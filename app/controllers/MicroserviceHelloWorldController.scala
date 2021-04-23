@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.penalties.controllers
+package controllers
 
-import javax.inject.{Inject, Singleton}
+import config.AppConfig
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
-import uk.gov.hmrc.penalties.config.AppConfig
 
+import javax.inject.{Inject, Singleton}
 import scala.concurrent.Future
 
 @Singleton()

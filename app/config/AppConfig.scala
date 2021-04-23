@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.penalties.config
+package config
 
 import javax.inject.{Inject, Singleton}
 import play.api.Configuration
