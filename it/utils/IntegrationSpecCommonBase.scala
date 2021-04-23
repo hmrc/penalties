@@ -18,13 +18,12 @@ package utils
 
 import com.codahale.metrics.SharedMetricRegistries
 import helpers.WiremockHelper
-import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, TestSuite}
+import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, Matchers, TestSuite, WordSpec}
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.ws.{WSClient, WSRequest}
-import uk.gov.hmrc.play.test.UnitSpec
 
-trait IntegrationSpecCommonBase extends UnitSpec with GuiceOneServerPerSuite with
+trait IntegrationSpecCommonBase extends WordSpec with Matchers with GuiceOneServerPerSuite with
   BeforeAndAfterAll with BeforeAndAfterEach with TestSuite with WiremockHelper {
 
   lazy val injector = app.injector
