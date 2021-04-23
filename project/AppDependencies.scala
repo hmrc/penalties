@@ -1,6 +1,6 @@
+
 import play.core.PlayVersion
-import play.sbt.PlayImport._
-import sbt.Keys.libraryDependencies
+import play.core.PlayVersion.current
 import sbt._
 
 object AppDependencies {
@@ -10,15 +10,15 @@ object AppDependencies {
   )
 
   val test = Seq(
-    "uk.gov.hmrc"             %% "bootstrap-test-play-27"   % "4.2.0"             % Test,
-    "org.scalatest"           %% "scalatest"                % "3.2.7"             % Test,
-    "com.typesafe.play"       %% "play-test"                % PlayVersion.current % "test, it",
-    "org.mockito"             %  "mockito-all"              % "1.10.19"           % "test, it",
-    "com.vladsch.flexmark"    %  "flexmark-all"             % "0.36.8"            % "test, it",
-    "org.scalatestplus.play"  %% "scalatestplus-play"       % "4.0.3"             % "test, it",
-    "uk.gov.hmrc"             %% "hmrctest"                 % "3.10.0-play-26"    % "test, it",
-    "org.pegdown"             %  "pegdown"                  % "1.6.0"             % IntegrationTest,
-    "com.github.tomakehurst"  %  "wiremock-jre8"            % "2.27.2"            % IntegrationTest,
-    "uk.gov.hmrc"             %% "service-integration-test" % "1.1.0-play-27"     % "test, it"
+    "uk.gov.hmrc"             %% "bootstrap-backend-play-27"   % "3.3.0"  % "test",
+    "uk.gov.hmrc.mongo"       %% "hmrc-mongo-test-play-27"     % "0.48.0" % "test, it",
+    "org.scalatest"           %% "scalatest"                   % "3.0.8"   % "test",
+    "com.typesafe.play"       %% "play-test"                   % current   % "test",
+    "org.pegdown"             %  "pegdown"                     % "1.6.0"   % "test, it",
+    "org.scalatestplus.play"  %% "scalatestplus-play"          % "4.0.3"   % "test, it",
+    "com.github.tomakehurst"  %  "wiremock-jre8"               % "2.23.2"  % "it",
+    "org.scalamock"           %% "scalamock-scalatest-support" % "3.6.0"   % "test",
+    "com.github.tomakehurst"  %  "wiremock-standalone"         % "2.22.0"  % "it",
+    "org.mockito"             % "mockito-core"                 % "3.1.0"   % "test, it"
   )
 }
