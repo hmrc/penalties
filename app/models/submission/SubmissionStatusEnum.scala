@@ -18,23 +18,23 @@ package models.submission
 
 import play.api.libs.json._
 
-object SubmissionStatus extends Enumeration {
+object SubmissionStatusEnum extends Enumeration {
   val Submitted = Value
   val Overdue = Value
   val Under_Review = Value
-  val TaxTribunal = Value
+  val Tax_Tribunal = Value
 
-  implicit val format: Format[SubmissionStatus.Value] = new Format[SubmissionStatus.Value] {
-    override def writes(o: SubmissionStatus.Value): JsValue = {
+  implicit val format: Format[SubmissionStatusEnum.Value] = new Format[SubmissionStatusEnum.Value] {
+    override def writes(o: SubmissionStatusEnum.Value): JsValue = {
       JsString(o.toString.toUpperCase)
     }
 
-    override def reads(json: JsValue): JsResult[SubmissionStatus.Value] = {
+    override def reads(json: JsValue): JsResult[SubmissionStatusEnum.Value] = {
       json.as[String] match {
         case "SUBMITTED" => JsSuccess(Submitted)
         case "OVERDUE" => JsSuccess(Overdue)
         case "UNDER_REVIEW" => JsSuccess(Under_Review)
-        case "TAX_TRIBUNAL" => JsSuccess(TaxTribunal)
+        case "TAX_TRIBUNAL" => JsSuccess(Tax_Tribunal)
         case e => JsError(s"$e not recognised")
       }
     }

@@ -18,7 +18,7 @@ package models.point
 
 import models.financial.Financial
 import models.penalty.PenaltyPeriod
-import models.submission.{Submission, SubmissionStatus}
+import models.submission.{Submission, SubmissionStatusEnum}
 import org.scalatest.{Matchers, WordSpec}
 import play.api.libs.json.{JsString, JsValue, Json}
 
@@ -43,7 +43,7 @@ class PenaltyPointSpec extends WordSpec with Matchers {
       "submission" -> Json.obj (
       "dueDate" -> "2019-05-31T23:59:59.999",
       "submittedDate" -> "2019-06-01T23:59:59.999",
-      "status" -> SubmissionStatus.Submitted
+      "status" -> SubmissionStatusEnum.Submitted
         )
     ),
     "communications" -> Seq.empty[String],
@@ -65,7 +65,7 @@ class PenaltyPointSpec extends WordSpec with Matchers {
       submission = Submission(
         dueDate = sampleDateTime3,
         submittedDate = Some(sampleDateTime4),
-        status = SubmissionStatus.Submitted
+        status = SubmissionStatusEnum.Submitted
       )
     ),
     communications = Seq.empty,

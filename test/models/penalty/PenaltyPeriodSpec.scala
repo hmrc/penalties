@@ -16,7 +16,7 @@
 
 package models.penalty
 
-import models.submission.{Submission, SubmissionStatus}
+import models.submission.{Submission, SubmissionStatusEnum}
 import org.scalatest.{Matchers, WordSpec}
 import play.api.libs.json.{JsValue, Json}
 
@@ -44,7 +44,7 @@ class PenaltyPeriodSpec extends WordSpec with Matchers {
     submission = Submission(
       dueDate = LocalDateTime.of(2019, 5, 31, 23, 59, 59).plus(999, ChronoUnit.MILLIS),
       submittedDate = Some(LocalDateTime.of(2019, 5, 30, 23, 59, 59).plus(999, ChronoUnit.MILLIS)),
-      status = SubmissionStatus.Submitted
+      status = SubmissionStatusEnum.Submitted
     )
   )
   "PenaltyPeriod" should {

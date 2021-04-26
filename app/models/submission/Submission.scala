@@ -23,7 +23,7 @@ import java.time.LocalDateTime
 case class Submission(
                        dueDate: LocalDateTime,
                        submittedDate: Option[LocalDateTime] = None,
-                       status: SubmissionStatus.Value
+                       status: SubmissionStatusEnum.Value
                      )
 
 object Submission {

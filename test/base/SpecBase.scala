@@ -20,7 +20,7 @@ import config.AppConfig
 import models.ETMPPayload
 import models.penalty.PenaltyPeriod
 import models.point.{PenaltyPoint, PenaltyTypeEnum, PointStatusEnum}
-import models.submission.{Submission, SubmissionStatus}
+import models.submission.{Submission, SubmissionStatusEnum}
 import org.scalatest.{Matchers, WordSpec}
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
@@ -57,7 +57,7 @@ trait SpecBase extends WordSpec with Matchers with GuiceOneAppPerSuite with Mock
           submission = Submission(
             dueDate = LocalDateTime.of(1970, 2, 6, 0, 0, 0),
             submittedDate = Some(LocalDateTime.of(1970, 2, 7, 0, 0, 0)),
-            status = SubmissionStatus.Submitted
+            status = SubmissionStatusEnum.Submitted
           )
         ),
         communications = Seq.empty,
