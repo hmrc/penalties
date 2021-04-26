@@ -18,7 +18,7 @@ package models.point
 
 import models.communication.Communication
 import models.financial.Financial
-import models.penalty.{PenaltyPeriod, PenaltyTypeEnum}
+import models.penalty.PenaltyPeriod
 import play.api.libs.json.{Json, OFormat}
 
 import java.time.LocalDateTime

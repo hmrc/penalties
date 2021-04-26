@@ -18,8 +18,8 @@ package base
 
 import config.AppConfig
 import models.ETMPPayload
-import models.penalty.{PenaltyPeriod, PenaltyTypeEnum}
-import models.point.{PenaltyPoint, PointStatusEnum}
+import models.penalty.PenaltyPeriod
+import models.point.{PenaltyPoint, PenaltyTypeEnum, PointStatusEnum}
 import models.submission.{Submission, SubmissionStatus}
 import org.scalatest.{Matchers, WordSpec}
 import org.scalatestplus.mockito.MockitoSugar
