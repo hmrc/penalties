@@ -16,12 +16,22 @@
 
 package config
 
+import featureSwitches.{CallETMP, FeatureSwitching}
+
 import javax.inject.{Inject, Singleton}
 import play.api.Configuration
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
 @Singleton
-class AppConfig @Inject()(config: Configuration, servicesConfig: ServicesConfig) {
+class AppConfig @Inject()(config: Configuration, servicesConfig: ServicesConfig) extends FeatureSwitching {
   val auditingEnabled: Boolean = config.get[Boolean]("auditing.enabled")
   val graphiteHost: String     = config.get[String]("microservice.metrics.graphite.host")
+
+  lazy val stubBase: String = servicesConfig.baseUrl("penalties-stub")
+
+  lazy val getVATPenaltiesURL: String = {
+    if(!isEnabled(CallETMP)) stubBase + "/penalties-stub/etmp/mtd-vat/"
+    //TODO: change to relevant URL when implemented
+    else "/"
+  }
 }

@@ -17,13 +17,54 @@
 package base
 
 import config.AppConfig
+import models.ETMPPayload
+import models.penalty.{PenaltyPeriod, PenaltyTypeEnum}
+import models.point.{PenaltyPoint, PointStatusEnum}
+import models.submission.{Submission, SubmissionStatus}
 import org.scalatest.{Matchers, WordSpec}
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
+import play.api.mvc.AnyContent
+import play.api.test.FakeRequest
 
-trait SpecBase extends WordSpec with Matchers with GuiceOneAppPerSuite with MockitoSugar  {
+import java.time.LocalDateTime
+
+trait SpecBase extends WordSpec with Matchers with GuiceOneAppPerSuite with MockitoSugar {
 
   lazy val injector = app.injector
 
   implicit val appConfig: AppConfig = injector.instanceOf[AppConfig]
+
+  val fakeRequest: FakeRequest[AnyContent] = FakeRequest("GET", "/")
+
+  val mockETMPPayloadResponseAsModel: ETMPPayload = ETMPPayload(
+    pointsTotal = 1,
+    lateSubmissions = 0,
+    adjustmentPointsTotal = 0,
+    fixedPenaltyAmount = 0,
+    penaltyAmountsTotal = 1,
+    penaltyPointsThreshold = 3,
+    penaltyPoints = Seq(
+      PenaltyPoint(
+        `type` = PenaltyTypeEnum.Point,
+        number = "1",
+        dateCreated = LocalDateTime.of(1970, 1, 1, 0, 0, 0),
+        dateExpired = Some(LocalDateTime.of(1970, 1, 1, 0, 0, 0)),
+        status = PointStatusEnum.Active,
+        period = PenaltyPeriod(
+          startDate = LocalDateTime.of(1970, 1, 1, 0, 0, 0),
+          endDate = LocalDateTime.of(1970, 1, 31, 0, 0, 0),
+          submission = Submission(
+            dueDate = LocalDateTime.of(1970, 2, 6, 0, 0, 0),
+            submittedDate = Some(LocalDateTime.of(1970, 2, 7, 0, 0, 0)),
+            status = SubmissionStatus.Submitted
+          )
+        ),
+        communications = Seq.empty,
+        financial = None
+      )
+    )
+  )
+
+  val sampleMTDVATEnrolmentKey: String = "HMRC-MTD-VAT~VRN~123456789"
 }
