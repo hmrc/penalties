@@ -23,7 +23,7 @@ case class ETMPPayload(
                         pointsTotal: Int,
                         lateSubmissions: Int,
                         adjustmentPointsTotal: BigDecimal,
-                        fixedPenaltyAmount: Int,
+                        fixedPenaltyAmount: BigDecimal,
                         penaltyAmountsTotal: BigDecimal,
                         penaltyPointsThreshold: Int,
                         penaltyPoints: Seq[PenaltyPoint]
