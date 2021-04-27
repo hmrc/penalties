@@ -18,6 +18,7 @@ package controllers
 
 import base.SpecBase
 import config.AppConfig
+import connectors.parsers.ETMPPayloadParser.{GetETMPPayloadMalformed, GetETMPPayloadNoContent, GetETMPPayloadSuccessResponse}
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
 import play.api.http.Status
@@ -43,19 +44,28 @@ class ETMPControllerSpec extends SpecBase {
   "getPenaltiesData" should {
     "call the service to retrieve data from ETMP and return OK with the body if successful" in new Setup {
       when(mockETMPService.getPenaltyDataFromETMPForEnrolment(ArgumentMatchers.eq(sampleMTDVATEnrolmentKey))(ArgumentMatchers.any()))
-        .thenReturn(Future.successful(Some(mockETMPPayloadResponseAsModel)))
+        .thenReturn(Future.successful((Some(mockETMPPayloadResponseAsModel), Right(GetETMPPayloadSuccessResponse(mockETMPPayloadResponseAsModel)))))
 
       val result = controller.getPenaltiesData(sampleMTDVATEnrolmentKey)(fakeRequest)
       status(result) shouldBe Status.OK
       contentAsJson(result) shouldBe Json.toJson(mockETMPPayloadResponseAsModel)
     }
 
-    "call the service and return an ISE if there is a failure" in new Setup {
+    "call the service and return an ISE if there is a failure to do with processing" in new Setup {
       when(mockETMPService.getPenaltyDataFromETMPForEnrolment(ArgumentMatchers.eq(sampleMTDVATEnrolmentKey))(ArgumentMatchers.any()))
-        .thenReturn(Future.successful(None))
+        .thenReturn(Future.successful((None, Left(GetETMPPayloadMalformed))))
 
       val result = controller.getPenaltiesData(sampleMTDVATEnrolmentKey)(fakeRequest)
       status(result) shouldBe Status.INTERNAL_SERVER_ERROR
+      contentAsString(result) shouldBe s"Something went wrong."
+    }
+
+    "call the service and return a NotFound if there is a NoContent is returned from the connector" in new Setup {
+      when(mockETMPService.getPenaltyDataFromETMPForEnrolment(ArgumentMatchers.eq(sampleMTDVATEnrolmentKey))(ArgumentMatchers.any()))
+        .thenReturn(Future.successful((None, Left(GetETMPPayloadNoContent))))
+
+      val result = controller.getPenaltiesData(sampleMTDVATEnrolmentKey)(fakeRequest)
+      status(result) shouldBe Status.NOT_FOUND
       contentAsString(result) shouldBe s"Could not retrieve ETMP penalty data for $sampleMTDVATEnrolmentKey"
     }
   }
