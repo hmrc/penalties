@@ -17,7 +17,7 @@
 package services
 
 import connectors.ETMPConnector
-import connectors.parsers.ETMPPayloadParser.{GetETMPPayloadFailureResponse, GetETMPPayloadMalformed, GetETMPPayloadNoContent, GetETMPPayloadSuccessResponse}
+import connectors.parsers.ETMPPayloadParser.{ETMPPayloadResponse, GetETMPPayloadFailureResponse, GetETMPPayloadMalformed, GetETMPPayloadNoContent, GetETMPPayloadSuccessResponse}
 import models.ETMPPayload
 import play.api.Logger.logger
 import uk.gov.hmrc.http.HeaderCarrier
@@ -28,25 +28,31 @@ import scala.concurrent.{ExecutionContext, Future}
 class ETMPService @Inject()(etmpConnector: ETMPConnector)
                            (implicit ec: ExecutionContext) {
 
-  def getPenaltyDataFromETMPForEnrolment(enrolmentKey: String)(implicit hc: HeaderCarrier): Future[Option[ETMPPayload]] = {
-    val startOfLogMsg: String = "[ETMPService][getPenaltyDataFromETMPForEnrolment]"
+  def getPenaltyDataFromETMPForEnrolment(enrolmentKey: String)(implicit hc: HeaderCarrier): Future[(Option[ETMPPayload], ETMPPayloadResponse) ] = {
+    implicit val startOfLogMsg: String = "[ETMPService][getPenaltyDataFromETMPForEnrolment]"
     etmpConnector.getPenaltiesDataForEnrolmentKey(enrolmentKey).map {
-        case Right(_@GetETMPPayloadSuccessResponse(payload)) => {
-          logger.debug(s"$startOfLogMsg - Got a success response from the connector. Parsed model: $payload")
-          Some(payload)
-        }
-        case Left(GetETMPPayloadNoContent) => {
-          logger.info(s"$startOfLogMsg - No content returned from ETMP.")
-          None
-        }
-        case Left(GetETMPPayloadMalformed) => {
-          logger.info(s"$startOfLogMsg - Failed to parse HTTP response into model.")
-          None
-        }
-        case Left(GetETMPPayloadFailureResponse(_)) => {
-          logger.info(s"$startOfLogMsg - Unknown status returned from connector.")
-          None
-        }
+      handleConnectorResponse(_)
+    }
+  }
+
+  private def handleConnectorResponse(connectorResponse: ETMPPayloadResponse)(implicit startOfLogMsg: String): (Option[ETMPPayload], ETMPPayloadResponse) = {
+    connectorResponse match {
+      case res@Right(_@GetETMPPayloadSuccessResponse(payload)) => {
+        logger.debug(s"$startOfLogMsg - Got a success response from the connector. Parsed model: $payload")
+        (Some(payload), res)
+      }
+      case res@Left(GetETMPPayloadNoContent) => {
+        logger.info(s"$startOfLogMsg - No content returned from ETMP.")
+        (None, res)
+      }
+      case res@Left(GetETMPPayloadMalformed) => {
+        logger.info(s"$startOfLogMsg - Failed to parse HTTP response into model.")
+        (None, res)
+      }
+      case res@Left(GetETMPPayloadFailureResponse(_)) => {
+        logger.error(s"$startOfLogMsg - Unknown status returned from connector.")
+        (None, res)
+      }
     }
   }
 }

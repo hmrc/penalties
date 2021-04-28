@@ -17,6 +17,7 @@
 package controllers
 
 import config.AppConfig
+import connectors.parsers.ETMPPayloadParser.GetETMPPayloadNoContent
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import services.ETMPService
@@ -33,13 +34,18 @@ class ETMPController @Inject()(appConfig: AppConfig,
   def getPenaltiesData(enrolmentKey: String): Action[AnyContent] = Action.async {
     implicit request => {
       etmpService.getPenaltyDataFromETMPForEnrolment(enrolmentKey).map {
-        _.fold(
-          InternalServerError(s"Could not retrieve ETMP penalty data for $enrolmentKey")
-        )(
-          etmpData => {
-            Ok(Json.toJson(etmpData))
-          }
-        )
+        result => {
+          result._1.fold {
+            result._2 match {
+              case Left(GetETMPPayloadNoContent) => NotFound(s"Could not retrieve ETMP penalty data for $enrolmentKey")
+              case Left(_) => InternalServerError("Something went wrong.")
+            }
+          }(
+            etmpData => {
+              Ok(Json.toJson(etmpData))
+            }
+          )
+        }
       }
     }
   }

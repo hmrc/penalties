@@ -36,9 +36,11 @@ class AppConfigSpec extends WordSpec with Matchers with MockitoSugar with Featur
   "getVATPenaltiesURL" should {
     "call ETMP when the feature switch is enabled" in new Setup {
       enableFeatureSwitch(CallETMP)
+      when(mockServicesConfig.baseUrl(ArgumentMatchers.any()))
+        .thenReturn("localhost:0000")
       val result = config.getVATPenaltiesURL
       //TODO: change this once we have the correct URL
-      result shouldBe "/"
+      result shouldBe "localhost:0000/"
     }
 
     "call the stub when the feature switch is disabled" in new Setup {

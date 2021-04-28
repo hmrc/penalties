@@ -29,9 +29,11 @@ class AppConfig @Inject()(config: Configuration, servicesConfig: ServicesConfig)
 
   lazy val stubBase: String = servicesConfig.baseUrl("penalties-stub")
 
-  lazy val getVATPenaltiesURL: String = {
+  lazy val etmpBase: String = servicesConfig.baseUrl("etmp")
+
+  def getVATPenaltiesURL: String = {
     if(!isEnabled(CallETMP)) stubBase + "/penalties-stub/etmp/mtd-vat/"
     //TODO: change to relevant URL when implemented
-    else "/"
+    else etmpBase + "/"
   }
 }
