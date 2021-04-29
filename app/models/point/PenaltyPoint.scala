@@ -29,6 +29,7 @@ case class PenaltyPoint(
                          dateCreated: LocalDateTime,
                          dateExpired: Option[LocalDateTime] = None,
                          status: PointStatusEnum.Value,
+                         reason: Option[String],
                          period: PenaltyPeriod,
                          communications: Seq[Communication],
                          financial: Option[Financial] = None

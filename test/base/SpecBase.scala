@@ -51,6 +51,7 @@ trait SpecBase extends WordSpec with Matchers with GuiceOneAppPerSuite with Mock
         dateCreated = LocalDateTime.of(1970, 1, 1, 0, 0, 0),
         dateExpired = Some(LocalDateTime.of(1970, 1, 1, 0, 0, 0)),
         status = PointStatusEnum.Active,
+        reason = Some("reason"),
         period = PenaltyPeriod(
           startDate = LocalDateTime.of(1970, 1, 1, 0, 0, 0),
           endDate = LocalDateTime.of(1970, 1, 31, 0, 0, 0),

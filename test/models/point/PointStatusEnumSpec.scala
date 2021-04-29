@@ -30,6 +30,21 @@ class PointStatusEnumSpec extends WordSpec with Matchers {
     result shouldBe JsString("REJECTED")
   }
 
+  "be writable to JSON for 'ADDED'" in {
+    val result = Json.toJson(PointStatusEnum.Added)
+    result shouldBe JsString("ADDED")
+  }
+
+  "be writable to JSON for 'REMOVED'" in {
+    val result = Json.toJson(PointStatusEnum.Removed)
+    result shouldBe JsString("REMOVED")
+  }
+
+  "be writable to JSON for 'DUE'" in {
+    val result = Json.toJson(PointStatusEnum.Due)
+    result shouldBe JsString("DUE")
+  }
+
   "be readable from JSON for 'ACTIVE'" in {
     val result = Json.fromJson(JsString("ACTIVE"))(PointStatusEnum.format)
     result.isSuccess shouldBe true
@@ -40,6 +55,24 @@ class PointStatusEnumSpec extends WordSpec with Matchers {
     val result = Json.fromJson(JsString("REJECTED"))(PointStatusEnum.format)
     result.isSuccess shouldBe true
     result.get shouldBe PointStatusEnum.Rejected
+  }
+
+  "be readable from JSON for 'ADDED'" in {
+    val result = Json.fromJson(JsString("ADDED"))(PointStatusEnum.format)
+    result.isSuccess shouldBe true
+    result.get shouldBe PointStatusEnum.Added
+  }
+
+  "be readable from JSON for 'REMOVED'" in {
+    val result = Json.fromJson(JsString("REMOVED"))(PointStatusEnum.format)
+    result.isSuccess shouldBe true
+    result.get shouldBe PointStatusEnum.Removed
+  }
+
+  "be readable from JSON for 'DUE'" in {
+    val result = Json.fromJson(JsString("DUE"))(PointStatusEnum.format)
+    result.isSuccess shouldBe true
+    result.get shouldBe PointStatusEnum.Due
   }
 
   "return a JSError when there is no matches for the specified value" in {

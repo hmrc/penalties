@@ -20,10 +20,10 @@ import models.financial.Financial
 import models.penalty.PenaltyPeriod
 import models.submission.{Submission, SubmissionStatusEnum}
 import org.scalatest.{Matchers, WordSpec}
-import play.api.libs.json.{JsString, JsValue, Json}
+import play.api.libs.json.Json
 
 import java.time.temporal.ChronoUnit
-import java.time.{LocalDate, LocalDateTime}
+import java.time.LocalDateTime
 
 class PenaltyPointSpec extends WordSpec with Matchers {
 
@@ -59,6 +59,7 @@ class PenaltyPointSpec extends WordSpec with Matchers {
     dateCreated = sampleDateTime1,
     dateExpired = Some(sampleDateTime2),
     status = PointStatusEnum.Active,
+    reason = None,
     period = PenaltyPeriod(
       startDate = sampleDateTime1,
       endDate = sampleDateTime2,

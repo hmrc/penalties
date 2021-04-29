@@ -101,6 +101,7 @@ trait IntegrationSpecCommonBase extends WordSpec with Matchers with GuiceOneServ
         dateCreated = sampleDate,
         dateExpired = Some(sampleDate),
         status = PointStatusEnum.Active,
+        reason = None,
         period = PenaltyPeriod(
           startDate = sampleDate,
           endDate = sampleDate,
@@ -128,6 +129,7 @@ trait IntegrationSpecCommonBase extends WordSpec with Matchers with GuiceOneServ
         dateCreated = sampleDate,
         dateExpired = Some(sampleDate),
         status = PointStatusEnum.Active,
+        reason = None,
         period = PenaltyPeriod(
           startDate = sampleDate,
           endDate = sampleDate,
