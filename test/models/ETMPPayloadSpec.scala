@@ -74,6 +74,7 @@ class ETMPPayloadSpec extends WordSpec with Matchers {
       |			"dateCreated": "2021-04-23T18:25:43.511",
       |			"dateExpired": "2021-04-23T18:25:43.511",
       |			"status": "ACTIVE",
+      |     "reason": "reason",
       |			"period": {
       |				"startDate": "2021-04-23T18:25:43.511",
       |				"endDate": "2021-04-23T18:25:43.511",
@@ -109,6 +110,7 @@ class ETMPPayloadSpec extends WordSpec with Matchers {
         dateCreated = sampleDate,
         dateExpired = Some(sampleDate),
         status = PointStatusEnum.Active,
+        reason = None,
         period = PenaltyPeriod(
           startDate = sampleDate,
           endDate = sampleDate,
@@ -136,6 +138,7 @@ class ETMPPayloadSpec extends WordSpec with Matchers {
         dateCreated = sampleDate,
         dateExpired = Some(sampleDate),
         status = PointStatusEnum.Active,
+        reason = Some("reason"),
         period = PenaltyPeriod(
           startDate = sampleDate,
           endDate = sampleDate,

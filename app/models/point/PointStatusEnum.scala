@@ -21,6 +21,9 @@ import play.api.libs.json._
 object PointStatusEnum extends Enumeration {
   val Active = Value
   val Rejected = Value
+  val Added = Value
+  val Removed = Value
+  val Due = Value
 
   implicit val format: Format[PointStatusEnum.Value] = new Format[PointStatusEnum.Value] {
     override def writes(o: PointStatusEnum.Value): JsValue = {
@@ -31,6 +34,9 @@ object PointStatusEnum extends Enumeration {
       json.as[String] match {
         case "ACTIVE" => JsSuccess(Active)
         case "REJECTED" => JsSuccess(Rejected)
+        case "ADDED" => JsSuccess(Added)
+        case "REMOVED" => JsSuccess(Removed)
+        case "DUE" => JsSuccess(Due)
         case e => JsError(s"$e not recognised")
       }
     }
