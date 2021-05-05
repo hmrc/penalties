@@ -22,7 +22,7 @@ import play.api.libs.json.{Json, OFormat}
 case class ETMPPayload(
                         pointsTotal: Int,
                         lateSubmissions: Int,
-                        adjustmentPointsTotal: BigDecimal,
+                        adjustmentPointsTotal: Int,
                         fixedPenaltyAmount: BigDecimal,
                         penaltyAmountsTotal: BigDecimal,
                         penaltyPointsThreshold: Int,
