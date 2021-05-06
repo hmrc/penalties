@@ -102,7 +102,7 @@ trait IntegrationSpecCommonBase extends WordSpec with Matchers with GuiceOneServ
         dateExpired = Some(sampleDate),
         status = PointStatusEnum.Active,
         reason = None,
-        period = PenaltyPeriod(
+        period = Some(PenaltyPeriod(
           startDate = sampleDate,
           endDate = sampleDate,
           submission = Submission(
@@ -110,7 +110,7 @@ trait IntegrationSpecCommonBase extends WordSpec with Matchers with GuiceOneServ
             submittedDate = Some(sampleDate),
             status = SubmissionStatusEnum.Submitted
           )
-        ),
+        )),
         communications = Seq(
           Communication(
             `type` = CommunicationTypeEnum.secureMessage,
@@ -130,7 +130,7 @@ trait IntegrationSpecCommonBase extends WordSpec with Matchers with GuiceOneServ
         dateExpired = Some(sampleDate),
         status = PointStatusEnum.Active,
         reason = None,
-        period = PenaltyPeriod(
+        period = Some(PenaltyPeriod(
           startDate = sampleDate,
           endDate = sampleDate,
           submission = Submission(
@@ -138,7 +138,7 @@ trait IntegrationSpecCommonBase extends WordSpec with Matchers with GuiceOneServ
             submittedDate = Some(sampleDate),
             status = SubmissionStatusEnum.Submitted
           )
-        ),
+        )),
         communications = Seq(
           Communication(
             `type` = CommunicationTypeEnum.letter,
