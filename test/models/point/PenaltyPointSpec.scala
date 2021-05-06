@@ -91,12 +91,6 @@ class PenaltyPointSpec extends WordSpec with Matchers {
     status = PointStatusEnum.Added
   )
 
-  val removedPenaltyPointAsPointModelWithNoPeriod: PenaltyPoint = penaltyPointAsPointModel.copy(
-    period = None,
-    dateExpired = None,
-    status = PointStatusEnum.Removed
-  )
-
   val penaltyPointAsFinancialPenaltyModel: PenaltyPoint = penaltyPointAsPointModel.copy(
     `type` = PenaltyTypeEnum.Financial,
     financial = Some(Financial(300.00, sampleDateTime3))
@@ -119,14 +113,9 @@ class PenaltyPointSpec extends WordSpec with Matchers {
       result shouldBe penaltyPointAsJson(PenaltyTypeEnum.Point, Some(sampleDateTime2), None, true, PointStatusEnum.Active)
     }
 
-    "be writable to JSON when no period exists i.e. user has a added point" in {
+    "be writable to JSON when no period exists i.e. user has an added point" in {
       val result = Json.toJson(addedPenaltyPointAsPointModelWithNoPeriod)
       result shouldBe penaltyPointAsJson(PenaltyTypeEnum.Point, None, None, false, PointStatusEnum.Added)
-    }
-
-    "be writeable to JSON when no period exists i.e. user has a removed point" in {
-      val result = Json.toJson(removedPenaltyPointAsPointModelWithNoPeriod)
-      result shouldBe penaltyPointAsJson(PenaltyTypeEnum.Point, None, None, false, PointStatusEnum.Removed)
     }
 
     s"be readable from JSON when the point type is ${PenaltyTypeEnum.Financial}" in {
@@ -154,16 +143,10 @@ class PenaltyPointSpec extends WordSpec with Matchers {
       result.get shouldBe penaltyPointAsPointModelWithNoDateExpired
     }
 
-    "be readable from JSON when no period exists i.e. user has a added point" in {
+    "be readable from JSON when no period exists i.e. user has an added point" in {
       val result = Json.fromJson(penaltyPointAsJson(PenaltyTypeEnum.Point, None, None, false, PointStatusEnum.Added))(PenaltyPoint.format)
       result.isSuccess shouldBe true
       result.get shouldBe addedPenaltyPointAsPointModelWithNoPeriod
-    }
-
-    "be readable from JSON when no period exists i.e. user has a removed point" in {
-      val result = Json.fromJson(penaltyPointAsJson(PenaltyTypeEnum.Point, None, None, false, PointStatusEnum.Removed))(PenaltyPoint.format)
-      result.isSuccess shouldBe true
-      result.get shouldBe removedPenaltyPointAsPointModelWithNoPeriod
     }
   }
 }
