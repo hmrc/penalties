@@ -49,11 +49,7 @@ class ETMPControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock {
       |					"dateSent": "2021-04-23T18:25:43.511",
       |					"documentId": "1234567890"
       |				}
-      |			],
-      |     "financial": {
-      |        "amountDue": 400.00,
-      |        "dueDate": "2021-04-23T18:25:43.511"
-      |     }
+      |			]
       |		},
       |		{
       |			"type": "point",
@@ -104,11 +100,7 @@ class ETMPControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock {
       |					"dateSent": "2021-04-23T18:25:43.511",
       |					"documentId": "1234567890"
       |				}
-      |			],
-      |     "financial": {
-      |        "amountDue": 400.00,
-      |        "dueDate": "2021-04-23T18:25:43.511"
-      |     }
+      |			]
       |		},
       |		{
       |			"type": "point",
