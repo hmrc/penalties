@@ -32,26 +32,34 @@ class PenaltyPointSpec extends WordSpec with Matchers {
   val sampleDateTime3: LocalDateTime = LocalDateTime.of(2019, 5, 31, 23, 59, 59).plus(999, ChronoUnit.MILLIS)
   val sampleDateTime4: LocalDateTime = LocalDateTime.of(2019, 6, 1, 23, 59, 59).plus(999, ChronoUnit.MILLIS)
 
-  val penaltyPointAsJson = (pointType: PenaltyTypeEnum.Value, dateExpired: Option[LocalDateTime], financial: Option[Financial]) => Json.obj(
-    "type" -> pointType,
-    "number" -> "1",
-    "dateCreated" -> "2019-01-31T23:59:59.998",
-    "status" -> PointStatusEnum.Active,
-    "period" -> Json.obj(
-      "startDate" -> "2019-01-31T23:59:59.998",
-      "endDate" -> "2019-01-31T23:59:59.999",
-      "submission" -> Json.obj (
-      "dueDate" -> "2019-05-31T23:59:59.999",
-      "submittedDate" -> "2019-06-01T23:59:59.999",
-      "status" -> SubmissionStatusEnum.Submitted
-        )
-    ),
-    "communications" -> Seq.empty[String],
-  ).deepMerge(
-    dateExpired.fold(Json.obj())(obj => Json.obj("dateExpired" -> obj))
-  ).deepMerge(
-    financial.fold(Json.obj())(obj => Json.obj("financial" -> obj))
-  )
+  val penaltyPointAsJson = (pointType: PenaltyTypeEnum.Value, dateExpired: Option[LocalDateTime], financial: Option[Financial],
+                            withPeriod: Boolean, status: PointStatusEnum.Value) => {
+    val base = Json.obj(
+      "type" -> pointType,
+      "number" -> "1",
+      "dateCreated" -> "2019-01-31T23:59:59.998",
+      "status" -> status,
+      "communications" -> Seq.empty[String],
+    ).deepMerge(
+      dateExpired.fold(Json.obj())(obj => Json.obj("dateExpired" -> obj))
+    ).deepMerge(
+      financial.fold(Json.obj())(obj => Json.obj("financial" -> obj))
+    )
+    if(withPeriod) {
+      base.deepMerge(Json.obj("period" -> Json.obj(
+            "startDate" -> "2019-01-31T23:59:59.998",
+            "endDate" -> "2019-01-31T23:59:59.999",
+            "submission" -> Json.obj (
+              "dueDate" -> "2019-05-31T23:59:59.999",
+              "submittedDate" -> "2019-06-01T23:59:59.999",
+              "status" -> SubmissionStatusEnum.Submitted
+            )
+          )))
+    } else {
+      base
+    }
+
+  }
 
   val penaltyPointAsPointModel: PenaltyPoint = PenaltyPoint(
     `type` = PenaltyTypeEnum.Point,
@@ -60,7 +68,7 @@ class PenaltyPointSpec extends WordSpec with Matchers {
     dateExpired = Some(sampleDateTime2),
     status = PointStatusEnum.Active,
     reason = None,
-    period = PenaltyPeriod(
+    period = Some(PenaltyPeriod(
       startDate = sampleDateTime1,
       endDate = sampleDateTime2,
       submission = Submission(
@@ -68,13 +76,25 @@ class PenaltyPointSpec extends WordSpec with Matchers {
         submittedDate = Some(sampleDateTime4),
         status = SubmissionStatusEnum.Submitted
       )
-    ),
+    )),
     communications = Seq.empty,
     financial = None
   )
 
   val penaltyPointAsPointModelWithNoDateExpired: PenaltyPoint = penaltyPointAsPointModel.copy(
     dateExpired = None
+  )
+
+  val addedPenaltyPointAsPointModelWithNoPeriod: PenaltyPoint = penaltyPointAsPointModel.copy(
+    period = None,
+    dateExpired = None,
+    status = PointStatusEnum.Added
+  )
+
+  val removedPenaltyPointAsPointModelWithNoPeriod: PenaltyPoint = penaltyPointAsPointModel.copy(
+    period = None,
+    dateExpired = None,
+    status = PointStatusEnum.Removed
   )
 
   val penaltyPointAsFinancialPenaltyModel: PenaltyPoint = penaltyPointAsPointModel.copy(
@@ -91,37 +111,59 @@ class PenaltyPointSpec extends WordSpec with Matchers {
   "PenaltyPoint" should {
     s"be writeable to JSON when the point type is ${PenaltyTypeEnum.Financial}" in {
       val result = Json.toJson(penaltyPointAsFinancialPenaltyModel)
-      result shouldBe penaltyPointAsJson(PenaltyTypeEnum.Financial, Some(sampleDateTime2), Some(Financial(300.00, sampleDateTime3)))
+      result shouldBe penaltyPointAsJson(PenaltyTypeEnum.Financial, Some(sampleDateTime2), Some(Financial(300.00, sampleDateTime3)), true, PointStatusEnum.Active)
     }
 
     s"be writeable to JSON when the point type is ${PenaltyTypeEnum.Point}" in {
       val result = Json.toJson(penaltyPointAsPointModel)
-      result shouldBe penaltyPointAsJson(PenaltyTypeEnum.Point, Some(sampleDateTime2), None)
+      result shouldBe penaltyPointAsJson(PenaltyTypeEnum.Point, Some(sampleDateTime2), None, true, PointStatusEnum.Active)
+    }
+
+    "be writable to JSON when no period exists i.e. user has a added point" in {
+      val result = Json.toJson(addedPenaltyPointAsPointModelWithNoPeriod)
+      result shouldBe penaltyPointAsJson(PenaltyTypeEnum.Point, None, None, false, PointStatusEnum.Added)
+    }
+
+    "be writeable to JSON when no period exists i.e. user has a removed point" in {
+      val result = Json.toJson(removedPenaltyPointAsPointModelWithNoPeriod)
+      result shouldBe penaltyPointAsJson(PenaltyTypeEnum.Point, None, None, false, PointStatusEnum.Removed)
     }
 
     s"be readable from JSON when the point type is ${PenaltyTypeEnum.Financial}" in {
-      val result = Json.fromJson(penaltyPointAsJson(PenaltyTypeEnum.Financial, Some(sampleDateTime2), Some(Financial(300.00, sampleDateTime3))
+      val result = Json.fromJson(penaltyPointAsJson(PenaltyTypeEnum.Financial, Some(sampleDateTime2), Some(Financial(300.00, sampleDateTime3)), true, PointStatusEnum.Active
       ))(PenaltyPoint.format)
       result.isSuccess shouldBe true
       result.get shouldBe penaltyPointAsFinancialPenaltyModel
     }
 
     s"be readable from JSON when the point type is ${PenaltyTypeEnum.Point}" in {
-      val result = Json.fromJson(penaltyPointAsJson(PenaltyTypeEnum.Point, Some(sampleDateTime2), None))(PenaltyPoint.format)
+      val result = Json.fromJson(penaltyPointAsJson(PenaltyTypeEnum.Point, Some(sampleDateTime2), None, true, PointStatusEnum.Active))(PenaltyPoint.format)
       result.isSuccess shouldBe true
       result.get shouldBe penaltyPointAsPointModel
     }
 
     "be readable from JSON when there is no dateExpired KV in the JSON" in {
-      val result = Json.fromJson(penaltyPointAsJson(PenaltyTypeEnum.Financial, None, Some(Financial(300.00, sampleDateTime3))))(PenaltyPoint.format)
+      val result = Json.fromJson(penaltyPointAsJson(PenaltyTypeEnum.Financial, None, Some(Financial(300.00, sampleDateTime3)), true, PointStatusEnum.Active))(PenaltyPoint.format)
       result.isSuccess shouldBe true
       result.get shouldBe penaltyPointAsFinancialPenaltyModelNoDateExpired
     }
 
     "be readable from JSON when there is no financial KV i.e. normal penalty point, in the JSON" in {
-      val result = Json.fromJson(penaltyPointAsJson(PenaltyTypeEnum.Point, None, None))(PenaltyPoint.format)
+      val result = Json.fromJson(penaltyPointAsJson(PenaltyTypeEnum.Point, None, None, true, PointStatusEnum.Active))(PenaltyPoint.format)
       result.isSuccess shouldBe true
       result.get shouldBe penaltyPointAsPointModelWithNoDateExpired
+    }
+
+    "be readable from JSON when no period exists i.e. user has a added point" in {
+      val result = Json.fromJson(penaltyPointAsJson(PenaltyTypeEnum.Point, None, None, false, PointStatusEnum.Added))(PenaltyPoint.format)
+      result.isSuccess shouldBe true
+      result.get shouldBe addedPenaltyPointAsPointModelWithNoPeriod
+    }
+
+    "be readable from JSON when no period exists i.e. user has a removed point" in {
+      val result = Json.fromJson(penaltyPointAsJson(PenaltyTypeEnum.Point, None, None, false, PointStatusEnum.Removed))(PenaltyPoint.format)
+      result.isSuccess shouldBe true
+      result.get shouldBe removedPenaltyPointAsPointModelWithNoPeriod
     }
   }
 }
