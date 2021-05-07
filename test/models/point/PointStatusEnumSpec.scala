@@ -45,6 +45,11 @@ class PointStatusEnumSpec extends WordSpec with Matchers {
     result shouldBe JsString("DUE")
   }
 
+  "be writable to JSON for 'PAID'" in {
+    val result = Json.toJson(PointStatusEnum.Paid)
+    result shouldBe JsString("PAID")
+  }
+
   "be readable from JSON for 'ACTIVE'" in {
     val result = Json.fromJson(JsString("ACTIVE"))(PointStatusEnum.format)
     result.isSuccess shouldBe true
@@ -73,6 +78,12 @@ class PointStatusEnumSpec extends WordSpec with Matchers {
     val result = Json.fromJson(JsString("DUE"))(PointStatusEnum.format)
     result.isSuccess shouldBe true
     result.get shouldBe PointStatusEnum.Due
+  }
+
+  "be readable from JSON for 'PAID'" in {
+    val result = Json.fromJson(JsString("PAID"))(PointStatusEnum.format)
+    result.isSuccess shouldBe true
+    result.get shouldBe PointStatusEnum.Paid
   }
 
   "return a JSError when there is no matches for the specified value" in {
