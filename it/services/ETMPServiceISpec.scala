@@ -17,19 +17,9 @@
 package services
 
 import connectors.parsers.ETMPPayloadParser.{GetETMPPayloadFailureResponse, GetETMPPayloadMalformed, GetETMPPayloadNoContent}
-import models.ETMPPayload
-import models.communication.{Communication, CommunicationTypeEnum}
-import models.financial.Financial
-import models.penalty.PenaltyPeriod
-import models.point.{PenaltyPoint, PenaltyTypeEnum, PointStatusEnum}
-import models.submission.{Submission, SubmissionStatusEnum}
 import play.api.http.Status
 import play.api.test.Helpers._
-import uk.gov.hmrc.http.HeaderCarrier
 import utils.{ETMPWiremock, IntegrationSpecCommonBase}
-
-import java.time.LocalDateTime
-import java.time.temporal.ChronoUnit
 
 class ETMPServiceISpec extends IntegrationSpecCommonBase with ETMPWiremock {
   val service: ETMPService = injector.instanceOf[ETMPService]

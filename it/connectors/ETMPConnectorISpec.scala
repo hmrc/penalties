@@ -16,12 +16,10 @@
 
 package connectors
 
-import config.AppConfig
 import connectors.parsers.ETMPPayloadParser.{GetETMPPayloadFailureResponse, GetETMPPayloadMalformed, GetETMPPayloadNoContent, GetETMPPayloadSuccessResponse}
 import featureSwitches.{CallETMP, FeatureSwitching}
 import play.api.http.Status
 import play.api.test.Helpers._
-import uk.gov.hmrc.http.HttpClient
 import utils.{ETMPWiremock, IntegrationSpecCommonBase}
 
 import scala.concurrent.ExecutionContext

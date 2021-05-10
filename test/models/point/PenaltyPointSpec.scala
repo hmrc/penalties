@@ -37,6 +37,7 @@ class PenaltyPointSpec extends WordSpec with Matchers {
     val base = Json.obj(
       "type" -> pointType,
       "number" -> "1",
+      "id" -> "123456789",
       "dateCreated" -> "2019-01-31T23:59:59.998",
       "status" -> status,
       "communications" -> Seq.empty[String],
@@ -64,6 +65,7 @@ class PenaltyPointSpec extends WordSpec with Matchers {
   val penaltyPointAsPointModel: PenaltyPoint = PenaltyPoint(
     `type` = PenaltyTypeEnum.Point,
     number = "1",
+    id = "123456789",
     dateCreated = sampleDateTime1,
     dateExpired = Some(sampleDateTime2),
     status = PointStatusEnum.Active,

@@ -98,6 +98,7 @@ trait IntegrationSpecCommonBase extends WordSpec with Matchers with GuiceOneServ
       PenaltyPoint(
         `type` = PenaltyTypeEnum.Financial,
         number = "2",
+        id = "1235",
         dateCreated = sampleDate,
         dateExpired = Some(sampleDate),
         status = PointStatusEnum.Active,
@@ -126,6 +127,7 @@ trait IntegrationSpecCommonBase extends WordSpec with Matchers with GuiceOneServ
       PenaltyPoint(
         `type` = PenaltyTypeEnum.Point,
         number = "1",
+        id = "1234",
         dateCreated = sampleDate,
         dateExpired = Some(sampleDate),
         status = PointStatusEnum.Active,
