@@ -39,7 +39,7 @@ trait SpecBase extends WordSpec with Matchers with GuiceOneAppPerSuite with Mock
 
   val mockETMPPayloadResponseAsModel: ETMPPayload = ETMPPayload(
     pointsTotal = 1,
-    lateSubmissions = 0,
+    lateSubmissions = 0 ,
     adjustmentPointsTotal = 0,
     fixedPenaltyAmount = 0,
     penaltyAmountsTotal = 1,
@@ -48,6 +48,58 @@ trait SpecBase extends WordSpec with Matchers with GuiceOneAppPerSuite with Mock
       PenaltyPoint(
         `type` = PenaltyTypeEnum.Point,
         number = "1",
+        id = "123456789",
+        dateCreated = LocalDateTime.of(1970, 1, 1, 0, 0, 0),
+        dateExpired = Some(LocalDateTime.of(1970, 1, 1, 0, 0, 0)),
+        status = PointStatusEnum.Active,
+        reason = Some("reason"),
+        period = Some(PenaltyPeriod(
+          startDate = LocalDateTime.of(1970, 1, 1, 0, 0, 0),
+          endDate = LocalDateTime.of(1970, 1, 31, 0, 0, 0),
+          submission = Submission(
+            dueDate = LocalDateTime.of(1970, 2, 6, 0, 0, 0),
+            submittedDate = Some(LocalDateTime.of(1970, 2, 7, 0, 0, 0)),
+            status = SubmissionStatusEnum.Submitted
+          )
+        )),
+        communications = Seq.empty,
+        financial = None
+      )
+    )
+  )
+
+  val mockETMPPayloadResponseAsModelMultiplePoints: ETMPPayload = ETMPPayload(
+    pointsTotal = 2,
+    lateSubmissions = 2,
+    adjustmentPointsTotal = 0,
+    fixedPenaltyAmount = 0,
+    penaltyAmountsTotal = 2,
+    penaltyPointsThreshold = 4,
+    penaltyPoints = Seq(
+      PenaltyPoint(
+        `type` = PenaltyTypeEnum.Point,
+        number = "2",
+        id = "123456790",
+        dateCreated = LocalDateTime.of(1970, 1, 1, 0, 0, 0),
+        dateExpired = Some(LocalDateTime.of(1970, 1, 1, 0, 0, 0)),
+        status = PointStatusEnum.Active,
+        reason = Some("reason"),
+        period = Some(PenaltyPeriod(
+          startDate = LocalDateTime.of(1970, 1, 1, 0, 0, 0),
+          endDate = LocalDateTime.of(1970, 1, 31, 0, 0, 0),
+          submission = Submission(
+            dueDate = LocalDateTime.of(1970, 2, 6, 0, 0, 0),
+            submittedDate = Some(LocalDateTime.of(1970, 2, 7, 0, 0, 0)),
+            status = SubmissionStatusEnum.Submitted
+          )
+        )),
+        communications = Seq.empty,
+        financial = None
+      ),
+      PenaltyPoint(
+        `type` = PenaltyTypeEnum.Point,
+        number = "1",
+        id = "123456789",
         dateCreated = LocalDateTime.of(1970, 1, 1, 0, 0, 0),
         dateExpired = Some(LocalDateTime.of(1970, 1, 1, 0, 0, 0)),
         status = PointStatusEnum.Active,

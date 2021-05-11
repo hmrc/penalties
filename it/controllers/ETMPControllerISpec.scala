@@ -16,8 +16,6 @@
 
 package controllers
 
-import config.AppConfig
-import featureSwitches.{CallETMP, FeatureSwitch, FeatureSwitching}
 import play.api.http.Status
 import play.api.libs.json.{JsValue, Json}
 import play.api.test.Helpers._
@@ -39,6 +37,7 @@ class ETMPControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock {
       |		{
       |			"type": "point",
       |			"number": "2",
+      |     "id": "1235",
       |			"dateCreated": "2021-04-23T18:25:43.511",
       |			"dateExpired": "2021-04-23T18:25:43.511",
       |			"status": "ADDED",
@@ -53,6 +52,7 @@ class ETMPControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock {
       |		{
       |			"type": "point",
       |			"number": "1",
+      |     "id": "1234",
       |			"dateCreated": "2021-04-23T18:25:43.511",
       |			"dateExpired": "2021-04-23T18:25:43.511",
       |			"status": "ACTIVE",
