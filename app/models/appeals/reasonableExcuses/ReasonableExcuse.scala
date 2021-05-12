@@ -22,15 +22,13 @@ import play.api.libs.json.{JsValue, Json}
 sealed trait ReasonableExcuse {
   val descriptionMessageKey: String
 
-  def isEnabled(appConfig: AppConfig): Boolean
+  def isEnabled(appConfig: AppConfig): Boolean = {
+    appConfig.isReasonableExcuseEnabled(toString)
+  }
 }
 
 class WithName(string: String) {
   override val toString: String = string
-
-  def isEnabled(appConfig: AppConfig): Boolean = {
-    appConfig.isReasonableExcuseEnabled(toString)
-  }
 }
 
 object ReasonableExcuse {
