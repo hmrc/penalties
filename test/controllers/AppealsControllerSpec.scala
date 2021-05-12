@@ -17,13 +17,14 @@
 package controllers
 
 import base.SpecBase
+import config.AppConfig
 import connectors.parsers.ETMPPayloadParser.{GetETMPPayloadMalformed, GetETMPPayloadNoContent, GetETMPPayloadSuccessResponse}
 import models.appeals.AppealData
 import models.appeals.AppealTypeEnum.Late_Submission
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
 import play.api.http.Status
-import play.api.libs.json.Json
+import play.api.libs.json.{JsValue, Json}
 import play.api.test.Helpers._
 import services.ETMPService
 
@@ -32,10 +33,12 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 class AppealsControllerSpec extends SpecBase {
   val mockETMPService: ETMPService = mock[ETMPService]
+  val mockAppConfig: AppConfig = mock[AppConfig]
 
-  class Setup {
+  class Setup(withRealAppConfig: Boolean = true) {
+    reset(mockAppConfig)
     reset(mockETMPService)
-    val controller = new AppealsController(appConfig, mockETMPService, stubControllerComponents())
+    val controller = new AppealsController(if(withRealAppConfig) appConfig else mockAppConfig, mockETMPService, stubControllerComponents())
   }
   "getAppealsDataForLateSubmissionPenalty" should {
     s"return NOT_FOUND (${Status.NOT_FOUND}) when ETMP can not find the data for the given enrolment key" in new Setup {
@@ -98,6 +101,93 @@ class AppealsControllerSpec extends SpecBase {
         mockETMPPayloadResponseAsModelMultiplePoints.penaltyPoints.last.period.get.endDate
       )
       contentAsString(result) shouldBe Json.toJson(appealDataToReturn).toString()
+    }
+  }
+
+  "getReasonableExcuses" should {
+    "return all the excuses that are stored in the ReasonableExcuse model" in new Setup {
+      val jsonExpectedToReturn: JsValue = Json.parse(
+        """
+          |{
+          |  "excuses": [
+          |    {
+          |      "type": "bereavement",
+          |      "descriptionKey": "reasonableExcuses.bereavementReason"
+          |    },
+          |    {
+          |      "type": "crime",
+          |      "descriptionKey": "reasonableExcuses.crimeReason"
+          |    },
+          |    {
+          |      "type": "fireOrFlood",
+          |      "descriptionKey": "reasonableExcuses.fireOrFloodReason"
+          |    },
+          |    {
+          |      "type": "health",
+          |      "descriptionKey": "reasonableExcuses.healthReason"
+          |    },
+          |    {
+          |      "type": "lossOfStaff",
+          |      "descriptionKey": "reasonableExcuses.lossOfStaffReason"
+          |    },
+          |    {
+          |      "type": "technicalIssues",
+          |      "descriptionKey": "reasonableExcuses.technicalIssuesReason"
+          |    },
+          |    {
+          |      "type": "other",
+          |      "descriptionKey": "reasonableExcuses.otherReason"
+          |    }
+          |  ]
+          |}
+          |""".stripMargin
+      )
+
+      val result = controller.getReasonableExcuses()(fakeRequest)
+      status(result) shouldBe OK
+      contentAsJson(result) shouldBe jsonExpectedToReturn
+    }
+
+    "return only those reasonable excuses that are active based on config" in new Setup(withRealAppConfig = false) {
+      val jsonExpectedToReturn: JsValue = Json.parse(
+        """
+          |{
+          |  "excuses": [
+          |    {
+          |      "type": "bereavement",
+          |      "descriptionKey": "reasonableExcuses.bereavementReason"
+          |    },
+          |    {
+          |      "type": "crime",
+          |      "descriptionKey": "reasonableExcuses.crimeReason"
+          |    },
+          |    {
+          |      "type": "fireOrFlood",
+          |      "descriptionKey": "reasonableExcuses.fireOrFloodReason"
+          |    },
+          |    {
+          |      "type": "health",
+          |      "descriptionKey": "reasonableExcuses.healthReason"
+          |    },
+          |    {
+          |      "type": "lossOfStaff",
+          |      "descriptionKey": "reasonableExcuses.lossOfStaffReason"
+          |    },
+          |    {
+          |      "type": "technicalIssues",
+          |      "descriptionKey": "reasonableExcuses.technicalIssuesReason"
+          |    }
+          |  ]
+          |}
+          |""".stripMargin
+      )
+      when(mockAppConfig.isReasonableExcuseEnabled(ArgumentMatchers.any()))
+        .thenReturn(true)
+      when(mockAppConfig.isReasonableExcuseEnabled(ArgumentMatchers.eq("other")))
+        .thenReturn(false)
+      val result = controller.getReasonableExcuses()(fakeRequest)
+      status(result) shouldBe OK
+      contentAsJson(result) shouldBe jsonExpectedToReturn
     }
   }
 }

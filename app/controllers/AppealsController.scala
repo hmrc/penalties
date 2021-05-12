@@ -21,6 +21,7 @@ import connectors.parsers.ETMPPayloadParser.GetETMPPayloadNoContent
 import models.ETMPPayload
 import models.appeals.{AppealData, AppealTypeEnum}
 import models.appeals.AppealTypeEnum._
+import models.appeals.reasonableExcuses.ReasonableExcuse
 import play.api.Logger.logger
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, ControllerComponents, Result}
@@ -68,5 +69,9 @@ class AppealsController @Inject()(appConfig: AppConfig,
       logger.info("[AppealsController][getAppealsData] Data retrieved for enrolment but provided penalty ID was not found. Returning 404.")
       NotFound("Penalty ID was not found in users penalties.")
     }
+  }
+
+  def getReasonableExcuses: Action[AnyContent] = Action {
+    Ok(ReasonableExcuse.allExcusesToJson(appConfig))
   }
 }

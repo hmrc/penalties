@@ -53,4 +53,47 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
       result.status shouldBe Status.INTERNAL_SERVER_ERROR
     }
   }
+
+  "getReasonableExcuses" should {
+    "return all active reasonable excuses" in {
+      val jsonExpectedToReturn: JsValue = Json.parse(
+        """
+          |{
+          |  "excuses": [
+          |    {
+          |      "type": "bereavement",
+          |      "descriptionKey": "reasonableExcuses.bereavementReason"
+          |    },
+          |    {
+          |      "type": "crime",
+          |      "descriptionKey": "reasonableExcuses.crimeReason"
+          |    },
+          |    {
+          |      "type": "fireOrFlood",
+          |      "descriptionKey": "reasonableExcuses.fireOrFloodReason"
+          |    },
+          |    {
+          |      "type": "health",
+          |      "descriptionKey": "reasonableExcuses.healthReason"
+          |    },
+          |    {
+          |      "type": "lossOfStaff",
+          |      "descriptionKey": "reasonableExcuses.lossOfStaffReason"
+          |    },
+          |    {
+          |      "type": "technicalIssues",
+          |      "descriptionKey": "reasonableExcuses.technicalIssuesReason"
+          |    },
+          |    {
+          |      "type": "other",
+          |      "descriptionKey": "reasonableExcuses.otherReason"
+          |    }
+          |  ]
+          |}
+          |""".stripMargin)
+      val result = await(buildClientForRequestToApp(uri = "/appeals-data/reasonable-excuses").get())
+      result.status shouldBe OK
+      Json.parse(result.body) shouldBe jsonExpectedToReturn
+    }
+  }
 }
