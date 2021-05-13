@@ -36,4 +36,8 @@ class AppConfig @Inject()(config: Configuration, servicesConfig: ServicesConfig)
     //TODO: change to relevant URL when implemented
     else etmpBase + "/"
   }
+
+  def isReasonableExcuseEnabled(excuseName: String): Boolean = {
+    config.get[Boolean](s"reasonableExcuses.$excuseName.enabled")
+  }
 }
