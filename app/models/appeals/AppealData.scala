@@ -16,7 +16,6 @@
 
 package models.appeals
 
-import models.point.PenaltyTypeEnum
 import play.api.libs.json.{Json, OFormat}
 
 import java.time.LocalDateTime
@@ -24,7 +23,8 @@ import java.time.LocalDateTime
 case class AppealData(
                        `type`: AppealTypeEnum.Value,
                        startDate: LocalDateTime,
-                       endDate: LocalDateTime
+                       endDate: LocalDateTime,
+                       dueDate: LocalDateTime
                      )
 
 object AppealData {
