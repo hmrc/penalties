@@ -16,10 +16,11 @@
 
 package models.communication
 
-import org.scalatest.{Matchers, WordSpec}
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 import play.api.libs.json.{JsString, Json}
 
-class CommunicationTypeEnumSpec extends WordSpec with Matchers {
+class CommunicationTypeEnumSpec extends AnyWordSpec with Matchers {
 
   "CommunicationTypeEnum" should {
     "be writable to JSON for 'secureMessage'" in {

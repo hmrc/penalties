@@ -16,10 +16,11 @@
 
 package models.point
 
-import org.scalatest.{Matchers, WordSpec}
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 import play.api.libs.json.{JsString, Json}
 
-class PenaltyTypeEnumSpec extends WordSpec with Matchers {
+class PenaltyTypeEnumSpec extends AnyWordSpec with Matchers {
   "be writable to JSON for 'point'" in {
     val result = Json.toJson(PenaltyTypeEnum.Point)
     result shouldBe JsString("point")

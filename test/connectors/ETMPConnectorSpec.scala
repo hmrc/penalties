@@ -29,8 +29,8 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class ETMPConnectorSpec extends SpecBase {
   implicit val ec: ExecutionContext = ExecutionContext.Implicits.global
-  val mockHttpClient: HttpClient = mock[HttpClient]
-  val mockAppConfig: AppConfig = mock[AppConfig]
+  val mockHttpClient: HttpClient = mock(classOf[HttpClient])
+  val mockAppConfig: AppConfig = mock(classOf[AppConfig])
 
   class Setup {
     reset(mockHttpClient)
@@ -50,7 +50,7 @@ class ETMPConnectorSpec extends SpecBase {
         ArgumentMatchers.any()))
         .thenReturn(Future.successful(Right(GetETMPPayloadSuccessResponse(mockETMPPayloadResponseAsModel))))
 
-      val result = await(connector.getPenaltiesDataForEnrolmentKey("123456789")(HeaderCarrier()))
+      val result: ETMPPayloadResponse = await(connector.getPenaltiesDataForEnrolmentKey("123456789")(HeaderCarrier()))
       result.isRight shouldBe true
       result.right.get.asInstanceOf[GetETMPPayloadSuccessResponse].etmpPayload shouldBe mockETMPPayloadResponseAsModel
     }
@@ -65,7 +65,7 @@ class ETMPConnectorSpec extends SpecBase {
             ArgumentMatchers.any()))
           .thenReturn(Future.successful(Left(GetETMPPayloadMalformed)))
 
-        val result = await(connector.getPenaltiesDataForEnrolmentKey("123456789")(HeaderCarrier()))
+        val result: ETMPPayloadResponse = await(connector.getPenaltiesDataForEnrolmentKey("123456789")(HeaderCarrier()))
         result.isLeft shouldBe true
       }
 
@@ -78,7 +78,7 @@ class ETMPConnectorSpec extends SpecBase {
             ArgumentMatchers.any()))
           .thenReturn(Future.successful(Left(GetETMPPayloadNoContent)))
 
-        val result = await(connector.getPenaltiesDataForEnrolmentKey("123456789")(HeaderCarrier()))
+        val result: ETMPPayloadResponse = await(connector.getPenaltiesDataForEnrolmentKey("123456789")(HeaderCarrier()))
         result.isLeft shouldBe true
       }
 
@@ -91,7 +91,7 @@ class ETMPConnectorSpec extends SpecBase {
             ArgumentMatchers.any()))
           .thenReturn(Future.successful(Left(GetETMPPayloadFailureResponse(Status.INTERNAL_SERVER_ERROR))))
 
-        val result = await(connector.getPenaltiesDataForEnrolmentKey("123456789")(HeaderCarrier()))
+        val result: ETMPPayloadResponse = await(connector.getPenaltiesDataForEnrolmentKey("123456789")(HeaderCarrier()))
         result.isLeft shouldBe true
       }
 
@@ -104,7 +104,7 @@ class ETMPConnectorSpec extends SpecBase {
             ArgumentMatchers.any()))
           .thenReturn(Future.successful(Left(GetETMPPayloadFailureResponse(Status.BAD_GATEWAY))))
 
-        val result = await(connector.getPenaltiesDataForEnrolmentKey("123456789")(HeaderCarrier()))
+        val result: ETMPPayloadResponse = await(connector.getPenaltiesDataForEnrolmentKey("123456789")(HeaderCarrier()))
         result.isLeft shouldBe true
       }
     }

@@ -17,7 +17,6 @@
 package models.appeals.reasonableExcuses
 
 import base.SpecBase
-import config.AppConfig
 import models.appeals.reasonableExcuses.ReasonableExcuse._
 import play.api.libs.json.{JsValue, Json}
 

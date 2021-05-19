@@ -19,7 +19,8 @@ package services
 import base.SpecBase
 import connectors.ETMPConnector
 import connectors.parsers.ETMPPayloadParser._
-import org.mockito.{ArgumentMatcher, ArgumentMatchers}
+import models.ETMPPayload
+import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
 import play.api.test.Helpers._
 import uk.gov.hmrc.http.HeaderCarrier
@@ -29,7 +30,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class ETMPServiceSpec extends SpecBase {
   implicit val ec: ExecutionContext = ExecutionContext.Implicits.global
   implicit val hc: HeaderCarrier = HeaderCarrier()
-  val mockEtmpConnector: ETMPConnector = mock[ETMPConnector]
+  val mockEtmpConnector: ETMPConnector = mock(classOf[ETMPConnector])
 
   class Setup {
     reset(mockEtmpConnector)
@@ -41,7 +42,7 @@ class ETMPServiceSpec extends SpecBase {
       when(mockEtmpConnector.getPenaltiesDataForEnrolmentKey(ArgumentMatchers.eq("123456789"))(ArgumentMatchers.any()))
         .thenReturn(Future.successful(Right(GetETMPPayloadSuccessResponse(mockETMPPayloadResponseAsModel))))
 
-      val result = await(service.getPenaltyDataFromETMPForEnrolment("123456789"))
+      val result: (Option[ETMPPayload], ETMPPayloadResponse) = await(service.getPenaltyDataFromETMPForEnrolment("123456789"))
       result._1.isDefined shouldBe true
       result._1.get shouldBe mockETMPPayloadResponseAsModel
     }
@@ -50,7 +51,7 @@ class ETMPServiceSpec extends SpecBase {
       when(mockEtmpConnector.getPenaltiesDataForEnrolmentKey(ArgumentMatchers.eq("123456789"))(ArgumentMatchers.any()))
         .thenReturn(Future.successful(Left(GetETMPPayloadNoContent)))
 
-      val result = await(service.getPenaltyDataFromETMPForEnrolment("123456789"))
+      val result: (Option[ETMPPayload], ETMPPayloadResponse) = await(service.getPenaltyDataFromETMPForEnrolment("123456789"))
       result._1.isDefined shouldBe false
       result._2.isLeft shouldBe true
       result._2.left.get shouldBe GetETMPPayloadNoContent
@@ -60,7 +61,7 @@ class ETMPServiceSpec extends SpecBase {
       when(mockEtmpConnector.getPenaltiesDataForEnrolmentKey(ArgumentMatchers.eq("123456789"))(ArgumentMatchers.any()))
         .thenReturn(Future.successful(Left(GetETMPPayloadMalformed)))
 
-      val result = await(service.getPenaltyDataFromETMPForEnrolment("123456789"))
+      val result: (Option[ETMPPayload], ETMPPayloadResponse) = await(service.getPenaltyDataFromETMPForEnrolment("123456789"))
       result._1.isDefined shouldBe false
       result._2.isLeft shouldBe true
       result._2.left.get shouldBe GetETMPPayloadMalformed
@@ -70,7 +71,7 @@ class ETMPServiceSpec extends SpecBase {
       when(mockEtmpConnector.getPenaltiesDataForEnrolmentKey(ArgumentMatchers.eq("123456789"))(ArgumentMatchers.any()))
         .thenReturn(Future.successful(Left(GetETMPPayloadFailureResponse(IM_A_TEAPOT))))
 
-      val result = await(service.getPenaltyDataFromETMPForEnrolment("123456789"))
+      val result: (Option[ETMPPayload], ETMPPayloadResponse) = await(service.getPenaltyDataFromETMPForEnrolment("123456789"))
       result._1.isDefined shouldBe false
       result._2.isLeft shouldBe true
       result._2.left.get shouldBe GetETMPPayloadFailureResponse(IM_A_TEAPOT)
@@ -80,7 +81,7 @@ class ETMPServiceSpec extends SpecBase {
       when(mockEtmpConnector.getPenaltiesDataForEnrolmentKey(ArgumentMatchers.eq("123456789"))(ArgumentMatchers.any()))
         .thenReturn(Future.failed(new Exception("Something has gone wrong.")))
 
-      val result = intercept[Exception](await(service.getPenaltyDataFromETMPForEnrolment("123456789")))
+      val result: Exception = intercept[Exception](await(service.getPenaltyDataFromETMPForEnrolment("123456789")))
       result.getMessage shouldBe "Something has gone wrong."
     }
   }

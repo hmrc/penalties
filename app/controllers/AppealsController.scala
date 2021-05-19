@@ -22,7 +22,7 @@ import models.ETMPPayload
 import models.appeals.{AppealData, AppealTypeEnum}
 import models.appeals.AppealTypeEnum._
 import models.appeals.reasonableExcuses.ReasonableExcuse
-import play.api.Logger.logger
+import utils.Logger.logger
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, ControllerComponents, Result}
 import services.ETMPService

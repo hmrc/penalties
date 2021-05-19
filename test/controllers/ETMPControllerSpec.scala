@@ -23,14 +23,15 @@ import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
 import play.api.http.Status
 import play.api.libs.json.Json
+import play.api.mvc.Result
 import play.api.test.Helpers._
 import services.ETMPService
 
 import scala.concurrent.Future
 
 class ETMPControllerSpec extends SpecBase {
-  val mockAppConfig: AppConfig = mock[AppConfig]
-  val mockETMPService: ETMPService = mock[ETMPService]
+  val mockAppConfig: AppConfig = mock(classOf[AppConfig])
+  val mockETMPService: ETMPService = mock(classOf[ETMPService])
 
   class Setup {
     reset(mockAppConfig, mockETMPService)
@@ -46,7 +47,7 @@ class ETMPControllerSpec extends SpecBase {
       when(mockETMPService.getPenaltyDataFromETMPForEnrolment(ArgumentMatchers.eq(sampleMTDVATEnrolmentKey))(ArgumentMatchers.any()))
         .thenReturn(Future.successful((Some(mockETMPPayloadResponseAsModel), Right(GetETMPPayloadSuccessResponse(mockETMPPayloadResponseAsModel)))))
 
-      val result = controller.getPenaltiesData(sampleMTDVATEnrolmentKey)(fakeRequest)
+      val result: Future[Result] = controller.getPenaltiesData(sampleMTDVATEnrolmentKey)(fakeRequest)
       status(result) shouldBe Status.OK
       contentAsJson(result) shouldBe Json.toJson(mockETMPPayloadResponseAsModel)
     }
@@ -55,7 +56,7 @@ class ETMPControllerSpec extends SpecBase {
       when(mockETMPService.getPenaltyDataFromETMPForEnrolment(ArgumentMatchers.eq(sampleMTDVATEnrolmentKey))(ArgumentMatchers.any()))
         .thenReturn(Future.successful((None, Left(GetETMPPayloadMalformed))))
 
-      val result = controller.getPenaltiesData(sampleMTDVATEnrolmentKey)(fakeRequest)
+      val result: Future[Result] = controller.getPenaltiesData(sampleMTDVATEnrolmentKey)(fakeRequest)
       status(result) shouldBe Status.INTERNAL_SERVER_ERROR
       contentAsString(result) shouldBe s"Something went wrong."
     }
@@ -64,7 +65,7 @@ class ETMPControllerSpec extends SpecBase {
       when(mockETMPService.getPenaltyDataFromETMPForEnrolment(ArgumentMatchers.eq(sampleMTDVATEnrolmentKey))(ArgumentMatchers.any()))
         .thenReturn(Future.successful((None, Left(GetETMPPayloadNoContent))))
 
-      val result = controller.getPenaltiesData(sampleMTDVATEnrolmentKey)(fakeRequest)
+      val result: Future[Result] = controller.getPenaltiesData(sampleMTDVATEnrolmentKey)(fakeRequest)
       status(result) shouldBe Status.NOT_FOUND
       contentAsString(result) shouldBe s"Could not retrieve ETMP penalty data for $sampleMTDVATEnrolmentKey"
     }

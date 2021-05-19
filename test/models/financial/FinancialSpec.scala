@@ -16,13 +16,14 @@
 
 package models.financial
 
-import org.scalatest.{Matchers, WordSpec}
-import play.api.libs.json.{JsValue, Json}
-
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 
-class FinancialSpec extends WordSpec with Matchers {
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
+import play.api.libs.json.{JsValue, Json}
+
+class FinancialSpec extends AnyWordSpec with Matchers {
   val financialModelAsJson: JsValue = Json.parse(
     """
       |{
