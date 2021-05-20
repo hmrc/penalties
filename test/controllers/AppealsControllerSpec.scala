@@ -25,6 +25,7 @@ import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
 import play.api.http.Status
 import play.api.libs.json.{JsValue, Json}
+import play.api.mvc.Result
 import play.api.test.Helpers._
 import services.ETMPService
 
@@ -32,8 +33,8 @@ import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class AppealsControllerSpec extends SpecBase {
-  val mockETMPService: ETMPService = mock[ETMPService]
-  val mockAppConfig: AppConfig = mock[AppConfig]
+  val mockETMPService: ETMPService = mock(classOf[ETMPService])
+  val mockAppConfig: AppConfig = mock(classOf[AppConfig])
 
   class Setup(withRealAppConfig: Boolean = true) {
     reset(mockAppConfig)
@@ -46,7 +47,7 @@ class AppealsControllerSpec extends SpecBase {
       when(mockETMPService.getPenaltyDataFromETMPForEnrolment(ArgumentMatchers.eq(sampleEnrolmentKey))(ArgumentMatchers.any()))
         .thenReturn(Future.successful((None, Left(GetETMPPayloadNoContent))))
 
-      val result = controller.getAppealsDataForLateSubmissionPenalty("1", sampleEnrolmentKey)(fakeRequest)
+      val result: Future[Result] = controller.getAppealsDataForLateSubmissionPenalty("1", sampleEnrolmentKey)(fakeRequest)
       status(result) shouldBe Status.NOT_FOUND
       contentAsString(result) shouldBe s"Could not retrieve ETMP penalty data for $sampleEnrolmentKey"
     }
@@ -57,7 +58,7 @@ class AppealsControllerSpec extends SpecBase {
       when(mockETMPService.getPenaltyDataFromETMPForEnrolment(ArgumentMatchers.eq(sampleEnrolmentKey))(ArgumentMatchers.any()))
         .thenReturn(Future.successful((Some(mockETMPPayloadResponseAsModel), Right(GetETMPPayloadSuccessResponse(mockETMPPayloadResponseAsModel)))))
 
-      val result = controller.getAppealsDataForLateSubmissionPenalty(samplePenaltyId, sampleEnrolmentKey)(fakeRequest)
+      val result: Future[Result] = controller.getAppealsDataForLateSubmissionPenalty(samplePenaltyId, sampleEnrolmentKey)(fakeRequest)
       status(result) shouldBe Status.NOT_FOUND
       contentAsString(result) shouldBe "Penalty ID was not found in users penalties."
     }
@@ -67,7 +68,7 @@ class AppealsControllerSpec extends SpecBase {
       when(mockETMPService.getPenaltyDataFromETMPForEnrolment(ArgumentMatchers.eq(sampleEnrolmentKey))(ArgumentMatchers.any()))
         .thenReturn(Future.successful((None, Left(GetETMPPayloadMalformed))))
 
-      val result = controller.getAppealsDataForLateSubmissionPenalty("1", sampleEnrolmentKey)(fakeRequest)
+      val result: Future[Result] = controller.getAppealsDataForLateSubmissionPenalty("1", sampleEnrolmentKey)(fakeRequest)
       status(result) shouldBe Status.INTERNAL_SERVER_ERROR
     }
 
@@ -77,7 +78,7 @@ class AppealsControllerSpec extends SpecBase {
       when(mockETMPService.getPenaltyDataFromETMPForEnrolment(ArgumentMatchers.eq(sampleEnrolmentKey))(ArgumentMatchers.any()))
         .thenReturn(Future.successful((Some(mockETMPPayloadResponseAsModel), Right(GetETMPPayloadSuccessResponse(mockETMPPayloadResponseAsModel)))))
 
-      val result = controller.getAppealsDataForLateSubmissionPenalty(samplePenaltyId, sampleEnrolmentKey)(fakeRequest)
+      val result: Future[Result] = controller.getAppealsDataForLateSubmissionPenalty(samplePenaltyId, sampleEnrolmentKey)(fakeRequest)
       status(result) shouldBe Status.OK
       val appealDataToReturn: AppealData = AppealData(
         Late_Submission,
@@ -92,9 +93,10 @@ class AppealsControllerSpec extends SpecBase {
       val samplePenaltyId: String = "123456789"
       val sampleEnrolmentKey: String = "HMRC-MTD-VAT~VRN~123456789"
       when(mockETMPService.getPenaltyDataFromETMPForEnrolment(ArgumentMatchers.eq(sampleEnrolmentKey))(ArgumentMatchers.any()))
-        .thenReturn(Future.successful((Some(mockETMPPayloadResponseAsModelMultiplePoints), Right(GetETMPPayloadSuccessResponse(mockETMPPayloadResponseAsModelMultiplePoints)))))
+        .thenReturn(Future.successful((Some(mockETMPPayloadResponseAsModelMultiplePoints),
+          Right(GetETMPPayloadSuccessResponse(mockETMPPayloadResponseAsModelMultiplePoints)))))
 
-      val result = controller.getAppealsDataForLateSubmissionPenalty(samplePenaltyId, sampleEnrolmentKey)(fakeRequest)
+      val result: Future[Result] = controller.getAppealsDataForLateSubmissionPenalty(samplePenaltyId, sampleEnrolmentKey)(fakeRequest)
       status(result) shouldBe Status.OK
       val appealDataToReturn: AppealData = AppealData(
         Late_Submission,
@@ -145,7 +147,7 @@ class AppealsControllerSpec extends SpecBase {
           |""".stripMargin
       )
 
-      val result = controller.getReasonableExcuses()(fakeRequest)
+      val result: Future[Result] = controller.getReasonableExcuses()(fakeRequest)
       status(result) shouldBe OK
       contentAsJson(result) shouldBe jsonExpectedToReturn
     }
@@ -187,7 +189,7 @@ class AppealsControllerSpec extends SpecBase {
         .thenReturn(true)
       when(mockAppConfig.isReasonableExcuseEnabled(ArgumentMatchers.eq("other")))
         .thenReturn(false)
-      val result = controller.getReasonableExcuses()(fakeRequest)
+      val result: Future[Result] = controller.getReasonableExcuses()(fakeRequest)
       status(result) shouldBe OK
       contentAsJson(result) shouldBe jsonExpectedToReturn
     }

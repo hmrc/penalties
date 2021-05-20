@@ -16,23 +16,25 @@
 
 package models.point
 
+import java.time.LocalDateTime
+import java.time.temporal.ChronoUnit
+
 import models.financial.Financial
 import models.penalty.PenaltyPeriod
 import models.submission.{Submission, SubmissionStatusEnum}
-import org.scalatest.{Matchers, WordSpec}
-import play.api.libs.json.Json
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
+import play.api.libs.json.{JsObject, Json}
 
-import java.time.temporal.ChronoUnit
-import java.time.LocalDateTime
-
-class PenaltyPointSpec extends WordSpec with Matchers {
+class PenaltyPointSpec extends AnyWordSpec with Matchers {
 
   val sampleDateTime1: LocalDateTime = LocalDateTime.of(2019, 1, 31, 23, 59, 59).plus(998, ChronoUnit.MILLIS)
   val sampleDateTime2: LocalDateTime = LocalDateTime.of(2019, 1, 31, 23, 59, 59).plus(999, ChronoUnit.MILLIS)
   val sampleDateTime3: LocalDateTime = LocalDateTime.of(2019, 5, 31, 23, 59, 59).plus(999, ChronoUnit.MILLIS)
   val sampleDateTime4: LocalDateTime = LocalDateTime.of(2019, 6, 1, 23, 59, 59).plus(999, ChronoUnit.MILLIS)
 
-  val penaltyPointAsJson = (pointType: PenaltyTypeEnum.Value, dateExpired: Option[LocalDateTime], financial: Option[Financial],
+  val penaltyPointAsJson: (PenaltyTypeEnum.Value, Option[LocalDateTime], Option[Financial], Boolean, PointStatusEnum.Value) => JsObject =
+    (pointType: PenaltyTypeEnum.Value, dateExpired: Option[LocalDateTime], financial: Option[Financial],
                             withPeriod: Boolean, status: PointStatusEnum.Value) => {
     val base = Json.obj(
       "type" -> pointType,

@@ -16,22 +16,23 @@
 
 package base
 
+import java.time.LocalDateTime
+
 import config.AppConfig
 import models.ETMPPayload
 import models.penalty.PenaltyPeriod
 import models.point.{PenaltyPoint, PenaltyTypeEnum, PointStatusEnum}
 import models.submission.{Submission, SubmissionStatusEnum}
-import org.scalatest.{Matchers, WordSpec}
-import org.scalatestplus.mockito.MockitoSugar
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
+import play.api.inject.Injector
 import play.api.mvc.AnyContent
 import play.api.test.FakeRequest
 
-import java.time.LocalDateTime
+trait SpecBase extends AnyWordSpec with Matchers with GuiceOneAppPerSuite {
 
-trait SpecBase extends WordSpec with Matchers with GuiceOneAppPerSuite with MockitoSugar {
-
-  lazy val injector = app.injector
+  lazy val injector: Injector = app.injector
 
   implicit val appConfig: AppConfig = injector.instanceOf[AppConfig]
 

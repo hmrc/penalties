@@ -16,12 +16,13 @@
 
 package models.submission
 
-import org.scalatest.{Matchers, WordSpec}
-import play.api.libs.json.{JsString, JsValue, Json}
-
 import java.time.LocalDateTime
 
-class SubmissionSpec extends WordSpec with Matchers {
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
+import play.api.libs.json.{JsValue, Json}
+
+class SubmissionSpec extends AnyWordSpec with Matchers {
   val sampleDate1: LocalDateTime = LocalDateTime.of(2020, 1, 1, 1, 0, 1)
   val sampleDate2: LocalDateTime = LocalDateTime.of(2020, 1, 1, 2, 0, 1)
 

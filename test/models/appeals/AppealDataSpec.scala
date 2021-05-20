@@ -16,12 +16,13 @@
 
 package models.appeals
 
-import org.scalatest.{Matchers, WordSpec}
-import play.api.libs.json.{JsResult, JsValue, Json}
-
 import java.time.LocalDateTime
 
-class AppealDataSpec extends WordSpec with Matchers {
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
+import play.api.libs.json.{JsResult, JsValue, Json}
+
+class AppealDataSpec extends AnyWordSpec with Matchers {
   val modelAsJson: JsValue = Json.parse(
     """
       |{

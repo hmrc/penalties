@@ -19,14 +19,14 @@ package config
 import featureSwitches.{CallETMP, FeatureSwitching}
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
-import org.scalatest.{Matchers, WordSpec}
-import org.scalatestplus.mockito.MockitoSugar
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 import play.api.Configuration
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
-class AppConfigSpec extends WordSpec with Matchers with MockitoSugar with FeatureSwitching {
-  val mockConfiguration: Configuration = mock[Configuration]
-  val mockServicesConfig: ServicesConfig = mock[ServicesConfig]
+class AppConfigSpec extends AnyWordSpec with Matchers with FeatureSwitching {
+  val mockConfiguration: Configuration = mock(classOf[Configuration])
+  val mockServicesConfig: ServicesConfig = mock(classOf[ServicesConfig])
   class Setup {
     reset(mockConfiguration)
     reset(mockServicesConfig)
@@ -38,7 +38,7 @@ class AppConfigSpec extends WordSpec with Matchers with MockitoSugar with Featur
       enableFeatureSwitch(CallETMP)
       when(mockServicesConfig.baseUrl(ArgumentMatchers.any()))
         .thenReturn("localhost:0000")
-      val result = config.getVATPenaltiesURL
+      val result: String = config.getVATPenaltiesURL
       //TODO: change this once we have the correct URL
       result shouldBe "localhost:0000/"
     }
@@ -47,7 +47,7 @@ class AppConfigSpec extends WordSpec with Matchers with MockitoSugar with Featur
       disableFeatureSwitch(CallETMP)
       when(mockServicesConfig.baseUrl(ArgumentMatchers.any()))
         .thenReturn("localhost:0000")
-      val result = config.getVATPenaltiesURL
+      val result: String = config.getVATPenaltiesURL
       result shouldBe "localhost:0000/penalties-stub/etmp/mtd-vat/"
     }
   }

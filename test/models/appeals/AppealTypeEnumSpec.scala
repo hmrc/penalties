@@ -16,10 +16,11 @@
 
 package models.appeals
 
-import org.scalatest.{Matchers, WordSpec}
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 import play.api.libs.json.{JsString, Json}
 
-class AppealTypeEnumSpec extends WordSpec with Matchers {
+class AppealTypeEnumSpec extends AnyWordSpec with Matchers {
 
   "be writable to JSON for 'LATE_SUBMISSION'" in {
     val result = Json.toJson(AppealTypeEnum.Late_Submission)

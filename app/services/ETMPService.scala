@@ -17,9 +17,10 @@
 package services
 
 import connectors.ETMPConnector
-import connectors.parsers.ETMPPayloadParser.{ETMPPayloadResponse, GetETMPPayloadFailureResponse, GetETMPPayloadMalformed, GetETMPPayloadNoContent, GetETMPPayloadSuccessResponse}
+import connectors.parsers.ETMPPayloadParser.{ETMPPayloadResponse,
+  GetETMPPayloadFailureResponse, GetETMPPayloadMalformed, GetETMPPayloadNoContent, GetETMPPayloadSuccessResponse}
 import models.ETMPPayload
-import play.api.Logger.logger
+import utils.Logger.logger
 import uk.gov.hmrc.http.HeaderCarrier
 
 import javax.inject.Inject
@@ -37,22 +38,18 @@ class ETMPService @Inject()(etmpConnector: ETMPConnector)
 
   private def handleConnectorResponse(connectorResponse: ETMPPayloadResponse)(implicit startOfLogMsg: String): (Option[ETMPPayload], ETMPPayloadResponse) = {
     connectorResponse match {
-      case res@Right(_@GetETMPPayloadSuccessResponse(payload)) => {
+      case res@Right(_@GetETMPPayloadSuccessResponse(payload)) =>
         logger.debug(s"$startOfLogMsg - Got a success response from the connector. Parsed model: $payload")
         (Some(payload), res)
-      }
-      case res@Left(GetETMPPayloadNoContent) => {
+      case res@Left(GetETMPPayloadNoContent) =>
         logger.info(s"$startOfLogMsg - No content returned from ETMP.")
         (None, res)
-      }
-      case res@Left(GetETMPPayloadMalformed) => {
+      case res@Left(GetETMPPayloadMalformed) =>
         logger.info(s"$startOfLogMsg - Failed to parse HTTP response into model.")
         (None, res)
-      }
-      case res@Left(GetETMPPayloadFailureResponse(_)) => {
+      case res@Left(GetETMPPayloadFailureResponse(_)) =>
         logger.error(s"$startOfLogMsg - Unknown status returned from connector.")
         (None, res)
-      }
     }
   }
 }

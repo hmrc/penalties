@@ -14,19 +14,8 @@
  * limitations under the License.
  */
 
-package models.appeals
+package utils
 
-import java.time.LocalDateTime
-
-import play.api.libs.json.{Json, OFormat}
-
-case class AppealData(
-                       `type`: AppealTypeEnum.Value,
-                       startDate: LocalDateTime,
-                       endDate: LocalDateTime,
-                       dueDate: LocalDateTime
-                     )
-
-object AppealData {
-  implicit val format: OFormat[AppealData] = Json.format[AppealData]
+object Logger {
+  val logger: play.api.Logger = play.api.Logger("penaltiesBackendLogger")
 }

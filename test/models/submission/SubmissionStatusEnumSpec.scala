@@ -16,10 +16,11 @@
 
 package models.submission
 
-import org.scalatest.{Matchers, WordSpec}
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 import play.api.libs.json.{JsString, Json}
 
-class SubmissionStatusEnumSpec extends WordSpec with Matchers {
+class SubmissionStatusEnumSpec extends AnyWordSpec with Matchers {
   "be writable to JSON for 'SUBMITTED'" in {
     val result = Json.toJson(SubmissionStatusEnum.Submitted)
     result shouldBe JsString("SUBMITTED")

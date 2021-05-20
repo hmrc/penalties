@@ -17,7 +17,7 @@
 package connectors.parsers
 
 import models.ETMPPayload
-import play.api.Logger.logger
+import utils.Logger.logger
 import uk.gov.hmrc.http.{HttpReads, HttpResponse}
 import play.api.http.Status._
 import play.api.libs.json.{JsError, JsSuccess}
@@ -47,10 +47,9 @@ object ETMPPayloadParser {
               Left(GetETMPPayloadMalformed)
           }
         case NO_CONTENT => Left(GetETMPPayloadNoContent)
-        case INTERNAL_SERVER_ERROR => {
+        case INTERNAL_SERVER_ERROR =>
           logger.error(s"[ETMPPayloadReads][read] Received ISE when trying to call ETMP - with body: ${response.body}")
           Left(GetETMPPayloadFailureResponse(INTERNAL_SERVER_ERROR))
-        }
         case _@status =>
           logger.error(s"[ETMPPayloadReads][read] Received unexpected response from ETMP, status code: $status and body: ${response.body}")
           Left(GetETMPPayloadFailureResponse(status))

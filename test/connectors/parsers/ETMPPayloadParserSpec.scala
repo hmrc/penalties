@@ -18,12 +18,13 @@ package connectors.parsers
 
 import connectors.parsers.ETMPPayloadParser._
 import models.ETMPPayload
-import org.scalatest.{Matchers, WordSpec}
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 import play.api.http.Status
 import play.api.libs.json.Json
 import uk.gov.hmrc.http.HttpResponse
 
-class ETMPPayloadParserSpec extends WordSpec with Matchers {
+class ETMPPayloadParserSpec extends AnyWordSpec with Matchers {
 
   val mockETMPPayloadModel: ETMPPayload = ETMPPayload(
     0,
