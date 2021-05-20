@@ -27,7 +27,8 @@ class AppealDataSpec extends WordSpec with Matchers {
       |{
       | "type": "LATE_SUBMISSION",
       | "startDate": "2021-01-01T18:25:43.511",
-      | "endDate": "2021-02-01T18:25:43.511"
+      | "endDate": "2021-02-01T18:25:43.511",
+      | "dueDate": "2021-03-07T18:25:43.511"
       |}
       |""".stripMargin)
 
@@ -35,6 +36,7 @@ class AppealDataSpec extends WordSpec with Matchers {
     `type` = AppealTypeEnum.Late_Submission,
     startDate = LocalDateTime.of(2021, 1, 1, 18, 25, 43, 511 * 1000000),
     endDate = LocalDateTime.of(2021, 2, 1, 18, 25, 43, 511 * 1000000),
+    dueDate = LocalDateTime.of(2021, 3, 7, 18, 25, 43, 511 * 1000000)
   )
 
   "AppealData" should {

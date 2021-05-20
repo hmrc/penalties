@@ -82,7 +82,8 @@ class AppealsControllerSpec extends SpecBase {
       val appealDataToReturn: AppealData = AppealData(
         Late_Submission,
         mockETMPPayloadResponseAsModel.penaltyPoints.head.period.get.startDate,
-        mockETMPPayloadResponseAsModel.penaltyPoints.head.period.get.endDate
+        mockETMPPayloadResponseAsModel.penaltyPoints.head.period.get.endDate,
+        mockETMPPayloadResponseAsModel.penaltyPoints.head.period.get.submission.dueDate
       )
       contentAsString(result) shouldBe Json.toJson(appealDataToReturn).toString()
     }
@@ -98,7 +99,8 @@ class AppealsControllerSpec extends SpecBase {
       val appealDataToReturn: AppealData = AppealData(
         Late_Submission,
         mockETMPPayloadResponseAsModelMultiplePoints.penaltyPoints.last.period.get.startDate,
-        mockETMPPayloadResponseAsModelMultiplePoints.penaltyPoints.last.period.get.endDate
+        mockETMPPayloadResponseAsModelMultiplePoints.penaltyPoints.last.period.get.endDate,
+        mockETMPPayloadResponseAsModel.penaltyPoints.head.period.get.submission.dueDate
       )
       contentAsString(result) shouldBe Json.toJson(appealDataToReturn).toString()
     }
