@@ -49,6 +49,8 @@
 
     <logger name="application" level="DEBUG"/>
 
+    <logger name="penaltiesBackendLogger" level="INFO"/>
+
     <logger name="connector" level="TRACE">
         <appender-ref ref="STDOUT"/>
     </logger>
