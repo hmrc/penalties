@@ -37,6 +37,18 @@ class AppConfig @Inject()(config: Configuration, servicesConfig: ServicesConfig)
     else etmpBase + "/"
   }
 
+  def getPastReturnURL: String = {
+    if(!isEnabled(CallETMP)) stubBase + "/penalties-stub/compliance/previous-data/mtd-vat"
+    //TODO: change to relevant URL when implemented
+    else etmpBase + "/"
+  }
+
+  def getComplianceSummaryURL: String = {
+    if(!isEnabled(CallETMP)) stubBase + "/penalties-stub/compliance/summary-data/mtd-vat"
+    //TODO: change to relevant URL when implemented
+    else etmpBase + "/"
+  }
+
   def isReasonableExcuseEnabled(excuseName: String): Boolean = {
     config.get[Boolean](s"reasonableExcuses.$excuseName.enabled")
   }
