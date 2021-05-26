@@ -16,8 +16,6 @@
 
 package connectors
 
-import java.time.LocalDateTime
-
 import config.AppConfig
 import connectors.parsers.ComplianceParser.CompliancePayloadResponse
 import javax.inject.Inject
