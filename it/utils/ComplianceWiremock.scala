@@ -16,6 +16,8 @@
 
 package utils
 
+import java.time.LocalDateTime
+
 import com.github.tomakehurst.wiremock.client.WireMock._
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
 import play.api.libs.json.{JsValue, Json}
@@ -28,32 +30,34 @@ trait ComplianceWiremock {
     "{}"
   )
 
-  def mockResponseForStubPastReturnPayload(status: Int, enrolmentKey: String, body: Option[String] = None): StubMapping = {
-    stubFor(get(urlEqualTo(s"/penalties-stub/compliance/previous-data/mtd-vat/$enrolmentKey"))
+  def mockResponseForStubPastReturnPayload(status: Int, identifier: String, startDate: LocalDateTime, endDate: LocalDateTime,
+                                           regime: String, body: Option[String] = None): StubMapping = {
+    stubFor(get(urlEqualTo(s"/penalties-stub/compliance/previous-data/$regime/$identifier?startDate=$startDate&endDate=$endDate"))
       .willReturn(
         aResponse()
           .withBody(body.fold(pastReturnPayloadAsJson.toString())(identity))
           .withStatus(status)))
   }
 
-  def mockResponseForPastReturnPayload(status: Int, enrolmentKey: String, body: Option[String] = None): StubMapping = {
-    stubFor(get(urlEqualTo(s"/$enrolmentKey"))
+  def mockResponseForPastReturnPayload(status: Int, identifier: String, startDate: LocalDateTime, endDate: LocalDateTime,
+                                       body: Option[String] = None): StubMapping = {
+    stubFor(get(urlEqualTo(s"/$identifier?startDate=$startDate&endDate=$endDate"))
     .willReturn(
       aResponse()
         .withBody(body.fold(pastReturnPayloadAsJson.toString())(identity))
         .withStatus(status)))
   }
 
-  def mockResponseForStubComplianceSummaryPayload(status: Int, enrolmentKey: String, body: Option[String] = None): StubMapping = {
-    stubFor(get(urlEqualTo(s"/penalties-stub/compliance/summary-data/mtd-vat/$enrolmentKey"))
+  def mockResponseForStubComplianceSummaryPayload(status: Int, identifier: String, regime: String, body: Option[String] = None): StubMapping = {
+    stubFor(get(urlEqualTo(s"/penalties-stub/compliance/summary-data/$regime/$identifier"))
     .willReturn(
       aResponse()
         .withBody(body.fold(complianceSummaryPayloadAsJson.toString())(identity))
         .withStatus(status)))
   }
 
-  def mockResponseForComplianceSummaryPayload(status: Int, enrolmentKey: String, body: Option[String] = None): StubMapping = {
-    stubFor(get(urlEqualTo(s"/$enrolmentKey"))
+  def mockResponseForComplianceSummaryPayload(status: Int, identifier: String, regime: String, body: Option[String] = None): StubMapping = {
+    stubFor(get(urlEqualTo(s"/$identifier"))
     .willReturn(
       aResponse()
         .withBody(body.fold(complianceSummaryPayloadAsJson.toString())(identity))

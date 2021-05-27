@@ -16,6 +16,8 @@
 
 package connectors
 
+import java.time.LocalDateTime
+
 import connectors.parsers.ComplianceParser.{CompliancePayloadResponse, GetCompliancePayloadFailureResponse, GetCompliancePayloadSuccessResponse}
 import featureSwitches.{CallETMP, FeatureSwitching}
 import play.api.http.Status
@@ -27,6 +29,8 @@ import scala.concurrent.ExecutionContext
 class ComplianceConnectorISpec extends IntegrationSpecCommonBase with ComplianceWiremock with FeatureSwitching {
 
   implicit val ec: ExecutionContext = ExecutionContext.Implicits.global
+  val testStartDate: LocalDateTime = LocalDateTime.of(2021,1,1, 1,0,0)
+  val testEndDate: LocalDateTime = LocalDateTime.of(2021,1,8,1,0,0)
 
   class Setup {
     val connector: ComplianceConnector = injector.instanceOf[ComplianceConnector]
@@ -35,16 +39,16 @@ class ComplianceConnectorISpec extends IntegrationSpecCommonBase with Compliance
   "getPastReturnsForEnrolmentKey" should {
     "call ETMP when the feature switch is enabled and handle a successful response" in new Setup {
       enableFeatureSwitch(CallETMP)
-      mockResponseForPastReturnPayload(Status.OK, "123456789")
-      val result: CompliancePayloadResponse = await(connector.getPastReturnsForEnrolmentKey("123456789"))
+      mockResponseForPastReturnPayload(Status.OK, "123456789", testStartDate, testEndDate)
+      val result: CompliancePayloadResponse = await(connector.getPastReturnsForEnrolmentKey("123456789", testStartDate, testEndDate, "mtd-vat"))
       result.isRight shouldBe true
       result.right.get.asInstanceOf[GetCompliancePayloadSuccessResponse].jsValue shouldBe pastReturnPayloadAsJson
     }
 
     "call the stub when the feature switch is disabled and handle a successful response" in new Setup {
       disableFeatureSwitch(CallETMP)
-      mockResponseForStubPastReturnPayload(Status.OK, "123456789")
-      val result: CompliancePayloadResponse = await(connector.getPastReturnsForEnrolmentKey("123456789"))
+      mockResponseForStubPastReturnPayload(Status.OK, "123456789", testStartDate, testEndDate, "mtd-vat")
+      val result: CompliancePayloadResponse = await(connector.getPastReturnsForEnrolmentKey("123456789", testStartDate, testEndDate, "mtd-vat"))
       result.isRight shouldBe true
       result.right.get.asInstanceOf[GetCompliancePayloadSuccessResponse].jsValue shouldBe pastReturnPayloadAsJson
     }
@@ -54,16 +58,16 @@ class ComplianceConnectorISpec extends IntegrationSpecCommonBase with Compliance
 
     s"return a $GetCompliancePayloadFailureResponse when the response status is ISE (${Status.INTERNAL_SERVER_ERROR})" in new Setup {
       enableFeatureSwitch(CallETMP)
-      mockResponseForPastReturnPayload(Status.INTERNAL_SERVER_ERROR, "123456789")
-      val result: CompliancePayloadResponse = await(connector.getPastReturnsForEnrolmentKey("123456789"))
+      mockResponseForPastReturnPayload(Status.INTERNAL_SERVER_ERROR, "123456789", testStartDate, testEndDate)
+      val result: CompliancePayloadResponse = await(connector.getPastReturnsForEnrolmentKey("123456789", testStartDate, testEndDate, "mtd-vat"))
       result.isLeft shouldBe true
       result.left.get shouldBe GetCompliancePayloadFailureResponse(Status.INTERNAL_SERVER_ERROR)
     }
 
     s"return a $GetCompliancePayloadFailureResponse when the response status is unmatched i.e. Gateway Timeout (${Status.GATEWAY_TIMEOUT})" in new Setup {
       enableFeatureSwitch(CallETMP)
-      mockResponseForPastReturnPayload(Status.GATEWAY_TIMEOUT, "123456789")
-      val result: CompliancePayloadResponse = await(connector.getPastReturnsForEnrolmentKey("123456789"))
+      mockResponseForPastReturnPayload(Status.GATEWAY_TIMEOUT, "123456789", testStartDate, testEndDate)
+      val result: CompliancePayloadResponse = await(connector.getPastReturnsForEnrolmentKey("123456789", testStartDate, testEndDate, "mtd-vat"))
       result.isLeft shouldBe true
       result.left.get shouldBe GetCompliancePayloadFailureResponse(Status.GATEWAY_TIMEOUT)
     }
@@ -72,16 +76,16 @@ class ComplianceConnectorISpec extends IntegrationSpecCommonBase with Compliance
   "getComplianceSummaryForEnrolmentKey" should {
     "call ETMP when the feature switch is enabled and handle a successful response" in new Setup {
       enableFeatureSwitch(CallETMP)
-      mockResponseForComplianceSummaryPayload(Status.OK, "123456789")
-      val result: CompliancePayloadResponse = await(connector.getComplianceSummaryForEnrolmentKey("123456789"))
+      mockResponseForComplianceSummaryPayload(Status.OK, "123456789", "mtd-vat")
+      val result: CompliancePayloadResponse = await(connector.getComplianceSummaryForEnrolmentKey("123456789", "mtd-vat"))
       result.isRight shouldBe true
       result.right.get.asInstanceOf[GetCompliancePayloadSuccessResponse].jsValue shouldBe complianceSummaryPayloadAsJson
     }
 
     "call the stub when the feature switch is disabled and handle a successful response" in new Setup {
       disableFeatureSwitch(CallETMP)
-      mockResponseForStubComplianceSummaryPayload(Status.OK, "123456789")
-      val result: CompliancePayloadResponse = await(connector.getComplianceSummaryForEnrolmentKey("123456789"))
+      mockResponseForStubComplianceSummaryPayload(Status.OK, "123456789", "mtd-vat")
+      val result: CompliancePayloadResponse = await(connector.getComplianceSummaryForEnrolmentKey("123456789", "mtd-vat"))
       result.isRight shouldBe true
       result.right.get.asInstanceOf[GetCompliancePayloadSuccessResponse].jsValue shouldBe complianceSummaryPayloadAsJson
     }
@@ -91,16 +95,16 @@ class ComplianceConnectorISpec extends IntegrationSpecCommonBase with Compliance
 
     s"return a $GetCompliancePayloadFailureResponse when the response status is ISE (${Status.INTERNAL_SERVER_ERROR})" in new Setup {
       enableFeatureSwitch(CallETMP)
-      mockResponseForComplianceSummaryPayload(Status.INTERNAL_SERVER_ERROR, "123456789")
-      val result: CompliancePayloadResponse = await(connector.getComplianceSummaryForEnrolmentKey("123456789"))
+      mockResponseForComplianceSummaryPayload(Status.INTERNAL_SERVER_ERROR, "123456789", "mtd-vat")
+      val result: CompliancePayloadResponse = await(connector.getComplianceSummaryForEnrolmentKey("123456789", "mtd-vat"))
       result.isLeft shouldBe true
       result.left.get shouldBe GetCompliancePayloadFailureResponse(Status.INTERNAL_SERVER_ERROR)
     }
 
     s"return a $GetCompliancePayloadFailureResponse when the response status is unmatched i.e. Gateway Timeout (${Status.GATEWAY_TIMEOUT})" in new Setup {
       enableFeatureSwitch(CallETMP)
-      mockResponseForComplianceSummaryPayload(Status.GATEWAY_TIMEOUT, "123456789")
-      val result: CompliancePayloadResponse = await(connector.getComplianceSummaryForEnrolmentKey("123456789"))
+      mockResponseForComplianceSummaryPayload(Status.GATEWAY_TIMEOUT, "123456789", "mtd-vat")
+      val result: CompliancePayloadResponse = await(connector.getComplianceSummaryForEnrolmentKey("123456789", "mtd-vat"))
       result.isLeft shouldBe true
       result.left.get shouldBe GetCompliancePayloadFailureResponse(Status.GATEWAY_TIMEOUT)
     }
