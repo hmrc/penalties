@@ -37,12 +37,12 @@ class ComplianceConnectorSpec extends SpecBase {
     reset(mockAppConfig)
 
     val connector = new ComplianceConnector(mockHttpClient, mockAppConfig)
-    when(mockAppConfig.getComplianceSummaryURL).thenReturn("/")
     when(mockAppConfig.getPastReturnURL).thenReturn("/")
+    when(mockAppConfig.getComplianceSummaryURL).thenReturn("/")
   }
 
   "getPastReturnsForEnrolmentKey" should {
-    s"return a JsValue" in new Setup {
+    "return a JsValue" in new Setup {
       when(mockHttpClient.GET[CompliancePayloadResponse](ArgumentMatchers.eq("/123456789"),
       ArgumentMatchers.any(),
       ArgumentMatchers.any())
@@ -52,6 +52,24 @@ class ComplianceConnectorSpec extends SpecBase {
         .thenReturn(Future.successful(Right(GetCompliancePayloadSuccessResponse(Json.parse("{}")))))
 
       val result: CompliancePayloadResponse = await(connector.getPastReturnsForEnrolmentKey("123456789")(HeaderCarrier()))
+      result.isRight shouldBe true
+      result.right.get.asInstanceOf[GetCompliancePayloadSuccessResponse] shouldBe GetCompliancePayloadSuccessResponse(Json.parse("{}"))
+    }
+  }
+
+  "getComplianceSummaryForEnrolmentKey" should {
+    "return a JsValue" in new Setup {
+      when(mockHttpClient.GET[CompliancePayloadResponse](ArgumentMatchers.eq("/123456789"),
+      ArgumentMatchers.any(),
+      ArgumentMatchers.any())
+        (ArgumentMatchers.any(),
+        ArgumentMatchers.any(),
+        ArgumentMatchers.any()))
+        .thenReturn(Future.successful(Right(GetCompliancePayloadSuccessResponse(Json.parse("{}")))))
+
+      val result: CompliancePayloadResponse = await(connector.getComplianceSummaryForEnrolmentKey("123456789")(HeaderCarrier()))
+      result.isRight shouldBe true
+      result.right.get.asInstanceOf[GetCompliancePayloadSuccessResponse] shouldBe GetCompliancePayloadSuccessResponse(Json.parse("{}"))
     }
   }
 }
