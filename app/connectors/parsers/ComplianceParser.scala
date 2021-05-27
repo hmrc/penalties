@@ -16,18 +16,22 @@
 
 package connectors.parsers
 
-import models.ETMPPayload
-import play.api.http.Status.{INTERNAL_SERVER_ERROR, NO_CONTENT, OK}
-import play.api.libs.json.{JsError, JsSuccess, JsValue}
+import play.api.http.Status.{INTERNAL_SERVER_ERROR, OK}
+import play.api.libs.json.JsValue
 import uk.gov.hmrc.http.{HttpReads, HttpResponse}
 import utils.Logger.logger
 
 object ComplianceParser {
   sealed trait GetCompliancePayloadFailure
-  sealed trait GetCompliancePayloadSuccess
+  sealed trait GetCompliancePayloadSuccess {
+    val jsValue: JsValue
+  }
 
   case class  GetCompliancePayloadSuccessResponse(jsValue: JsValue) extends GetCompliancePayloadSuccess
   case class  GetCompliancePayloadFailureResponse(status: Int) extends GetCompliancePayloadFailure
+  //TODO: Implement NoContent into object
+  case object GetCompliancePayloadNoContent extends GetCompliancePayloadFailure
+  //TODO: Implement Malformed into object
   case object GetCompliancePayloadMalformed extends GetCompliancePayloadFailure
 
   type CompliancePayloadResponse = Either[GetCompliancePayloadFailure, GetCompliancePayloadSuccess]
