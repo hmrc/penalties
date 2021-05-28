@@ -14,23 +14,13 @@
  * limitations under the License.
  */
 
-package models.compliance
+package utils
 
-import play.api.libs.json._
+import java.time.LocalDateTime
+import javax.inject.Inject
 
-object ReturnStatusEnum extends Enumeration {
-  val submitted = Value
-
-  implicit val format: Format[ReturnStatusEnum.Value] = new Format[ReturnStatusEnum.Value] {
-    override def writes(o: ReturnStatusEnum.Value): JsValue = {
-      JsString(o.toString.toUpperCase)
-    }
-
-    override def reads(json: JsValue): JsResult[ReturnStatusEnum.Value] = {
-      json.as[String].toUpperCase match {
-        case "SUBMITTED" => JsSuccess(submitted)
-        case e => JsError(s"$e not recognised")
-      }
-    }
+class DateHelper @Inject()() {
+  def dateTimeNow(): LocalDateTime = {
+    LocalDateTime.now()
   }
 }

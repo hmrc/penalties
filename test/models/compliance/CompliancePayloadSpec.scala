@@ -23,9 +23,7 @@ import play.api.libs.json.{JsObject, Json}
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 
-class CompliancePayloadSpec extends AnyWordSpec with Matchers{
-
-
+class CompliancePayloadSpec extends AnyWordSpec with Matchers {
   val sampleDateTime: LocalDateTime = LocalDateTime.of(2019, 1, 31, 23, 59, 59).plus(998, ChronoUnit.MILLIS)
 
   val regime = "VAT"
@@ -42,22 +40,31 @@ class CompliancePayloadSpec extends AnyWordSpec with Matchers{
 
   val returns: Seq[Return] = Seq[Return](return1, return2)
 
-  val emptyReturnsModel:CompliancePayload = CompliancePayload(regime, vrn, 0, 2, sampleDateTime, emptyMissingReturns, returns)
+  val emptyReturnsModel: CompliancePayload = CompliancePayload("0", "2", sampleDateTime, emptyMissingReturns, returns)
 
-  val someReturnsModel:CompliancePayload = CompliancePayload(regime, vrn, 0, 2, sampleDateTime, someMissingReturns, returns)
+  val someReturnsModel: CompliancePayload = CompliancePayload("2", "2", sampleDateTime, someMissingReturns, returns)
 
-  def getComplianceDataJson(missingReturns: Int):JsObject = Json.obj(
-    "regime" -> regime,
-    "VRN" -> vrn,
-    "NoOfMissingReturns" -> missingReturns,
-    "noOfSubmissionsReqForCompliance"-> 2,
-    "expiryDateOfAllPenaltyPoints" -> sampleDateTime,
-    "missingReturns" -> (missingReturns match {
-      case 0 => emptyMissingReturns
-      case _=> someMissingReturns
-    }),
-    "returns" -> returns
-  )
+  def getComplianceDataJson(missingReturns: Int, isWithRegimeAndVRN: Boolean = false):JsObject = {
+    val base = Json.obj(
+      "noOfMissingReturns" -> s"$missingReturns",
+      "noOfSubmissionsReqForCompliance"-> "2",
+      "expiryDateOfAllPenaltyPoints" -> sampleDateTime,
+      "missingReturns" -> (missingReturns match {
+        case 0 => emptyMissingReturns
+        case _ => someMissingReturns
+      }),
+      "returns" -> returns
+    )
+
+    if(isWithRegimeAndVRN) {
+      base.deepMerge(Json.obj(
+          "regime" -> regime,
+          "VRN" -> vrn,
+      ))
+    } else {
+      base
+    }
+  }
 
   "CompliancePayload" should {
     "be writeable to JSON when no missing returns" in {
@@ -71,13 +78,13 @@ class CompliancePayloadSpec extends AnyWordSpec with Matchers{
     }
 
     s"be readable from JSON when no missing returns" in {
-      val result = Json.fromJson(getComplianceDataJson(0))(CompliancePayload.format)
+      val result = Json.fromJson(getComplianceDataJson(0, true))(CompliancePayload.format)
       result.isSuccess shouldBe true
       result.get shouldBe emptyReturnsModel
     }
 
     s"be readable from JSON when there are missing returns" in {
-      val result = Json.fromJson(getComplianceDataJson(2))(CompliancePayload.format)
+      val result = Json.fromJson(getComplianceDataJson(2, true))(CompliancePayload.format)
       result.isSuccess shouldBe true
       result.get shouldBe someReturnsModel
     }

@@ -21,10 +21,8 @@ import play.api.libs.json.{Json, OFormat}
 import java.time.LocalDateTime
 
 case class CompliancePayload(
-                              regime: String,
-                              VRN: String,
-                              NoOfMissingReturns: Int,
-                              noOfSubmissionsReqForCompliance: Int,
+                              noOfMissingReturns: String,
+                              noOfSubmissionsReqForCompliance: String,
                               expiryDateOfAllPenaltyPoints: LocalDateTime,
                               missingReturns: Seq[MissingReturn],
                               returns: Seq[Return]
