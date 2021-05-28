@@ -59,22 +59,28 @@ class ComplianceService @Inject()(complianceConnector: ComplianceConnector,
     }
   }
 
+  private def connectorFailureHandler(failure: GetCompliancePayloadFailure)(implicit startOfLogMsg: String, callType: String): Option[JsValue] = {
+      failure match {
+        case _@GetCompliancePayloadFailureResponse(status) => {
+          logger.error(s"$startOfLogMsg - Received status $status back from ETMP for $callType data")
+          None
+        }
+        case _@GetCompliancePayloadMalformed => {
+          logger.error(s"$startOfLogMsg - Received malformed JSON back from ETMP for $callType data")
+          None
+        }
+        case _@GetCompliancePayloadNoContent => {
+          logger.warn(s"$startOfLogMsg - Received no content back from ETMP for $callType data")
+          None
+        }
+      }
+  }
+
   def getComplianceHistory(identifier: String, startDate: LocalDateTime, endDate: LocalDateTime, regime: String)
                           (implicit hc: HeaderCarrier, ec: ExecutionContext, startOfLogMsg: String): Future[Option[JsValue]] = {
     complianceConnector.getPastReturnsForEnrolmentKey(identifier, startDate, endDate, regime).map {
       _.fold({
-        case _@GetCompliancePayloadFailureResponse(status) => {
-          logger.error(s"$startOfLogMsg - Received status $status back from ETMP for previous compliance data")
-          None
-        }
-        case _@GetCompliancePayloadMalformed => {
-          logger.error(s"$startOfLogMsg - Received malformed JSON back from ETMP for previous compliance data")
-          None
-        }
-        case _@GetCompliancePayloadNoContent => {
-          logger.warn(s"$startOfLogMsg - Received no content back from ETMP for previous compliance data")
-          None
-        }
+        connectorFailureHandler(_)(implicitly, "previous compliance")
       },
         pastReturns => {
           logger.debug(s"$startOfLogMsg - Received JSON: ${pastReturns.jsValue} from connector for past returns")
@@ -88,18 +94,7 @@ class ComplianceService @Inject()(complianceConnector: ComplianceConnector,
                           (implicit hc: HeaderCarrier, ec: ExecutionContext,startOfLogMsg: String): Future[Option[JsValue]] = {
     complianceConnector.getComplianceSummaryForEnrolmentKey(identifier, regime).map {
       _.fold[Option[JsValue]]({
-        case _@GetCompliancePayloadFailureResponse(status) => {
-          logger.error(s"$startOfLogMsg - Received status $status back from ETMP for compliance summary data")
-          None
-        }
-        case _@GetCompliancePayloadMalformed => {
-          logger.error(s"$startOfLogMsg - Received malformed JSON back from ETMP for compliance summary data")
-          None
-        }
-        case _@GetCompliancePayloadNoContent => {
-          logger.warn(s"$startOfLogMsg - Received no content back from ETMP for compliance summary data")
-          None
-        }
+        connectorFailureHandler(_)(implicitly, "compliance summary")
       },
         complianceSummary => {
           logger.debug(s"$startOfLogMsg - Received JSON: ${complianceSummary.jsValue} from connector for summary data")
