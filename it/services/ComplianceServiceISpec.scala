@@ -36,12 +36,6 @@ class ComplianceServiceISpec extends IntegrationSpecCommonBase with ComplianceWi
         val result = await(complianceService.getComplianceSummary("123456789", "mtd-vat"))
         result.isDefined shouldBe false
       }
-
-//      "the connector returns a success response but the JSON is invalid" in {
-//        mockResponseForStubComplianceSummaryPayload(INTERNAL_SERVER_ERROR, "123456789", "mtd-vat", Some("{}"))
-//        val result = await(complianceService.getComplianceSummary("123456789", "mtd-vat"))
-//        result.isDefined shouldBe false
-//      }
     }
 
     "return Some" when {
@@ -83,12 +77,6 @@ class ComplianceServiceISpec extends IntegrationSpecCommonBase with ComplianceWi
         val result = await(complianceService.getComplianceHistory("123456789", LocalDateTime.now().minusYears(2), LocalDateTime.now(), "mtd-vat"))
         result.isDefined shouldBe false
       }
-
-      //      "the connector returns a success response but the JSON is invalid" in {
-      //        mockResponseForStubComplianceSummaryPayload(INTERNAL_SERVER_ERROR, "123456789", "mtd-vat", Some("{}"))
-      //        val result = await(complianceService.getComplianceSummary("123456789", "mtd-vat"))
-      //        result.isDefined shouldBe false
-      //      }
     }
 
     "return Some" when {
