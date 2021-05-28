@@ -16,8 +16,8 @@
 
 package connectors.parsers
 
-import play.api.http.Status.{INTERNAL_SERVER_ERROR, OK}
-import play.api.libs.json.JsValue
+import play.api.http.Status.{INTERNAL_SERVER_ERROR, NO_CONTENT, OK}
+import play.api.libs.json.{JsError, JsSuccess, JsValue}
 import uk.gov.hmrc.http.{HttpReads, HttpResponse}
 import utils.Logger.logger
 
@@ -29,9 +29,7 @@ object ComplianceParser {
 
   case class  GetCompliancePayloadSuccessResponse(jsValue: JsValue) extends GetCompliancePayloadSuccess
   case class  GetCompliancePayloadFailureResponse(status: Int) extends GetCompliancePayloadFailure
-  //TODO: Implement NoContent into object
   case object GetCompliancePayloadNoContent extends GetCompliancePayloadFailure
-  //TODO: Implement Malformed into object
   case object GetCompliancePayloadMalformed extends GetCompliancePayloadFailure
 
   type CompliancePayloadResponse = Either[GetCompliancePayloadFailure, GetCompliancePayloadSuccess]
@@ -41,7 +39,14 @@ object ComplianceParser {
       response.status match {
         case OK =>
           logger.debug(s"[CompliancePayloadReads][read] Json response: ${response.json}")
-          Right(GetCompliancePayloadSuccessResponse(response.json))
+          response.json.validate[JsValue] match {
+            case JsSuccess(compliancePayload, _) =>
+              Right(GetCompliancePayloadSuccessResponse(compliancePayload))
+            case JsError(errors) =>
+              logger.debug(s"[CompliancePayloadReads][read] Json validation errors: $errors")
+              Left(GetCompliancePayloadMalformed)
+          }
+        case NO_CONTENT => Left(GetCompliancePayloadNoContent)
         case INTERNAL_SERVER_ERROR =>
           logger.error(s"[CompliancePayloadReads][read] Received ISE when trying to call ETMP - with body: ${response.body}")
           Left(GetCompliancePayloadFailureResponse(INTERNAL_SERVER_ERROR))

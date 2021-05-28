@@ -18,7 +18,7 @@ package connectors
 
 import java.time.LocalDateTime
 
-import connectors.parsers.ComplianceParser.{CompliancePayloadResponse, GetCompliancePayloadFailureResponse, GetCompliancePayloadSuccessResponse}
+import connectors.parsers.ComplianceParser.{CompliancePayloadResponse, GetCompliancePayloadFailureResponse, GetCompliancePayloadMalformed, GetCompliancePayloadNoContent, GetCompliancePayloadSuccessResponse}
 import featureSwitches.{CallETMP, FeatureSwitching}
 import play.api.http.Status
 import play.api.test.Helpers._
@@ -53,8 +53,13 @@ class ComplianceConnectorISpec extends IntegrationSpecCommonBase with Compliance
       result.right.get.asInstanceOf[GetCompliancePayloadSuccessResponse].jsValue shouldBe pastReturnPayloadAsJson
     }
 
-    //TODO: Implement GetCompliancePayloadMalformed test
-    //TODO: Implement GetCompliancePayloadNoContent test
+    s"return a $GetCompliancePayloadNoContent when the response status is No Content (${Status.NO_CONTENT})" in new Setup {
+      enableFeatureSwitch(CallETMP)
+      mockResponseForPastReturnPayload(Status.NO_CONTENT, "123456789", testStartDate, testEndDate, Some("{}"))
+      val result: CompliancePayloadResponse = await(connector.getPastReturnsForEnrolmentKey("123456789", testStartDate, testEndDate, "mtd-vat"))
+      result.isLeft shouldBe true
+      result.left.get shouldBe GetCompliancePayloadNoContent
+    }
 
     s"return a $GetCompliancePayloadFailureResponse when the response status is ISE (${Status.INTERNAL_SERVER_ERROR})" in new Setup {
       enableFeatureSwitch(CallETMP)
@@ -90,8 +95,13 @@ class ComplianceConnectorISpec extends IntegrationSpecCommonBase with Compliance
       result.right.get.asInstanceOf[GetCompliancePayloadSuccessResponse].jsValue shouldBe complianceSummaryPayloadAsJson
     }
 
-    //TODO: Implement GetCompliancePayloadMalformed test
-    //TODO: Implement GetCompliancePayloadNoContent test
+    s"return a $GetCompliancePayloadNoContent when the response status is No Content (${Status.NO_CONTENT})" in new Setup {
+      enableFeatureSwitch(CallETMP)
+      mockResponseForComplianceSummaryPayload(Status.NO_CONTENT, "123456789","mtd-vat", Some("{}"))
+      val result: CompliancePayloadResponse = await(connector.getComplianceSummaryForEnrolmentKey("123456789", "mtd-vat"))
+      result.isLeft shouldBe true
+      result.left.get shouldBe GetCompliancePayloadNoContent
+    }
 
     s"return a $GetCompliancePayloadFailureResponse when the response status is ISE (${Status.INTERNAL_SERVER_ERROR})" in new Setup {
       enableFeatureSwitch(CallETMP)
