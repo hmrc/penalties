@@ -38,9 +38,9 @@ object ComplianceParser {
     override def read(method: String, url: String, response: HttpResponse): CompliancePayloadResponse = {
       response.status match {
         case OK =>
-          logger.debug(s"[CompliancePayloadReads][read] Json response: ${response.json}")
           response.json.validate[JsValue] match {
             case JsSuccess(compliancePayload, _) =>
+              logger.debug(s"[CompliancePayloadReads][read] Json response: ${response.json}")
               Right(GetCompliancePayloadSuccessResponse(compliancePayload))
             case JsError(errors) =>
               logger.debug(s"[CompliancePayloadReads][read] Json validation errors: $errors")

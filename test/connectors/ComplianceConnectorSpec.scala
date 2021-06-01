@@ -28,6 +28,7 @@ import play.api.http.Status
 import play.api.test.Helpers._
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient}
 
+import java.time.LocalDateTime
 import scala.concurrent.{ExecutionContext, Future}
 
 class ComplianceConnectorSpec extends SpecBase {
@@ -36,6 +37,9 @@ class ComplianceConnectorSpec extends SpecBase {
   val mockAppConfig: AppConfig = mock(classOf[AppConfig])
   val testStartDate: LocalDateTime = LocalDateTime.of(2021,1,1,1,0,0)
   val testEndDate: LocalDateTime = LocalDateTime.of(2021,1,8,1,0,0)
+
+  val date1: LocalDateTime = LocalDateTime.of(2022, 1, 1, 1, 1, 0)
+  val date2: LocalDateTime = LocalDateTime.of(2024, 1, 1, 1, 1, 0)
 
   class Setup {
     reset(mockHttpClient)

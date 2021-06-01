@@ -24,15 +24,47 @@ import play.api.libs.json.{JsValue, Json}
 
 trait ComplianceWiremock {
   val pastReturnPayloadAsJson: JsValue = Json.parse(
-    "{}"
+    """
+      |{
+      |   "regime":"VAT",
+      |   "VRN":"10045678976543",
+      |   "noOfMissingReturns":"2",
+      |   "missingReturns":[
+      |      {
+      |         "startDate":"2020-10-01T00:00:00.000Z",
+      |         "endDate":"2020-12-31T23:59:59.000Z"
+      |      }
+      |   ]
+      |}
+      |""".stripMargin
   )
   val complianceSummaryPayloadAsJson: JsValue = Json.parse(
-    "{}"
+    """
+      |{
+      |   "regime":"VAT",
+      |   "VRN":"10045678976543",
+      |   "expiryDateOfAllPenaltyPoints":"2023-03-31T00:00:00.000Z",
+      |   "noOfSubmissionsReqForCompliance":"4",
+      |   "returns":[
+      |      {
+      |         "startDate":"2020-10-01T00:00:00.000Z",
+      |         "endDate":"2020-12-31T23:59:59.000Z",
+      |         "dueDate":"2021-05-07T23:59:59.000Z",
+      |         "status":"Submitted"
+      |      },
+      |      {
+      |         "startDate":"2021-04-01T00:00:00.000Z",
+      |         "endDate":"2021-06-30T23:59:59.000Z",
+      |         "dueDate":"2021-08-07T23:59:59.000Z"
+      |      }
+      |   ]
+      |}
+      |""".stripMargin
   )
 
   def mockResponseForStubPastReturnPayload(status: Int, identifier: String, startDate: LocalDateTime, endDate: LocalDateTime,
                                            regime: String, body: Option[String] = None): StubMapping = {
-    stubFor(get(urlEqualTo(s"/penalties-stub/compliance/previous-data/$regime/$identifier?startDate=$startDate&endDate=$endDate"))
+    stubFor(get(urlPathEqualTo(s"/penalties-stub/compliance/previous-data/$regime/$identifier"))
       .willReturn(
         aResponse()
           .withBody(body.fold(pastReturnPayloadAsJson.toString())(identity))
@@ -41,7 +73,7 @@ trait ComplianceWiremock {
 
   def mockResponseForPastReturnPayload(status: Int, identifier: String, startDate: LocalDateTime, endDate: LocalDateTime,
                                        body: Option[String] = None): StubMapping = {
-    stubFor(get(urlEqualTo(s"/$identifier?startDate=$startDate&endDate=$endDate"))
+    stubFor(get(urlPathEqualTo(s"/$identifier"))
     .willReturn(
       aResponse()
         .withBody(body.fold(pastReturnPayloadAsJson.toString())(identity))
