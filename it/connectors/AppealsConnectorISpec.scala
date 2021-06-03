@@ -32,9 +32,28 @@ class AppealsConnectorISpec extends IntegrationSpecCommonBase with AppealWiremoc
   }
 
   "submitAppeal" should {
-    "Jsonify the model and send the request and return the response - when ETMP feature switch enabled" in new Setup {
+    "Jsonify the model and send the request and return the response - when ETMP feature switch enabled, call ETMP" in new Setup {
       enableFeatureSwitch(CallETMP)
       mockResponseForAppealSubmissionETMP(Status.OK)
+      val modelToSend: AppealSubmission = AppealSubmission(
+        submittedBy = "client",
+        penaltyId = "1234567890",
+        reasonableExcuse = "ENUM_PEGA_LIST",
+        honestyDeclaration = true,
+        appealInformation = CrimeAppealInformation(
+          `type` = "crime",
+          dateOfEvent = "2021-04-23T18:25:43.511Z",
+          reportedIssue = true,
+          statement = None
+        )
+      )
+      val result = await(connector.submitAppeal(modelToSend))
+      result.status shouldBe OK
+    }
+
+    "Jsonify the model and send the request and return the response - when ETMP feature switch disabled, call stub" in new Setup {
+      disableFeatureSwitch(CallETMP)
+      mockResponseForAppealSubmissionStub(Status.OK)
       val modelToSend: AppealSubmission = AppealSubmission(
         submittedBy = "client",
         penaltyId = "1234567890",

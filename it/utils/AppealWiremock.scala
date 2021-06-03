@@ -29,4 +29,12 @@ trait AppealWiremock {
       ))
   }
 
+  def mockResponseForAppealSubmissionStub(status: Int): StubMapping = {
+    stubFor(post(urlEqualTo(s"/penalties-stub/appeals/submit"))
+      .willReturn(
+        aResponse()
+          .withStatus(status)
+      ))
+  }
+
 }
