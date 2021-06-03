@@ -28,6 +28,7 @@ import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.Result
 import play.api.test.Helpers._
 import services.ETMPService
+import uk.gov.hmrc.http.HttpResponse
 
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -41,6 +42,7 @@ class AppealsControllerSpec extends SpecBase {
     reset(mockETMPService)
     val controller = new AppealsController(if(withRealAppConfig) appConfig else mockAppConfig, mockETMPService, stubControllerComponents())
   }
+
   "getAppealsDataForLateSubmissionPenalty" should {
     s"return NOT_FOUND (${Status.NOT_FOUND}) when ETMP can not find the data for the given enrolment key" in new Setup {
       val sampleEnrolmentKey: String = "HMRC-MTD-VAT~VRN~123456789"
@@ -192,6 +194,80 @@ class AppealsControllerSpec extends SpecBase {
       val result: Future[Result] = controller.getReasonableExcuses()(fakeRequest)
       status(result) shouldBe OK
       contentAsJson(result) shouldBe jsonExpectedToReturn
+    }
+  }
+
+  "submitAppeal" should {
+    "return BAD_REQUEST (400)" when {
+      "the request body is not valid JSON" in new Setup {
+        val result = controller.submitAppeal()(fakeRequest)
+        status(result) shouldBe BAD_REQUEST
+        contentAsString(result) shouldBe "Invalid body received i.e. could not be parsed to JSON"
+      }
+
+      "the request body is valid JSON but can not be serialised to a model" in new Setup {
+        val appealsJson: JsValue = Json.parse(
+          """
+            |{
+            |    "submittedBy": "client",
+            |    "penaltyId": "1234567890",
+            |    "reasonableExcuse": "ENUM_PEGA_LIST",
+            |    "honestyDeclaration": true
+            |}
+            |""".stripMargin)
+
+        val result = controller.submitAppeal()(fakeRequest.withJsonBody(appealsJson))
+        status(result) shouldBe BAD_REQUEST
+        contentAsString(result) shouldBe "Failed to parse to model"
+      }
+    }
+
+    "return ISE (500)" when {
+      "the connector calls fails" in new Setup {
+        when(mockETMPService.submitAppeal(ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
+          .thenReturn(Future.successful(HttpResponse(GATEWAY_TIMEOUT, "")))
+        val appealsJson: JsValue = Json.parse(
+          """
+            |{
+            |    "submittedBy": "client",
+            |    "penaltyId": "1234567890",
+            |    "reasonableExcuse": "crime",
+            |    "honestyDeclaration": true,
+            |    "appealInformation": {
+            |						"type": "crime",
+            |            "dateOfEvent": "2021-04-23T18:25:43.511Z",
+            |            "reportedIssue": true,
+            |						 "statement": "This is a statement"
+            |		}
+            |}
+            |""".stripMargin)
+        val result = controller.submitAppeal()(fakeRequest.withJsonBody(appealsJson))
+        status(result) shouldBe INTERNAL_SERVER_ERROR
+        contentAsString(result) shouldBe "Something went wrong."
+      }
+    }
+
+    "return OK (200)" when {
+      "the JSON request body can be parsed and the connector returns a successful response" in new Setup {
+        when(mockETMPService.submitAppeal(ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
+          .thenReturn(Future.successful(HttpResponse(OK, "")))
+        val appealsJson: JsValue = Json.parse(
+          """
+            |{
+            |    "submittedBy": "client",
+            |    "penaltyId": "1234567890",
+            |    "reasonableExcuse": "crime",
+            |    "honestyDeclaration": true,
+            |    "appealInformation": {
+            |						"type": "crime",
+            |            "dateOfEvent": "2021-04-23T18:25:43.511Z",
+            |            "reportedIssue": true
+            |		}
+            |}
+            |""".stripMargin)
+        val result = controller.submitAppeal()(fakeRequest.withJsonBody(appealsJson))
+        status(result) shouldBe OK
+      }
     }
   }
 }

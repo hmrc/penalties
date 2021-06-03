@@ -19,10 +19,10 @@ package controllers
 import play.api.http.Status
 import play.api.libs.json.{JsValue, Json}
 import play.api.test.Helpers.await
-import utils.{ETMPWiremock, IntegrationSpecCommonBase}
+import utils.{AppealWiremock, ETMPWiremock, IntegrationSpecCommonBase}
 import play.api.test.Helpers._
 
-class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock {
+class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock with AppealWiremock {
   val controller: AppealsController = injector.instanceOf[AppealsController]
 
   val appealJson: JsValue = Json.parse(
@@ -95,6 +95,72 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
       val result = await(buildClientForRequestToApp(uri = "/appeals-data/reasonable-excuses").get())
       result.status shouldBe OK
       Json.parse(result.body) shouldBe jsonExpectedToReturn
+    }
+  }
+
+  "submitAppeal" should {
+    "call the connector and send the appeal data received in the request body - returns OK when successful" in {
+      mockResponseForAppealSubmissionStub(OK)
+      val jsonToSubmit: JsValue = Json.parse(
+        """
+          |{
+          |    "submittedBy": "client",
+          |    "penaltyId": "1234567890",
+          |    "reasonableExcuse": "crime",
+          |    "honestyDeclaration": true,
+          |    "appealInformation": {
+          |						"type": "crime",
+          |            "dateOfEvent": "2021-04-23T18:25:43.511Z",
+          |            "reportedIssue": true,
+          |						"statement": "This is a statement"
+          |		}
+          |}
+          |""".stripMargin)
+      val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal").post(
+        jsonToSubmit
+      ))
+      result.status shouldBe OK
+    }
+
+    "return BAD_REQUEST (400)" when {
+      "no JSON body is in the request" in {
+        val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal").post(
+          ""
+        ))
+        result.status shouldBe BAD_REQUEST
+      }
+
+      "JSON body is present but it can not be parsed to a model" in {
+        val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal").post(
+          Json.parse("{}")
+        ))
+        result.status shouldBe BAD_REQUEST
+      }
+    }
+
+    "return ISE (500)" when {
+      "the call to ETMP/stub fails" in {
+        mockResponseForAppealSubmissionStub(GATEWAY_TIMEOUT)
+        val jsonToSubmit: JsValue = Json.parse(
+          """
+            |{
+            |    "submittedBy": "client",
+            |    "penaltyId": "1234567890",
+            |    "reasonableExcuse": "crime",
+            |    "honestyDeclaration": true,
+            |    "appealInformation": {
+            |						"type": "crime",
+            |            "dateOfEvent": "2021-04-23T18:25:43.511Z",
+            |            "reportedIssue": true,
+            |						"statement": "This is a statement"
+            |		}
+            |}
+            |""".stripMargin)
+        val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal").post(
+          jsonToSubmit
+        ))
+        result.status shouldBe INTERNAL_SERVER_ERROR
+      }
     }
   }
 }
