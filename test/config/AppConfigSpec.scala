@@ -51,4 +51,23 @@ class AppConfigSpec extends AnyWordSpec with Matchers with FeatureSwitching {
       result shouldBe "localhost:0000/penalties-stub/etmp/mtd-vat/"
     }
   }
+
+  "getAppealSubmissionURL" should {
+    "call ETMP when the feature switch is enabled" in new Setup {
+      enableFeatureSwitch(CallETMP)
+      when(mockServicesConfig.baseUrl(ArgumentMatchers.any()))
+        .thenReturn("localhost:0000")
+      val result: String = config.getAppealSubmissionURL
+      //TODO: change this once we have the correct URL
+      result shouldBe "localhost:0000/"
+    }
+
+    "call the stub when the feature switch is disabled" in new Setup {
+      disableFeatureSwitch(CallETMP)
+      when(mockServicesConfig.baseUrl(ArgumentMatchers.any()))
+        .thenReturn("localhost:0000")
+      val result: String = config.getAppealSubmissionURL
+      result shouldBe "localhost:0000/penalties-stub/appeals/submit"
+    }
+  }
 }
