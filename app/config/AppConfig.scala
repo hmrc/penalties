@@ -49,6 +49,12 @@ class AppConfig @Inject()(config: Configuration, servicesConfig: ServicesConfig)
     else etmpBase + "/"
   }
 
+  def getAppealSubmissionURL: String = {
+    if(!isEnabled(CallETMP)) stubBase + s"/penalties-stub/appeals/submit"
+    //TODO: change to relevant URL when implemented
+    else etmpBase + "/"
+  }
+
   def isReasonableExcuseEnabled(excuseName: String): Boolean = {
     config.get[Boolean](s"reasonableExcuses.$excuseName.enabled")
   }
