@@ -19,7 +19,7 @@ package controllers
 import config.AppConfig
 import connectors.parsers.ETMPPayloadParser.GetETMPPayloadNoContent
 import models.ETMPPayload
-import models.appeals.{AppealData, AppealTypeEnum}
+import models.appeals.{AppealData, AppealSubmission, AppealTypeEnum}
 import models.appeals.AppealTypeEnum._
 import models.appeals.reasonableExcuses.ReasonableExcuse
 import utils.Logger.logger
@@ -29,7 +29,7 @@ import services.ETMPService
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
 import javax.inject.Inject
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 class AppealsController @Inject()(appConfig: AppConfig,
                                   etmpService: ETMPService,
@@ -74,5 +74,44 @@ class AppealsController @Inject()(appConfig: AppConfig,
 
   def getReasonableExcuses: Action[AnyContent] = Action {
     Ok(ReasonableExcuse.allExcusesToJson(appConfig))
+  }
+
+  def submitAppeal: Action[AnyContent] = Action.async {
+    implicit request => {
+      request.body.asJson.fold({
+        logger.error("[AppealsController][submitAppeal] Fail to validate request body as JSON")
+        Future(BadRequest("Invalid body received i.e. could not be parsed to JSON"))
+      })(
+        jsonBody => {
+          val parseResultToModel = Json.fromJson(jsonBody)(AppealSubmission.apiReads)
+          parseResultToModel.fold(
+            failure => {
+              logger.error("[AppealsController][submitAppeal] Fail to parse request body to model")
+              logger.debug(s"[AppealsController][submitAppeal] Parse failure(s): $failure")
+              Future(BadRequest("Failed to parse to model"))
+          },
+            appealSubmission => {
+              etmpService.submitAppeal(appealSubmission).map {
+                response => response.status match {
+                  case OK => {
+                    Ok("")
+                  }
+                  case _ => {
+                    logger.error(s"[AppealsController][submitAppeal] Connector returned unknown status code: ${response.status} ")
+                    logger.debug(s"[AppealsController][submitAppeal] Failure response body: ${response.body}")
+                    InternalServerError("Something went wrong.")
+                  }
+                }
+              } recover {
+                case e => {
+                  logger.error(s"[AppealsController][submitAppeal] Unknown exception occurred with message: ${e.getMessage}")
+                  InternalServerError("Something went wrong.")
+                }
+              }
+            }
+          )
+        }
+      )
+    }
   }
 }

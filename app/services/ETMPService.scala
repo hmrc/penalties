@@ -16,17 +16,18 @@
 
 package services
 
-import connectors.ETMPConnector
-import connectors.parsers.ETMPPayloadParser.{ETMPPayloadResponse,
-  GetETMPPayloadFailureResponse, GetETMPPayloadMalformed, GetETMPPayloadNoContent, GetETMPPayloadSuccessResponse}
+import connectors.{AppealsConnector, ETMPConnector}
+import connectors.parsers.ETMPPayloadParser.{ETMPPayloadResponse, GetETMPPayloadFailureResponse, GetETMPPayloadMalformed, GetETMPPayloadNoContent, GetETMPPayloadSuccessResponse}
 import models.ETMPPayload
+import models.appeals.AppealSubmission
 import utils.Logger.logger
-import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class ETMPService @Inject()(etmpConnector: ETMPConnector)
+class ETMPService @Inject()(etmpConnector: ETMPConnector,
+                            appealsConnector: AppealsConnector)
                            (implicit ec: ExecutionContext) {
 
   def getPenaltyDataFromETMPForEnrolment(enrolmentKey: String)(implicit hc: HeaderCarrier): Future[(Option[ETMPPayload], ETMPPayloadResponse) ] = {
@@ -51,5 +52,9 @@ class ETMPService @Inject()(etmpConnector: ETMPConnector)
         logger.error(s"$startOfLogMsg - Unknown status returned from connector.")
         (None, res)
     }
+  }
+
+  def submitAppeal(appealSubmission: AppealSubmission)(implicit ec: ExecutionContext, hc: HeaderCarrier): Future[HttpResponse] = {
+    appealsConnector.submitAppeal(appealSubmission)
   }
 }
