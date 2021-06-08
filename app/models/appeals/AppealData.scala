@@ -24,7 +24,8 @@ case class AppealData(
                        `type`: AppealTypeEnum.Value,
                        startDate: LocalDateTime,
                        endDate: LocalDateTime,
-                       dueDate: LocalDateTime
+                       dueDate: LocalDateTime,
+                       dateCommunicationSent: LocalDateTime
                      )
 
 object AppealData {

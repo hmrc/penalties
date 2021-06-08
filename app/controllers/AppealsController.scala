@@ -63,8 +63,12 @@ class AppealsController @Inject()(appConfig: AppConfig,
     if (isPenaltyIdInETMPPayload) {
       logger.debug(s"[AppealsController][getAppealsData] Penalty ID: $penaltyIdToCheck for enrolment key: $enrolmentKey found in ETMP.")
       val penaltyBasedOnId = etmpData.penaltyPoints.find(_.id == penaltyIdToCheck).get
-      val dataToReturn: AppealData = AppealData(appealType, penaltyBasedOnId.period.get.startDate, penaltyBasedOnId.period.get.endDate,
-        penaltyBasedOnId.period.get.submission.dueDate)
+      val dataToReturn: AppealData = AppealData(`type` = appealType,
+        startDate = penaltyBasedOnId.period.get.startDate,
+        endDate = penaltyBasedOnId.period.get.endDate,
+        dueDate = penaltyBasedOnId.period.get.submission.dueDate,
+        dateCommunicationSent = penaltyBasedOnId.communications.head.dateSent
+      )
       Ok(Json.toJson(dataToReturn))
     } else {
       logger.info("[AppealsController][getAppealsData] Data retrieved for enrolment but provided penalty ID was not found. Returning 404.")
