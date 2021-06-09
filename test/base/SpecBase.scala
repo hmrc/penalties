@@ -17,9 +17,9 @@
 package base
 
 import java.time.LocalDateTime
-
 import config.AppConfig
 import models.ETMPPayload
+import models.communication.{Communication, CommunicationTypeEnum}
 import models.penalty.PenaltyPeriod
 import models.point.{PenaltyPoint, PenaltyTypeEnum, PointStatusEnum}
 import models.submission.{Submission, SubmissionStatusEnum}
@@ -63,7 +63,13 @@ trait SpecBase extends AnyWordSpec with Matchers with GuiceOneAppPerSuite {
             status = SubmissionStatusEnum.Submitted
           )
         )),
-        communications = Seq.empty,
+        communications = Seq(
+          Communication(
+            `type` = CommunicationTypeEnum.secureMessage,
+            dateSent = LocalDateTime.of(1970, 2, 8, 0, 0, 0),
+            documentId = "123456789"
+          )
+        ),
         financial = None
       )
     )
@@ -94,7 +100,13 @@ trait SpecBase extends AnyWordSpec with Matchers with GuiceOneAppPerSuite {
             status = SubmissionStatusEnum.Submitted
           )
         )),
-        communications = Seq.empty,
+        communications = Seq(
+          Communication(
+            `type` = CommunicationTypeEnum.secureMessage,
+            dateSent = LocalDateTime.of(1970, 2, 8, 0, 0, 0),
+            documentId = "123456789"
+          )
+        ),
         financial = None
       ),
       PenaltyPoint(
@@ -114,7 +126,13 @@ trait SpecBase extends AnyWordSpec with Matchers with GuiceOneAppPerSuite {
             status = SubmissionStatusEnum.Submitted
           )
         )),
-        communications = Seq.empty,
+        communications = Seq(
+          Communication(
+            `type` = CommunicationTypeEnum.secureMessage,
+            dateSent = LocalDateTime.of(1970, 2, 8, 0, 0, 0),
+            documentId = "123456789"
+          )
+        ),
         financial = None
       )
     )

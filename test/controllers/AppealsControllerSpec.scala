@@ -86,7 +86,8 @@ class AppealsControllerSpec extends SpecBase {
         Late_Submission,
         mockETMPPayloadResponseAsModel.penaltyPoints.head.period.get.startDate,
         mockETMPPayloadResponseAsModel.penaltyPoints.head.period.get.endDate,
-        mockETMPPayloadResponseAsModel.penaltyPoints.head.period.get.submission.dueDate
+        mockETMPPayloadResponseAsModel.penaltyPoints.head.period.get.submission.dueDate,
+        mockETMPPayloadResponseAsModel.penaltyPoints.head.communications.head.dateSent
       )
       contentAsString(result) shouldBe Json.toJson(appealDataToReturn).toString()
     }
@@ -104,7 +105,8 @@ class AppealsControllerSpec extends SpecBase {
         Late_Submission,
         mockETMPPayloadResponseAsModelMultiplePoints.penaltyPoints.last.period.get.startDate,
         mockETMPPayloadResponseAsModelMultiplePoints.penaltyPoints.last.period.get.endDate,
-        mockETMPPayloadResponseAsModel.penaltyPoints.head.period.get.submission.dueDate
+        mockETMPPayloadResponseAsModelMultiplePoints.penaltyPoints.head.period.get.submission.dueDate,
+        mockETMPPayloadResponseAsModelMultiplePoints.penaltyPoints.head.communications.head.dateSent
       )
       contentAsString(result) shouldBe Json.toJson(appealDataToReturn).toString()
     }

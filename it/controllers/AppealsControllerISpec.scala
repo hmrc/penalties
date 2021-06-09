@@ -31,7 +31,8 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
       |  "type": "LATE_SUBMISSION",
       |  "startDate": "2021-04-23T18:25:43.511",
       |  "endDate": "2021-04-23T18:25:43.511",
-      |  "dueDate": "2021-04-23T18:25:43.511"
+      |  "dueDate": "2021-04-23T18:25:43.511",
+      |  "dateCommunicationSent": "2021-04-23T18:25:43.511"
       |}
       |""".stripMargin)
 
