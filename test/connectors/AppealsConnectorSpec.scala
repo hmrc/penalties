@@ -58,7 +58,9 @@ class AppealsConnectorSpec extends SpecBase {
           `type` = "crime",
           dateOfEvent = "2021-04-23T18:25:43.511Z",
           reportedIssue = true,
-          statement = None
+          statement = None,
+          lateAppeal = false,
+          lateAppealReason = None
         )
       )
       val result = await(connector.submitAppeal(modelToSend)(HeaderCarrier()))

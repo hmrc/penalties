@@ -31,7 +31,9 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       |    "appealInformation": {
       |						"type": "crime",
       |            "dateOfEvent": "2021-04-23T18:25:43.511Z",
-      |            "reportedIssue": true
+      |            "reportedIssue": true,
+      |            "lateAppeal": true,
+      |            "lateAppealReason": "Reason"
       |		}
       |}
       |""".stripMargin)
@@ -55,7 +57,9 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       |{
       |   "type": "crime",
       |   "dateOfEvent": "2021-04-23T18:25:43.511Z",
-      |   "reportedIssue": true
+      |   "reportedIssue": true,
+      |   "lateAppeal": true,
+      |    "lateAppealReason": "Reason"
       |}
       |""".stripMargin
   )
@@ -78,7 +82,9 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           `type` = "crime",
           dateOfEvent = "2021-04-23T18:25:43.511Z",
           reportedIssue = true,
-          statement = None
+          statement = None,
+          lateAppeal = true,
+          lateAppealReason = Some("Reason")
         )
       }
 
@@ -96,7 +102,9 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           `type` = "crime",
           dateOfEvent = "2021-04-23T18:25:43.511Z",
           reportedIssue = true,
-          statement = None
+          statement = None,
+          lateAppeal = true,
+          lateAppealReason = Some("Reason")
         )
         val result = AppealSubmission.parseAppealInformationToJson(model)
         result shouldBe crimeAppealInformationJson
@@ -116,7 +124,9 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             `type` = "crime",
             dateOfEvent = "2021-04-23T18:25:43.511Z",
             reportedIssue = true,
-            statement = None
+            statement = None,
+            lateAppeal = true,
+            lateAppealReason = Some("Reason")
           )
         )
 
@@ -144,7 +154,9 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             `type` = "crime",
             dateOfEvent = "2021-04-23T18:25:43.511Z",
             reportedIssue = true,
-            statement = None
+            statement = None,
+            lateAppeal = true,
+            lateAppealReason = Some("Reason")
           )
         )
         val jsonRepresentingModel: JsValue = Json.obj(
@@ -155,7 +167,9 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           "appealInformation" -> Json.obj(
             "type" -> "crime",
             "dateOfEvent" -> "2021-04-23T18:25:43.511Z",
-            "reportedIssue" -> true
+            "reportedIssue" -> true,
+            "lateAppeal" -> true,
+            "lateAppealReason" -> "Reason"
           )
         )
 
@@ -172,13 +186,16 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           `type` = "crime",
           dateOfEvent = "2021-04-23T18:25:43.511Z",
           reportedIssue = true,
-          statement = None
+          statement = None,
+          lateAppeal = false,
+          lateAppealReason = None
         )
         val result = Json.toJson(model)(CrimeAppealInformation.crimeAppealWrites)
         result shouldBe Json.obj(
           "type" -> "crime",
           "dateOfEvent" -> "2021-04-23T18:25:43.511Z",
-          "reportedIssue" -> true
+          "reportedIssue" -> true,
+        "lateAppeal"-> false
         )
       }
     }
