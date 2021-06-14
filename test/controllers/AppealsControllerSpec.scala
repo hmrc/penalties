@@ -239,7 +239,8 @@ class AppealsControllerSpec extends SpecBase {
             |						"type": "crime",
             |            "dateOfEvent": "2021-04-23T18:25:43.511Z",
             |            "reportedIssue": true,
-            |						 "statement": "This is a statement"
+            |						 "statement": "This is a statement",
+            |            "lateAppeal": false
             |		}
             |}
             |""".stripMargin)
@@ -263,7 +264,8 @@ class AppealsControllerSpec extends SpecBase {
             |    "appealInformation": {
             |						"type": "crime",
             |            "dateOfEvent": "2021-04-23T18:25:43.511Z",
-            |            "reportedIssue": true
+            |            "reportedIssue": true,
+            |            "lateAppeal": false
             |		}
             |}
             |""".stripMargin)

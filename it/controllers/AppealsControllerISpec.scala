@@ -113,7 +113,8 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
           |						"type": "crime",
           |            "dateOfEvent": "2021-04-23T18:25:43.511Z",
           |            "reportedIssue": true,
-          |						"statement": "This is a statement"
+          |						 "statement": "This is a statement",
+          |            "lateAppeal": false
           |		}
           |}
           |""".stripMargin)
@@ -153,7 +154,8 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
             |						"type": "crime",
             |            "dateOfEvent": "2021-04-23T18:25:43.511Z",
             |            "reportedIssue": true,
-            |						"statement": "This is a statement"
+            |						 "statement": "This is a statement",
+            |            "lateAppeal": false
             |		}
             |}
             |""".stripMargin)

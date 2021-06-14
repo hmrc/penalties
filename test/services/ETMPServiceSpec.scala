@@ -103,7 +103,9 @@ class ETMPServiceSpec extends SpecBase {
         `type` = "crime",
         dateOfEvent = "2021-04-23T18:25:43.511Z",
         reportedIssue = true,
-        statement = None
+        statement = None,
+        lateAppeal = false,
+        lateAppealReason = None
       )
     )
     "return the response from the connector i.e. act as a pass-through function" in new Setup {
