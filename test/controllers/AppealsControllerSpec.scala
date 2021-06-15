@@ -40,7 +40,7 @@ class AppealsControllerSpec extends SpecBase {
   class Setup(withRealAppConfig: Boolean = true) {
     reset(mockAppConfig)
     reset(mockETMPService)
-    val controller = new AppealsController(if(withRealAppConfig) appConfig else mockAppConfig, mockETMPService, stubControllerComponents())
+    val controller = new AppealsController(if (withRealAppConfig) appConfig else mockAppConfig, mockETMPService, stubControllerComponents())
   }
 
   "getAppealsDataForLateSubmissionPenalty" should {
@@ -251,7 +251,7 @@ class AppealsControllerSpec extends SpecBase {
     }
 
     "return OK (200)" when {
-      "the JSON request body can be parsed and the connector returns a successful response" in new Setup {
+      "the JSON request body can be parsed and the connector returns a successful response for crime" in new Setup {
         when(mockETMPService.submitAppeal(ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
           .thenReturn(Future.successful(HttpResponse(OK, "")))
         val appealsJson: JsValue = Json.parse(
@@ -265,6 +265,27 @@ class AppealsControllerSpec extends SpecBase {
             |						"type": "crime",
             |            "dateOfEvent": "2021-04-23T18:25:43.511Z",
             |            "reportedIssue": true,
+            |            "lateAppeal": false
+            |		}
+            |}
+            |""".stripMargin)
+        val result = controller.submitAppeal()(fakeRequest.withJsonBody(appealsJson))
+        status(result) shouldBe OK
+      }
+
+      "the Json request body can be parsed and the connector returns a successful response for fire or flood" in new Setup {
+        when(mockETMPService.submitAppeal(ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
+          .thenReturn(Future.successful(HttpResponse(OK, "")))
+        val appealsJson: JsValue = Json.parse(
+          """
+            |{
+            |    "submittedBy": "client",
+            |    "penaltyId": "1234567890",
+            |    "reasonableExcuse": "fireOrFlood",
+            |    "honestyDeclaration": true,
+            |    "appealInformation": {
+            |						"type": "fireOrFlood",
+            |            "dateOfEvent": "2021-04-23T18:25:43.511Z",
             |            "lateAppeal": false
             |		}
             |}

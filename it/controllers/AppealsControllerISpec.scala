@@ -100,7 +100,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
   }
 
   "submitAppeal" should {
-    "call the connector and send the appeal data received in the request body - returns OK when successful" in {
+    "call the connector and send the appeal data received in the request body - returns OK when successful for crime" in {
       mockResponseForAppealSubmissionStub(OK)
       val jsonToSubmit: JsValue = Json.parse(
         """
@@ -116,6 +116,29 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
           |						 "statement": "This is a statement",
           |            "lateAppeal": false
           |		}
+          |}
+          |""".stripMargin)
+      val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal").post(
+        jsonToSubmit
+      ))
+      result.status shouldBe OK
+    }
+
+    "call the connector and send the appeal data received in the request body - returns OK when successful for fire or flood" in {
+      mockResponseForAppealSubmissionStub(OK)
+      val jsonToSubmit: JsValue = Json.parse(
+        """
+          |{
+          |    "submittedBy": "client",
+          |    "penaltyId": "1234567890",
+          |    "reasonableExcuse": "fireOrFlood",
+          |    "honestyDeclaration": true,
+          |    "appealInformation": {
+          |          "type": "fireOrFlood",
+          |          "dateOfEvent": "2021-04-23T18:25:43.511Z",
+          |          "statement": "This is a statement",
+          |          "lateAppeal": false
+          |    }
           |}
           |""".stripMargin)
       val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal").post(
