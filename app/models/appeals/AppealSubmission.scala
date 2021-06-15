@@ -59,6 +59,38 @@ object CrimeAppealInformation {
   }
 }
 
+case class FireOrFloodAppealInformation(
+                                         `type`: String,
+                                         dateOfEvent: String,
+                                         statement: Option[String],
+                                         lateAppeal: Boolean,
+                                         lateAppealReason: Option[String]
+                                       ) extends AppealInformation
+
+object FireOrFloodAppealInformation {
+  implicit val fireOrFloodAppealInformationFormatter: OFormat[FireOrFloodAppealInformation] = Json.format[FireOrFloodAppealInformation]
+
+  val fireOrFloodAppealWrites: Writes[FireOrFloodAppealInformation] = (fireOrFloodAppealInformation: FireOrFloodAppealInformation) => {
+    Json.obj(
+      "type" -> fireOrFloodAppealInformation.`type`,
+      "dateOfEvent" -> fireOrFloodAppealInformation.dateOfEvent,
+      "lateAppeal" -> fireOrFloodAppealInformation.lateAppeal
+    ).deepMerge(
+      fireOrFloodAppealInformation.statement.fold(
+        Json.obj()
+      )(
+        statement => Json.obj("statement" -> statement)
+      )
+    ).deepMerge(
+      fireOrFloodAppealInformation.lateAppealReason.fold(
+        Json.obj()
+      )(
+        lateAppealReason => Json.obj("lateAppealReason" -> lateAppealReason)
+      )
+    )
+  }
+}
+
 case class AppealSubmission(
                              submittedBy: String,
                              penaltyId: String,
@@ -73,6 +105,9 @@ object AppealSubmission {
       case "crime" => {
         Json.fromJson(payload)(CrimeAppealInformation.crimeAppealInformationFormatter)
       }
+      case "fireOrFlood" => {
+        Json.fromJson(payload)(FireOrFloodAppealInformation.fireOrFloodAppealInformationFormatter)
+      }
     }
   }
 
@@ -80,6 +115,9 @@ object AppealSubmission {
     payload.`type` match {
       case "crime" => {
         Json.toJson(payload.asInstanceOf[CrimeAppealInformation])(CrimeAppealInformation.crimeAppealWrites)
+      }
+      case "fireOrFlood" => {
+        Json.toJson(payload.asInstanceOf[FireOrFloodAppealInformation])(FireOrFloodAppealInformation.fireOrFloodAppealWrites)
       }
     }
   }
