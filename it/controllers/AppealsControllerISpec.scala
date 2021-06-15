@@ -131,7 +131,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
           |{
           |    "submittedBy": "client",
           |    "penaltyId": "1234567890",
-          |    "reasonableExcuse": "lossOfStaff",
+          |    "reasonableExcuse": "fireOrFlood",
           |    "honestyDeclaration": true,
           |    "appealInformation": {
           |          "type": "fireOrFlood",
