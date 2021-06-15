@@ -91,6 +91,38 @@ object FireOrFloodAppealInformation {
   }
 }
 
+case class LossOfStaffAppealInformation(
+                                         `type`: String,
+                                         dateOfEvent: String,
+                                         statement: Option[String],
+                                         lateAppeal: Boolean,
+                                         lateAppealReason: Option[String]
+                                       ) extends AppealInformation
+
+object LossOfStaffAppealInformation {
+  implicit val lossOfStaffAppealInformationFormatter: OFormat[LossOfStaffAppealInformation] = Json.format[LossOfStaffAppealInformation]
+
+  val lossOfStaffAppealWrites: Writes[LossOfStaffAppealInformation] = (lossOfStaffAppealInformation: LossOfStaffAppealInformation) => {
+    Json.obj(
+      "type" -> lossOfStaffAppealInformation.`type`,
+      "dateOfEvent" -> lossOfStaffAppealInformation.dateOfEvent,
+      "lateAppeal" -> lossOfStaffAppealInformation.lateAppeal
+    ).deepMerge(
+      lossOfStaffAppealInformation.statement.fold(
+        Json.obj()
+      )(
+        statement => Json.obj("statement" -> statement)
+      )
+    ).deepMerge(
+      lossOfStaffAppealInformation.lateAppealReason.fold(
+        Json.obj()
+      )(
+        lateAppealReason => Json.obj("lateAppealReason" -> lateAppealReason)
+      )
+    )
+  }
+}
+
 case class AppealSubmission(
                              submittedBy: String,
                              penaltyId: String,
@@ -108,6 +140,9 @@ object AppealSubmission {
       case "fireOrFlood" => {
         Json.fromJson(payload)(FireOrFloodAppealInformation.fireOrFloodAppealInformationFormatter)
       }
+      case "lossOfStaff" => {
+        Json.fromJson(payload)(LossOfStaffAppealInformation.lossOfStaffAppealInformationFormatter)
+      }
     }
   }
 
@@ -119,6 +154,9 @@ object AppealSubmission {
       case "fireOrFlood" => {
         Json.toJson(payload.asInstanceOf[FireOrFloodAppealInformation])(FireOrFloodAppealInformation.fireOrFloodAppealWrites)
       }
+      case "lossOfStaff" => {
+        Json.toJson(payload.asInstanceOf[LossOfStaffAppealInformation])(LossOfStaffAppealInformation.lossOfStaffAppealWrites)
+      }
     }
   }
 
@@ -129,14 +167,14 @@ object AppealSubmission {
       reasonableExcuse <- (json \ "reasonableExcuse").validate[String]
       honestyDeclaration <- (json \ "honestyDeclaration").validate[Boolean]
       appealInformationType <- (json \ "appealInformation" \ "type").validate[String]
-      appealInformationReportedIssue <- parseAppealInformationFromJson(appealInformationType, (json \ "appealInformation").get)
+      appealInformation <- parseAppealInformationFromJson(appealInformationType, (json \ "appealInformation").get)
     } yield {
       AppealSubmission(
         submittedBy,
         penaltyId,
         reasonableExcuse,
         honestyDeclaration,
-        appealInformationReportedIssue
+        appealInformation
       )
     }
   }
