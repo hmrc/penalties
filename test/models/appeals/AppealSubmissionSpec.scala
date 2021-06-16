@@ -54,6 +54,48 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       |}
       |""".stripMargin)
 
+  val technicalIssuesAppealJson: JsValue = Json.parse(
+    """
+      |{
+      |    "submittedBy": "client",
+      |    "penaltyId": "1234567890",
+      |    "reasonableExcuse": "technicalIssues",
+      |    "honestyDeclaration": true,
+      |    "appealInformation": {
+      |						"type": "technicalIssues",
+      |            "startDateOfEvent": "2021-04-23T18:25:43.511Z",
+      |            "endDateOfEvent": "2021-04-24T18:25:43.511Z",
+      |            "lateAppeal": true,
+      |            "lateAppealReason": "Reason"
+      |		}
+      |}
+      |""".stripMargin)
+
+  val technicalIssuesAppealJsonWithKeyMissing: JsValue = Json.parse(
+    """
+      |{
+      |    "submittedBy": "client",
+      |    "penaltyId": "1234567890",
+      |    "reasonableExcuse": "technicalIssues",
+      |    "appealInformation": {
+      |						"type": "technicalIssues",
+      |            "startDateOfEvent": "2021-04-23T18:25:43.511Z"
+      |		}
+      |}
+      |""".stripMargin)
+
+  val technicalIssuesAppealInformationJson: JsValue = Json.parse(
+    """
+      |{
+      |   "type": "technicalIssues",
+      |   "startDateOfEvent": "2021-04-23T18:25:43.511Z",
+      |   "endDateOfEvent": "2021-04-24T18:25:43.511Z",
+      |   "lateAppeal": true,
+      |   "lateAppealReason": "Reason"
+      |}
+      |""".stripMargin
+  )
+
   val fireOrFloodAppealJson: JsValue = Json.parse(
     """
       |{
@@ -153,10 +195,20 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       |}
       |""".stripMargin
   )
+
   val invalidFireOrFloodAppealInformationJson: JsValue = Json.parse(
     """
       |{
       |   "dateOfEvent": "2021-04-23T18:25:43.511Z",
+      |   "lateAppeal": true
+      |}
+      |""".stripMargin
+  )
+
+  val invalidTechnicalIssuesAppealInformationJson: JsValue = Json.parse(
+    """
+      |{
+      |   "startDateOfEvent": "2021-04-23T18:25:43.511Z",
       |   "lateAppeal": true
       |}
       |""".stripMargin
@@ -198,6 +250,26 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
 
       "return a JsError when the appeal information payload is incorrect" in {
         val result = AppealSubmission.parseAppealInformationFromJson("fireOrFlood", invalidFireOrFloodAppealInformationJson)
+        result.isSuccess shouldBe false
+      }
+    }
+
+    "for technicalIssues" must {
+      "parse the appeal information object into the relevant appeal information case class" in {
+        val result = AppealSubmission.parseAppealInformationFromJson("technicalIssues", technicalIssuesAppealInformationJson)
+        result.isSuccess shouldBe true
+        result.get shouldBe TechnicalIssuesAppealInformation(
+          `type` = "technicalIssues",
+          startDateOfEvent = "2021-04-23T18:25:43.511Z",
+          endDateOfEvent = "2021-04-24T18:25:43.511Z",
+          statement = None,
+          lateAppeal = true,
+          lateAppealReason = Some("Reason")
+        )
+      }
+
+      "return a JsError when the appeal information payload is incorrect" in {
+        val result = AppealSubmission.parseAppealInformationFromJson("technicalIssues", invalidTechnicalIssuesAppealInformationJson)
         result.isSuccess shouldBe false
       }
     }
@@ -244,6 +316,21 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
         )
         val result = AppealSubmission.parseAppealInformationToJson(model)
         result shouldBe lossOfStaffAppealInformationJson
+      }
+    }
+
+    "for technical issues" must {
+      "parse the appeal information model into a JsObject" in {
+        val model = TechnicalIssuesAppealInformation(
+          `type` = "technicalIssues",
+          startDateOfEvent = "2021-04-23T18:25:43.511Z",
+          endDateOfEvent = "2021-04-24T18:25:43.511Z",
+          statement = None,
+          lateAppeal = true,
+          lateAppealReason = Some("Reason")
+        )
+        val result = AppealSubmission.parseAppealInformationToJson(model)
+        result shouldBe technicalIssuesAppealInformationJson
       }
     }
   }
@@ -327,6 +414,34 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
 
       "not parse the JSON into a model when some keys are not present" in {
         val result = Json.fromJson(lossOfStaffAppealJsonWithKeyMissing)(AppealSubmission.apiReads)
+        result.isSuccess shouldBe false
+      }
+    }
+
+    "for technical issues" must {
+      "parse the JSON into a model when all keys are present" in {
+        val expectedResult = AppealSubmission(
+          submittedBy = "client",
+          penaltyId = "1234567890",
+          reasonableExcuse = "technicalIssues",
+          honestyDeclaration = true,
+          appealInformation = TechnicalIssuesAppealInformation(
+            `type` = "technicalIssues",
+            startDateOfEvent = "2021-04-23T18:25:43.511Z",
+            endDateOfEvent = "2021-04-24T18:25:43.511Z",
+            statement = None,
+            lateAppeal = true,
+            lateAppealReason = Some("Reason")
+          )
+        )
+
+        val result = Json.fromJson(technicalIssuesAppealJson)(AppealSubmission.apiReads)
+        result.isSuccess shouldBe true
+        result.get shouldBe expectedResult
+      }
+
+      "not parse the JSON into a model when some keys are not present" in {
+        val result = Json.fromJson(technicalIssuesAppealJsonWithKeyMissing)(AppealSubmission.apiReads)
         result.isSuccess shouldBe false
       }
     }
@@ -434,7 +549,43 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
         result shouldBe jsonRepresentingModel
       }
     }
+
+    "for technical issues" must {
+      "write the model to JSON" in {
+        val modelToConvertToJson: AppealSubmission = AppealSubmission(
+          submittedBy = "client",
+          penaltyId = "1234",
+          reasonableExcuse = "technicalIssues",
+          honestyDeclaration = true,
+          appealInformation = TechnicalIssuesAppealInformation(
+            `type` = "technicalIssues",
+            startDateOfEvent = "2021-04-23T18:25:43.511Z",
+            endDateOfEvent = "2021-04-24T18:25:43.511Z",
+            statement = None,
+            lateAppeal = false,
+            lateAppealReason = None
+          )
+        )
+
+        val jsonRepresentingModel: JsValue = Json.obj(
+          "submittedBy" -> "client",
+          "penaltyId" -> "1234",
+          "reasonableExcuse" -> "technicalIssues",
+          "honestyDeclaration" -> true,
+          "appealInformation" -> Json.obj(
+            "type" -> "technicalIssues",
+            "startDateOfEvent" -> "2021-04-23T18:25:43.511Z",
+            "endDateOfEvent" -> "2021-04-24T18:25:43.511Z",
+            "lateAppeal" -> false
+          )
+        )
+
+        val result = Json.toJson(modelToConvertToJson)(AppealSubmission.apiWrites)
+        result shouldBe jsonRepresentingModel
+      }
+    }
   }
+
 
   "CrimeAppealInformation" should {
     "crimeAppealWrites" must {
@@ -493,6 +644,29 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           "type" -> "fireOrFlood",
           "dateOfEvent" -> "2021-04-23T18:25:43.511Z",
           "lateAppeal"-> false
+        )
+      }
+    }
+  }
+
+  "TechnicalIssuesAppealInformation" should {
+    "technicalIssuesAppealWrites" must {
+      "write the appeal model to JSON" in {
+        val model = TechnicalIssuesAppealInformation(
+          `type` = "technicalIssues",
+          startDateOfEvent = "2021-04-23T18:25:43.511Z",
+          endDateOfEvent = "2021-04-24T18:25:43.511Z",
+          statement = None,
+          lateAppeal = true,
+          lateAppealReason = Some("Reason")
+        )
+        val result = Json.toJson(model)(TechnicalIssuesAppealInformation.technicalIssuesAppealWrites)
+        result shouldBe Json.obj(
+          "type" -> "technicalIssues",
+          "startDateOfEvent" -> "2021-04-23T18:25:43.511Z",
+          "endDateOfEvent" -> "2021-04-24T18:25:43.511Z",
+          "lateAppeal" -> true,
+          "lateAppealReason" -> "Reason"
         )
       }
     }

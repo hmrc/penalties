@@ -170,6 +170,30 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
       result.status shouldBe OK
     }
 
+    "call the connector and send the appeal data received in the request body - returns OK when successful for technical issues" in {
+      mockResponseForAppealSubmissionStub(OK)
+      val jsonToSubmit: JsValue = Json.parse(
+        """
+          |{
+          |    "submittedBy": "client",
+          |    "penaltyId": "1234567890",
+          |    "reasonableExcuse": "technicalIssues",
+          |    "honestyDeclaration": true,
+          |    "appealInformation": {
+          |						"type": "technicalIssues",
+          |            "startDateOfEvent": "2021-04-23T18:25:43.511Z",
+          |            "endDateOfEvent": "2021-04-24T18:25:43.511Z",
+          |						 "statement": "This is a statement",
+          |            "lateAppeal": false
+          |		}
+          |}
+          |""".stripMargin)
+      val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal").post(
+        jsonToSubmit
+      ))
+      result.status shouldBe OK
+    }
+
     "return BAD_REQUEST (400)" when {
       "no JSON body is in the request" in {
         val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal").post(
