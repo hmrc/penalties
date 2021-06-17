@@ -20,7 +20,6 @@ import play.api.libs.json._
 
 sealed trait AppealInformation {
   val `type`: String
-  val dateOfEvent: String
   val statement: Option[String]
   val lateAppeal: Boolean
 }
@@ -123,6 +122,40 @@ object LossOfStaffAppealInformation {
   }
 }
 
+case class TechnicalIssuesAppealInformation(
+                                             `type`: String,
+                                             startDateOfEvent: String,
+                                             endDateOfEvent: String,
+                                             statement: Option[String],
+                                             lateAppeal: Boolean,
+                                             lateAppealReason: Option[String]
+                                           ) extends AppealInformation
+
+object TechnicalIssuesAppealInformation {
+  implicit val technicalIssuesAppealInformationFormatter: OFormat[TechnicalIssuesAppealInformation] = Json.format[TechnicalIssuesAppealInformation]
+
+  val technicalIssuesAppealWrites: Writes[TechnicalIssuesAppealInformation] = (lossOfStaffAppealInformation: TechnicalIssuesAppealInformation) => {
+    Json.obj(
+      "type" -> lossOfStaffAppealInformation.`type`,
+      "startDateOfEvent" -> lossOfStaffAppealInformation.startDateOfEvent,
+      "endDateOfEvent" -> lossOfStaffAppealInformation.endDateOfEvent,
+      "lateAppeal" -> lossOfStaffAppealInformation.lateAppeal
+    ).deepMerge(
+      lossOfStaffAppealInformation.statement.fold(
+        Json.obj()
+      )(
+        statement => Json.obj("statement" -> statement)
+      )
+    ).deepMerge(
+      lossOfStaffAppealInformation.lateAppealReason.fold(
+        Json.obj()
+      )(
+        lateAppealReason => Json.obj("lateAppealReason" -> lateAppealReason)
+      )
+    )
+  }
+}
+
 case class AppealSubmission(
                              submittedBy: String,
                              penaltyId: String,
@@ -143,6 +176,9 @@ object AppealSubmission {
       case "lossOfStaff" => {
         Json.fromJson(payload)(LossOfStaffAppealInformation.lossOfStaffAppealInformationFormatter)
       }
+      case "technicalIssues" => {
+        Json.fromJson(payload)(TechnicalIssuesAppealInformation.technicalIssuesAppealInformationFormatter)
+      }
     }
   }
 
@@ -156,6 +192,9 @@ object AppealSubmission {
       }
       case "lossOfStaff" => {
         Json.toJson(payload.asInstanceOf[LossOfStaffAppealInformation])(LossOfStaffAppealInformation.lossOfStaffAppealWrites)
+      }
+      case "technicalIssues" => {
+        Json.toJson(payload.asInstanceOf[TechnicalIssuesAppealInformation])(TechnicalIssuesAppealInformation.technicalIssuesAppealWrites)
       }
     }
   }
