@@ -194,6 +194,84 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
       result.status shouldBe OK
     }
 
+    "call the connector and send the appeal data received in the request body - returns OK when successful for health" when {
+      "there has been no hospital stay" in {
+        mockResponseForAppealSubmissionStub(OK)
+        val jsonToSubmit: JsValue = Json.parse(
+          """
+            |{
+            |    "submittedBy": "client",
+            |    "penaltyId": "1234567890",
+            |    "reasonableExcuse": "health",
+            |    "honestyDeclaration": true,
+            |    "appealInformation": {
+            |						 "type": "health",
+            |            "dateOfEvent": "2021-04-23T18:25:43.511Z",
+            |            "hospitalStayInvolved": false,
+            |            "eventOngoing": false,
+            |						 "statement": "This is a statement",
+            |            "lateAppeal": false
+            |		}
+            |}
+            |""".stripMargin)
+        val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal").post(
+          jsonToSubmit
+        ))
+        result.status shouldBe OK
+      }
+
+      "there is an ongoing hospital stay" in {
+        mockResponseForAppealSubmissionStub(OK)
+        val jsonToSubmit: JsValue = Json.parse(
+          """
+            |{
+            |    "submittedBy": "client",
+            |    "penaltyId": "1234567890",
+            |    "reasonableExcuse": "health",
+            |    "honestyDeclaration": true,
+            |    "appealInformation": {
+            |						 "type": "health",
+            |            "startDateOfEvent": "2021-04-23T18:25:43.511Z",
+            |            "hospitalStayInvolved": true,
+            |            "eventOngoing": true,
+            |						 "statement": "This is a statement",
+            |            "lateAppeal": false
+            |		}
+            |}
+            |""".stripMargin)
+        val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal").post(
+          jsonToSubmit
+        ))
+        result.status shouldBe OK
+      }
+
+      "there has been a hospital stay" in {
+        mockResponseForAppealSubmissionStub(OK)
+        val jsonToSubmit: JsValue = Json.parse(
+          """
+            |{
+            |    "submittedBy": "client",
+            |    "penaltyId": "1234567890",
+            |    "reasonableExcuse": "health",
+            |    "honestyDeclaration": true,
+            |    "appealInformation": {
+            |						 "type": "health",
+            |            "startDateOfEvent": "2021-04-23T18:25:43.511Z",
+            |            "endDateOfEvent": "2021-04-23T18:25:43.511Z",
+            |            "hospitalStayInvolved": true,
+            |            "eventOngoing": false,
+            |						 "statement": "This is a statement",
+            |            "lateAppeal": false
+            |		}
+            |}
+            |""".stripMargin)
+        val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal").post(
+          jsonToSubmit
+        ))
+        result.status shouldBe OK
+      }
+    }
+
     "return BAD_REQUEST (400)" when {
       "no JSON body is in the request" in {
         val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal").post(

@@ -336,6 +336,78 @@ class AppealsControllerSpec extends SpecBase {
         val result = controller.submitAppeal()(fakeRequest.withJsonBody(appealsJson))
         status(result) shouldBe OK
       }
+
+      "the Json request body can be parsed and the connector returns a successful response for health" when {
+        "there was no hospital stay" in new Setup {
+          when(mockETMPService.submitAppeal(ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
+            .thenReturn(Future.successful(HttpResponse(OK, "")))
+          val appealsJson: JsValue = Json.parse(
+            """
+              |{
+              |    "submittedBy": "client",
+              |    "penaltyId": "1234567890",
+              |    "reasonableExcuse": "health",
+              |    "honestyDeclaration": true,
+              |    "appealInformation": {
+              |						"type": "health",
+              |            "dateOfEvent": "2021-04-23T18:25:43.511Z",
+              |            "hospitalStayInvolved": false,
+              |            "eventOngoing": false,
+              |            "lateAppeal": false
+              |		}
+              |}
+              |""".stripMargin)
+          val result = controller.submitAppeal()(fakeRequest.withJsonBody(appealsJson))
+          status(result) shouldBe OK
+        }
+
+        "there is an ongoing hospital stay" in new Setup {
+          when(mockETMPService.submitAppeal(ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
+            .thenReturn(Future.successful(HttpResponse(OK, "")))
+          val appealsJson: JsValue = Json.parse(
+            """
+              |{
+              |    "submittedBy": "client",
+              |    "penaltyId": "1234567890",
+              |    "reasonableExcuse": "health",
+              |    "honestyDeclaration": true,
+              |    "appealInformation": {
+              |						"type": "health",
+              |            "startDateOfEvent": "2021-04-23T18:25:43.511Z",
+              |            "hospitalStayInvolved": true,
+              |            "eventOngoing": true,
+              |            "lateAppeal": false
+              |		}
+              |}
+              |""".stripMargin)
+          val result = controller.submitAppeal()(fakeRequest.withJsonBody(appealsJson))
+          status(result) shouldBe OK
+        }
+
+        "there was a hospital stay that has ended" in new Setup {
+          when(mockETMPService.submitAppeal(ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
+            .thenReturn(Future.successful(HttpResponse(OK, "")))
+          val appealsJson: JsValue = Json.parse(
+            """
+              |{
+              |    "submittedBy": "client",
+              |    "penaltyId": "1234567890",
+              |    "reasonableExcuse": "health",
+              |    "honestyDeclaration": true,
+              |    "appealInformation": {
+              |						"type": "health",
+              |            "startDateOfEvent": "2021-04-23T18:25:43.511Z",
+              |            "endDateOfEvent": "2021-04-23T18:25:43.511Z",
+              |            "hospitalStayInvolved": true,
+              |            "eventOngoing": false,
+              |            "lateAppeal": false
+              |		}
+              |}
+              |""".stripMargin)
+          val result = controller.submitAppeal()(fakeRequest.withJsonBody(appealsJson))
+          status(result) shouldBe OK
+        }
+      }
     }
   }
 }

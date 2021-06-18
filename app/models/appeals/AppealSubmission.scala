@@ -156,6 +156,62 @@ object TechnicalIssuesAppealInformation {
   }
 }
 
+case class HealthAppealInformation(
+                                    `type`: String,
+                                    hospitalStayInvolved: Boolean,
+                                    dateOfEvent: Option[String],
+                                    startDateOfEvent: Option[String],
+                                    endDateOfEvent: Option[String],
+                                    eventOngoing: Boolean,
+                                    statement: Option[String],
+                                    lateAppeal: Boolean,
+                                    lateAppealReason: Option[String]
+                                  ) extends AppealInformation
+
+object HealthAppealInformation {
+  implicit val healthAppealInformationFormatter: OFormat[HealthAppealInformation] = Json.format[HealthAppealInformation]
+
+  val healthAppealWrites: Writes[HealthAppealInformation] = (healthAppealInformation: HealthAppealInformation) => {
+    Json.obj(
+      "type" -> healthAppealInformation.`type`,
+      "hospitalStayInvolved" -> healthAppealInformation.hospitalStayInvolved,
+      "eventOngoing" -> healthAppealInformation.eventOngoing,
+      "lateAppeal" -> healthAppealInformation.lateAppeal
+    ).deepMerge(
+      healthAppealInformation.statement.fold(
+        Json.obj()
+      )(
+        statement => Json.obj("statement" -> statement)
+      )
+    ).deepMerge(
+      healthAppealInformation.lateAppealReason.fold(
+        Json.obj()
+      )(
+        lateAppealReason => Json.obj("lateAppealReason" -> lateAppealReason)
+      )
+    ).deepMerge(
+      (healthAppealInformation.hospitalStayInvolved, healthAppealInformation.eventOngoing) match {
+        case (true, true) => {
+          Json.obj(
+            "startDateOfEvent" -> healthAppealInformation.startDateOfEvent.get
+          )
+        }
+        case (true, false) => {
+          Json.obj(
+            "startDateOfEvent" -> healthAppealInformation.startDateOfEvent.get,
+            "endDateOfEvent" -> healthAppealInformation.endDateOfEvent.get
+          )
+        }
+        case _ => {
+          Json.obj(
+            "dateOfEvent" -> healthAppealInformation.dateOfEvent.get
+          )
+        }
+      }
+    )
+  }
+}
+
 case class AppealSubmission(
                              submittedBy: String,
                              penaltyId: String,
@@ -179,6 +235,9 @@ object AppealSubmission {
       case "technicalIssues" => {
         Json.fromJson(payload)(TechnicalIssuesAppealInformation.technicalIssuesAppealInformationFormatter)
       }
+      case "health" => {
+        Json.fromJson(payload)(HealthAppealInformation.healthAppealInformationFormatter)
+      }
     }
   }
 
@@ -195,6 +254,9 @@ object AppealSubmission {
       }
       case "technicalIssues" => {
         Json.toJson(payload.asInstanceOf[TechnicalIssuesAppealInformation])(TechnicalIssuesAppealInformation.technicalIssuesAppealWrites)
+      }
+      case "health" => {
+        Json.toJson(payload.asInstanceOf[HealthAppealInformation])(HealthAppealInformation.healthAppealWrites)
       }
     }
   }
