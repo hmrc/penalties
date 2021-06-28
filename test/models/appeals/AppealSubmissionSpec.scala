@@ -213,7 +213,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       |}
       |""".stripMargin)
 
-  val otherAppealJsonWithKeyMissing: JsValue = Json.parse(
+  val otherAppealJsonNoEvidence: JsValue = Json.parse(
     """
       |{
       |    "submittedBy": "client",
@@ -223,6 +223,22 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       |    "appealInformation": {
       |						"type": "other",
       |            "dateOfEvent": "2021-04-23T18:25:43.511Z",
+      |            "statement": "This is a reason.",
+      |            "lateAppeal": true,
+      |            "lateAppealReason": "Reason"
+      |		}
+      |}
+      |""".stripMargin)
+
+  val otherAppealJsonWithKeyMissing: JsValue = Json.parse(
+    """
+      |{
+      |    "submittedBy": "client",
+      |    "penaltyId": "1234567890",
+      |    "reasonableExcuse": "other",
+      |    "honestyDeclaration": true,
+      |    "appealInformation": {
+      |						"type": "other",
       |            "lateAppeal": true,
       |            "lateAppealReason": "Reason"
       |		}
@@ -356,12 +372,21 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       |""".stripMargin
   )
 
-  val invalidOtherAppealInformationJson: JsValue = Json.parse(
+  val otherAppealInformationJsonNoEvidence: JsValue = Json.parse(
     """
       |{
       |   "type": "other",
       |   "dateOfEvent": "2021-04-23T18:25:43.511Z",
       |   "statement": "This is a statement.",
+      |   "lateAppeal": false
+      |}
+      |""".stripMargin
+  )
+
+  val invalidOtherAppealInformationJson: JsValue = Json.parse(
+    """
+      |{
+      |   "type": "other",
       |   "lateAppeal": false
       |}
       |""".stripMargin)
@@ -502,9 +527,22 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           statement = Some("This is a statement."),
           lateAppeal = false,
           lateAppealReason = None,
-          supportingEvidence = Evidence(
+          supportingEvidence = Some(Evidence(
             noOfUploadedFiles = 1, referenceId = "ref1"
-          )
+          ))
+        )
+      }
+
+      "parse the appeal information object into the relevant appeal information case class - no evidence" in {
+        val result = AppealSubmission.parseAppealInformationFromJson("other", otherAppealInformationJsonNoEvidence)
+        result.isSuccess shouldBe true
+        result.get shouldBe OtherAppealInformation(
+          `type` = "other",
+          dateOfEvent = "2021-04-23T18:25:43.511Z",
+          statement = Some("This is a statement."),
+          lateAppeal = false,
+          lateAppealReason = None,
+          supportingEvidence = None
         )
       }
 
@@ -632,14 +670,27 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           `type` = "other",
           dateOfEvent = "2021-04-23T18:25:43.511Z",
           statement = Some("This is a statement."),
-          supportingEvidence = Evidence(
+          supportingEvidence = Some(Evidence(
             noOfUploadedFiles = 1, referenceId = "ref1"
-          ),
+          )),
           lateAppeal = false,
           lateAppealReason = None
         )
         val result = AppealSubmission.parseAppealInformationToJson(model)
         result shouldBe otherAppealInformationJson
+      }
+
+      "parse the appeal information model into a JsObject - no evidence" in {
+        val model = OtherAppealInformation(
+          `type` = "other",
+          dateOfEvent = "2021-04-23T18:25:43.511Z",
+          statement = Some("This is a statement."),
+          supportingEvidence = None,
+          lateAppeal = false,
+          lateAppealReason = None
+        )
+        val result = AppealSubmission.parseAppealInformationToJson(model)
+        result shouldBe otherAppealInformationJsonNoEvidence
       }
     }
   }
@@ -834,15 +885,36 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             `type` = "other",
             dateOfEvent = "2021-04-23T18:25:43.511Z",
             statement = Some("This is a reason."),
-            supportingEvidence = Evidence(
+            supportingEvidence = Some(Evidence(
               noOfUploadedFiles = 1, referenceId = "ref1"
-            ),
+            )),
             lateAppeal = true,
             lateAppealReason = Some("Reason")
           )
         )
 
         val result = Json.fromJson(otherAppealJson)(AppealSubmission.apiReads)
+        result.isSuccess shouldBe true
+        result.get shouldBe expectedResult
+      }
+
+      "parse the JSON into a model when all keys are present - no evidence" in {
+        val expectedResult = AppealSubmission(
+          submittedBy = "client",
+          penaltyId = "1234567890",
+          reasonableExcuse = "other",
+          honestyDeclaration = true,
+          appealInformation = OtherAppealInformation(
+            `type` = "other",
+            dateOfEvent = "2021-04-23T18:25:43.511Z",
+            statement = Some("This is a reason."),
+            supportingEvidence = None,
+            lateAppeal = true,
+            lateAppealReason = Some("Reason")
+          )
+        )
+
+        val result = Json.fromJson(otherAppealJsonNoEvidence)(AppealSubmission.apiReads)
         result.isSuccess shouldBe true
         result.get shouldBe expectedResult
       }
@@ -1117,10 +1189,10 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             `type` = "other",
             dateOfEvent = "2021-04-23T18:25:43.511Z",
             statement = Some("This was the reason"),
-            supportingEvidence = Evidence(
+            supportingEvidence = Some(Evidence(
               noOfUploadedFiles = 1,
               referenceId = "ref1"
-            ),
+            )),
             lateAppeal = false,
             lateAppealReason = None
           )
@@ -1147,6 +1219,39 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
         result shouldBe jsonRepresentingModel
       }
 
+      "write the model to JSON - no evidence" in {
+        val modelToConvertToJson: AppealSubmission = AppealSubmission(
+          submittedBy = "client",
+          penaltyId = "1234",
+          reasonableExcuse = "other",
+          honestyDeclaration = true,
+          appealInformation = OtherAppealInformation(
+            `type` = "other",
+            dateOfEvent = "2021-04-23T18:25:43.511Z",
+            statement = Some("This was the reason"),
+            supportingEvidence = None,
+            lateAppeal = false,
+            lateAppealReason = None
+          )
+        )
+
+        val jsonRepresentingModel: JsValue = Json.obj(
+          "submittedBy" -> "client",
+          "penaltyId" -> "1234",
+          "reasonableExcuse" -> "other",
+          "honestyDeclaration" -> true,
+          "appealInformation" -> Json.obj(
+            "type" -> "other",
+            "dateOfEvent" -> "2021-04-23T18:25:43.511Z",
+            "statement" -> "This was the reason",
+            "lateAppeal" -> false
+          )
+        )
+
+        val result = Json.toJson(modelToConvertToJson)(AppealSubmission.apiWrites)
+        result shouldBe jsonRepresentingModel
+      }
+
       "write the model to JSON - for late appeal" in {
         val modelToConvertToJson: AppealSubmission = AppealSubmission(
           submittedBy = "client",
@@ -1157,10 +1262,10 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             `type` = "other",
             dateOfEvent = "2021-04-23T18:25:43.511Z",
             statement = Some("This was the reason"),
-            supportingEvidence = Evidence(
+            supportingEvidence = Some(Evidence(
               noOfUploadedFiles = 1,
               referenceId = "ref1"
-            ),
+            )),
             lateAppeal = true,
             lateAppealReason = Some("Late reason")
           )
@@ -1360,7 +1465,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           `type` = "other",
           dateOfEvent = "2022-01-01T13:00:00.000Z",
           statement = Some("I was late. Sorry."),
-          supportingEvidence = Evidence(1, "reference-3000"),
+          supportingEvidence = Some(Evidence(1, "reference-3000")),
           lateAppeal = false,
           lateAppealReason = None
         )
@@ -1386,7 +1491,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           `type` = "other",
           dateOfEvent = "2022-01-01T13:00:00.000Z",
           statement = Some("I was late. Sorry."),
-          supportingEvidence = Evidence(1, "reference-3000"),
+          supportingEvidence = Some(Evidence(1, "reference-3000")),
           lateAppeal = true,
           lateAppealReason = Some("This is a reason")
         )
@@ -1402,6 +1507,28 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             | },
             | "lateAppeal": true,
             | "lateAppealReason": "This is a reason"
+            |}
+            |""".stripMargin)
+        val result = Json.toJson(modelToConvertToJson)
+        result shouldBe expectedResult
+      }
+
+      "write to JSON - no evidence" in {
+        val modelToConvertToJson = OtherAppealInformation(
+          `type` = "other",
+          dateOfEvent = "2022-01-01T13:00:00.000Z",
+          statement = Some("I was late. Sorry."),
+          supportingEvidence = None,
+          lateAppeal = false,
+          lateAppealReason = None
+        )
+        val expectedResult = Json.parse(
+          """
+            |{
+            | "type": "other",
+            | "dateOfEvent": "2022-01-01T13:00:00.000Z",
+            | "statement": "I was late. Sorry.",
+            | "lateAppeal": false
             |}
             |""".stripMargin)
         val result = Json.toJson(modelToConvertToJson)

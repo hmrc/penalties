@@ -216,7 +216,7 @@ case class OtherAppealInformation(
                                    `type`: String,
                                    dateOfEvent: String,
                                    statement: Option[String],
-                                   supportingEvidence: Evidence,
+                                   supportingEvidence: Option[Evidence],
                                    lateAppeal: Boolean,
                                    lateAppealReason: Option[String]
                                  ) extends AppealInformation
@@ -230,13 +230,18 @@ object OtherAppealInformation {
       "type" -> otherAppealInformation.`type`,
       "dateOfEvent" -> otherAppealInformation.dateOfEvent,
       "statement" -> otherAppealInformation.statement.get,
-      "supportingEvidence" -> Json.toJson(otherAppealInformation.supportingEvidence),
       "lateAppeal" -> otherAppealInformation.lateAppeal
     ).deepMerge(
       otherAppealInformation.lateAppealReason.fold(
         Json.obj()
       )(
         lateAppealReason => Json.obj("lateAppealReason" -> lateAppealReason)
+      )
+    ).deepMerge(
+      otherAppealInformation.supportingEvidence.fold(
+        Json.obj()
+      )(
+        evidence => Json.obj("supportingEvidence" -> evidence)
       )
     )
   }
