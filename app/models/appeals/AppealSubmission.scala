@@ -212,6 +212,36 @@ object HealthAppealInformation {
   }
 }
 
+case class OtherAppealInformation(
+                                   `type`: String,
+                                   dateOfEvent: String,
+                                   statement: Option[String],
+                                   supportingEvidence: Evidence,
+                                   lateAppeal: Boolean,
+                                   lateAppealReason: Option[String]
+                                 ) extends AppealInformation
+
+object OtherAppealInformation {
+  implicit val evidenceFormatter: OFormat[Evidence] = Evidence.format
+  implicit val otherAppealInformationFormatter: OFormat[OtherAppealInformation] = Json.format[OtherAppealInformation]
+
+  val otherAppealInformationWrites: Writes[OtherAppealInformation] = (otherAppealInformation: OtherAppealInformation) => {
+    Json.obj(
+      "type" -> otherAppealInformation.`type`,
+      "dateOfEvent" -> otherAppealInformation.dateOfEvent,
+      "statement" -> otherAppealInformation.statement.get,
+      "supportingEvidence" -> Json.toJson(otherAppealInformation.supportingEvidence),
+      "lateAppeal" -> otherAppealInformation.lateAppeal
+    ).deepMerge(
+      otherAppealInformation.lateAppealReason.fold(
+        Json.obj()
+      )(
+        lateAppealReason => Json.obj("lateAppealReason" -> lateAppealReason)
+      )
+    )
+  }
+}
+
 case class AppealSubmission(
                              submittedBy: String,
                              penaltyId: String,
@@ -238,6 +268,9 @@ object AppealSubmission {
       case "health" => {
         Json.fromJson(payload)(HealthAppealInformation.healthAppealInformationFormatter)
       }
+      case "other" => {
+        Json.fromJson(payload)(OtherAppealInformation.otherAppealInformationFormatter)
+      }
     }
   }
 
@@ -257,6 +290,9 @@ object AppealSubmission {
       }
       case "health" => {
         Json.toJson(payload.asInstanceOf[HealthAppealInformation])(HealthAppealInformation.healthAppealWrites)
+      }
+      case "other" => {
+        Json.toJson(payload.asInstanceOf[OtherAppealInformation])(OtherAppealInformation.otherAppealInformationWrites)
       }
     }
   }
