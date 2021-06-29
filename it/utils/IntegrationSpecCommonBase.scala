@@ -18,10 +18,10 @@ package utils
 
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
-
 import com.codahale.metrics.SharedMetricRegistries
 import helpers.WiremockHelper
 import models.ETMPPayload
+import models.appeals.AppealStatusEnum
 import models.communication.{Communication, CommunicationTypeEnum}
 import models.financial.Financial
 import models.penalty.PenaltyPeriod
@@ -103,6 +103,7 @@ trait IntegrationSpecCommonBase extends AnyWordSpec with Matchers with GuiceOneS
         `type` = PenaltyTypeEnum.Financial,
         number = "2",
         id = "1235",
+        appealStatus = Some(AppealStatusEnum.Under_Review),
         dateCreated = sampleDate,
         dateExpired = Some(sampleDate),
         status = PointStatusEnum.Active,
@@ -132,6 +133,7 @@ trait IntegrationSpecCommonBase extends AnyWordSpec with Matchers with GuiceOneS
         `type` = PenaltyTypeEnum.Point,
         number = "1",
         id = "1234",
+        appealStatus = None,
         dateCreated = sampleDate,
         dateExpired = Some(sampleDate),
         status = PointStatusEnum.Active,

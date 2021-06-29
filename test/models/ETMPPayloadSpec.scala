@@ -16,9 +16,10 @@
 
 package models
 
+import models.appeals.AppealStatusEnum
+
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
-
 import models.communication.{Communication, CommunicationTypeEnum}
 import models.financial.Financial
 import models.penalty.PenaltyPeriod
@@ -45,6 +46,7 @@ class ETMPPayloadSpec extends AnyWordSpec with Matchers {
       |		{
       |			"type": "financial",
       |			"number": "2",
+      |     "appealStatus": "UNDER_REVIEW",
       |     "id": "123456790",
       |			"dateCreated": "2021-04-23T18:25:43.511",
       |			"dateExpired": "2021-04-23T18:25:43.511",
@@ -111,6 +113,7 @@ class ETMPPayloadSpec extends AnyWordSpec with Matchers {
         `type` = PenaltyTypeEnum.Financial,
         number = "2",
         id = "123456790",
+        appealStatus = Some(AppealStatusEnum.Under_Review),
         dateCreated = sampleDate,
         dateExpired = Some(sampleDate),
         status = PointStatusEnum.Active,
@@ -140,6 +143,7 @@ class ETMPPayloadSpec extends AnyWordSpec with Matchers {
         `type` = PenaltyTypeEnum.Point,
         number = "1",
         id = "123456789",
+        appealStatus = None,
         dateCreated = sampleDate,
         dateExpired = Some(sampleDate),
         status = PointStatusEnum.Active,

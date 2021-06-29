@@ -35,6 +35,7 @@ trait ETMPWiremock {
       |			"type": "financial",
       |			"number": "2",
       |     "id": "1235",
+      |     "appealStatus": "UNDER_REVIEW",
       |			"dateCreated": "2021-04-23T18:25:43.511",
       |			"dateExpired": "2021-04-23T18:25:43.511",
       |			"status": "ACTIVE",
