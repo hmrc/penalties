@@ -80,10 +80,10 @@ class AppealsController @Inject()(appConfig: AppConfig,
     Ok(ReasonableExcuse.allExcusesToJson(appConfig))
   }
 
-  def submitAppeal: Action[AnyContent] = Action.async {
+  def submitAppeal(enrolmentKey: String): Action[AnyContent] = Action.async {
     implicit request => {
       request.body.asJson.fold({
-        logger.error("[AppealsController][submitAppeal] Fail to validate request body as JSON")
+        logger.error("[AppealsController][submitAppeal] Failed to validate request body as JSON")
         Future(BadRequest("Invalid body received i.e. could not be parsed to JSON"))
       })(
         jsonBody => {
@@ -93,19 +93,20 @@ class AppealsController @Inject()(appConfig: AppConfig,
               logger.error("[AppealsController][submitAppeal] Fail to parse request body to model")
               logger.debug(s"[AppealsController][submitAppeal] Parse failure(s): $failure")
               Future(BadRequest("Failed to parse to model"))
-          },
+            },
             appealSubmission => {
-              etmpService.submitAppeal(appealSubmission).map {
-                response => response.status match {
-                  case OK => {
-                    Ok("")
+              etmpService.submitAppeal(appealSubmission, enrolmentKey).map {
+                response =>
+                  response.status match {
+                    case OK => {
+                      Ok("")
+                    }
+                    case _ => {
+                      logger.error(s"[AppealsController][submitAppeal] Connector returned unknown status code: ${response.status} ")
+                      logger.debug(s"[AppealsController][submitAppeal] Failure response body: ${response.body}")
+                      InternalServerError("Something went wrong.")
+                    }
                   }
-                  case _ => {
-                    logger.error(s"[AppealsController][submitAppeal] Connector returned unknown status code: ${response.status} ")
-                    logger.debug(s"[AppealsController][submitAppeal] Failure response body: ${response.body}")
-                    InternalServerError("Something went wrong.")
-                  }
-                }
               } recover {
                 case e => {
                   logger.error(s"[AppealsController][submitAppeal] Unknown exception occurred with message: ${e.getMessage}")
