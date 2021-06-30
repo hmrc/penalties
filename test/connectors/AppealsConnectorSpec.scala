@@ -63,7 +63,7 @@ class AppealsConnectorSpec extends SpecBase {
           lateAppealReason = None
         )
       )
-      val result = await(connector.submitAppeal(modelToSend)(HeaderCarrier()))
+      val result = await(connector.submitAppeal(modelToSend, "HMRC-MTD-VAT~VRN~123456789")(HeaderCarrier()))
       result.status shouldBe OK
       result.body shouldBe "OK"
     }

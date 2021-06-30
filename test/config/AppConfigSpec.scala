@@ -57,7 +57,7 @@ class AppConfigSpec extends AnyWordSpec with Matchers with FeatureSwitching {
       enableFeatureSwitch(CallETMP)
       when(mockServicesConfig.baseUrl(ArgumentMatchers.any()))
         .thenReturn("localhost:0000")
-      val result: String = config.getAppealSubmissionURL
+      val result: String = config.getAppealSubmissionURL("HMRC-MTD-VAT~VRN~123456789")
       //TODO: change this once we have the correct URL
       result shouldBe "localhost:0000/"
     }
@@ -66,8 +66,8 @@ class AppConfigSpec extends AnyWordSpec with Matchers with FeatureSwitching {
       disableFeatureSwitch(CallETMP)
       when(mockServicesConfig.baseUrl(ArgumentMatchers.any()))
         .thenReturn("localhost:0000")
-      val result: String = config.getAppealSubmissionURL
-      result shouldBe "localhost:0000/penalties-stub/appeals/submit"
+      val result: String = config.getAppealSubmissionURL("HMRC-MTD-VAT~VRN~123456789")
+      result shouldBe "localhost:0000/penalties-stub/appeals/submit?enrolmentKey=HMRC-MTD-VAT~VRN~123456789"
     }
   }
 }

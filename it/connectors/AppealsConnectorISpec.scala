@@ -49,13 +49,13 @@ class AppealsConnectorISpec extends IntegrationSpecCommonBase with AppealWiremoc
           lateAppealReason = None
         )
       )
-      val result = await(connector.submitAppeal(modelToSend))
+      val result = await(connector.submitAppeal(modelToSend, "HMRC-MTD-VAT~VRN~123456789"))
       result.status shouldBe OK
     }
 
     "Jsonify the model and send the request and return the response - when ETMP feature switch disabled, call stub" in new Setup {
       disableFeatureSwitch(CallETMP)
-      mockResponseForAppealSubmissionStub(Status.OK)
+      mockResponseForAppealSubmissionStub(Status.OK, "HMRC-MTD-VAT~VRN~123456789")
       val modelToSend: AppealSubmission = AppealSubmission(
         submittedBy = "client",
         penaltyId = "1234567890",
@@ -70,7 +70,7 @@ class AppealsConnectorISpec extends IntegrationSpecCommonBase with AppealWiremoc
           lateAppealReason = None
         )
       )
-      val result = await(connector.submitAppeal(modelToSend))
+      val result = await(connector.submitAppeal(modelToSend, "HMRC-MTD-VAT~VRN~123456789"))
       result.status shouldBe OK
     }
   }

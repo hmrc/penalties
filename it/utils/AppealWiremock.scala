@@ -29,8 +29,8 @@ trait AppealWiremock {
       ))
   }
 
-  def mockResponseForAppealSubmissionStub(status: Int): StubMapping = {
-    stubFor(post(urlEqualTo(s"/penalties-stub/appeals/submit"))
+  def mockResponseForAppealSubmissionStub(status: Int, enrolmentKey: String): StubMapping = {
+    stubFor(post(urlEqualTo(s"/penalties-stub/appeals/submit?enrolmentKey=$enrolmentKey"))
       .willReturn(
         aResponse()
           .withStatus(status)
