@@ -21,6 +21,7 @@ import play.api.libs.json.{Format, JsError, JsResult, JsString, JsSuccess, JsVal
 object AppealStatusEnum extends Enumeration {
 
   val Under_Review = Value
+  val Accepted = Value
 
   implicit val format: Format[AppealStatusEnum.Value] = new Format[AppealStatusEnum.Value] {
     override def writes(o: AppealStatusEnum.Value): JsValue = {
@@ -30,6 +31,7 @@ object AppealStatusEnum extends Enumeration {
     override def reads(json: JsValue): JsResult[AppealStatusEnum.Value] = {
       json.as[String].toUpperCase match {
         case "UNDER_REVIEW" => JsSuccess(Under_Review)
+        case "ACCEPTED" => JsSuccess(Accepted)
         case e => JsError(s"$e not recognised")
       }
     }
