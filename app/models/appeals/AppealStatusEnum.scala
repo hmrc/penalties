@@ -23,6 +23,7 @@ object AppealStatusEnum extends Enumeration {
   val Under_Review = Value
   val Accepted = Value
   val Rejected = Value
+  val Reinstated = Value
 
   implicit val format: Format[AppealStatusEnum.Value] = new Format[AppealStatusEnum.Value] {
     override def writes(o: AppealStatusEnum.Value): JsValue = {
@@ -34,6 +35,7 @@ object AppealStatusEnum extends Enumeration {
         case "UNDER_REVIEW" => JsSuccess(Under_Review)
         case "ACCEPTED" => JsSuccess(Accepted)
         case "REJECTED" => JsSuccess(Rejected)
+        case "REINSTATED" => JsSuccess(Reinstated)
         case e => JsError(s"$e not recognised")
       }
     }
