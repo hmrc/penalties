@@ -64,6 +64,7 @@ class AppealStatusEnumSpec extends AnyWordSpec with Matchers {
   "be writable to JSON for 'Reinstated'" in {
     val result = Json.toJson(AppealStatusEnum.Reinstated)
     result shouldBe JsString("REINSTATED")
+  }
 
     "be readable from JSON for 'Tribunal_Rejected'" in {
       val result = Json.fromJson(JsString("TRIBUNAL_REJECTED"))(AppealStatusEnum.format)
@@ -75,5 +76,4 @@ class AppealStatusEnumSpec extends AnyWordSpec with Matchers {
       val result = Json.toJson(AppealStatusEnum.Tribunal_Rejected)
       result shouldBe JsString("TRIBUNAL_REJECTED")
     }
-  }
 }
