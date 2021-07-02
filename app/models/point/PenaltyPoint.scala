@@ -16,6 +16,7 @@
 
 package models.point
 
+import models.appeals.AppealStatusEnum
 import models.communication.Communication
 import models.financial.Financial
 import models.penalty.PenaltyPeriod
@@ -27,6 +28,7 @@ case class PenaltyPoint(
                          `type`: PenaltyTypeEnum.Value,
                          number: String,
                          id: String,
+                         appealStatus: Option[AppealStatusEnum.Value] = None,
                          dateCreated: LocalDateTime,
                          dateExpired: Option[LocalDateTime] = None,
                          status: PointStatusEnum.Value,
