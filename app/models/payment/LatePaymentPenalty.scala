@@ -14,16 +14,16 @@
  * limitations under the License.
  */
 
-package models.point
+package models.payment
 
 import models.appeals.AppealStatusEnum
 import models.communication.Communication
-import models.payment.{PaymentFinancial, PaymentPeriod}
+import models.point.{PenaltyTypeEnum, PointStatusEnum}
 import play.api.libs.json.{Json, OFormat}
 
 import java.time.LocalDateTime
 
-case class PaymentPoint(
+case class LatePaymentPenalty(
                          `type`: PenaltyTypeEnum.Value,
                          id: String,
                          reason: String,
@@ -35,6 +35,6 @@ case class PaymentPoint(
                          financial: PaymentFinancial
                        )
 
-object PaymentPoint {
-  implicit val format: OFormat[PaymentPoint] = Json.format[PaymentPoint]
+object LatePaymentPenalty {
+  implicit val format: OFormat[LatePaymentPenalty] = Json.format[LatePaymentPenalty]
 }

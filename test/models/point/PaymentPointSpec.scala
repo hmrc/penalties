@@ -17,7 +17,8 @@
 package models.point
 
 import models.appeals.AppealStatusEnum
-import models.payment.{PaymentFinancial, PaymentPeriod, PaymentStatusEnum}
+import models.payment
+import models.payment.{LatePaymentPenalty, PaymentFinancial, PaymentPeriod, PaymentStatusEnum}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import play.api.libs.json.Json
@@ -46,7 +47,7 @@ class PaymentPointSpec extends AnyWordSpec with Matchers {
     if(withAppealStatus) Json.obj("appealStatus" -> AppealStatusEnum.Under_Review) else Json.obj()
   )
 
-  val paymentPointModelWithAppeal: PaymentPoint = PaymentPoint(
+  val paymentPointModelWithAppeal: LatePaymentPenalty = payment.LatePaymentPenalty(
     `type` = PenaltyTypeEnum.Financial,
     id = "123456789",
     reason = "VAT_NOT_PAID_ON_TIME",
@@ -79,13 +80,13 @@ class PaymentPointSpec extends AnyWordSpec with Matchers {
   }
 
   "be readable from JSON with no appeal status" in {
-    val result = Json.fromJson(paymentPointJson(false))(PaymentPoint.format)
+    val result = Json.fromJson(paymentPointJson(false))(LatePaymentPenalty.format)
     result.isSuccess shouldBe true
     result.get shouldBe paymentPointModelWithNoAppeal
   }
 
   "be readable from JSON with an appeal status" in {
-    val result = Json.fromJson(paymentPointJson(true))(PaymentPoint.format)
+    val result = Json.fromJson(paymentPointJson(true))(LatePaymentPenalty.format)
     result.isSuccess shouldBe true
     result.get shouldBe paymentPointModelWithAppeal
   }

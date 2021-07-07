@@ -24,9 +24,9 @@ import models.ETMPPayload
 import models.appeals.AppealStatusEnum
 import models.communication.{Communication, CommunicationTypeEnum}
 import models.financial.Financial
-import models.payment.{PaymentFinancial, PaymentPeriod, PaymentStatusEnum}
+import models.payment.{LatePaymentPenalty, PaymentFinancial, PaymentPeriod, PaymentStatusEnum}
 import models.penalty.PenaltyPeriod
-import models.point.{PaymentPoint, PenaltyPoint, PenaltyTypeEnum, PointStatusEnum}
+import models.point.{PenaltyPoint, PenaltyTypeEnum, PointStatusEnum}
 import models.submission.{Submission, SubmissionStatusEnum}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
@@ -158,7 +158,7 @@ trait IntegrationSpecCommonBase extends AnyWordSpec with Matchers with GuiceOneS
   )
 
   val etmpPayloadModelWithLPP = etmpPayloadModel.copy(latePaymentPenalties = Some(Seq(
-    PaymentPoint(
+    LatePaymentPenalty(
       `type` = PenaltyTypeEnum.Financial,
       id = "1234567891",
       reason = "VAT_NOT_PAID_ON_TIME",
