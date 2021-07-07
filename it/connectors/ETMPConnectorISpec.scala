@@ -19,6 +19,7 @@ package connectors
 import connectors.parsers.ETMPPayloadParser.{GetETMPPayloadFailureResponse, GetETMPPayloadMalformed, GetETMPPayloadNoContent, GetETMPPayloadSuccessResponse}
 import featureSwitches.{CallETMP, FeatureSwitching}
 import play.api.http.Status
+import play.api.libs.json.Json
 import play.api.test.Helpers._
 import utils.{ETMPWiremock, IntegrationSpecCommonBase}
 
@@ -32,6 +33,100 @@ class ETMPConnectorISpec extends IntegrationSpecCommonBase with ETMPWiremock wit
     val connector: ETMPConnector = injector.instanceOf[ETMPConnector]
   }
 
+  val etmpPayloadWithLPP = Json.parse(
+    """
+      |{
+      |	"pointsTotal": 1,
+      |	"lateSubmissions": 1,
+      |	"adjustmentPointsTotal": 1,
+      |	"fixedPenaltyAmount": 200,
+      |	"penaltyAmountsTotal": 400.00,
+      |	"penaltyPointsThreshold": 4,
+      |	"penaltyPoints": [
+      |		{
+      |			"type": "financial",
+      |			"number": "2",
+      |     "id": "1235",
+      |     "appealStatus": "UNDER_REVIEW",
+      |			"dateCreated": "2021-04-23T18:25:43.511",
+      |			"dateExpired": "2021-04-23T18:25:43.511",
+      |			"status": "ACTIVE",
+      |			"period": {
+      |				"startDate": "2021-04-23T18:25:43.511",
+      |				"endDate": "2021-04-23T18:25:43.511",
+      |				"submission": {
+      |					"dueDate": "2021-04-23T18:25:43.511",
+      |					"submittedDate": "2021-04-23T18:25:43.511",
+      |					"status": "SUBMITTED"
+      |				}
+      |			},
+      |			"communications": [
+      |				{
+      |					"type": "secureMessage",
+      |					"dateSent": "2021-04-23T18:25:43.511",
+      |					"documentId": "1234567890"
+      |				}
+      |			],
+      |     "financial": {
+      |        "amountDue": 400.00,
+      |        "dueDate": "2021-04-23T18:25:43.511"
+      |     }
+      |		},
+      |		{
+      |			"type": "point",
+      |			"number": "1",
+      |     "id": "1234",
+      |			"dateCreated": "2021-04-23T18:25:43.511",
+      |			"dateExpired": "2021-04-23T18:25:43.511",
+      |			"status": "ACTIVE",
+      |			"period": {
+      |				"startDate": "2021-04-23T18:25:43.511",
+      |				"endDate": "2021-04-23T18:25:43.511",
+      |				"submission": {
+      |					"dueDate": "2021-04-23T18:25:43.511",
+      |					"submittedDate": "2021-04-23T18:25:43.511",
+      |					"status": "SUBMITTED"
+      |				}
+      |			},
+      |			"communications": [
+      |				{
+      |					"type": "letter",
+      |					"dateSent": "2021-04-23T18:25:43.511",
+      |					"documentId": "1234567890"
+      |				}
+      |			]
+      |		}
+      |	],
+      | "latePaymentPenalties": [
+      |    {
+      |      "type": "financial",
+      |      "reason": "VAT_NOT_PAID_ON_TIME",
+      |      "id": "1234567891",
+      |      "dateCreated": "2021-04-23T18:25:43.511",
+      |      "status": "ACTIVE",
+      |      "appealStatus": "UNDER_REVIEW",
+      |      "period": {
+      |        "startDate": "2021-04-23T18:25:43.511",
+      |        "endDate": "2021-04-23T18:25:43.511",
+      |		     "paymentStatus": "PAID"
+      |      },
+      |      "communications": [
+      |        {
+      |          "type": "letter",
+      |          "dateSent": "2021-04-23T18:25:43.511",
+      |          "documentId": "1234567890"
+      |        }
+      |      ],
+      |      "financial": {
+      |        "amountDue": 400.00,
+      |        "outstandingAmountDue": 0.00,
+      |        "dueDate": "2021-04-23T18:25:43.511"
+      |      }
+      |    }
+      | ]
+      |}
+      |""".stripMargin)
+
 
   "getPenaltiesDataForEnrolmentKey" should {
     "call ETMP when the feature switch is enabled and handle a successful response" in new Setup {
@@ -40,6 +135,14 @@ class ETMPConnectorISpec extends IntegrationSpecCommonBase with ETMPWiremock wit
       val result = await(connector.getPenaltiesDataForEnrolmentKey("123456789"))
       result.isRight shouldBe true
       result.right.get.asInstanceOf[GetETMPPayloadSuccessResponse].etmpPayload shouldBe etmpPayloadModel
+    }
+
+    "call ETMP when the feature switch is enabled and handle a successful response (with LPP)" in new Setup {
+      enableFeatureSwitch(CallETMP)
+      mockResponseForETMPPayload(Status.OK, "123456789", Some(etmpPayloadWithLPP.toString()))
+      val result = await(connector.getPenaltiesDataForEnrolmentKey("123456789"))
+      result.isRight shouldBe true
+      result.right.get.asInstanceOf[GetETMPPayloadSuccessResponse].etmpPayload shouldBe etmpPayloadModelWithLPP
     }
 
     "call the stub when the feature switch is disabled and handle a successful response" in new Setup {

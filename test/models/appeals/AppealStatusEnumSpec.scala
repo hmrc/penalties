@@ -98,4 +98,9 @@ class AppealStatusEnumSpec extends AnyWordSpec with Matchers {
     val result = Json.toJson(AppealStatusEnum.Accepted_By_Tribunal)
     result shouldBe JsString("ACCEPTED_BY_TRIBUNAL")
   }
+
+  "fail when the status is not recognised" in {
+    val result = Json.fromJson(JsString("WHAT_IS_THIS"))(AppealStatusEnum.format)
+    result.isSuccess shouldBe false
+  }
 }

@@ -22,8 +22,9 @@ import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 import models.communication.{Communication, CommunicationTypeEnum}
 import models.financial.Financial
+import models.payment.{PaymentFinancial, PaymentPeriod, PaymentStatusEnum}
 import models.penalty.PenaltyPeriod
-import models.point.{PenaltyPoint, PenaltyTypeEnum, PointStatusEnum}
+import models.point.{PaymentPoint, PenaltyPoint, PenaltyTypeEnum, PointStatusEnum}
 import models.submission.{Submission, SubmissionStatusEnum}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
@@ -101,6 +102,98 @@ class ETMPPayloadSpec extends AnyWordSpec with Matchers {
       |}
       |""".stripMargin)
 
+  val etmpPayloadAsJsonWithLPP: JsValue = Json.parse(
+    """
+        {
+      |	"pointsTotal": 1,
+      |	"lateSubmissions": 1,
+      |	"adjustmentPointsTotal": 1,
+      |	"fixedPenaltyAmount": 200,
+      |	"penaltyAmountsTotal": 400.00,
+      |	"penaltyPointsThreshold": 4,
+      |	"penaltyPoints": [
+      |		{
+      |			"type": "financial",
+      |			"number": "2",
+      |     "appealStatus": "UNDER_REVIEW",
+      |     "id": "123456790",
+      |			"dateCreated": "2021-04-23T18:25:43.511",
+      |			"dateExpired": "2021-04-23T18:25:43.511",
+      |			"status": "ACTIVE",
+      |			"period": {
+      |				"startDate": "2021-04-23T18:25:43.511",
+      |				"endDate": "2021-04-23T18:25:43.511",
+      |				"submission": {
+      |					"dueDate": "2021-04-23T18:25:43.511",
+      |					"submittedDate": "2021-04-23T18:25:43.511",
+      |					"status": "SUBMITTED"
+      |				}
+      |			},
+      |			"communications": [
+      |				{
+      |					"type": "secureMessage",
+      |					"dateSent": "2021-04-23T18:25:43.511",
+      |					"documentId": "1234567890"
+      |				}
+      |			],
+      |     "financial": {
+      |        "amountDue": 400.00,
+      |        "dueDate": "2021-04-23T18:25:43.511"
+      |     }
+      |		},
+      |		{
+      |			"type": "point",
+      |			"number": "1",
+      |     "id": "123456789",
+      |			"dateCreated": "2021-04-23T18:25:43.511",
+      |			"dateExpired": "2021-04-23T18:25:43.511",
+      |			"status": "ACTIVE",
+      |     "reason": "reason",
+      |			"period": {
+      |				"startDate": "2021-04-23T18:25:43.511",
+      |				"endDate": "2021-04-23T18:25:43.511",
+      |				"submission": {
+      |					"dueDate": "2021-04-23T18:25:43.511",
+      |					"submittedDate": "2021-04-23T18:25:43.511",
+      |					"status": "SUBMITTED"
+      |				}
+      |			},
+      |			"communications": [
+      |				{
+      |					"type": "letter",
+      |					"dateSent": "2021-04-23T18:25:43.511",
+      |					"documentId": "1234567890"
+      |				}
+      |			]
+      |		}
+      |	],
+      | "latePaymentPenalties": [    {
+      |      "type": "financial",
+      |      "reason": "VAT_NOT_PAID_ON_TIME",
+      |      "id": "1234567891",
+      |      "dateCreated": "2021-04-23T18:25:43.511",
+      |      "status": "ACTIVE",
+      |      "period": {
+      |        "startDate": "2021-04-23T18:25:43.511",
+      |        "endDate": "2021-04-23T18:25:43.511",
+      |	       "paymentStatus": "PAID"
+      |      },
+      |      "communications": [
+      |        {
+      |          "type": "letter",
+      |          "dateSent": "2021-04-23T18:25:43.511",
+      |          "documentId": "1234567890"
+      |        }
+      |      ],
+      |      "financial": {
+      |        "amountDue": 400.00,
+      |        "outstandingAmountDue": 2.00,
+      |        "dueDate": "2021-04-23T18:25:43.511"
+      |      }
+      |    }]
+      |}
+      |""".stripMargin)
+
   val etmpPayloadModel: ETMPPayload = ETMPPayload(
     pointsTotal = 1,
     lateSubmissions = 1,
@@ -168,16 +261,59 @@ class ETMPPayloadSpec extends AnyWordSpec with Matchers {
     )
   )
 
+  val etmpPayloadModelWithLPPs = etmpPayloadModel.copy(
+    latePaymentPenalties = Some(
+      Seq(
+        PaymentPoint(
+          `type` = PenaltyTypeEnum.Financial,
+          id = "1234567891",
+          reason = "VAT_NOT_PAID_ON_TIME",
+          dateCreated = sampleDate,
+          status = PointStatusEnum.Active,
+          appealStatus = None,
+          period = PaymentPeriod(
+            startDate = sampleDate,
+            endDate = sampleDate,
+            paymentStatus = PaymentStatusEnum.Paid
+          ),
+          communications = Seq(
+            Communication(
+              `type` = CommunicationTypeEnum.letter,
+              dateSent = sampleDate,
+              documentId = "1234567890"
+            )
+          ),
+          financial = PaymentFinancial(
+            amountDue = 400.00,
+            outstandingAmountDue = 2.00,
+            dueDate = sampleDate
+          )
+        )
+      )
+    )
+  )
+
   "ETMPPayload" should {
     "be writable to JSON" in {
       val result = Json.toJson(etmpPayloadModel)
       result shouldBe etmpPayloadAsJson
     }
 
+    "be writable to JSON when there is a LPP" in {
+      val result = Json.toJson(etmpPayloadModelWithLPPs)
+      result shouldBe etmpPayloadAsJsonWithLPP
+    }
+
     "be readable from JSON" in {
       val result = Json.fromJson(etmpPayloadAsJson)(ETMPPayload.format)
       result.isSuccess shouldBe true
       result.get shouldBe etmpPayloadModel
+    }
+
+    "be readable from JSON when there is a LPP" in {
+      val result = Json.fromJson(etmpPayloadAsJsonWithLPP)(ETMPPayload.format)
+      result.isSuccess shouldBe true
+      result.get shouldBe etmpPayloadModelWithLPPs
     }
   }
 }
