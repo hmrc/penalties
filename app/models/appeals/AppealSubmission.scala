@@ -22,6 +22,9 @@ sealed trait AppealInformation {
   val `type`: String
   val statement: Option[String]
   val lateAppeal: Boolean
+  val lateAppealReason: Option[String]
+  val whoPlannedToSubmit: Option[String]
+  val causeOfLateSubmissionAgent: Option[String]
 }
 
 case class CrimeAppealInformation(
@@ -30,7 +33,9 @@ case class CrimeAppealInformation(
                                    reportedIssue: Boolean,
                                    statement: Option[String],
                                    lateAppeal: Boolean,
-                                   lateAppealReason: Option[String]
+                                   lateAppealReason: Option[String],
+                                   whoPlannedToSubmit: Option[String],
+                                   causeOfLateSubmissionAgent: Option[String]
                                  ) extends AppealInformation
 
 object CrimeAppealInformation {
@@ -54,6 +59,18 @@ object CrimeAppealInformation {
       )(
         lateAppealReason => Json.obj("lateAppealReason" -> lateAppealReason)
       )
+    ).deepMerge(
+      crimeAppealInformation.whoPlannedToSubmit.fold(
+        Json.obj()
+      )(
+        whoPlannedToSubmit => Json.obj("whoPlannedToSubmit" -> whoPlannedToSubmit)
+      )
+    ).deepMerge(
+      crimeAppealInformation.causeOfLateSubmissionAgent.fold(
+        Json.obj()
+      )(
+        causeOfLateSubmissionAgent => Json.obj("causeOfLateSubmissionAgent" -> causeOfLateSubmissionAgent)
+      )
     )
   }
 }
@@ -63,7 +80,9 @@ case class FireOrFloodAppealInformation(
                                          dateOfEvent: String,
                                          statement: Option[String],
                                          lateAppeal: Boolean,
-                                         lateAppealReason: Option[String]
+                                         lateAppealReason: Option[String],
+                                         whoPlannedToSubmit: Option[String],
+                                         causeOfLateSubmissionAgent: Option[String]
                                        ) extends AppealInformation
 
 object FireOrFloodAppealInformation {
@@ -86,6 +105,18 @@ object FireOrFloodAppealInformation {
       )(
         lateAppealReason => Json.obj("lateAppealReason" -> lateAppealReason)
       )
+    ).deepMerge(
+      fireOrFloodAppealInformation.whoPlannedToSubmit.fold(
+        Json.obj()
+      )(
+        whoPlannedToSubmit => Json.obj("whoPlannedToSubmit" -> whoPlannedToSubmit)
+      )
+    ).deepMerge(
+      fireOrFloodAppealInformation.causeOfLateSubmissionAgent.fold(
+        Json.obj()
+      )(
+        causeOfLateSubmissionAgent => Json.obj("causeOfLateSubmissionAgent" -> causeOfLateSubmissionAgent)
+      )
     )
   }
 }
@@ -95,7 +126,9 @@ case class LossOfStaffAppealInformation(
                                          dateOfEvent: String,
                                          statement: Option[String],
                                          lateAppeal: Boolean,
-                                         lateAppealReason: Option[String]
+                                         lateAppealReason: Option[String],
+                                         whoPlannedToSubmit: Option[String],
+                                         causeOfLateSubmissionAgent: Option[String]
                                        ) extends AppealInformation
 
 object LossOfStaffAppealInformation {
@@ -118,6 +151,18 @@ object LossOfStaffAppealInformation {
       )(
         lateAppealReason => Json.obj("lateAppealReason" -> lateAppealReason)
       )
+    ).deepMerge(
+      lossOfStaffAppealInformation.whoPlannedToSubmit.fold(
+        Json.obj()
+      )(
+        whoPlannedToSubmit => Json.obj("whoPlannedToSubmit" -> whoPlannedToSubmit)
+      )
+    ).deepMerge(
+      lossOfStaffAppealInformation.causeOfLateSubmissionAgent.fold(
+        Json.obj()
+      )(
+        causeOfLateSubmissionAgent => Json.obj("causeOfLateSubmissionAgent" -> causeOfLateSubmissionAgent)
+      )
     )
   }
 }
@@ -128,29 +173,43 @@ case class TechnicalIssuesAppealInformation(
                                              endDateOfEvent: String,
                                              statement: Option[String],
                                              lateAppeal: Boolean,
-                                             lateAppealReason: Option[String]
+                                             lateAppealReason: Option[String],
+                                             whoPlannedToSubmit: Option[String],
+                                             causeOfLateSubmissionAgent: Option[String]
                                            ) extends AppealInformation
 
 object TechnicalIssuesAppealInformation {
   implicit val technicalIssuesAppealInformationFormatter: OFormat[TechnicalIssuesAppealInformation] = Json.format[TechnicalIssuesAppealInformation]
 
-  val technicalIssuesAppealWrites: Writes[TechnicalIssuesAppealInformation] = (lossOfStaffAppealInformation: TechnicalIssuesAppealInformation) => {
+  val technicalIssuesAppealWrites: Writes[TechnicalIssuesAppealInformation] = (technicalIssuesAppealInformation: TechnicalIssuesAppealInformation) => {
     Json.obj(
-      "type" -> lossOfStaffAppealInformation.`type`,
-      "startDateOfEvent" -> lossOfStaffAppealInformation.startDateOfEvent,
-      "endDateOfEvent" -> lossOfStaffAppealInformation.endDateOfEvent,
-      "lateAppeal" -> lossOfStaffAppealInformation.lateAppeal
+      "type" -> technicalIssuesAppealInformation.`type`,
+      "startDateOfEvent" -> technicalIssuesAppealInformation.startDateOfEvent,
+      "endDateOfEvent" -> technicalIssuesAppealInformation.endDateOfEvent,
+      "lateAppeal" -> technicalIssuesAppealInformation.lateAppeal
     ).deepMerge(
-      lossOfStaffAppealInformation.statement.fold(
+      technicalIssuesAppealInformation.statement.fold(
         Json.obj()
       )(
         statement => Json.obj("statement" -> statement)
       )
     ).deepMerge(
-      lossOfStaffAppealInformation.lateAppealReason.fold(
+      technicalIssuesAppealInformation.lateAppealReason.fold(
         Json.obj()
       )(
         lateAppealReason => Json.obj("lateAppealReason" -> lateAppealReason)
+      )
+    ).deepMerge(
+      technicalIssuesAppealInformation.whoPlannedToSubmit.fold(
+        Json.obj()
+      )(
+        whoPlannedToSubmit => Json.obj("whoPlannedToSubmit" -> whoPlannedToSubmit)
+      )
+    ).deepMerge(
+      technicalIssuesAppealInformation.causeOfLateSubmissionAgent.fold(
+        Json.obj()
+      )(
+        causeOfLateSubmissionAgent => Json.obj("causeOfLateSubmissionAgent" -> causeOfLateSubmissionAgent)
       )
     )
   }
@@ -165,7 +224,9 @@ case class HealthAppealInformation(
                                     eventOngoing: Boolean,
                                     statement: Option[String],
                                     lateAppeal: Boolean,
-                                    lateAppealReason: Option[String]
+                                    lateAppealReason: Option[String],
+                                    whoPlannedToSubmit: Option[String],
+                                    causeOfLateSubmissionAgent: Option[String]
                                   ) extends AppealInformation
 
 object HealthAppealInformation {
@@ -208,6 +269,18 @@ object HealthAppealInformation {
           )
         }
       }
+    ).deepMerge(
+      healthAppealInformation.whoPlannedToSubmit.fold(
+        Json.obj()
+      )(
+        whoPlannedToSubmit => Json.obj("whoPlannedToSubmit" -> whoPlannedToSubmit)
+      )
+    ).deepMerge(
+      healthAppealInformation.causeOfLateSubmissionAgent.fold(
+        Json.obj()
+      )(
+        causeOfLateSubmissionAgent => Json.obj("causeOfLateSubmissionAgent" -> causeOfLateSubmissionAgent)
+      )
     )
   }
 }
@@ -218,7 +291,9 @@ case class OtherAppealInformation(
                                    statement: Option[String],
                                    supportingEvidence: Option[Evidence],
                                    lateAppeal: Boolean,
-                                   lateAppealReason: Option[String]
+                                   lateAppealReason: Option[String],
+                                   whoPlannedToSubmit: Option[String],
+                                   causeOfLateSubmissionAgent: Option[String]
                                  ) extends AppealInformation
 
 object OtherAppealInformation {
@@ -242,6 +317,18 @@ object OtherAppealInformation {
         Json.obj()
       )(
         evidence => Json.obj("supportingEvidence" -> evidence)
+      )
+    ).deepMerge(
+      otherAppealInformation.whoPlannedToSubmit.fold(
+        Json.obj()
+      )(
+        whoPlannedToSubmit => Json.obj("whoPlannedToSubmit" -> whoPlannedToSubmit)
+      )
+    ).deepMerge(
+      otherAppealInformation.causeOfLateSubmissionAgent.fold(
+        Json.obj()
+      )(
+        causeOfLateSubmissionAgent => Json.obj("causeOfLateSubmissionAgent" -> causeOfLateSubmissionAgent)
       )
     )
   }

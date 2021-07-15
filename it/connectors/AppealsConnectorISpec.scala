@@ -46,7 +46,9 @@ class AppealsConnectorISpec extends IntegrationSpecCommonBase with AppealWiremoc
           reportedIssue = true,
           statement = None,
           lateAppeal = false,
-          lateAppealReason = None
+          lateAppealReason = None,
+          whoPlannedToSubmit = None,
+          causeOfLateSubmissionAgent = None
         )
       )
       val result = await(connector.submitAppeal(modelToSend, "HMRC-MTD-VAT~VRN~123456789"))
@@ -67,7 +69,9 @@ class AppealsConnectorISpec extends IntegrationSpecCommonBase with AppealWiremoc
           reportedIssue = true,
           statement = None,
           lateAppeal = false,
-          lateAppealReason = None
+          lateAppealReason = None,
+          whoPlannedToSubmit = None,
+          causeOfLateSubmissionAgent = None
         )
       )
       val result = await(connector.submitAppeal(modelToSend, "HMRC-MTD-VAT~VRN~123456789"))

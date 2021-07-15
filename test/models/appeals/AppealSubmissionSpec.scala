@@ -33,7 +33,9 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       |            "dateOfEvent": "2021-04-23T18:25:43.511Z",
       |            "reportedIssue": true,
       |            "lateAppeal": true,
-      |            "lateAppealReason": "Reason"
+      |            "lateAppealReason": "Reason",
+      |            "whoPlannedToSubmit": "agent",
+      |            "causeOfLateSubmissionAgent": "client"
       |		}
       |}
       |""".stripMargin)
@@ -49,7 +51,9 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       |						"type": "lossOfStaff",
       |            "dateOfEvent": "2021-04-23T18:25:43.511Z",
       |            "lateAppeal": true,
-      |            "lateAppealReason": "Reason"
+      |            "lateAppealReason": "Reason",
+      |            "whoPlannedToSubmit": "agent",
+      |            "causeOfLateSubmissionAgent": "client"
       |		}
       |}
       |""".stripMargin)
@@ -66,7 +70,9 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       |            "startDateOfEvent": "2021-04-23T18:25:43.511Z",
       |            "endDateOfEvent": "2021-04-24T18:25:43.511Z",
       |            "lateAppeal": true,
-      |            "lateAppealReason": "Reason"
+      |            "lateAppealReason": "Reason",
+      |            "whoPlannedToSubmit": "agent",
+      |            "causeOfLateSubmissionAgent": "client"
       |		}
       |}
       |""".stripMargin)
@@ -91,7 +97,9 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       |   "startDateOfEvent": "2021-04-23T18:25:43.511Z",
       |   "endDateOfEvent": "2021-04-24T18:25:43.511Z",
       |   "lateAppeal": true,
-      |   "lateAppealReason": "Reason"
+      |   "lateAppealReason": "Reason",
+      |   "whoPlannedToSubmit": "agent",
+      |   "causeOfLateSubmissionAgent": "client"
       |}
       |""".stripMargin
   )
@@ -107,7 +115,9 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       |						"type": "fireOrFlood",
       |           "dateOfEvent": "2021-04-23T18:25:43.511Z",
       |           "lateAppeal": true,
-      |           "lateAppealReason": "Reason"
+      |           "lateAppealReason": "Reason",
+      |           "whoPlannedToSubmit": "agent",
+      |           "causeOfLateSubmissionAgent": "client"
       |		}
       |}
       |""".stripMargin)
@@ -124,7 +134,9 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       |           "dateOfEvent": "2021-04-23T18:25:43.511Z",
       |           "hospitalStayInvolved": false,
       |           "eventOngoing": false,
-      |           "lateAppeal": false
+      |           "lateAppeal": false,
+      |           "whoPlannedToSubmit": "agent",
+      |           "causeOfLateSubmissionAgent": "client"
       |    }
       |}
       |""".stripMargin)
@@ -141,7 +153,9 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       |           "startDateOfEvent": "2021-04-23T18:25:43.511Z",
       |           "hospitalStayInvolved": true,
       |           "eventOngoing": true,
-      |           "lateAppeal": false
+      |           "lateAppeal": false,
+      |           "whoPlannedToSubmit": "agent",
+      |           "causeOfLateSubmissionAgent": "client"
       |    }
       |}
       |""".stripMargin)
@@ -159,7 +173,9 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       |           "endDateOfEvent": "2021-04-24T18:25:43.511Z",
       |           "hospitalStayInvolved": true,
       |           "eventOngoing": false,
-      |           "lateAppeal": false
+      |           "lateAppeal": false,
+      |           "whoPlannedToSubmit": "agent",
+      |           "causeOfLateSubmissionAgent": "client"
       |    }
       |}
       |""".stripMargin)
@@ -208,7 +224,9 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       |             "referenceId": "ref1"
       |            },
       |            "lateAppeal": true,
-      |            "lateAppealReason": "Reason"
+      |            "lateAppealReason": "Reason",
+      |            "whoPlannedToSubmit": "agent",
+      |            "causeOfLateSubmissionAgent": "client"
       |		}
       |}
       |""".stripMargin)
@@ -225,7 +243,9 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       |            "dateOfEvent": "2021-04-23T18:25:43.511Z",
       |            "statement": "This is a reason.",
       |            "lateAppeal": true,
-      |            "lateAppealReason": "Reason"
+      |            "lateAppealReason": "Reason",
+      |            "whoPlannedToSubmit": "agent",
+      |            "causeOfLateSubmissionAgent": "client"
       |		}
       |}
       |""".stripMargin)
@@ -251,7 +271,9 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       |   "type": "lossOfStaff",
       |   "dateOfEvent": "2021-04-23T18:25:43.511Z",
       |   "lateAppeal": true,
-      |   "lateAppealReason": "Reason"
+      |   "lateAppealReason": "Reason",
+      |   "whoPlannedToSubmit": "agent",
+      |   "causeOfLateSubmissionAgent": "client"
       |}
       |""".stripMargin
   )
@@ -277,7 +299,9 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       |   "dateOfEvent": "2021-04-23T18:25:43.511Z",
       |   "reportedIssue": true,
       |   "lateAppeal": true,
-      |    "lateAppealReason": "Reason"
+      |   "lateAppealReason": "Reason",
+      |   "whoPlannedToSubmit": "agent",
+      |   "causeOfLateSubmissionAgent": "client"
       |}
       |""".stripMargin
   )
@@ -288,7 +312,9 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       |   "type": "fireOrFlood",
       |   "dateOfEvent": "2021-04-23T18:25:43.511Z",
       |   "lateAppeal": true,
-      |   "lateAppealReason": "Reason"
+      |   "lateAppealReason": "Reason",
+      |   "whoPlannedToSubmit": "agent",
+      |   "causeOfLateSubmissionAgent": "client"
       |}
       |""".stripMargin
   )
@@ -328,7 +354,9 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       |   "endDateOfEvent": "2021-04-24T18:25:43.511Z",
       |   "eventOngoing": false,
       |   "hospitalStayInvolved": true,
-      |   "lateAppeal": false
+      |   "lateAppeal": false,
+      |   "whoPlannedToSubmit": "agent",
+      |   "causeOfLateSubmissionAgent": "client"
       |}
       |""".stripMargin
   )
@@ -340,7 +368,9 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       |   "startDateOfEvent": "2021-04-23T18:25:43.511Z",
       |   "eventOngoing": true,
       |   "hospitalStayInvolved": true,
-      |   "lateAppeal": false
+      |   "lateAppeal": false,
+      |   "whoPlannedToSubmit": "agent",
+      |   "causeOfLateSubmissionAgent": "client"
       |}
       |""".stripMargin
   )
@@ -352,7 +382,9 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       |   "dateOfEvent": "2021-04-23T18:25:43.511Z",
       |   "hospitalStayInvolved": false,
       |   "eventOngoing": false,
-      |   "lateAppeal": false
+      |   "lateAppeal": false,
+      |   "whoPlannedToSubmit": "agent",
+      |   "causeOfLateSubmissionAgent": "client"
       |}
       |""".stripMargin
   )
@@ -367,7 +399,9 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       |     "noOfUploadedFiles": 1,
       |     "referenceId": "ref1"
       |   },
-      |   "lateAppeal": false
+      |   "lateAppeal": false,
+      |   "whoPlannedToSubmit": "agent",
+      |   "causeOfLateSubmissionAgent": "client"
       |}
       |""".stripMargin
   )
@@ -378,7 +412,9 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       |   "type": "other",
       |   "dateOfEvent": "2021-04-23T18:25:43.511Z",
       |   "statement": "This is a statement.",
-      |   "lateAppeal": false
+      |   "lateAppeal": false,
+      |   "whoPlannedToSubmit": "agent",
+      |   "causeOfLateSubmissionAgent": "client"
       |}
       |""".stripMargin
   )
@@ -411,7 +447,9 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           reportedIssue = true,
           statement = None,
           lateAppeal = true,
-          lateAppealReason = Some("Reason")
+          lateAppealReason = Some("Reason"),
+          whoPlannedToSubmit = Some("agent"),
+          causeOfLateSubmissionAgent = Some("client")
         )
       }
 
@@ -430,7 +468,9 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           dateOfEvent = "2021-04-23T18:25:43.511Z",
           statement = None,
           lateAppeal = true,
-          lateAppealReason = Some("Reason")
+          lateAppealReason = Some("Reason"),
+          whoPlannedToSubmit = Some("agent"),
+          causeOfLateSubmissionAgent = Some("client")
         )
       }
 
@@ -450,7 +490,9 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           endDateOfEvent = "2021-04-24T18:25:43.511Z",
           statement = None,
           lateAppeal = true,
-          lateAppealReason = Some("Reason")
+          lateAppealReason = Some("Reason"),
+          whoPlannedToSubmit = Some("agent"),
+          causeOfLateSubmissionAgent = Some("client")
         )
       }
 
@@ -474,7 +516,9 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             hospitalStayInvolved = false,
             statement = None,
             lateAppeal = false,
-            lateAppealReason = None
+            lateAppealReason = None,
+            whoPlannedToSubmit = Some("agent"),
+            causeOfLateSubmissionAgent = Some("client")
           )
         }
 
@@ -490,7 +534,9 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             hospitalStayInvolved = true,
             statement = None,
             lateAppeal = false,
-            lateAppealReason = None
+            lateAppealReason = None,
+            whoPlannedToSubmit = Some("agent"),
+            causeOfLateSubmissionAgent = Some("client")
           )
         }
 
@@ -506,7 +552,9 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             hospitalStayInvolved = true,
             statement = None,
             lateAppeal = false,
-            lateAppealReason = None
+            lateAppealReason = None,
+            whoPlannedToSubmit = Some("agent"),
+            causeOfLateSubmissionAgent = Some("client")
           )
         }
       }
@@ -529,7 +577,9 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           lateAppealReason = None,
           supportingEvidence = Some(Evidence(
             noOfUploadedFiles = 1, referenceId = "ref1"
-          ))
+          )),
+          whoPlannedToSubmit = Some("agent"),
+          causeOfLateSubmissionAgent = Some("client")
         )
       }
 
@@ -542,7 +592,9 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           statement = Some("This is a statement."),
           lateAppeal = false,
           lateAppealReason = None,
-          supportingEvidence = None
+          supportingEvidence = None,
+          whoPlannedToSubmit = Some("agent"),
+          causeOfLateSubmissionAgent = Some("client")
         )
       }
 
@@ -562,7 +614,9 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           reportedIssue = true,
           statement = None,
           lateAppeal = true,
-          lateAppealReason = Some("Reason")
+          lateAppealReason = Some("Reason"),
+          whoPlannedToSubmit = Some("agent"),
+          causeOfLateSubmissionAgent = Some("client")
         )
         val result = AppealSubmission.parseAppealInformationToJson(model)
         result shouldBe crimeAppealInformationJson
@@ -576,7 +630,9 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           dateOfEvent = "2021-04-23T18:25:43.511Z",
           statement = None,
           lateAppeal = true,
-          lateAppealReason = Some("Reason")
+          lateAppealReason = Some("Reason"),
+          whoPlannedToSubmit = Some("agent"),
+          causeOfLateSubmissionAgent = Some("client")
         )
         val result = AppealSubmission.parseAppealInformationToJson(model)
         result shouldBe fireOrFloodAppealInformationJson
@@ -590,7 +646,9 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           dateOfEvent = "2021-04-23T18:25:43.511Z",
           statement = None,
           lateAppeal = true,
-          lateAppealReason = Some("Reason")
+          lateAppealReason = Some("Reason"),
+          whoPlannedToSubmit = Some("agent"),
+          causeOfLateSubmissionAgent = Some("client")
         )
         val result = AppealSubmission.parseAppealInformationToJson(model)
         result shouldBe lossOfStaffAppealInformationJson
@@ -605,7 +663,9 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           endDateOfEvent = "2021-04-24T18:25:43.511Z",
           statement = None,
           lateAppeal = true,
-          lateAppealReason = Some("Reason")
+          lateAppealReason = Some("Reason"),
+          whoPlannedToSubmit = Some("agent"),
+          causeOfLateSubmissionAgent = Some("client")
         )
         val result = AppealSubmission.parseAppealInformationToJson(model)
         result shouldBe technicalIssuesAppealInformationJson
@@ -623,7 +683,9 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           hospitalStayInvolved = true,
           statement = None,
           lateAppeal = false,
-          lateAppealReason = None
+          lateAppealReason = None,
+          whoPlannedToSubmit = Some("agent"),
+          causeOfLateSubmissionAgent = Some("client")
         )
         val result = AppealSubmission.parseAppealInformationToJson(model)
         result shouldBe healthAppealInformationHospitalStayNotOngoingJson
@@ -640,7 +702,9 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           hospitalStayInvolved = true,
           statement = None,
           lateAppeal = false,
-          lateAppealReason = None
+          lateAppealReason = None,
+          whoPlannedToSubmit = Some("agent"),
+          causeOfLateSubmissionAgent = Some("client")
         )
         val result = AppealSubmission.parseAppealInformationToJson(model)
         result shouldBe healthAppealInformationHospitalStayOngoingJson
@@ -657,7 +721,9 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           hospitalStayInvolved = false,
           statement = None,
           lateAppeal = false,
-          lateAppealReason = None
+          lateAppealReason = None,
+          whoPlannedToSubmit = Some("agent"),
+          causeOfLateSubmissionAgent = Some("client")
         )
         val result = AppealSubmission.parseAppealInformationToJson(model)
         result shouldBe healthAppealInformationNoHospitalStayJson
@@ -674,7 +740,9 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             noOfUploadedFiles = 1, referenceId = "ref1"
           )),
           lateAppeal = false,
-          lateAppealReason = None
+          lateAppealReason = None,
+          whoPlannedToSubmit = Some("agent"),
+          causeOfLateSubmissionAgent = Some("client")
         )
         val result = AppealSubmission.parseAppealInformationToJson(model)
         result shouldBe otherAppealInformationJson
@@ -687,7 +755,9 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           statement = Some("This is a statement."),
           supportingEvidence = None,
           lateAppeal = false,
-          lateAppealReason = None
+          lateAppealReason = None,
+          whoPlannedToSubmit = Some("agent"),
+          causeOfLateSubmissionAgent = Some("client")
         )
         val result = AppealSubmission.parseAppealInformationToJson(model)
         result shouldBe otherAppealInformationJsonNoEvidence
@@ -709,7 +779,9 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             reportedIssue = true,
             statement = None,
             lateAppeal = true,
-            lateAppealReason = Some("Reason")
+            lateAppealReason = Some("Reason"),
+            whoPlannedToSubmit = Some("agent"),
+            causeOfLateSubmissionAgent = Some("client")
           )
         )
 
@@ -736,7 +808,9 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             dateOfEvent = "2021-04-23T18:25:43.511Z",
             statement = None,
             lateAppeal = true,
-            lateAppealReason = Some("Reason")
+            lateAppealReason = Some("Reason"),
+            whoPlannedToSubmit = Some("agent"),
+            causeOfLateSubmissionAgent = Some("client")
           )
         )
 
@@ -763,7 +837,9 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             dateOfEvent = "2021-04-23T18:25:43.511Z",
             statement = None,
             lateAppeal = true,
-            lateAppealReason = Some("Reason")
+            lateAppealReason = Some("Reason"),
+            whoPlannedToSubmit = Some("agent"),
+            causeOfLateSubmissionAgent = Some("client")
           )
         )
 
@@ -791,7 +867,9 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             endDateOfEvent = "2021-04-24T18:25:43.511Z",
             statement = None,
             lateAppeal = true,
-            lateAppealReason = Some("Reason")
+            lateAppealReason = Some("Reason"),
+            whoPlannedToSubmit = Some("agent"),
+            causeOfLateSubmissionAgent = Some("client")
           )
         )
 
@@ -822,8 +900,11 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             hospitalStayInvolved = false,
             statement = None,
             lateAppeal = false,
-            lateAppealReason = None
-          ))
+            lateAppealReason = None,
+            whoPlannedToSubmit = Some("agent"),
+            causeOfLateSubmissionAgent = Some("client")
+          )
+        )
         val result = Json.fromJson(healthAppealNoHospitalStayJson)(AppealSubmission.apiReads)
         result.isSuccess shouldBe true
         result.get shouldBe expectedResult
@@ -844,8 +925,11 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             hospitalStayInvolved = true,
             statement = None,
             lateAppeal = false,
-            lateAppealReason = None
-          ))
+            lateAppealReason = None,
+            whoPlannedToSubmit = Some("agent"),
+            causeOfLateSubmissionAgent = Some("client")
+          )
+        )
         val result = Json.fromJson(healthAppealHospitalStayOngoingJson)(AppealSubmission.apiReads)
         result.isSuccess shouldBe true
         result.get shouldBe expectedResult
@@ -866,8 +950,11 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             hospitalStayInvolved = true,
             statement = None,
             lateAppeal = false,
-            lateAppealReason = None
-          ))
+            lateAppealReason = None,
+            whoPlannedToSubmit = Some("agent"),
+            causeOfLateSubmissionAgent = Some("client")
+          )
+        )
         val result = Json.fromJson(healthAppealHospitalStayEndedJson)(AppealSubmission.apiReads)
         result.isSuccess shouldBe true
         result.get shouldBe expectedResult
@@ -889,7 +976,9 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
               noOfUploadedFiles = 1, referenceId = "ref1"
             )),
             lateAppeal = true,
-            lateAppealReason = Some("Reason")
+            lateAppealReason = Some("Reason"),
+            whoPlannedToSubmit = Some("agent"),
+            causeOfLateSubmissionAgent = Some("client")
           )
         )
 
@@ -910,7 +999,9 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             statement = Some("This is a reason."),
             supportingEvidence = None,
             lateAppeal = true,
-            lateAppealReason = Some("Reason")
+            lateAppealReason = Some("Reason"),
+            whoPlannedToSubmit = Some("agent"),
+            causeOfLateSubmissionAgent = Some("client")
           )
         )
 
@@ -940,7 +1031,9 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             reportedIssue = true,
             statement = None,
             lateAppeal = true,
-            lateAppealReason = Some("Reason")
+            lateAppealReason = Some("Reason"),
+            whoPlannedToSubmit = Some("agent"),
+            causeOfLateSubmissionAgent = Some("client")
           )
         )
         val jsonRepresentingModel: JsValue = Json.obj(
@@ -953,7 +1046,9 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             "dateOfEvent" -> "2021-04-23T18:25:43.511Z",
             "reportedIssue" -> true,
             "lateAppeal" -> true,
-            "lateAppealReason" -> "Reason"
+            "lateAppealReason" -> "Reason",
+            "whoPlannedToSubmit" -> "agent",
+            "causeOfLateSubmissionAgent" -> "client"
           )
         )
 
@@ -974,7 +1069,9 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             dateOfEvent = "2021-04-23T18:25:43.511Z",
             statement = None,
             lateAppeal = true,
-            lateAppealReason = Some("Reason")
+            lateAppealReason = Some("Reason"),
+            whoPlannedToSubmit = Some("agent"),
+            causeOfLateSubmissionAgent = Some("client")
           )
         )
 
@@ -987,7 +1084,9 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             "type" -> "fireOrFlood",
             "dateOfEvent" -> "2021-04-23T18:25:43.511Z",
             "lateAppeal" -> true,
-            "lateAppealReason" -> "Reason"
+            "lateAppealReason" -> "Reason",
+            "whoPlannedToSubmit" -> "agent",
+            "causeOfLateSubmissionAgent" -> "client"
           )
         )
 
@@ -1008,7 +1107,9 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             dateOfEvent = "2021-04-23T18:25:43.511Z",
             statement = None,
             lateAppeal = true,
-            lateAppealReason = Some("Reason")
+            lateAppealReason = Some("Reason"),
+            whoPlannedToSubmit = Some("agent"),
+            causeOfLateSubmissionAgent = Some("client")
           )
         )
         val jsonRepresentingModel: JsValue = Json.obj(
@@ -1020,7 +1121,9 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             "type" -> "lossOfStaff",
             "dateOfEvent" -> "2021-04-23T18:25:43.511Z",
             "lateAppeal" -> true,
-            "lateAppealReason" -> "Reason"
+            "lateAppealReason" -> "Reason",
+            "whoPlannedToSubmit" -> "agent",
+            "causeOfLateSubmissionAgent" -> "client"
           )
         )
 
@@ -1046,7 +1149,9 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
               dateOfEvent = None,
               statement = None,
               lateAppeal = true,
-              lateAppealReason = Some("Reason")
+              lateAppealReason = Some("Reason"),
+              whoPlannedToSubmit = Some("agent"),
+              causeOfLateSubmissionAgent = Some("client")
             )
           )
           val jsonRepresentingModel: JsValue = Json.obj(
@@ -1061,7 +1166,9 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
               "eventOngoing" -> false,
               "hospitalStayInvolved" -> true,
               "lateAppeal" -> true,
-              "lateAppealReason" -> "Reason"
+              "lateAppealReason" -> "Reason",
+              "whoPlannedToSubmit" -> "agent",
+              "causeOfLateSubmissionAgent" -> "client"
             )
           )
           val result = Json.toJson(modelToConvertToJson)(AppealSubmission.apiWrites)
@@ -1083,7 +1190,9 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
               dateOfEvent = None,
               statement = None,
               lateAppeal = true,
-              lateAppealReason = Some("Reason")
+              lateAppealReason = Some("Reason"),
+              whoPlannedToSubmit = Some("agent"),
+              causeOfLateSubmissionAgent = Some("client")
             )
           )
           val jsonRepresentingModel: JsValue = Json.obj(
@@ -1097,7 +1206,9 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
               "eventOngoing" -> true,
               "hospitalStayInvolved" -> true,
               "lateAppeal" -> true,
-              "lateAppealReason" -> "Reason"
+              "lateAppealReason" -> "Reason",
+              "whoPlannedToSubmit" -> "agent",
+              "causeOfLateSubmissionAgent" -> "client"
             )
           )
           val result = Json.toJson(modelToConvertToJson)(AppealSubmission.apiWrites)
@@ -1120,7 +1231,9 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
               dateOfEvent = Some("2021-04-23T18:25:43.511Z"),
               statement = None,
               lateAppeal = true,
-              lateAppealReason = Some("Reason")
+              lateAppealReason = Some("Reason"),
+              whoPlannedToSubmit = Some("agent"),
+              causeOfLateSubmissionAgent = Some("client")
             )
           )
           val jsonRepresentingModel: JsValue = Json.obj(
@@ -1134,7 +1247,9 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
               "eventOngoing" -> false,
               "hospitalStayInvolved" -> false,
               "lateAppeal" -> true,
-              "lateAppealReason" -> "Reason"
+              "lateAppealReason" -> "Reason",
+              "whoPlannedToSubmit" -> "agent",
+              "causeOfLateSubmissionAgent" -> "client"
             )
           )
           val result = Json.toJson(modelToConvertToJson)(AppealSubmission.apiWrites)
@@ -1156,7 +1271,9 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             endDateOfEvent = "2021-04-24T18:25:43.511Z",
             statement = None,
             lateAppeal = false,
-            lateAppealReason = None
+            lateAppealReason = None,
+            whoPlannedToSubmit = Some("agent"),
+            causeOfLateSubmissionAgent = Some("client")
           )
         )
 
@@ -1169,7 +1286,9 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             "type" -> "technicalIssues",
             "startDateOfEvent" -> "2021-04-23T18:25:43.511Z",
             "endDateOfEvent" -> "2021-04-24T18:25:43.511Z",
-            "lateAppeal" -> false
+            "lateAppeal" -> false,
+            "whoPlannedToSubmit" -> "agent",
+            "causeOfLateSubmissionAgent" -> "client"
           )
         )
 
@@ -1194,7 +1313,9 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
               referenceId = "ref1"
             )),
             lateAppeal = false,
-            lateAppealReason = None
+            lateAppealReason = None,
+            whoPlannedToSubmit = Some("agent"),
+            causeOfLateSubmissionAgent = Some("client")
           )
         )
 
@@ -1211,7 +1332,9 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
               "noOfUploadedFiles" -> 1,
               "referenceId" -> "ref1"
             ),
-            "lateAppeal" -> false
+            "lateAppeal" -> false,
+            "whoPlannedToSubmit" -> "agent",
+            "causeOfLateSubmissionAgent" -> "client"
           )
         )
 
@@ -1231,7 +1354,9 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             statement = Some("This was the reason"),
             supportingEvidence = None,
             lateAppeal = false,
-            lateAppealReason = None
+            lateAppealReason = None,
+            whoPlannedToSubmit = Some("agent"),
+            causeOfLateSubmissionAgent = Some("client")
           )
         )
 
@@ -1244,7 +1369,9 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             "type" -> "other",
             "dateOfEvent" -> "2021-04-23T18:25:43.511Z",
             "statement" -> "This was the reason",
-            "lateAppeal" -> false
+            "lateAppeal" -> false,
+            "whoPlannedToSubmit" -> "agent",
+            "causeOfLateSubmissionAgent" -> "client"
           )
         )
 
@@ -1267,7 +1394,9 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
               referenceId = "ref1"
             )),
             lateAppeal = true,
-            lateAppealReason = Some("Late reason")
+            lateAppealReason = Some("Late reason"),
+            whoPlannedToSubmit = Some("agent"),
+            causeOfLateSubmissionAgent = Some("client")
           )
         )
 
@@ -1285,7 +1414,9 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
               "referenceId" -> "ref1"
             ),
             "lateAppeal" -> true,
-            "lateAppealReason" -> "Late reason"
+            "lateAppealReason" -> "Late reason",
+            "whoPlannedToSubmit" -> "agent",
+            "causeOfLateSubmissionAgent" -> "client"
           )
         )
 
@@ -1305,14 +1436,18 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           reportedIssue = true,
           statement = None,
           lateAppeal = false,
-          lateAppealReason = None
+          lateAppealReason = None,
+          whoPlannedToSubmit = Some("agent"),
+          causeOfLateSubmissionAgent = Some("client")
         )
         val result = Json.toJson(model)(CrimeAppealInformation.crimeAppealWrites)
         result shouldBe Json.obj(
           "type" -> "crime",
           "dateOfEvent" -> "2021-04-23T18:25:43.511Z",
           "reportedIssue" -> true,
-          "lateAppeal" -> false
+          "lateAppeal" -> false,
+          "whoPlannedToSubmit" -> "agent",
+          "causeOfLateSubmissionAgent" -> "client"
         )
       }
     }
@@ -1326,13 +1461,17 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           dateOfEvent = "2021-04-23T18:25:43.511Z",
           statement = None,
           lateAppeal = false,
-          lateAppealReason = None
+          lateAppealReason = None,
+          whoPlannedToSubmit = Some("agent"),
+          causeOfLateSubmissionAgent = Some("client")
         )
         val result = Json.toJson(model)(LossOfStaffAppealInformation.lossOfStaffAppealWrites)
         result shouldBe Json.obj(
           "type" -> "lossOfStaff",
           "dateOfEvent" -> "2021-04-23T18:25:43.511Z",
-          "lateAppeal" -> false
+          "lateAppeal" -> false,
+          "whoPlannedToSubmit" -> "agent",
+          "causeOfLateSubmissionAgent" -> "client"
         )
       }
     }
@@ -1346,13 +1485,17 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           dateOfEvent = "2021-04-23T18:25:43.511Z",
           statement = None,
           lateAppeal = false,
-          lateAppealReason = None
+          lateAppealReason = None,
+          whoPlannedToSubmit = Some("agent"),
+          causeOfLateSubmissionAgent = Some("client")
         )
         val result = Json.toJson(model)(FireOrFloodAppealInformation.fireOrFloodAppealWrites)
         result shouldBe Json.obj(
           "type" -> "fireOrFlood",
           "dateOfEvent" -> "2021-04-23T18:25:43.511Z",
-          "lateAppeal" -> false
+          "lateAppeal" -> false,
+          "whoPlannedToSubmit" -> "agent",
+          "causeOfLateSubmissionAgent" -> "client"
         )
       }
     }
@@ -1367,7 +1510,9 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           endDateOfEvent = "2021-04-24T18:25:43.511Z",
           statement = None,
           lateAppeal = true,
-          lateAppealReason = Some("Reason")
+          lateAppealReason = Some("Reason"),
+          whoPlannedToSubmit = Some("agent"),
+          causeOfLateSubmissionAgent = Some("client")
         )
         val result = Json.toJson(model)(TechnicalIssuesAppealInformation.technicalIssuesAppealWrites)
         result shouldBe Json.obj(
@@ -1375,7 +1520,9 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           "startDateOfEvent" -> "2021-04-23T18:25:43.511Z",
           "endDateOfEvent" -> "2021-04-24T18:25:43.511Z",
           "lateAppeal" -> true,
-          "lateAppealReason" -> "Reason"
+          "lateAppealReason" -> "Reason",
+          "whoPlannedToSubmit" -> "agent",
+          "causeOfLateSubmissionAgent" -> "client"
         )
       }
     }
@@ -1394,7 +1541,9 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             dateOfEvent = None,
             statement = None,
             lateAppeal = true,
-            lateAppealReason = Some("Reason")
+            lateAppealReason = Some("Reason"),
+            whoPlannedToSubmit = Some("agent"),
+            causeOfLateSubmissionAgent = Some("client")
           )
           val result = Json.toJson(model)(HealthAppealInformation.healthAppealWrites)
           result shouldBe Json.obj(
@@ -1404,7 +1553,9 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             "eventOngoing" -> false,
             "hospitalStayInvolved" -> true,
             "lateAppeal" -> true,
-            "lateAppealReason" -> "Reason"
+            "lateAppealReason" -> "Reason",
+            "whoPlannedToSubmit" -> "agent",
+            "causeOfLateSubmissionAgent" -> "client"
           )
         }
 
@@ -1418,7 +1569,9 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             dateOfEvent = None,
             statement = None,
             lateAppeal = true,
-            lateAppealReason = Some("Reason")
+            lateAppealReason = Some("Reason"),
+            whoPlannedToSubmit = Some("agent"),
+            causeOfLateSubmissionAgent = Some("client")
           )
           val result = Json.toJson(model)(HealthAppealInformation.healthAppealWrites)
           result shouldBe Json.obj(
@@ -1427,7 +1580,9 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             "eventOngoing" -> true,
             "hospitalStayInvolved" -> true,
             "lateAppeal" -> true,
-            "lateAppealReason" -> "Reason"
+            "lateAppealReason" -> "Reason",
+            "whoPlannedToSubmit" -> "agent",
+            "causeOfLateSubmissionAgent" -> "client"
           )
         }
 
@@ -1442,7 +1597,9 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             dateOfEvent = Some("2021-04-23T18:25:43.511Z"),
             statement = None,
             lateAppeal = true,
-            lateAppealReason = Some("Reason")
+            lateAppealReason = Some("Reason"),
+            whoPlannedToSubmit = Some("agent"),
+            causeOfLateSubmissionAgent = Some("client")
           )
           val result = Json.toJson(model)(HealthAppealInformation.healthAppealWrites)
           result shouldBe Json.obj(
@@ -1451,7 +1608,9 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             "eventOngoing" -> false,
             "hospitalStayInvolved" -> false,
             "lateAppeal" -> true,
-            "lateAppealReason" -> "Reason"
+            "lateAppealReason" -> "Reason",
+            "whoPlannedToSubmit" -> "agent",
+            "causeOfLateSubmissionAgent" -> "client"
           )
         }
       }
@@ -1467,7 +1626,9 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           statement = Some("I was late. Sorry."),
           supportingEvidence = Some(Evidence(1, "reference-3000")),
           lateAppeal = false,
-          lateAppealReason = None
+          lateAppealReason = None,
+          whoPlannedToSubmit = Some("agent"),
+          causeOfLateSubmissionAgent = Some("client")
         )
         val expectedResult = Json.parse(
           """
@@ -1479,7 +1640,9 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             |   "noOfUploadedFiles": 1,
             |   "referenceId": "reference-3000"
             | },
-            | "lateAppeal": false
+            | "lateAppeal": false,
+            | "whoPlannedToSubmit": "agent",
+            | "causeOfLateSubmissionAgent": "client"
             |}
             |""".stripMargin)
         val result = Json.toJson(modelToConvertToJson)
@@ -1493,7 +1656,9 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           statement = Some("I was late. Sorry."),
           supportingEvidence = Some(Evidence(1, "reference-3000")),
           lateAppeal = true,
-          lateAppealReason = Some("This is a reason")
+          lateAppealReason = Some("This is a reason"),
+          whoPlannedToSubmit = Some("agent"),
+          causeOfLateSubmissionAgent = Some("client")
         )
         val expectedResult = Json.parse(
           """
@@ -1506,7 +1671,9 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             |   "referenceId": "reference-3000"
             | },
             | "lateAppeal": true,
-            | "lateAppealReason": "This is a reason"
+            | "lateAppealReason": "This is a reason",
+            | "whoPlannedToSubmit": "agent",
+            | "causeOfLateSubmissionAgent": "client"
             |}
             |""".stripMargin)
         val result = Json.toJson(modelToConvertToJson)
@@ -1520,7 +1687,9 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           statement = Some("I was late. Sorry."),
           supportingEvidence = None,
           lateAppeal = false,
-          lateAppealReason = None
+          lateAppealReason = None,
+          whoPlannedToSubmit = Some("agent"),
+          causeOfLateSubmissionAgent = Some("client")
         )
         val expectedResult = Json.parse(
           """
@@ -1528,7 +1697,9 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             | "type": "other",
             | "dateOfEvent": "2022-01-01T13:00:00.000Z",
             | "statement": "I was late. Sorry.",
-            | "lateAppeal": false
+            | "lateAppeal": false,
+            | "whoPlannedToSubmit": "agent",
+            | "causeOfLateSubmissionAgent": "client"
             |}
             |""".stripMargin)
         val result = Json.toJson(modelToConvertToJson)
