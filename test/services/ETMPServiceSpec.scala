@@ -105,7 +105,9 @@ class ETMPServiceSpec extends SpecBase {
         reportedIssue = true,
         statement = None,
         lateAppeal = false,
-        lateAppealReason = None
+        lateAppealReason = None,
+        whoPlannedToSubmit = None,
+        causeOfLateSubmissionAgent = None
       )
     )
     "return the response from the connector i.e. act as a pass-through function" in new Setup {
