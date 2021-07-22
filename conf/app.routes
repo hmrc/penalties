@@ -4,6 +4,7 @@ GET        /etmp/penalties/:enrolmentKey                controllers.ETMPControll
 
 # Appeals
 GET        /appeals-data/late-submissions               controllers.AppealsController.getAppealsDataForLateSubmissionPenalty(penaltyId: String, enrolmentKey: String)
+GET        /appeals-data/late-payments                  controllers.AppealsController.getAppealsDataForLatePaymentPenalty(penaltyId: String, enrolmentKey: String)
 GET        /appeals-data/reasonable-excuses             controllers.AppealsController.getReasonableExcuses
 POST       /appeals/submit-appeal                       controllers.AppealsController.submitAppeal(enrolmentKey: String)
 

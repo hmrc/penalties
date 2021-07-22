@@ -168,6 +168,7 @@ trait IntegrationSpecCommonBase extends AnyWordSpec with Matchers with GuiceOneS
       period = PaymentPeriod(
         startDate = sampleDate,
         endDate = sampleDate,
+        dueDate = sampleDate,
         paymentStatus = PaymentStatusEnum.Paid
       ),
       communications = Seq(

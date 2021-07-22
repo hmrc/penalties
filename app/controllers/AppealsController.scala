@@ -26,6 +26,7 @@ import utils.Logger.logger
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, ControllerComponents, Result}
 import services.ETMPService
+import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
 import javax.inject.Inject
@@ -36,22 +37,32 @@ class AppealsController @Inject()(appConfig: AppConfig,
                                   cc: ControllerComponents)(implicit ec: ExecutionContext)
   extends BackendController(cc) {
 
+  private def getAppealDataForPenalty(penaltyId: String, enrolmentKey: String, penaltyType: AppealTypeEnum.Value)(implicit hc: HeaderCarrier): Future[Result] = {
+    etmpService.getPenaltyDataFromETMPForEnrolment(enrolmentKey).map {
+      result => {
+        result._1.fold {
+          result._2 match {
+            case Left(GetETMPPayloadNoContent) => NotFound(s"Could not retrieve ETMP penalty data for $enrolmentKey")
+            case Left(_) => InternalServerError("Something went wrong.")
+          }
+        }(
+          etmpData => {
+            checkAndReturnResponseForPenaltyData(etmpData, penaltyId, enrolmentKey, penaltyType)
+          }
+        )
+      }
+    }
+  }
+
   def getAppealsDataForLateSubmissionPenalty(penaltyId: String, enrolmentKey: String): Action[AnyContent] = Action.async {
     implicit request => {
-      etmpService.getPenaltyDataFromETMPForEnrolment(enrolmentKey).map {
-        result => {
-          result._1.fold {
-            result._2 match {
-              case Left(GetETMPPayloadNoContent) => NotFound(s"Could not retrieve ETMP penalty data for $enrolmentKey")
-              case Left(_) => InternalServerError("Something went wrong.")
-            }
-          }(
-            etmpData => {
-              checkAndReturnResponseForPenaltyData(etmpData, penaltyId, enrolmentKey, Late_Submission)
-            }
-          )
-        }
-      }
+      getAppealDataForPenalty(penaltyId, enrolmentKey, Late_Submission)
+    }
+  }
+
+  def getAppealsDataForLatePaymentPenalty(penaltyId: String, enrolmentKey: String): Action[AnyContent] = Action.async {
+    implicit request => {
+      getAppealDataForPenalty(penaltyId, enrolmentKey, Late_Payment)
     }
   }
 
@@ -59,14 +70,25 @@ class AppealsController @Inject()(appConfig: AppConfig,
                                                    penaltyIdToCheck: String,
                                                    enrolmentKey: String,
                                                    appealType: AppealTypeEnum.Value): Result = {
-    val isPenaltyIdInETMPPayload: Boolean = etmpData.penaltyPoints.exists(_.id == penaltyIdToCheck)
-    if (isPenaltyIdInETMPPayload) {
-      logger.debug(s"[AppealsController][getAppealsData] Penalty ID: $penaltyIdToCheck for enrolment key: $enrolmentKey found in ETMP.")
+    val isLSPPenaltyIdInETMPPayload: Boolean = etmpData.penaltyPoints.exists(_.id == penaltyIdToCheck)
+    val isLPPPenaltyIdInETMPPayload: Boolean = etmpData.latePaymentPenalties.exists(_.exists(_.id == penaltyIdToCheck))
+    if (appealType == AppealTypeEnum.Late_Submission && isLSPPenaltyIdInETMPPayload) {
+      logger.debug(s"[AppealsController][getAppealsData] Penalty ID: $penaltyIdToCheck for enrolment key: $enrolmentKey found in ETMP for $appealType.")
       val penaltyBasedOnId = etmpData.penaltyPoints.find(_.id == penaltyIdToCheck).get
       val dataToReturn: AppealData = AppealData(`type` = appealType,
         startDate = penaltyBasedOnId.period.get.startDate,
         endDate = penaltyBasedOnId.period.get.endDate,
         dueDate = penaltyBasedOnId.period.get.submission.dueDate,
+        dateCommunicationSent = penaltyBasedOnId.communications.head.dateSent
+      )
+      Ok(Json.toJson(dataToReturn))
+    } else if(appealType == AppealTypeEnum.Late_Payment && isLPPPenaltyIdInETMPPayload) {
+      logger.debug(s"[AppealsController][getAppealsData] Penalty ID: $penaltyIdToCheck for enrolment key: $enrolmentKey found in ETMP for $appealType.")
+      val penaltyBasedOnId = etmpData.latePaymentPenalties.get.find(_.id == penaltyIdToCheck).get
+      val dataToReturn: AppealData = AppealData(`type` = appealType,
+        startDate = penaltyBasedOnId.period.startDate,
+        endDate = penaltyBasedOnId.period.endDate,
+        dueDate = penaltyBasedOnId.period.dueDate,
         dateCommunicationSent = penaltyBasedOnId.communications.head.dateSent
       )
       Ok(Json.toJson(dataToReturn))

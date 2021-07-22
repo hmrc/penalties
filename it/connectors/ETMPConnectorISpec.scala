@@ -108,6 +108,7 @@ class ETMPConnectorISpec extends IntegrationSpecCommonBase with ETMPWiremock wit
       |      "period": {
       |        "startDate": "2021-04-23T18:25:43.511",
       |        "endDate": "2021-04-23T18:25:43.511",
+      |        "dueDate": "2021-04-23T18:25:43.511",
       |		     "paymentStatus": "PAID"
       |      },
       |      "communications": [
