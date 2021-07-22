@@ -27,6 +27,51 @@ sealed trait AppealInformation {
   val causeOfLateSubmissionAgent: Option[String]
 }
 
+case class BereavementAppealInformation(
+                                         `type`: String,
+                                          dateOfEvent: String,
+                                          statement: Option[String],
+                                          lateAppeal: Boolean,
+                                          lateAppealReason: Option[String],
+                                          whoPlannedToSubmit: Option[String],
+                                          causeOfLateSubmissionAgent: Option[String]
+                                       ) extends AppealInformation
+object BereavementAppealInformation {
+  implicit val bereavementAppealInformationFormatter: OFormat[BereavementAppealInformation] = Json.format[BereavementAppealInformation]
+
+  val bereavementAppealWrites: Writes[BereavementAppealInformation] = (bereavementAppealInformation: BereavementAppealInformation) => {
+    Json.obj(
+      "type" -> bereavementAppealInformation.`type`,
+      "dateOfEvent" -> bereavementAppealInformation.dateOfEvent,
+      "lateAppeal" -> bereavementAppealInformation.lateAppeal
+    ).deepMerge(
+      bereavementAppealInformation.statement.fold(
+        Json.obj()
+      )(
+        statement => Json.obj("statement" -> statement)
+      )
+    ).deepMerge(
+      bereavementAppealInformation.lateAppealReason.fold(
+        Json.obj()
+      )(
+        lateAppealReason => Json.obj("lateAppealReason" -> lateAppealReason)
+      )
+    ).deepMerge(
+      bereavementAppealInformation.whoPlannedToSubmit.fold(
+        Json.obj()
+      )(
+        whoPlannedToSubmit => Json.obj("whoPlannedToSubmit" -> whoPlannedToSubmit)
+      )
+    ).deepMerge(
+      bereavementAppealInformation.causeOfLateSubmissionAgent.fold(
+        Json.obj()
+      )(
+        causeOfLateSubmissionAgent => Json.obj("causeOfLateSubmissionAgent" -> causeOfLateSubmissionAgent)
+      )
+    )
+  }
+}
+
 case class CrimeAppealInformation(
                                    `type`: String,
                                    dateOfEvent: String,
@@ -348,6 +393,9 @@ object AppealSubmission {
       case "crime" => {
         Json.fromJson(payload)(CrimeAppealInformation.crimeAppealInformationFormatter)
       }
+      case "bereavement" => {
+        Json.fromJson(payload)(BereavementAppealInformation.bereavementAppealInformationFormatter)
+      }
       case "fireOrFlood" => {
         Json.fromJson(payload)(FireOrFloodAppealInformation.fireOrFloodAppealInformationFormatter)
       }
@@ -370,6 +418,9 @@ object AppealSubmission {
     payload.`type` match {
       case "crime" => {
         Json.toJson(payload.asInstanceOf[CrimeAppealInformation])(CrimeAppealInformation.crimeAppealWrites)
+      }
+      case "bereavement" => {
+        Json.toJson(payload.asInstanceOf[BereavementAppealInformation])(BereavementAppealInformation.bereavementAppealWrites)
       }
       case "fireOrFlood" => {
         Json.toJson(payload.asInstanceOf[FireOrFloodAppealInformation])(FireOrFloodAppealInformation.fireOrFloodAppealWrites)

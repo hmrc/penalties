@@ -21,6 +21,25 @@ import org.scalatest.wordspec.AnyWordSpec
 import play.api.libs.json.{JsValue, Json}
 
 class AppealSubmissionSpec extends AnyWordSpec with Matchers {
+  val bereavementAppealJson: JsValue = Json.parse(
+    """
+      |{
+      |   "submittedBy": "client",
+      |   "penaltyId": "123456789",
+      |   "reasonableExcuse": "bereavement",
+      |   "honestyDeclaration": true,
+      |   "appealInformation": {
+      |             "type": "bereavement",
+      |             "dateOfEvent": "2021-04-23T18:25:43.511Z",
+      |             "lateAppeal": true,
+      |             "lateAppealReason": "Reason",
+      |             "whoPlannedToSubmit": "agent",
+      |             "causeOfLateSubmissionAgent": "client"
+      |   }
+      |}
+      |""".stripMargin
+  )
+
   val crimeAppealJson: JsValue = Json.parse(
     """
       |{
@@ -180,6 +199,19 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       |}
       |""".stripMargin)
 
+  val bereavementAppealJsonWithKeyMissing: JsValue = Json.parse(
+    """
+      |{
+      |    "submittedBy": "client",
+      |    "penaltyId": "123456789",
+      |    "reasonableExcuse": "bereavement",
+      |    "appealInformation": {
+      |           "type": "bereavement",
+      |           "dateOfEvent": "2021-04-23T18:25:43.511Z"
+      |    }
+      |}
+      |""".stripMargin
+  )
 
   val crimeAppealJsonWithKeyMissing: JsValue = Json.parse(
     """
@@ -292,6 +324,19 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       |""".stripMargin
   )
 
+  val bereavementAppealInformationJson: JsValue = Json.parse(
+    """
+      |{
+      |   "type": "bereavement",
+      |   "dateOfEvent": "2021-04-23T18:25:43.511Z",
+      |   "lateAppeal": true,
+      |   "lateAppealReason": "Reason",
+      |   "whoPlannedToSubmit": "agent",
+      |   "causeOfLateSubmissionAgent": "client"
+      |}
+      |""".stripMargin
+  )
+
   val crimeAppealInformationJson: JsValue = Json.parse(
     """
       |{
@@ -315,6 +360,15 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       |   "lateAppealReason": "Reason",
       |   "whoPlannedToSubmit": "agent",
       |   "causeOfLateSubmissionAgent": "client"
+      |}
+      |""".stripMargin
+  )
+
+  val invalidBereavementAppealInformationJson: JsValue = Json.parse(
+    """
+      |{
+      |    "dateOfEvent": "2021-04-23T18:25:43.511Z",
+      |    "lateAppeal": true
       |}
       |""".stripMargin
   )
@@ -437,6 +491,26 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       |""".stripMargin)
 
   "parseAppealInformationFromJson" should {
+    "for bereavement" must {
+      "parse the appeal information object into the relevant appeal information case class" in {
+        val result = AppealSubmission.parseAppealInformationFromJson("bereavement", bereavementAppealInformationJson)
+        result.isSuccess shouldBe true
+        result.get shouldBe BereavementAppealInformation(
+          `type` = "bereavement",
+          dateOfEvent = "2021-04-23T18:25:43.511Z",
+          statement = None,
+          lateAppeal = true,
+          lateAppealReason = Some("Reason"),
+          whoPlannedToSubmit = Some("agent"),
+          causeOfLateSubmissionAgent = Some("client")
+        )
+      }
+
+      "return a JsError when the appeal information payload is incorrect" in {
+        val result = AppealSubmission.parseAppealInformationFromJson("bereavement", invalidBereavementAppealInformationJson)
+        result.isSuccess shouldBe false
+      }
+    }
     "for crime" must {
       "parse the appeal information object into the relevant appeal information case class" in {
         val result = AppealSubmission.parseAppealInformationFromJson("crime", crimeAppealInformationJson)
