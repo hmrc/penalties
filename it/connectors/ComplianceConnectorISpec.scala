@@ -18,13 +18,12 @@ package connectors
 
 import java.time.LocalDateTime
 
-import connectors.parsers.ComplianceParser.{CompliancePayloadResponse, GetCompliancePayloadFailureResponse, GetCompliancePayloadMalformed, GetCompliancePayloadNoContent, GetCompliancePayloadSuccessResponse}
+import connectors.parsers.ComplianceParser.{CompliancePayloadResponse, GetCompliancePayloadFailureResponse, GetCompliancePayloadNoContent, GetCompliancePayloadSuccessResponse}
 import featureSwitches.{CallETMP, FeatureSwitching}
 import play.api.http.Status
 import play.api.test.Helpers._
 import utils.{ComplianceWiremock, IntegrationSpecCommonBase}
 
-import java.time.LocalDateTime
 import scala.concurrent.ExecutionContext
 
 class ComplianceConnectorISpec extends IntegrationSpecCommonBase with ComplianceWiremock with FeatureSwitching {

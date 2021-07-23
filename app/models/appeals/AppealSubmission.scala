@@ -390,11 +390,11 @@ case class AppealSubmission(
 object AppealSubmission {
   def parseAppealInformationFromJson(reason: String, payload: JsValue): JsResult[AppealInformation] = {
     reason match {
-      case "crime" => {
-        Json.fromJson(payload)(CrimeAppealInformation.crimeAppealInformationFormatter)
-      }
       case "bereavement" => {
         Json.fromJson(payload)(BereavementAppealInformation.bereavementAppealInformationFormatter)
+      }
+      case "crime" => {
+          Json.fromJson(payload)(CrimeAppealInformation.crimeAppealInformationFormatter)
       }
       case "fireOrFlood" => {
         Json.fromJson(payload)(FireOrFloodAppealInformation.fireOrFloodAppealInformationFormatter)
@@ -416,11 +416,11 @@ object AppealSubmission {
 
   def parseAppealInformationToJson(payload: AppealInformation): JsValue = {
     payload.`type` match {
-      case "crime" => {
-        Json.toJson(payload.asInstanceOf[CrimeAppealInformation])(CrimeAppealInformation.crimeAppealWrites)
-      }
       case "bereavement" => {
         Json.toJson(payload.asInstanceOf[BereavementAppealInformation])(BereavementAppealInformation.bereavementAppealWrites)
+      }
+      case "crime" => {
+          Json.toJson(payload.asInstanceOf[CrimeAppealInformation])(CrimeAppealInformation.crimeAppealWrites)
       }
       case "fireOrFlood" => {
         Json.toJson(payload.asInstanceOf[FireOrFloodAppealInformation])(FireOrFloodAppealInformation.fireOrFloodAppealWrites)

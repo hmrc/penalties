@@ -100,6 +100,25 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
   }
 
   "submitAppeal" should {
+    "call the connector and send the appeal data received in the request body - returns OK when successful for bereavement" in {
+      mockResponseForAppealSubmissionStub(OK, "HMRC-MTD-VAT~VRN~123456789")
+      val jsonToSubmit: JsValue = Json.parse(
+        """
+          |{
+          |    "submittedBy": "client",
+          |    "penaltyId": "1234567890",
+          |    "reasonableExcuse": "bereavement",
+          |    "honestyDeclaration": true,
+          |    "appealInformation": {
+          |						"type": "crime",
+          |           "dateOfEvent": "2021-04-23T18:25:43.511Z",
+          |						"statement": "This is a statement",
+          |           "lateAppeal": false
+          |		}
+          |}
+          |""".stripMargin
+      )
+    }
     "call the connector and send the appeal data received in the request body - returns OK when successful for crime" in {
       mockResponseForAppealSubmissionStub(OK, "HMRC-MTD-VAT~VRN~123456789")
       val jsonToSubmit: JsValue = Json.parse(
