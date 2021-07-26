@@ -110,7 +110,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
           |    "reasonableExcuse": "bereavement",
           |    "honestyDeclaration": true,
           |    "appealInformation": {
-          |						"type": "crime",
+          |						"type": "bereavement",
           |           "dateOfEvent": "2021-04-23T18:25:43.511Z",
           |						"statement": "This is a statement",
           |           "lateAppeal": false
