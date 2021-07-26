@@ -20,7 +20,7 @@ import base.SpecBase
 import config.AppConfig
 import connectors.parsers.ETMPPayloadParser.{GetETMPPayloadMalformed, GetETMPPayloadNoContent, GetETMPPayloadSuccessResponse}
 import models.appeals.AppealData
-import models.appeals.AppealTypeEnum.Late_Submission
+import models.appeals.AppealTypeEnum.{Late_Payment, Late_Submission}
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
 import play.api.http.Status
@@ -107,6 +107,75 @@ class AppealsControllerSpec extends SpecBase {
         mockETMPPayloadResponseAsModelMultiplePoints.penaltyPoints.last.period.get.endDate,
         mockETMPPayloadResponseAsModelMultiplePoints.penaltyPoints.head.period.get.submission.dueDate,
         mockETMPPayloadResponseAsModelMultiplePoints.penaltyPoints.head.communications.head.dateSent
+      )
+      contentAsString(result) shouldBe Json.toJson(appealDataToReturn).toString()
+    }
+  }
+
+  "getAppealsDataForLatePaymentPenalty" should {
+    s"return NOT_FOUND (${Status.NOT_FOUND}) when ETMP can not find the data for the given enrolment key" in new Setup {
+      val sampleEnrolmentKey: String = "HMRC-MTD-VAT~VRN~123456789"
+      when(mockETMPService.getPenaltyDataFromETMPForEnrolment(ArgumentMatchers.eq(sampleEnrolmentKey))(ArgumentMatchers.any()))
+        .thenReturn(Future.successful((None, Left(GetETMPPayloadNoContent))))
+
+      val result: Future[Result] = controller.getAppealsDataForLatePaymentPenalty("1", sampleEnrolmentKey)(fakeRequest)
+      status(result) shouldBe Status.NOT_FOUND
+      contentAsString(result) shouldBe s"Could not retrieve ETMP penalty data for $sampleEnrolmentKey"
+    }
+
+    s"return NOT_FOUND (${Status.NOT_FOUND}) when ETMP returns data but the given penaltyId is wrong" in new Setup {
+      val samplePenaltyId: String = "1234"
+      val sampleEnrolmentKey: String = "HMRC-MTD-VAT~VRN~123456789"
+      when(mockETMPService.getPenaltyDataFromETMPForEnrolment(ArgumentMatchers.eq(sampleEnrolmentKey))(ArgumentMatchers.any()))
+        .thenReturn(Future.successful((Some(mockETMPPayloadResponseAsModel), Right(GetETMPPayloadSuccessResponse(mockETMPPayloadResponseAsModel)))))
+
+      val result: Future[Result] = controller.getAppealsDataForLatePaymentPenalty(samplePenaltyId, sampleEnrolmentKey)(fakeRequest)
+      status(result) shouldBe Status.NOT_FOUND
+      contentAsString(result) shouldBe "Penalty ID was not found in users penalties."
+    }
+
+    s"return ISE (${Status.INTERNAL_SERVER_ERROR}) when the call to ETMP fails for some reason" in new Setup {
+      val sampleEnrolmentKey: String = "HMRC-MTD-VAT~VRN~123456789"
+      when(mockETMPService.getPenaltyDataFromETMPForEnrolment(ArgumentMatchers.eq(sampleEnrolmentKey))(ArgumentMatchers.any()))
+        .thenReturn(Future.successful((None, Left(GetETMPPayloadMalformed))))
+
+      val result: Future[Result] = controller.getAppealsDataForLatePaymentPenalty("1", sampleEnrolmentKey)(fakeRequest)
+      status(result) shouldBe Status.INTERNAL_SERVER_ERROR
+    }
+
+    s"return OK (${Status.OK}) when the call to ETMP succeeds and the penalty ID matches" in new Setup {
+      val samplePenaltyId: String = "123456800"
+      val sampleEnrolmentKey: String = "HMRC-MTD-VAT~VRN~123456789"
+      when(mockETMPService.getPenaltyDataFromETMPForEnrolment(ArgumentMatchers.eq(sampleEnrolmentKey))(ArgumentMatchers.any()))
+        .thenReturn(Future.successful((Some(mockETMPPayloadResponseAsModelForLPP), Right(GetETMPPayloadSuccessResponse(mockETMPPayloadResponseAsModelForLPP)))))
+
+      val result: Future[Result] = controller.getAppealsDataForLatePaymentPenalty(samplePenaltyId, sampleEnrolmentKey)(fakeRequest)
+      status(result) shouldBe Status.OK
+      val appealDataToReturn: AppealData = AppealData(
+        Late_Payment,
+        mockETMPPayloadResponseAsModelForLPP.latePaymentPenalties.get.head.period.startDate,
+        mockETMPPayloadResponseAsModelForLPP.latePaymentPenalties.get.head.period.endDate,
+        mockETMPPayloadResponseAsModelForLPP.latePaymentPenalties.get.head.period.dueDate,
+        mockETMPPayloadResponseAsModelForLPP.latePaymentPenalties.get.head.communications.head.dateSent
+      )
+      contentAsString(result) shouldBe Json.toJson(appealDataToReturn).toString()
+    }
+
+    s"return OK (${Status.OK}) when the call to ETMP succeeds and the correct model for the specified penalty ID" in new Setup {
+      val samplePenaltyId: String = "123456800"
+      val sampleEnrolmentKey: String = "HMRC-MTD-VAT~VRN~123456789"
+      when(mockETMPService.getPenaltyDataFromETMPForEnrolment(ArgumentMatchers.eq(sampleEnrolmentKey))(ArgumentMatchers.any()))
+        .thenReturn(Future.successful((Some(mockETMPPayloadResponseAsModelMultipleSubmissionAndPaymentPoints),
+          Right(GetETMPPayloadSuccessResponse(mockETMPPayloadResponseAsModelMultipleSubmissionAndPaymentPoints)))))
+
+      val result: Future[Result] = controller.getAppealsDataForLatePaymentPenalty(samplePenaltyId, sampleEnrolmentKey)(fakeRequest)
+      status(result) shouldBe Status.OK
+      val appealDataToReturn: AppealData = AppealData(
+        Late_Payment,
+        mockETMPPayloadResponseAsModelMultipleSubmissionAndPaymentPoints.latePaymentPenalties.get.head.period.startDate,
+        mockETMPPayloadResponseAsModelMultipleSubmissionAndPaymentPoints.latePaymentPenalties.get.head.period.endDate,
+        mockETMPPayloadResponseAsModelMultipleSubmissionAndPaymentPoints.latePaymentPenalties.get.head.period.dueDate,
+        mockETMPPayloadResponseAsModelMultipleSubmissionAndPaymentPoints.latePaymentPenalties.get.head.communications.head.dateSent
       )
       contentAsString(result) shouldBe Json.toJson(appealDataToReturn).toString()
     }

@@ -25,6 +25,119 @@ import play.api.test.Helpers._
 class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock with AppealWiremock {
   val controller: AppealsController = injector.instanceOf[AppealsController]
 
+  val lspAndLppBodyToReturnFromETMP: JsValue = Json.parse(
+    """
+      |{
+      |		"pointsTotal" : 3,
+      |		"lateSubmissions" : 3,
+      |		"fixedPenaltyAmount" : 0,
+      |		"penaltyPointsThreshold" : 4,
+      |		"penaltyAmountsTotal" : 0,
+      |		"adjustmentPointsTotal" : 0,
+      |		"penaltyPoints" : [
+      |						{
+      |				"communications" : [
+      |					{
+      |						"type" : "letter",
+      |						"documentId" : "1234567890",
+      |						"dateSent" : "2023-08-09T18:25:43.511"
+      |					}
+      |				],
+      |				"type" : "point",
+      |				"number" : "3",
+      |				"period" : {
+      |					"startDate" : "2023-07-01T18:25:43.511",
+      |					"submission" : {
+      |						"dueDate" : "2023-11-07T18:25:43.511",
+      |						"status" : "SUBMITTED",
+      |						"submittedDate" : "2023-11-15T18:25:43.511"
+      |					},
+      |					"endDate" : "2023-09-30T18:25:43.511"
+      |				},
+      |				"status" : "ACTIVE",
+      |				"dateExpired" : "2025-11-07T18:25:43.511",
+      |				"dateCreated" : "2023-11-07T18:25:43.511",
+      |				"id" : "1234567893"
+      |			},
+      |			{
+      |				"communications" : [
+      |					{
+      |						"type" : "letter",
+      |						"documentId" : "1234567890",
+      |						"dateSent" : "2023-08-09T18:25:43.511"
+      |					}
+      |				],
+      |				"type" : "point",
+      |				"number" : "2",
+      |				"period" : {
+      |					"startDate" : "2023-04-01T18:25:43.511",
+      |					"submission" : {
+      |						"dueDate" : "2023-08-07T18:25:43.511",
+      |						"status" : "SUBMITTED",
+      |						"submittedDate" : "2023-08-15T18:25:43.511"
+      |					},
+      |					"endDate" : "2023-06-30T18:25:43.511"
+      |				},
+      |				"status" : "ACTIVE",
+      |				"dateExpired" : "2025-08-07T18:25:43.511",
+      |				"dateCreated" : "2023-08-07T18:25:43.511",
+      |				"id" : "1234567892"
+      |			},
+      |			{
+      |				"type" : "point",
+      |				"communications" : [
+      |					{
+      |						"type" : "letter",
+      |						"documentId" : "1234567890",
+      |						"dateSent" : "2021-05-08T18:25:43.511"
+      |					}
+      |				],
+      |				"number" : "1",
+      |				"period" : {
+      |					"startDate" : "2023-01-01T18:25:43.511",
+      |					"submission" : {
+      |						"dueDate" : "2023-05-07T18:25:43.511",
+      |						"status" : "SUBMITTED",
+      |						"submittedDate" : "2023-05-12T18:25:43.511"
+      |					},
+      |					"endDate" : "2023-03-31T18:25:43.511"
+      |				},
+      |				"status" : "ACTIVE",
+      |				"dateCreated" : "2023-05-08T18:25:43.511",
+      |				"dateExpired" : "2025-05-08T18:25:43.511",
+      |				"id" : "1234567891"
+      |			}
+      |		],
+      |		"latePaymentPenalties": [
+      |			{
+      |				"type": "financial",
+      |				"id" : "1234",
+      |				"reason": "",
+      |				"dateCreated": "2023-01-01T18:25:43.511",
+      |				"status": "DUE",
+      |				"period": {
+      |					"startDate": "2023-01-01T18:25:43.511",
+      |					"endDate" : "2023-03-31T18:25:43.511",
+      |					"dueDate" : "2023-05-07T18:25:43.511",
+      |					"paymentStatus": "PAID"
+      |				},
+      |				"communications": [
+      |					{
+      |						"type" : "letter",
+      |						"documentId" : "1234567890",
+      |						"dateSent" : "2021-05-08T18:25:43.511"
+      |					}
+      |				],
+      |				"financial": {
+      |					"amountDue": 144.21,
+      |					"outstandingAmountDue": 144.21,
+      |					"dueDate": "2023-05-07T18:25:43.511"
+      |				}
+      |			}
+      |		]
+      |	}
+      |""".stripMargin)
+
   val appealJson: JsValue = Json.parse(
     """
       |{
@@ -33,6 +146,17 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
       |  "endDate": "2021-04-23T18:25:43.511",
       |  "dueDate": "2021-04-23T18:25:43.511",
       |  "dateCommunicationSent": "2021-04-23T18:25:43.511"
+      |}
+      |""".stripMargin)
+
+  val appealJsonLPP: JsValue = Json.parse(
+    """
+      |{
+      |  "type": "LATE_PAYMENT",
+      |	 "startDate": "2023-01-01T18:25:43.511",
+      |	 "endDate" : "2023-03-31T18:25:43.511",
+      |	 "dueDate" : "2023-05-07T18:25:43.511",
+      |  "dateCommunicationSent": "2021-05-08T18:25:43.511"
       |}
       |""".stripMargin)
 
@@ -52,6 +176,26 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
 
     "return an ISE when the call to ETMP fails" in {
       val result = await(buildClientForRequestToApp(uri = "/appeals-data/late-submissions?penaltyId=0001&enrolmentKey=123456789").get())
+      result.status shouldBe Status.INTERNAL_SERVER_ERROR
+    }
+  }
+
+  "getAppealsDataForLatePaymentPenalty" should {
+    "call ETMP and compare the penalty ID provided and the penalty ID in the payload - return OK if there is a match" in {
+      mockResponseForStubETMPPayload(Status.OK, "123456789", Some(lspAndLppBodyToReturnFromETMP.toString()))
+      val result = await(buildClientForRequestToApp(uri = "/appeals-data/late-payments?penaltyId=1234&enrolmentKey=123456789").get())
+      result.status shouldBe Status.OK
+      result.body shouldBe appealJsonLPP.toString()
+    }
+
+    "return NOT_FOUND when the penalty ID given does not match the penalty ID in the payload" in {
+      mockResponseForStubETMPPayload(Status.OK, "123456789", Some(lspAndLppBodyToReturnFromETMP.toString()))
+      val result = await(buildClientForRequestToApp(uri = "/appeals-data/late-payments?penaltyId=0001&enrolmentKey=123456789").get())
+      result.status shouldBe Status.NOT_FOUND
+    }
+
+    "return an ISE when the call to ETMP fails" in {
+      val result = await(buildClientForRequestToApp(uri = "/appeals-data/late-payments?penaltyId=0001&enrolmentKey=123456789").get())
       result.status shouldBe Status.INTERNAL_SERVER_ERROR
     }
   }

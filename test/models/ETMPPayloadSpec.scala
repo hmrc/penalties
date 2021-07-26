@@ -176,6 +176,7 @@ class ETMPPayloadSpec extends AnyWordSpec with Matchers {
       |      "period": {
       |        "startDate": "2021-04-23T18:25:43.511",
       |        "endDate": "2021-04-23T18:25:43.511",
+      |        "dueDate": "2021-04-23T18:25:43.511",
       |	       "paymentStatus": "PAID"
       |      },
       |      "communications": [
@@ -274,6 +275,7 @@ class ETMPPayloadSpec extends AnyWordSpec with Matchers {
           period = PaymentPeriod(
             startDate = sampleDate,
             endDate = sampleDate,
+            dueDate = sampleDate,
             paymentStatus = PaymentStatusEnum.Paid
           ),
           communications = Seq(

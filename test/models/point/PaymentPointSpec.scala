@@ -35,6 +35,7 @@ class PaymentPointSpec extends AnyWordSpec with Matchers {
     "period" -> Json.obj(
       "startDate" -> "2020-01-01T01:00:00.123",
       "endDate" -> "2020-01-01T01:00:00.123",
+      "dueDate" -> "2020-01-01T01:00:00.123",
       "paymentStatus" -> "PAID"
     ),
     "communications" -> Seq.empty[String],
@@ -57,6 +58,7 @@ class PaymentPointSpec extends AnyWordSpec with Matchers {
     period = PaymentPeriod(
       startDate = LocalDateTime.parse("2020-01-01T01:00:00.123"),
       endDate = LocalDateTime.parse("2020-01-01T01:00:00.123"),
+      dueDate = LocalDateTime.parse("2020-01-01T01:00:00.123"),
       paymentStatus = PaymentStatusEnum.Paid
     ),
     communications = Seq.empty,
