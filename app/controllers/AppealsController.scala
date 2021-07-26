@@ -22,6 +22,8 @@ import models.ETMPPayload
 import models.appeals.{AppealData, AppealSubmission, AppealTypeEnum}
 import models.appeals.AppealTypeEnum._
 import models.appeals.reasonableExcuses.ReasonableExcuse
+import models.payment.LatePaymentPenalty
+import models.point.PenaltyPoint
 import utils.Logger.logger
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, ControllerComponents, Result}
@@ -70,11 +72,11 @@ class AppealsController @Inject()(appConfig: AppConfig,
                                                    penaltyIdToCheck: String,
                                                    enrolmentKey: String,
                                                    appealType: AppealTypeEnum.Value): Result = {
-    val isLSPPenaltyIdInETMPPayload: Boolean = etmpData.penaltyPoints.exists(_.id == penaltyIdToCheck)
-    val isLPPPenaltyIdInETMPPayload: Boolean = etmpData.latePaymentPenalties.exists(_.exists(_.id == penaltyIdToCheck))
-    if (appealType == AppealTypeEnum.Late_Submission && isLSPPenaltyIdInETMPPayload) {
+    val lspPenaltyIdInETMPPayload: Option[PenaltyPoint] = etmpData.penaltyPoints.find(_.id == penaltyIdToCheck)
+    val lppPenaltyIdInETMPPayload: Option[LatePaymentPenalty] = etmpData.latePaymentPenalties.flatMap(_.find(_.id == penaltyIdToCheck))
+    if (appealType == AppealTypeEnum.Late_Submission && lspPenaltyIdInETMPPayload.isDefined) {
       logger.debug(s"[AppealsController][getAppealsData] Penalty ID: $penaltyIdToCheck for enrolment key: $enrolmentKey found in ETMP for $appealType.")
-      val penaltyBasedOnId = etmpData.penaltyPoints.find(_.id == penaltyIdToCheck).get
+      val penaltyBasedOnId = lspPenaltyIdInETMPPayload.get
       val dataToReturn: AppealData = AppealData(`type` = appealType,
         startDate = penaltyBasedOnId.period.get.startDate,
         endDate = penaltyBasedOnId.period.get.endDate,
@@ -82,9 +84,9 @@ class AppealsController @Inject()(appConfig: AppConfig,
         dateCommunicationSent = penaltyBasedOnId.communications.head.dateSent
       )
       Ok(Json.toJson(dataToReturn))
-    } else if(appealType == AppealTypeEnum.Late_Payment && isLPPPenaltyIdInETMPPayload) {
+    } else if(appealType == AppealTypeEnum.Late_Payment && lppPenaltyIdInETMPPayload.isDefined) {
       logger.debug(s"[AppealsController][getAppealsData] Penalty ID: $penaltyIdToCheck for enrolment key: $enrolmentKey found in ETMP for $appealType.")
-      val penaltyBasedOnId = etmpData.latePaymentPenalties.get.find(_.id == penaltyIdToCheck).get
+      val penaltyBasedOnId = lppPenaltyIdInETMPPayload.get
       val dataToReturn: AppealData = AppealData(`type` = appealType,
         startDate = penaltyBasedOnId.period.startDate,
         endDate = penaltyBasedOnId.period.endDate,
