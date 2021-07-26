@@ -65,7 +65,38 @@ class AppealsConnectorSpec extends SpecBase {
           causeOfLateSubmissionAgent = None
         )
       )
-      val result = await(connector.submitAppeal(modelToSend, "HMRC-MTD-VAT~VRN~123456789")(HeaderCarrier()))
+      val result = await(connector.submitAppeal(modelToSend, "HMRC-MTD-VAT~VRN~123456789", false)(HeaderCarrier()))
+      result.status shouldBe OK
+      result.body shouldBe "OK"
+    }
+
+    "return the response of the call for LPP" in new Setup {
+      when(mockHttpClient.POST[AppealSubmission, HttpResponse](
+        ArgumentMatchers.any(),
+        ArgumentMatchers.any(),
+        ArgumentMatchers.any()
+      )(ArgumentMatchers.any(),
+        ArgumentMatchers.any(),
+        ArgumentMatchers.any(),
+        ArgumentMatchers.any()))
+        .thenReturn(Future.successful(HttpResponse(OK, "OK")))
+      val modelToSend: AppealSubmission = AppealSubmission(
+        submittedBy = "client",
+        penaltyId = "1234567890",
+        reasonableExcuse = "ENUM_PEGA_LIST",
+        honestyDeclaration = true,
+        appealInformation = CrimeAppealInformation(
+          `type` = "crime",
+          dateOfEvent = "2021-04-23T18:25:43.511Z",
+          reportedIssue = true,
+          statement = None,
+          lateAppeal = false,
+          lateAppealReason = None,
+          whoPlannedToSubmit = None,
+          causeOfLateSubmissionAgent = None
+        )
+      )
+      val result = await(connector.submitAppeal(modelToSend, "HMRC-MTD-VAT~VRN~123456789", true)(HeaderCarrier()))
       result.status shouldBe OK
       result.body shouldBe "OK"
     }

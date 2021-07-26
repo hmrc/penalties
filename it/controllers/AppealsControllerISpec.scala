@@ -281,7 +281,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
           |		}
           |}
           |""".stripMargin)
-      val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789").post(
+      val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=false").post(
         jsonToSubmit
       ))
       result.status shouldBe OK
@@ -304,7 +304,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
           |    }
           |}
           |""".stripMargin)
-      val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789").post(
+      val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=false").post(
         jsonToSubmit
       ))
       result.status shouldBe OK
@@ -327,7 +327,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
           |		}
           |}
           |""".stripMargin)
-      val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789").post(
+      val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=false").post(
         jsonToSubmit
       ))
       result.status shouldBe OK
@@ -351,7 +351,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
           |		}
           |}
           |""".stripMargin)
-      val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789").post(
+      val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=false").post(
         jsonToSubmit
       ))
       result.status shouldBe OK
@@ -377,7 +377,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
             |		}
             |}
             |""".stripMargin)
-        val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789").post(
+        val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=false").post(
           jsonToSubmit
         ))
         result.status shouldBe OK
@@ -402,7 +402,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
             |		}
             |}
             |""".stripMargin)
-        val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789").post(
+        val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=false").post(
           jsonToSubmit
         ))
         result.status shouldBe OK
@@ -428,7 +428,31 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
             |		}
             |}
             |""".stripMargin)
-        val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789").post(
+        val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=false").post(
+          jsonToSubmit
+        ))
+        result.status shouldBe OK
+      }
+
+      "call the connector and send the appeal data received in the request body - returns OK when successful for LPP" in {
+        mockResponseForAppealSubmissionStub(OK, "HMRC-MTD-VAT~VRN~123456789", true)
+        val jsonToSubmit: JsValue = Json.parse(
+          """
+            |{
+            |    "submittedBy": "client",
+            |    "penaltyId": "1234567890",
+            |    "reasonableExcuse": "crime",
+            |    "honestyDeclaration": true,
+            |    "appealInformation": {
+            |						"type": "crime",
+            |            "dateOfEvent": "2021-04-23T18:25:43.511Z",
+            |            "reportedIssue": true,
+            |						 "statement": "This is a statement",
+            |            "lateAppeal": false
+            |		}
+            |}
+            |""".stripMargin)
+        val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=true").post(
           jsonToSubmit
         ))
         result.status shouldBe OK
@@ -470,7 +494,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
             |		}
             |}
             |""".stripMargin)
-        val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789").post(
+        val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=false").post(
           jsonToSubmit
         ))
         result.status shouldBe INTERNAL_SERVER_ERROR

@@ -54,7 +54,7 @@ class ETMPService @Inject()(etmpConnector: ETMPConnector,
     }
   }
 
-  def submitAppeal(appealSubmission: AppealSubmission, enrolmentKey: String)(implicit ec: ExecutionContext, hc: HeaderCarrier): Future[HttpResponse] = {
-    appealsConnector.submitAppeal(appealSubmission, enrolmentKey)
+  def submitAppeal(appealSubmission: AppealSubmission, enrolmentKey: String, isLPP: Boolean)(implicit ec: ExecutionContext, hc: HeaderCarrier): Future[HttpResponse] = {
+    appealsConnector.submitAppeal(appealSubmission, enrolmentKey, isLPP)
   }
 }
