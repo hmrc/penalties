@@ -21,6 +21,25 @@ import org.scalatest.wordspec.AnyWordSpec
 import play.api.libs.json.{JsValue, Json}
 
 class AppealSubmissionSpec extends AnyWordSpec with Matchers {
+  val bereavementAppealJson: JsValue = Json.parse(
+    """
+      |{
+      |   "submittedBy": "client",
+      |   "penaltyId": "123456789",
+      |   "reasonableExcuse": "bereavement",
+      |   "honestyDeclaration": true,
+      |   "appealInformation": {
+      |             "type": "bereavement",
+      |             "dateOfEvent": "2021-04-23T18:25:43.511Z",
+      |             "lateAppeal": true,
+      |             "lateAppealReason": "Reason",
+      |             "whoPlannedToSubmit": "agent",
+      |             "causeOfLateSubmissionAgent": "client"
+      |   }
+      |}
+      |""".stripMargin
+  )
+
   val crimeAppealJson: JsValue = Json.parse(
     """
       |{
@@ -180,6 +199,19 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       |}
       |""".stripMargin)
 
+  val bereavementAppealJsonWithKeyMissing: JsValue = Json.parse(
+    """
+      |{
+      |    "submittedBy": "client",
+      |    "penaltyId": "123456789",
+      |    "reasonableExcuse": "bereavement",
+      |    "appealInformation": {
+      |           "type": "bereavement",
+      |           "dateOfEvent": "2021-04-23T18:25:43.511Z"
+      |    }
+      |}
+      |""".stripMargin
+  )
 
   val crimeAppealJsonWithKeyMissing: JsValue = Json.parse(
     """
@@ -292,6 +324,19 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       |""".stripMargin
   )
 
+  val bereavementAppealInformationJson: JsValue = Json.parse(
+    """
+      |{
+      |   "type": "bereavement",
+      |   "dateOfEvent": "2021-04-23T18:25:43.511Z",
+      |   "lateAppeal": true,
+      |   "lateAppealReason": "Reason",
+      |   "whoPlannedToSubmit": "agent",
+      |   "causeOfLateSubmissionAgent": "client"
+      |}
+      |""".stripMargin
+  )
+
   val crimeAppealInformationJson: JsValue = Json.parse(
     """
       |{
@@ -315,6 +360,15 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       |   "lateAppealReason": "Reason",
       |   "whoPlannedToSubmit": "agent",
       |   "causeOfLateSubmissionAgent": "client"
+      |}
+      |""".stripMargin
+  )
+
+  val invalidBereavementAppealInformationJson: JsValue = Json.parse(
+    """
+      |{
+      |    "dateOfEvent": "2021-04-23T18:25:43.511Z",
+      |    "lateAppeal": true
       |}
       |""".stripMargin
   )
@@ -437,6 +491,26 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       |""".stripMargin)
 
   "parseAppealInformationFromJson" should {
+    "for bereavement" must {
+      "parse the appeal information object into the relevant appeal information case class" in {
+        val result = AppealSubmission.parseAppealInformationFromJson("bereavement", bereavementAppealInformationJson)
+        result.isSuccess shouldBe true
+        result.get shouldBe BereavementAppealInformation(
+          `type` = "bereavement",
+          dateOfEvent = "2021-04-23T18:25:43.511Z",
+          statement = None,
+          lateAppeal = true,
+          lateAppealReason = Some("Reason"),
+          whoPlannedToSubmit = Some("agent"),
+          causeOfLateSubmissionAgent = Some("client")
+        )
+      }
+
+      "return a JsError when the appeal information payload is incorrect" in {
+        val result = AppealSubmission.parseAppealInformationFromJson("bereavement", invalidBereavementAppealInformationJson)
+        result.isSuccess shouldBe false
+      }
+    }
     "for crime" must {
       "parse the appeal information object into the relevant appeal information case class" in {
         val result = AppealSubmission.parseAppealInformationFromJson("crime", crimeAppealInformationJson)
@@ -606,6 +680,21 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
   }
 
   "parseAppealInformationToJson" should {
+    "for bereavement" must {
+      "parse the appeal information model into a JsObject" in {
+        val model = BereavementAppealInformation(
+          `type` = "bereavement",
+          dateOfEvent = "2021-04-23T18:25:43.511Z",
+          statement = None,
+          lateAppeal = true,
+          lateAppealReason = Some("Reason"),
+          whoPlannedToSubmit = Some("agent"),
+          causeOfLateSubmissionAgent = Some("client")
+        )
+        val result = AppealSubmission.parseAppealInformationToJson(model)
+        result shouldBe bereavementAppealInformationJson
+      }
+    }
     "for crime" must {
       "parse the appeal information model into a JsObject" in {
         val model = CrimeAppealInformation(
@@ -766,6 +855,34 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
   }
 
   "apiReads" should {
+    "for bereavement" must {
+      "parse the JSON into a model when all keys are present" in {
+        val expectedResult = AppealSubmission(
+          submittedBy = "client",
+          penaltyId = "123456789",
+          reasonableExcuse = "bereavement",
+          honestyDeclaration = true,
+          appealInformation = BereavementAppealInformation(
+            `type` = "bereavement",
+            dateOfEvent = "2021-04-23T18:25:43.511Z",
+            statement = None,
+            lateAppeal = true,
+            lateAppealReason = Some("Reason"),
+            whoPlannedToSubmit = Some("agent"),
+            causeOfLateSubmissionAgent = Some("client")
+          )
+        )
+
+        val result = Json.fromJson(bereavementAppealJson)(AppealSubmission.apiReads)
+        result.isSuccess shouldBe true
+        result.get shouldBe expectedResult
+      }
+
+      "not parse the JSON into a model when some keys are not present" in {
+        val result = Json.fromJson(bereavementAppealJsonWithKeyMissing)(AppealSubmission.apiReads)
+        result.isSuccess shouldBe false
+      }
+    }
     "for crime" must {
       "parse the JSON into a model when all keys are present" in {
         val expectedResult = AppealSubmission(
@@ -1018,6 +1135,42 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
   }
 
   "apiWrites" should {
+    "for bereavement" must {
+      "write the model to JSON" in {
+        val modelToCovertToJson: AppealSubmission = AppealSubmission(
+          submittedBy = "client",
+          penaltyId = "1234",
+          reasonableExcuse = "bereavement",
+          honestyDeclaration = true,
+          appealInformation = BereavementAppealInformation(
+              `type` = "bereavement",
+              dateOfEvent = "2021-04-23T18:25:43.511Z",
+              statement = None,
+              lateAppeal = true,
+              lateAppealReason = Some("Reason"),
+              whoPlannedToSubmit = Some("agent"),
+              causeOfLateSubmissionAgent = Some("client")
+            )
+          )
+        val jsonRepresentingModel: JsValue = Json.obj(
+          "submittedBy"-> "client",
+          "penaltyId" -> "1234",
+          "reasonableExcuse" -> "bereavement",
+          "honestyDeclaration" -> true,
+          "appealInformation" -> Json.obj(
+            "type" -> "bereavement",
+            "dateOfEvent" -> "2021-04-23T18:25:43.511Z",
+            "lateAppeal" -> true,
+            "lateAppealReason" -> "Reason",
+            "whoPlannedToSubmit" -> "agent",
+            "causeOfLateSubmissionAgent" -> "client"
+          )
+        )
+
+        val result = Json.toJson(modelToCovertToJson)(AppealSubmission.apiWrites)
+        result shouldBe jsonRepresentingModel
+      }
+    }
     "for crime" must {
       "write the model to JSON" in {
         val modelToConvertToJson: AppealSubmission = AppealSubmission(
@@ -1426,6 +1579,29 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
     }
   }
 
+  "BereavementAppealInformation" should {
+    "bereavementAppealWrites" must {
+      "write the appeal model to JSON" in {
+        val model = BereavementAppealInformation(
+          `type` = "bereavement",
+          dateOfEvent = "2021-04-23T18:25:43.511Z",
+          statement = None,
+          lateAppeal = false,
+          lateAppealReason = None,
+          whoPlannedToSubmit = Some("agent"),
+          causeOfLateSubmissionAgent = Some("client")
+        )
+        val result = Json.toJson(model)(BereavementAppealInformation.bereavementAppealWrites)
+        result shouldBe Json.obj(
+          "type" -> "bereavement",
+          "dateOfEvent" -> "2021-04-23T18:25:43.511Z",
+          "lateAppeal" -> false,
+          "whoPlannedToSubmit" -> "agent",
+          "causeOfLateSubmissionAgent" -> "client"
+        )
+      }
+    }
+  }
 
   "CrimeAppealInformation" should {
     "crimeAppealWrites" must {
