@@ -49,8 +49,8 @@ class AppConfig @Inject()(config: Configuration, servicesConfig: ServicesConfig)
     else etmpBase + "/"
   }
 
-  def getAppealSubmissionURL(enrolmentKey: String): String = {
-    if(!isEnabled(CallETMP)) stubBase + s"/penalties-stub/appeals/submit?enrolmentKey=$enrolmentKey"
+  def getAppealSubmissionURL(enrolmentKey: String, isLPP: Boolean): String = {
+    if(!isEnabled(CallETMP)) stubBase + s"/penalties-stub/appeals/submit?enrolmentKey=$enrolmentKey&isLPP=$isLPP"
     //TODO: change to relevant URL when implemented
     else etmpBase + "/"
   }

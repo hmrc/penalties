@@ -51,7 +51,7 @@ class AppealsConnectorISpec extends IntegrationSpecCommonBase with AppealWiremoc
           causeOfLateSubmissionAgent = None
         )
       )
-      val result = await(connector.submitAppeal(modelToSend, "HMRC-MTD-VAT~VRN~123456789"))
+      val result = await(connector.submitAppeal(modelToSend, "HMRC-MTD-VAT~VRN~123456789", false))
       result.status shouldBe OK
     }
 
@@ -74,7 +74,30 @@ class AppealsConnectorISpec extends IntegrationSpecCommonBase with AppealWiremoc
           causeOfLateSubmissionAgent = None
         )
       )
-      val result = await(connector.submitAppeal(modelToSend, "HMRC-MTD-VAT~VRN~123456789"))
+      val result = await(connector.submitAppeal(modelToSend, "HMRC-MTD-VAT~VRN~123456789", false))
+      result.status shouldBe OK
+    }
+
+    "Jsonify the model and send the request and return the response - when ETMP feature switch disabled, call stub - for LPP" in new Setup {
+      disableFeatureSwitch(CallETMP)
+      mockResponseForAppealSubmissionStub(Status.OK, "HMRC-MTD-VAT~VRN~123456789", true)
+      val modelToSend: AppealSubmission = AppealSubmission(
+        submittedBy = "client",
+        penaltyId = "1234567890",
+        reasonableExcuse = "ENUM_PEGA_LIST",
+        honestyDeclaration = true,
+        appealInformation = CrimeAppealInformation(
+          `type` = "crime",
+          dateOfEvent = "2021-04-23T18:25:43.511Z",
+          reportedIssue = true,
+          statement = None,
+          lateAppeal = false,
+          lateAppealReason = None,
+          whoPlannedToSubmit = None,
+          causeOfLateSubmissionAgent = None
+        )
+      )
+      val result = await(connector.submitAppeal(modelToSend, "HMRC-MTD-VAT~VRN~123456789", true))
       result.status shouldBe OK
     }
   }
