@@ -262,6 +262,10 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
           |}
           |""".stripMargin
       )
+      val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=false").post(
+        jsonToSubmit
+      ))
+      result.status shouldBe OK
     }
     "call the connector and send the appeal data received in the request body - returns OK when successful for crime" in {
       mockResponseForAppealSubmissionStub(OK, "HMRC-MTD-VAT~VRN~123456789")
@@ -498,6 +502,159 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
           jsonToSubmit
         ))
         result.status shouldBe INTERNAL_SERVER_ERROR
+      }
+    }
+  }
+
+  "getIsMultiplePenaltiesInSamePeriod" should {
+    val lspAndLPPInSamePeriod: JsValue = Json.parse(
+      """
+        |{
+        |		"pointsTotal" : 1,
+        |		"lateSubmissions" : 1,
+        |		"adjustmentPointsTotal" : 0,
+        |		"fixedPenaltyAmount" : 0,
+        |		"penaltyAmountsTotal" : 0,
+        |		"penaltyPointsThreshold" : 4,
+        |		"penaltyPoints" : [
+        |			{
+        |				"type" : "point",
+        |				"number" : "1",
+        |				"id" : "1234567891",
+        |				"dateCreated" : "2023-05-08T18:25:43.511Z",
+        |				"dateExpired" : "2025-05-08T18:25:43.511Z",
+        |				"status" : "ACTIVE",
+        |				"period" : {
+        |					"startDate" : "2023-01-01T18:25:43.511Z",
+        |					"submission" : {
+        |						"dueDate" : "2023-05-07T18:25:43.511Z",
+        |						"status" : "SUBMITTED",
+        |						"submittedDate" : "2023-05-12T18:25:43.511Z"
+        |					},
+        |					"endDate" : "2023-03-31T18:25:43.511Z"
+        |				},
+        |				"communications" : [
+        |					{
+        |						"type" : "letter",
+        |						"documentId" : "1234567890",
+        |						"dateSent" : "2021-05-08T18:25:43.511Z"
+        |					}
+        |				]
+        |			}
+        |		],
+        |		"latePaymentPenalties" : [
+        |			{
+        |				"type" : "financial",
+        |				"id" : "1234567901",
+        |				"reason" : "",
+        |				"dateCreated" : "2023-01-01T18:25:43.511Z",
+        |				"status" : "DUE",
+        |				"period" : {
+        |					"startDate" : "2023-01-01T18:25:43.511Z",
+        |					"endDate" : "2023-03-31T18:25:43.511Z",
+        |					"dueDate" : "2023-05-07T10:00:00.010Z",
+        |					"paymentStatus" : "PAID"
+        |				},
+        |				"communications" : [
+        |					{
+        |						"type" : "letter",
+        |						"documentId" : "1234567890",
+        |						"dateSent" : "2021-05-08T18:25:43.511Z"
+        |					}
+        |				],
+        |				"financial" : {
+        |					"amountDue" : 144.21,
+        |					"outstandingAmountDue" : 144.21,
+        |					"dueDate" : "2023-05-07T18:25:43.511Z"
+        |				}
+        |			}
+        |		]
+        |	}
+        |""".stripMargin)
+
+    val lppAndLSPInDifferentPeriod: JsValue = Json.parse(
+      """
+        |{
+        |		"pointsTotal" : 1,
+        |		"lateSubmissions" : 1,
+        |		"adjustmentPointsTotal" : 0,
+        |		"fixedPenaltyAmount" : 0,
+        |		"penaltyAmountsTotal" : 0,
+        |		"penaltyPointsThreshold" : 4,
+        |		"penaltyPoints" : [
+        |			{
+        |				"type" : "point",
+        |				"number" : "1",
+        |				"id" : "1234567891",
+        |				"dateCreated" : "2023-08-08T18:25:43.511Z",
+        |				"dateExpired" : "2025-08-08T18:25:43.511Z",
+        |				"status" : "ACTIVE",
+        |				"period" : {
+        |					"startDate" : "2023-04-01T18:25:43.511Z",
+        |					"submission" : {
+        |						"dueDate" : "2023-08-07T18:25:43.511Z",
+        |						"status" : "SUBMITTED",
+        |						"submittedDate" : "2023-08-12T18:25:43.511Z"
+        |					},
+        |					"endDate" : "2023-06-30T18:25:43.511Z"
+        |				},
+        |				"communications" : [
+        |					{
+        |						"type" : "letter",
+        |						"documentId" : "1234567890",
+        |						"dateSent" : "2021-08-08T18:25:43.511Z"
+        |					}
+        |				]
+        |			}
+        |		],
+        |		"latePaymentPenalties" : [
+        |			{
+        |				"type" : "financial",
+        |				"id" : "1234567901",
+        |				"reason" : "",
+        |				"dateCreated" : "2023-01-01T18:25:43.511Z",
+        |				"status" : "DUE",
+        |				"period" : {
+        |					"startDate" : "2023-01-01T18:25:43.511Z",
+        |					"endDate" : "2023-03-31T18:25:43.511Z",
+        |					"dueDate" : "2023-05-07T10:00:00.010Z",
+        |					"paymentStatus" : "PAID"
+        |				},
+        |				"communications" : [
+        |					{
+        |						"type" : "letter",
+        |						"documentId" : "1234567890",
+        |						"dateSent" : "2021-05-08T18:25:43.511Z"
+        |					}
+        |				],
+        |				"financial" : {
+        |					"amountDue" : 144.21,
+        |					"outstandingAmountDue" : 144.21,
+        |					"dueDate" : "2023-05-07T18:25:43.511Z"
+        |				}
+        |			}
+        |		]
+        |	}
+        |""".stripMargin)
+    "return OK" when {
+      "the service returns true" in {
+        mockResponseForStubETMPPayload(Status.OK, "HMRC-MTD-VAT~VRN~123456789", Some(lspAndLPPInSamePeriod.toString()))
+        val result = await(buildClientForRequestToApp(uri = "/appeals/multiple-penalties-in-same-period?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=true&penaltyId=1234567901").get())
+        result.status shouldBe OK
+      }
+    }
+
+    "return NO CONTENT" when {
+      "the service returns false - no other periods" in {
+        mockResponseForStubETMPPayload(Status.OK, "HMRC-MTD-VAT~VRN~123456789", Some(lppAndLSPInDifferentPeriod.toString()))
+        val result = await(buildClientForRequestToApp(uri = "/appeals/multiple-penalties-in-same-period?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=true&penaltyId=1234567901").get())
+        result.status shouldBe NO_CONTENT
+      }
+
+      "the service returns false - something went wrong" in {
+        mockResponseForStubETMPPayload(Status.INTERNAL_SERVER_ERROR, "HMRC-MTD-VAT~VRN~123456789", None)
+        val result = await(buildClientForRequestToApp(uri = "/appeals/multiple-penalties-in-same-period?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=true&penaltyId=1234567901").get())
+        result.status shouldBe NO_CONTENT
       }
     }
   }

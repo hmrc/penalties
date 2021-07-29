@@ -56,6 +56,20 @@ class AppealsController @Inject()(appConfig: AppConfig,
     }
   }
 
+  def getIsMultiplePenaltiesInSamePeriod(penaltyId: String, enrolmentKey: String, isLPP: Boolean): Action[AnyContent] = Action.async {
+    implicit request => {
+      etmpService.isMultiplePenaltiesInSamePeriod(penaltyId, enrolmentKey, isLPP).map {
+        if(_) {
+          logger.info("[AppealsController][getIsMultiplePenaltiesInSamePeriod] - User has multiple penalties in same period - returning OK")
+          Ok("")
+        } else {
+          logger.debug("[AppealsController][getIsMultiplePenaltiesInSamePeriod] - User has NO multiple penalties in same period or something went wrong - returning NO_CONTENT")
+          NoContent
+        }
+      }
+    }
+  }
+
   def getAppealsDataForLateSubmissionPenalty(penaltyId: String, enrolmentKey: String): Action[AnyContent] = Action.async {
     implicit request => {
       getAppealDataForPenalty(penaltyId, enrolmentKey, Late_Submission)
