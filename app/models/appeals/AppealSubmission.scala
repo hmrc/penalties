@@ -21,10 +21,6 @@ import play.api.libs.json._
 sealed trait AppealInformation {
   val `type`: String
   val statement: Option[String]
-  val lateAppeal: Boolean
-  val lateAppealReason: Option[String]
-  val whoPlannedToSubmit: Option[String]
-  val causeOfLateSubmissionAgent: Option[String]
 }
 
 case class BereavementAppealInformation(
@@ -379,6 +375,30 @@ object OtherAppealInformation {
   }
 }
 
+case class ObligationAppealInformation(
+                                        `type`: String,
+                                        statement: Option[String],
+                                        supportingEvidence: Option[Evidence]
+                                      ) extends AppealInformation
+
+object ObligationAppealInformation{
+  implicit val evidenceFormatter: OFormat[Evidence] = Evidence.format
+  implicit val obligationAppealInformationFormatter: OFormat[ObligationAppealInformation] = Json.format[ObligationAppealInformation]
+
+  val obligationAppealInformationWrites: Writes[ObligationAppealInformation] = (obligationAppealInformation: ObligationAppealInformation) => {
+    Json.obj(
+      "type" -> obligationAppealInformation.`type`,
+      "statement" -> obligationAppealInformation.statement.get
+    ).deepMerge(
+      obligationAppealInformation.supportingEvidence.fold(
+        Json.obj()
+      )(
+        supportingEvidence => Json.obj("supportingEvidence" -> supportingEvidence)
+      )
+    )
+  }
+}
+
 case class AppealSubmission(
                              submittedBy: String,
                              penaltyId: String,
@@ -411,6 +431,9 @@ object AppealSubmission {
       case "other" => {
         Json.fromJson(payload)(OtherAppealInformation.otherAppealInformationFormatter)
       }
+      case "obligation" => {
+        Json.fromJson(payload)(ObligationAppealInformation.obligationAppealInformationFormatter)
+      }
     }
   }
 
@@ -436,6 +459,9 @@ object AppealSubmission {
       }
       case "other" => {
         Json.toJson(payload.asInstanceOf[OtherAppealInformation])(OtherAppealInformation.otherAppealInformationWrites)
+      }
+      case "obligation" => {
+        Json.toJson(payload.asInstanceOf[ObligationAppealInformation])(ObligationAppealInformation.obligationAppealInformationWrites)
       }
     }
   }
