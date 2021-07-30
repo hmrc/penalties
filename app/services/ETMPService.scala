@@ -54,32 +54,21 @@ class ETMPService @Inject()(etmpConnector: ETMPConnector,
           } else {
             val penaltyPeriod = optPenaltyPeriod.get
             logger.debug(s"$startOfLogMsg - Found period for penalty - start : ${penaltyPeriod._1} to end : ${penaltyPeriod._2}")
-            val penaltyDataExcludingThisPenalty = {
-              if(isLPP) {
-                val newLPPExcludingThis = penaltyData.latePaymentPenalties.get diff Seq(getLPPPenaltyFromPayload(penaltyId, penaltyData))
-                penaltyData.copy(latePaymentPenalties = Some(newLPPExcludingThis))
-              } else {
-                val newLSPExcludingThis = penaltyData.penaltyPoints diff Seq(getLSPPenaltyFromPayload(penaltyId, penaltyData))
-                penaltyData.copy(penaltyPoints = newLSPExcludingThis)
-              }
-            }
-            logger.debug(s"$startOfLogMsg - Removed current penalty from payload retrieved - remaining payload: \n$penaltyDataExcludingThisPenalty")
-            val isOtherLSPInSamePeriod = penaltyDataExcludingThisPenalty.penaltyPoints.exists(_.period.exists(period => period.startDate.toLocalDate == penaltyPeriod._1 && period.endDate.toLocalDate == penaltyPeriod._2))
-            val isOtherLPPInSamePeriod = penaltyDataExcludingThisPenalty.latePaymentPenalties.exists(_.exists(lpp => lpp.period.startDate.toLocalDate == penaltyPeriod._1 && lpp.period.endDate.toLocalDate == penaltyPeriod._2))
+            val isOtherLSPInSamePeriod = penaltyData.penaltyPoints.exists(
+              penalty => penalty.period.exists(
+                period => period.startDate.toLocalDate == penaltyPeriod._1 && period.endDate.toLocalDate == penaltyPeriod._2 && penalty.id != penaltyId)
+            )
+            val isOtherLPPInSamePeriod = penaltyData.latePaymentPenalties.exists(
+              _.exists(
+                lpp => lpp.period.startDate.toLocalDate == penaltyPeriod._1 && lpp.period.endDate.toLocalDate == penaltyPeriod._2 && lpp.id != penaltyId
+              )
+            )
             logger.debug(s"$startOfLogMsg - is other LSP in same period: $isOtherLSPInSamePeriod & is other LPP in same period: $isOtherLPPInSamePeriod")
             isOtherLSPInSamePeriod || isOtherLPPInSamePeriod
           }
         }
       )
     }
-  }
-
-  private def getLPPPenaltyFromPayload(penaltyId: String, payload: ETMPPayload): LatePaymentPenalty = {
-    payload.latePaymentPenalties.get.find(_.id == penaltyId).get
-  }
-
-  private def getLSPPenaltyFromPayload(penaltyId: String, payload: ETMPPayload): PenaltyPoint = {
-    payload.penaltyPoints.find(_.id == penaltyId).get
   }
 
   private def getPeriodForPenalty(payload: ETMPPayload, isLPP: Boolean, penaltyId: String): Option[(LocalDate, LocalDate)] = {
