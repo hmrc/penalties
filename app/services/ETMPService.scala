@@ -20,9 +20,12 @@ import connectors.{AppealsConnector, ETMPConnector}
 import connectors.parsers.ETMPPayloadParser.{ETMPPayloadResponse, GetETMPPayloadFailureResponse, GetETMPPayloadMalformed, GetETMPPayloadNoContent, GetETMPPayloadSuccessResponse}
 import models.ETMPPayload
 import models.appeals.AppealSubmission
+import models.payment.LatePaymentPenalty
+import models.point.PenaltyPoint
 import utils.Logger.logger
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 
+import java.time.{LocalDate, LocalDateTime}
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -34,6 +37,47 @@ class ETMPService @Inject()(etmpConnector: ETMPConnector,
     implicit val startOfLogMsg: String = "[ETMPService][getPenaltyDataFromETMPForEnrolment]"
     etmpConnector.getPenaltiesDataForEnrolmentKey(enrolmentKey).map {
       handleConnectorResponse(_)
+    }
+  }
+
+  def isMultiplePenaltiesInSamePeriod(penaltyId: String, enrolmentKey: String, isLPP: Boolean)(implicit hc: HeaderCarrier): Future[Boolean] = {
+    implicit val startOfLogMsg: String = "[ETMPService][isMultiplePenaltiesInSamePeriod]"
+    etmpConnector.getPenaltiesDataForEnrolmentKey(enrolmentKey).map {
+      handleConnectorResponse(_)._1.fold({
+        false
+      })(
+        penaltyData => {
+          val optPenaltyPeriod = getPeriodForPenalty(penaltyData, isLPP, penaltyId)
+          if(optPenaltyPeriod.isEmpty) {
+            logger.error(s"$startOfLogMsg - Could not find period for penalty - returning false")
+            false
+          } else {
+            val penaltyPeriod = optPenaltyPeriod.get
+            logger.debug(s"$startOfLogMsg - Found period for penalty - start : ${penaltyPeriod._1} to end : ${penaltyPeriod._2}")
+            val isOtherLSPInSamePeriod = penaltyData.penaltyPoints.exists(
+              penalty => penalty.period.exists(
+                period => period.startDate.toLocalDate == penaltyPeriod._1 && period.endDate.toLocalDate == penaltyPeriod._2 && penalty.id != penaltyId)
+            )
+            val isOtherLPPInSamePeriod = penaltyData.latePaymentPenalties.exists(
+              _.exists(
+                lpp => lpp.period.startDate.toLocalDate == penaltyPeriod._1 && lpp.period.endDate.toLocalDate == penaltyPeriod._2 && lpp.id != penaltyId
+              )
+            )
+            logger.debug(s"$startOfLogMsg - is other LSP in same period: $isOtherLSPInSamePeriod & is other LPP in same period: $isOtherLPPInSamePeriod")
+            isOtherLSPInSamePeriod || isOtherLPPInSamePeriod
+          }
+        }
+      )
+    }
+  }
+
+  private def getPeriodForPenalty(payload: ETMPPayload, isLPP: Boolean, penaltyId: String): Option[(LocalDate, LocalDate)] = {
+    if (isLPP) {
+      val optPenalty = payload.latePaymentPenalties.flatMap(_.find(_.id == penaltyId))
+      optPenalty.map(penalty => (penalty.period.startDate.toLocalDate, penalty.period.endDate.toLocalDate))
+    } else {
+      val optPenalty = payload.penaltyPoints.find(_.id == penaltyId)
+      optPenalty.flatMap(_.period.map(period => (period.startDate.toLocalDate, period.endDate.toLocalDate)))
     }
   }
 

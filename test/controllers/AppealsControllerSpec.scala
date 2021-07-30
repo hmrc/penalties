@@ -501,4 +501,20 @@ class AppealsControllerSpec extends SpecBase {
       }
     }
   }
+
+  "getIsMultiplePenaltiesInSamePeriod" should {
+    "return OK when the service returns true" in new Setup {
+      when(mockETMPService.isMultiplePenaltiesInSamePeriod(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any()))
+        .thenReturn(Future.successful(true))
+      val result = controller.getIsMultiplePenaltiesInSamePeriod("1234", "123456789", false)(fakeRequest)
+      status(result) shouldBe OK
+    }
+
+    "return NO CONTENT when the service returns false" in new Setup {
+      when(mockETMPService.isMultiplePenaltiesInSamePeriod(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any()))
+        .thenReturn(Future.successful(false))
+      val result = controller.getIsMultiplePenaltiesInSamePeriod("1234", "123456789", false)(fakeRequest)
+      status(result) shouldBe NO_CONTENT
+    }
+  }
 }
