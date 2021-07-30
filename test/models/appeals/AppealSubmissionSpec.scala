@@ -490,6 +490,82 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       |}
       |""".stripMargin)
 
+  val obligationAppealInformationJson: JsValue = Json.parse(
+    """
+      |{
+      |   "type": "obligation",
+      |   "statement": "A valid statement",
+      |   "supportingEvidence": {
+      |     "noOfUploadedFiles": 1,
+      |     "referenceId": "ref"
+      |   }
+      |}
+      |""".stripMargin
+  )
+
+  val obligationAppealInformationJsonNoEvidence: JsValue = Json.parse(
+  """
+      |{
+      |   "type": "obligation",
+      |   "statement": "A valid statement"
+      |}
+      |""".stripMargin)
+
+  val invalidObligationAppealInformationJson: JsValue = Json.parse(
+    """
+      |{
+      |   "statement": 1
+      |}
+      |""".stripMargin)
+
+  val obligationAppealJson: JsValue = Json.parse(
+    """
+      |{
+      |   "submittedBy": "client",
+      |    "penaltyId": "1234567890",
+      |    "reasonableExcuse": "obligation",
+      |    "honestyDeclaration": true,
+      |    "appealInformation": {
+      |       "type": "obligation",
+      |       "statement": "A valid statement",
+      |       "supportingEvidence": {
+      |         "noOfUploadedFiles": 1,
+      |         "referenceId": "ref"
+      |       }
+      |    }
+      |}
+      |""".stripMargin
+  )
+
+  val obligationAppealJsonNoEvidence: JsValue = Json.parse(
+    """
+      |{
+      |   "submittedBy": "client",
+      |    "penaltyId": "1234567890",
+      |    "reasonableExcuse": "obligation",
+      |    "honestyDeclaration": true,
+      |    "appealInformation": {
+      |       "type": "obligation",
+      |       "statement": "A valid statement"
+      |    }
+      |}
+      |""".stripMargin
+  )
+
+  val obligationAppealJsonWithKeysMissing: JsValue = Json.parse(
+    """
+      |{
+      |    "submittedBy": "client",
+      |    "penaltyId": "1234567890",
+      |    "reasonableExcuse": "obligation",
+      |    "honestyDeclaration": true,
+      |    "appealInformation": {
+      |						"statement": "a statement"
+      |     }
+      |}
+      |""".stripMargin
+  )
+
   "parseAppealInformationFromJson" should {
     "for bereavement" must {
       "parse the appeal information object into the relevant appeal information case class" in {
@@ -677,6 +753,36 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
         result.isSuccess shouldBe false
       }
     }
+
+    "for obligation" must {
+      "parse the appeal information object to the appeal information case class" in {
+        val result = AppealSubmission.parseAppealInformationFromJson("obligation", obligationAppealInformationJson)
+        result.isSuccess shouldBe true
+        result.get shouldBe ObligationAppealInformation(
+          `type` = "obligation",
+          statement = Some("A valid statement"),
+          supportingEvidence = Some(Evidence(
+            noOfUploadedFiles = 1,
+            referenceId = "ref"
+          ))
+        )
+      }
+
+      "parse the appeal information object to the appeal information case class - no evidence" in {
+        val result = AppealSubmission.parseAppealInformationFromJson("obligation", obligationAppealInformationJsonNoEvidence)
+        result.isSuccess shouldBe true
+        result.get shouldBe ObligationAppealInformation(
+          `type` = "obligation",
+          statement = Some("A valid statement"),
+          supportingEvidence = None
+        )
+      }
+
+      "return a JsError when the appeal information payload is incorrect" in {
+        val result = AppealSubmission.parseAppealInformationFromJson("obligation", invalidObligationAppealInformationJson)
+        result.isSuccess shouldBe false
+      }
+    }
   }
 
   "parseAppealInformationToJson" should {
@@ -850,6 +956,31 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
         )
         val result = AppealSubmission.parseAppealInformationToJson(model)
         result shouldBe otherAppealInformationJsonNoEvidence
+      }
+    }
+
+    "for obligation" must {
+      "parse the appeal information model to a JsObject" in {
+        val model = ObligationAppealInformation(
+          `type` = "obligation",
+          statement = Some("A valid statement"),
+          supportingEvidence = Some(Evidence(
+            noOfUploadedFiles = 1,
+            referenceId = "ref"
+          ))
+        )
+        val result = AppealSubmission.parseAppealInformationToJson(model)
+        result shouldBe obligationAppealInformationJson
+      }
+
+      "parse the appeal information model to a JsObject - no evidence" in {
+        val model = ObligationAppealInformation(
+          `type` = "obligation",
+          statement = Some("A valid statement"),
+          supportingEvidence = None
+        )
+        val result = AppealSubmission.parseAppealInformationToJson(model)
+        result shouldBe obligationAppealInformationJsonNoEvidence
       }
     }
   }
@@ -1129,6 +1260,52 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
 
       "not parse the JSON into a model when some keys are not present" in {
         val result = Json.fromJson(otherAppealJsonWithKeyMissing)(AppealSubmission.apiReads)
+        result.isSuccess shouldBe false
+      }
+    }
+
+    "for obligation" must {
+      "parse the JSON into a model when all keys are present" in {
+        val expectedResult = AppealSubmission(
+          submittedBy = "client",
+          penaltyId = "1234567890",
+          reasonableExcuse = "obligation",
+          honestyDeclaration = true,
+          appealInformation = ObligationAppealInformation(
+            `type` = "obligation",
+            statement = Some("A valid statement"),
+            supportingEvidence = Some(Evidence(
+              noOfUploadedFiles = 1,
+              referenceId = "ref"
+            ))
+          )
+        )
+
+        val result = Json.fromJson(obligationAppealJson)(AppealSubmission.apiReads)
+        result.isSuccess shouldBe true
+        result.get shouldBe expectedResult
+      }
+
+      "parse the JSON into a model when all keys are present - no evidence" in {
+        val expectedResult = AppealSubmission(
+          submittedBy = "client",
+          penaltyId = "1234567890",
+          reasonableExcuse = "obligation",
+          honestyDeclaration = true,
+          appealInformation = ObligationAppealInformation(
+            `type` = "obligation",
+            statement = Some("A valid statement"),
+            supportingEvidence = None
+          )
+        )
+
+        val result = Json.fromJson(obligationAppealJsonNoEvidence)(AppealSubmission.apiReads)
+        result.isSuccess shouldBe true
+        result.get shouldBe expectedResult
+      }
+
+      "not parse the JSON into a model when some keys are not present" in {
+        val result = Json.fromJson(obligationAppealJsonWithKeysMissing)(AppealSubmission.apiReads)
         result.isSuccess shouldBe false
       }
     }
@@ -1577,6 +1754,71 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
         result shouldBe jsonRepresentingModel
       }
     }
+
+    "for obligation" must {
+      "write the model to JSON" in {
+        val modelToCovertToJson: AppealSubmission = AppealSubmission(
+          submittedBy = "client",
+          penaltyId = "1234",
+          reasonableExcuse = "obligation",
+          honestyDeclaration = true,
+          appealInformation = ObligationAppealInformation(
+            `type` = "obligation",
+            statement = Some("A valid statement"),
+            supportingEvidence = Some(Evidence(
+              noOfUploadedFiles = 1,
+              referenceId = "ref"
+            ))
+          )
+        )
+
+        val jsonModel: JsValue = Json.obj(
+          "submittedBy" -> "client",
+          "penaltyId"-> "1234",
+          "reasonableExcuse" -> "obligation",
+          "honestyDeclaration" -> true,
+          "appealInformation" -> Json.obj(
+            "type" -> "obligation",
+            "statement" -> "A valid statement",
+            "supportingEvidence" -> Json.obj(
+              "noOfUploadedFiles" -> 1,
+              "referenceId" -> "ref"
+            )
+          )
+        )
+
+        val result = Json.toJson(modelToCovertToJson)(AppealSubmission.apiWrites)
+        result shouldBe jsonModel
+      }
+
+      "write the model to JSON - no evidence" in {
+        val modelToCovertToJson: AppealSubmission = AppealSubmission(
+          submittedBy = "client",
+          penaltyId = "1234",
+          reasonableExcuse = "obligation",
+          honestyDeclaration = true,
+          appealInformation = ObligationAppealInformation(
+            `type` = "obligation",
+            statement = Some("A valid statement"),
+            supportingEvidence = None
+          )
+        )
+
+        val jsonModel: JsValue = Json.obj(
+          "submittedBy" -> "client",
+          "penaltyId"-> "1234",
+          "reasonableExcuse" -> "obligation",
+          "honestyDeclaration" -> true,
+          "appealInformation" -> Json.obj(
+            "type" -> "obligation",
+            "statement" -> "A valid statement"
+          )
+        )
+
+        val result = Json.toJson(modelToCovertToJson)(AppealSubmission.apiWrites)
+        result shouldBe jsonModel
+      }
+    }
   }
 
   "BereavementAppealInformation" should {
@@ -1879,6 +2121,57 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             |}
             |""".stripMargin)
         val result = Json.toJson(modelToConvertToJson)
+        result shouldBe expectedResult
+      }
+    }
+  }
+
+  "ObligationAppealInformation" should {
+    "obligationAppealInformationWrites" should {
+      "write to JSON" in {
+        val model = ObligationAppealInformation(
+          `type` = "obligation",
+          statement = Some("A valid statement"),
+          supportingEvidence = Some(Evidence(
+            noOfUploadedFiles = 1,
+            referenceId = "ref"
+          ))
+        )
+
+        val expectedResult = Json.parse(
+          """
+            |{
+            |   "type": "obligation",
+            |   "statement": "A valid statement",
+            |   "supportingEvidence": {
+            |       "noOfUploadedFiles": 1,
+            |       "referenceId": "ref"
+            |   }
+            |}
+            |""".stripMargin
+        )
+
+        val result = Json.toJson(model)
+        result shouldBe expectedResult
+      }
+
+      "write to JSON - no evidence" in {
+        val model = ObligationAppealInformation(
+          `type` = "obligation",
+          statement = Some("A valid statement"),
+          supportingEvidence = None
+        )
+
+        val expectedResult = Json.parse(
+          """
+            |{
+            |   "type": "obligation",
+            |   "statement": "A valid statement"
+            |}
+            |""".stripMargin
+        )
+
+        val result = Json.toJson(model)
         result shouldBe expectedResult
       }
     }
