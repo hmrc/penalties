@@ -185,4 +185,58 @@ trait IntegrationSpecCommonBase extends AnyWordSpec with Matchers with GuiceOneS
       )
     )
   )))
+
+  val etmpPayloadModelWithLPPAndAdditionalPenalties = etmpPayloadModel.copy(latePaymentPenalties = Some(Seq(
+    LatePaymentPenalty(
+      `type` = PenaltyTypeEnum.Additional,
+      id = "1234567892",
+      reason = "VAT_NOT_PAID_WITHIN_31_DAYS",
+      dateCreated = sampleDate,
+      status = PointStatusEnum.Active,
+      period = PaymentPeriod(
+        startDate = sampleDate,
+        endDate = sampleDate,
+        dueDate = sampleDate,
+        paymentStatus = PaymentStatusEnum.Paid
+      ),
+      communications = Seq(
+        Communication(
+          `type` = CommunicationTypeEnum.letter,
+          dateSent = sampleDate,
+          documentId = "1234567890"
+        )
+      ),
+      financial = PaymentFinancial(
+        amountDue = 123.45,
+        outstandingAmountDue = 0.00,
+        dueDate = sampleDate
+      )
+    ),
+    LatePaymentPenalty(
+      `type` = PenaltyTypeEnum.Financial,
+      id = "1234567891",
+      reason = "VAT_NOT_PAID_ON_TIME",
+      dateCreated = sampleDate,
+      status = PointStatusEnum.Active,
+      appealStatus = Some(AppealStatusEnum.Under_Review),
+      period = PaymentPeriod(
+        startDate = sampleDate,
+        endDate = sampleDate,
+        dueDate = sampleDate,
+        paymentStatus = PaymentStatusEnum.Paid
+      ),
+      communications = Seq(
+        Communication(
+          `type` = CommunicationTypeEnum.letter,
+          dateSent = sampleDate,
+          documentId = "1234567890"
+        )
+      ),
+      financial = PaymentFinancial(
+        amountDue = 400.00,
+        outstandingAmountDue = 0.00,
+        dueDate = sampleDate
+      )
+    )
+  )))
 }

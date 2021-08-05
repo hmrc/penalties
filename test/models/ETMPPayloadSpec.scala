@@ -167,31 +167,58 @@ class ETMPPayloadSpec extends AnyWordSpec with Matchers {
       |			]
       |		}
       |	],
-      | "latePaymentPenalties": [    {
-      |      "type": "financial",
-      |      "reason": "VAT_NOT_PAID_ON_TIME",
-      |      "id": "1234567891",
-      |      "dateCreated": "2021-04-23T18:25:43.511",
-      |      "status": "ACTIVE",
-      |      "period": {
-      |        "startDate": "2021-04-23T18:25:43.511",
-      |        "endDate": "2021-04-23T18:25:43.511",
-      |        "dueDate": "2021-04-23T18:25:43.511",
-      |	       "paymentStatus": "PAID"
-      |      },
-      |      "communications": [
-      |        {
+      | "latePaymentPenalties": [
+      |     {
+      |       "type": "additional",
+      |       "reason": "VAT_OVERDUE_BY_31_DAYS",
+      |       "id": "1234567892",
+      |       "dateCreated": "2021-04-23T18:25:43.511",
+      |       "status": "ACTIVE",
+      |       "period": {
+      |         "startDate": "2021-04-23T18:25:43.511",
+      |         "endDate": "2021-04-23T18:25:43.511",
+      |         "dueDate": "2021-04-23T18:25:43.511",
+      |	        "paymentStatus": "PAID"
+      |       },
+      |       "communications": [
+      |         {
+      |          "type": "letter",
+      |          "dateSent": "2021-04-23T18:25:43.511",
+      |          "documentId": "1234567890"
+      |         }
+      |       ],
+      |       "financial": {
+      |         "amountDue": 123.45,
+      |         "outstandingAmountDue": 2.00,
+      |         "dueDate": "2021-04-23T18:25:43.511"
+      |       }
+      |     },
+      |     {
+      |       "type": "financial",
+      |       "reason": "VAT_NOT_PAID_ON_TIME",
+      |       "id": "1234567891",
+      |       "dateCreated": "2021-04-23T18:25:43.511",
+      |       "status": "ACTIVE",
+      |       "period": {
+      |         "startDate": "2021-04-23T18:25:43.511",
+      |         "endDate": "2021-04-23T18:25:43.511",
+      |         "dueDate": "2021-04-23T18:25:43.511",
+      |	        "paymentStatus": "PAID"
+      |       },
+      |       "communications": [
+      |       {
       |          "type": "letter",
       |          "dateSent": "2021-04-23T18:25:43.511",
       |          "documentId": "1234567890"
       |        }
-      |      ],
-      |      "financial": {
-      |        "amountDue": 400.00,
-      |        "outstandingAmountDue": 2.00,
-      |        "dueDate": "2021-04-23T18:25:43.511"
-      |      }
-      |    }]
+      |       ],
+      |       "financial": {
+      |         "amountDue": 400.00,
+      |         "outstandingAmountDue": 2.00,
+      |         "dueDate": "2021-04-23T18:25:43.511"
+      |       }
+      |    }
+      |]
       |}
       |""".stripMargin)
 
@@ -265,6 +292,32 @@ class ETMPPayloadSpec extends AnyWordSpec with Matchers {
   val etmpPayloadModelWithLPPs = etmpPayloadModel.copy(
     latePaymentPenalties = Some(
       Seq(
+        LatePaymentPenalty(
+          `type` = PenaltyTypeEnum.Additional,
+          id = "1234567892",
+          reason = "VAT_OVERDUE_BY_31_DAYS",
+          dateCreated = sampleDate,
+          status = PointStatusEnum.Active,
+          appealStatus = None,
+          period = PaymentPeriod(
+            startDate = sampleDate,
+            endDate = sampleDate,
+            dueDate = sampleDate,
+            paymentStatus = PaymentStatusEnum.Paid
+          ),
+          communications = Seq(
+            Communication(
+              `type` = CommunicationTypeEnum.letter,
+              dateSent = sampleDate,
+              documentId = "1234567890"
+            )
+          ),
+          financial = PaymentFinancial(
+            amountDue = 123.45,
+            outstandingAmountDue = 2.00,
+            dueDate = sampleDate
+          )
+        ),
         LatePaymentPenalty(
           `type` = PenaltyTypeEnum.Financial,
           id = "1234567891",
