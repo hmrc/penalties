@@ -22,6 +22,7 @@ object PenaltyTypeEnum extends Enumeration {
 
   val Financial = Value
   val Point = Value
+  val Additional = Value
 
   implicit val format: Format[PenaltyTypeEnum.Value] = new Format[PenaltyTypeEnum.Value] {
     override def writes(o: PenaltyTypeEnum.Value): JsValue = {
@@ -32,6 +33,7 @@ object PenaltyTypeEnum extends Enumeration {
       json.as[String] match {
         case "point" => JsSuccess(Point)
         case "financial" => JsSuccess(Financial)
+        case "additional" => JsSuccess(Additional)
         case e => JsError(s"$e not recognised")
       }
     }

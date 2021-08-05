@@ -92,6 +92,13 @@ class ETMPControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock {
       result.body shouldBe Json.toJson(etmpPayloadModelWithLPP).toString
     }
 
+    s"call out to ETMP and return OK (${Status.OK}) when successful for LPP with additional penalties" in {
+      mockResponseForStubETMPPayload(Status.OK, "123456789", body = Some(Json.toJson(etmpPayloadModelWithLPPAndAdditionalPenalties).toString))
+      val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/123456789").get())
+      result.status shouldBe Status.OK
+      result.body shouldBe Json.toJson(etmpPayloadModelWithLPPAndAdditionalPenalties).toString
+    }
+
     s"call out to ETMP and return OK (${Status.OK}) when there is added points i.e. no period" in {
       mockResponseForStubETMPPayload(Status.OK, "123456789", body = Some(etmpPayloadAsJsonAddedPoint.toString()))
       val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/123456789").get())

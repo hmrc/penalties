@@ -43,6 +43,17 @@ class PenaltyTypeEnumSpec extends AnyWordSpec with Matchers {
     result.get shouldBe PenaltyTypeEnum.Financial
   }
 
+  "be writable to JSON for 'additional'" in {
+    val result = Json.toJson(PenaltyTypeEnum.Additional)
+    result shouldBe JsString("additional")
+  }
+
+  "be readable from JSON for 'additional'" in {
+    val result = Json.fromJson(JsString("additional"))(PenaltyTypeEnum.format)
+    result.isSuccess shouldBe true
+    result.get shouldBe PenaltyTypeEnum.Additional
+  }
+
   "return a JSError when there is no matches for the specified value" in {
     val result = Json.fromJson(JsString("invalid"))(PenaltyTypeEnum.format)
     result.isError shouldBe true
