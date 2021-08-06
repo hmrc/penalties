@@ -76,9 +76,9 @@ class AppealsController @Inject()(appConfig: AppConfig,
     }
   }
 
-  def getAppealsDataForLatePaymentPenalty(penaltyId: String, enrolmentKey: String): Action[AnyContent] = Action.async {
+  def getAppealsDataForLatePaymentPenalty(penaltyId: String, enrolmentKey: String, isAdditional: Boolean): Action[AnyContent] = Action.async {
     implicit request => {
-      getAppealDataForPenalty(penaltyId, enrolmentKey, Late_Payment)
+      getAppealDataForPenalty(penaltyId, enrolmentKey, if(isAdditional) Additional else Late_Payment)
     }
   }
 
@@ -98,7 +98,7 @@ class AppealsController @Inject()(appConfig: AppConfig,
         dateCommunicationSent = penaltyBasedOnId.communications.head.dateSent
       )
       Ok(Json.toJson(dataToReturn))
-    } else if(appealType == AppealTypeEnum.Late_Payment && lppPenaltyIdInETMPPayload.isDefined) {
+    } else if((appealType == AppealTypeEnum.Late_Payment || appealType == AppealTypeEnum.Additional) && lppPenaltyIdInETMPPayload.isDefined) {
       logger.debug(s"[AppealsController][getAppealsData] Penalty ID: $penaltyIdToCheck for enrolment key: $enrolmentKey found in ETMP for $appealType.")
       val penaltyBasedOnId = lppPenaltyIdInETMPPayload.get
       val dataToReturn: AppealData = AppealData(`type` = appealType,

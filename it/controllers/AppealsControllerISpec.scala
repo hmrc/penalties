@@ -160,6 +160,17 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
       |}
       |""".stripMargin)
 
+  val appealJsonLPPAdditional: JsValue = Json.parse(
+    """
+      |{
+      |  "type": "ADDITIONAL",
+      |	 "startDate": "2023-01-01T18:25:43.511",
+      |	 "endDate" : "2023-03-31T18:25:43.511",
+      |	 "dueDate" : "2023-05-07T18:25:43.511",
+      |  "dateCommunicationSent": "2021-05-08T18:25:43.511"
+      |}
+      |""".stripMargin)
+
   "getAppealsDataForLateSubmissionPenalty" should {
     "call ETMP and compare the penalty ID provided and the penalty ID in the payload - return OK if there is a match" in {
       mockResponseForStubETMPPayload(Status.OK, "123456789")
@@ -183,19 +194,26 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
   "getAppealsDataForLatePaymentPenalty" should {
     "call ETMP and compare the penalty ID provided and the penalty ID in the payload - return OK if there is a match" in {
       mockResponseForStubETMPPayload(Status.OK, "123456789", Some(lspAndLppBodyToReturnFromETMP.toString()))
-      val result = await(buildClientForRequestToApp(uri = "/appeals-data/late-payments?penaltyId=1234&enrolmentKey=123456789").get())
+      val result = await(buildClientForRequestToApp(uri = "/appeals-data/late-payments?penaltyId=1234&enrolmentKey=123456789&isAdditional=false").get())
       result.status shouldBe Status.OK
       result.body shouldBe appealJsonLPP.toString()
     }
 
+    "call ETMP and compare the penalty ID provided and the penalty ID in the payload for Additional- return OK if there is a match" in {
+      mockResponseForStubETMPPayload(Status.OK, "123456789", Some(lspAndLppBodyToReturnFromETMP.toString()))
+      val result = await(buildClientForRequestToApp(uri = "/appeals-data/late-payments?penaltyId=1234&enrolmentKey=123456789&isAdditional=true").get())
+      result.status shouldBe Status.OK
+      result.body shouldBe appealJsonLPPAdditional.toString()
+    }
+
     "return NOT_FOUND when the penalty ID given does not match the penalty ID in the payload" in {
       mockResponseForStubETMPPayload(Status.OK, "123456789", Some(lspAndLppBodyToReturnFromETMP.toString()))
-      val result = await(buildClientForRequestToApp(uri = "/appeals-data/late-payments?penaltyId=0001&enrolmentKey=123456789").get())
+      val result = await(buildClientForRequestToApp(uri = "/appeals-data/late-payments?penaltyId=0001&enrolmentKey=123456789&isAdditional=false").get())
       result.status shouldBe Status.NOT_FOUND
     }
 
     "return an ISE when the call to ETMP fails" in {
-      val result = await(buildClientForRequestToApp(uri = "/appeals-data/late-payments?penaltyId=0001&enrolmentKey=123456789").get())
+      val result = await(buildClientForRequestToApp(uri = "/appeals-data/late-payments?penaltyId=0001&enrolmentKey=123456789&isAdditional=false").get())
       result.status shouldBe Status.INTERNAL_SERVER_ERROR
     }
   }
