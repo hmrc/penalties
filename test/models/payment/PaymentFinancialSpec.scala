@@ -32,10 +32,29 @@ class PaymentFinancialSpec extends AnyWordSpec with Matchers {
       |}
       |""".stripMargin)
 
+  val paymentFinancialWithCrystalizedAndEstimatedInterestJson: JsValue = Json.parse(
+    """
+      |{
+      | "amountDue": 420.10,
+      | "outstandingAmountDue": 0.00,
+      | "dueDate": "2020-01-01T13:00:00.123",
+      | "estimatedInterest": 10.00,
+      | "crystalizedInterest": 10.00
+      |}
+      |""".stripMargin)
+
   val paymentFinancialModel: PaymentFinancial = PaymentFinancial(
     amountDue = 420.10,
     outstandingAmountDue = 0.00,
     dueDate = LocalDateTime.parse("2020-01-01T13:00:00.123")
+  )
+
+  val paymentFinancialModelWithCrystalizedAndEstimatedInterest: PaymentFinancial = PaymentFinancial(
+    amountDue = 420.10,
+    outstandingAmountDue = 0.00,
+    dueDate = LocalDateTime.parse("2020-01-01T13:00:00.123"),
+    estimatedInterest = Some(10.00),
+    crystalizedInterest = Some(10.00)
   )
 
   "be readable from JSON" in {
@@ -47,5 +66,16 @@ class PaymentFinancialSpec extends AnyWordSpec with Matchers {
   "be writable to JSON" in {
     val result = Json.toJson(paymentFinancialModel)
     result shouldBe paymentFinancialJson
+  }
+
+  "be readable from JSON with interest present" in {
+    val result = Json.fromJson(paymentFinancialWithCrystalizedAndEstimatedInterestJson)(PaymentFinancial.format)
+    result.isSuccess shouldBe true
+    result.get shouldBe paymentFinancialModelWithCrystalizedAndEstimatedInterest
+  }
+
+  "be writable to JSON with interest present" in {
+    val result = Json.toJson(paymentFinancialModelWithCrystalizedAndEstimatedInterest)
+    result shouldBe paymentFinancialWithCrystalizedAndEstimatedInterestJson
   }
 }

@@ -16,6 +16,7 @@
 
 package models
 
+import models.financial.OverviewElement
 import models.payment.LatePaymentPenalty
 import models.point.PenaltyPoint
 import play.api.libs.json.{Json, OFormat}
@@ -26,6 +27,8 @@ case class ETMPPayload(
                         adjustmentPointsTotal: Int,
                         fixedPenaltyAmount: BigDecimal,
                         penaltyAmountsTotal: BigDecimal,
+                        otherPenalties: Option[Boolean] = None,
+                        vatOverview: Option[Seq[OverviewElement]] = None,
                         penaltyPointsThreshold: Int,
                         penaltyPoints: Seq[PenaltyPoint],
                         latePaymentPenalties: Option[Seq[LatePaymentPenalty]] = None

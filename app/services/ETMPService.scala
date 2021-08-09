@@ -16,16 +16,14 @@
 
 package services
 
-import connectors.{AppealsConnector, ETMPConnector}
 import connectors.parsers.ETMPPayloadParser.{ETMPPayloadResponse, GetETMPPayloadFailureResponse, GetETMPPayloadMalformed, GetETMPPayloadNoContent, GetETMPPayloadSuccessResponse}
+import connectors.{AppealsConnector, ETMPConnector}
 import models.ETMPPayload
 import models.appeals.AppealSubmission
-import models.payment.LatePaymentPenalty
-import models.point.PenaltyPoint
-import utils.Logger.logger
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
+import utils.Logger.logger
 
-import java.time.{LocalDate, LocalDateTime}
+import java.time.LocalDate
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
