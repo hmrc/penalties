@@ -27,13 +27,13 @@ import uk.gov.hmrc.http.HttpResponse
 class ETMPPayloadParserSpec extends AnyWordSpec with Matchers {
 
   val mockETMPPayloadModel: ETMPPayload = ETMPPayload(
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    Seq.empty
+    pointsTotal = 0,
+    lateSubmissions = 0,
+    adjustmentPointsTotal = 0,
+    fixedPenaltyAmount = 0,
+    penaltyAmountsTotal = 0,
+    penaltyPointsThreshold = 0,
+    penaltyPoints = Seq.empty
   )
   val mockOKHttpResponseWithValidBody: HttpResponse = HttpResponse.apply(status = Status.OK, json = Json.toJson(mockETMPPayloadModel), headers = Map.empty)
   val mockOKHttpResponseWithInvalidBody: HttpResponse = HttpResponse.apply(status = Status.OK, json = Json.parse("{}"), headers = Map.empty)

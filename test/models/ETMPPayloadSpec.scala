@@ -21,7 +21,7 @@ import models.appeals.AppealStatusEnum
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 import models.communication.{Communication, CommunicationTypeEnum}
-import models.financial.Financial
+import models.financial.{AmountTypeEnum, Financial, OverviewElement}
 import models.payment.{LatePaymentPenalty, PaymentFinancial, PaymentPeriod, PaymentStatusEnum}
 import models.penalty.PenaltyPeriod
 import models.point.{PenaltyPoint, PenaltyTypeEnum, PointStatusEnum}
@@ -42,6 +42,89 @@ class ETMPPayloadSpec extends AnyWordSpec with Matchers {
       |	"adjustmentPointsTotal": 1,
       |	"fixedPenaltyAmount": 200,
       |	"penaltyAmountsTotal": 400.00,
+      |	"penaltyPointsThreshold": 4,
+      |	"penaltyPoints": [
+      |		{
+      |			"type": "financial",
+      |			"number": "2",
+      |     "appealStatus": "UNDER_REVIEW",
+      |     "id": "123456790",
+      |			"dateCreated": "2021-04-23T18:25:43.511",
+      |			"dateExpired": "2021-04-23T18:25:43.511",
+      |			"status": "ACTIVE",
+      |			"period": {
+      |				"startDate": "2021-04-23T18:25:43.511",
+      |				"endDate": "2021-04-23T18:25:43.511",
+      |				"submission": {
+      |					"dueDate": "2021-04-23T18:25:43.511",
+      |					"submittedDate": "2021-04-23T18:25:43.511",
+      |					"status": "SUBMITTED"
+      |				}
+      |			},
+      |			"communications": [
+      |				{
+      |					"type": "secureMessage",
+      |					"dateSent": "2021-04-23T18:25:43.511",
+      |					"documentId": "1234567890"
+      |				}
+      |			],
+      |     "financial": {
+      |        "amountDue": 400.00,
+      |        "dueDate": "2021-04-23T18:25:43.511"
+      |     }
+      |		},
+      |		{
+      |			"type": "point",
+      |			"number": "1",
+      |     "id": "123456789",
+      |			"dateCreated": "2021-04-23T18:25:43.511",
+      |			"dateExpired": "2021-04-23T18:25:43.511",
+      |			"status": "ACTIVE",
+      |     "reason": "reason",
+      |			"period": {
+      |				"startDate": "2021-04-23T18:25:43.511",
+      |				"endDate": "2021-04-23T18:25:43.511",
+      |				"submission": {
+      |					"dueDate": "2021-04-23T18:25:43.511",
+      |					"submittedDate": "2021-04-23T18:25:43.511",
+      |					"status": "SUBMITTED"
+      |				}
+      |			},
+      |			"communications": [
+      |				{
+      |					"type": "letter",
+      |					"dateSent": "2021-04-23T18:25:43.511",
+      |					"documentId": "1234567890"
+      |				}
+      |			]
+      |		}
+      |	]
+      |}
+      |""".stripMargin)
+
+  val etmpPayloadWithVATOverviewAsJson: JsValue = Json.parse(
+    """
+        {
+      |	"pointsTotal": 1,
+      |	"lateSubmissions": 1,
+      |	"adjustmentPointsTotal": 1,
+      |	"fixedPenaltyAmount": 200,
+      |	"penaltyAmountsTotal": 400.00,
+      | "otherPenalties": false,
+      | "vatOverview": [
+      |   {
+      |     "type": "VAT",
+      |     "amount": 100.00,
+      |     "estimatedInterest": 10.00,
+      |     "crystalizedInterest": 10.00
+      |   },
+      |   {
+      |     "type": "CENTRAL_ASSESSMENT",
+      |     "amount": 100.00,
+      |     "estimatedInterest": 10.00,
+      |     "crystalizedInterest": 10.00
+      |   }
+      | ],
       |	"penaltyPointsThreshold": 4,
       |	"penaltyPoints": [
       |		{
@@ -289,6 +372,90 @@ class ETMPPayloadSpec extends AnyWordSpec with Matchers {
     )
   )
 
+  val etmpPayloadModelWithVATOverview: ETMPPayload = ETMPPayload(
+    pointsTotal = 1,
+    lateSubmissions = 1,
+    adjustmentPointsTotal = 1,
+    fixedPenaltyAmount = 200.00,
+    penaltyAmountsTotal = 400.00,
+    otherPenalties = Some(false),
+    vatOverview = Some(
+      Seq(
+        OverviewElement(
+          `type` = AmountTypeEnum.VAT,
+          amount = 100.00,
+          estimatedInterest = Some(10.00),
+          crystalizedInterest = Some(10.00)
+        ),
+        OverviewElement(
+          `type` = AmountTypeEnum.Central_Assessment,
+          amount = 100.00,
+          estimatedInterest = Some(10.00),
+          crystalizedInterest = Some(10.00)
+        )
+      )
+    ),
+    penaltyPointsThreshold = 4,
+    penaltyPoints = Seq(
+      PenaltyPoint(
+        `type` = PenaltyTypeEnum.Financial,
+        number = "2",
+        id = "123456790",
+        appealStatus = Some(AppealStatusEnum.Under_Review),
+        dateCreated = sampleDate,
+        dateExpired = Some(sampleDate),
+        status = PointStatusEnum.Active,
+        reason = None,
+        period = Some(PenaltyPeriod(
+          startDate = sampleDate,
+          endDate = sampleDate,
+          submission = Submission(
+            dueDate = sampleDate,
+            submittedDate = Some(sampleDate),
+            status = SubmissionStatusEnum.Submitted
+          )
+        )),
+        communications = Seq(
+          Communication(
+            `type` = CommunicationTypeEnum.secureMessage,
+            dateSent = sampleDate,
+            documentId = "1234567890"
+          )
+        ),
+        financial = Some(Financial(
+          amountDue = 400.00,
+          dueDate = sampleDate
+        ))
+      ),
+      PenaltyPoint(
+        `type` = PenaltyTypeEnum.Point,
+        number = "1",
+        id = "123456789",
+        appealStatus = None,
+        dateCreated = sampleDate,
+        dateExpired = Some(sampleDate),
+        status = PointStatusEnum.Active,
+        reason = Some("reason"),
+        period = Some(PenaltyPeriod(
+          startDate = sampleDate,
+          endDate = sampleDate,
+          submission = Submission(
+            dueDate = sampleDate,
+            submittedDate = Some(sampleDate),
+            status = SubmissionStatusEnum.Submitted
+          )
+        )),
+        communications = Seq(
+          Communication(
+            `type` = CommunicationTypeEnum.letter,
+            dateSent = sampleDate,
+            documentId = "1234567890")
+        ),
+        financial = None
+      )
+    )
+  )
+
   val etmpPayloadModelWithLPPs = etmpPayloadModel.copy(
     latePaymentPenalties = Some(
       Seq(
@@ -359,6 +526,11 @@ class ETMPPayloadSpec extends AnyWordSpec with Matchers {
       result shouldBe etmpPayloadAsJsonWithLPP
     }
 
+    "be writable to JSON when there is a VAT overview field present" in {
+      val result = Json.toJson(etmpPayloadModelWithVATOverview)
+      result shouldBe etmpPayloadWithVATOverviewAsJson
+    }
+
     "be readable from JSON" in {
       val result = Json.fromJson(etmpPayloadAsJson)(ETMPPayload.format)
       result.isSuccess shouldBe true
@@ -369,6 +541,12 @@ class ETMPPayloadSpec extends AnyWordSpec with Matchers {
       val result = Json.fromJson(etmpPayloadAsJsonWithLPP)(ETMPPayload.format)
       result.isSuccess shouldBe true
       result.get shouldBe etmpPayloadModelWithLPPs
+    }
+
+    "be readable from JSON when there is a VAT overview field present" in {
+      val result = Json.fromJson(etmpPayloadWithVATOverviewAsJson)(ETMPPayload.format)
+      result.isSuccess shouldBe true
+      result.get shouldBe etmpPayloadModelWithVATOverview
     }
   }
 }
