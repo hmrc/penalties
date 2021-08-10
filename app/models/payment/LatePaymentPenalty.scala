@@ -19,6 +19,7 @@ package models.payment
 import models.appeals.AppealStatusEnum
 import models.communication.Communication
 import models.point.{PenaltyTypeEnum, PointStatusEnum}
+import models.reason.PaymentPenaltyReasonEnum
 import play.api.libs.json.{Json, OFormat}
 
 import java.time.LocalDateTime
@@ -26,7 +27,7 @@ import java.time.LocalDateTime
 case class LatePaymentPenalty(
                          `type`: PenaltyTypeEnum.Value,
                          id: String,
-                         reason: String,
+                         reason: PaymentPenaltyReasonEnum.Value,
                          dateCreated: LocalDateTime,
                          status: PointStatusEnum.Value,
                          appealStatus: Option[AppealStatusEnum.Value] = None,

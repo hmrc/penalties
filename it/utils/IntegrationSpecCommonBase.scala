@@ -27,6 +27,7 @@ import models.financial.{AmountTypeEnum, Financial, OverviewElement}
 import models.payment.{LatePaymentPenalty, PaymentFinancial, PaymentPeriod, PaymentStatusEnum}
 import models.penalty.PenaltyPeriod
 import models.point.{PenaltyPoint, PenaltyTypeEnum, PointStatusEnum}
+import models.reason.PaymentPenaltyReasonEnum
 import models.submission.{Submission, SubmissionStatusEnum}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
@@ -161,7 +162,7 @@ trait IntegrationSpecCommonBase extends AnyWordSpec with Matchers with GuiceOneS
     LatePaymentPenalty(
       `type` = PenaltyTypeEnum.Financial,
       id = "1234567891",
-      reason = "VAT_NOT_PAID_ON_TIME",
+      reason = PaymentPenaltyReasonEnum.VAT_NOT_PAID_WITHIN_30_DAYS,
       dateCreated = sampleDate,
       status = PointStatusEnum.Active,
       appealStatus = Some(AppealStatusEnum.Under_Review),
@@ -190,7 +191,7 @@ trait IntegrationSpecCommonBase extends AnyWordSpec with Matchers with GuiceOneS
     LatePaymentPenalty(
       `type` = PenaltyTypeEnum.Additional,
       id = "1234567892",
-      reason = "VAT_NOT_PAID_WITHIN_31_DAYS",
+      reason = PaymentPenaltyReasonEnum.VAT_NOT_PAID_AFTER_30_DAYS,
       dateCreated = sampleDate,
       status = PointStatusEnum.Active,
       period = PaymentPeriod(
@@ -215,7 +216,7 @@ trait IntegrationSpecCommonBase extends AnyWordSpec with Matchers with GuiceOneS
     LatePaymentPenalty(
       `type` = PenaltyTypeEnum.Financial,
       id = "1234567891",
-      reason = "VAT_NOT_PAID_ON_TIME",
+      reason = PaymentPenaltyReasonEnum.VAT_NOT_PAID_WITHIN_30_DAYS,
       dateCreated = sampleDate,
       status = PointStatusEnum.Active,
       appealStatus = Some(AppealStatusEnum.Under_Review),
@@ -262,7 +263,7 @@ trait IntegrationSpecCommonBase extends AnyWordSpec with Matchers with GuiceOneS
       LatePaymentPenalty(
         `type` = PenaltyTypeEnum.Additional,
         id = "1234567892",
-        reason = "VAT_NOT_PAID_WITHIN_31_DAYS",
+        reason = PaymentPenaltyReasonEnum.VAT_NOT_PAID_AFTER_30_DAYS,
         dateCreated = sampleDate,
         status = PointStatusEnum.Active,
         period = PaymentPeriod(
@@ -287,7 +288,7 @@ trait IntegrationSpecCommonBase extends AnyWordSpec with Matchers with GuiceOneS
       LatePaymentPenalty(
         `type` = PenaltyTypeEnum.Financial,
         id = "1234567891",
-        reason = "VAT_NOT_PAID_ON_TIME",
+        reason = PaymentPenaltyReasonEnum.VAT_NOT_PAID_WITHIN_30_DAYS,
         dateCreated = sampleDate,
         status = PointStatusEnum.Active,
         appealStatus = Some(AppealStatusEnum.Under_Review),
