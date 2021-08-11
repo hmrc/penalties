@@ -133,7 +133,7 @@ trait SpecBase extends AnyWordSpec with Matchers with GuiceOneAppPerSuite {
         LatePaymentPenalty(
           `type` = PenaltyTypeEnum.Additional,
           id = "123456801",
-          reason = "",
+          reason = PaymentPenaltyReasonEnum.VAT_NOT_PAID_AFTER_30_DAYS,
           dateCreated = LocalDateTime.of(1970, 2, 8, 0, 0, 0),
           status = PointStatusEnum.Due,
           appealStatus = None,
@@ -159,7 +159,7 @@ trait SpecBase extends AnyWordSpec with Matchers with GuiceOneAppPerSuite {
         LatePaymentPenalty(
           `type` = PenaltyTypeEnum.Financial,
           id = "123456800",
-          reason = "",
+          reason = PaymentPenaltyReasonEnum.VAT_NOT_PAID_WITHIN_30_DAYS,
           dateCreated = LocalDateTime.of(1970, 2, 8, 0, 0, 0),
           status = PointStatusEnum.Due,
           appealStatus = None,
