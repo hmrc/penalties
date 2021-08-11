@@ -25,6 +25,7 @@ import models.financial.{AmountTypeEnum, Financial, OverviewElement}
 import models.payment.{LatePaymentPenalty, PaymentFinancial, PaymentPeriod, PaymentStatusEnum}
 import models.penalty.PenaltyPeriod
 import models.point.{PenaltyPoint, PenaltyTypeEnum, PointStatusEnum}
+import models.reason.PaymentPenaltyReasonEnum
 import models.submission.{Submission, SubmissionStatusEnum}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
@@ -253,7 +254,7 @@ class ETMPPayloadSpec extends AnyWordSpec with Matchers {
       | "latePaymentPenalties": [
       |     {
       |       "type": "additional",
-      |       "reason": "VAT_OVERDUE_BY_31_DAYS",
+      |       "reason": "VAT_NOT_PAID_AFTER_30_DAYS",
       |       "id": "1234567892",
       |       "dateCreated": "2021-04-23T18:25:43.511",
       |       "status": "ACTIVE",
@@ -278,7 +279,7 @@ class ETMPPayloadSpec extends AnyWordSpec with Matchers {
       |     },
       |     {
       |       "type": "financial",
-      |       "reason": "VAT_NOT_PAID_ON_TIME",
+      |       "reason": "VAT_NOT_PAID_WITHIN_30_DAYS",
       |       "id": "1234567891",
       |       "dateCreated": "2021-04-23T18:25:43.511",
       |       "status": "ACTIVE",
@@ -462,7 +463,7 @@ class ETMPPayloadSpec extends AnyWordSpec with Matchers {
         LatePaymentPenalty(
           `type` = PenaltyTypeEnum.Additional,
           id = "1234567892",
-          reason = "VAT_OVERDUE_BY_31_DAYS",
+          reason = PaymentPenaltyReasonEnum.VAT_NOT_PAID_AFTER_30_DAYS,
           dateCreated = sampleDate,
           status = PointStatusEnum.Active,
           appealStatus = None,
@@ -488,7 +489,7 @@ class ETMPPayloadSpec extends AnyWordSpec with Matchers {
         LatePaymentPenalty(
           `type` = PenaltyTypeEnum.Financial,
           id = "1234567891",
-          reason = "VAT_NOT_PAID_ON_TIME",
+          reason = PaymentPenaltyReasonEnum.VAT_NOT_PAID_WITHIN_30_DAYS,
           dateCreated = sampleDate,
           status = PointStatusEnum.Active,
           appealStatus = None,

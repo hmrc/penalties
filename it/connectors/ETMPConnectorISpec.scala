@@ -100,7 +100,7 @@ class ETMPConnectorISpec extends IntegrationSpecCommonBase with ETMPWiremock wit
       | "latePaymentPenalties": [
       |    {
       |      "type": "financial",
-      |      "reason": "VAT_NOT_PAID_ON_TIME",
+      |      "reason": "VAT_NOT_PAID_WITHIN_30_DAYS",
       |      "id": "1234567891",
       |      "dateCreated": "2021-04-23T18:25:43.511",
       |      "status": "ACTIVE",
@@ -195,7 +195,7 @@ class ETMPConnectorISpec extends IntegrationSpecCommonBase with ETMPWiremock wit
       | "latePaymentPenalties": [
       |     {
       |      "type": "additional",
-      |      "reason": "VAT_NOT_PAID_WITHIN_31_DAYS",
+      |      "reason": "VAT_NOT_PAID_AFTER_30_DAYS",
       |      "id": "1234567892",
       |      "dateCreated": "2021-04-23T18:25:43.511",
       |      "status": "ACTIVE",
@@ -220,7 +220,7 @@ class ETMPConnectorISpec extends IntegrationSpecCommonBase with ETMPWiremock wit
       |    },
       |    {
       |      "type": "financial",
-      |      "reason": "VAT_NOT_PAID_ON_TIME",
+      |      "reason": "VAT_NOT_PAID_WITHIN_30_DAYS",
       |      "id": "1234567891",
       |      "dateCreated": "2021-04-23T18:25:43.511",
       |      "status": "ACTIVE",

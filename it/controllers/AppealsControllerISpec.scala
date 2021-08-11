@@ -112,7 +112,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
       |			{
       |				"type": "financial",
       |				"id" : "1234",
-      |				"reason": "",
+      |				"reason": "VAT_NOT_PAID_WITHIN_30_DAYS",
       |				"dateCreated": "2023-01-01T18:25:43.511",
       |				"status": "DUE",
       |				"period": {
@@ -564,7 +564,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
         |			{
         |				"type" : "financial",
         |				"id" : "1234567901",
-        |				"reason" : "",
+        |				"reason" : "VAT_NOT_PAID_WITHIN_30_DAYS",
         |				"dateCreated" : "2023-01-01T18:25:43.511Z",
         |				"status" : "DUE",
         |				"period" : {
@@ -629,7 +629,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
         |			{
         |				"type" : "financial",
         |				"id" : "1234567901",
-        |				"reason" : "",
+        |				"reason" : "VAT_NOT_PAID_WITHIN_30_DAYS",
         |				"dateCreated" : "2023-01-01T18:25:43.511Z",
         |				"status" : "DUE",
         |				"period" : {

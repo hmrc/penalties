@@ -63,7 +63,7 @@ class ETMPServiceISpec extends IntegrationSpecCommonBase with ETMPWiremock {
       |			{
       |				"type" : "financial",
       |				"id" : "1234567901",
-      |				"reason" : "",
+      |				"reason" : "VAT_NOT_PAID_WITHIN_30_DAYS",
       |				"dateCreated" : "2023-01-01T18:25:43.511Z",
       |				"status" : "DUE",
       |				"period" : {
@@ -128,7 +128,7 @@ class ETMPServiceISpec extends IntegrationSpecCommonBase with ETMPWiremock {
       |  {
       |				"type" : "financial",
       |				"id" : "1234567902",
-      |				"reason" : "",
+      |				"reason" : "VAT_NOT_PAID_WITHIN_30_DAYS",
       |				"dateCreated" : "2023-01-01T18:25:43.511Z",
       |				"status" : "DUE",
       |				"period" : {
@@ -153,7 +153,7 @@ class ETMPServiceISpec extends IntegrationSpecCommonBase with ETMPWiremock {
       |			{
       |				"type" : "financial",
       |				"id" : "1234567901",
-      |				"reason" : "",
+      |				"reason" : "VAT_NOT_PAID_WITHIN_30_DAYS",
       |				"dateCreated" : "2023-01-01T18:25:43.511Z",
       |				"status" : "DUE",
       |				"period" : {

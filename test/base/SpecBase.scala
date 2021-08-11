@@ -23,6 +23,7 @@ import models.communication.{Communication, CommunicationTypeEnum}
 import models.payment.{LatePaymentPenalty, PaymentFinancial, PaymentPeriod, PaymentStatusEnum}
 import models.penalty.PenaltyPeriod
 import models.point.{PenaltyPoint, PenaltyTypeEnum, PointStatusEnum}
+import models.reason.PaymentPenaltyReasonEnum
 import models.submission.{Submission, SubmissionStatusEnum}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
@@ -91,7 +92,7 @@ trait SpecBase extends AnyWordSpec with Matchers with GuiceOneAppPerSuite {
         LatePaymentPenalty(
           `type` = PenaltyTypeEnum.Financial,
           id = "123456800",
-          reason = "",
+          reason = PaymentPenaltyReasonEnum.VAT_NOT_PAID_WITHIN_30_DAYS,
           dateCreated = LocalDateTime.of(1970, 2, 8, 0, 0, 0),
           status = PointStatusEnum.Due,
           appealStatus = None,
@@ -318,7 +319,7 @@ trait SpecBase extends AnyWordSpec with Matchers with GuiceOneAppPerSuite {
         LatePaymentPenalty(
           `type` = PenaltyTypeEnum.Financial,
           id = "123456800",
-          reason = "",
+          reason = PaymentPenaltyReasonEnum.VAT_NOT_PAID_WITHIN_30_DAYS,
           dateCreated = LocalDateTime.of(1970, 2, 8, 0, 0, 0),
           status = PointStatusEnum.Due,
           appealStatus = None,
@@ -344,7 +345,7 @@ trait SpecBase extends AnyWordSpec with Matchers with GuiceOneAppPerSuite {
         LatePaymentPenalty(
           `type` = PenaltyTypeEnum.Financial,
           id = "123456799",
-          reason = "",
+          reason = PaymentPenaltyReasonEnum.VAT_NOT_PAID_WITHIN_30_DAYS,
           dateCreated = LocalDateTime.of(1970, 2, 8, 0, 0, 0),
           status = PointStatusEnum.Due,
           appealStatus = None,

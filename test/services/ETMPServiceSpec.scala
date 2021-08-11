@@ -25,6 +25,7 @@ import models.communication.{Communication, CommunicationTypeEnum}
 import models.payment.{LatePaymentPenalty, PaymentFinancial, PaymentPeriod, PaymentStatusEnum}
 import models.penalty.PenaltyPeriod
 import models.point.{PenaltyPoint, PenaltyTypeEnum, PointStatusEnum}
+import models.reason.PaymentPenaltyReasonEnum
 import models.submission.{Submission, SubmissionStatusEnum}
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
@@ -175,7 +176,7 @@ class ETMPServiceSpec extends SpecBase {
           LatePaymentPenalty(
             `type` = PenaltyTypeEnum.Financial,
             id = "123456800",
-            reason = "",
+            reason = PaymentPenaltyReasonEnum.VAT_NOT_PAID_WITHIN_30_DAYS,
             dateCreated = LocalDateTime.of(2023, 5, 8, 0, 0, 0),
             status = PointStatusEnum.Due,
             appealStatus = None,
@@ -215,7 +216,7 @@ class ETMPServiceSpec extends SpecBase {
           LatePaymentPenalty(
             `type` = PenaltyTypeEnum.Financial,
             id = "123456801",
-            reason = "",
+            reason = PaymentPenaltyReasonEnum.VAT_NOT_PAID_WITHIN_30_DAYS,
             dateCreated = LocalDateTime.of(2023, 5, 8, 0, 0, 0),
             status = PointStatusEnum.Due,
             appealStatus = None,
@@ -241,7 +242,7 @@ class ETMPServiceSpec extends SpecBase {
           LatePaymentPenalty(
             `type` = PenaltyTypeEnum.Financial,
             id = "123456800",
-            reason = "",
+            reason = PaymentPenaltyReasonEnum.VAT_NOT_PAID_WITHIN_30_DAYS,
             dateCreated = LocalDateTime.of(2023, 5, 8, 0, 0, 0),
             status = PointStatusEnum.Due,
             appealStatus = None,
@@ -309,7 +310,7 @@ class ETMPServiceSpec extends SpecBase {
           LatePaymentPenalty(
             `type` = PenaltyTypeEnum.Financial,
             id = "123456800",
-            reason = "",
+            reason = PaymentPenaltyReasonEnum.VAT_NOT_PAID_WITHIN_30_DAYS,
             dateCreated = LocalDateTime.of(2023, 8, 8, 0, 0, 0),
             status = PointStatusEnum.Due,
             appealStatus = None,
