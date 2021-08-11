@@ -118,6 +118,73 @@ trait SpecBase extends AnyWordSpec with Matchers with GuiceOneAppPerSuite {
     )
   )
 
+  val mockETMPPayloadResponseAsModelForLPPWithAdditionalPenalties: ETMPPayload = ETMPPayload(
+    pointsTotal = 1,
+    lateSubmissions = 0 ,
+    adjustmentPointsTotal = 0,
+    fixedPenaltyAmount = 0,
+    penaltyAmountsTotal = 1,
+    penaltyPointsThreshold = 3,
+    penaltyPoints = Seq(
+    ),
+    latePaymentPenalties = Some(
+      Seq(
+        LatePaymentPenalty(
+          `type` = PenaltyTypeEnum.Additional,
+          id = "123456801",
+          reason = "",
+          dateCreated = LocalDateTime.of(1970, 2, 8, 0, 0, 0),
+          status = PointStatusEnum.Due,
+          appealStatus = None,
+          period = PaymentPeriod(
+            startDate = LocalDateTime.of(1970, 2, 8, 0, 0, 0),
+            endDate = LocalDateTime.of(1970, 2, 8, 0, 0, 0),
+            dueDate = LocalDateTime.of(1970, 2, 8, 0, 0, 0),
+            paymentStatus = PaymentStatusEnum.Paid
+          ),
+          communications = Seq(
+            Communication(
+              `type` = CommunicationTypeEnum.letter,
+              dateSent = LocalDateTime.of(1970, 2, 8, 0, 0, 0),
+              documentId = "DOC1"
+            )
+          ),
+          financial = PaymentFinancial(
+            amountDue = 144,
+            outstandingAmountDue = 0,
+            dueDate = LocalDateTime.of(1970, 2, 8, 0, 0, 0)
+          )
+        ),
+        LatePaymentPenalty(
+          `type` = PenaltyTypeEnum.Financial,
+          id = "123456800",
+          reason = "",
+          dateCreated = LocalDateTime.of(1970, 2, 8, 0, 0, 0),
+          status = PointStatusEnum.Due,
+          appealStatus = None,
+          period = PaymentPeriod(
+            startDate = LocalDateTime.of(1970, 2, 8, 0, 0, 0),
+            endDate = LocalDateTime.of(1970, 2, 8, 0, 0, 0),
+            dueDate = LocalDateTime.of(1970, 2, 8, 0, 0, 0),
+            paymentStatus = PaymentStatusEnum.Paid
+          ),
+          communications = Seq(
+            Communication(
+              `type` = CommunicationTypeEnum.letter,
+              dateSent = LocalDateTime.of(1970, 2, 8, 0, 0, 0),
+              documentId = "DOC1"
+            )
+          ),
+          financial = PaymentFinancial(
+            amountDue = 144,
+            outstandingAmountDue = 0,
+            dueDate = LocalDateTime.of(1970, 2, 8, 0, 0, 0)
+          )
+        )
+      )
+    )
+  )
+
   val mockETMPPayloadResponseAsModelMultiplePoints: ETMPPayload = ETMPPayload(
     pointsTotal = 2,
     lateSubmissions = 2,
