@@ -69,6 +69,7 @@ class ETMPConnectorISpec extends IntegrationSpecCommonBase with ETMPWiremock wit
       |			],
       |     "financial": {
       |        "amountDue": 400.00,
+      |        "outstandingAmountDue": 400.00,
       |        "dueDate": "2021-04-23T18:25:43.511"
       |     }
       |		},
@@ -164,6 +165,7 @@ class ETMPConnectorISpec extends IntegrationSpecCommonBase with ETMPWiremock wit
       |			],
       |     "financial": {
       |        "amountDue": 400.00,
+      |        "outstandingAmountDue": 400.00,
       |        "dueDate": "2021-04-23T18:25:43.511"
       |     }
       |		},

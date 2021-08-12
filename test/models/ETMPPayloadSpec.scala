@@ -71,6 +71,7 @@ class ETMPPayloadSpec extends AnyWordSpec with Matchers {
       |			],
       |     "financial": {
       |        "amountDue": 400.00,
+      |        "outstandingAmountDue": 400.00,
       |        "dueDate": "2021-04-23T18:25:43.511"
       |     }
       |		},
@@ -154,6 +155,7 @@ class ETMPPayloadSpec extends AnyWordSpec with Matchers {
       |			],
       |     "financial": {
       |        "amountDue": 400.00,
+      |        "outstandingAmountDue": 400.00,
       |        "dueDate": "2021-04-23T18:25:43.511"
       |     }
       |		},
@@ -222,6 +224,7 @@ class ETMPPayloadSpec extends AnyWordSpec with Matchers {
       |			],
       |     "financial": {
       |        "amountDue": 400.00,
+      |        "outstandingAmountDue": 400.00,
       |        "dueDate": "2021-04-23T18:25:43.511"
       |     }
       |		},
@@ -341,6 +344,7 @@ class ETMPPayloadSpec extends AnyWordSpec with Matchers {
         ),
         financial = Some(Financial(
           amountDue = 400.00,
+          outstandingAmountDue = 400.00,
           dueDate = sampleDate
         ))
       ),
@@ -425,6 +429,7 @@ class ETMPPayloadSpec extends AnyWordSpec with Matchers {
         ),
         financial = Some(Financial(
           amountDue = 400.00,
+          outstandingAmountDue = 400.00,
           dueDate = sampleDate
         ))
       ),

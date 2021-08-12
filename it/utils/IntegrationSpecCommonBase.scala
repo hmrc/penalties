@@ -126,6 +126,7 @@ trait IntegrationSpecCommonBase extends AnyWordSpec with Matchers with GuiceOneS
         ),
         financial = Some(Financial(
           amountDue = 400.00,
+          outstandingAmountDue = 400.00,
           dueDate = sampleDate
         ))
       ),
