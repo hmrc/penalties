@@ -17,8 +17,9 @@
 package models.point
 
 import models.appeals.AppealStatusEnum
+import models.financial.Financial
 import models.payment
-import models.payment.{LatePaymentPenalty, PaymentFinancial, PaymentPeriod, PaymentStatusEnum}
+import models.payment.{LatePaymentPenalty, PaymentPeriod, PaymentStatusEnum}
 import models.reason.PaymentPenaltyReasonEnum
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
@@ -63,7 +64,7 @@ class PaymentPointSpec extends AnyWordSpec with Matchers {
       paymentStatus = PaymentStatusEnum.Paid
     ),
     communications = Seq.empty,
-    financial = PaymentFinancial(
+    financial = Financial(
       amountDue = 400.00,
       outstandingAmountDue = 0.00,
       dueDate = LocalDateTime.parse("2020-01-01T01:00:00.123")

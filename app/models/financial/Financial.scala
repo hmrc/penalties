@@ -22,6 +22,7 @@ import java.time.LocalDateTime
 
 case class Financial(
                       amountDue: BigDecimal,
+                      outstandingAmountDue: BigDecimal,
                       dueDate: LocalDateTime,
                       estimatedInterest: Option[BigDecimal] = None,
                       crystalizedInterest: Option[BigDecimal] = None

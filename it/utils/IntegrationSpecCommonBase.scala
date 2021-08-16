@@ -24,7 +24,7 @@ import models.ETMPPayload
 import models.appeals.AppealStatusEnum
 import models.communication.{Communication, CommunicationTypeEnum}
 import models.financial.{AmountTypeEnum, Financial, OverviewElement}
-import models.payment.{LatePaymentPenalty, PaymentFinancial, PaymentPeriod, PaymentStatusEnum}
+import models.payment.{LatePaymentPenalty, PaymentPeriod, PaymentStatusEnum}
 import models.penalty.PenaltyPeriod
 import models.point.{PenaltyPoint, PenaltyTypeEnum, PointStatusEnum}
 import models.reason.PaymentPenaltyReasonEnum
@@ -126,6 +126,7 @@ trait IntegrationSpecCommonBase extends AnyWordSpec with Matchers with GuiceOneS
         ),
         financial = Some(Financial(
           amountDue = 400.00,
+          outstandingAmountDue = 400.00,
           dueDate = sampleDate
         ))
       ),
@@ -179,7 +180,7 @@ trait IntegrationSpecCommonBase extends AnyWordSpec with Matchers with GuiceOneS
           documentId = "1234567890"
         )
       ),
-      financial = PaymentFinancial(
+      financial = Financial(
         amountDue = 400.00,
         outstandingAmountDue = 0.00,
         dueDate = sampleDate
@@ -207,7 +208,7 @@ trait IntegrationSpecCommonBase extends AnyWordSpec with Matchers with GuiceOneS
           documentId = "1234567890"
         )
       ),
-      financial = PaymentFinancial(
+      financial = Financial(
         amountDue = 123.45,
         outstandingAmountDue = 0.00,
         dueDate = sampleDate
@@ -233,7 +234,7 @@ trait IntegrationSpecCommonBase extends AnyWordSpec with Matchers with GuiceOneS
           documentId = "1234567890"
         )
       ),
-      financial = PaymentFinancial(
+      financial = Financial(
         amountDue = 400.00,
         outstandingAmountDue = 0.00,
         dueDate = sampleDate
@@ -279,7 +280,7 @@ trait IntegrationSpecCommonBase extends AnyWordSpec with Matchers with GuiceOneS
             documentId = "1234567890"
           )
         ),
-        financial = PaymentFinancial(
+        financial = Financial(
           amountDue = 123.45,
           outstandingAmountDue = 0.00,
           dueDate = sampleDate
@@ -305,7 +306,7 @@ trait IntegrationSpecCommonBase extends AnyWordSpec with Matchers with GuiceOneS
             documentId = "1234567890"
           )
         ),
-        financial = PaymentFinancial(
+        financial = Financial(
           amountDue = 400.00,
           outstandingAmountDue = 0.00,
           dueDate = sampleDate
