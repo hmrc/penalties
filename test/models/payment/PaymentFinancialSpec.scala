@@ -16,14 +16,15 @@
 
 package models.payment
 
+import models.financial.Financial
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import play.api.libs.json.{JsValue, Json}
 
 import java.time.LocalDateTime
 
-class PaymentFinancialSpec extends AnyWordSpec with Matchers {
-  val paymentFinancialJson: JsValue = Json.parse(
+class FinancialSpec extends AnyWordSpec with Matchers {
+  val FinancialJson: JsValue = Json.parse(
     """
       |{
       | "amountDue": 420.10,
@@ -32,7 +33,7 @@ class PaymentFinancialSpec extends AnyWordSpec with Matchers {
       |}
       |""".stripMargin)
 
-  val paymentFinancialWithCrystalizedAndEstimatedInterestJson: JsValue = Json.parse(
+  val FinancialWithCrystalizedAndEstimatedInterestJson: JsValue = Json.parse(
     """
       |{
       | "amountDue": 420.10,
@@ -43,13 +44,13 @@ class PaymentFinancialSpec extends AnyWordSpec with Matchers {
       |}
       |""".stripMargin)
 
-  val paymentFinancialModel: PaymentFinancial = PaymentFinancial(
+  val FinancialModel: Financial = Financial(
     amountDue = 420.10,
     outstandingAmountDue = 0.00,
     dueDate = LocalDateTime.parse("2020-01-01T13:00:00.123")
   )
 
-  val paymentFinancialModelWithCrystalizedAndEstimatedInterest: PaymentFinancial = PaymentFinancial(
+  val FinancialModelWithCrystalizedAndEstimatedInterest: Financial = Financial(
     amountDue = 420.10,
     outstandingAmountDue = 0.00,
     dueDate = LocalDateTime.parse("2020-01-01T13:00:00.123"),
@@ -58,24 +59,24 @@ class PaymentFinancialSpec extends AnyWordSpec with Matchers {
   )
 
   "be readable from JSON" in {
-    val result = Json.fromJson(paymentFinancialJson)(PaymentFinancial.format)
+    val result = Json.fromJson(FinancialJson)(Financial.format)
     result.isSuccess shouldBe true
-    result.get shouldBe paymentFinancialModel
+    result.get shouldBe FinancialModel
   }
 
   "be writable to JSON" in {
-    val result = Json.toJson(paymentFinancialModel)
-    result shouldBe paymentFinancialJson
+    val result = Json.toJson(FinancialModel)
+    result shouldBe FinancialJson
   }
 
   "be readable from JSON with interest present" in {
-    val result = Json.fromJson(paymentFinancialWithCrystalizedAndEstimatedInterestJson)(PaymentFinancial.format)
+    val result = Json.fromJson(FinancialWithCrystalizedAndEstimatedInterestJson)(Financial.format)
     result.isSuccess shouldBe true
-    result.get shouldBe paymentFinancialModelWithCrystalizedAndEstimatedInterest
+    result.get shouldBe FinancialModelWithCrystalizedAndEstimatedInterest
   }
 
   "be writable to JSON with interest present" in {
-    val result = Json.toJson(paymentFinancialModelWithCrystalizedAndEstimatedInterest)
-    result shouldBe paymentFinancialWithCrystalizedAndEstimatedInterestJson
+    val result = Json.toJson(FinancialModelWithCrystalizedAndEstimatedInterest)
+    result shouldBe FinancialWithCrystalizedAndEstimatedInterestJson
   }
 }

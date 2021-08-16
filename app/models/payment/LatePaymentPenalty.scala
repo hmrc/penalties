@@ -18,6 +18,7 @@ package models.payment
 
 import models.appeals.AppealStatusEnum
 import models.communication.Communication
+import models.financial.Financial
 import models.point.{PenaltyTypeEnum, PointStatusEnum}
 import models.reason.PaymentPenaltyReasonEnum
 import play.api.libs.json.{Json, OFormat}
@@ -33,7 +34,7 @@ case class LatePaymentPenalty(
                          appealStatus: Option[AppealStatusEnum.Value] = None,
                          period: PaymentPeriod,
                          communications: Seq[Communication],
-                         financial: PaymentFinancial
+                         financial: Financial
                        )
 
 object LatePaymentPenalty {

@@ -20,7 +20,8 @@ import java.time.LocalDateTime
 import config.AppConfig
 import models.ETMPPayload
 import models.communication.{Communication, CommunicationTypeEnum}
-import models.payment.{LatePaymentPenalty, PaymentFinancial, PaymentPeriod, PaymentStatusEnum}
+import models.financial.Financial
+import models.payment.{LatePaymentPenalty, PaymentPeriod, PaymentStatusEnum}
 import models.penalty.PenaltyPeriod
 import models.point.{PenaltyPoint, PenaltyTypeEnum, PointStatusEnum}
 import models.reason.PaymentPenaltyReasonEnum
@@ -109,7 +110,7 @@ trait SpecBase extends AnyWordSpec with Matchers with GuiceOneAppPerSuite {
               documentId = "DOC1"
             )
           ),
-          financial = PaymentFinancial(
+          financial = Financial(
             amountDue = 144,
             outstandingAmountDue = 0,
             dueDate = LocalDateTime.of(1970, 2, 8, 0, 0, 0)
@@ -150,7 +151,7 @@ trait SpecBase extends AnyWordSpec with Matchers with GuiceOneAppPerSuite {
               documentId = "DOC1"
             )
           ),
-          financial = PaymentFinancial(
+          financial = Financial(
             amountDue = 144,
             outstandingAmountDue = 0,
             dueDate = LocalDateTime.of(1970, 2, 8, 0, 0, 0)
@@ -176,7 +177,7 @@ trait SpecBase extends AnyWordSpec with Matchers with GuiceOneAppPerSuite {
               documentId = "DOC1"
             )
           ),
-          financial = PaymentFinancial(
+          financial = Financial(
             amountDue = 144,
             outstandingAmountDue = 0,
             dueDate = LocalDateTime.of(1970, 2, 8, 0, 0, 0)
@@ -336,7 +337,7 @@ trait SpecBase extends AnyWordSpec with Matchers with GuiceOneAppPerSuite {
               documentId = "DOC1"
             )
           ),
-          financial = PaymentFinancial(
+          financial = Financial(
             amountDue = 144,
             outstandingAmountDue = 0,
             dueDate = LocalDateTime.of(1970, 2, 8, 0, 0, 0)
@@ -362,7 +363,7 @@ trait SpecBase extends AnyWordSpec with Matchers with GuiceOneAppPerSuite {
               documentId = "DOC1"
             )
           ),
-          financial = PaymentFinancial(
+          financial = Financial(
             amountDue = 144,
             outstandingAmountDue = 0,
             dueDate = LocalDateTime.of(1970, 2, 8, 0, 0, 0)

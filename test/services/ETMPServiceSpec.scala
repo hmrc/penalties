@@ -22,7 +22,8 @@ import connectors.parsers.ETMPPayloadParser._
 import models.ETMPPayload
 import models.appeals.{AppealSubmission, CrimeAppealInformation}
 import models.communication.{Communication, CommunicationTypeEnum}
-import models.payment.{LatePaymentPenalty, PaymentFinancial, PaymentPeriod, PaymentStatusEnum}
+import models.financial.Financial
+import models.payment.{LatePaymentPenalty, PaymentPeriod, PaymentStatusEnum}
 import models.penalty.PenaltyPeriod
 import models.point.{PenaltyPoint, PenaltyTypeEnum, PointStatusEnum}
 import models.reason.PaymentPenaltyReasonEnum
@@ -193,7 +194,7 @@ class ETMPServiceSpec extends SpecBase {
                 documentId = "DOC1"
               )
             ),
-            financial = PaymentFinancial(
+            financial = Financial(
               amountDue = 144,
               outstandingAmountDue = 0,
               dueDate = LocalDateTime.of(2023, 5, 8, 0, 0, 0)
@@ -233,7 +234,7 @@ class ETMPServiceSpec extends SpecBase {
                 documentId = "DOC1"
               )
             ),
-            financial = PaymentFinancial(
+            financial = Financial(
               amountDue = 144,
               outstandingAmountDue = 0,
               dueDate = LocalDateTime.of(2023, 5, 8, 0, 0, 0)
@@ -259,7 +260,7 @@ class ETMPServiceSpec extends SpecBase {
                 documentId = "DOC1"
               )
             ),
-            financial = PaymentFinancial(
+            financial = Financial(
               amountDue = 144,
               outstandingAmountDue = 0,
               dueDate = LocalDateTime.of(2023, 5, 8, 0, 0, 0)
@@ -327,7 +328,7 @@ class ETMPServiceSpec extends SpecBase {
                 documentId = "DOC1"
               )
             ),
-            financial = PaymentFinancial(
+            financial = Financial(
               amountDue = 144,
               outstandingAmountDue = 0,
               dueDate = LocalDateTime.of(2023, 8, 8, 0, 0, 0)
