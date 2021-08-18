@@ -25,6 +25,7 @@ object PointStatusEnum extends Enumeration {
   val Removed = Value
   val Due = Value
   val Paid = Value
+  val Estimated = Value
 
   implicit val format: Format[PointStatusEnum.Value] = new Format[PointStatusEnum.Value] {
     override def writes(o: PointStatusEnum.Value): JsValue = {
@@ -39,6 +40,7 @@ object PointStatusEnum extends Enumeration {
         case "REMOVED" => JsSuccess(Removed)
         case "DUE" => JsSuccess(Due)
         case "PAID" => JsSuccess(Paid)
+        case "ESTIMATED" => JsSuccess(Estimated)
         case e => JsError(s"$e not recognised")
       }
     }
