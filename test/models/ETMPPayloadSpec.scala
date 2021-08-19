@@ -257,7 +257,7 @@ class ETMPPayloadSpec extends AnyWordSpec with Matchers {
       | "latePaymentPenalties": [
       |     {
       |       "type": "additional",
-      |       "reason": "VAT_NOT_PAID_AFTER_30_DAYS",
+      |       "reason": "OFFICERS_ASSESSMENT_NOT_PAID_WITHIN_15_DAYS",
       |       "id": "1234567892",
       |       "dateCreated": "2021-04-23T18:25:43.511",
       |       "status": "ACTIVE",
@@ -468,7 +468,7 @@ class ETMPPayloadSpec extends AnyWordSpec with Matchers {
         LatePaymentPenalty(
           `type` = PenaltyTypeEnum.Additional,
           id = "1234567892",
-          reason = PaymentPenaltyReasonEnum.VAT_NOT_PAID_AFTER_30_DAYS,
+          reason = PaymentPenaltyReasonEnum.OFFICERS_ASSESSMENT_NOT_PAID_WITHIN_15_DAYS,
           dateCreated = sampleDate,
           status = PointStatusEnum.Active,
           appealStatus = None,
