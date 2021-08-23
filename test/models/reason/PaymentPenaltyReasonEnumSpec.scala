@@ -21,37 +21,165 @@ import org.scalatest.wordspec.AnyWordSpec
 import play.api.libs.json.{JsString, Json}
 
 class PaymentPenaltyReasonEnumSpec extends AnyWordSpec with Matchers {
-  "be writable to JSON for 'VAT_NOT_PAID_AFTER_30_DAYS'" in {
-    val result = Json.toJson(PaymentPenaltyReasonEnum.VAT_NOT_PAID_AFTER_30_DAYS)
-    result shouldBe JsString("VAT_NOT_PAID_AFTER_30_DAYS")
-  }
 
-  "be writable to JSON for 'VAT_NOT_PAID_WITHIN_15_DAYS'" in {
-    val result = Json.toJson(PaymentPenaltyReasonEnum.VAT_NOT_PAID_WITHIN_15_DAYS)
-    result shouldBe JsString("VAT_NOT_PAID_WITHIN_15_DAYS")
-  }
+  "PaymentPenaltyReasonEnum" should {
 
-  "be writable to JSON for 'VAT_NOT_PAID_WITHIN_30_DAYS'" in {
-    val result = Json.toJson(PaymentPenaltyReasonEnum.VAT_NOT_PAID_WITHIN_30_DAYS)
-    result shouldBe JsString("VAT_NOT_PAID_WITHIN_30_DAYS")
-  }
+    "be writable to Json" when {
 
-  "be readable from JSON for 'VAT_NOT_PAID_AFTER_30_DAYS'" in {
-    val result = Json.fromJson(JsString("VAT_NOT_PAID_AFTER_30_DAYS"))(PaymentPenaltyReasonEnum.format)
-    result.isSuccess shouldBe true
-    result.get shouldBe PaymentPenaltyReasonEnum.VAT_NOT_PAID_AFTER_30_DAYS
-  }
+      "the penalty has not been paid within 15 days" when {
 
-  "be readable from JSON for 'VAT_NOT_PAID_WITHIN_30_DAYS'" in {
-    val result = Json.fromJson(JsString("VAT_NOT_PAID_WITHIN_30_DAYS"))(PaymentPenaltyReasonEnum.format)
-    result.isSuccess shouldBe true
-    result.get shouldBe PaymentPenaltyReasonEnum.VAT_NOT_PAID_WITHIN_30_DAYS
-  }
+        "the penalty is for VAT" in {
+          val result = Json.toJson(PaymentPenaltyReasonEnum.VAT_NOT_PAID_WITHIN_15_DAYS)
+          result shouldBe JsString("VAT_NOT_PAID_WITHIN_15_DAYS")
+        }
 
-  "be readable from JSON for 'VAT_NOT_PAID_WITHIN_15_DAYS'" in {
-    val result = Json.fromJson(JsString("VAT_NOT_PAID_WITHIN_15_DAYS"))(PaymentPenaltyReasonEnum.format)
-    result.isSuccess shouldBe true
-    result.get shouldBe PaymentPenaltyReasonEnum.VAT_NOT_PAID_WITHIN_15_DAYS
+        "the penalty is for CENTRAL_ASSESSMENT" in {
+          val result = Json.toJson(PaymentPenaltyReasonEnum.CENTRAL_ASSESSMENT_NOT_PAID_WITHIN_15_DAYS)
+          result shouldBe JsString("CENTRAL_ASSESSMENT_NOT_PAID_WITHIN_15_DAYS")
+        }
+
+        "the penalty is for ERROR_CORRECTION_NOTICE" in {
+          val result = Json.toJson(PaymentPenaltyReasonEnum.ERROR_CORRECTION_NOTICE_NOT_PAID_WITHIN_15_DAYS)
+          result shouldBe JsString("ERROR_CORRECTION_NOTICE_NOT_PAID_WITHIN_15_DAYS")
+        }
+
+        "the penalty is for OFFICERS_ASSESSMENT" in {
+          val result = Json.toJson(PaymentPenaltyReasonEnum.OFFICERS_ASSESSMENT_NOT_PAID_WITHIN_15_DAYS)
+          result shouldBe JsString("OFFICERS_ASSESSMENT_NOT_PAID_WITHIN_15_DAYS")
+        }
+      }
+
+      "the penalty has not been paid within 30 days" when {
+
+        "the penalty is for VAT" in {
+          val result = Json.toJson(PaymentPenaltyReasonEnum.VAT_NOT_PAID_WITHIN_30_DAYS)
+          result shouldBe JsString("VAT_NOT_PAID_WITHIN_30_DAYS")
+        }
+
+        "the penalty is for CENTRAL_ASSESSMENT" in {
+          val result = Json.toJson(PaymentPenaltyReasonEnum.CENTRAL_ASSESSMENT_NOT_PAID_WITHIN_30_DAYS)
+          result shouldBe JsString("CENTRAL_ASSESSMENT_NOT_PAID_WITHIN_30_DAYS")
+        }
+
+        "the penalty is for ERROR_CORRECTION_NOTICE" in {
+          val result = Json.toJson(PaymentPenaltyReasonEnum.ERROR_CORRECTION_NOTICE_NOT_PAID_WITHIN_30_DAYS)
+          result shouldBe JsString("ERROR_CORRECTION_NOTICE_NOT_PAID_WITHIN_30_DAYS")
+        }
+
+        "the penalty is for OFFICERS_ASSESSMENT" in {
+          val result = Json.toJson(PaymentPenaltyReasonEnum.OFFICERS_ASSESSMENT_NOT_PAID_WITHIN_30_DAYS)
+          result shouldBe JsString("OFFICERS_ASSESSMENT_NOT_PAID_WITHIN_30_DAYS")
+        }
+      }
+
+      "the penalty has not been paid after 30 days " when {
+
+        "the penalty is for VAT" in {
+          val result = Json.toJson(PaymentPenaltyReasonEnum.VAT_NOT_PAID_AFTER_30_DAYS)
+          result shouldBe JsString("VAT_NOT_PAID_AFTER_30_DAYS")
+        }
+
+        "the penalty is for CENTRAL_ASSESSMENT" in {
+          val result = Json.toJson(PaymentPenaltyReasonEnum.CENTRAL_ASSESSMENT_NOT_PAID_AFTER_30_DAYS)
+          result shouldBe JsString("CENTRAL_ASSESSMENT_NOT_PAID_AFTER_30_DAYS")
+        }
+
+        "the penalty is for ERROR_CORRECTION_NOTICE" in {
+          val result = Json.toJson(PaymentPenaltyReasonEnum.ERROR_CORRECTION_NOTICE_NOT_PAID_AFTER_30_DAYS)
+          result shouldBe JsString("ERROR_CORRECTION_NOTICE_NOT_PAID_AFTER_30_DAYS")
+        }
+
+        "the penalty is for OFFICERS_ASSESSMENT" in {
+          val result = Json.toJson(PaymentPenaltyReasonEnum.OFFICERS_ASSESSMENT_NOT_PAID_AFTER_30_DAYS)
+          result shouldBe JsString("OFFICERS_ASSESSMENT_NOT_PAID_AFTER_30_DAYS")
+        }
+      }
+    }
+
+    "be readable from json" when {
+
+      "the penalty has not been paid within 15 days " when {
+
+        "the penalty is for VAT" in {
+          val result = Json.fromJson(JsString("VAT_NOT_PAID_WITHIN_15_DAYS"))(PaymentPenaltyReasonEnum.format)
+          result.isSuccess shouldBe true
+          result.get shouldBe PaymentPenaltyReasonEnum.VAT_NOT_PAID_WITHIN_15_DAYS
+        }
+
+        "the penalty is for CENTRAL_ASSESSMENT" in {
+          val result = Json.fromJson(JsString("CENTRAL_ASSESSMENT_NOT_PAID_WITHIN_15_DAYS"))(PaymentPenaltyReasonEnum.format)
+          result.isSuccess shouldBe true
+          result.get shouldBe PaymentPenaltyReasonEnum.CENTRAL_ASSESSMENT_NOT_PAID_WITHIN_15_DAYS
+        }
+
+        "the penalty is for ERROR_CORRECTION_NOTICE" in {
+          val result = Json.fromJson(JsString("ERROR_CORRECTION_NOTICE_NOT_PAID_WITHIN_15_DAYS"))(PaymentPenaltyReasonEnum.format)
+          result.isSuccess shouldBe true
+          result.get shouldBe PaymentPenaltyReasonEnum.ERROR_CORRECTION_NOTICE_NOT_PAID_WITHIN_15_DAYS
+        }
+
+        "the penalty is for OFFICERS_ASSESSMENT" in {
+          val result = Json.fromJson(JsString("OFFICERS_ASSESSMENT_NOT_PAID_WITHIN_15_DAYS"))(PaymentPenaltyReasonEnum.format)
+          result.isSuccess shouldBe true
+          result.get shouldBe PaymentPenaltyReasonEnum.OFFICERS_ASSESSMENT_NOT_PAID_WITHIN_15_DAYS
+        }
+      }
+
+      "the penalty has not been paid within 30 days " when {
+
+        "the penalty is for VAT" in {
+          val result = Json.fromJson(JsString("VAT_NOT_PAID_WITHIN_30_DAYS"))(PaymentPenaltyReasonEnum.format)
+          result.isSuccess shouldBe true
+          result.get shouldBe PaymentPenaltyReasonEnum.VAT_NOT_PAID_WITHIN_30_DAYS
+        }
+
+        "the penalty is for CENTRAL_ASSESSMENT" in {
+          val result = Json.fromJson(JsString("CENTRAL_ASSESSMENT_NOT_PAID_WITHIN_30_DAYS"))(PaymentPenaltyReasonEnum.format)
+          result.isSuccess shouldBe true
+          result.get shouldBe PaymentPenaltyReasonEnum.CENTRAL_ASSESSMENT_NOT_PAID_WITHIN_30_DAYS
+        }
+
+        "the penalty is for ERROR_CORRECTION_NOTICE" in {
+          val result = Json.fromJson(JsString("ERROR_CORRECTION_NOTICE_NOT_PAID_WITHIN_30_DAYS"))(PaymentPenaltyReasonEnum.format)
+          result.isSuccess shouldBe true
+          result.get shouldBe PaymentPenaltyReasonEnum.ERROR_CORRECTION_NOTICE_NOT_PAID_WITHIN_30_DAYS
+        }
+
+        "the penalty is for OFFICERS_ASSESSMENT" in {
+          val result = Json.fromJson(JsString("OFFICERS_ASSESSMENT_NOT_PAID_WITHIN_30_DAYS"))(PaymentPenaltyReasonEnum.format)
+          result.isSuccess shouldBe true
+          result.get shouldBe PaymentPenaltyReasonEnum.OFFICERS_ASSESSMENT_NOT_PAID_WITHIN_30_DAYS
+        }
+      }
+
+      "the penalty has not been paid after 30 days " when {
+
+        "the penalty is for VAT" in {
+          val result = Json.fromJson(JsString("VAT_NOT_PAID_AFTER_30_DAYS"))(PaymentPenaltyReasonEnum.format)
+          result.isSuccess shouldBe true
+          result.get shouldBe PaymentPenaltyReasonEnum.VAT_NOT_PAID_AFTER_30_DAYS
+        }
+
+        "the penalty is for CENTRAL_ASSESSMENT" in {
+          val result = Json.fromJson(JsString("CENTRAL_ASSESSMENT_NOT_PAID_AFTER_30_DAYS"))(PaymentPenaltyReasonEnum.format)
+          result.isSuccess shouldBe true
+          result.get shouldBe PaymentPenaltyReasonEnum.CENTRAL_ASSESSMENT_NOT_PAID_AFTER_30_DAYS
+        }
+
+        "the penalty is for ERROR_CORRECTION_NOTICE" in {
+          val result = Json.fromJson(JsString("ERROR_CORRECTION_NOTICE_NOT_PAID_AFTER_30_DAYS"))(PaymentPenaltyReasonEnum.format)
+          result.isSuccess shouldBe true
+          result.get shouldBe PaymentPenaltyReasonEnum.ERROR_CORRECTION_NOTICE_NOT_PAID_AFTER_30_DAYS
+        }
+
+        "the penalty is for OFFICERS_ASSESSMENT" in {
+          val result = Json.fromJson(JsString("OFFICERS_ASSESSMENT_NOT_PAID_AFTER_30_DAYS"))(PaymentPenaltyReasonEnum.format)
+          result.isSuccess shouldBe true
+          result.get shouldBe PaymentPenaltyReasonEnum.OFFICERS_ASSESSMENT_NOT_PAID_AFTER_30_DAYS
+        }
+      }
+    }
+
   }
 }
 
