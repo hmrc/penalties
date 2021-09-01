@@ -29,6 +29,8 @@ class AppConfig @Inject()(config: Configuration, servicesConfig: ServicesConfig)
 
   lazy val stubBase: String = servicesConfig.baseUrl("penalties-stub")
 
+  lazy val appName: String = config.get[String]("appName")
+
   lazy val etmpBase: String = servicesConfig.baseUrl("etmp")
 
   def getVATPenaltiesURL: String = {
