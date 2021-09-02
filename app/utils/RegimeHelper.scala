@@ -34,6 +34,13 @@ object RegimeHelper {
     }
   }
 
+  def getIdentifierTypeFromEnrolmentKey(enrolmentKey: String): String = {
+    enrolmentKey match {
+      case key if key.contains("MTD-VAT") => "VRN"
+      case _ => ""
+    }
+  }
+
   def getIdentifierFromEnrolmentKey(enrolmentKey: String): String = {
     enrolmentKey match {
       case key if key.contains("MTD-VAT") => key.split("~").last

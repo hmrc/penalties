@@ -26,18 +26,21 @@ import play.api.libs.json.Json
 import play.api.mvc.Result
 import play.api.test.Helpers._
 import services.ETMPService
+import services.auditing.AuditService
 
 import scala.concurrent.Future
 
 class ETMPControllerSpec extends SpecBase {
   val mockAppConfig: AppConfig = mock(classOf[AppConfig])
   val mockETMPService: ETMPService = mock(classOf[ETMPService])
+  val mockAuditService: AuditService = mock(classOf[AuditService])
 
   class Setup {
-    reset(mockAppConfig, mockETMPService)
+    reset(mockAppConfig, mockETMPService, mockAuditService)
     val controller: ETMPController = new ETMPController(
       mockAppConfig,
       mockETMPService,
+      mockAuditService,
       stubControllerComponents()
     )
   }
@@ -46,7 +49,6 @@ class ETMPControllerSpec extends SpecBase {
     "call the service to retrieve data from ETMP and return OK with the body if successful" in new Setup {
       when(mockETMPService.getPenaltyDataFromETMPForEnrolment(ArgumentMatchers.eq(sampleMTDVATEnrolmentKey))(ArgumentMatchers.any()))
         .thenReturn(Future.successful((Some(mockETMPPayloadResponseAsModel), Right(GetETMPPayloadSuccessResponse(mockETMPPayloadResponseAsModel)))))
-
       val result: Future[Result] = controller.getPenaltiesData(sampleMTDVATEnrolmentKey)(fakeRequest)
       status(result) shouldBe Status.OK
       contentAsJson(result) shouldBe Json.toJson(mockETMPPayloadResponseAsModel)
