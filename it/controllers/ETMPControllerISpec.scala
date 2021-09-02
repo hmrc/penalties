@@ -16,6 +16,8 @@
 
 package controllers
 
+import com.github.tomakehurst.wiremock.client.WireMock.{postRequestedFor, urlEqualTo}
+import scala.collection.JavaConverters._
 import play.api.http.Status
 import play.api.libs.json.{JsValue, Json}
 import play.api.test.Helpers._
@@ -23,6 +25,19 @@ import utils.{ETMPWiremock, IntegrationSpecCommonBase}
 
 class ETMPControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock {
   val controller = injector.instanceOf[ETMPController]
+
+  val etmpPayloadAsJsonWithNoPoints: JsValue = Json.parse(
+    """
+      |{
+      |	"pointsTotal": 0,
+      |	"lateSubmissions": 0,
+      |	"adjustmentPointsTotal": 0,
+      |	"fixedPenaltyAmount": 0,
+      |	"penaltyAmountsTotal": 0,
+      |	"penaltyPointsThreshold": 4,
+      |	"penaltyPoints": []
+      |}
+      |""".stripMargin)
 
   val etmpPayloadAsJsonAddedPoint: JsValue = Json.parse(
     """
@@ -124,6 +139,22 @@ class ETMPControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock {
       val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/123456789").get())
       result.status shouldBe Status.INTERNAL_SERVER_ERROR
       result.body shouldBe "Something went wrong."
+    }
+
+    "audit the response when the user has > 0 penalties" in {
+      mockResponseForStubETMPPayload(Status.OK, "123456789")
+      val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/123456789").get())
+      result.status shouldBe Status.OK
+      result.body shouldBe etmpPayloadAsJson.toString()
+      wireMockServer.findAll(postRequestedFor(urlEqualTo("/write/audit"))).asScala.toList.exists(_.getBodyAsString.contains("UserHasPenalty")) shouldBe true
+    }
+
+    "NOT audit the response when the user has 0 penalties" in {
+      mockResponseForStubETMPPayload(Status.OK, "123456789", body = Some(etmpPayloadAsJsonWithNoPoints.toString()))
+      val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/123456789").get())
+      result.status shouldBe Status.OK
+      result.body shouldBe etmpPayloadAsJsonWithNoPoints.toString()
+      wireMockServer.findAll(postRequestedFor(urlEqualTo("/write/audit"))).asScala.toList.exists(_.getBodyAsString.contains("UserHasPenalty")) shouldBe false
     }
   }
 }

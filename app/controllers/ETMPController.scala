@@ -46,6 +46,12 @@ class ETMPController @Inject()(appConfig: AppConfig,
             }
           }(
             etmpData => {
+              if(etmpData.pointsTotal > 0) {
+                val auditModel = UserHasPenaltyAuditModel(etmpData, RegimeHelper.getIdentifierFromEnrolmentKey(enrolmentKey),
+                  RegimeHelper.getIdentifierTypeFromEnrolmentKey(enrolmentKey),
+                  request.session.get("CLIENT_VRN"))
+                auditService.audit(auditModel)
+              }
               Ok(Json.toJson(etmpData))
             }
           )
