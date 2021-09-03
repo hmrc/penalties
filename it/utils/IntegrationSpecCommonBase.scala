@@ -40,7 +40,7 @@ import play.api.libs.ws.{WSClient, WSRequest}
 import uk.gov.hmrc.http.HeaderCarrier
 
 trait IntegrationSpecCommonBase extends AnyWordSpec with Matchers with GuiceOneServerPerSuite with
-  BeforeAndAfterAll with BeforeAndAfterEach with TestSuite with WiremockHelper {
+  BeforeAndAfterAll with BeforeAndAfterEach with TestSuite with WiremockHelper with DatastreamWiremock {
 
   implicit val hc: HeaderCarrier = HeaderCarrier()
 
@@ -54,6 +54,8 @@ trait IntegrationSpecCommonBase extends AnyWordSpec with Matchers with GuiceOneS
 
   override def beforeEach(): Unit = {
     super.beforeEach()
+    mockAuditResponse()
+    mockMergedAuditResponse()
     SharedMetricRegistries.clear()
   }
 
@@ -71,12 +73,15 @@ trait IntegrationSpecCommonBase extends AnyWordSpec with Matchers with GuiceOneS
   }
 
   val configForApp: Map[String, Any] = Map(
-    "auditing.enabled" -> false,
+    "auditing.enabled" -> true,
     "auditing.traceRequests" -> false,
     "microservice.services.penalties-stub.host" -> stubHost,
     "microservice.services.penalties-stub.port" -> stubPort,
     "microservice.services.etmp.host" -> stubHost,
-    "microservice.services.etmp.port" -> stubPort
+    "microservice.services.etmp.port" -> stubPort,
+    "microservice.services.etmp.host" -> stubHost,
+    "auditing.consumer.baseUri.host" -> stubHost,
+    "auditing.consumer.baseUri.port" -> stubPort
   )
 
   override lazy val app: Application = new GuiceApplicationBuilder()
