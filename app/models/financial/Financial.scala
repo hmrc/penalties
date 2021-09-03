@@ -24,6 +24,9 @@ case class Financial(
                       amountDue: BigDecimal,
                       outstandingAmountDue: BigDecimal,
                       dueDate: LocalDateTime,
+                      outstandingAmountDay15: Option[BigDecimal] = None,
+                      outstandingAmountDay31: Option[BigDecimal] = None,
+                      percentageOfOutstandingAmtCharged: Option[BigDecimal] = None,
                       estimatedInterest: Option[BigDecimal] = None,
                       crystalizedInterest: Option[BigDecimal] = None
                     )
