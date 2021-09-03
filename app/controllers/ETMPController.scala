@@ -35,7 +35,7 @@ class ETMPController @Inject()(appConfig: AppConfig,
                                cc: ControllerComponents)
   extends BackendController(cc) {
 
-  def getPenaltiesData(enrolmentKey: String): Action[AnyContent] = Action.async {
+  def getPenaltiesData(enrolmentKey: String, arn: Option[String] = None): Action[AnyContent] = Action.async {
     implicit request => {
       etmpService.getPenaltyDataFromETMPForEnrolment(enrolmentKey).map {
         result => {
@@ -49,7 +49,7 @@ class ETMPController @Inject()(appConfig: AppConfig,
               if(etmpData.pointsTotal > 0) {
                 val auditModel = UserHasPenaltyAuditModel(etmpData, RegimeHelper.getIdentifierFromEnrolmentKey(enrolmentKey),
                   RegimeHelper.getIdentifierTypeFromEnrolmentKey(enrolmentKey),
-                  request.session.get("CLIENT_VRN"))
+                  arn)
                 auditService.audit(auditModel)
               }
               Ok(Json.toJson(etmpData))
