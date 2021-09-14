@@ -23,7 +23,7 @@ import play.api.libs.json.{JsValue, Json}
 
 import java.time.LocalDateTime
 
-class FinancialSpec extends AnyWordSpec with Matchers {
+class PaymentFinancialSpec extends AnyWordSpec with Matchers {
   val FinancialJson: JsValue = Json.parse(
     """
       |{

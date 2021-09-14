@@ -33,7 +33,8 @@ import play.api.libs.json.{JsValue, Json}
 
 class ETMPPayloadSpec extends AnyWordSpec with Matchers {
 
-  val sampleDate: LocalDateTime = LocalDateTime.of(2021, 4, 23, 18, 25, 43).plus(511, ChronoUnit.MILLIS)
+  val sampleDate: LocalDateTime = LocalDateTime.of(
+    2021, 4, 23, 18, 25, 43).plus(511, ChronoUnit.MILLIS)
 
   val etmpPayloadAsJson: JsValue = Json.parse(
     """
@@ -462,7 +463,7 @@ class ETMPPayloadSpec extends AnyWordSpec with Matchers {
     )
   )
 
-  val etmpPayloadModelWithLPPs = etmpPayloadModel.copy(
+  val etmpPayloadModelWithLPPs: ETMPPayload = etmpPayloadModel.copy(
     latePaymentPenalties = Some(
       Seq(
         LatePaymentPenalty(

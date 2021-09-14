@@ -16,7 +16,8 @@
 
 package services
 
-import connectors.parsers.ETMPPayloadParser.{ETMPPayloadResponse, GetETMPPayloadFailureResponse, GetETMPPayloadMalformed, GetETMPPayloadNoContent, GetETMPPayloadSuccessResponse}
+import connectors.parsers.ETMPPayloadParser.{ETMPPayloadResponse,
+  GetETMPPayloadFailureResponse, GetETMPPayloadMalformed, GetETMPPayloadNoContent, GetETMPPayloadSuccessResponse}
 import connectors.{AppealsConnector, ETMPConnector}
 import models.ETMPPayload
 import models.appeals.AppealSubmission
@@ -96,7 +97,8 @@ class ETMPService @Inject()(etmpConnector: ETMPConnector,
     }
   }
 
-  def submitAppeal(appealSubmission: AppealSubmission, enrolmentKey: String, isLPP: Boolean)(implicit ec: ExecutionContext, hc: HeaderCarrier): Future[HttpResponse] = {
-    appealsConnector.submitAppeal(appealSubmission, enrolmentKey, isLPP)
+  def submitAppeal(appealSubmission: AppealSubmission,
+                   enrolmentKey: String, isLPP: Boolean)(
+    implicit ec: ExecutionContext, hc: HeaderCarrier): Future[HttpResponse] = {appealsConnector.submitAppeal(appealSubmission, enrolmentKey, isLPP)
   }
 }

@@ -19,10 +19,10 @@ package models.financial
 import play.api.libs.json._
 
 object AmountTypeEnum extends Enumeration {
-  val VAT = Value
-  val Central_Assessment = Value
-  val Officers_Assessment = Value
-  val ECN = Value
+  val VAT: AmountTypeEnum.Value = Value
+  val Central_Assessment: AmountTypeEnum.Value = Value
+  val Officers_Assessment: AmountTypeEnum.Value = Value
+  val ECN: AmountTypeEnum.Value = Value
 
   implicit val format: Format[AmountTypeEnum.Value] = new Format[AmountTypeEnum.Value] {
     override def writes(o: AmountTypeEnum.Value): JsValue = {

@@ -42,7 +42,6 @@ class ETMPControllerSpec extends SpecBase {
   class Setup {
     reset(mockAppConfig, mockETMPService, mockAuditService)
     val controller: ETMPController = new ETMPController(
-      mockAppConfig,
       mockETMPService,
       mockAuditService,
       stubControllerComponents()

@@ -20,13 +20,13 @@ import play.api.libs.json.{Format, JsError, JsResult, JsString, JsSuccess, JsVal
 
 object AppealStatusEnum extends Enumeration {
 
-  val Under_Review = Value
-  val Under_Tribunal_Review = Value
-  val Accepted = Value
-  val Rejected = Value
-  val Reinstated = Value
-  val Tribunal_Rejected = Value
-  val Accepted_By_Tribunal = Value
+  val Under_Review: AppealStatusEnum.Value = Value
+  val Under_Tribunal_Review: AppealStatusEnum.Value = Value
+  val Accepted: AppealStatusEnum.Value = Value
+  val Rejected: AppealStatusEnum.Value = Value
+  val Reinstated: AppealStatusEnum.Value = Value
+  val Tribunal_Rejected: AppealStatusEnum.Value = Value
+  val Accepted_By_Tribunal: AppealStatusEnum.Value = Value
 
   implicit val format: Format[AppealStatusEnum.Value] = new Format[AppealStatusEnum.Value] {
     override def writes(o: AppealStatusEnum.Value): JsValue = {

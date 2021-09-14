@@ -19,10 +19,10 @@ package models.submission
 import play.api.libs.json._
 
 object SubmissionStatusEnum extends Enumeration {
-  val Submitted = Value
-  val Overdue = Value
-  val Under_Review = Value
-  val Tax_Tribunal = Value
+  val Submitted: SubmissionStatusEnum.Value = Value
+  val Overdue: SubmissionStatusEnum.Value = Value
+  val Under_Review: SubmissionStatusEnum.Value = Value
+  val Tax_Tribunal: SubmissionStatusEnum.Value = Value
 
   implicit val format: Format[SubmissionStatusEnum.Value] = new Format[SubmissionStatusEnum.Value] {
     override def writes(o: SubmissionStatusEnum.Value): JsValue = {

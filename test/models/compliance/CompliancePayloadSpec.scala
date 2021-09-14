@@ -24,7 +24,8 @@ import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 
 class CompliancePayloadSpec extends AnyWordSpec with Matchers {
-  val sampleDateTime: LocalDateTime = LocalDateTime.of(2019, 1, 31, 23, 59, 59).plus(998, ChronoUnit.MILLIS)
+  val sampleDateTime: LocalDateTime = LocalDateTime.of(
+    2019, 1, 31, 23, 59, 59).plus(998, ChronoUnit.MILLIS)
 
   val regime = "VAT"
   val vrn = "123456789"
@@ -78,13 +79,13 @@ class CompliancePayloadSpec extends AnyWordSpec with Matchers {
     }
 
     s"be readable from JSON when no missing returns" in {
-      val result = Json.fromJson(getComplianceDataJson(0, true))(CompliancePayload.format)
+      val result = Json.fromJson(getComplianceDataJson(0, isWithRegimeAndVRN = true))(CompliancePayload.format)
       result.isSuccess shouldBe true
       result.get shouldBe emptyReturnsModel
     }
 
     s"be readable from JSON when there are missing returns" in {
-      val result = Json.fromJson(getComplianceDataJson(2, true))(CompliancePayload.format)
+      val result = Json.fromJson(getComplianceDataJson(2, isWithRegimeAndVRN = true))(CompliancePayload.format)
       result.isSuccess shouldBe true
       result.get shouldBe someReturnsModel
     }

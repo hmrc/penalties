@@ -19,13 +19,13 @@ package models.point
 import play.api.libs.json._
 
 object PointStatusEnum extends Enumeration {
-  val Active = Value
-  val Rejected = Value
-  val Added = Value
-  val Removed = Value
-  val Due = Value
-  val Paid = Value
-  val Estimated = Value
+  val Active: PointStatusEnum.Value = Value
+  val Rejected: PointStatusEnum.Value = Value
+  val Added: PointStatusEnum.Value = Value
+  val Removed: PointStatusEnum.Value = Value
+  val Due: PointStatusEnum.Value = Value
+  val Paid: PointStatusEnum.Value = Value
+  val Estimated: PointStatusEnum.Value = Value
 
   implicit val format: Format[PointStatusEnum.Value] = new Format[PointStatusEnum.Value] {
     override def writes(o: PointStatusEnum.Value): JsValue = {

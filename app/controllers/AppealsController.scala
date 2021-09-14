@@ -39,7 +39,8 @@ class AppealsController @Inject()(appConfig: AppConfig,
                                   cc: ControllerComponents)(implicit ec: ExecutionContext)
   extends BackendController(cc) {
 
-  private def getAppealDataForPenalty(penaltyId: String, enrolmentKey: String, penaltyType: AppealTypeEnum.Value)(implicit hc: HeaderCarrier): Future[Result] = {
+  private def getAppealDataForPenalty(penaltyId: String,
+                                      enrolmentKey: String, penaltyType: AppealTypeEnum.Value)(implicit hc: HeaderCarrier): Future[Result] = {
     etmpService.getPenaltyDataFromETMPForEnrolment(enrolmentKey).map {
       result => {
         result._1.fold {
@@ -63,7 +64,8 @@ class AppealsController @Inject()(appConfig: AppConfig,
           logger.info("[AppealsController][getIsMultiplePenaltiesInSamePeriod] - User has multiple penalties in same period - returning OK")
           Ok("")
         } else {
-          logger.debug("[AppealsController][getIsMultiplePenaltiesInSamePeriod] - User has NO multiple penalties in same period or something went wrong - returning NO_CONTENT")
+          logger.debug("[AppealsController][getIsMultiplePenaltiesInSamePeriod]" +
+            " - User has NO multiple penalties in same period or something went wrong - returning NO_CONTENT")
           NoContent
         }
       }
@@ -136,20 +138,17 @@ class AppealsController @Inject()(appConfig: AppConfig,
               etmpService.submitAppeal(appealSubmission, enrolmentKey, isLPP).map {
                 response =>
                   response.status match {
-                    case OK => {
+                    case OK =>
                       Ok("")
-                    }
-                    case _ => {
+                    case _ =>
                       logger.error(s"[AppealsController][submitAppeal] Connector returned unknown status code: ${response.status} ")
                       logger.debug(s"[AppealsController][submitAppeal] Failure response body: ${response.body}")
                       InternalServerError("Something went wrong.")
-                    }
                   }
               } recover {
-                case e => {
+                case e =>
                   logger.error(s"[AppealsController][submitAppeal] Unknown exception occurred with message: ${e.getMessage}")
                   InternalServerError("Something went wrong.")
-                }
               }
             }
           )

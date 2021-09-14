@@ -40,11 +40,15 @@ class PenaltyPeriodSpec extends AnyWordSpec with Matchers {
       |""".stripMargin)
 
   val penaltyPeriodModel: PenaltyPeriod = PenaltyPeriod(
-    startDate = LocalDateTime.of(2019, 1, 31, 23, 59, 59).plus(998, ChronoUnit.MILLIS),
-    endDate = LocalDateTime.of(2019, 1, 31, 23, 59, 59).plus(999, ChronoUnit.MILLIS),
+    startDate = LocalDateTime.of(
+      2019, 1, 31, 23, 59, 59).plus(998, ChronoUnit.MILLIS),
+    endDate = LocalDateTime.of(
+      2019, 1, 31, 23, 59, 59).plus(999, ChronoUnit.MILLIS),
     submission = Submission(
-      dueDate = LocalDateTime.of(2019, 5, 31, 23, 59, 59).plus(999, ChronoUnit.MILLIS),
-      submittedDate = Some(LocalDateTime.of(2019, 5, 30, 23, 59, 59).plus(999, ChronoUnit.MILLIS)),
+      dueDate = LocalDateTime.of(
+        2019, 5, 31, 23, 59, 59).plus(999, ChronoUnit.MILLIS),
+      submittedDate = Some(LocalDateTime.of(
+        2019, 5, 30, 23, 59, 59).plus(999, ChronoUnit.MILLIS)),
       status = SubmissionStatusEnum.Submitted
     )
   )

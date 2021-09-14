@@ -293,22 +293,19 @@ object HealthAppealInformation {
       )
     ).deepMerge(
       (healthAppealInformation.hospitalStayInvolved, healthAppealInformation.eventOngoing) match {
-        case (true, true) => {
+        case (true, true) =>
           Json.obj(
             "startDateOfEvent" -> healthAppealInformation.startDateOfEvent.get
           )
-        }
-        case (true, false) => {
+        case (true, false) =>
           Json.obj(
             "startDateOfEvent" -> healthAppealInformation.startDateOfEvent.get,
             "endDateOfEvent" -> healthAppealInformation.endDateOfEvent.get
           )
-        }
-        case _ => {
+        case _ =>
           Json.obj(
             "dateOfEvent" -> healthAppealInformation.dateOfEvent.get
           )
-        }
       }
     ).deepMerge(
       healthAppealInformation.whoPlannedToSubmit.fold(
@@ -410,59 +407,43 @@ case class AppealSubmission(
 object AppealSubmission {
   def parseAppealInformationFromJson(reason: String, payload: JsValue): JsResult[AppealInformation] = {
     reason match {
-      case "bereavement" => {
+      case "bereavement" =>
         Json.fromJson(payload)(BereavementAppealInformation.bereavementAppealInformationFormatter)
-      }
-      case "crime" => {
-          Json.fromJson(payload)(CrimeAppealInformation.crimeAppealInformationFormatter)
-      }
-      case "fireOrFlood" => {
+      case "crime" =>
+        Json.fromJson(payload)(CrimeAppealInformation.crimeAppealInformationFormatter)
+      case "fireOrFlood" =>
         Json.fromJson(payload)(FireOrFloodAppealInformation.fireOrFloodAppealInformationFormatter)
-      }
-      case "lossOfStaff" => {
+      case "lossOfStaff" =>
         Json.fromJson(payload)(LossOfStaffAppealInformation.lossOfStaffAppealInformationFormatter)
-      }
-      case "technicalIssues" => {
+      case "technicalIssues" =>
         Json.fromJson(payload)(TechnicalIssuesAppealInformation.technicalIssuesAppealInformationFormatter)
-      }
-      case "health" => {
+      case "health" =>
         Json.fromJson(payload)(HealthAppealInformation.healthAppealInformationFormatter)
-      }
-      case "other" => {
+      case "other" =>
         Json.fromJson(payload)(OtherAppealInformation.otherAppealInformationFormatter)
-      }
-      case "obligation" => {
+      case "obligation" =>
         Json.fromJson(payload)(ObligationAppealInformation.obligationAppealInformationFormatter)
-      }
     }
   }
 
   def parseAppealInformationToJson(payload: AppealInformation): JsValue = {
     payload.`type` match {
-      case "bereavement" => {
+      case "bereavement" =>
         Json.toJson(payload.asInstanceOf[BereavementAppealInformation])(BereavementAppealInformation.bereavementAppealWrites)
-      }
-      case "crime" => {
-          Json.toJson(payload.asInstanceOf[CrimeAppealInformation])(CrimeAppealInformation.crimeAppealWrites)
-      }
-      case "fireOrFlood" => {
+      case "crime" =>
+        Json.toJson(payload.asInstanceOf[CrimeAppealInformation])(CrimeAppealInformation.crimeAppealWrites)
+      case "fireOrFlood" =>
         Json.toJson(payload.asInstanceOf[FireOrFloodAppealInformation])(FireOrFloodAppealInformation.fireOrFloodAppealWrites)
-      }
-      case "lossOfStaff" => {
+      case "lossOfStaff" =>
         Json.toJson(payload.asInstanceOf[LossOfStaffAppealInformation])(LossOfStaffAppealInformation.lossOfStaffAppealWrites)
-      }
-      case "technicalIssues" => {
+      case "technicalIssues" =>
         Json.toJson(payload.asInstanceOf[TechnicalIssuesAppealInformation])(TechnicalIssuesAppealInformation.technicalIssuesAppealWrites)
-      }
-      case "health" => {
+      case "health" =>
         Json.toJson(payload.asInstanceOf[HealthAppealInformation])(HealthAppealInformation.healthAppealWrites)
-      }
-      case "other" => {
+      case "other" =>
         Json.toJson(payload.asInstanceOf[OtherAppealInformation])(OtherAppealInformation.otherAppealInformationWrites)
-      }
-      case "obligation" => {
+      case "obligation" =>
         Json.toJson(payload.asInstanceOf[ObligationAppealInformation])(ObligationAppealInformation.obligationAppealInformationWrites)
-      }
     }
   }
 

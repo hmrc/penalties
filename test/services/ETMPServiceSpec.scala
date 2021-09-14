@@ -62,7 +62,7 @@ class ETMPServiceSpec extends SpecBase {
       result._1.get shouldBe mockETMPPayloadResponseAsModel
     }
 
-    s"return $None when the connector returns No Content (${NO_CONTENT})" in new Setup {
+    s"return $None when the connector returns No Content ($NO_CONTENT)" in new Setup {
       when(mockEtmpConnector.getPenaltiesDataForEnrolmentKey(ArgumentMatchers.eq("123456789"))(ArgumentMatchers.any()))
         .thenReturn(Future.successful(Left(GetETMPPayloadNoContent)))
 
@@ -122,7 +122,7 @@ class ETMPServiceSpec extends SpecBase {
       when(mockAppealsConnector.submitAppeal(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any()))
         .thenReturn(Future.successful(HttpResponse(OK, "")))
 
-      val result = await(service.submitAppeal(modelToPassToServer, "HMRC-MTD-VAT~VRN~123456789", false))
+      val result: HttpResponse = await(service.submitAppeal(modelToPassToServer, "HMRC-MTD-VAT~VRN~123456789", isLPP = false))
       result.status shouldBe OK
     }
 
@@ -130,7 +130,7 @@ class ETMPServiceSpec extends SpecBase {
       when(mockAppealsConnector.submitAppeal(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any()))
         .thenReturn(Future.failed(new Exception("Something went wrong")))
 
-      val result = intercept[Exception](await(service.submitAppeal(modelToPassToServer, "HMRC-MTD-VAT~VRN~123456789", false)))
+      val result: Exception = intercept[Exception](await(service.submitAppeal(modelToPassToServer, "HMRC-MTD-VAT~VRN~123456789", isLPP = false)))
       result.getMessage shouldBe "Something went wrong"
     }
   }
@@ -343,7 +343,7 @@ class ETMPServiceSpec extends SpecBase {
         when(mockEtmpConnector.getPenaltiesDataForEnrolmentKey(ArgumentMatchers.eq("123456789"))(ArgumentMatchers.any()))
           .thenReturn(Future.successful(Right(GetETMPPayloadSuccessResponse(mockETMPPayloadResponseAsModelWithLPPSamePeriodAsLSP))))
 
-        val result = service.isMultiplePenaltiesInSamePeriod("123456790", "123456789", isLPP = false)
+        val result: Future[Boolean] = service.isMultiplePenaltiesInSamePeriod("123456790", "123456789", isLPP = false)
         await(result) shouldBe true
       }
 
@@ -351,7 +351,7 @@ class ETMPServiceSpec extends SpecBase {
         when(mockEtmpConnector.getPenaltiesDataForEnrolmentKey(ArgumentMatchers.eq("123456789"))(ArgumentMatchers.any()))
           .thenReturn(Future.successful(Right(GetETMPPayloadSuccessResponse(mockETMPPayloadResponseAsModelWithLPPSamePeriodAsLSP))))
 
-        val result = service.isMultiplePenaltiesInSamePeriod("123456800", "123456789", isLPP = true)
+        val result: Future[Boolean] = service.isMultiplePenaltiesInSamePeriod("123456800", "123456789", isLPP = true)
         await(result) shouldBe true
       }
 
@@ -359,7 +359,7 @@ class ETMPServiceSpec extends SpecBase {
         when(mockEtmpConnector.getPenaltiesDataForEnrolmentKey(ArgumentMatchers.eq("123456789"))(ArgumentMatchers.any()))
           .thenReturn(Future.successful(Right(GetETMPPayloadSuccessResponse(mockETMPPayloadResponseAsModelWith2LPPWithSamePeriod))))
 
-        val result = service.isMultiplePenaltiesInSamePeriod("123456800", "123456789", isLPP = true)
+        val result: Future[Boolean] = service.isMultiplePenaltiesInSamePeriod("123456800", "123456789", isLPP = true)
         await(result) shouldBe true
       }
     }
@@ -369,7 +369,7 @@ class ETMPServiceSpec extends SpecBase {
         when(mockEtmpConnector.getPenaltiesDataForEnrolmentKey(ArgumentMatchers.eq("123456789"))(ArgumentMatchers.any()))
           .thenReturn(Future.successful(Right(GetETMPPayloadSuccessResponse(mockETMPPayloadResponseAsModelWithLPPSamePeriodAsLSP))))
 
-        val result = service.isMultiplePenaltiesInSamePeriod("123456790", "123456789", isLPP = true)
+        val result: Future[Boolean] = service.isMultiplePenaltiesInSamePeriod("123456790", "123456789", isLPP = true)
         await(result) shouldBe false
       }
 
@@ -377,7 +377,7 @@ class ETMPServiceSpec extends SpecBase {
         when(mockEtmpConnector.getPenaltiesDataForEnrolmentKey(ArgumentMatchers.eq("123456789"))(ArgumentMatchers.any()))
           .thenReturn(Future.successful(Right(GetETMPPayloadSuccessResponse(mockETMPPayloadResponseAsModelWith2LPPWithSamePeriod))))
 
-        val result = service.isMultiplePenaltiesInSamePeriod("123456800", "123456789", isLPP = false)
+        val result: Future[Boolean] = service.isMultiplePenaltiesInSamePeriod("123456800", "123456789", isLPP = false)
         await(result) shouldBe false
       }
 
@@ -385,7 +385,7 @@ class ETMPServiceSpec extends SpecBase {
         when(mockEtmpConnector.getPenaltiesDataForEnrolmentKey(ArgumentMatchers.eq("123456789"))(ArgumentMatchers.any()))
           .thenReturn(Future.successful(Right(GetETMPPayloadSuccessResponse(mockETMPPayloadResponseAsModelWith2LPPWithSamePeriod))))
 
-        val result = service.isMultiplePenaltiesInSamePeriod("1234", "123456789", isLPP = true)
+        val result: Future[Boolean] = service.isMultiplePenaltiesInSamePeriod("1234", "123456789", isLPP = true)
         await(result) shouldBe false
       }
 
@@ -393,7 +393,7 @@ class ETMPServiceSpec extends SpecBase {
         when(mockEtmpConnector.getPenaltiesDataForEnrolmentKey(ArgumentMatchers.eq("123456789"))(ArgumentMatchers.any()))
           .thenReturn(Future.successful(Right(GetETMPPayloadSuccessResponse(mockETMPPayloadResponseAsModelWithLPPDifferentPeriodAsLSP))))
 
-        val result = service.isMultiplePenaltiesInSamePeriod("123456800", "123456789", isLPP = true)
+        val result: Future[Boolean] = service.isMultiplePenaltiesInSamePeriod("123456800", "123456789", isLPP = true)
         await(result) shouldBe false
       }
 
@@ -401,7 +401,7 @@ class ETMPServiceSpec extends SpecBase {
         when(mockEtmpConnector.getPenaltiesDataForEnrolmentKey(ArgumentMatchers.eq("123456789"))(ArgumentMatchers.any()))
           .thenReturn(Future.successful(Right(GetETMPPayloadSuccessResponse(mockETMPPayloadResponseAsModelWithLPPDifferentPeriodAsLSP))))
 
-        val result = service.isMultiplePenaltiesInSamePeriod("123456790", "123456789", isLPP = false)
+        val result: Future[Boolean] = service.isMultiplePenaltiesInSamePeriod("123456790", "123456789", isLPP = false)
         await(result) shouldBe false
       }
 
@@ -409,7 +409,7 @@ class ETMPServiceSpec extends SpecBase {
         when(mockEtmpConnector.getPenaltiesDataForEnrolmentKey(ArgumentMatchers.eq("123456789"))(ArgumentMatchers.any()))
           .thenReturn(Future.successful(Left(GetETMPPayloadMalformed)))
 
-        val result = service.isMultiplePenaltiesInSamePeriod("1234", "123456789", isLPP = true)
+        val result: Future[Boolean] = service.isMultiplePenaltiesInSamePeriod("1234", "123456789", isLPP = true)
         await(result) shouldBe false
       }
     }

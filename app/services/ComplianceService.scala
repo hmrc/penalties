@@ -61,18 +61,15 @@ class ComplianceService @Inject()(complianceConnector: ComplianceConnector,
 
   private def connectorFailureHandler(failure: GetCompliancePayloadFailure)(implicit startOfLogMsg: String, callType: String): Option[JsValue] = {
       failure match {
-        case _@GetCompliancePayloadFailureResponse(status) => {
+        case _@GetCompliancePayloadFailureResponse(status) =>
           logger.error(s"$startOfLogMsg - Received status $status back from ETMP for $callType data")
           None
-        }
-        case _@GetCompliancePayloadMalformed => {
+        case _@GetCompliancePayloadMalformed =>
           logger.error(s"$startOfLogMsg - Received malformed JSON back from ETMP for $callType data")
           None
-        }
-        case _@GetCompliancePayloadNoContent => {
+        case _@GetCompliancePayloadNoContent =>
           logger.warn(s"$startOfLogMsg - Received no content back from ETMP for $callType data")
           None
-        }
       }
   }
 

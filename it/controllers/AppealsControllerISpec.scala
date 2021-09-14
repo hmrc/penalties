@@ -457,7 +457,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
       }
 
       "call the connector and send the appeal data received in the request body - returns OK when successful for LPP" in {
-        mockResponseForAppealSubmissionStub(OK, "HMRC-MTD-VAT~VRN~123456789", true)
+        mockResponseForAppealSubmissionStub(OK, "HMRC-MTD-VAT~VRN~123456789", isLPP = true)
         val jsonToSubmit: JsValue = Json.parse(
           """
             |{
@@ -657,7 +657,8 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
     "return OK" when {
       "the service returns true" in {
         mockResponseForStubETMPPayload(Status.OK, "HMRC-MTD-VAT~VRN~123456789", Some(lspAndLPPInSamePeriod.toString()))
-        val result = await(buildClientForRequestToApp(uri = "/appeals/multiple-penalties-in-same-period?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=true&penaltyId=1234567901").get())
+        val result = await(buildClientForRequestToApp(uri =
+          "/appeals/multiple-penalties-in-same-period?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=true&penaltyId=1234567901").get())
         result.status shouldBe OK
       }
     }
@@ -665,13 +666,15 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
     "return NO CONTENT" when {
       "the service returns false - no other periods" in {
         mockResponseForStubETMPPayload(Status.OK, "HMRC-MTD-VAT~VRN~123456789", Some(lppAndLSPInDifferentPeriod.toString()))
-        val result = await(buildClientForRequestToApp(uri = "/appeals/multiple-penalties-in-same-period?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=true&penaltyId=1234567901").get())
+        val result = await(buildClientForRequestToApp(uri =
+          "/appeals/multiple-penalties-in-same-period?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=true&penaltyId=1234567901").get())
         result.status shouldBe NO_CONTENT
       }
 
       "the service returns false - something went wrong" in {
         mockResponseForStubETMPPayload(Status.INTERNAL_SERVER_ERROR, "HMRC-MTD-VAT~VRN~123456789", None)
-        val result = await(buildClientForRequestToApp(uri = "/appeals/multiple-penalties-in-same-period?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=true&penaltyId=1234567901").get())
+        val result = await(buildClientForRequestToApp(uri =
+          "/appeals/multiple-penalties-in-same-period?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=true&penaltyId=1234567901").get())
         result.status shouldBe NO_CONTENT
       }
     }

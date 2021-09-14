@@ -20,18 +20,18 @@ import play.api.libs.json.{Format, JsError, JsResult, JsString, JsSuccess, JsVal
 
 object PaymentPenaltyReasonEnum extends Enumeration {
 
-  val VAT_NOT_PAID_WITHIN_15_DAYS = Value
-  val VAT_NOT_PAID_WITHIN_30_DAYS = Value
-  val VAT_NOT_PAID_AFTER_30_DAYS = Value
-  val CENTRAL_ASSESSMENT_NOT_PAID_WITHIN_15_DAYS = Value
-  val CENTRAL_ASSESSMENT_NOT_PAID_WITHIN_30_DAYS = Value
-  val CENTRAL_ASSESSMENT_NOT_PAID_AFTER_30_DAYS = Value
-  val ERROR_CORRECTION_NOTICE_NOT_PAID_WITHIN_15_DAYS = Value
-  val ERROR_CORRECTION_NOTICE_NOT_PAID_WITHIN_30_DAYS = Value
-  val ERROR_CORRECTION_NOTICE_NOT_PAID_AFTER_30_DAYS = Value
-  val OFFICERS_ASSESSMENT_NOT_PAID_WITHIN_15_DAYS = Value
-  val OFFICERS_ASSESSMENT_NOT_PAID_WITHIN_30_DAYS = Value
-  val OFFICERS_ASSESSMENT_NOT_PAID_AFTER_30_DAYS = Value
+  val VAT_NOT_PAID_WITHIN_15_DAYS: PaymentPenaltyReasonEnum.Value = Value
+  val VAT_NOT_PAID_WITHIN_30_DAYS: PaymentPenaltyReasonEnum.Value = Value
+  val VAT_NOT_PAID_AFTER_30_DAYS: PaymentPenaltyReasonEnum.Value = Value
+  val CENTRAL_ASSESSMENT_NOT_PAID_WITHIN_15_DAYS: PaymentPenaltyReasonEnum.Value = Value
+  val CENTRAL_ASSESSMENT_NOT_PAID_WITHIN_30_DAYS: PaymentPenaltyReasonEnum.Value = Value
+  val CENTRAL_ASSESSMENT_NOT_PAID_AFTER_30_DAYS: PaymentPenaltyReasonEnum.Value = Value
+  val ERROR_CORRECTION_NOTICE_NOT_PAID_WITHIN_15_DAYS: PaymentPenaltyReasonEnum.Value = Value
+  val ERROR_CORRECTION_NOTICE_NOT_PAID_WITHIN_30_DAYS: PaymentPenaltyReasonEnum.Value = Value
+  val ERROR_CORRECTION_NOTICE_NOT_PAID_AFTER_30_DAYS: PaymentPenaltyReasonEnum.Value = Value
+  val OFFICERS_ASSESSMENT_NOT_PAID_WITHIN_15_DAYS: PaymentPenaltyReasonEnum.Value = Value
+  val OFFICERS_ASSESSMENT_NOT_PAID_WITHIN_30_DAYS: PaymentPenaltyReasonEnum.Value = Value
+  val OFFICERS_ASSESSMENT_NOT_PAID_AFTER_30_DAYS: PaymentPenaltyReasonEnum.Value = Value
 
   implicit val format: Format[PaymentPenaltyReasonEnum.Value] = new Format[PaymentPenaltyReasonEnum.Value] {
     override def writes(o: PaymentPenaltyReasonEnum.Value): JsValue = {

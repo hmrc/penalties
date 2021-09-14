@@ -19,7 +19,7 @@ package models.compliance
 import play.api.libs.json._
 
 object ReturnStatusEnum extends Enumeration {
-  val submitted = Value
+  val submitted: ReturnStatusEnum.Value = Value
 
   implicit val format: Format[ReturnStatusEnum.Value] = new Format[ReturnStatusEnum.Value] {
     override def writes(o: ReturnStatusEnum.Value): JsValue = {

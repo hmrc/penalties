@@ -19,8 +19,8 @@ package models.communication
 import play.api.libs.json._
 
 object CommunicationTypeEnum extends Enumeration {
-  val secureMessage = Value
-  val letter = Value
+  val secureMessage: CommunicationTypeEnum.Value = Value
+  val letter: CommunicationTypeEnum.Value = Value
 
   implicit val format: Format[CommunicationTypeEnum.Value] = new Format[CommunicationTypeEnum.Value] {
     override def writes(o: CommunicationTypeEnum.Value): JsValue = {

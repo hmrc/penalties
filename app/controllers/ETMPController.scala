@@ -16,8 +16,8 @@
 
 package controllers
 
-import config.AppConfig
 import connectors.parsers.ETMPPayloadParser.GetETMPPayloadNoContent
+import javax.inject.Inject
 import models.auditing.UserHasPenaltyAuditModel
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
@@ -26,11 +26,9 @@ import services.auditing.AuditService
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import utils.RegimeHelper
 
-import javax.inject.Inject
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class ETMPController @Inject()(appConfig: AppConfig,
-                               etmpService: ETMPService,
+class ETMPController @Inject()(etmpService: ETMPService,
                                auditService: AuditService,
                                cc: ControllerComponents)
   extends BackendController(cc) {

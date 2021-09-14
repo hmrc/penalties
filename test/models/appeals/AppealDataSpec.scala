@@ -36,10 +36,14 @@ class AppealDataSpec extends AnyWordSpec with Matchers {
 
   val model: AppealData = AppealData(
     `type` = AppealTypeEnum.Late_Submission,
-    startDate = LocalDateTime.of(2021, 1, 1, 18, 25, 43, 511 * 1000000),
-    endDate = LocalDateTime.of(2021, 2, 1, 18, 25, 43, 511 * 1000000),
-    dueDate = LocalDateTime.of(2021, 3, 7, 18, 25, 43, 511 * 1000000),
-    dateCommunicationSent = LocalDateTime.of(2021, 3, 8, 18, 25, 43, 511 * 1000000)
+    startDate = LocalDateTime.of(
+      2021, 1, 1, 18, 25, 43, 511 * 1000000),
+    endDate = LocalDateTime.of(
+      2021, 2, 1, 18, 25, 43, 511 * 1000000),
+    dueDate = LocalDateTime.of(
+      2021, 3, 7, 18, 25, 43, 511 * 1000000),
+    dateCommunicationSent = LocalDateTime.of(
+      2021, 3, 8, 18, 25, 43, 511 * 1000000)
   )
 
   "AppealData" should {

@@ -20,6 +20,7 @@ import featureSwitches.{CallETMP, FeatureSwitching}
 import models.appeals.{AppealSubmission, CrimeAppealInformation}
 import play.api.http.Status
 import play.api.test.Helpers._
+import uk.gov.hmrc.http.HttpResponse
 import utils.{AppealWiremock, IntegrationSpecCommonBase}
 
 import scala.concurrent.ExecutionContext
@@ -51,7 +52,7 @@ class AppealsConnectorISpec extends IntegrationSpecCommonBase with AppealWiremoc
           causeOfLateSubmissionAgent = None
         )
       )
-      val result = await(connector.submitAppeal(modelToSend, "HMRC-MTD-VAT~VRN~123456789", false))
+      val result: HttpResponse = await(connector.submitAppeal(modelToSend, "HMRC-MTD-VAT~VRN~123456789", isLPP = false))
       result.status shouldBe OK
     }
 
@@ -74,13 +75,13 @@ class AppealsConnectorISpec extends IntegrationSpecCommonBase with AppealWiremoc
           causeOfLateSubmissionAgent = None
         )
       )
-      val result = await(connector.submitAppeal(modelToSend, "HMRC-MTD-VAT~VRN~123456789", false))
+      val result: HttpResponse = await(connector.submitAppeal(modelToSend, "HMRC-MTD-VAT~VRN~123456789", isLPP = false))
       result.status shouldBe OK
     }
 
     "Jsonify the model and send the request and return the response - when ETMP feature switch disabled, call stub - for LPP" in new Setup {
       disableFeatureSwitch(CallETMP)
-      mockResponseForAppealSubmissionStub(Status.OK, "HMRC-MTD-VAT~VRN~123456789", true)
+      mockResponseForAppealSubmissionStub(Status.OK, "HMRC-MTD-VAT~VRN~123456789", isLPP = true)
       val modelToSend: AppealSubmission = AppealSubmission(
         submittedBy = "client",
         penaltyId = "1234567890",
@@ -97,7 +98,7 @@ class AppealsConnectorISpec extends IntegrationSpecCommonBase with AppealWiremoc
           causeOfLateSubmissionAgent = None
         )
       )
-      val result = await(connector.submitAppeal(modelToSend, "HMRC-MTD-VAT~VRN~123456789", true))
+      val result: HttpResponse = await(connector.submitAppeal(modelToSend, "HMRC-MTD-VAT~VRN~123456789", isLPP = true))
       result.status shouldBe OK
     }
   }

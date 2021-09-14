@@ -24,13 +24,14 @@ import org.mockito.Mockito.{mock, reset, verify, when}
 import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.http.{HeaderCarrier, RequestId, SessionId}
 import uk.gov.hmrc.play.audit.http.connector.{AuditConnector, AuditResult}
+import uk.gov.hmrc.play.audit.model.ExtendedDataEvent
 
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class AuditServiceSpec extends SpecBase {
-  val mockConfig = mock(classOf[AppConfig])
-  val mockAuditConnector = mock(classOf[AuditConnector])
+  val mockConfig: AppConfig = mock(classOf[AppConfig])
+  val mockAuditConnector: AuditConnector = mock(classOf[AuditConnector])
 
   class Setup {
     reset(mockConfig, mockAuditConnector)
@@ -48,7 +49,7 @@ class AuditServiceSpec extends SpecBase {
         override val detail: JsValue = Json.parse("{}")
       }
       implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("session1")), requestId = Some(RequestId("request1")))
-      val result = service.toExtendedDataEvent(jsonAuditModel, "/path")
+      val result: ExtendedDataEvent = service.toExtendedDataEvent(jsonAuditModel, "/path")
       result.auditType shouldBe "AuditType"
       result.tags("X-Session-ID") shouldBe "session1"
       result.tags("X-Request-ID") shouldBe "request1"

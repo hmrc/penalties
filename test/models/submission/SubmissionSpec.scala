@@ -23,8 +23,10 @@ import org.scalatest.wordspec.AnyWordSpec
 import play.api.libs.json.{JsValue, Json}
 
 class SubmissionSpec extends AnyWordSpec with Matchers {
-  val sampleDate1: LocalDateTime = LocalDateTime.of(2020, 1, 1, 1, 0, 1)
-  val sampleDate2: LocalDateTime = LocalDateTime.of(2020, 1, 1, 2, 0, 1)
+  val sampleDate1: LocalDateTime = LocalDateTime.of(
+    2020, 1, 1, 1, 0, 1)
+  val sampleDate2: LocalDateTime = LocalDateTime.of(
+    2020, 1, 1, 2, 0, 1)
 
   val submissionAsModelWithSubmittedDate: Submission = Submission(
     dueDate = sampleDate1,

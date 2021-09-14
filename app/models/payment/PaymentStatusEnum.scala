@@ -20,8 +20,8 @@ import play.api.libs.json.{Format, JsError, JsResult, JsString, JsSuccess, JsVal
 
 object PaymentStatusEnum extends Enumeration {
 
-  val Paid = Value
-  val Due = Value
+  val Paid: PaymentStatusEnum.Value = Value
+  val Due: PaymentStatusEnum.Value = Value
 
   implicit val format: Format[PaymentStatusEnum.Value] = new Format[PaymentStatusEnum.Value] {
     override def writes(o: PaymentStatusEnum.Value): JsValue = {

@@ -164,7 +164,7 @@ trait IntegrationSpecCommonBase extends AnyWordSpec with Matchers with GuiceOneS
     )
   )
 
-  val etmpPayloadModelWithLPP = etmpPayloadModel.copy(latePaymentPenalties = Some(Seq(
+  val etmpPayloadModelWithLPP: ETMPPayload = etmpPayloadModel.copy(latePaymentPenalties = Some(Seq(
     LatePaymentPenalty(
       `type` = PenaltyTypeEnum.Financial,
       id = "1234567891",
@@ -193,7 +193,7 @@ trait IntegrationSpecCommonBase extends AnyWordSpec with Matchers with GuiceOneS
     )
   )))
 
-  val etmpPayloadModelWithLPPAndAdditionalPenalties = etmpPayloadModel.copy(latePaymentPenalties = Some(Seq(
+  val etmpPayloadModelWithLPPAndAdditionalPenalties: ETMPPayload = etmpPayloadModel.copy(latePaymentPenalties = Some(Seq(
     LatePaymentPenalty(
       `type` = PenaltyTypeEnum.Additional,
       id = "1234567892",
@@ -247,7 +247,7 @@ trait IntegrationSpecCommonBase extends AnyWordSpec with Matchers with GuiceOneS
     )
   )))
 
-  val etmpPayloadModelWithVATOverview = etmpPayloadModel.copy(
+  val etmpPayloadModelWithVATOverview: ETMPPayload = etmpPayloadModel.copy(
     otherPenalties = Some(false),
     vatOverview = Some(
       Seq(

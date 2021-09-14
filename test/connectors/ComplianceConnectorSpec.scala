@@ -20,26 +20,30 @@ import java.time.LocalDateTime
 
 import base.SpecBase
 import config.AppConfig
-import connectors.parsers.ComplianceParser.{CompliancePayloadResponse, GetCompliancePayloadFailureResponse, GetCompliancePayloadMalformed, GetCompliancePayloadNoContent, GetCompliancePayloadSuccessResponse}
+import connectors.parsers.ComplianceParser.{CompliancePayloadResponse, GetCompliancePayloadFailureResponse,
+  GetCompliancePayloadMalformed, GetCompliancePayloadNoContent, GetCompliancePayloadSuccessResponse}
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
-import play.api.libs.json.Json
 import play.api.http.Status
+import play.api.libs.json.Json
 import play.api.test.Helpers._
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient}
 
-import java.time.LocalDateTime
 import scala.concurrent.{ExecutionContext, Future}
 
 class ComplianceConnectorSpec extends SpecBase {
   implicit val ec: ExecutionContext = ExecutionContext.Implicits.global
   val mockHttpClient: HttpClient = mock(classOf[HttpClient])
   val mockAppConfig: AppConfig = mock(classOf[AppConfig])
-  val testStartDate: LocalDateTime = LocalDateTime.of(2021,1,1,1,0,0)
-  val testEndDate: LocalDateTime = LocalDateTime.of(2021,1,8,1,0,0)
+  val testStartDate: LocalDateTime = LocalDateTime.of(
+    2021,1,1,1,0,0)
+  val testEndDate: LocalDateTime = LocalDateTime.of(
+    2021,1,8,1,0,0)
 
-  val date1: LocalDateTime = LocalDateTime.of(2022, 1, 1, 1, 1, 0)
-  val date2: LocalDateTime = LocalDateTime.of(2024, 1, 1, 1, 1, 0)
+  val date1: LocalDateTime = LocalDateTime.of(
+    2022, 1, 1, 1, 1, 0)
+  val date2: LocalDateTime = LocalDateTime.of(
+    2024, 1, 1, 1, 1, 0)
 
   class Setup {
     reset(mockHttpClient)
