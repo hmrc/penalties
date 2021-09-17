@@ -23,12 +23,11 @@ import models.payment.{LatePaymentPenalty, PaymentPeriod, PaymentStatusEnum}
 import models.reason.PaymentPenaltyReasonEnum
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
-import play.api.libs.json.Json
-
+import play.api.libs.json.{JsObject, Json}
 import java.time.LocalDateTime
 
 class PaymentPointSpec extends AnyWordSpec with Matchers {
-  val paymentPointJson = (withAppealStatus: Boolean) => Json.obj(
+  val paymentPointJson: Boolean => JsObject = (withAppealStatus: Boolean) => Json.obj(
     "type" -> "financial",
     "id" -> "123456789",
     "reason" -> "VAT_NOT_PAID_WITHIN_30_DAYS",
@@ -71,7 +70,7 @@ class PaymentPointSpec extends AnyWordSpec with Matchers {
     )
   )
 
-  val paymentPointModelWithNoAppeal = paymentPointModelWithAppeal.copy(appealStatus = None)
+  val paymentPointModelWithNoAppeal: LatePaymentPenalty = paymentPointModelWithAppeal.copy(appealStatus = None)
 
   "be writable to JSON with no appeal status" in {
     val result = Json.toJson(paymentPointModelWithNoAppeal)

@@ -18,7 +18,8 @@ package services
 
 import base.SpecBase
 import connectors.ComplianceConnector
-import connectors.parsers.ComplianceParser.{GetCompliancePayloadFailureResponse, GetCompliancePayloadMalformed, GetCompliancePayloadNoContent, GetCompliancePayloadSuccessResponse}
+import connectors.parsers.ComplianceParser.{GetCompliancePayloadFailureResponse, GetCompliancePayloadMalformed,
+  GetCompliancePayloadNoContent, GetCompliancePayloadSuccessResponse}
 import models.compliance.{CompliancePayload, MissingReturn, Return, ReturnStatusEnum}
 import org.mockito.{ArgumentCaptor, ArgumentMatchers}
 import org.mockito.Mockito._
@@ -51,7 +52,7 @@ class ComplianceServiceSpec extends SpecBase {
         when(mockComplianceConnector.getComplianceSummaryForEnrolmentKey(ArgumentMatchers.eq(identifier),
           ArgumentMatchers.eq(mtdVatRegime))(ArgumentMatchers.any()))
           .thenReturn(Future.successful(Left(GetCompliancePayloadFailureResponse(Status.INTERNAL_SERVER_ERROR))))
-        val result = await(service.getComplianceSummary(identifier, mtdVatRegime)(implicitly, implicitly, ""))
+        val result: Option[JsValue] = await(service.getComplianceSummary(identifier, mtdVatRegime)(implicitly, implicitly, ""))
         result.isDefined shouldBe false
       }
 
@@ -60,7 +61,7 @@ class ComplianceServiceSpec extends SpecBase {
         when(mockComplianceConnector.getComplianceSummaryForEnrolmentKey(ArgumentMatchers.eq(identifier),
           ArgumentMatchers.eq(mtdVatRegime))(ArgumentMatchers.any()))
           .thenReturn(Future.successful(Left(GetCompliancePayloadMalformed)))
-        val result = await(service.getComplianceSummary(identifier, mtdVatRegime)(implicitly, implicitly, ""))
+        val result: Option[JsValue] = await(service.getComplianceSummary(identifier, mtdVatRegime)(implicitly, implicitly, ""))
         result.isDefined shouldBe false
       }
 
@@ -69,7 +70,7 @@ class ComplianceServiceSpec extends SpecBase {
         when(mockComplianceConnector.getComplianceSummaryForEnrolmentKey(ArgumentMatchers.eq(identifier),
           ArgumentMatchers.eq(mtdVatRegime))(ArgumentMatchers.any()))
           .thenReturn(Future.successful(Left(GetCompliancePayloadNoContent)))
-        val result = await(service.getComplianceSummary(identifier, mtdVatRegime)(implicitly, implicitly, ""))
+        val result: Option[JsValue] = await(service.getComplianceSummary(identifier, mtdVatRegime)(implicitly, implicitly, ""))
         result.isDefined shouldBe false
       }
     }
@@ -80,7 +81,7 @@ class ComplianceServiceSpec extends SpecBase {
         when(mockComplianceConnector.getComplianceSummaryForEnrolmentKey(ArgumentMatchers.eq(identifier),
           ArgumentMatchers.eq(mtdVatRegime))(ArgumentMatchers.any()))
           .thenReturn(Future.successful(Right(GetCompliancePayloadSuccessResponse(Json.parse("{}")))))
-        val result = await(service.getComplianceSummary(identifier, mtdVatRegime)(implicitly, implicitly, ""))
+        val result: Option[JsValue] = await(service.getComplianceSummary(identifier, mtdVatRegime)(implicitly, implicitly, ""))
         result.isDefined shouldBe true
         result.get shouldBe Json.parse("{}")
       }
@@ -92,31 +93,37 @@ class ComplianceServiceSpec extends SpecBase {
     "return None" when {
       "the connector returns an unknown failure" in new Setup {
         val identifier: String = "123456789"
-        val localDateTime: LocalDateTime = LocalDateTime.of(2022, 5, 1, 0, 0, 0)
+        val localDateTime: LocalDateTime = LocalDateTime.of(
+          2022, 5, 1, 0, 0, 0)
         when(mockComplianceConnector.getPastReturnsForEnrolmentKey(ArgumentMatchers.eq(identifier),
           ArgumentMatchers.eq(localDateTime.minusYears(2)), ArgumentMatchers.eq(localDateTime), ArgumentMatchers.eq("mtd-vat"))(ArgumentMatchers.any()))
           .thenReturn(Future.successful(Left(GetCompliancePayloadFailureResponse(Status.INTERNAL_SERVER_ERROR))))
-        val result = await(service.getComplianceHistory(identifier, localDateTime.minusYears(2), localDateTime, mtdVatRegime)(implicitly, implicitly, ""))
+        val result: Option[JsValue] = await(service.getComplianceHistory(identifier, localDateTime.minusYears(2),
+          localDateTime, mtdVatRegime)(implicitly, implicitly, ""))
         result.isDefined shouldBe false
       }
 
       "the connector returns invalid JSON" in new Setup {
         val identifier: String = "123456789"
-        val localDateTime: LocalDateTime = LocalDateTime.of(2022, 5, 1, 0, 0, 0)
+        val localDateTime: LocalDateTime = LocalDateTime.of(
+          2022, 5, 1, 0, 0, 0)
         when(mockComplianceConnector.getPastReturnsForEnrolmentKey(ArgumentMatchers.eq(identifier),
           ArgumentMatchers.eq(localDateTime.minusYears(2)), ArgumentMatchers.eq(localDateTime), ArgumentMatchers.eq("mtd-vat"))(ArgumentMatchers.any()))
           .thenReturn(Future.successful(Left(GetCompliancePayloadMalformed)))
-        val result = await(service.getComplianceHistory(identifier, localDateTime.minusYears(2), localDateTime, mtdVatRegime)(implicitly, implicitly, ""))
+        val result: Option[JsValue] = await(service.getComplianceHistory(identifier, localDateTime.minusYears(2),
+          localDateTime, mtdVatRegime)(implicitly, implicitly, ""))
         result.isDefined shouldBe false
       }
 
       "the connector returns NoContent" in new Setup {
         val identifier: String = "123456789"
-        val localDateTime: LocalDateTime = LocalDateTime.of(2022, 5, 1, 0, 0, 0)
+        val localDateTime: LocalDateTime = LocalDateTime.of(
+          2022, 5, 1, 0, 0, 0)
         when(mockComplianceConnector.getPastReturnsForEnrolmentKey(ArgumentMatchers.eq(identifier),
           ArgumentMatchers.eq(localDateTime.minusYears(2)), ArgumentMatchers.eq(localDateTime), ArgumentMatchers.eq("mtd-vat"))(ArgumentMatchers.any()))
           .thenReturn(Future.successful(Left(GetCompliancePayloadNoContent)))
-        val result = await(service.getComplianceHistory(identifier, localDateTime.minusYears(2), localDateTime, mtdVatRegime)(implicitly, implicitly, ""))
+        val result: Option[JsValue] = await(service.getComplianceHistory(identifier, localDateTime.minusYears(2),
+          localDateTime, mtdVatRegime)(implicitly, implicitly, ""))
         result.isDefined shouldBe false
       }
     }
@@ -124,12 +131,14 @@ class ComplianceServiceSpec extends SpecBase {
     "return Some" when {
       "the connector returns a successful response - calling the connector with startDate = now - 2 years and endDate = now" in new Setup {
         val identifier: String = "123456789"
-        val localDateTime: LocalDateTime = LocalDateTime.of(2022, 5, 1, 0, 0, 0)
+        val localDateTime: LocalDateTime = LocalDateTime.of(
+          2022, 5, 1, 0, 0, 0)
         when(mockDateHelper.dateTimeNow()).thenReturn(localDateTime)
         when(mockComplianceConnector.getPastReturnsForEnrolmentKey(ArgumentMatchers.eq(identifier),
           ArgumentMatchers.eq(localDateTime.minusYears(2)), ArgumentMatchers.eq(localDateTime), ArgumentMatchers.eq("mtd-vat"))(ArgumentMatchers.any()))
           .thenReturn(Future.successful(Right(GetCompliancePayloadSuccessResponse(Json.parse("{}")))))
-        val result = await(service.getComplianceHistory(identifier, localDateTime.minusYears(2), localDateTime, mtdVatRegime)(implicitly, implicitly, ""))
+        val result: Option[JsValue] = await(service.getComplianceHistory(identifier, localDateTime.minusYears(2),
+          localDateTime, mtdVatRegime)(implicitly, implicitly, ""))
         result.isDefined shouldBe true
         result.get shouldBe Json.parse("{}")
       }
@@ -143,7 +152,8 @@ class ComplianceServiceSpec extends SpecBase {
 
     "return None" when {
       "the call to retrieve previous compliance data succeeds but the call to retrieve current data does not succeed" in new Setup {
-        val localDateTime: LocalDateTime = LocalDateTime.of(2022, 5, 1, 0, 0, 0)
+        val localDateTime: LocalDateTime = LocalDateTime.of(
+          2022, 5, 1, 0, 0, 0)
         when(mockDateHelper.dateTimeNow()).thenReturn(localDateTime)
         when(mockComplianceConnector.getComplianceSummaryForEnrolmentKey(ArgumentMatchers.eq(identifier),
           ArgumentMatchers.eq(mtdVatRegime))(ArgumentMatchers.any()))
@@ -152,12 +162,13 @@ class ComplianceServiceSpec extends SpecBase {
           ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any()))
           .thenReturn(Future.successful(Right(GetCompliancePayloadSuccessResponse(Json.parse("{}")))))
 
-        val result = await(service.getComplianceDataForEnrolmentKey(enrolmentKey))
+        val result: Option[CompliancePayload] = await(service.getComplianceDataForEnrolmentKey(enrolmentKey))
         result.isDefined shouldBe false
       }
 
       "the call to retrieve current data succeeds but the call to retrieve previous compliance data does not succeed" in new Setup {
-        val localDateTime: LocalDateTime = LocalDateTime.of(2022, 5, 1, 0, 0, 0)
+        val localDateTime: LocalDateTime = LocalDateTime.of(
+          2022, 5, 1, 0, 0, 0)
         when(mockDateHelper.dateTimeNow()).thenReturn(localDateTime)
         when(mockComplianceConnector.getComplianceSummaryForEnrolmentKey(ArgumentMatchers.eq(identifier),
           ArgumentMatchers.eq(mtdVatRegime))(ArgumentMatchers.any()))
@@ -166,12 +177,13 @@ class ComplianceServiceSpec extends SpecBase {
           ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any()))
           .thenReturn(Future.successful(Left(GetCompliancePayloadFailureResponse(Status.INTERNAL_SERVER_ERROR))))
 
-        val result = await(service.getComplianceDataForEnrolmentKey(enrolmentKey))
+        val result: Option[CompliancePayload] = await(service.getComplianceDataForEnrolmentKey(enrolmentKey))
         result.isDefined shouldBe false
       }
 
       "both calls succeed but the JSON returned is invalid" in new Setup {
-        val localDateTime: LocalDateTime = LocalDateTime.of(2022, 5, 1, 0, 0, 0)
+        val localDateTime: LocalDateTime = LocalDateTime.of(
+          2022, 5, 1, 0, 0, 0)
         when(mockDateHelper.dateTimeNow()).thenReturn(localDateTime)
         when(mockComplianceConnector.getComplianceSummaryForEnrolmentKey(ArgumentMatchers.eq(identifier),
           ArgumentMatchers.eq(mtdVatRegime))(ArgumentMatchers.any()))
@@ -180,14 +192,15 @@ class ComplianceServiceSpec extends SpecBase {
           ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any()))
           .thenReturn(Future.successful(Right(GetCompliancePayloadSuccessResponse(Json.parse("{}")))))
 
-        val result = await(service.getComplianceDataForEnrolmentKey(enrolmentKey))
+        val result: Option[CompliancePayload] = await(service.getComplianceDataForEnrolmentKey(enrolmentKey))
         result.isDefined shouldBe false
       }
     }
 
     "return Some" when {
       "the call to retrieve current and previous compliance data succeeds - startDate = now - 2 years, endDate = now" in new Setup {
-        val localDateTime: LocalDateTime = LocalDateTime.of(2022, 5, 1, 0, 0, 0)
+        val localDateTime: LocalDateTime = LocalDateTime.of(
+          2022, 5, 1, 0, 0, 0)
         val previousDataResponse: JsValue = Json.parse(
           """
             |{
@@ -225,27 +238,36 @@ class ComplianceServiceSpec extends SpecBase {
             |}
             |""".stripMargin)
 
-        val complianceModelRepresentingJSON = CompliancePayload(
+        val complianceModelRepresentingJSON: CompliancePayload = CompliancePayload(
           noOfMissingReturns = "2",
           noOfSubmissionsReqForCompliance = "4",
-          expiryDateOfAllPenaltyPoints = LocalDateTime.of(2023, 3, 31, 0, 0, 0, 0),
+          expiryDateOfAllPenaltyPoints = LocalDateTime.of(
+            2023, 3, 31, 0, 0, 0, 0),
           missingReturns = Seq(
             MissingReturn(
-              startDate = LocalDateTime.of(2020, 10, 1, 0, 0, 0, 0),
-              endDate = LocalDateTime.of(2020, 12, 31, 23, 59, 59, 0)
+              startDate = LocalDateTime.of(
+                2020, 10, 1, 0, 0, 0, 0),
+              endDate = LocalDateTime.of(
+                2020, 12, 31, 23, 59, 59, 0)
             )
           ),
           returns = Seq(
             Return(
-              startDate = LocalDateTime.of(2020, 10, 1, 0, 0, 0, 0),
-              endDate = LocalDateTime.of(2020, 12, 31, 23, 59, 59, 0),
-              dueDate = LocalDateTime.of(2021, 5, 7, 23, 59, 59, 0),
+              startDate = LocalDateTime.of(
+                2020, 10, 1, 0, 0, 0, 0),
+              endDate = LocalDateTime.of(
+                2020, 12, 31, 23, 59, 59, 0),
+              dueDate = LocalDateTime.of(
+                2021, 5, 7, 23, 59, 59, 0),
               status = Some(ReturnStatusEnum.submitted)
             ),
             Return(
-              startDate = LocalDateTime.of(2021, 4, 1, 0, 0, 0, 0),
-              endDate = LocalDateTime.of(2021, 6, 30, 23, 59, 59, 0),
-              dueDate = LocalDateTime.of(2021, 8, 7, 23, 59, 59, 0),
+              startDate = LocalDateTime.of(
+                2021, 4, 1, 0, 0, 0, 0),
+              endDate = LocalDateTime.of(
+                2021, 6, 30, 23, 59, 59, 0),
+              dueDate = LocalDateTime.of(
+                2021, 8, 7, 23, 59, 59, 0),
               status = None
             )
           )
@@ -260,7 +282,7 @@ class ComplianceServiceSpec extends SpecBase {
           startDateCaptor.capture(), endDateCaptor.capture(), ArgumentMatchers.any())(ArgumentMatchers.any()))
           .thenReturn(Future.successful(Right(GetCompliancePayloadSuccessResponse(currentComplianceDataResponse))))
 
-        val result = await(service.getComplianceDataForEnrolmentKey(enrolmentKey))
+        val result: Option[CompliancePayload] = await(service.getComplianceDataForEnrolmentKey(enrolmentKey))
         result.isDefined shouldBe true
         result.get shouldBe complianceModelRepresentingJSON
         startDateCaptor.getValue shouldBe localDateTime.minusYears(2)

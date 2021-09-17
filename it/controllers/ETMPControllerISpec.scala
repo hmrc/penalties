@@ -24,7 +24,7 @@ import play.api.test.Helpers._
 import utils.{ETMPWiremock, IntegrationSpecCommonBase}
 
 class ETMPControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock {
-  val controller = injector.instanceOf[ETMPController]
+  val controller: ETMPController = injector.instanceOf[ETMPController]
 
   val etmpPayloadAsJsonWithNoPoints: JsValue = Json.parse(
     """

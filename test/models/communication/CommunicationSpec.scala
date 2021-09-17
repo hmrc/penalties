@@ -35,7 +35,8 @@ class CommunicationSpec extends AnyWordSpec with Matchers {
 
   val communicationModel: Communication = Communication(
     `type` = CommunicationTypeEnum.letter,
-    dateSent = LocalDateTime.of(2021, 4, 23, 18, 25, 43).plus(511, ChronoUnit.MILLIS),
+    dateSent = LocalDateTime.of(
+      2021, 4, 23, 18, 25, 43).plus(511, ChronoUnit.MILLIS),
     documentId = "123456789"
   )
   "Communication" should {

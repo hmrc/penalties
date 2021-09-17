@@ -65,7 +65,7 @@ class AppealsConnectorSpec extends SpecBase {
           causeOfLateSubmissionAgent = None
         )
       )
-      val result = await(connector.submitAppeal(modelToSend, "HMRC-MTD-VAT~VRN~123456789", false)(HeaderCarrier()))
+      val result: HttpResponse = await(connector.submitAppeal(modelToSend, "HMRC-MTD-VAT~VRN~123456789", isLPP = false)(HeaderCarrier()))
       result.status shouldBe OK
       result.body shouldBe "OK"
     }
@@ -96,7 +96,7 @@ class AppealsConnectorSpec extends SpecBase {
           causeOfLateSubmissionAgent = None
         )
       )
-      val result = await(connector.submitAppeal(modelToSend, "HMRC-MTD-VAT~VRN~123456789", true)(HeaderCarrier()))
+      val result: HttpResponse = await(connector.submitAppeal(modelToSend, "HMRC-MTD-VAT~VRN~123456789", isLPP = true)(HeaderCarrier()))
       result.status shouldBe OK
       result.body shouldBe "OK"
     }

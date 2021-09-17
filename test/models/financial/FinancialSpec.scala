@@ -77,7 +77,8 @@ class FinancialSpec extends AnyWordSpec with Matchers {
   val financialModel: Financial = Financial(
     amountDue = 400.12,
     outstandingAmountDue = 400.12,
-    dueDate = LocalDateTime.of(2019, 1, 31, 23, 59, 59).plus(999, ChronoUnit.MILLIS)
+    dueDate = LocalDateTime.of(
+      2019, 1, 31, 23, 59, 59).plus(999, ChronoUnit.MILLIS)
   )
 
   val financialModelWithInterest: Financial = Financial(

@@ -37,10 +37,9 @@ class ComplianceController @Inject()(complianceService: ComplianceService,
           data => Ok(Json.toJson(data))
         )
       } recover {
-        case e => {
+        case e =>
           logger.error(s"[ComplianceController][getComplianceDataForEnrolmentKey] - Service returned exception, with message: ${e.getMessage}")
           InternalServerError(s"Exception occurred with error: ${e.getMessage}")
-        }
       }
     }
   }

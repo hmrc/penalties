@@ -43,7 +43,8 @@ class ReturnSpec extends AnyWordSpec with Matchers {
       |}
       |""".stripMargin)
 
-  val date = LocalDateTime.of(2019, 1, 31, 23, 59, 59).plus(999, ChronoUnit.MILLIS)
+  val date: LocalDateTime = LocalDateTime.of(
+    2019, 1, 31, 23, 59, 59).plus(999, ChronoUnit.MILLIS)
 
   val returnModelNoStatus: Return = Return(date, date, date)
   val returnModelWithStatus: Return = Return(date, date, date, Some(ReturnStatusEnum.submitted))

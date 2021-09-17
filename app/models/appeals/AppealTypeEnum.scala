@@ -19,9 +19,9 @@ package models.appeals
 import play.api.libs.json._
 
 object AppealTypeEnum extends Enumeration {
-  val Late_Submission = Value
-  val Late_Payment = Value
-  val Additional = Value
+  val Late_Submission: AppealTypeEnum.Value = Value
+  val Late_Payment: AppealTypeEnum.Value = Value
+  val Additional: AppealTypeEnum.Value = Value
 
   implicit val format: Format[AppealTypeEnum.Value] = new Format[AppealTypeEnum.Value] {
     override def writes(o: AppealTypeEnum.Value): JsValue = {

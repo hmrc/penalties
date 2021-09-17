@@ -20,9 +20,9 @@ import play.api.libs.json._
 
 object PenaltyTypeEnum extends Enumeration {
 
-  val Financial = Value
-  val Point = Value
-  val Additional = Value
+  val Financial: PenaltyTypeEnum.Value = Value
+  val Point: PenaltyTypeEnum.Value = Value
+  val Additional: PenaltyTypeEnum.Value = Value
 
   implicit val format: Format[PenaltyTypeEnum.Value] = new Format[PenaltyTypeEnum.Value] {
     override def writes(o: PenaltyTypeEnum.Value): JsValue = {

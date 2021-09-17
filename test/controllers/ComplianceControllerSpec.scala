@@ -23,9 +23,11 @@ import org.mockito.Mockito._
 import play.api.libs.json.Json
 import play.api.test.Helpers._
 import services.ComplianceService
-
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
+
+import play.api.mvc.Result
+
 import scala.concurrent.{ExecutionContext, Future}
 
 class ComplianceControllerSpec extends SpecBase {
@@ -45,14 +47,15 @@ class ComplianceControllerSpec extends SpecBase {
         when(mockService.getComplianceDataForEnrolmentKey(ArgumentMatchers.eq(enrolmentKey))(ArgumentMatchers.any(), ArgumentMatchers.any()))
           .thenReturn(Future.successful(None))
 
-        val result = controller.getComplianceDataForEnrolmentKey(enrolmentKey)(fakeRequest)
+        val result: Future[Result] = controller.getComplianceDataForEnrolmentKey(enrolmentKey)(fakeRequest)
         await(result).header.status shouldBe NOT_FOUND
         contentAsString(result) shouldBe s"Could not find any compliance data for enrolment: $enrolmentKey"
       }
     }
 
     "return 200" when {
-      val sampleDateTime: LocalDateTime = LocalDateTime.of(2019, 1, 31, 23, 59, 59).plus(998, ChronoUnit.MILLIS)
+      val sampleDateTime: LocalDateTime = LocalDateTime.of(
+        2019, 1, 31, 23, 59, 59).plus(998, ChronoUnit.MILLIS)
       val return1: Return = Return(sampleDateTime, sampleDateTime, sampleDateTime, Some(ReturnStatusEnum.submitted))
       val return2: Return = Return(sampleDateTime, sampleDateTime, sampleDateTime, None)
       val missingReturn1 : MissingReturn = MissingReturn(sampleDateTime, sampleDateTime)
@@ -64,7 +67,7 @@ class ComplianceControllerSpec extends SpecBase {
         when(mockService.getComplianceDataForEnrolmentKey(ArgumentMatchers.eq(enrolmentKey))(ArgumentMatchers.any(), ArgumentMatchers.any()))
           .thenReturn(Future.successful(Some(returnModel)))
 
-        val result = controller.getComplianceDataForEnrolmentKey(enrolmentKey)(fakeRequest)
+        val result: Future[Result] = controller.getComplianceDataForEnrolmentKey(enrolmentKey)(fakeRequest)
         await(result).header.status shouldBe OK
         contentAsJson(result) shouldBe Json.toJson(returnModel)
       }
@@ -76,7 +79,7 @@ class ComplianceControllerSpec extends SpecBase {
         when(mockService.getComplianceDataForEnrolmentKey(ArgumentMatchers.eq(enrolmentKey))(ArgumentMatchers.any(), ArgumentMatchers.any()))
           .thenReturn(Future.failed(new Exception("failure in calling service")))
 
-        val result = controller.getComplianceDataForEnrolmentKey(enrolmentKey)(fakeRequest)
+        val result: Future[Result] = controller.getComplianceDataForEnrolmentKey(enrolmentKey)(fakeRequest)
         await(result).header.status shouldBe INTERNAL_SERVER_ERROR
       }
     }

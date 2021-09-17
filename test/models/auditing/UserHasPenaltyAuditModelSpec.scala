@@ -27,18 +27,21 @@ import models.point.{PenaltyPoint, PenaltyTypeEnum, PointStatusEnum}
 import models.reason.PaymentPenaltyReasonEnum
 import models.submission.{Submission, SubmissionStatusEnum}
 import utils.Logger
-
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 
 class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
-  val sampleDateTime1: LocalDateTime = LocalDateTime.of(2019, 1, 31, 23, 59, 59).plus(998, ChronoUnit.MILLIS)
+  val sampleDateTime1: LocalDateTime = LocalDateTime.of(
+    2019, 1, 31, 23, 59, 59).plus(998, ChronoUnit.MILLIS)
 
-  val basicModel: UserHasPenaltyAuditModel = UserHasPenaltyAuditModel(mockETMPPayloadResponseAsModel, "1234", "VRN", None)(fakeRequest.withHeaders("User-Agent" -> "penalties-frontend"))
-  val basicModelWithUserAgent = (userAgent: String) => UserHasPenaltyAuditModel(mockETMPPayloadResponseAsModel, "1234", "VRN", None)(fakeRequest.withHeaders("User-Agent" -> userAgent))
+  val basicModel: UserHasPenaltyAuditModel =
+    UserHasPenaltyAuditModel(mockETMPPayloadResponseAsModel, "1234", "VRN", None)(fakeRequest.withHeaders("User-Agent" -> "penalties-frontend"))
+  val basicModelWithUserAgent: String => UserHasPenaltyAuditModel =
+    (userAgent: String) => UserHasPenaltyAuditModel(mockETMPPayloadResponseAsModel, "1234", "VRN", None)(fakeRequest.withHeaders("User-Agent" -> userAgent))
   val basicAgentModel: UserHasPenaltyAuditModel = UserHasPenaltyAuditModel(mockETMPPayloadResponseAsModel, "1234", "VRN", Some("ARN123"))(fakeRequest)
   val mockETMPPayloadWithOutstandingVAT: ETMPPayload = ETMPPayload(
-    pointsTotal = 0, lateSubmissions = 0, adjustmentPointsTotal = 0, fixedPenaltyAmount = 0, penaltyAmountsTotal = 0, otherPenalties = None, penaltyPointsThreshold = 4, penaltyPoints = Seq.empty, latePaymentPenalties = None,
+    pointsTotal = 0, lateSubmissions = 0, adjustmentPointsTotal = 0, fixedPenaltyAmount = 0, penaltyAmountsTotal = 0,
+    otherPenalties = None, penaltyPointsThreshold = 4, penaltyPoints = Seq.empty, latePaymentPenalties = None,
     vatOverview = Some(
       Seq(
         OverviewElement(
@@ -55,8 +58,8 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
   )
 
   val mockETMPPayloadWithInterest: ETMPPayload = ETMPPayload(
-    pointsTotal = 1, lateSubmissions = 1, adjustmentPointsTotal = 0, fixedPenaltyAmount = 0, penaltyAmountsTotal = 1, otherPenalties = None, penaltyPointsThreshold = 4,
-    penaltyPoints = Seq(
+    pointsTotal = 1, lateSubmissions = 1, adjustmentPointsTotal = 0, fixedPenaltyAmount = 0, penaltyAmountsTotal = 1,
+    otherPenalties = None, penaltyPointsThreshold = 4, penaltyPoints = Seq(
       PenaltyPoint(
         `type` = PenaltyTypeEnum.Financial,
         number = "4",
@@ -117,9 +120,9 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
     )
   )
 
-  val mockETMPPayloadWithAppeals = (appealStatus: AppealStatusEnum.Value) =>  ETMPPayload(
-    pointsTotal = 0, lateSubmissions = 0, adjustmentPointsTotal = 0, fixedPenaltyAmount = 0, penaltyAmountsTotal = 0, otherPenalties = None, penaltyPointsThreshold = 4,
-    penaltyPoints = Seq(
+  val mockETMPPayloadWithAppeals: AppealStatusEnum.Value => ETMPPayload = (appealStatus: AppealStatusEnum.Value) =>  ETMPPayload(
+    pointsTotal = 0, lateSubmissions = 0, adjustmentPointsTotal = 0, fixedPenaltyAmount = 0, penaltyAmountsTotal = 0,
+    otherPenalties = None, penaltyPointsThreshold = 4, penaltyPoints = Seq(
       PenaltyPoint(
         `type` = PenaltyTypeEnum.Point,
         number = "4",
@@ -180,9 +183,9 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
     )
   )
 
-  val mockETMPPayloadWithLPPs = (paymentStatus: PointStatusEnum.Value) => ETMPPayload(
-    pointsTotal = 0, lateSubmissions = 0, adjustmentPointsTotal = 0, fixedPenaltyAmount = 0, penaltyAmountsTotal = 0, otherPenalties = None, penaltyPointsThreshold = 4,
-    penaltyPoints = Seq(),
+  val mockETMPPayloadWithLPPs: PointStatusEnum.Value => ETMPPayload = (paymentStatus: PointStatusEnum.Value) => ETMPPayload(
+    pointsTotal = 0, lateSubmissions = 0, adjustmentPointsTotal = 0, fixedPenaltyAmount = 0, penaltyAmountsTotal = 0,
+    otherPenalties = None, penaltyPointsThreshold = 4, penaltyPoints = Seq(),
     latePaymentPenalties = Some(
       Seq(
         LatePaymentPenalty(
@@ -229,8 +232,8 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
   )
 
   val mockETMPPayloadWithLPPPaidAndUnpaid: ETMPPayload = ETMPPayload(
-    pointsTotal = 0, lateSubmissions = 0, adjustmentPointsTotal = 0, fixedPenaltyAmount = 0, penaltyAmountsTotal = 0, otherPenalties = None, penaltyPointsThreshold = 4,
-    penaltyPoints = Seq(),
+    pointsTotal = 0, lateSubmissions = 0, adjustmentPointsTotal = 0, fixedPenaltyAmount = 0, penaltyAmountsTotal = 0,
+    otherPenalties = None, penaltyPointsThreshold = 4, penaltyPoints = Seq(),
     latePaymentPenalties = Some(
       Seq(
         LatePaymentPenalty(
@@ -276,9 +279,9 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
     vatOverview = None
   )
 
-  val mockETMPPayloadWithLPPAppealed = (appealStatus: AppealStatusEnum.Value) => ETMPPayload(
-    pointsTotal = 0, lateSubmissions = 0, adjustmentPointsTotal = 0, fixedPenaltyAmount = 0, penaltyAmountsTotal = 0, otherPenalties = None, penaltyPointsThreshold = 4,
-    penaltyPoints = Seq(),
+  val mockETMPPayloadWithLPPAppealed: AppealStatusEnum.Value => ETMPPayload = (appealStatus: AppealStatusEnum.Value) => ETMPPayload(
+    pointsTotal = 0, lateSubmissions = 0, adjustmentPointsTotal = 0, fixedPenaltyAmount = 0, penaltyAmountsTotal = 0,
+    otherPenalties = None, penaltyPointsThreshold = 4, penaltyPoints = Seq(),
     latePaymentPenalties = Some(
       Seq(
         LatePaymentPenalty(
@@ -434,18 +437,29 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
     )
   )
 
-  val auditModelWithOutstandingParentCharges: UserHasPenaltyAuditModel = UserHasPenaltyAuditModel(mockETMPPayloadWithOutstandingVAT, "1234", "VRN", Some("ARN123"))(fakeRequest)
-  val auditModelWithInterest: UserHasPenaltyAuditModel = UserHasPenaltyAuditModel(mockETMPPayloadWithInterest, "1234", "VRN", Some("ARN123"))(fakeRequest)
-  val auditModelWithLSPPs: UserHasPenaltyAuditModel = UserHasPenaltyAuditModel(mockETMPPayloadResponseAsModelMultiplePoints, "1234", "VRN", None)(fakeRequest)
-  val auditModelWithLSPPsUnderReview: UserHasPenaltyAuditModel = UserHasPenaltyAuditModel(mockETMPPayloadWithAppeals(AppealStatusEnum.Under_Review), "1234", "VRN", None)(fakeRequest)
-  val auditModelWithLSPPsAcceptedAppeal: UserHasPenaltyAuditModel = UserHasPenaltyAuditModel(mockETMPPayloadWithAppeals(AppealStatusEnum.Accepted), "1234", "VRN", None)(fakeRequest)
-  val auditModelWithLSPUnpaidAndRemoved: UserHasPenaltyAuditModel = UserHasPenaltyAuditModel(mockETMPPayloadResponseLSPPaidAndUnpaid, "1234", "VRN", None)(fakeRequest)
+  val auditModelWithOutstandingParentCharges: UserHasPenaltyAuditModel =
+    UserHasPenaltyAuditModel(mockETMPPayloadWithOutstandingVAT, "1234", "VRN", Some("ARN123"))(fakeRequest)
+  val auditModelWithInterest: UserHasPenaltyAuditModel =
+    UserHasPenaltyAuditModel(mockETMPPayloadWithInterest, "1234", "VRN", Some("ARN123"))(fakeRequest)
+  val auditModelWithLSPPs: UserHasPenaltyAuditModel =
+    UserHasPenaltyAuditModel(mockETMPPayloadResponseAsModelMultiplePoints, "1234", "VRN", None)(fakeRequest)
+  val auditModelWithLSPPsUnderReview: UserHasPenaltyAuditModel =
+    UserHasPenaltyAuditModel(mockETMPPayloadWithAppeals(AppealStatusEnum.Under_Review), "1234", "VRN", None)(fakeRequest)
+  val auditModelWithLSPPsAcceptedAppeal: UserHasPenaltyAuditModel =
+    UserHasPenaltyAuditModel(mockETMPPayloadWithAppeals(AppealStatusEnum.Accepted), "1234", "VRN", None)(fakeRequest)
+  val auditModelWithLSPUnpaidAndRemoved: UserHasPenaltyAuditModel =
+    UserHasPenaltyAuditModel(mockETMPPayloadResponseLSPPaidAndUnpaid, "1234", "VRN", None)(fakeRequest)
 
-  val auditModelWithLPPsPaid: UserHasPenaltyAuditModel = UserHasPenaltyAuditModel(mockETMPPayloadWithLPPs(PointStatusEnum.Paid), "1234", "VRN", None)(fakeRequest)
-  val auditModelWithLPPsUnpaid: UserHasPenaltyAuditModel = UserHasPenaltyAuditModel(mockETMPPayloadWithLPPs(PointStatusEnum.Due), "1234", "VRN", None)(fakeRequest)
-  val auditModelWithLPPsUnpaidAndPaid: UserHasPenaltyAuditModel = UserHasPenaltyAuditModel(mockETMPPayloadWithLPPPaidAndUnpaid, "1234", "VRN", None)(fakeRequest)
-  val auditModelWithLPPsUnderReview: UserHasPenaltyAuditModel = UserHasPenaltyAuditModel(mockETMPPayloadWithLPPAppealed(AppealStatusEnum.Under_Review), "1234", "VRN", None)(fakeRequest)
-  val auditModelWithLPPsAccepted: UserHasPenaltyAuditModel = UserHasPenaltyAuditModel(mockETMPPayloadWithLPPAppealed(AppealStatusEnum.Accepted), "1234", "VRN", None)(fakeRequest)
+  val auditModelWithLPPsPaid: UserHasPenaltyAuditModel =
+    UserHasPenaltyAuditModel(mockETMPPayloadWithLPPs(PointStatusEnum.Paid), "1234", "VRN", None)(fakeRequest)
+  val auditModelWithLPPsUnpaid: UserHasPenaltyAuditModel =
+    UserHasPenaltyAuditModel(mockETMPPayloadWithLPPs(PointStatusEnum.Due), "1234", "VRN", None)(fakeRequest)
+  val auditModelWithLPPsUnpaidAndPaid: UserHasPenaltyAuditModel =
+    UserHasPenaltyAuditModel(mockETMPPayloadWithLPPPaidAndUnpaid, "1234", "VRN", None)(fakeRequest)
+  val auditModelWithLPPsUnderReview: UserHasPenaltyAuditModel =
+    UserHasPenaltyAuditModel(mockETMPPayloadWithLPPAppealed(AppealStatusEnum.Under_Review), "1234", "VRN", None)(fakeRequest)
+  val auditModelWithLPPsAccepted: UserHasPenaltyAuditModel =
+    UserHasPenaltyAuditModel(mockETMPPayloadWithLPPAppealed(AppealStatusEnum.Accepted), "1234", "VRN", None)(fakeRequest)
 
   "UserHasPenaltyAuditModel" should {
     "have the correct audit type" in {

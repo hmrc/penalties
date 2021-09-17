@@ -39,16 +39,17 @@ case class UserHasPenaltyAuditModel(
     case Some(x) if x.contains("penalties-frontend") => "penalties-frontend"
     case Some(x) if x.contains("business-account") => "BTA"
     case Some(x) if x.contains("vat-through-software") => "VATVC"
-    case Some(_) | None => {
+    case Some(_) | None =>
       logger.error("[UserHasPenaltyAuditModel] - could not distinguish referer for audit")
       logger.debug(s"[UserHasPenaltyAuditModel] - request headers: \n ${request.headers.headers}")
       ""
-    }
   }
 
-  private val lspsUnpaidAndUnappealed: Seq[PenaltyPoint] = etmpPayload.penaltyPoints.filter(point => !point.status.equals(PointStatusEnum.Paid) && !point.status.equals(PointStatusEnum.Removed) && point.`type`.equals(PenaltyTypeEnum.Financial))
+  private val lspsUnpaidAndUnappealed: Seq[PenaltyPoint] = etmpPayload.penaltyPoints.filter(point =>
+    !point.status.equals(PointStatusEnum.Paid) && !point.status.equals(PointStatusEnum.Removed) && point.`type`.equals(PenaltyTypeEnum.Financial))
 
-  private val lppsUnpaidAndUnappealed: Option[Seq[LatePaymentPenalty]] = etmpPayload.latePaymentPenalties.map(_.filter(point => !point.status.equals(PointStatusEnum.Paid) && !point.status.equals(PointStatusEnum.Removed)))
+  private val lppsUnpaidAndUnappealed: Option[Seq[LatePaymentPenalty]] = etmpPayload.latePaymentPenalties.map(_.filter(point =>
+    !point.status.equals(PointStatusEnum.Paid) && !point.status.equals(PointStatusEnum.Removed)))
 
   private val totalTaxDue: BigDecimal = etmpPayload.vatOverview.map(_.map(_.amount).sum).getOrElse(BigDecimal(0))
 
@@ -56,9 +57,11 @@ case class UserHasPenaltyAuditModel(
     etmpPayload.vatOverview.map(charge =>
       charge.map(_.crystalizedInterest.getOrElse(BigDecimal(0))).sum + charge.map(_.estimatedInterest.getOrElse(BigDecimal(0))).sum).getOrElse(BigDecimal(0)) +
       lspsUnpaidAndUnappealed.map(
-      point => point.financial.flatMap(_.estimatedInterest).getOrElse(BigDecimal(0)) + point.financial.flatMap(_.crystalizedInterest).getOrElse(BigDecimal(0))).sum +
+      point => point.financial.flatMap(_.estimatedInterest).getOrElse(BigDecimal(0)) +
+        point.financial.flatMap(_.crystalizedInterest).getOrElse(BigDecimal(0))).sum +
       lppsUnpaidAndUnappealed.map(
-      _.map(lpp => lpp.financial.crystalizedInterest.getOrElse(BigDecimal(0)) + lpp.financial.estimatedInterest.getOrElse(BigDecimal(0))).sum).getOrElse(BigDecimal(0))
+      _.map(lpp => lpp.financial.crystalizedInterest.getOrElse(BigDecimal(0)) +
+        lpp.financial.estimatedInterest.getOrElse(BigDecimal(0))).sum).getOrElse(BigDecimal(0))
   }
 
   private val totalFinancialPenaltyDue: BigDecimal = lspsUnpaidAndUnappealed.map(_.financial.map(_.amountDue).getOrElse(BigDecimal(0))).sum +
@@ -68,9 +71,11 @@ case class UserHasPenaltyAuditModel(
 
   private val amountOfLSPs: Int = etmpPayload.penaltyPoints.count(point => !point.status.equals(PointStatusEnum.Removed))
 
-  private val financialLSPs: Int = etmpPayload.penaltyPoints.count(point => point.`type` == PenaltyTypeEnum.Financial && !point.status.equals(PointStatusEnum.Removed))
+  private val financialLSPs: Int = etmpPayload.penaltyPoints.count(point =>
+    point.`type` == PenaltyTypeEnum.Financial && !point.status.equals(PointStatusEnum.Removed))
 
-  private val amountOfLSPsUnderAppeal: Int = etmpPayload.penaltyPoints.count(point => point.appealStatus.contains(AppealStatusEnum.Under_Review) || point.appealStatus.contains(AppealStatusEnum.Under_Tribunal_Review))
+  private val amountOfLSPsUnderAppeal: Int = etmpPayload.penaltyPoints.count(point =>
+    point.appealStatus.contains(AppealStatusEnum.Under_Review) || point.appealStatus.contains(AppealStatusEnum.Under_Tribunal_Review))
 
   private val lspDetail: JsValue = jsonObjNoNulls(
     "penaltyPointsThreshold" -> etmpPayload.penaltyPointsThreshold,
@@ -81,11 +86,13 @@ case class UserHasPenaltyAuditModel(
 
   private val numberOfPaidLPPs: Int = etmpPayload.latePaymentPenalties.map(_.count(_.status == PointStatusEnum.Paid)).getOrElse(0)
 
-  private val numberOfUnpaidLPPs: Int = etmpPayload.latePaymentPenalties.map(_.count(point => !point.status.equals(PointStatusEnum.Paid) && !point.status.equals(PointStatusEnum.Removed))).getOrElse(0)
+  private val numberOfUnpaidLPPs: Int = etmpPayload.latePaymentPenalties.map(_.count(point =>
+    !point.status.equals(PointStatusEnum.Paid) && !point.status.equals(PointStatusEnum.Removed))).getOrElse(0)
 
   private val totalNumberOfLPPs: Int = etmpPayload.latePaymentPenalties.map(_.count(point => !point.status.equals(PointStatusEnum.Removed))).getOrElse(0)
 
-  private val amountOfLPPsUnderAppeal: Int = etmpPayload.latePaymentPenalties.map(_.count(point => point.appealStatus.contains(AppealStatusEnum.Under_Review) || point.appealStatus.contains(AppealStatusEnum.Under_Tribunal_Review))).getOrElse(0)
+  private val amountOfLPPsUnderAppeal: Int = etmpPayload.latePaymentPenalties.map(_.count(point =>
+    point.appealStatus.contains(AppealStatusEnum.Under_Review) || point.appealStatus.contains(AppealStatusEnum.Under_Tribunal_Review))).getOrElse(0)
 
   private val lppDetail: JsValue = jsonObjNoNulls(
     "numberOfPaidPenalties" -> numberOfPaidLPPs,

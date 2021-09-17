@@ -165,7 +165,8 @@ class AppealsControllerSpec extends SpecBase {
       val samplePenaltyId: String = "123456801"
       val sampleEnrolmentKey: String = "HMRC-MTD-VAT~VRN~123456789"
       when(mockETMPService.getPenaltyDataFromETMPForEnrolment(ArgumentMatchers.eq(sampleEnrolmentKey))(ArgumentMatchers.any()))
-        .thenReturn(Future.successful((Some(mockETMPPayloadResponseAsModelForLPPWithAdditionalPenalties), Right(GetETMPPayloadSuccessResponse(mockETMPPayloadResponseAsModelForLPPWithAdditionalPenalties)))))
+        .thenReturn(Future.successful((Some(mockETMPPayloadResponseAsModelForLPPWithAdditionalPenalties),
+          Right(GetETMPPayloadSuccessResponse(mockETMPPayloadResponseAsModelForLPPWithAdditionalPenalties)))))
 
       val result: Future[Result] = controller.getAppealsDataForLatePaymentPenalty(samplePenaltyId, sampleEnrolmentKey, isAdditional = true)(fakeRequest)
       status(result) shouldBe Status.OK
@@ -289,7 +290,7 @@ class AppealsControllerSpec extends SpecBase {
   "submitAppeal" should {
     "return BAD_REQUEST (400)" when {
       "the request body is not valid JSON" in new Setup {
-        val result = controller.submitAppeal("HMRC-MTD-VAT~VRN~123456789", false)(fakeRequest)
+        val result: Future[Result] = controller.submitAppeal("HMRC-MTD-VAT~VRN~123456789", isLPP = false)(fakeRequest)
         status(result) shouldBe BAD_REQUEST
         contentAsString(result) shouldBe "Invalid body received i.e. could not be parsed to JSON"
       }
@@ -305,7 +306,7 @@ class AppealsControllerSpec extends SpecBase {
             |}
             |""".stripMargin)
 
-        val result = controller.submitAppeal("HMRC-MTD-VAT~VRN~123456789", false)(fakeRequest.withJsonBody(appealsJson))
+        val result: Future[Result] = controller.submitAppeal("HMRC-MTD-VAT~VRN~123456789", isLPP = false)(fakeRequest.withJsonBody(appealsJson))
         status(result) shouldBe BAD_REQUEST
         contentAsString(result) shouldBe "Failed to parse to model"
       }
@@ -313,8 +314,8 @@ class AppealsControllerSpec extends SpecBase {
 
     "return ISE (500)" when {
       "the connector calls fails" in new Setup {
-        when(mockETMPService.submitAppeal(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
-          .thenReturn(Future.successful(HttpResponse(GATEWAY_TIMEOUT, "")))
+        when(mockETMPService.submitAppeal(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
+        (ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(HttpResponse(GATEWAY_TIMEOUT, "")))
         val appealsJson: JsValue = Json.parse(
           """
             |{
@@ -331,7 +332,7 @@ class AppealsControllerSpec extends SpecBase {
             |		}
             |}
             |""".stripMargin)
-        val result = controller.submitAppeal("HMRC-MTD-VAT~VRN~123456789", false)(fakeRequest.withJsonBody(appealsJson))
+        val result: Future[Result] = controller.submitAppeal("HMRC-MTD-VAT~VRN~123456789", isLPP = false)(fakeRequest.withJsonBody(appealsJson))
         status(result) shouldBe INTERNAL_SERVER_ERROR
         contentAsString(result) shouldBe "Something went wrong."
       }
@@ -339,8 +340,8 @@ class AppealsControllerSpec extends SpecBase {
 
     "return OK (200)" when {
       "the JSON request body can be parsed and the connector returns a successful response for crime" in new Setup {
-        when(mockETMPService.submitAppeal(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
-          .thenReturn(Future.successful(HttpResponse(OK, "")))
+        when(mockETMPService.submitAppeal(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
+        (ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(HttpResponse(OK, "")))
         val appealsJson: JsValue = Json.parse(
           """
             |{
@@ -356,13 +357,13 @@ class AppealsControllerSpec extends SpecBase {
             |		}
             |}
             |""".stripMargin)
-        val result = controller.submitAppeal("HMRC-MTD-VAT~VRN~123456789", false)(fakeRequest.withJsonBody(appealsJson))
+        val result: Future[Result] = controller.submitAppeal("HMRC-MTD-VAT~VRN~123456789", isLPP = false)(fakeRequest.withJsonBody(appealsJson))
         status(result) shouldBe OK
       }
 
       "the JSON request body can be parsed and the connector returns a successful response for loss of staff" in new Setup {
-        when(mockETMPService.submitAppeal(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
-          .thenReturn(Future.successful(HttpResponse(OK, "")))
+        when(mockETMPService.submitAppeal(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
+        (ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(HttpResponse(OK, "")))
         val appealsJson: JsValue = Json.parse(
           """
             |{
@@ -377,13 +378,13 @@ class AppealsControllerSpec extends SpecBase {
             |		}
             |}
             |""".stripMargin)
-        val result = controller.submitAppeal("HMRC-MTD-VAT~VRN~123456789", false)(fakeRequest.withJsonBody(appealsJson))
+        val result: Future[Result] = controller.submitAppeal("HMRC-MTD-VAT~VRN~123456789", isLPP = false)(fakeRequest.withJsonBody(appealsJson))
         status(result) shouldBe OK
       }
 
       "the Json request body can be parsed and the connector returns a successful response for fire or flood" in new Setup {
-        when(mockETMPService.submitAppeal(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
-          .thenReturn(Future.successful(HttpResponse(OK, "")))
+        when(mockETMPService.submitAppeal(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
+        (ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(HttpResponse(OK, "")))
         val appealsJson: JsValue = Json.parse(
           """
             |{
@@ -398,13 +399,13 @@ class AppealsControllerSpec extends SpecBase {
             |		}
             |}
             |""".stripMargin)
-        val result = controller.submitAppeal("HMRC-MTD-VAT~VRN~123456789", false)(fakeRequest.withJsonBody(appealsJson))
+        val result: Future[Result] = controller.submitAppeal("HMRC-MTD-VAT~VRN~123456789", isLPP = false)(fakeRequest.withJsonBody(appealsJson))
         status(result) shouldBe OK
       }
 
       "the Json request body can be parsed and the connector returns a successful response for technical issues" in new Setup {
-        when(mockETMPService.submitAppeal(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
-          .thenReturn(Future.successful(HttpResponse(OK, "")))
+        when(mockETMPService.submitAppeal(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
+        (ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(HttpResponse(OK, "")))
         val appealsJson: JsValue = Json.parse(
           """
             |{
@@ -420,14 +421,14 @@ class AppealsControllerSpec extends SpecBase {
             |		}
             |}
             |""".stripMargin)
-        val result = controller.submitAppeal("HMRC-MTD-VAT~VRN~123456789", false)(fakeRequest.withJsonBody(appealsJson))
+        val result: Future[Result] = controller.submitAppeal("HMRC-MTD-VAT~VRN~123456789", isLPP = false)(fakeRequest.withJsonBody(appealsJson))
         status(result) shouldBe OK
       }
 
       "the Json request body can be parsed and the connector returns a successful response for health" when {
         "there was no hospital stay" in new Setup {
-          when(mockETMPService.submitAppeal(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
-            .thenReturn(Future.successful(HttpResponse(OK, "")))
+          when(mockETMPService.submitAppeal(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
+          (ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(HttpResponse(OK, "")))
           val appealsJson: JsValue = Json.parse(
             """
               |{
@@ -444,13 +445,13 @@ class AppealsControllerSpec extends SpecBase {
               |		}
               |}
               |""".stripMargin)
-          val result = controller.submitAppeal("HMRC-MTD-VAT~VRN~123456789", false)(fakeRequest.withJsonBody(appealsJson))
+          val result: Future[Result] = controller.submitAppeal("HMRC-MTD-VAT~VRN~123456789", isLPP = false)(fakeRequest.withJsonBody(appealsJson))
           status(result) shouldBe OK
         }
 
         "there is an ongoing hospital stay" in new Setup {
-          when(mockETMPService.submitAppeal(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
-            .thenReturn(Future.successful(HttpResponse(OK, "")))
+          when(mockETMPService.submitAppeal(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
+          (ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(HttpResponse(OK, "")))
           val appealsJson: JsValue = Json.parse(
             """
               |{
@@ -467,13 +468,13 @@ class AppealsControllerSpec extends SpecBase {
               |		}
               |}
               |""".stripMargin)
-          val result = controller.submitAppeal("HMRC-MTD-VAT~VRN~123456789", false)(fakeRequest.withJsonBody(appealsJson))
+          val result: Future[Result] = controller.submitAppeal("HMRC-MTD-VAT~VRN~123456789", isLPP = false)(fakeRequest.withJsonBody(appealsJson))
           status(result) shouldBe OK
         }
 
         "there was a hospital stay that has ended" in new Setup {
-          when(mockETMPService.submitAppeal(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
-            .thenReturn(Future.successful(HttpResponse(OK, "")))
+          when(mockETMPService.submitAppeal(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
+          (ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(HttpResponse(OK, "")))
           val appealsJson: JsValue = Json.parse(
             """
               |{
@@ -491,13 +492,13 @@ class AppealsControllerSpec extends SpecBase {
               |		}
               |}
               |""".stripMargin)
-          val result = controller.submitAppeal("HMRC-MTD-VAT~VRN~123456789", false)(fakeRequest.withJsonBody(appealsJson))
+          val result: Future[Result] = controller.submitAppeal("HMRC-MTD-VAT~VRN~123456789", isLPP = false)(fakeRequest.withJsonBody(appealsJson))
           status(result) shouldBe OK
         }
 
         "the JSON request body can be parsed and the appeal is a LPP" in new Setup {
-          when(mockETMPService.submitAppeal(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
-            .thenReturn(Future.successful(HttpResponse(OK, "")))
+          when(mockETMPService.submitAppeal(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
+          (ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(HttpResponse(OK, "")))
           val appealsJson: JsValue = Json.parse(
             """
               |{
@@ -513,7 +514,7 @@ class AppealsControllerSpec extends SpecBase {
               |		}
               |}
               |""".stripMargin)
-          val result = controller.submitAppeal("HMRC-MTD-VAT~VRN~123456789", true)(fakeRequest.withJsonBody(appealsJson))
+          val result: Future[Result] = controller.submitAppeal("HMRC-MTD-VAT~VRN~123456789", isLPP = true)(fakeRequest.withJsonBody(appealsJson))
           status(result) shouldBe OK
         }
       }
@@ -524,14 +525,14 @@ class AppealsControllerSpec extends SpecBase {
     "return OK when the service returns true" in new Setup {
       when(mockETMPService.isMultiplePenaltiesInSamePeriod(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any()))
         .thenReturn(Future.successful(true))
-      val result = controller.getIsMultiplePenaltiesInSamePeriod("1234", "123456789", false)(fakeRequest)
+      val result: Future[Result] = controller.getIsMultiplePenaltiesInSamePeriod("1234", "123456789", isLPP = false)(fakeRequest)
       status(result) shouldBe OK
     }
 
     "return NO CONTENT when the service returns false" in new Setup {
       when(mockETMPService.isMultiplePenaltiesInSamePeriod(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any()))
         .thenReturn(Future.successful(false))
-      val result = controller.getIsMultiplePenaltiesInSamePeriod("1234", "123456789", false)(fakeRequest)
+      val result: Future[Result] = controller.getIsMultiplePenaltiesInSamePeriod("1234", "123456789", isLPP = false)(fakeRequest)
       status(result) shouldBe NO_CONTENT
     }
   }
