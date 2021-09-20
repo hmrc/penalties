@@ -32,6 +32,11 @@ class AppealTypeEnumSpec extends AnyWordSpec with Matchers {
     result shouldBe JsString("LATE_PAYMENT")
   }
 
+  "be writable to JSON for 'ADDITIONAL'" in {
+    val result = Json.toJson(AppealTypeEnum.Additional)
+    result shouldBe JsString("ADDITIONAL")
+  }
+
   "be readable from JSON for 'LATE_SUBMISSION'" in {
     val result = Json.fromJson(JsString("LATE_SUBMISSION"))(AppealTypeEnum.format)
     result.isSuccess shouldBe true
@@ -42,6 +47,12 @@ class AppealTypeEnumSpec extends AnyWordSpec with Matchers {
     val result = Json.fromJson(JsString("LATE_PAYMENT"))(AppealTypeEnum.format)
     result.isSuccess shouldBe true
     result.get shouldBe AppealTypeEnum.Late_Payment
+  }
+
+  "be writable from JSON for 'ADDITIONAL'" in {
+    val result = Json.fromJson(JsString("ADDITIONAL"))(AppealTypeEnum.format)
+    result.isSuccess shouldBe true
+    result.get shouldBe AppealTypeEnum.Additional
   }
 
   "return a JSError when there is no matches for the specified value" in {

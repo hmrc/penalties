@@ -33,9 +33,9 @@ class AppealsConnectorISpec extends IntegrationSpecCommonBase with AppealWiremoc
   }
 
   "submitAppeal" should {
-    "Jsonify the model and send the request and return the response - when ETMP feature switch enabled, call ETMP" in new Setup {
+    "Jsonify the model and send the request and return the response - when PEGA feature switch enabled, call PEGA" in new Setup {
       enableFeatureSwitch(CallETMP)
-      mockResponseForAppealSubmissionETMP(Status.OK)
+      mockResponseForAppealSubmissionETMP(Status.OK, "1234567890")
       val modelToSend: AppealSubmission = AppealSubmission(
         submittedBy = "client",
         penaltyId = "1234567890",

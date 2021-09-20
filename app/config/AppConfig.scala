@@ -33,6 +33,8 @@ class AppConfig @Inject()(config: Configuration, servicesConfig: ServicesConfig)
 
   lazy val etmpBase: String = servicesConfig.baseUrl("etmp")
 
+  lazy val pegaBase: String = servicesConfig.baseUrl("pega")
+
   def getVATPenaltiesURL: String = {
     if(!isEnabled(CallETMP)) stubBase + "/penalties-stub/etmp/mtd-vat/"
     //TODO: change to relevant URL when implemented
@@ -51,10 +53,10 @@ class AppConfig @Inject()(config: Configuration, servicesConfig: ServicesConfig)
     else etmpBase + "/"
   }
 
-  def getAppealSubmissionURL(enrolmentKey: String, isLPP: Boolean): String = {
+  def getAppealSubmissionURL(enrolmentKey: String, isLPP: Boolean, penaltyId: String): String = {
     if(!isEnabled(CallETMP)) stubBase + s"/penalties-stub/appeals/submit?enrolmentKey=$enrolmentKey&isLPP=$isLPP"
     //TODO: change to relevant URL when implemented
-    else etmpBase + "/"
+    else pegaBase + s"/penalty/first-stage-appeal/$penaltyId"
   }
 
   def isReasonableExcuseEnabled(excuseName: String): Boolean = {

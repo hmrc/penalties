@@ -57,16 +57,15 @@ class AppConfigSpec extends AnyWordSpec with Matchers with FeatureSwitching {
       enableFeatureSwitch(CallETMP)
       when(mockServicesConfig.baseUrl(ArgumentMatchers.any()))
         .thenReturn("localhost:0000")
-      val result: String = config.getAppealSubmissionURL("HMRC-MTD-VAT~VRN~123456789", isLPP = false)
-      //TODO: change this once we have the correct URL
-      result shouldBe "localhost:0000/"
+      val result: String = config.getAppealSubmissionURL("HMRC-MTD-VAT~VRN~123456789", isLPP = false, penaltyId = "0000001")
+      result shouldBe "localhost:0000/penalty/first-stage-appeal/0000001"
     }
 
     "call the stub when the feature switch is disabled" in new Setup {
       disableFeatureSwitch(CallETMP)
       when(mockServicesConfig.baseUrl(ArgumentMatchers.any()))
         .thenReturn("localhost:0000")
-      val result: String = config.getAppealSubmissionURL("HMRC-MTD-VAT~VRN~123456789", isLPP = false)
+      val result: String = config.getAppealSubmissionURL("HMRC-MTD-VAT~VRN~123456789", isLPP = false, penaltyId = "0000001")
       result shouldBe "localhost:0000/penalties-stub/appeals/submit?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=false"
     }
 
@@ -74,7 +73,7 @@ class AppConfigSpec extends AnyWordSpec with Matchers with FeatureSwitching {
       disableFeatureSwitch(CallETMP)
       when(mockServicesConfig.baseUrl(ArgumentMatchers.any()))
         .thenReturn("localhost:0000")
-      val result: String = config.getAppealSubmissionURL("HMRC-MTD-VAT~VRN~123456789", isLPP = true)
+      val result: String = config.getAppealSubmissionURL("HMRC-MTD-VAT~VRN~123456789", isLPP = true, penaltyId = "0000001")
       result shouldBe "localhost:0000/penalties-stub/appeals/submit?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=true"
     }
   }
