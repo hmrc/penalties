@@ -16,7 +16,7 @@
 
 package config
 
-import featureSwitches.{CallETMP, FeatureSwitching}
+import featureSwitches.{CallETMP, CallPEGA, FeatureSwitching}
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
 import org.scalatest.matchers.should.Matchers
@@ -54,27 +54,26 @@ class AppConfigSpec extends AnyWordSpec with Matchers with FeatureSwitching {
 
   "getAppealSubmissionURL" should {
     "call ETMP when the feature switch is enabled" in new Setup {
-      enableFeatureSwitch(CallETMP)
+      enableFeatureSwitch(CallPEGA)
       when(mockServicesConfig.baseUrl(ArgumentMatchers.any()))
         .thenReturn("localhost:0000")
-      val result: String = config.getAppealSubmissionURL("HMRC-MTD-VAT~VRN~123456789", isLPP = false)
-      //TODO: change this once we have the correct URL
-      result shouldBe "localhost:0000/"
+      val result: String = config.getAppealSubmissionURL("HMRC-MTD-VAT~VRN~123456789", isLPP = false, penaltyId = "0000001")
+      result shouldBe "localhost:0000/penalty/first-stage-appeal/0000001"
     }
 
     "call the stub when the feature switch is disabled" in new Setup {
-      disableFeatureSwitch(CallETMP)
+      disableFeatureSwitch(CallPEGA)
       when(mockServicesConfig.baseUrl(ArgumentMatchers.any()))
         .thenReturn("localhost:0000")
-      val result: String = config.getAppealSubmissionURL("HMRC-MTD-VAT~VRN~123456789", isLPP = false)
+      val result: String = config.getAppealSubmissionURL("HMRC-MTD-VAT~VRN~123456789", isLPP = false, penaltyId = "0000001")
       result shouldBe "localhost:0000/penalties-stub/appeals/submit?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=false"
     }
 
     "call the stub when the feature switch is disabled - for LPP" in new Setup {
-      disableFeatureSwitch(CallETMP)
+      disableFeatureSwitch(CallPEGA)
       when(mockServicesConfig.baseUrl(ArgumentMatchers.any()))
         .thenReturn("localhost:0000")
-      val result: String = config.getAppealSubmissionURL("HMRC-MTD-VAT~VRN~123456789", isLPP = true)
+      val result: String = config.getAppealSubmissionURL("HMRC-MTD-VAT~VRN~123456789", isLPP = true, penaltyId = "0000001")
       result shouldBe "localhost:0000/penalties-stub/appeals/submit?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=true"
     }
   }

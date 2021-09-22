@@ -16,7 +16,7 @@
 
 package config
 
-import featureSwitches.{CallETMP, FeatureSwitching}
+import featureSwitches.{CallETMP, CallPEGA, FeatureSwitching}
 
 import javax.inject.{Inject, Singleton}
 import play.api.Configuration
@@ -32,6 +32,8 @@ class AppConfig @Inject()(config: Configuration, servicesConfig: ServicesConfig)
   lazy val appName: String = config.get[String]("appName")
 
   lazy val etmpBase: String = servicesConfig.baseUrl("etmp")
+
+  lazy val pegaBase: String = servicesConfig.baseUrl("pega")
 
   def getVATPenaltiesURL: String = {
     if(!isEnabled(CallETMP)) stubBase + "/penalties-stub/etmp/mtd-vat/"
@@ -51,10 +53,10 @@ class AppConfig @Inject()(config: Configuration, servicesConfig: ServicesConfig)
     else etmpBase + "/"
   }
 
-  def getAppealSubmissionURL(enrolmentKey: String, isLPP: Boolean): String = {
-    if(!isEnabled(CallETMP)) stubBase + s"/penalties-stub/appeals/submit?enrolmentKey=$enrolmentKey&isLPP=$isLPP"
+  def getAppealSubmissionURL(enrolmentKey: String, isLPP: Boolean, penaltyId: String): String = {
+    if(!isEnabled(CallPEGA)) stubBase + s"/penalties-stub/appeals/submit?enrolmentKey=$enrolmentKey&isLPP=$isLPP"
     //TODO: change to relevant URL when implemented
-    else etmpBase + "/"
+    else pegaBase + s"/penalty/first-stage-appeal/$penaltyId"
   }
 
   def isReasonableExcuseEnabled(excuseName: String): Boolean = {
