@@ -21,7 +21,7 @@ import com.github.tomakehurst.wiremock.stubbing.StubMapping
 
 trait AppealWiremock {
 
-  def mockResponseForAppealSubmissionETMP(status: Int, penaltyId: String): StubMapping = {
+  def mockResponseForAppealSubmissionPEGA(status: Int, penaltyId: String): StubMapping = {
     stubFor(post(urlEqualTo(s"/penalty/first-stage-appeal/$penaltyId"))
       .willReturn(
         aResponse()

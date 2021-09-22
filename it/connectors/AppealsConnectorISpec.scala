@@ -16,7 +16,7 @@
 
 package connectors
 
-import featureSwitches.{CallETMP, FeatureSwitching}
+import featureSwitches.{CallPEGA, FeatureSwitching}
 import models.appeals.{AppealSubmission, CrimeAppealInformation}
 import play.api.http.Status
 import play.api.test.Helpers._
@@ -34,8 +34,8 @@ class AppealsConnectorISpec extends IntegrationSpecCommonBase with AppealWiremoc
 
   "submitAppeal" should {
     "Jsonify the model and send the request and return the response - when PEGA feature switch enabled, call PEGA" in new Setup {
-      enableFeatureSwitch(CallETMP)
-      mockResponseForAppealSubmissionETMP(Status.OK, "1234567890")
+      enableFeatureSwitch(CallPEGA)
+      mockResponseForAppealSubmissionPEGA(Status.OK, "1234567890")
       val modelToSend: AppealSubmission = AppealSubmission(
         submittedBy = "client",
         penaltyId = "1234567890",
@@ -56,8 +56,8 @@ class AppealsConnectorISpec extends IntegrationSpecCommonBase with AppealWiremoc
       result.status shouldBe OK
     }
 
-    "Jsonify the model and send the request and return the response - when ETMP feature switch disabled, call stub" in new Setup {
-      disableFeatureSwitch(CallETMP)
+    "Jsonify the model and send the request and return the response - when PEGA feature switch disabled, call stub" in new Setup {
+      disableFeatureSwitch(CallPEGA)
       mockResponseForAppealSubmissionStub(Status.OK, "HMRC-MTD-VAT~VRN~123456789")
       val modelToSend: AppealSubmission = AppealSubmission(
         submittedBy = "client",
@@ -79,8 +79,8 @@ class AppealsConnectorISpec extends IntegrationSpecCommonBase with AppealWiremoc
       result.status shouldBe OK
     }
 
-    "Jsonify the model and send the request and return the response - when ETMP feature switch disabled, call stub - for LPP" in new Setup {
-      disableFeatureSwitch(CallETMP)
+    "Jsonify the model and send the request and return the response - when PEGA feature switch disabled, call stub - for LPP" in new Setup {
+      disableFeatureSwitch(CallPEGA)
       mockResponseForAppealSubmissionStub(Status.OK, "HMRC-MTD-VAT~VRN~123456789", isLPP = true)
       val modelToSend: AppealSubmission = AppealSubmission(
         submittedBy = "client",

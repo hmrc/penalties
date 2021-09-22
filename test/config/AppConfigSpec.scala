@@ -16,7 +16,7 @@
 
 package config
 
-import featureSwitches.{CallETMP, FeatureSwitching}
+import featureSwitches.{CallETMP, CallPEGA, FeatureSwitching}
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
 import org.scalatest.matchers.should.Matchers
@@ -54,7 +54,7 @@ class AppConfigSpec extends AnyWordSpec with Matchers with FeatureSwitching {
 
   "getAppealSubmissionURL" should {
     "call ETMP when the feature switch is enabled" in new Setup {
-      enableFeatureSwitch(CallETMP)
+      enableFeatureSwitch(CallPEGA)
       when(mockServicesConfig.baseUrl(ArgumentMatchers.any()))
         .thenReturn("localhost:0000")
       val result: String = config.getAppealSubmissionURL("HMRC-MTD-VAT~VRN~123456789", isLPP = false, penaltyId = "0000001")
@@ -62,7 +62,7 @@ class AppConfigSpec extends AnyWordSpec with Matchers with FeatureSwitching {
     }
 
     "call the stub when the feature switch is disabled" in new Setup {
-      disableFeatureSwitch(CallETMP)
+      disableFeatureSwitch(CallPEGA)
       when(mockServicesConfig.baseUrl(ArgumentMatchers.any()))
         .thenReturn("localhost:0000")
       val result: String = config.getAppealSubmissionURL("HMRC-MTD-VAT~VRN~123456789", isLPP = false, penaltyId = "0000001")
@@ -70,7 +70,7 @@ class AppConfigSpec extends AnyWordSpec with Matchers with FeatureSwitching {
     }
 
     "call the stub when the feature switch is disabled - for LPP" in new Setup {
-      disableFeatureSwitch(CallETMP)
+      disableFeatureSwitch(CallPEGA)
       when(mockServicesConfig.baseUrl(ArgumentMatchers.any()))
         .thenReturn("localhost:0000")
       val result: String = config.getAppealSubmissionURL("HMRC-MTD-VAT~VRN~123456789", isLPP = true, penaltyId = "0000001")
