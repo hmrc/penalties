@@ -726,7 +726,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           lateAppeal = false,
           lateAppealReason = None,
           supportingEvidence = Some(Evidence(
-            noOfUploadedFiles = 1, referenceId = "ref1"
+            noOfUploadedFiles = 1, referenceId = Some("ref1")
           )),
           whoPlannedToSubmit = Some("agent"),
           causeOfLateSubmissionAgent = Some("client")
@@ -763,7 +763,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           statement = Some("A valid statement"),
           supportingEvidence = Some(Evidence(
             noOfUploadedFiles = 1,
-            referenceId = "ref"
+            referenceId = Some("ref")
           ))
         )
       }
@@ -932,7 +932,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           dateOfEvent = "2021-04-23T18:25:43.511Z",
           statement = Some("This is a statement."),
           supportingEvidence = Some(Evidence(
-            noOfUploadedFiles = 1, referenceId = "ref1"
+            noOfUploadedFiles = 1, referenceId = Some("ref1")
           )),
           lateAppeal = false,
           lateAppealReason = None,
@@ -966,7 +966,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           statement = Some("A valid statement"),
           supportingEvidence = Some(Evidence(
             noOfUploadedFiles = 1,
-            referenceId = "ref"
+            referenceId = Some("ref")
           ))
         )
         val result = AppealSubmission.parseAppealInformationToJson(model)
@@ -1221,7 +1221,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             dateOfEvent = "2021-04-23T18:25:43.511Z",
             statement = Some("This is a reason."),
             supportingEvidence = Some(Evidence(
-              noOfUploadedFiles = 1, referenceId = "ref1"
+              noOfUploadedFiles = 1, referenceId = Some("ref1")
             )),
             lateAppeal = true,
             lateAppealReason = Some("Reason"),
@@ -1276,7 +1276,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             statement = Some("A valid statement"),
             supportingEvidence = Some(Evidence(
               noOfUploadedFiles = 1,
-              referenceId = "ref"
+              referenceId = Some("ref")
             ))
           )
         )
@@ -1640,7 +1640,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             statement = Some("This was the reason"),
             supportingEvidence = Some(Evidence(
               noOfUploadedFiles = 1,
-              referenceId = "ref1"
+              referenceId = Some("ref1")
             )),
             lateAppeal = false,
             lateAppealReason = None,
@@ -1721,7 +1721,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             statement = Some("This was the reason"),
             supportingEvidence = Some(Evidence(
               noOfUploadedFiles = 1,
-              referenceId = "ref1"
+              referenceId = Some("ref1")
             )),
             lateAppeal = true,
             lateAppealReason = Some("Late reason"),
@@ -1767,7 +1767,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             statement = Some("A valid statement"),
             supportingEvidence = Some(Evidence(
               noOfUploadedFiles = 1,
-              referenceId = "ref"
+              referenceId = Some("ref")
             ))
           )
         )
@@ -2042,7 +2042,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           `type` = "other",
           dateOfEvent = "2022-01-01T13:00:00.000Z",
           statement = Some("I was late. Sorry."),
-          supportingEvidence = Some(Evidence(1, "reference-3000")),
+          supportingEvidence = Some(Evidence(1, Some("reference-3000"))),
           lateAppeal = false,
           lateAppealReason = None,
           whoPlannedToSubmit = Some("agent"),
@@ -2072,7 +2072,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           `type` = "other",
           dateOfEvent = "2022-01-01T13:00:00.000Z",
           statement = Some("I was late. Sorry."),
-          supportingEvidence = Some(Evidence(1, "reference-3000")),
+          supportingEvidence = Some(Evidence(1, Some("reference-3000"))),
           lateAppeal = true,
           lateAppealReason = Some("This is a reason"),
           whoPlannedToSubmit = Some("agent"),
@@ -2134,7 +2134,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           statement = Some("A valid statement"),
           supportingEvidence = Some(Evidence(
             noOfUploadedFiles = 1,
-            referenceId = "ref"
+            referenceId = Some("ref")
           ))
         )
 
