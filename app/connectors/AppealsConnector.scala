@@ -26,7 +26,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class AppealsConnector @Inject()(httpClient: HttpClient,
                                  appConfig: AppConfig)(implicit ec: ExecutionContext) {
   def submitAppeal(appealSubmission: AppealSubmission, enrolmentKey: String, isLPP: Boolean)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
-    httpClient.POST[AppealSubmission, HttpResponse](appConfig.getAppealSubmissionURL(enrolmentKey, isLPP, appealSubmission.penaltyId),
-      appealSubmission)(AppealSubmission.apiWrites, implicitly, implicitly, implicitly)
+     httpClient.POST[AppealSubmission, HttpResponse](appConfig.getAppealSubmissionURL(enrolmentKey, isLPP, appealSubmission.penaltyId),
+      appealSubmission,hc.otherHeaders)(AppealSubmission.apiWrites, implicitly, implicitly, implicitly)
   }
 }

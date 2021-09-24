@@ -23,11 +23,12 @@ class FeatureSwitchSpec extends SpecBase {
   class Setup {
     val featureSwitching: FeatureSwitching = new FeatureSwitching {}
     sys.props -= CallETMP.name
+    sys.props -= CallPEGA.name
   }
 
   "FeatureSwitch listOfAllFeatureSwitches" should {
     "be all the featureswitches in the app" in {
-      FeatureSwitch.listOfAllFeatureSwitches shouldBe List(CallETMP)
+      FeatureSwitch.listOfAllFeatureSwitches shouldBe List(CallETMP,CallPEGA)
     }
   }
   "FeatureSwitching constants" should {
@@ -38,16 +39,28 @@ class FeatureSwitchSpec extends SpecBase {
   }
 
   "FeatureSwitching isEnabled" should {
-    s"return true if feature switch is enabled" in new Setup {
+    s"return true if ETMP feature switch is enabled" in new Setup {
       featureSwitching.enableFeatureSwitch(CallETMP)
       featureSwitching.isEnabled(CallETMP) shouldBe true
     }
-    s"return.false if feature switch is disabled" in new Setup {
+    s"return.false if ETMP feature switch is disabled" in new Setup {
       featureSwitching.disableFeatureSwitch(CallETMP)
       featureSwitching.isEnabled(CallETMP) shouldBe false
     }
-    "return false if feature switch does not exist" in new Setup {
+    "return false if ETMP feature switch does not exist" in new Setup {
       featureSwitching.isEnabled(CallETMP) shouldBe false
+    }
+
+    s"return true if PEGA feature switch is enabled" in new Setup {
+      featureSwitching.enableFeatureSwitch(CallPEGA)
+      featureSwitching.isEnabled(CallPEGA) shouldBe true
+    }
+    s"return.false if PEGA feature switch is disabled" in new Setup {
+      featureSwitching.disableFeatureSwitch(CallETMP)
+      featureSwitching.isEnabled(CallPEGA) shouldBe false
+    }
+    "return false if PEGA feature switch does not exist" in new Setup {
+      featureSwitching.isEnabled(CallPEGA) shouldBe false
     }
   }
 
@@ -56,12 +69,20 @@ class FeatureSwitchSpec extends SpecBase {
       featureSwitching.enableFeatureSwitch(CallETMP)
       (sys.props get CallETMP.name get) shouldBe "true"
     }
+    s"set ${CallPEGA.name} property to true" in new Setup {
+      featureSwitching.enableFeatureSwitch(CallPEGA)
+      (sys.props get CallPEGA.name get) shouldBe "true"
+    }
   }
 
   "FeatureSwitching disableFeatureSwitch" should {
     s"set ${CallETMP.name} property to false" in new Setup {
       featureSwitching.disableFeatureSwitch(CallETMP)
       (sys.props get CallETMP.name get) shouldBe "false"
+    }
+    s"set ${CallPEGA.name} property to false" in new Setup {
+      featureSwitching.disableFeatureSwitch(CallPEGA)
+      (sys.props get CallPEGA.name get) shouldBe "false"
     }
   }
 }

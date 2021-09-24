@@ -53,6 +53,9 @@ class AppealsConnectorISpec extends IntegrationSpecCommonBase with AppealWiremoc
         )
       )
       val result: HttpResponse = await(connector.submitAppeal(modelToSend, "HMRC-MTD-VAT~VRN~123456789", isLPP = false))
+      result.header("Authorization") shouldBe Some("pega-bearerToken")
+      result.header("CorrelationId") shouldBe Some("1111111-qqqq-2222-eeee")
+      result.header("Environment") shouldBe Some("pegaEnvironment")
       result.status shouldBe OK
     }
 
@@ -76,7 +79,7 @@ class AppealsConnectorISpec extends IntegrationSpecCommonBase with AppealWiremoc
         )
       )
       val result: HttpResponse = await(connector.submitAppeal(modelToSend, "HMRC-MTD-VAT~VRN~123456789", isLPP = false))
-      result.status shouldBe OK
+       result.status shouldBe OK
     }
 
     "Jsonify the model and send the request and return the response - when PEGA feature switch disabled, call stub - for LPP" in new Setup {

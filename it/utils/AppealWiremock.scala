@@ -20,12 +20,15 @@ import com.github.tomakehurst.wiremock.client.WireMock._
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
 
 trait AppealWiremock {
-
+  val bearerToken = "bearerToken"
   def mockResponseForAppealSubmissionPEGA(status: Int, penaltyId: String): StubMapping = {
     stubFor(post(urlEqualTo(s"/penalty/first-stage-appeal/$penaltyId"))
       .willReturn(
         aResponse()
           .withStatus(status)
+          .withHeader("Authorization" ,"pega-bearerToken","otherBearerToken")
+          .withHeader("CorrelationId", "1111111-qqqq-2222-eeee")
+          .withHeader("Environment", "pegaEnvironment")
       ))
   }
 
