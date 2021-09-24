@@ -20,7 +20,7 @@ import play.api.libs.json.{Json, OFormat}
 
 case class Evidence(
                      noOfUploadedFiles: Int,
-                     referenceId: String
+                     referenceId: Option[String]
                    )
 
 object Evidence {
