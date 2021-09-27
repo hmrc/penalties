@@ -33,7 +33,7 @@ class AppealsConnectorISpec extends IntegrationSpecCommonBase with AppealWiremoc
   }
 
   "submitAppeal" should {
-    "Jsonify the model and send the request and return the response - when PEGA feature switch enabled, call PEGA" in new Setup {
+    "Jsonify the model and send the request and return the response with Headers- when PEGA feature switch enabled, call PEGA" in new Setup {
       enableFeatureSwitch(CallPEGA)
       mockResponseForAppealSubmissionPEGA(Status.OK, "1234567890")
       val modelToSend: AppealSubmission = AppealSubmission(

@@ -23,7 +23,7 @@ sealed trait FeatureSwitch {
 
 object FeatureSwitch {
   val prefix: String = "feature.switch"
-  val listOfAllFeatureSwitches: List[FeatureSwitch] = List(CallETMP)
+  val listOfAllFeatureSwitches: List[FeatureSwitch] = List(CallETMP,CallPEGA)
 }
 
 case object CallETMP extends FeatureSwitch {

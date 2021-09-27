@@ -28,6 +28,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class AppealsConnectorSpec extends SpecBase {
   val mockHttpClient: HttpClient = mock(classOf[HttpClient])
+  implicit val hc: HeaderCarrier = HeaderCarrier()
 
   class Setup {
     val connector = new AppealsConnector(
@@ -38,12 +39,12 @@ class AppealsConnectorSpec extends SpecBase {
     reset(mockHttpClient)
   }
 
-  "submitAppeal" should {
+  "submitAppeal with headers" should {
     "return the response of the call" in new Setup {
       when(mockHttpClient.POST[AppealSubmission, HttpResponse](
         ArgumentMatchers.any(),
         ArgumentMatchers.any(),
-        ArgumentMatchers.any()
+        ArgumentMatchers.eq(hc.otherHeaders)
       )(ArgumentMatchers.any(),
         ArgumentMatchers.any(),
         ArgumentMatchers.any(),
@@ -65,7 +66,7 @@ class AppealsConnectorSpec extends SpecBase {
           causeOfLateSubmissionAgent = None
         )
       )
-      val result: HttpResponse = await(connector.submitAppeal(modelToSend, "HMRC-MTD-VAT~VRN~123456789", isLPP = false)(HeaderCarrier()))
+      val result: HttpResponse = await(connector.submitAppeal(modelToSend, "HMRC-MTD-VAT~VRN~123456789", isLPP = false)(hc))
       result.status shouldBe OK
       result.body shouldBe "OK"
     }
