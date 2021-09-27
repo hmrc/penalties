@@ -58,6 +58,7 @@ class AppealsConnectorSpec extends SpecBase with FeatureSwitching {
         penaltyId = "1234567890",
         reasonableExcuse = "ENUM_PEGA_LIST",
         honestyDeclaration = true,
+        agentDetails = agentDetails,
         appealInformation = CrimeAppealInformation(
           `type` = "crime",
           dateOfEvent = "2021-04-23T18:25:43.511Z",
@@ -94,6 +95,7 @@ class AppealsConnectorSpec extends SpecBase with FeatureSwitching {
         penaltyId = "1234567890",
         reasonableExcuse = "ENUM_PEGA_LIST",
         honestyDeclaration = true,
+        agentDetails = agentDetails,
         appealInformation = CrimeAppealInformation(
           `type` = "crime",
           dateOfEvent = "2021-04-23T18:25:43.511Z",
@@ -128,6 +130,7 @@ class AppealsConnectorSpec extends SpecBase with FeatureSwitching {
         penaltyId = "1234567890",
         reasonableExcuse = "ENUM_PEGA_LIST",
         honestyDeclaration = true,
+        agentDetails = agentDetails,
         appealInformation = CrimeAppealInformation(
           `type` = "crime",
           dateOfEvent = "2021-04-23T18:25:43.511Z",

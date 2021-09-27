@@ -41,6 +41,7 @@ class AppealsConnectorISpec extends IntegrationSpecCommonBase with AppealWiremoc
         penaltyId = "1234567890",
         reasonableExcuse = "ENUM_PEGA_LIST",
         honestyDeclaration = true,
+        agentDetails = None,
         appealInformation = CrimeAppealInformation(
           `type` = "crime",
           dateOfEvent = "2021-04-23T18:25:43.511Z",
@@ -64,6 +65,7 @@ class AppealsConnectorISpec extends IntegrationSpecCommonBase with AppealWiremoc
         penaltyId = "1234567890",
         reasonableExcuse = "ENUM_PEGA_LIST",
         honestyDeclaration = true,
+        agentDetails = None,
         appealInformation = CrimeAppealInformation(
           `type` = "crime",
           dateOfEvent = "2021-04-23T18:25:43.511Z",
@@ -87,6 +89,7 @@ class AppealsConnectorISpec extends IntegrationSpecCommonBase with AppealWiremoc
         penaltyId = "1234567890",
         reasonableExcuse = "ENUM_PEGA_LIST",
         honestyDeclaration = true,
+        agentDetails = None,
         appealInformation = CrimeAppealInformation(
           `type` = "crime",
           dateOfEvent = "2021-04-23T18:25:43.511Z",

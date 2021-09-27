@@ -19,6 +19,7 @@ package models.appeals
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import play.api.libs.json.{JsValue, Json}
+import uk.gov.hmrc.emailaddress.EmailAddress
 
 class AppealSubmissionSpec extends AnyWordSpec with Matchers {
   val bereavementAppealJson: JsValue = Json.parse(
@@ -43,10 +44,20 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
   val crimeAppealJson: JsValue = Json.parse(
     """
       |{
-      |    "submittedBy": "client",
+      |    "submittedBy": "agent",
       |    "penaltyId": "1234567890",
       |    "reasonableExcuse": "crime",
       |    "honestyDeclaration": true,
+      |    "agentDetails": {
+      |            "agentReferenceNo": "AGENT1",
+      |            "name": "Jack",
+      |            "addressLine1": "Flat 20",
+      |            "addressLine2": "123 Jack street",
+      |            "addressLine4": "Birmingham",
+      |            "addressLine5": "UK",
+      |            "postCode": "AAA AAA",
+      |            "agentEmailID": "Jack@aaa.com"
+      |    },
       |    "appealInformation": {
       |						"type": "crime",
       |            "dateOfEvent": "2021-04-23T18:25:43.511Z",
@@ -62,10 +73,20 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
   val lossOfStaffAppealJson: JsValue = Json.parse(
     """
       |{
-      |    "submittedBy": "client",
+      |    "submittedBy": "agent",
       |    "penaltyId": "1234567890",
       |    "reasonableExcuse": "lossOfStaff",
       |    "honestyDeclaration": true,
+      |    "agentDetails": {
+      |            "agentReferenceNo": "AGENT1",
+      |            "name": "Jack",
+      |            "addressLine1": "Flat 20",
+      |            "addressLine2": "123 Jack street",
+      |            "addressLine4": "Birmingham",
+      |            "addressLine5": "UK",
+      |            "postCode": "AAA AAA",
+      |            "agentEmailID": "Jack@aaa.com"
+      |    },
       |    "appealInformation": {
       |						"type": "lossOfStaff",
       |            "dateOfEvent": "2021-04-23T18:25:43.511Z",
@@ -80,10 +101,20 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
   val technicalIssuesAppealJson: JsValue = Json.parse(
     """
       |{
-      |    "submittedBy": "client",
+      |    "submittedBy": "agent",
       |    "penaltyId": "1234567890",
       |    "reasonableExcuse": "technicalIssues",
       |    "honestyDeclaration": true,
+      |    "agentDetails": {
+      |            "agentReferenceNo": "AGENT1",
+      |            "name": "Jack",
+      |            "addressLine1": "Flat 20",
+      |            "addressLine2": "123 Jack street",
+      |            "addressLine4": "Birmingham",
+      |            "addressLine5": "UK",
+      |            "postCode": "AAA AAA",
+      |            "agentEmailID": "Jack@aaa.com"
+      |    },
       |    "appealInformation": {
       |						"type": "technicalIssues",
       |            "startDateOfEvent": "2021-04-23T18:25:43.511Z",
@@ -126,10 +157,20 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
   val fireOrFloodAppealJson: JsValue = Json.parse(
     """
       |{
-      |    "submittedBy": "client",
+      |    "submittedBy": "agent",
       |    "penaltyId": "1234567890",
       |    "reasonableExcuse": "ENUM_PEGA_LIST",
       |    "honestyDeclaration": true,
+      |    "agentDetails": {
+      |            "agentReferenceNo": "AGENT1",
+      |            "name": "Jack",
+      |            "addressLine1": "Flat 20",
+      |            "addressLine2": "123 Jack street",
+      |            "addressLine4": "Birmingham",
+      |            "addressLine5": "UK",
+      |            "postCode": "AAA AAA",
+      |            "agentEmailID": "Jack@aaa.com"
+      |    },
       |    "appealInformation": {
       |						"type": "fireOrFlood",
       |           "dateOfEvent": "2021-04-23T18:25:43.511Z",
@@ -144,10 +185,20 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
   val healthAppealNoHospitalStayJson: JsValue = Json.parse(
     """
       |{
-      |    "submittedBy": "client",
+      |    "submittedBy": "agent",
       |    "penaltyId": "1234567890",
       |    "reasonableExcuse": "health",
       |    "honestyDeclaration": true,
+      |    "agentDetails": {
+      |            "agentReferenceNo": "AGENT1",
+      |            "name": "Jack",
+      |            "addressLine1": "Flat 20",
+      |            "addressLine2": "123 Jack street",
+      |            "addressLine4": "Birmingham",
+      |            "addressLine5": "UK",
+      |            "postCode": "AAA AAA",
+      |            "agentEmailID": "Jack@aaa.com"
+      |    },
       |    "appealInformation": {
       |           "type": "health",
       |           "dateOfEvent": "2021-04-23T18:25:43.511Z",
@@ -163,10 +214,20 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
   val healthAppealHospitalStayOngoingJson: JsValue = Json.parse(
     """
       |{
-      |    "submittedBy": "client",
+      |    "submittedBy": "agent",
       |    "penaltyId": "1234567890",
       |    "reasonableExcuse": "health",
       |    "honestyDeclaration": true,
+      |    "agentDetails": {
+      |            "agentReferenceNo": "AGENT1",
+      |            "name": "Jack",
+      |            "addressLine1": "Flat 20",
+      |            "addressLine2": "123 Jack street",
+      |            "addressLine4": "Birmingham",
+      |            "addressLine5": "UK",
+      |            "postCode": "AAA AAA",
+      |            "agentEmailID": "Jack@aaa.com"
+      |    },
       |    "appealInformation": {
       |           "type": "health",
       |           "startDateOfEvent": "2021-04-23T18:25:43.511Z",
@@ -182,10 +243,20 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
   val healthAppealHospitalStayEndedJson: JsValue = Json.parse(
     """
       |{
-      |    "submittedBy": "client",
+      |    "submittedBy": "agent",
       |    "penaltyId": "1234567890",
       |    "reasonableExcuse": "health",
       |    "honestyDeclaration": true,
+      |    "agentDetails": {
+      |            "agentReferenceNo": "AGENT1",
+      |            "name": "Jack",
+      |            "addressLine1": "Flat 20",
+      |            "addressLine2": "123 Jack street",
+      |            "addressLine4": "Birmingham",
+      |            "addressLine5": "UK",
+      |            "postCode": "AAA AAA",
+      |            "agentEmailID": "Jack@aaa.com"
+      |    },
       |    "appealInformation": {
       |           "type": "health",
       |           "startDateOfEvent": "2021-04-23T18:25:43.511Z",
@@ -243,10 +314,20 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
   val otherAppealJson: JsValue = Json.parse(
     """
       |{
-      |    "submittedBy": "client",
+      |    "submittedBy": "agent",
       |    "penaltyId": "1234567890",
       |    "reasonableExcuse": "other",
       |    "honestyDeclaration": true,
+      |    "agentDetails": {
+      |            "agentReferenceNo": "AGENT1",
+      |            "name": "Jack",
+      |            "addressLine1": "Flat 20",
+      |            "addressLine2": "123 Jack street",
+      |            "addressLine4": "Birmingham",
+      |            "addressLine5": "UK",
+      |            "postCode": "AAA AAA",
+      |            "agentEmailID": "Jack@aaa.com"
+      |    },
       |    "appealInformation": {
       |						"type": "other",
       |            "dateOfEvent": "2021-04-23T18:25:43.511Z",
@@ -266,10 +347,20 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
   val otherAppealJsonNoEvidence: JsValue = Json.parse(
     """
       |{
-      |    "submittedBy": "client",
+      |    "submittedBy": "agent",
       |    "penaltyId": "1234567890",
       |    "reasonableExcuse": "other",
       |    "honestyDeclaration": true,
+      |    "agentDetails": {
+      |            "agentReferenceNo": "AGENT1",
+      |            "name": "Jack",
+      |            "addressLine1": "Flat 20",
+      |            "addressLine2": "123 Jack street",
+      |            "addressLine4": "Birmingham",
+      |            "addressLine5": "UK",
+      |            "postCode": "AAA AAA",
+      |            "agentEmailID": "Jack@aaa.com"
+      |    },
       |    "appealInformation": {
       |						"type": "other",
       |            "dateOfEvent": "2021-04-23T18:25:43.511Z",
@@ -565,6 +656,18 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       |}
       |""".stripMargin
   )
+
+  val agentDetails = Some(AgentDetails(
+    agentReferenceNo = "AGENT1",
+    name = "Jack",
+    addressLine1 = "Flat 20",
+    addressLine2 = Some("123 Jack street"),
+    addressLine3 = None,
+    addressLine4 = Some("Birmingham"),
+    addressLine5 = Some("UK"),
+    postCode = "AAA AAA",
+    agentEmailID = Some(EmailAddress("Jack@aaa.com"))
+  ))
 
   "parseAppealInformationFromJson" should {
     "for bereavement" must {
@@ -993,6 +1096,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           penaltyId = "123456789",
           reasonableExcuse = "bereavement",
           honestyDeclaration = true,
+          agentDetails = None,
           appealInformation = BereavementAppealInformation(
             `type` = "bereavement",
             dateOfEvent = "2021-04-23T18:25:43.511Z",
@@ -1017,10 +1121,11 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
     "for crime" must {
       "parse the JSON into a model when all keys are present" in {
         val expectedResult = AppealSubmission(
-          submittedBy = "client",
+          submittedBy = "agent",
           penaltyId = "1234567890",
           reasonableExcuse = "crime",
           honestyDeclaration = true,
+          agentDetails = agentDetails,
           appealInformation = CrimeAppealInformation(
             `type` = "crime",
             dateOfEvent = "2021-04-23T18:25:43.511Z",
@@ -1047,10 +1152,11 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
     "for fireOrFlood" must {
       "parse the JSON into a model when all keys are present" in {
         val expectedResult = AppealSubmission(
-          submittedBy = "client",
+          submittedBy = "agent",
           penaltyId = "1234567890",
           reasonableExcuse = "ENUM_PEGA_LIST",
           honestyDeclaration = true,
+          agentDetails = agentDetails,
           appealInformation = FireOrFloodAppealInformation(
             `type` = "fireOrFlood",
             dateOfEvent = "2021-04-23T18:25:43.511Z",
@@ -1076,10 +1182,11 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
     "for loss of staff" must {
       "parse the JSON into a model when all keys are present" in {
         val expectedResult = AppealSubmission(
-          submittedBy = "client",
+          submittedBy = "agent",
           penaltyId = "1234567890",
           reasonableExcuse = "lossOfStaff",
           honestyDeclaration = true,
+          agentDetails = agentDetails,
           appealInformation = LossOfStaffAppealInformation(
             `type` = "lossOfStaff",
             dateOfEvent = "2021-04-23T18:25:43.511Z",
@@ -1105,10 +1212,11 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
     "for technical issues" must {
       "parse the JSON into a model when all keys are present" in {
         val expectedResult = AppealSubmission(
-          submittedBy = "client",
+          submittedBy = "agent",
           penaltyId = "1234567890",
           reasonableExcuse = "technicalIssues",
           honestyDeclaration = true,
+          agentDetails = agentDetails,
           appealInformation = TechnicalIssuesAppealInformation(
             `type` = "technicalIssues",
             startDateOfEvent = "2021-04-23T18:25:43.511Z",
@@ -1135,10 +1243,11 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
     "for health" must {
       "read the JSON when there was no hospital stay" in {
         val expectedResult = AppealSubmission(
-          submittedBy = "client",
+          submittedBy = "agent",
           penaltyId = "1234567890",
           reasonableExcuse = "health",
           honestyDeclaration = true,
+          agentDetails = agentDetails,
           appealInformation = HealthAppealInformation(
             `type` = "health",
             startDateOfEvent = None,
@@ -1160,10 +1269,11 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
 
       "read the JSON when there is an ongoing hospital stay" in {
         val expectedResult = AppealSubmission(
-          submittedBy = "client",
+          submittedBy = "agent",
           penaltyId = "1234567890",
           reasonableExcuse = "health",
           honestyDeclaration = true,
+          agentDetails = agentDetails,
           appealInformation = HealthAppealInformation(
             `type` = "health",
             startDateOfEvent = Some("2021-04-23T18:25:43.511Z"),
@@ -1185,10 +1295,11 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
 
       "read the JSON when there has been a hospital stay" in {
         val expectedResult = AppealSubmission(
-          submittedBy = "client",
+          submittedBy = "agent",
           penaltyId = "1234567890",
           reasonableExcuse = "health",
           honestyDeclaration = true,
+          agentDetails = agentDetails,
           appealInformation = HealthAppealInformation(
             `type` = "health",
             startDateOfEvent = Some("2021-04-23T18:25:43.511Z"),
@@ -1212,10 +1323,11 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
     "for other" must {
       "parse the JSON into a model when all keys are present" in {
         val expectedResult = AppealSubmission(
-          submittedBy = "client",
+          submittedBy = "agent",
           penaltyId = "1234567890",
           reasonableExcuse = "other",
           honestyDeclaration = true,
+          agentDetails = agentDetails,
           appealInformation = OtherAppealInformation(
             `type` = "other",
             dateOfEvent = "2021-04-23T18:25:43.511Z",
@@ -1237,10 +1349,11 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
 
       "parse the JSON into a model when all keys are present - no evidence" in {
         val expectedResult = AppealSubmission(
-          submittedBy = "client",
+          submittedBy = "agent",
           penaltyId = "1234567890",
           reasonableExcuse = "other",
           honestyDeclaration = true,
+          agentDetails = agentDetails,
           appealInformation = OtherAppealInformation(
             `type` = "other",
             dateOfEvent = "2021-04-23T18:25:43.511Z",
@@ -1271,6 +1384,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           penaltyId = "1234567890",
           reasonableExcuse = "obligation",
           honestyDeclaration = true,
+          agentDetails = None,
           appealInformation = ObligationAppealInformation(
             `type` = "obligation",
             statement = Some("A valid statement"),
@@ -1292,6 +1406,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           penaltyId = "1234567890",
           reasonableExcuse = "obligation",
           honestyDeclaration = true,
+          agentDetails = None,
           appealInformation = ObligationAppealInformation(
             `type` = "obligation",
             statement = Some("A valid statement"),
@@ -1315,10 +1430,11 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
     "for bereavement" must {
       "write the model to JSON" in {
         val modelToCovertToJson: AppealSubmission = AppealSubmission(
-          submittedBy = "client",
+          submittedBy = "agent",
           penaltyId = "1234",
           reasonableExcuse = "bereavement",
           honestyDeclaration = true,
+          agentDetails = agentDetails,
           appealInformation = BereavementAppealInformation(
               `type` = "bereavement",
               dateOfEvent = "2021-04-23T18:25:43.511Z",
@@ -1330,10 +1446,20 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             )
           )
         val jsonRepresentingModel: JsValue = Json.obj(
-          "submittedBy"-> "client",
+          "submittedBy"-> "agent",
           "penaltyId" -> "1234",
           "reasonableExcuse" -> "bereavement",
           "honestyDeclaration" -> true,
+          "agentDetails" -> Json.obj(
+            "agentReferenceNo"->  "AGENT1",
+            "name" -> "Jack",
+            "addressLine1" -> "Flat 20",
+            "addressLine2" -> "123 Jack street",
+            "addressLine4" -> "Birmingham",
+            "addressLine5" -> "UK",
+            "postCode" -> "AAA AAA",
+            "agentEmailID" -> "Jack@aaa.com"
+          ),
           "appealInformation" -> Json.obj(
             "type" -> "bereavement",
             "dateOfEvent" -> "2021-04-23T18:25:43.511Z",
@@ -1351,10 +1477,11 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
     "for crime" must {
       "write the model to JSON" in {
         val modelToConvertToJson: AppealSubmission = AppealSubmission(
-          submittedBy = "client",
+          submittedBy = "agent",
           penaltyId = "1234",
           reasonableExcuse = "crime",
           honestyDeclaration = true,
+          agentDetails = agentDetails,
           appealInformation = CrimeAppealInformation(
             `type` = "crime",
             dateOfEvent = "2021-04-23T18:25:43.511Z",
@@ -1367,10 +1494,20 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           )
         )
         val jsonRepresentingModel: JsValue = Json.obj(
-          "submittedBy" -> "client",
+          "submittedBy" -> "agent",
           "penaltyId" -> "1234",
           "reasonableExcuse" -> "crime",
           "honestyDeclaration" -> true,
+          "agentDetails" -> Json.obj(
+            "agentReferenceNo"->  "AGENT1",
+            "name" -> "Jack",
+            "addressLine1" -> "Flat 20",
+            "addressLine2" -> "123 Jack street",
+            "addressLine4" -> "Birmingham",
+            "addressLine5" -> "UK",
+            "postCode" -> "AAA AAA",
+            "agentEmailID" -> "Jack@aaa.com"
+          ),
           "appealInformation" -> Json.obj(
             "type" -> "crime",
             "dateOfEvent" -> "2021-04-23T18:25:43.511Z",
@@ -1390,10 +1527,11 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
     "for fireOrFlood" must {
       "write the model to Json" in {
         val modelToConvertToJson: AppealSubmission = AppealSubmission(
-          submittedBy = "client",
+          submittedBy = "agent",
           penaltyId = "1234",
           reasonableExcuse = "fireOrFlood",
           honestyDeclaration = true,
+          agentDetails = agentDetails,
           appealInformation = FireOrFloodAppealInformation(
             `type` = "fireOrFlood",
             dateOfEvent = "2021-04-23T18:25:43.511Z",
@@ -1406,10 +1544,20 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
         )
 
         val jsonRepresentingModel: JsValue = Json.obj(
-          "submittedBy" -> "client",
+          "submittedBy" -> "agent",
           "penaltyId" -> "1234",
           "reasonableExcuse" -> "fireOrFlood",
           "honestyDeclaration" -> true,
+          "agentDetails" -> Json.obj(
+            "agentReferenceNo"->  "AGENT1",
+            "name" -> "Jack",
+            "addressLine1" -> "Flat 20",
+            "addressLine2" -> "123 Jack street",
+            "addressLine4" -> "Birmingham",
+            "addressLine5" -> "UK",
+            "postCode" -> "AAA AAA",
+            "agentEmailID" -> "Jack@aaa.com"
+          ),
           "appealInformation" -> Json.obj(
             "type" -> "fireOrFlood",
             "dateOfEvent" -> "2021-04-23T18:25:43.511Z",
@@ -1428,10 +1576,11 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
     "for loss of staff" must {
       "write the model to JSON" in {
         val modelToConvertToJson: AppealSubmission = AppealSubmission(
-          submittedBy = "client",
+          submittedBy = "agent",
           penaltyId = "1234",
           reasonableExcuse = "lossOfStaff",
           honestyDeclaration = true,
+          agentDetails = agentDetails,
           appealInformation = LossOfStaffAppealInformation(
             `type` = "lossOfStaff",
             dateOfEvent = "2021-04-23T18:25:43.511Z",
@@ -1443,10 +1592,20 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           )
         )
         val jsonRepresentingModel: JsValue = Json.obj(
-          "submittedBy" -> "client",
+          "submittedBy" -> "agent",
           "penaltyId" -> "1234",
           "reasonableExcuse" -> "lossOfStaff",
           "honestyDeclaration" -> true,
+          "agentDetails" -> Json.obj(
+            "agentReferenceNo"->  "AGENT1",
+            "name" -> "Jack",
+            "addressLine1" -> "Flat 20",
+            "addressLine2" -> "123 Jack street",
+            "addressLine4" -> "Birmingham",
+            "addressLine5" -> "UK",
+            "postCode" -> "AAA AAA",
+            "agentEmailID" -> "Jack@aaa.com"
+          ),
           "appealInformation" -> Json.obj(
             "type" -> "lossOfStaff",
             "dateOfEvent" -> "2021-04-23T18:25:43.511Z",
@@ -1466,10 +1625,11 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       "write the appeal to JSON" when {
         "there has been a hospital stay - and is no longer ongoing (both start and end date) - write the appeal model to JSON" in {
           val modelToConvertToJson = AppealSubmission(
-            submittedBy = "client",
+            submittedBy = "agent",
             penaltyId = "1234",
             reasonableExcuse = "health",
             honestyDeclaration = true,
+            agentDetails = agentDetails,
             appealInformation = HealthAppealInformation(
               `type` = "health",
               startDateOfEvent = Some("2021-04-23T18:25:43.511Z"),
@@ -1485,10 +1645,20 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             )
           )
           val jsonRepresentingModel: JsValue = Json.obj(
-            "submittedBy" -> "client",
+            "submittedBy" -> "agent",
             "penaltyId" -> "1234",
             "reasonableExcuse" -> "health",
             "honestyDeclaration" -> true,
+            "agentDetails" -> Json.obj(
+              "agentReferenceNo"->  "AGENT1",
+              "name" -> "Jack",
+              "addressLine1" -> "Flat 20",
+              "addressLine2" -> "123 Jack street",
+              "addressLine4" -> "Birmingham",
+              "addressLine5" -> "UK",
+              "postCode" -> "AAA AAA",
+              "agentEmailID" -> "Jack@aaa.com"
+            ),
             "appealInformation" -> Json.obj(
               "type" -> "health",
               "startDateOfEvent" -> "2021-04-23T18:25:43.511Z",
@@ -1507,10 +1677,11 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
 
         "there has been a hospital stay AND it is ongoing (no end date) - write the appeal model to JSON" in {
           val modelToConvertToJson = AppealSubmission(
-            submittedBy = "client",
+            submittedBy = "agent",
             penaltyId = "1234",
             reasonableExcuse = "health",
             honestyDeclaration = true,
+            agentDetails = agentDetails,
             appealInformation = HealthAppealInformation(
               `type` = "health",
               startDateOfEvent = Some("2021-04-23T18:25:43.511Z"),
@@ -1526,10 +1697,20 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             )
           )
           val jsonRepresentingModel: JsValue = Json.obj(
-            "submittedBy" -> "client",
+            "submittedBy" -> "agent",
             "penaltyId" -> "1234",
             "reasonableExcuse" -> "health",
             "honestyDeclaration" -> true,
+            "agentDetails" -> Json.obj(
+              "agentReferenceNo"->  "AGENT1",
+              "name" -> "Jack",
+              "addressLine1" -> "Flat 20",
+              "addressLine2" -> "123 Jack street",
+              "addressLine4" -> "Birmingham",
+              "addressLine5" -> "UK",
+              "postCode" -> "AAA AAA",
+              "agentEmailID" -> "Jack@aaa.com"
+            ),
             "appealInformation" -> Json.obj(
               "type" -> "health",
               "startDateOfEvent" -> "2021-04-23T18:25:43.511Z",
@@ -1548,10 +1729,11 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
         "there has been NO hospital stay (dateOfEvent present, eventOngoing = false, hospitalStayInvolved = false) " +
           "write the appeal model to JSON" in {
           val modelToConvertToJson = AppealSubmission(
-            submittedBy = "client",
+            submittedBy = "agent",
             penaltyId = "1234",
             reasonableExcuse = "health",
             honestyDeclaration = true,
+            agentDetails = agentDetails,
             appealInformation = HealthAppealInformation(
               `type` = "health",
               startDateOfEvent = None,
@@ -1567,10 +1749,20 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             )
           )
           val jsonRepresentingModel: JsValue = Json.obj(
-            "submittedBy" -> "client",
+            "submittedBy" -> "agent",
             "penaltyId" -> "1234",
             "reasonableExcuse" -> "health",
             "honestyDeclaration" -> true,
+            "agentDetails" -> Json.obj(
+              "agentReferenceNo"->  "AGENT1",
+              "name" -> "Jack",
+              "addressLine1" -> "Flat 20",
+              "addressLine2" -> "123 Jack street",
+              "addressLine4" -> "Birmingham",
+              "addressLine5" -> "UK",
+              "postCode" -> "AAA AAA",
+              "agentEmailID" -> "Jack@aaa.com"
+            ),
             "appealInformation" -> Json.obj(
               "type" -> "health",
               "dateOfEvent" -> "2021-04-23T18:25:43.511Z",
@@ -1591,10 +1783,11 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
     "for technical issues" must {
       "write the model to JSON" in {
         val modelToConvertToJson: AppealSubmission = AppealSubmission(
-          submittedBy = "client",
+          submittedBy = "agent",
           penaltyId = "1234",
           reasonableExcuse = "technicalIssues",
           honestyDeclaration = true,
+          agentDetails = agentDetails,
           appealInformation = TechnicalIssuesAppealInformation(
             `type` = "technicalIssues",
             startDateOfEvent = "2021-04-23T18:25:43.511Z",
@@ -1608,10 +1801,20 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
         )
 
         val jsonRepresentingModel: JsValue = Json.obj(
-          "submittedBy" -> "client",
+          "submittedBy" -> "agent",
           "penaltyId" -> "1234",
           "reasonableExcuse" -> "technicalIssues",
           "honestyDeclaration" -> true,
+          "agentDetails" -> Json.obj(
+            "agentReferenceNo"->  "AGENT1",
+            "name" -> "Jack",
+            "addressLine1" -> "Flat 20",
+            "addressLine2" -> "123 Jack street",
+            "addressLine4" -> "Birmingham",
+            "addressLine5" -> "UK",
+            "postCode" -> "AAA AAA",
+            "agentEmailID" -> "Jack@aaa.com"
+          ),
           "appealInformation" -> Json.obj(
             "type" -> "technicalIssues",
             "startDateOfEvent" -> "2021-04-23T18:25:43.511Z",
@@ -1630,10 +1833,11 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
     "for other" must {
       "write the model to JSON" in {
         val modelToConvertToJson: AppealSubmission = AppealSubmission(
-          submittedBy = "client",
+          submittedBy = "agent",
           penaltyId = "1234",
           reasonableExcuse = "other",
           honestyDeclaration = true,
+          agentDetails = agentDetails,
           appealInformation = OtherAppealInformation(
             `type` = "other",
             dateOfEvent = "2021-04-23T18:25:43.511Z",
@@ -1650,10 +1854,20 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
         )
 
         val jsonRepresentingModel: JsValue = Json.obj(
-          "submittedBy" -> "client",
+          "submittedBy" -> "agent",
           "penaltyId" -> "1234",
           "reasonableExcuse" -> "other",
           "honestyDeclaration" -> true,
+          "agentDetails" -> Json.obj(
+            "agentReferenceNo"->  "AGENT1",
+            "name" -> "Jack",
+            "addressLine1" -> "Flat 20",
+            "addressLine2" -> "123 Jack street",
+            "addressLine4" -> "Birmingham",
+            "addressLine5" -> "UK",
+            "postCode" -> "AAA AAA",
+            "agentEmailID" -> "Jack@aaa.com"
+          ),
           "appealInformation" -> Json.obj(
             "type" -> "other",
             "dateOfEvent" -> "2021-04-23T18:25:43.511Z",
@@ -1674,10 +1888,11 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
 
       "write the model to JSON - no evidence" in {
         val modelToConvertToJson: AppealSubmission = AppealSubmission(
-          submittedBy = "client",
+          submittedBy = "agent",
           penaltyId = "1234",
           reasonableExcuse = "other",
           honestyDeclaration = true,
+          agentDetails = agentDetails,
           appealInformation = OtherAppealInformation(
             `type` = "other",
             dateOfEvent = "2021-04-23T18:25:43.511Z",
@@ -1691,10 +1906,20 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
         )
 
         val jsonRepresentingModel: JsValue = Json.obj(
-          "submittedBy" -> "client",
+          "submittedBy" -> "agent",
           "penaltyId" -> "1234",
           "reasonableExcuse" -> "other",
           "honestyDeclaration" -> true,
+          "agentDetails" -> Json.obj(
+            "agentReferenceNo"->  "AGENT1",
+            "name" -> "Jack",
+            "addressLine1" -> "Flat 20",
+            "addressLine2" -> "123 Jack street",
+            "addressLine4" -> "Birmingham",
+            "addressLine5" -> "UK",
+            "postCode" -> "AAA AAA",
+            "agentEmailID" -> "Jack@aaa.com"
+          ),
           "appealInformation" -> Json.obj(
             "type" -> "other",
             "dateOfEvent" -> "2021-04-23T18:25:43.511Z",
@@ -1711,10 +1936,11 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
 
       "write the model to JSON - for late appeal" in {
         val modelToConvertToJson: AppealSubmission = AppealSubmission(
-          submittedBy = "client",
+          submittedBy = "agent",
           penaltyId = "1234",
           reasonableExcuse = "other",
           honestyDeclaration = true,
+          agentDetails = agentDetails,
           appealInformation = OtherAppealInformation(
             `type` = "other",
             dateOfEvent = "2021-04-23T18:25:43.511Z",
@@ -1731,10 +1957,20 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
         )
 
         val jsonRepresentingModel: JsValue = Json.obj(
-          "submittedBy" -> "client",
+          "submittedBy" -> "agent",
           "penaltyId" -> "1234",
           "reasonableExcuse" -> "other",
           "honestyDeclaration" -> true,
+          "agentDetails" -> Json.obj(
+            "agentReferenceNo"->  "AGENT1",
+            "name" -> "Jack",
+            "addressLine1" -> "Flat 20",
+            "addressLine2" -> "123 Jack street",
+            "addressLine4" -> "Birmingham",
+            "addressLine5" -> "UK",
+            "postCode" -> "AAA AAA",
+            "agentEmailID" -> "Jack@aaa.com"
+          ),
           "appealInformation" -> Json.obj(
             "type" -> "other",
             "dateOfEvent" -> "2021-04-23T18:25:43.511Z",
@@ -1762,6 +1998,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           penaltyId = "1234",
           reasonableExcuse = "obligation",
           honestyDeclaration = true,
+          agentDetails = None,
           appealInformation = ObligationAppealInformation(
             `type` = "obligation",
             statement = Some("A valid statement"),
@@ -1797,6 +2034,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           penaltyId = "1234",
           reasonableExcuse = "obligation",
           honestyDeclaration = true,
+          agentDetails = None,
           appealInformation = ObligationAppealInformation(
             `type` = "obligation",
             statement = Some("A valid statement"),
