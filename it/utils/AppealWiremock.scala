@@ -26,9 +26,6 @@ trait AppealWiremock {
       .willReturn(
         aResponse()
           .withStatus(status)
-          .withHeader("Authorization" ,"pega-bearerToken")
-          .withHeader("CorrelationId", "1111111-qqqq-2222-eeee")
-          .withHeader("Environment", "pegaEnvironment")
       ))
   }
 
