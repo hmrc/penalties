@@ -17,7 +17,7 @@
 package connectors
 
 import config.AppConfig
-import featureSwitches.{CallPEGA, FeatureSwitch}
+import featureSwitches.CallPEGA
 import models.appeals.AppealSubmission
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse}
 
