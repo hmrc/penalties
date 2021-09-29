@@ -26,10 +26,10 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class AppealsConnector @Inject()(httpClient: HttpClient,
                                  appConfig: AppConfig)(implicit ec: ExecutionContext) {
-  def submitAppeal(appealSubmission: AppealSubmission, enrolmentKey: String, isLPP: Boolean)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
+  def submitAppeal(appealSubmission: AppealSubmission, enrolmentKey: String, isLPP: Boolean, penaltyId: String)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
     val isPEGASwitchEnabled: Boolean = appConfig.isEnabled(CallPEGA)
     val hcWithNoHeaders: HeaderCarrier = HeaderCarrier()
-     httpClient.POST[AppealSubmission, HttpResponse](appConfig.getAppealSubmissionURL(enrolmentKey, isLPP, appealSubmission.penaltyId),
+     httpClient.POST[AppealSubmission, HttpResponse](appConfig.getAppealSubmissionURL(enrolmentKey, isLPP, penaltyId),
       appealSubmission, if(isPEGASwitchEnabled) hc.otherHeaders else hcWithNoHeaders.otherHeaders)(AppealSubmission.apiWrites, implicitly, if(isPEGASwitchEnabled) hc else hcWithNoHeaders, implicitly)
   }
 }

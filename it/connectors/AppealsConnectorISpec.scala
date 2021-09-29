@@ -38,9 +38,9 @@ class AppealsConnectorISpec extends IntegrationSpecCommonBase with AppealWiremoc
       mockResponseForAppealSubmissionPEGA(Status.OK, "1234567890")
       val modelToSend: AppealSubmission = AppealSubmission(
         submittedBy = "client",
-        penaltyId = "1234567890",
         reasonableExcuse = "ENUM_PEGA_LIST",
         honestyDeclaration = true,
+        agentDetails = None,
         appealInformation = CrimeAppealInformation(
           `type` = "crime",
           dateOfEvent = "2021-04-23T18:25:43.511Z",
@@ -52,18 +52,18 @@ class AppealsConnectorISpec extends IntegrationSpecCommonBase with AppealWiremoc
           causeOfLateSubmissionAgent = None
         )
       )
-      val result: HttpResponse = await(connector.submitAppeal(modelToSend, "HMRC-MTD-VAT~VRN~123456789", isLPP = false))
+      val result: HttpResponse = await(connector.submitAppeal(modelToSend, "HMRC-MTD-VAT~VRN~1234567890", isLPP = false, penaltyId = "1234567890"))
       result.status shouldBe OK
     }
 
     "Jsonify the model and send the request and return the response - when PEGA feature switch disabled, call stub" in new Setup {
       disableFeatureSwitch(CallPEGA)
-      mockResponseForAppealSubmissionStub(Status.OK, "HMRC-MTD-VAT~VRN~123456789")
+      mockResponseForAppealSubmissionStub(Status.OK, "HMRC-MTD-VAT~VRN~123456789", penaltyId = "123456789")
       val modelToSend: AppealSubmission = AppealSubmission(
         submittedBy = "client",
-        penaltyId = "1234567890",
         reasonableExcuse = "ENUM_PEGA_LIST",
         honestyDeclaration = true,
+        agentDetails = None,
         appealInformation = CrimeAppealInformation(
           `type` = "crime",
           dateOfEvent = "2021-04-23T18:25:43.511Z",
@@ -75,18 +75,18 @@ class AppealsConnectorISpec extends IntegrationSpecCommonBase with AppealWiremoc
           causeOfLateSubmissionAgent = None
         )
       )
-      val result: HttpResponse = await(connector.submitAppeal(modelToSend, "HMRC-MTD-VAT~VRN~123456789", isLPP = false))
+      val result: HttpResponse = await(connector.submitAppeal(modelToSend, "HMRC-MTD-VAT~VRN~123456789", isLPP = false, penaltyId = "123456789"))
       result.status shouldBe OK
     }
 
     "Jsonify the model and send the request and return the response - when PEGA feature switch disabled, call stub - for LPP" in new Setup {
       disableFeatureSwitch(CallPEGA)
-      mockResponseForAppealSubmissionStub(Status.OK, "HMRC-MTD-VAT~VRN~123456789", isLPP = true)
+      mockResponseForAppealSubmissionStub(Status.OK, "HMRC-MTD-VAT~VRN~123456789", isLPP = true, penaltyId = "123456789")
       val modelToSend: AppealSubmission = AppealSubmission(
         submittedBy = "client",
-        penaltyId = "1234567890",
         reasonableExcuse = "ENUM_PEGA_LIST",
         honestyDeclaration = true,
+        agentDetails = None,
         appealInformation = CrimeAppealInformation(
           `type` = "crime",
           dateOfEvent = "2021-04-23T18:25:43.511Z",
@@ -98,7 +98,7 @@ class AppealsConnectorISpec extends IntegrationSpecCommonBase with AppealWiremoc
           causeOfLateSubmissionAgent = None
         )
       )
-      val result: HttpResponse = await(connector.submitAppeal(modelToSend, "HMRC-MTD-VAT~VRN~123456789", isLPP = true))
+      val result: HttpResponse = await(connector.submitAppeal(modelToSend, "HMRC-MTD-VAT~VRN~123456789", isLPP = true, penaltyId = "123456789"))
       result.status shouldBe OK
     }
   }

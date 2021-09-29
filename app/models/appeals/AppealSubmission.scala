@@ -25,13 +25,14 @@ sealed trait AppealInformation {
 
 case class BereavementAppealInformation(
                                          `type`: String,
-                                          dateOfEvent: String,
-                                          statement: Option[String],
-                                          lateAppeal: Boolean,
-                                          lateAppealReason: Option[String],
-                                          whoPlannedToSubmit: Option[String],
-                                          causeOfLateSubmissionAgent: Option[String]
+                                         dateOfEvent: String,
+                                         statement: Option[String],
+                                         lateAppeal: Boolean,
+                                         lateAppealReason: Option[String],
+                                         whoPlannedToSubmit: Option[String],
+                                         causeOfLateSubmissionAgent: Option[String]
                                        ) extends AppealInformation
+
 object BereavementAppealInformation {
   implicit val bereavementAppealInformationFormatter: OFormat[BereavementAppealInformation] = Json.format[BereavementAppealInformation]
 
@@ -378,7 +379,7 @@ case class ObligationAppealInformation(
                                         supportingEvidence: Option[Evidence]
                                       ) extends AppealInformation
 
-object ObligationAppealInformation{
+object ObligationAppealInformation {
   implicit val evidenceFormatter: OFormat[Evidence] = Evidence.format
   implicit val obligationAppealInformationFormatter: OFormat[ObligationAppealInformation] = Json.format[ObligationAppealInformation]
 
@@ -398,9 +399,9 @@ object ObligationAppealInformation{
 
 case class AppealSubmission(
                              submittedBy: String,
-                             penaltyId: String,
                              reasonableExcuse: String,
                              honestyDeclaration: Boolean,
+                             agentDetails: Option[AgentDetails],
                              appealInformation: AppealInformation
                            )
 
@@ -450,17 +451,17 @@ object AppealSubmission {
   val apiReads: Reads[AppealSubmission] = (json: JsValue) => {
     for {
       submittedBy <- (json \ "submittedBy").validate[String]
-      penaltyId <- (json \ "penaltyId").validate[String]
       reasonableExcuse <- (json \ "reasonableExcuse").validate[String]
       honestyDeclaration <- (json \ "honestyDeclaration").validate[Boolean]
+      agentDetails <- (json \ "agentDetails").validateOpt[AgentDetails]
       appealInformationType <- (json \ "appealInformation" \ "type").validate[String]
       appealInformation <- parseAppealInformationFromJson(appealInformationType, (json \ "appealInformation").get)
     } yield {
       AppealSubmission(
         submittedBy,
-        penaltyId,
         reasonableExcuse,
         honestyDeclaration,
+        agentDetails,
         appealInformation
       )
     }
@@ -469,10 +470,15 @@ object AppealSubmission {
   val apiWrites: Writes[AppealSubmission] = (appealSubmission: AppealSubmission) => {
     Json.obj(
       "submittedBy" -> appealSubmission.submittedBy,
-      "penaltyId" -> appealSubmission.penaltyId,
       "reasonableExcuse" -> appealSubmission.reasonableExcuse,
       "honestyDeclaration" -> appealSubmission.honestyDeclaration,
       "appealInformation" -> parseAppealInformationToJson(appealSubmission.appealInformation)
+    ).deepMerge(
+      appealSubmission.agentDetails.fold(
+        Json.obj()
+      )(
+        details => Json.obj("agentDetails" -> details)
+      )
     )
   }
 }

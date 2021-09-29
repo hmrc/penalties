@@ -55,9 +55,9 @@ class AppealsConnectorSpec extends SpecBase with FeatureSwitching {
         .thenReturn(Future.successful(HttpResponse(OK, "OK")))
       val modelToSend: AppealSubmission = AppealSubmission(
         submittedBy = "client",
-        penaltyId = "1234567890",
         reasonableExcuse = "ENUM_PEGA_LIST",
         honestyDeclaration = true,
+        agentDetails = agentDetails,
         appealInformation = CrimeAppealInformation(
           `type` = "crime",
           dateOfEvent = "2021-04-23T18:25:43.511Z",
@@ -69,7 +69,7 @@ class AppealsConnectorSpec extends SpecBase with FeatureSwitching {
           causeOfLateSubmissionAgent = None
         )
       )
-      val result: HttpResponse = await(connector.submitAppeal(modelToSend, "HMRC-MTD-VAT~VRN~123456789", isLPP = false)(hc))
+      val result: HttpResponse = await(connector.submitAppeal(modelToSend, "HMRC-MTD-VAT~VRN~123456789", isLPP = false, penaltyId = "1234567890")(hc))
       result.status shouldBe OK
       result.body shouldBe "OK"
       argumentCaptorOtherHeaders.getValue.find(_._1 == "Authorization").get._2 shouldBe "auth1"
@@ -91,9 +91,9 @@ class AppealsConnectorSpec extends SpecBase with FeatureSwitching {
         .thenReturn(Future.successful(HttpResponse(OK, "OK")))
       val modelToSend: AppealSubmission = AppealSubmission(
         submittedBy = "client",
-        penaltyId = "1234567890",
         reasonableExcuse = "ENUM_PEGA_LIST",
         honestyDeclaration = true,
+        agentDetails = agentDetails,
         appealInformation = CrimeAppealInformation(
           `type` = "crime",
           dateOfEvent = "2021-04-23T18:25:43.511Z",
@@ -105,7 +105,7 @@ class AppealsConnectorSpec extends SpecBase with FeatureSwitching {
           causeOfLateSubmissionAgent = None
         )
       )
-      val result: HttpResponse = await(connector.submitAppeal(modelToSend, "HMRC-MTD-VAT~VRN~123456789", isLPP = false)(hc))
+      val result: HttpResponse = await(connector.submitAppeal(modelToSend, "HMRC-MTD-VAT~VRN~123456789", isLPP = false, penaltyId = "1234567890")(hc))
       result.status shouldBe OK
       result.body shouldBe "OK"
       argumentCaptorOtherHeaders.getValue.exists(_._1 == "Authorization") shouldBe false
@@ -125,9 +125,9 @@ class AppealsConnectorSpec extends SpecBase with FeatureSwitching {
         .thenReturn(Future.successful(HttpResponse(OK, "OK")))
       val modelToSend: AppealSubmission = AppealSubmission(
         submittedBy = "client",
-        penaltyId = "1234567890",
         reasonableExcuse = "ENUM_PEGA_LIST",
         honestyDeclaration = true,
+        agentDetails = agentDetails,
         appealInformation = CrimeAppealInformation(
           `type` = "crime",
           dateOfEvent = "2021-04-23T18:25:43.511Z",
@@ -139,7 +139,7 @@ class AppealsConnectorSpec extends SpecBase with FeatureSwitching {
           causeOfLateSubmissionAgent = None
         )
       )
-      val result: HttpResponse = await(connector.submitAppeal(modelToSend, "HMRC-MTD-VAT~VRN~123456789", isLPP = true)(HeaderCarrier()))
+      val result: HttpResponse = await(connector.submitAppeal(modelToSend, "HMRC-MTD-VAT~VRN~123456789", isLPP = true, penaltyId = "1234567890")(HeaderCarrier()))
       result.status shouldBe OK
       result.body shouldBe "OK"
     }
