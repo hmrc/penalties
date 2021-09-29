@@ -104,7 +104,6 @@ class ETMPServiceSpec extends SpecBase {
   "submitAppeal" should {
     val modelToPassToServer: AppealSubmission = AppealSubmission(
       submittedBy = "client",
-      penaltyId = "1234567890",
       reasonableExcuse = "ENUM_PEGA_LIST",
       honestyDeclaration = true,
       agentDetails = None,
@@ -120,18 +119,18 @@ class ETMPServiceSpec extends SpecBase {
       )
     )
     "return the response from the connector i.e. act as a pass-through function" in new Setup {
-      when(mockAppealsConnector.submitAppeal(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any()))
+      when(mockAppealsConnector.submitAppeal(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any()))
         .thenReturn(Future.successful(HttpResponse(OK, "")))
 
-      val result: HttpResponse = await(service.submitAppeal(modelToPassToServer, "HMRC-MTD-VAT~VRN~123456789", isLPP = false))
+      val result: HttpResponse = await(service.submitAppeal(modelToPassToServer, "HMRC-MTD-VAT~VRN~123456789", isLPP = false, penaltyId = "123456789"))
       result.status shouldBe OK
     }
 
     "throw an exception when the connector throws an exception" in new Setup {
-      when(mockAppealsConnector.submitAppeal(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any()))
+      when(mockAppealsConnector.submitAppeal(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any()))
         .thenReturn(Future.failed(new Exception("Something went wrong")))
 
-      val result: Exception = intercept[Exception](await(service.submitAppeal(modelToPassToServer, "HMRC-MTD-VAT~VRN~123456789", isLPP = false)))
+      val result: Exception = intercept[Exception](await(service.submitAppeal(modelToPassToServer, "HMRC-MTD-VAT~VRN~123456789", isLPP = false, penaltyId = "123456789")))
       result.getMessage shouldBe "Something went wrong"
     }
   }

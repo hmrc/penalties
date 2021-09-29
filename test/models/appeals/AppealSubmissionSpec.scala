@@ -26,7 +26,6 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
     """
       |{
       |   "submittedBy": "client",
-      |   "penaltyId": "123456789",
       |   "reasonableExcuse": "bereavement",
       |   "honestyDeclaration": true,
       |   "appealInformation": {
@@ -45,7 +44,6 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
     """
       |{
       |    "submittedBy": "agent",
-      |    "penaltyId": "1234567890",
       |    "reasonableExcuse": "crime",
       |    "honestyDeclaration": true,
       |    "agentDetails": {
@@ -74,7 +72,6 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
     """
       |{
       |    "submittedBy": "agent",
-      |    "penaltyId": "1234567890",
       |    "reasonableExcuse": "lossOfStaff",
       |    "honestyDeclaration": true,
       |    "agentDetails": {
@@ -102,7 +99,6 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
     """
       |{
       |    "submittedBy": "agent",
-      |    "penaltyId": "1234567890",
       |    "reasonableExcuse": "technicalIssues",
       |    "honestyDeclaration": true,
       |    "agentDetails": {
@@ -131,7 +127,6 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
     """
       |{
       |    "submittedBy": "client",
-      |    "penaltyId": "1234567890",
       |    "reasonableExcuse": "technicalIssues",
       |    "appealInformation": {
       |						"type": "technicalIssues",
@@ -158,7 +153,6 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
     """
       |{
       |    "submittedBy": "agent",
-      |    "penaltyId": "1234567890",
       |    "reasonableExcuse": "ENUM_PEGA_LIST",
       |    "honestyDeclaration": true,
       |    "agentDetails": {
@@ -186,7 +180,6 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
     """
       |{
       |    "submittedBy": "agent",
-      |    "penaltyId": "1234567890",
       |    "reasonableExcuse": "health",
       |    "honestyDeclaration": true,
       |    "agentDetails": {
@@ -215,7 +208,6 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
     """
       |{
       |    "submittedBy": "agent",
-      |    "penaltyId": "1234567890",
       |    "reasonableExcuse": "health",
       |    "honestyDeclaration": true,
       |    "agentDetails": {
@@ -244,7 +236,6 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
     """
       |{
       |    "submittedBy": "agent",
-      |    "penaltyId": "1234567890",
       |    "reasonableExcuse": "health",
       |    "honestyDeclaration": true,
       |    "agentDetails": {
@@ -274,7 +265,6 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
     """
       |{
       |    "submittedBy": "client",
-      |    "penaltyId": "123456789",
       |    "reasonableExcuse": "bereavement",
       |    "appealInformation": {
       |           "type": "bereavement",
@@ -288,7 +278,6 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
     """
       |{
       |    "submittedBy": "client",
-      |    "penaltyId": "1234567890",
       |    "reasonableExcuse": "crime",
       |    "appealInformation": {
       |						"type": "crime",
@@ -302,7 +291,6 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
     """
       |{
       |    "submittedBy": "client",
-      |    "penaltyId": "1234567890",
       |    "reasonableExcuse": "lossOfStaff",
       |    "appealInformation": {
       |						"type": "lossOfStaff",
@@ -315,7 +303,6 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
     """
       |{
       |    "submittedBy": "agent",
-      |    "penaltyId": "1234567890",
       |    "reasonableExcuse": "other",
       |    "honestyDeclaration": true,
       |    "agentDetails": {
@@ -348,7 +335,6 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
     """
       |{
       |    "submittedBy": "agent",
-      |    "penaltyId": "1234567890",
       |    "reasonableExcuse": "other",
       |    "honestyDeclaration": true,
       |    "agentDetails": {
@@ -377,7 +363,6 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
     """
       |{
       |    "submittedBy": "client",
-      |    "penaltyId": "1234567890",
       |    "reasonableExcuse": "other",
       |    "honestyDeclaration": true,
       |    "appealInformation": {
@@ -405,7 +390,6 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
     """
       |{
       |    "submittedBy": "client",
-      |    "penaltyId": "1234567890",
       |    "reasonableExcuse": "ENUM_PEGA_LIST",
       |    "appealInformation": {
       |						"type": "fireOrFlood",
@@ -613,7 +597,6 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
     """
       |{
       |   "submittedBy": "client",
-      |    "penaltyId": "1234567890",
       |    "reasonableExcuse": "obligation",
       |    "honestyDeclaration": true,
       |    "appealInformation": {
@@ -632,7 +615,6 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
     """
       |{
       |   "submittedBy": "client",
-      |    "penaltyId": "1234567890",
       |    "reasonableExcuse": "obligation",
       |    "honestyDeclaration": true,
       |    "appealInformation": {
@@ -647,7 +629,6 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
     """
       |{
       |    "submittedBy": "client",
-      |    "penaltyId": "1234567890",
       |    "reasonableExcuse": "obligation",
       |    "honestyDeclaration": true,
       |    "appealInformation": {
@@ -1093,7 +1074,6 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       "parse the JSON into a model when all keys are present" in {
         val expectedResult = AppealSubmission(
           submittedBy = "client",
-          penaltyId = "123456789",
           reasonableExcuse = "bereavement",
           honestyDeclaration = true,
           agentDetails = None,
@@ -1122,7 +1102,6 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       "parse the JSON into a model when all keys are present" in {
         val expectedResult = AppealSubmission(
           submittedBy = "agent",
-          penaltyId = "1234567890",
           reasonableExcuse = "crime",
           honestyDeclaration = true,
           agentDetails = agentDetails,
@@ -1153,7 +1132,6 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       "parse the JSON into a model when all keys are present" in {
         val expectedResult = AppealSubmission(
           submittedBy = "agent",
-          penaltyId = "1234567890",
           reasonableExcuse = "ENUM_PEGA_LIST",
           honestyDeclaration = true,
           agentDetails = agentDetails,
@@ -1183,7 +1161,6 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       "parse the JSON into a model when all keys are present" in {
         val expectedResult = AppealSubmission(
           submittedBy = "agent",
-          penaltyId = "1234567890",
           reasonableExcuse = "lossOfStaff",
           honestyDeclaration = true,
           agentDetails = agentDetails,
@@ -1213,7 +1190,6 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       "parse the JSON into a model when all keys are present" in {
         val expectedResult = AppealSubmission(
           submittedBy = "agent",
-          penaltyId = "1234567890",
           reasonableExcuse = "technicalIssues",
           honestyDeclaration = true,
           agentDetails = agentDetails,
@@ -1244,7 +1220,6 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       "read the JSON when there was no hospital stay" in {
         val expectedResult = AppealSubmission(
           submittedBy = "agent",
-          penaltyId = "1234567890",
           reasonableExcuse = "health",
           honestyDeclaration = true,
           agentDetails = agentDetails,
@@ -1270,7 +1245,6 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       "read the JSON when there is an ongoing hospital stay" in {
         val expectedResult = AppealSubmission(
           submittedBy = "agent",
-          penaltyId = "1234567890",
           reasonableExcuse = "health",
           honestyDeclaration = true,
           agentDetails = agentDetails,
@@ -1296,7 +1270,6 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       "read the JSON when there has been a hospital stay" in {
         val expectedResult = AppealSubmission(
           submittedBy = "agent",
-          penaltyId = "1234567890",
           reasonableExcuse = "health",
           honestyDeclaration = true,
           agentDetails = agentDetails,
@@ -1324,7 +1297,6 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       "parse the JSON into a model when all keys are present" in {
         val expectedResult = AppealSubmission(
           submittedBy = "agent",
-          penaltyId = "1234567890",
           reasonableExcuse = "other",
           honestyDeclaration = true,
           agentDetails = agentDetails,
@@ -1350,7 +1322,6 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       "parse the JSON into a model when all keys are present - no evidence" in {
         val expectedResult = AppealSubmission(
           submittedBy = "agent",
-          penaltyId = "1234567890",
           reasonableExcuse = "other",
           honestyDeclaration = true,
           agentDetails = agentDetails,
@@ -1381,7 +1352,6 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       "parse the JSON into a model when all keys are present" in {
         val expectedResult = AppealSubmission(
           submittedBy = "client",
-          penaltyId = "1234567890",
           reasonableExcuse = "obligation",
           honestyDeclaration = true,
           agentDetails = None,
@@ -1403,7 +1373,6 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       "parse the JSON into a model when all keys are present - no evidence" in {
         val expectedResult = AppealSubmission(
           submittedBy = "client",
-          penaltyId = "1234567890",
           reasonableExcuse = "obligation",
           honestyDeclaration = true,
           agentDetails = None,
@@ -1431,7 +1400,6 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       "write the model to JSON" in {
         val modelToCovertToJson: AppealSubmission = AppealSubmission(
           submittedBy = "agent",
-          penaltyId = "1234",
           reasonableExcuse = "bereavement",
           honestyDeclaration = true,
           agentDetails = agentDetails,
@@ -1447,7 +1415,6 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           )
         val jsonRepresentingModel: JsValue = Json.obj(
           "submittedBy"-> "agent",
-          "penaltyId" -> "1234",
           "reasonableExcuse" -> "bereavement",
           "honestyDeclaration" -> true,
           "agentDetails" -> Json.obj(
@@ -1478,7 +1445,6 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       "write the model to JSON" in {
         val modelToConvertToJson: AppealSubmission = AppealSubmission(
           submittedBy = "agent",
-          penaltyId = "1234",
           reasonableExcuse = "crime",
           honestyDeclaration = true,
           agentDetails = agentDetails,
@@ -1495,7 +1461,6 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
         )
         val jsonRepresentingModel: JsValue = Json.obj(
           "submittedBy" -> "agent",
-          "penaltyId" -> "1234",
           "reasonableExcuse" -> "crime",
           "honestyDeclaration" -> true,
           "agentDetails" -> Json.obj(
@@ -1528,7 +1493,6 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       "write the model to Json" in {
         val modelToConvertToJson: AppealSubmission = AppealSubmission(
           submittedBy = "agent",
-          penaltyId = "1234",
           reasonableExcuse = "fireOrFlood",
           honestyDeclaration = true,
           agentDetails = agentDetails,
@@ -1545,7 +1509,6 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
 
         val jsonRepresentingModel: JsValue = Json.obj(
           "submittedBy" -> "agent",
-          "penaltyId" -> "1234",
           "reasonableExcuse" -> "fireOrFlood",
           "honestyDeclaration" -> true,
           "agentDetails" -> Json.obj(
@@ -1577,7 +1540,6 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       "write the model to JSON" in {
         val modelToConvertToJson: AppealSubmission = AppealSubmission(
           submittedBy = "agent",
-          penaltyId = "1234",
           reasonableExcuse = "lossOfStaff",
           honestyDeclaration = true,
           agentDetails = agentDetails,
@@ -1593,7 +1555,6 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
         )
         val jsonRepresentingModel: JsValue = Json.obj(
           "submittedBy" -> "agent",
-          "penaltyId" -> "1234",
           "reasonableExcuse" -> "lossOfStaff",
           "honestyDeclaration" -> true,
           "agentDetails" -> Json.obj(
@@ -1626,7 +1587,6 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
         "there has been a hospital stay - and is no longer ongoing (both start and end date) - write the appeal model to JSON" in {
           val modelToConvertToJson = AppealSubmission(
             submittedBy = "agent",
-            penaltyId = "1234",
             reasonableExcuse = "health",
             honestyDeclaration = true,
             agentDetails = agentDetails,
@@ -1646,7 +1606,6 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           )
           val jsonRepresentingModel: JsValue = Json.obj(
             "submittedBy" -> "agent",
-            "penaltyId" -> "1234",
             "reasonableExcuse" -> "health",
             "honestyDeclaration" -> true,
             "agentDetails" -> Json.obj(
@@ -1678,7 +1637,6 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
         "there has been a hospital stay AND it is ongoing (no end date) - write the appeal model to JSON" in {
           val modelToConvertToJson = AppealSubmission(
             submittedBy = "agent",
-            penaltyId = "1234",
             reasonableExcuse = "health",
             honestyDeclaration = true,
             agentDetails = agentDetails,
@@ -1698,7 +1656,6 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           )
           val jsonRepresentingModel: JsValue = Json.obj(
             "submittedBy" -> "agent",
-            "penaltyId" -> "1234",
             "reasonableExcuse" -> "health",
             "honestyDeclaration" -> true,
             "agentDetails" -> Json.obj(
@@ -1730,7 +1687,6 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           "write the appeal model to JSON" in {
           val modelToConvertToJson = AppealSubmission(
             submittedBy = "agent",
-            penaltyId = "1234",
             reasonableExcuse = "health",
             honestyDeclaration = true,
             agentDetails = agentDetails,
@@ -1750,7 +1706,6 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           )
           val jsonRepresentingModel: JsValue = Json.obj(
             "submittedBy" -> "agent",
-            "penaltyId" -> "1234",
             "reasonableExcuse" -> "health",
             "honestyDeclaration" -> true,
             "agentDetails" -> Json.obj(
@@ -1784,7 +1739,6 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       "write the model to JSON" in {
         val modelToConvertToJson: AppealSubmission = AppealSubmission(
           submittedBy = "agent",
-          penaltyId = "1234",
           reasonableExcuse = "technicalIssues",
           honestyDeclaration = true,
           agentDetails = agentDetails,
@@ -1802,7 +1756,6 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
 
         val jsonRepresentingModel: JsValue = Json.obj(
           "submittedBy" -> "agent",
-          "penaltyId" -> "1234",
           "reasonableExcuse" -> "technicalIssues",
           "honestyDeclaration" -> true,
           "agentDetails" -> Json.obj(
@@ -1834,7 +1787,6 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       "write the model to JSON" in {
         val modelToConvertToJson: AppealSubmission = AppealSubmission(
           submittedBy = "agent",
-          penaltyId = "1234",
           reasonableExcuse = "other",
           honestyDeclaration = true,
           agentDetails = agentDetails,
@@ -1855,7 +1807,6 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
 
         val jsonRepresentingModel: JsValue = Json.obj(
           "submittedBy" -> "agent",
-          "penaltyId" -> "1234",
           "reasonableExcuse" -> "other",
           "honestyDeclaration" -> true,
           "agentDetails" -> Json.obj(
@@ -1889,7 +1840,6 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       "write the model to JSON - no evidence" in {
         val modelToConvertToJson: AppealSubmission = AppealSubmission(
           submittedBy = "agent",
-          penaltyId = "1234",
           reasonableExcuse = "other",
           honestyDeclaration = true,
           agentDetails = agentDetails,
@@ -1907,7 +1857,6 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
 
         val jsonRepresentingModel: JsValue = Json.obj(
           "submittedBy" -> "agent",
-          "penaltyId" -> "1234",
           "reasonableExcuse" -> "other",
           "honestyDeclaration" -> true,
           "agentDetails" -> Json.obj(
@@ -1937,7 +1886,6 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       "write the model to JSON - for late appeal" in {
         val modelToConvertToJson: AppealSubmission = AppealSubmission(
           submittedBy = "agent",
-          penaltyId = "1234",
           reasonableExcuse = "other",
           honestyDeclaration = true,
           agentDetails = agentDetails,
@@ -1958,7 +1906,6 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
 
         val jsonRepresentingModel: JsValue = Json.obj(
           "submittedBy" -> "agent",
-          "penaltyId" -> "1234",
           "reasonableExcuse" -> "other",
           "honestyDeclaration" -> true,
           "agentDetails" -> Json.obj(
@@ -1995,7 +1942,6 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       "write the model to JSON" in {
         val modelToCovertToJson: AppealSubmission = AppealSubmission(
           submittedBy = "client",
-          penaltyId = "1234",
           reasonableExcuse = "obligation",
           honestyDeclaration = true,
           agentDetails = None,
@@ -2011,7 +1957,6 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
 
         val jsonModel: JsValue = Json.obj(
           "submittedBy" -> "client",
-          "penaltyId"-> "1234",
           "reasonableExcuse" -> "obligation",
           "honestyDeclaration" -> true,
           "appealInformation" -> Json.obj(
@@ -2031,7 +1976,6 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       "write the model to JSON - no evidence" in {
         val modelToCovertToJson: AppealSubmission = AppealSubmission(
           submittedBy = "client",
-          penaltyId = "1234",
           reasonableExcuse = "obligation",
           honestyDeclaration = true,
           agentDetails = None,
@@ -2044,7 +1988,6 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
 
         val jsonModel: JsValue = Json.obj(
           "submittedBy" -> "client",
-          "penaltyId"-> "1234",
           "reasonableExcuse" -> "obligation",
           "honestyDeclaration" -> true,
           "appealInformation" -> Json.obj(

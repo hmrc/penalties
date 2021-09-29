@@ -399,7 +399,6 @@ object ObligationAppealInformation {
 
 case class AppealSubmission(
                              submittedBy: String,
-                             penaltyId: String,
                              reasonableExcuse: String,
                              honestyDeclaration: Boolean,
                              agentDetails: Option[AgentDetails],
@@ -452,7 +451,6 @@ object AppealSubmission {
   val apiReads: Reads[AppealSubmission] = (json: JsValue) => {
     for {
       submittedBy <- (json \ "submittedBy").validate[String]
-      penaltyId <- (json \ "penaltyId").validate[String]
       reasonableExcuse <- (json \ "reasonableExcuse").validate[String]
       honestyDeclaration <- (json \ "honestyDeclaration").validate[Boolean]
       agentDetails <- (json \ "agentDetails").validateOpt[AgentDetails]
@@ -461,7 +459,6 @@ object AppealSubmission {
     } yield {
       AppealSubmission(
         submittedBy,
-        penaltyId,
         reasonableExcuse,
         honestyDeclaration,
         agentDetails,
@@ -473,7 +470,6 @@ object AppealSubmission {
   val apiWrites: Writes[AppealSubmission] = (appealSubmission: AppealSubmission) => {
     Json.obj(
       "submittedBy" -> appealSubmission.submittedBy,
-      "penaltyId" -> appealSubmission.penaltyId,
       "reasonableExcuse" -> appealSubmission.reasonableExcuse,
       "honestyDeclaration" -> appealSubmission.honestyDeclaration,
       "appealInformation" -> parseAppealInformationToJson(appealSubmission.appealInformation)
