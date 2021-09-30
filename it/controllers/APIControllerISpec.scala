@@ -48,7 +48,8 @@ class APIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock {
         result.status shouldBe BAD_REQUEST
       }
     }
-    s"return OK (${Status.NOT_FOUND})" when {
+
+    s"return NOT_FOUND (${Status.NOT_FOUND})" when {
       "the ETMP call fails" in {
         mockResponseForStubETMPPayload(Status.INTERNAL_SERVER_ERROR, "HMRC-MTD-VAT~VRN~123456789", body = Some(""))
         val result = await(buildClientForRequestToApp(uri = "/vat/penalties/summary/123456789").get)

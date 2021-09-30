@@ -15,6 +15,7 @@
  */
 
 package controllers
+
 import models.ETMPPayload
 import models.api.APIModel
 import play.api.libs.json.Json
@@ -24,7 +25,6 @@ import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import utils.RegimeHelper
 
 import javax.inject.Inject
-
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.matching.Regex
 
