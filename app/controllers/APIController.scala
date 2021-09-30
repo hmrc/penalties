@@ -22,21 +22,28 @@ import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import utils.RegimeHelper
 
 import javax.inject.Inject
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
+import scala.util.matching.Regex
 
 class APIController @Inject()(etmpService: ETMPService,
                               cc: ControllerComponents)(implicit ec: ExecutionContext)
   extends BackendController(cc) {
 
+  private val vrnRegex: Regex = "^[0-9]{1,9}$".r
+
   def getSummaryDataForVRN(vrn: String): Action[AnyContent] = Action.async {
     implicit request => {
-      val enrolmentKey = RegimeHelper.constructMTDVATEnrolmentKey(vrn)
-      etmpService.getPenaltyDataFromETMPForEnrolment(enrolmentKey).map {
-        _._1.fold(
-          NotFound(s"Unable to find data for VRN: $vrn")
-        )(
-          etmpPayload => Ok("")
-        )
+      if (!vrn.matches(vrnRegex.regex)) {
+        Future(BadRequest(s"VRN: $vrn was not in a valid format."))
+      } else {
+        val enrolmentKey = RegimeHelper.constructMTDVATEnrolmentKey(vrn)
+        etmpService.getPenaltyDataFromETMPForEnrolment(enrolmentKey).map {
+          _._1.fold(
+            NotFound(s"Unable to find data for VRN: $vrn")
+          )(
+            etmpPayload => Ok("")
+          )
+        }
       }
     }
   }

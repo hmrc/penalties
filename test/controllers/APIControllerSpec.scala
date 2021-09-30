@@ -50,6 +50,15 @@ class APIControllerSpec extends SpecBase {
       status(result) shouldBe Status.NOT_FOUND
     }
 
+    s"return BAD_REQUEST (${Status.BAD_REQUEST}) when the user supplies an invalid VRN" in new Setup {
+      when(mockETMPService.getPenaltyDataFromETMPForEnrolment(ArgumentMatchers.any())(ArgumentMatchers.any()))
+        .thenReturn(Future.successful((Some(mockETMPPayloadResponseAsModel), Right(GetETMPPayloadSuccessResponse(mockETMPPayloadResponseAsModel)))))
+      val result = controller.getSummaryDataForVRN("1234567891234567890")(fakeRequest)
+      status(result) shouldBe Status.BAD_REQUEST
+      //TODO: change data based on implementation
+      contentAsString(result) shouldBe "VRN: 1234567891234567890 was not in a valid format."
+    }
+
     s"return OK (${Status.OK}) when the call returns some data and can be parsed to the correct response" in new Setup {
       when(mockETMPService.getPenaltyDataFromETMPForEnrolment(ArgumentMatchers.any())(ArgumentMatchers.any()))
         .thenReturn(Future.successful((Some(mockETMPPayloadResponseAsModel), Right(GetETMPPayloadSuccessResponse(mockETMPPayloadResponseAsModel)))))
