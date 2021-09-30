@@ -47,4 +47,6 @@ object RegimeHelper {
       case _ => ""
     }
   }
+
+  def constructMTDVATEnrolmentKey(vrn: String): String = s"HMRC-MTD-VAT~VRN~$vrn"
 }
