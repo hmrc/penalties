@@ -16,7 +16,11 @@
 
 package controllers
 
-import play.api.mvc.{Action, AnyContent, ControllerComponents}
+import models.ETMPPayload
+import models.api.APIModel
+import models.point.PointStatusEnum
+import play.api.libs.json.Json
+import play.api.mvc.{Action, AnyContent, ControllerComponents, Result}
 import services.ETMPService
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import utils.RegimeHelper
@@ -41,10 +45,25 @@ class APIController @Inject()(etmpService: ETMPService,
           _._1.fold(
             NotFound(s"Unable to find data for VRN: $vrn")
           )(
-            etmpPayload => Ok("")
+            etmpPayload => {
+              returnResponseForAPI(etmpPayload)
+            }
           )
         }
       }
     }
+  }
+  private def returnResponseForAPI(etmpPayload:ETMPPayload):Result = {
+    val pointsTotal = etmpPayload.pointsTotal
+    val noOfEstimatedPenalties = getNumberOfEstimatedPenalties(etmpPayload)
+
+    val responseData:APIModel = APIModel(pointsTotal,noOfEstimatedPenalties)
+    Ok(Json.toJson(responseData))
+  }
+
+  private def getNumberOfEstimatedPenalties(etmpPayload: ETMPPayload): Int = {
+    val lppEstimatedPenalties:Int = etmpPayload.latePaymentPenalties.map(_.count(_.status==PointStatusEnum.Estimated)).getOrElse(0)
+    val lspEstimatedPenalties:Int = etmpPayload.penaltyPoints.count(_.status==PointStatusEnum.Estimated)
+      lppEstimatedPenalties + lspEstimatedPenalties
   }
 }
