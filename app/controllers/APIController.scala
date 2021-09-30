@@ -25,8 +25,11 @@ import services.ETMPService
 import services.auditing.AuditService
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import utils.RegimeHelper
-
 import javax.inject.Inject
+import models.ETMPPayload
+import models.point.PointStatusEnum
+import play.api.libs.json.Json
+
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.matching.Regex
 
@@ -49,7 +52,7 @@ class APIController @Inject()(etmpService: ETMPService,
           )(
             etmpPayload => {
               returnResponseForAPI(etmpPayload, enrolmentKey)
-            }
+          }
           )
         }
       }
@@ -60,10 +63,11 @@ class APIController @Inject()(etmpService: ETMPService,
     val pointsTotal = etmpPayload.pointsTotal
     val penaltyAmountWithEstimateStatus = etmpService.findEstimatedPenaltiesAmount(etmpPayload)
     val noOfEstimatedPenalties = etmpService.getNumberOfEstimatedPenalties(etmpPayload)
+    val crystallizedPenaltyAmount = getCrystallizedPenaltyAmount(etmpPayload)
     val responseData: APIModel = APIModel(
       noOfPoints = pointsTotal,
       noOfEstimatedPenalties = noOfEstimatedPenalties,
-      noOfCrystalisedPenalties = 0,
+      noOfCrystalisedPenalties = crystallizedPenaltyAmount,
       estimatedPenaltyAmount = penaltyAmountWithEstimateStatus,
       crystalisedPenaltyAmountDue = BigDecimal(0),
       hasAnyPenaltyData = false)
@@ -78,9 +82,9 @@ class APIController @Inject()(etmpService: ETMPService,
     Ok(Json.toJson(responseData))
   }
 
-  private def returnResponseForAPI(etmpPayload:ETMPPayload):Result = {
-    val pointsTotal = etmpPayload.pointsTotal
-    val responseData:APIModel = APIModel(pointsTotal)
-    Ok(Json.toJson(responseData))
+  private def getCrystallizedPenaltyAmount(payload: ETMPPayload): Int = {
+    val numOfDueLSPs = payload.penaltyPoints.map(_.status).count(status => status == PointStatusEnum.Due)
+    val numOfDueLPPs = payload.latePaymentPenalties.getOrElse(Seq.empty).map(_.status).count(status => status == PointStatusEnum.Due)
+    numOfDueLSPs + numOfDueLPPs
   }
 }

@@ -53,17 +53,6 @@ class APIControllerSpec extends SpecBase {
       status(result) shouldBe Status.NOT_FOUND
     }
 
-    s"return OK (${Status.OK}) when the call returns some data and can be parsed to the correct response" in new Setup {
-      when(mockETMPService.getPenaltyDataFromETMPForEnrolment(ArgumentMatchers.any())(ArgumentMatchers.any()))
-        .thenReturn(Future.successful((Some(mockETMPPayloadForAPIResponseData), Right(GetETMPPayloadSuccessResponse(mockETMPPayloadForAPIResponseData)))))
-      val result = controller.getSummaryDataForVRN("123456789")(fakeRequest)
-      status(result) shouldBe Status.OK
-      val apiDataToReturn: APIModel = APIModel(
-        mockETMPPayloadForAPIResponseData.pointsTotal
-      )
-      contentAsString(result) shouldBe Json.toJson(apiDataToReturn).toString()
-    }
-
     s"return BAD_REQUEST (${Status.BAD_REQUEST}) when the user supplies an invalid VRN" in new Setup {
       when(mockETMPService.getPenaltyDataFromETMPForEnrolment(ArgumentMatchers.any())(ArgumentMatchers.any()))
         .thenReturn(Future.successful((Some(mockETMPPayloadResponseAsModel), Right(GetETMPPayloadSuccessResponse(mockETMPPayloadResponseAsModel)))))
