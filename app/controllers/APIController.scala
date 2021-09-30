@@ -77,4 +77,10 @@ class APIController @Inject()(etmpService: ETMPService,
     }
     Ok(Json.toJson(responseData))
   }
+
+  private def returnResponseForAPI(etmpPayload:ETMPPayload):Result = {
+    val pointsTotal = etmpPayload.pointsTotal
+    val responseData:APIModel = APIModel(pointsTotal)
+    Ok(Json.toJson(responseData))
+  }
 }
