@@ -378,6 +378,16 @@ trait SpecBase extends AnyWordSpec with Matchers with GuiceOneAppPerSuite {
 
   val sampleMTDVATEnrolmentKey: String = "HMRC-MTD-VAT~VRN~123456789"
 
+  val mockETMPPayloadForAPIResponseData: ETMPPayload = ETMPPayload(
+    pointsTotal = 4,
+    lateSubmissions = 0 ,
+    adjustmentPointsTotal = 0,
+    fixedPenaltyAmount = 0,
+    penaltyAmountsTotal = 1,
+    penaltyPointsThreshold = 3,
+    penaltyPoints = Seq()
+  )
+
   val agentDetails = Some(AgentDetails(
     agentReferenceNo = "AGENT1",
     name = "Jack",
