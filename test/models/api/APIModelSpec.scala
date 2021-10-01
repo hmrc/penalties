@@ -24,12 +24,14 @@ class APIModelSpec extends AnyWordSpec with Matchers {
   val modelAsJson: JsValue = Json.parse(
     """
       |{
-      | "noOfPoints": 4
+      | "noOfPoints": 4,
+      | "noOfEstimatedPenalties":4
       |}
       |""".stripMargin)
 
   val model: APIModel = APIModel(
-    noOfPoints = 4
+    noOfPoints = 4,
+    noOfEstimatedPenalties = 4
   )
   "APIModel" should {
     "be writable to JSON" in {

@@ -385,6 +385,116 @@ trait SpecBase extends AnyWordSpec with Matchers with GuiceOneAppPerSuite {
     fixedPenaltyAmount = 0,
     penaltyAmountsTotal = 1,
     penaltyPointsThreshold = 3,
+    penaltyPoints = Seq(
+      PenaltyPoint(
+        `type` = PenaltyTypeEnum.Point,
+        number = "1",
+        id = "123456789",
+        appealStatus = None,
+        dateCreated = LocalDateTime.of(1970, 1, 1, 0, 0, 0),
+        dateExpired = Some(LocalDateTime.of(1970, 1, 1, 0, 0, 0)),
+        status = PointStatusEnum.Due,
+        reason = None,
+        period = Some(PenaltyPeriod(
+          startDate = LocalDateTime.of(1970, 1, 1, 0, 0, 0),
+          endDate = LocalDateTime.of(1970, 1, 31, 0, 0, 0),
+          submission = Submission(
+            dueDate = LocalDateTime.of(1970, 2, 6, 0, 0, 0),
+            submittedDate = None,
+            status = SubmissionStatusEnum.Overdue
+          )
+        )),
+        communications = Seq.empty,
+        financial = None
+      ),
+      PenaltyPoint(
+        `type` = PenaltyTypeEnum.Point,
+        number = "1",
+        id = "123456789",
+        appealStatus = None,
+        dateCreated = LocalDateTime.of(1970, 1, 1, 0, 0, 0),
+        dateExpired = Some(LocalDateTime.of(1970, 1, 1, 0, 0, 0)),
+        status = PointStatusEnum.Estimated,
+        reason = None,
+        period = Some(PenaltyPeriod(
+          startDate = LocalDateTime.of(1970, 1, 1, 0, 0, 0),
+          endDate = LocalDateTime.of(1970, 1, 31, 0, 0, 0),
+          submission = Submission(
+            dueDate = LocalDateTime.of(1970, 2, 6, 0, 0, 0),
+            submittedDate = None,
+            status = SubmissionStatusEnum.Overdue
+          )
+        )),
+        communications = Seq.empty,
+        financial = None
+      )
+    ),
+    latePaymentPenalties = Some(
+      Seq(
+        LatePaymentPenalty(
+          `type` = PenaltyTypeEnum.Financial,
+          id = "123456800",
+          reason = PaymentPenaltyReasonEnum.VAT_NOT_PAID_WITHIN_30_DAYS,
+          dateCreated = LocalDateTime.of(1970, 2, 8, 0, 0, 0),
+          status = PointStatusEnum.Due,
+          appealStatus = None,
+          period = PaymentPeriod(
+            startDate = LocalDateTime.of(1970, 2, 8, 0, 0, 0),
+            endDate = LocalDateTime.of(1970, 2, 8, 0, 0, 0),
+            dueDate = LocalDateTime.of(1970, 2, 8, 0, 0, 0),
+            paymentStatus = PaymentStatusEnum.Paid
+          ),
+          communications = Seq(
+            Communication(
+              `type` = CommunicationTypeEnum.letter,
+              dateSent = LocalDateTime.of(1970, 2, 8, 0, 0, 0),
+              documentId = "DOC1"
+            )
+          ),
+          financial = Financial(
+            amountDue = 144,
+            outstandingAmountDue = 0,
+            dueDate = LocalDateTime.of(1970, 2, 8, 0, 0, 0)
+          )
+        ),
+        LatePaymentPenalty(
+          `type` = PenaltyTypeEnum.Financial,
+          id = "123456800",
+          reason = PaymentPenaltyReasonEnum.VAT_NOT_PAID_WITHIN_30_DAYS,
+          dateCreated = LocalDateTime.of(1970, 2, 8, 0, 0, 0),
+          status = PointStatusEnum.Estimated,
+          appealStatus = None,
+          period = PaymentPeriod(
+            startDate = LocalDateTime.of(1970, 2, 8, 0, 0, 0),
+            endDate = LocalDateTime.of(1970, 2, 8, 0, 0, 0),
+            dueDate = LocalDateTime.of(1970, 2, 8, 0, 0, 0),
+            paymentStatus = PaymentStatusEnum.Paid
+          ),
+          communications = Seq(
+            Communication(
+              `type` = CommunicationTypeEnum.letter,
+              dateSent = LocalDateTime.of(1970, 2, 8, 0, 0, 0),
+              documentId = "DOC1"
+            )
+          ),
+          financial = Financial(
+            amountDue = 144,
+            outstandingAmountDue = 0,
+            dueDate = LocalDateTime.of(1970, 2, 8, 0, 0, 0)
+          )
+        )
+      )
+
+    )
+  )
+
+  val mockETMPPayloadWithNoEstimatedPenaltiesForAPIResponseData: ETMPPayload = ETMPPayload(
+    pointsTotal = 4,
+    lateSubmissions = 0 ,
+    adjustmentPointsTotal = 0,
+    fixedPenaltyAmount = 0,
+    penaltyAmountsTotal = 1,
+    penaltyPointsThreshold = 3,
     penaltyPoints = Seq()
   )
 

@@ -18,6 +18,7 @@ package controllers
 
 import models.ETMPPayload
 import models.api.APIModel
+import models.point.PointStatusEnum
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, ControllerComponents, Result}
 import services.ETMPService
@@ -54,7 +55,9 @@ class APIController @Inject()(etmpService: ETMPService,
   }
   private def returnResponseForAPI(etmpPayload:ETMPPayload):Result = {
     val pointsTotal = etmpPayload.pointsTotal
-    val responseData:APIModel = APIModel(pointsTotal)
+    val noOfEstimatedPenalties = etmpService.getNumberOfEstimatedPenalties(etmpPayload)
+
+    val responseData:APIModel = APIModel(pointsTotal,noOfEstimatedPenalties)
     Ok(Json.toJson(responseData))
   }
 }

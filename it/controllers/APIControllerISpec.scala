@@ -27,7 +27,8 @@ class APIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock {
   val apiDataJson: JsValue = Json.parse(
   """
      |{
-     | "noOfPoints": 1
+     | "noOfPoints": 1,
+     | "noOfEstimatedPenalties":0
      |}
      |""".stripMargin)
 
@@ -37,7 +38,6 @@ class APIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock {
         mockResponseForStubETMPPayload(Status.OK, "HMRC-MTD-VAT~VRN~123456789")
         val result = await(buildClientForRequestToApp(uri = "/vat/penalties/summary/123456789").get)
         result.status shouldBe OK
-        //TODO: change data based on implementation
         result.body shouldBe apiDataJson.toString()
       }
     }
