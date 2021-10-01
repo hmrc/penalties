@@ -18,9 +18,11 @@ package controllers
 
 import base.SpecBase
 import connectors.parsers.ETMPPayloadParser.{GetETMPPayloadFailureResponse, GetETMPPayloadNoContent, GetETMPPayloadSuccessResponse}
+import models.api.APIModel
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito.{mock, reset, when}
 import play.api.http.Status
+import play.api.libs.json.Json
 import play.api.test.Helpers._
 import services.ETMPService
 
@@ -61,11 +63,13 @@ class APIControllerSpec extends SpecBase {
 
     s"return OK (${Status.OK}) when the call returns some data and can be parsed to the correct response" in new Setup {
       when(mockETMPService.getPenaltyDataFromETMPForEnrolment(ArgumentMatchers.any())(ArgumentMatchers.any()))
-        .thenReturn(Future.successful((Some(mockETMPPayloadResponseAsModel), Right(GetETMPPayloadSuccessResponse(mockETMPPayloadResponseAsModel)))))
+        .thenReturn(Future.successful((Some(mockETMPPayloadForAPIResponseData), Right(GetETMPPayloadSuccessResponse(mockETMPPayloadForAPIResponseData)))))
       val result = controller.getSummaryDataForVRN("123456789")(fakeRequest)
       status(result) shouldBe Status.OK
-      //TODO: change data based on implementation
-      contentAsString(result) shouldBe ""
+      val apiDataToReturn: APIModel = APIModel(
+        mockETMPPayloadForAPIResponseData.pointsTotal
+      )
+      contentAsString(result) shouldBe Json.toJson(apiDataToReturn).toString()
     }
   }
 }

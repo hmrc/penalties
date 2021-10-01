@@ -16,7 +16,10 @@
 
 package controllers
 
-import play.api.mvc.{Action, AnyContent, ControllerComponents}
+import models.ETMPPayload
+import models.api.APIModel
+import play.api.libs.json.Json
+import play.api.mvc.{Action, AnyContent, ControllerComponents, Result}
 import services.ETMPService
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import utils.RegimeHelper
@@ -41,10 +44,17 @@ class APIController @Inject()(etmpService: ETMPService,
           _._1.fold(
             NotFound(s"Unable to find data for VRN: $vrn")
           )(
-            etmpPayload => Ok("")
+            etmpPayload => {
+              returnResponseForAPI(etmpPayload)
+            }
           )
         }
       }
     }
+  }
+  private def returnResponseForAPI(etmpPayload:ETMPPayload):Result = {
+    val pointsTotal = etmpPayload.pointsTotal
+    val responseData:APIModel = APIModel(pointsTotal)
+    Ok(Json.toJson(responseData))
   }
 }
