@@ -802,7 +802,7 @@ class ETMPServiceSpec extends SpecBase {
     }
 
     "return 0 if no LSPs or LPPs exist with ESTIMATE status" in new Setup {
-      val result = service.findEstimatedPenaltiesAmount(mockETMPPayloadResponseAsModelNoPenalties)
+      val result = service.findEstimatedPenaltiesAmount(mockETMPPayloadResponseAsModelNoEstimateLSPAndLPP)
       result shouldBe BigDecimal(0)
     }
   }

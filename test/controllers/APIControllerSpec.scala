@@ -18,7 +18,6 @@ package controllers
 
 import base.SpecBase
 import connectors.parsers.ETMPPayloadParser.{GetETMPPayloadFailureResponse, GetETMPPayloadNoContent, GetETMPPayloadSuccessResponse}
-import models.api.APIModel
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito.{mock, reset, when}
 import play.api.http.Status
@@ -73,7 +72,7 @@ class APIControllerSpec extends SpecBase {
         """
           |{
           |  "noOfPoints": 4,
-          |  "noOfEstimatedPenalties": 0,
+          |  "noOfEstimatedPenalties": 2,
           |  "noOfCrystalisedPenalties": 0,
           |  "estimatedPenaltyAmount": 123.45,
           |  "crystalisedPenaltyAmountDue": 0,
@@ -87,6 +86,8 @@ class APIControllerSpec extends SpecBase {
       when(mockETMPService.getNumberOfEstimatedPenalties(ArgumentMatchers.any())).thenReturn(0)
       when(mockETMPService.getPenaltyDataFromETMPForEnrolment(ArgumentMatchers.any())(ArgumentMatchers.any()))
         .thenReturn(Future.successful((Some(mockETMPPayloadWithNoEstimatedPenaltiesForAPIResponseData), Right(GetETMPPayloadSuccessResponse(mockETMPPayloadWithNoEstimatedPenaltiesForAPIResponseData)))))
+      when(mockETMPService.findEstimatedPenaltiesAmount(ArgumentMatchers.any()))
+        .thenReturn(BigDecimal(0))
       val result = controller.getSummaryDataForVRN("123456789")(fakeRequest)
       status(result) shouldBe Status.OK
       contentAsJson(result) shouldBe Json.parse(
@@ -101,5 +102,6 @@ class APIControllerSpec extends SpecBase {
           |}
           |""".stripMargin
       )
+    }
   }
 }
