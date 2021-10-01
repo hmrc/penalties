@@ -18,27 +18,27 @@ package models.api
 
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
-import play.api.libs.json.{JsResult, JsValue, Json}
+import play.api.libs.json.{JsValue, Json}
 
 class APIModelSpec extends AnyWordSpec with Matchers {
-  val modelAsJson: JsValue = Json.parse(
+  val apiModelAsModel: APIModel = APIModel(
+    noOfPoints = 3, noOfEstimatedPenalties = 2, noOfCrystalisedPenalties = 1, estimatedPenaltyAmount = BigDecimal(123.45), crystalisedPenaltyAmountDue = BigDecimal(54.32), hasAnyPenaltyData = true
+  )
+
+  val apiModelAsJson: JsValue = Json.parse(
     """
       |{
-      | "noOfPoints": 4,
-      | "noOfEstimatedPenalties":4,
-      | "hasAnyPenaltyData":false
+      |  "noOfPoints": 3,
+      |  "noOfEstimatedPenalties": 2,
+      |  "noOfCrystalisedPenalties": 1,
+      |  "estimatedPenaltyAmount": 123.45,
+      |  "crystalisedPenaltyAmountDue": 54.32,
+      |  "hasAnyPenaltyData": true
       |}
       |""".stripMargin)
 
-  val model: APIModel = APIModel(
-    noOfPoints = 4,
-    noOfEstimatedPenalties = 4,
-    hasAnyPenaltyData = false
-  )
-  "APIModel" should {
-    "be writable to JSON" in {
-      val resultAsJson: JsValue = Json.toJson(model)
-      resultAsJson shouldBe modelAsJson
-    }
+  "be writable to JSON" in {
+    val result = Json.toJson(apiModelAsModel)(APIModel.format)
+    result shouldBe apiModelAsJson
   }
 }

@@ -24,22 +24,145 @@ import utils.{ETMPWiremock, IntegrationSpecCommonBase}
 class APIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock {
   val controller: APIController = injector.instanceOf[APIController]
 
-  val apiDataJson: JsValue = Json.parse(
-  """
-     |{
-     | "noOfPoints": 1,
-     | "noOfEstimatedPenalties":0,
-     | "hasAnyPenaltyData":false
-     |}
-     |""".stripMargin)
+  val etmpPayloadAsJsonWithEstimatedLPP: JsValue = Json.parse(
+    """
+        {
+      |	"pointsTotal": 2,
+      |	"lateSubmissions": 2,
+      |	"adjustmentPointsTotal": 1,
+      |	"fixedPenaltyAmount": 200,
+      |	"penaltyAmountsTotal": 400.00,
+      |	"penaltyPointsThreshold": 4,
+      |	"penaltyPoints": [
+      |		{
+      |			"type": "financial",
+      |			"number": "2",
+      |     "appealStatus": "UNDER_REVIEW",
+      |     "id": "123456790",
+      |			"dateCreated": "2021-04-23T18:25:43.511",
+      |			"dateExpired": "2021-04-23T18:25:43.511",
+      |			"status": "ACTIVE",
+      |			"period": {
+      |				"startDate": "2021-04-23T18:25:43.511",
+      |				"endDate": "2021-04-23T18:25:43.511",
+      |				"submission": {
+      |					"dueDate": "2021-04-23T18:25:43.511",
+      |					"submittedDate": "2021-04-23T18:25:43.511",
+      |					"status": "SUBMITTED"
+      |				}
+      |			},
+      |			"communications": [
+      |				{
+      |					"type": "secureMessage",
+      |					"dateSent": "2021-04-23T18:25:43.511",
+      |					"documentId": "1234567890"
+      |				}
+      |			],
+      |     "financial": {
+      |        "amountDue": 400.00,
+      |        "outstandingAmountDue": 400.00,
+      |        "dueDate": "2021-04-23T18:25:43.511"
+      |     }
+      |		},
+      |		{
+      |			"type": "point",
+      |			"number": "1",
+      |     "id": "123456789",
+      |			"dateCreated": "2021-04-23T18:25:43.511",
+      |			"dateExpired": "2021-04-23T18:25:43.511",
+      |			"status": "ACTIVE",
+      |     "reason": "reason",
+      |			"period": {
+      |				"startDate": "2021-04-23T18:25:43.511",
+      |				"endDate": "2021-04-23T18:25:43.511",
+      |				"submission": {
+      |					"dueDate": "2021-04-23T18:25:43.511",
+      |					"submittedDate": "2021-04-23T18:25:43.511",
+      |					"status": "SUBMITTED"
+      |				}
+      |			},
+      |			"communications": [
+      |				{
+      |					"type": "letter",
+      |					"dateSent": "2021-04-23T18:25:43.511",
+      |					"documentId": "1234567890"
+      |				}
+      |			]
+      |		}
+      |	],
+      | "latePaymentPenalties": [
+      |     {
+      |       "type": "additional",
+      |       "reason": "VAT_NOT_PAID_AFTER_30_DAYS",
+      |       "id": "1234567892",
+      |       "dateCreated": "2021-04-23T18:25:43.511",
+      |       "status": "ESTIMATED",
+      |       "period": {
+      |         "startDate": "2021-04-23T18:25:43.511",
+      |         "endDate": "2021-04-23T18:25:43.511",
+      |         "dueDate": "2021-04-23T18:25:43.511",
+      |	        "paymentStatus": "PAID"
+      |       },
+      |       "communications": [
+      |         {
+      |          "type": "letter",
+      |          "dateSent": "2021-04-23T18:25:43.511",
+      |          "documentId": "1234567890"
+      |         }
+      |       ],
+      |       "financial": {
+      |         "amountDue": 23.45,
+      |         "outstandingAmountDue": 12.00,
+      |         "dueDate": "2021-04-23T18:25:43.511"
+      |       }
+      |     },
+      |     {
+      |       "type": "financial",
+      |       "reason": "VAT_NOT_PAID_WITHIN_30_DAYS",
+      |       "id": "1234567891",
+      |       "dateCreated": "2021-04-23T18:25:43.511",
+      |       "status": "ACTIVE",
+      |       "period": {
+      |         "startDate": "2021-04-23T18:25:43.511",
+      |         "endDate": "2021-04-23T18:25:43.511",
+      |         "dueDate": "2021-04-23T18:25:43.511",
+      |	        "paymentStatus": "PAID"
+      |       },
+      |       "communications": [
+      |       {
+      |          "type": "letter",
+      |          "dateSent": "2021-04-23T18:25:43.511",
+      |          "documentId": "1234567890"
+      |        }
+      |       ],
+      |       "financial": {
+      |         "amountDue": 400.00,
+      |         "outstandingAmountDue": 2.00,
+      |         "dueDate": "2021-04-23T18:25:43.511"
+      |       }
+      |    }
+      |]
+      |}
+      |""".stripMargin)
 
   "getSummaryDataForVRN" should {
     s"return OK (${Status.OK})" when {
       "the ETMP call succeeds" in {
-        mockResponseForStubETMPPayload(Status.OK, "HMRC-MTD-VAT~VRN~123456789")
+        mockResponseForStubETMPPayload(Status.OK, "HMRC-MTD-VAT~VRN~123456789", body = Some(etmpPayloadAsJsonWithEstimatedLPP.toString()))
         val result = await(buildClientForRequestToApp(uri = "/vat/penalties/summary/123456789").get)
         result.status shouldBe OK
-        result.body shouldBe apiDataJson.toString()
+        Json.parse(result.body) shouldBe Json.parse(
+          """
+            |{
+            |  "noOfPoints": 2,
+            |  "noOfEstimatedPenalties": 1,
+            |  "noOfCrystalisedPenalties": 0,
+            |  "estimatedPenaltyAmount": 12,
+            |  "crystalisedPenaltyAmountDue": 0,
+            |  "hasAnyPenaltyData": true
+            |}
+            |""".stripMargin
+        )
       }
     }
 
