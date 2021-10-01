@@ -19,12 +19,9 @@ package models.api
 import play.api.libs.json.{Json, Writes}
 
 case class APIModel(
-                     noOfPoints: Int,
-                     noOfEstimatedPenalties: Int,
-                     noOfCrystalisedPenalties: Int,
-                     estimatedPenaltyAmount: BigDecimal,
-                     crystalisedPenaltyAmountDue: BigDecimal,
-                     hasAnyPenaltyData: Boolean
+                     noOfPoints:Int,
+                     noOfEstimatedPenalties:Int,
+                     hasAnyPenaltyData:Boolean
                    )
 
 object APIModel {

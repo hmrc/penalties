@@ -20,6 +20,7 @@ import connectors.parsers.ETMPPayloadParser.{ETMPPayloadResponse, GetETMPPayload
 import connectors.{AppealsConnector, ETMPConnector}
 import models.ETMPPayload
 import models.appeals.AppealSubmission
+import models.payment.LatePaymentPenalty
 import models.point.PointStatusEnum
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import utils.Logger.logger
@@ -108,9 +109,7 @@ class ETMPService @Inject()(etmpConnector: ETMPConnector,
     lppEstimatedPenalties + lspEstimatedPenalties
   }
 
-  def findEstimatedPenaltiesAmount(etmpPayload: ETMPPayload): BigDecimal = {
-    val lSPAmountsWithEstimatedStatus = etmpPayload.penaltyPoints.filter(_.status == PointStatusEnum.Estimated).map(_.financial.map(_.outstandingAmountDue).getOrElse(BigDecimal(0))).sum
-    val lPPAmountsWithEstimatedStatus = etmpPayload.latePaymentPenalties.map(_.filter(_.status == PointStatusEnum.Estimated).map(_.financial.outstandingAmountDue).sum).getOrElse(BigDecimal(0))
-    lSPAmountsWithEstimatedStatus + lPPAmountsWithEstimatedStatus
+  def checkIfHasAnyPenaltyData(etmpPayload: ETMPPayload):Boolean ={
+    etmpPayload.latePaymentPenalties.exists(_.nonEmpty)  && etmpPayload.penaltyPoints.nonEmpty
   }
 }

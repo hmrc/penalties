@@ -554,8 +554,9 @@ class ETMPServiceSpec extends SpecBase {
     }
   }
 
-  "findEstimatedPenaltiesAmount" should {
-    val mockETMPPayloadResponseAsModelWithEstimateLSPAndLPP: ETMPPayload = ETMPPayload(
+  "checkIfHasAnyPenaltyData" should{
+
+    val etmpPayloadWithLSPandLPP: ETMPPayload = ETMPPayload(
       pointsTotal = 1,
       lateSubmissions = 0 ,
       adjustmentPointsTotal = 0,
@@ -566,40 +567,23 @@ class ETMPServiceSpec extends SpecBase {
         PenaltyPoint(
           `type` = PenaltyTypeEnum.Financial,
           number = "1",
-          id = "123456790",
+          id = "123456789",
           appealStatus = None,
-          dateCreated = LocalDateTime.of(2023, 5, 8, 0, 0, 0),
-          dateExpired = Some(LocalDateTime.of(2025, 5, 8, 0, 0, 0)),
+          dateCreated = LocalDateTime.of(1970, 1, 1, 0, 0, 0),
+          dateExpired = Some(LocalDateTime.of(1970, 1, 1, 0, 0, 0)),
           status = PointStatusEnum.Estimated,
-          reason = Some("reason"),
+          reason = None,
           period = Some(PenaltyPeriod(
-            startDate = LocalDateTime.of(2023, 1, 1, 0, 0, 0),
-            endDate = LocalDateTime.of(2023, 3, 31, 0, 0, 0),
+            startDate = LocalDateTime.of(1970, 1, 1, 0, 0, 0),
+            endDate = LocalDateTime.of(1970, 1, 31, 0, 0, 0),
             submission = Submission(
-              dueDate = LocalDateTime.of(2023, 5, 7, 0, 0, 0),
-              submittedDate = Some(LocalDateTime.of(2023, 5, 8, 0, 0, 0)),
-              status = SubmissionStatusEnum.Submitted
+              dueDate = LocalDateTime.of(1970, 2, 6, 0, 0, 0),
+              submittedDate = None,
+              status = SubmissionStatusEnum.Overdue
             )
           )),
-          communications = Seq(
-            Communication(
-              `type` = CommunicationTypeEnum.secureMessage,
-              dateSent = LocalDateTime.of(2023, 5, 8, 0, 0, 0),
-              documentId = "123456789"
-            )
-          ),
-          financial = Some(
-            Financial(
-              amountDue = 200,
-              outstandingAmountDue = 100,
-              dueDate = LocalDateTime.of(2023, 5, 7, 0, 0, 0),
-              outstandingAmountDay15 = None,
-              outstandingAmountDay31 = None,
-              percentageOfOutstandingAmtCharged = None,
-              estimatedInterest = None,
-              crystalizedInterest = None
-            )
-          )
+          communications = Seq.empty,
+          financial = None
         )
       ),
       latePaymentPenalties = Some(
@@ -607,7 +591,7 @@ class ETMPServiceSpec extends SpecBase {
           LatePaymentPenalty(
             `type` = PenaltyTypeEnum.Financial,
             id = "123456800",
-            reason = PaymentPenaltyReasonEnum.VAT_NOT_PAID_AFTER_30_DAYS,
+            reason = PaymentPenaltyReasonEnum.VAT_NOT_PAID_WITHIN_30_DAYS,
             dateCreated = LocalDateTime.of(2023, 5, 8, 0, 0, 0),
             status = PointStatusEnum.Estimated,
             appealStatus = None,
@@ -625,16 +609,31 @@ class ETMPServiceSpec extends SpecBase {
               )
             ),
             financial = Financial(
-              amountDue = 23,
-              outstandingAmountDue = 22,
+              amountDue = 144,
+              outstandingAmountDue = 0,
               dueDate = LocalDateTime.of(2023, 5, 8, 0, 0, 0)
             )
           )
         )
       )
     )
-
-    val mockETMPPayloadResponseAsModelWithEstimateLSPAndDueLPPs = mockETMPPayloadResponseAsModelWithEstimateLSPAndLPP.copy(
+    val etmpPayloadWithNOLSPandLPP: ETMPPayload = ETMPPayload(
+      pointsTotal = 1,
+      lateSubmissions = 0 ,
+      adjustmentPointsTotal = 0,
+      fixedPenaltyAmount = 0,
+      penaltyAmountsTotal = 1,
+      penaltyPointsThreshold = 3,
+      penaltyPoints = Seq()
+    )
+    val etmpPayloadWithLPP: ETMPPayload = ETMPPayload(
+      pointsTotal = 1,
+      lateSubmissions = 0 ,
+      adjustmentPointsTotal = 0,
+      fixedPenaltyAmount = 0,
+      penaltyAmountsTotal = 1,
+      penaltyPointsThreshold = 3,
+      penaltyPoints = Seq(),
       latePaymentPenalties = Some(
         Seq(
           LatePaymentPenalty(
@@ -642,7 +641,7 @@ class ETMPServiceSpec extends SpecBase {
             id = "123456800",
             reason = PaymentPenaltyReasonEnum.VAT_NOT_PAID_WITHIN_30_DAYS,
             dateCreated = LocalDateTime.of(2023, 5, 8, 0, 0, 0),
-            status = PointStatusEnum.Due,
+            status = PointStatusEnum.Estimated,
             appealStatus = None,
             period = PaymentPeriod(
               startDate = LocalDateTime.of(2023, 1, 1, 0, 0, 0),
@@ -659,50 +658,14 @@ class ETMPServiceSpec extends SpecBase {
             ),
             financial = Financial(
               amountDue = 144,
-              outstandingAmountDue = 122,
+              outstandingAmountDue = 0,
               dueDate = LocalDateTime.of(2023, 5, 8, 0, 0, 0)
             )
           )
         )
       )
     )
-
-    val mockETMPPayloadResponseAsModelWithDueLSPAndEstimateLPPs = mockETMPPayloadResponseAsModelWithEstimateLSPAndLPP.copy(
-      penaltyPoints = Seq(
-        PenaltyPoint(
-          `type` = PenaltyTypeEnum.Financial,
-          number = "1",
-          id = "1234",
-          dateCreated = LocalDateTime.of(2023, 5, 8, 0, 0, 0),
-          dateExpired = Some(LocalDateTime.of(2025, 5, 8, 0, 0, 0)),
-          status = PointStatusEnum.Due,
-          period = Some(PenaltyPeriod(
-            startDate = LocalDateTime.of(2023, 1, 1, 0, 0, 0),
-            endDate = LocalDateTime.of(2023, 3, 31, 0, 0, 0),
-            submission = Submission(
-              dueDate = LocalDateTime.of(2023, 5, 7, 0, 0, 0),
-              submittedDate = Some(LocalDateTime.of(2023, 5, 8, 0, 0, 0)),
-              status = SubmissionStatusEnum.Submitted
-            )
-          )),
-          communications = Seq.empty,
-          financial = Some(Financial(
-            amountDue = 200,
-            outstandingAmountDue = 122,
-            dueDate = LocalDateTime.of(2023, 5, 8, 0, 0, 0)
-          )),
-          reason = None
-        )
-      )
-    )
-
-    val mockETMPPayloadResponseAsModelNoPenalties = mockETMPPayloadResponseAsModel.copy(
-      pointsTotal = 0,
-      penaltyAmountsTotal = 0,
-      penaltyPoints = Seq()
-    )
-
-    val mockETMPPayloadResponseAsModelNoEstimateLSPAndLPP: ETMPPayload = ETMPPayload(
+    val etmpPayloadWithLSP: ETMPPayload = ETMPPayload(
       pointsTotal = 1,
       lateSubmissions = 0 ,
       adjustmentPointsTotal = 0,
@@ -713,97 +676,45 @@ class ETMPServiceSpec extends SpecBase {
         PenaltyPoint(
           `type` = PenaltyTypeEnum.Financial,
           number = "1",
-          id = "123456790",
+          id = "123456789",
           appealStatus = None,
-          dateCreated = LocalDateTime.of(2023, 5, 8, 0, 0, 0),
-          dateExpired = Some(LocalDateTime.of(2025, 5, 8, 0, 0, 0)),
-          status = PointStatusEnum.Due,
-          reason = Some("reason"),
+          dateCreated = LocalDateTime.of(1970, 1, 1, 0, 0, 0),
+          dateExpired = Some(LocalDateTime.of(1970, 1, 1, 0, 0, 0)),
+          status = PointStatusEnum.Estimated,
+          reason = None,
           period = Some(PenaltyPeriod(
-            startDate = LocalDateTime.of(2023, 1, 1, 0, 0, 0),
-            endDate = LocalDateTime.of(2023, 3, 31, 0, 0, 0),
+            startDate = LocalDateTime.of(1970, 1, 1, 0, 0, 0),
+            endDate = LocalDateTime.of(1970, 1, 31, 0, 0, 0),
             submission = Submission(
-              dueDate = LocalDateTime.of(2023, 5, 7, 0, 0, 0),
-              submittedDate = Some(LocalDateTime.of(2023, 5, 8, 0, 0, 0)),
-              status = SubmissionStatusEnum.Submitted
+              dueDate = LocalDateTime.of(1970, 2, 6, 0, 0, 0),
+              submittedDate = None,
+              status = SubmissionStatusEnum.Overdue
             )
           )),
-          communications = Seq(
-            Communication(
-              `type` = CommunicationTypeEnum.secureMessage,
-              dateSent = LocalDateTime.of(2023, 5, 8, 0, 0, 0),
-              documentId = "123456789"
-            )
-          ),
-          financial = Some(
-            Financial(
-              amountDue = 200,
-              outstandingAmountDue = 100,
-              dueDate = LocalDateTime.of(2023, 5, 7, 0, 0, 0),
-              outstandingAmountDay15 = None,
-              outstandingAmountDay31 = None,
-              percentageOfOutstandingAmtCharged = None,
-              estimatedInterest = None,
-              crystalizedInterest = None
-            )
-          )
-        )
-      ),
-      latePaymentPenalties = Some(
-        Seq(
-          LatePaymentPenalty(
-            `type` = PenaltyTypeEnum.Financial,
-            id = "123456800",
-            reason = PaymentPenaltyReasonEnum.VAT_NOT_PAID_AFTER_30_DAYS,
-            dateCreated = LocalDateTime.of(2023, 5, 8, 0, 0, 0),
-            status = PointStatusEnum.Due,
-            appealStatus = None,
-            period = PaymentPeriod(
-              startDate = LocalDateTime.of(2023, 1, 1, 0, 0, 0),
-              endDate = LocalDateTime.of(2023, 3, 31, 0, 0, 0),
-              dueDate = LocalDateTime.of(2023, 5, 7, 0, 0, 0),
-              paymentStatus = PaymentStatusEnum.Paid
-            ),
-            communications = Seq(
-              Communication(
-                `type` = CommunicationTypeEnum.letter,
-                dateSent = LocalDateTime.of(2023, 5, 8, 0, 0, 0),
-                documentId = "DOC1"
-              )
-            ),
-            financial = Financial(
-              amountDue = 23,
-              outstandingAmountDue = 22,
-              dueDate = LocalDateTime.of(2023, 5, 8, 0, 0, 0)
-            )
-          )
+          communications = Seq.empty,
+          financial = None
         )
       )
     )
-
-    "return the outstanding amount of LSPs + LPPs (only for penalties with ESTIMATE status)" in new Setup {
-      val result = service.findEstimatedPenaltiesAmount(mockETMPPayloadResponseAsModelWithEstimateLSPAndLPP)
-      result shouldBe BigDecimal(122)
+    "return true" when{
+      "etmp Payload has LPP and LSP" in new Setup{
+        service.checkIfHasAnyPenaltyData(etmpPayloadWithLSPandLPP) shouldBe true
+      }
     }
-
-    "return the outstanding amount of LSPs (if no LPPs with status ESTIMATE exist and only for LSPs with ESTIMATE status)" in new Setup {
-      val result = service.findEstimatedPenaltiesAmount(mockETMPPayloadResponseAsModelWithEstimateLSPAndDueLPPs)
-      result shouldBe BigDecimal(100)
+    "return false" when{
+      "etmp Payload has NO LPP and LSP" in new Setup{
+        service.checkIfHasAnyPenaltyData(etmpPayloadWithNOLSPandLPP) shouldBe false
+      }
     }
-
-    "return the outstanding amount of LPPs (if no LSPs with status ESTIMATE exist and only for LPPs with ESTIMATE status)" in new Setup {
-      val result = service.findEstimatedPenaltiesAmount(mockETMPPayloadResponseAsModelWithDueLSPAndEstimateLPPs)
-      result shouldBe BigDecimal(22)
+    "return false" when{
+      "etmp Payload has LPP and NO LSP" in new Setup{
+        service.checkIfHasAnyPenaltyData(etmpPayloadWithLPP) shouldBe false
+      }
     }
-
-    "return 0 if no LSPs or LPPs exist" in new Setup {
-      val result = service.findEstimatedPenaltiesAmount(mockETMPPayloadResponseAsModelNoPenalties)
-      result shouldBe BigDecimal(0)
-    }
-
-    "return 0 if no LSPs or LPPs exist with ESTIMATE status" in new Setup {
-      val result = service.findEstimatedPenaltiesAmount(mockETMPPayloadResponseAsModelNoEstimateLSPAndLPP)
-      result shouldBe BigDecimal(0)
+    "return false" when{
+      "etmp Payload has NO LPP but has LSP" in new Setup{
+        service.checkIfHasAnyPenaltyData(etmpPayloadWithLSP) shouldBe false
+      }
     }
   }
 }
