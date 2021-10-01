@@ -16,8 +16,7 @@
 
 package services
 
-import connectors.parsers.ETMPPayloadParser.{ETMPPayloadResponse,
-  GetETMPPayloadFailureResponse, GetETMPPayloadMalformed, GetETMPPayloadNoContent, GetETMPPayloadSuccessResponse}
+import connectors.parsers.ETMPPayloadParser.{ETMPPayloadResponse, GetETMPPayloadFailureResponse, GetETMPPayloadMalformed, GetETMPPayloadNoContent, GetETMPPayloadSuccessResponse}
 import connectors.{AppealsConnector, ETMPConnector}
 import models.ETMPPayload
 import models.appeals.AppealSubmission
@@ -107,5 +106,11 @@ class ETMPService @Inject()(etmpConnector: ETMPConnector,
     val lppEstimatedPenalties: Int = etmpPayload.latePaymentPenalties.map(_.count(_.status == PointStatusEnum.Estimated)).getOrElse(0)
     val lspEstimatedPenalties: Int = etmpPayload.penaltyPoints.count(_.status == PointStatusEnum.Estimated)
     lppEstimatedPenalties + lspEstimatedPenalties
+  }
+
+  def findEstimatedPenaltiesAmount(etmpPayload: ETMPPayload): BigDecimal = {
+    val lSPAmountsWithEstimatedStatus = etmpPayload.penaltyPoints.filter(_.status == PointStatusEnum.Estimated).map(_.financial.map(_.outstandingAmountDue).getOrElse(BigDecimal(0))).sum
+    val lPPAmountsWithEstimatedStatus = etmpPayload.latePaymentPenalties.map(_.filter(_.status == PointStatusEnum.Estimated).map(_.financial.outstandingAmountDue).sum).getOrElse(BigDecimal(0))
+    lSPAmountsWithEstimatedStatus + lPPAmountsWithEstimatedStatus
   }
 }

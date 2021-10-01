@@ -65,13 +65,22 @@ class APIControllerSpec extends SpecBase {
       when(mockETMPService.getNumberOfEstimatedPenalties(ArgumentMatchers.any())).thenReturn(2)
       when(mockETMPService.getPenaltyDataFromETMPForEnrolment(ArgumentMatchers.any())(ArgumentMatchers.any()))
         .thenReturn(Future.successful((Some(mockETMPPayloadForAPIResponseData), Right(GetETMPPayloadSuccessResponse(mockETMPPayloadForAPIResponseData)))))
+      when(mockETMPService.findEstimatedPenaltiesAmount(ArgumentMatchers.any()))
+        .thenReturn(BigDecimal(123.45))
       val result = controller.getSummaryDataForVRN("123456789")(fakeRequest)
       status(result) shouldBe Status.OK
-      val apiDataToReturn: APIModel = APIModel(
-        noOfPoints = 4,
-        noOfEstimatedPenalties = 2
+      contentAsJson(result) shouldBe Json.parse(
+        """
+          |{
+          |  "noOfPoints": 4,
+          |  "noOfEstimatedPenalties": 0,
+          |  "noOfCrystalisedPenalties": 0,
+          |  "estimatedPenaltyAmount": 123.45,
+          |  "crystalisedPenaltyAmountDue": 0,
+          |  "hasAnyPenaltyData": false
+          |}
+          |""".stripMargin
       )
-      contentAsString(result) shouldBe Json.toJson(apiDataToReturn).toString()
     }
 
     s"return OK (${Status.OK}) when there are no LSP or LPP estimated penalties in etmpPayload" in new Setup {
@@ -80,11 +89,17 @@ class APIControllerSpec extends SpecBase {
         .thenReturn(Future.successful((Some(mockETMPPayloadWithNoEstimatedPenaltiesForAPIResponseData), Right(GetETMPPayloadSuccessResponse(mockETMPPayloadWithNoEstimatedPenaltiesForAPIResponseData)))))
       val result = controller.getSummaryDataForVRN("123456789")(fakeRequest)
       status(result) shouldBe Status.OK
-      val apiDataToReturn: APIModel = APIModel(
-        noOfPoints = 4,
-        noOfEstimatedPenalties = 0
-        )
-      contentAsString(result) shouldBe Json.toJson(apiDataToReturn).toString()
-    }
+      contentAsJson(result) shouldBe Json.parse(
+        """
+          |{
+          |  "noOfPoints": 4,
+          |  "noOfEstimatedPenalties": 0,
+          |  "noOfCrystalisedPenalties": 0,
+          |  "estimatedPenaltyAmount": 0,
+          |  "crystalisedPenaltyAmountDue": 0,
+          |  "hasAnyPenaltyData": false
+          |}
+          |""".stripMargin
+      )
   }
 }

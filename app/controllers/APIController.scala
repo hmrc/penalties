@@ -53,11 +53,17 @@ class APIController @Inject()(etmpService: ETMPService,
       }
     }
   }
-  private def returnResponseForAPI(etmpPayload:ETMPPayload):Result = {
+  private def returnResponseForAPI(etmpPayload: ETMPPayload):Result = {
     val pointsTotal = etmpPayload.pointsTotal
+    val penaltyAmountWithEstimateStatus = etmpService.findEstimatedPenaltiesAmount(etmpPayload)
     val noOfEstimatedPenalties = etmpService.getNumberOfEstimatedPenalties(etmpPayload)
-
-    val responseData:APIModel = APIModel(pointsTotal,noOfEstimatedPenalties)
+    val responseData: APIModel = APIModel(
+      noOfPoints = pointsTotal,
+      noOfEstimatedPenalties = 0,
+      noOfCrystalisedPenalties = 0,
+      estimatedPenaltyAmount = penaltyAmountWithEstimateStatus,
+      crystalisedPenaltyAmountDue = BigDecimal(0),
+      hasAnyPenaltyData = false)
     Ok(Json.toJson(responseData))
   }
 }
