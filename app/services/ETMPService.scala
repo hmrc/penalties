@@ -21,6 +21,7 @@ import connectors.parsers.ETMPPayloadParser.{ETMPPayloadResponse,
 import connectors.{AppealsConnector, ETMPConnector}
 import models.ETMPPayload
 import models.appeals.AppealSubmission
+import models.point.PointStatusEnum
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import utils.Logger.logger
 
@@ -100,5 +101,11 @@ class ETMPService @Inject()(etmpConnector: ETMPConnector,
   def submitAppeal(appealSubmission: AppealSubmission,
                    enrolmentKey: String, isLPP: Boolean, penaltyId: String)(
     implicit ec: ExecutionContext, hc: HeaderCarrier): Future[HttpResponse] = {appealsConnector.submitAppeal(appealSubmission, enrolmentKey, isLPP, penaltyId)
+  }
+
+  def getNumberOfEstimatedPenalties(etmpPayload: ETMPPayload): Int = {
+    val lppEstimatedPenalties: Int = etmpPayload.latePaymentPenalties.map(_.count(_.status == PointStatusEnum.Estimated)).getOrElse(0)
+    val lspEstimatedPenalties: Int = etmpPayload.penaltyPoints.count(_.status == PointStatusEnum.Estimated)
+    lppEstimatedPenalties + lspEstimatedPenalties
   }
 }

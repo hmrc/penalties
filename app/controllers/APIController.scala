@@ -55,15 +55,9 @@ class APIController @Inject()(etmpService: ETMPService,
   }
   private def returnResponseForAPI(etmpPayload:ETMPPayload):Result = {
     val pointsTotal = etmpPayload.pointsTotal
-    val noOfEstimatedPenalties = getNumberOfEstimatedPenalties(etmpPayload)
+    val noOfEstimatedPenalties = etmpService.getNumberOfEstimatedPenalties(etmpPayload)
 
     val responseData:APIModel = APIModel(pointsTotal,noOfEstimatedPenalties)
     Ok(Json.toJson(responseData))
-  }
-
-  private def getNumberOfEstimatedPenalties(etmpPayload: ETMPPayload): Int = {
-    val lppEstimatedPenalties:Int = etmpPayload.latePaymentPenalties.map(_.count(_.status==PointStatusEnum.Estimated)).getOrElse(0)
-    val lspEstimatedPenalties:Int = etmpPayload.penaltyPoints.count(_.status==PointStatusEnum.Estimated)
-      lppEstimatedPenalties + lspEstimatedPenalties
   }
 }
