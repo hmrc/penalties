@@ -16,12 +16,12 @@
 
 package models.api
 
-import play.api.libs.json.{Json, OFormat}
+import play.api.libs.json.{Json, Writes}
 
 case class APIModel(
                      noOfPoints:Int
                    )
 
 object APIModel {
-  implicit val format: OFormat[APIModel] = Json.format[APIModel]
+  implicit val format: Writes[APIModel] = Json.writes[APIModel]
 }

@@ -108,7 +108,7 @@ class AppealsControllerSpec extends SpecBase {
         mockETMPPayloadResponseAsModelMultiplePoints.penaltyPoints.head.period.get.submission.dueDate,
         mockETMPPayloadResponseAsModelMultiplePoints.penaltyPoints.head.communications.head.dateSent
       )
-      contentAsString(result) shouldBe Json.toJson(appealDataToReturn).toString()
+      contentAsJson(result) shouldBe Json.toJson(appealDataToReturn)
     }
   }
 

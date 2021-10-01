@@ -46,7 +46,8 @@ class APIController @Inject()(etmpService: ETMPService,
           )(
             etmpPayload => {
               returnResponseForAPI(etmpPayload)
-            }          )
+            }
+          )
         }
       }
     }
