@@ -30,7 +30,7 @@ class APIModelSpec extends AnyWordSpec with Matchers {
       |{
       |  "noOfPoints": 3,
       |  "noOfEstimatedPenalties": 2,
-      |  "noOfCrystalisedPenalties": 1,
+      |  "noOfCrystallisedPenalties": 1,
       |  "estimatedPenaltyAmount": 123.45,
       |  "crystalisedPenaltyAmountDue": 54.32,
       |  "hasAnyPenaltyData": true
