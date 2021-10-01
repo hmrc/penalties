@@ -138,7 +138,7 @@ class ETMPServiceSpec extends SpecBase {
   "isMultiplePenaltiesInSamePeriod" should {
     val mockETMPPayloadResponseAsModelWithLPPSamePeriodAsLSP: ETMPPayload = ETMPPayload(
       pointsTotal = 1,
-      lateSubmissions = 0 ,
+      lateSubmissions = 0,
       adjustmentPointsTotal = 0,
       fixedPenaltyAmount = 0,
       penaltyAmountsTotal = 1,
@@ -206,7 +206,7 @@ class ETMPServiceSpec extends SpecBase {
 
     val mockETMPPayloadResponseAsModelWith2LPPWithSamePeriod: ETMPPayload = ETMPPayload(
       pointsTotal = 0,
-      lateSubmissions = 0 ,
+      lateSubmissions = 0,
       adjustmentPointsTotal = 0,
       fixedPenaltyAmount = 0,
       penaltyAmountsTotal = 0,
@@ -272,7 +272,7 @@ class ETMPServiceSpec extends SpecBase {
 
     val mockETMPPayloadResponseAsModelWithLPPDifferentPeriodAsLSP: ETMPPayload = ETMPPayload(
       pointsTotal = 1,
-      lateSubmissions = 0 ,
+      lateSubmissions = 0,
       adjustmentPointsTotal = 0,
       fixedPenaltyAmount = 0,
       penaltyAmountsTotal = 1,
@@ -805,5 +805,19 @@ class ETMPServiceSpec extends SpecBase {
       val result = service.findEstimatedPenaltiesAmount(mockETMPPayloadResponseAsModelNoEstimateLSPAndLPP)
       result shouldBe BigDecimal(0)
     }
+  }
+
+  "getCrystallizedPenaltyAmount" should {
+
+    "return the correct amount of due penalties in a payload " in new Setup {
+      val result = service.getCrystallizedPenaltyAmount(mockETMPPayloadResponseAsModelForLPPWithAdditionalPenalties)
+      result shouldBe 2
+    }
+
+    "return 0 when a payload has no due penalties" in new Setup {
+      val result = service.getCrystallizedPenaltyAmount(mockETMPPayloadResponseAsModel)
+      result shouldBe 0
+    }
+
   }
 }
