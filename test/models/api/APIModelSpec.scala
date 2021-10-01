@@ -38,11 +38,5 @@ class APIModelSpec extends AnyWordSpec with Matchers {
       val resultAsJson: JsValue = Json.toJson(model)
       resultAsJson shouldBe modelAsJson
     }
-
-    "be readable from JSON" in {
-      val resultAsModel: JsResult[APIModel] = Json.fromJson(modelAsJson)(APIModel.format)
-      resultAsModel.isSuccess shouldBe true
-      resultAsModel.get shouldBe model
-    }
   }
 }
