@@ -18,9 +18,11 @@ package controllers
 
 import models.ETMPPayload
 import models.api.APIModel
+import models.auditing.UserHasPenaltyAuditModel
 import play.api.libs.json.Json
-import play.api.mvc.{Action, AnyContent, ControllerComponents, Result}
+import play.api.mvc.{Action, AnyContent, ControllerComponents, Request, Result}
 import services.ETMPService
+import services.auditing.AuditService
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import utils.RegimeHelper
 
@@ -29,6 +31,7 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.matching.Regex
 
 class APIController @Inject()(etmpService: ETMPService,
+                              auditService: AuditService,
                               cc: ControllerComponents)(implicit ec: ExecutionContext)
   extends BackendController(cc) {
 
@@ -45,14 +48,15 @@ class APIController @Inject()(etmpService: ETMPService,
             NotFound(s"Unable to find data for VRN: $vrn")
           )(
             etmpPayload => {
-              returnResponseForAPI(etmpPayload)
+              returnResponseForAPI(etmpPayload, enrolmentKey)
             }
           )
         }
       }
     }
   }
-  private def returnResponseForAPI(etmpPayload: ETMPPayload):Result = {
+
+  private def returnResponseForAPI(etmpPayload: ETMPPayload, enrolmentKey: String)(implicit request: Request[_]): Result = {
     val pointsTotal = etmpPayload.pointsTotal
     val penaltyAmountWithEstimateStatus = etmpService.findEstimatedPenaltiesAmount(etmpPayload)
     val noOfEstimatedPenalties = etmpService.getNumberOfEstimatedPenalties(etmpPayload)
@@ -63,6 +67,14 @@ class APIController @Inject()(etmpService: ETMPService,
       estimatedPenaltyAmount = penaltyAmountWithEstimateStatus,
       crystalisedPenaltyAmountDue = BigDecimal(0),
       hasAnyPenaltyData = false)
+    if(pointsTotal > 0) {
+      val auditModel = UserHasPenaltyAuditModel(
+        etmpPayload = etmpPayload,
+        identifier = RegimeHelper.getIdentifierFromEnrolmentKey(enrolmentKey),
+        identifierType = RegimeHelper.getIdentifierTypeFromEnrolmentKey(enrolmentKey),
+        arn = None) //TODO: need to check this
+      auditService.audit(auditModel)
+    }
     Ok(Json.toJson(responseData))
   }
 }
