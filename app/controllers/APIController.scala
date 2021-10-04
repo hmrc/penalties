@@ -16,6 +16,7 @@
 
 package controllers
 
+import javax.inject.Inject
 import models.ETMPPayload
 import models.api.APIModel
 import models.auditing.UserHasPenaltyAuditModel
@@ -26,7 +27,6 @@ import services.auditing.AuditService
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import utils.RegimeHelper
 
-import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.matching.Regex
 
@@ -49,7 +49,7 @@ class APIController @Inject()(etmpService: ETMPService,
           )(
             etmpPayload => {
               returnResponseForAPI(etmpPayload, enrolmentKey)
-            }
+          }
           )
         }
       }
@@ -60,10 +60,11 @@ class APIController @Inject()(etmpService: ETMPService,
     val pointsTotal = etmpPayload.pointsTotal
     val penaltyAmountWithEstimateStatus = etmpService.findEstimatedPenaltiesAmount(etmpPayload)
     val noOfEstimatedPenalties = etmpService.getNumberOfEstimatedPenalties(etmpPayload)
+    val crystallizedPenaltyAmount = etmpService.getCrystallizedPenaltyAmount(etmpPayload)
     val responseData: APIModel = APIModel(
       noOfPoints = pointsTotal,
       noOfEstimatedPenalties = noOfEstimatedPenalties,
-      noOfCrystalisedPenalties = 0,
+      noOfCrystalisedPenalties = crystallizedPenaltyAmount,
       estimatedPenaltyAmount = penaltyAmountWithEstimateStatus,
       crystalisedPenaltyAmountDue = BigDecimal(0),
       hasAnyPenaltyData = false)

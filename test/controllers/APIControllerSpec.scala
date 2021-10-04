@@ -68,14 +68,15 @@ class APIControllerSpec extends SpecBase {
         .thenReturn(Future.successful((Some(mockETMPPayloadForAPIResponseData), Right(GetETMPPayloadSuccessResponse(mockETMPPayloadForAPIResponseData)))))
       when(mockETMPService.findEstimatedPenaltiesAmount(ArgumentMatchers.any()))
         .thenReturn(BigDecimal(123.45))
+      when(mockETMPService.getCrystallizedPenaltyAmount(ArgumentMatchers.any())).thenReturn(2)
       val result = controller.getSummaryDataForVRN("123456789")(fakeRequest)
       status(result) shouldBe Status.OK
       contentAsJson(result) shouldBe Json.parse(
         """
           |{
-          |  "noOfPoints": 4,
+          |  "noOfPoints": 2,
           |  "noOfEstimatedPenalties": 2,
-          |  "noOfCrystalisedPenalties": 0,
+          |  "noOfCrystalisedPenalties": 2,
           |  "estimatedPenaltyAmount": 123.45,
           |  "crystalisedPenaltyAmountDue": 0,
           |  "hasAnyPenaltyData": false
