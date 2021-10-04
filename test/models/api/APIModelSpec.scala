@@ -22,7 +22,7 @@ import play.api.libs.json.{JsValue, Json}
 
 class APIModelSpec extends AnyWordSpec with Matchers {
   val apiModelAsModel: APIModel = APIModel(
-    noOfPoints = 3, noOfEstimatedPenalties = 2, noOfCrystalisedPenalties = 1, estimatedPenaltyAmount = BigDecimal(123.45), crystalisedPenaltyAmountDue = BigDecimal(54.32), hasAnyPenaltyData = true
+    noOfPoints = 3, noOfEstimatedPenalties = 2, noOfCrystallisedPenalties = 1, estimatedPenaltyAmount = BigDecimal(123.45), crystalisedPenaltyAmountDue = BigDecimal(54.32), hasAnyPenaltyData = true
   )
 
   val apiModelAsJson: JsValue = Json.parse(

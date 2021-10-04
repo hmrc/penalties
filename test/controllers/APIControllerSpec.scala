@@ -74,9 +74,9 @@ class APIControllerSpec extends SpecBase {
       contentAsJson(result) shouldBe Json.parse(
         """
           |{
-          |  "noOfPoints": 4,
+          |  "noOfPoints": 2,
           |  "noOfEstimatedPenalties": 2,
-          |  "noOfCrystalisedPenalties": 2,
+          |  "noOfCrystallisedPenalties": 2,
           |  "estimatedPenaltyAmount": 123.45,
           |  "crystalisedPenaltyAmountDue": 0,
           |  "hasAnyPenaltyData": false
@@ -99,7 +99,7 @@ class APIControllerSpec extends SpecBase {
           |{
           |  "noOfPoints": 4,
           |  "noOfEstimatedPenalties": 0,
-          |  "noOfCrystalisedPenalties": 0,
+          |  "noOfCrystallisedPenalties": 0,
           |  "estimatedPenaltyAmount": 0,
           |  "crystalisedPenaltyAmountDue": 0,
           |  "hasAnyPenaltyData": false
