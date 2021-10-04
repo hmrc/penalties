@@ -64,7 +64,7 @@ class APIController @Inject()(etmpService: ETMPService,
     val responseData: APIModel = APIModel(
       noOfPoints = pointsTotal,
       noOfEstimatedPenalties = noOfEstimatedPenalties,
-      noOfCrystallisedPenalties = crystallizedPenaltyAmount,
+      noOfCrystalisedPenalties = crystallizedPenaltyAmount,
       estimatedPenaltyAmount = penaltyAmountWithEstimateStatus,
       crystalisedPenaltyAmountDue = BigDecimal(0),
       hasAnyPenaltyData = false)

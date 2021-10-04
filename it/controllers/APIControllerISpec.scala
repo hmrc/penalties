@@ -156,7 +156,7 @@ class APIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock {
             |{
             |  "noOfPoints": 2,
             |  "noOfEstimatedPenalties": 1,
-            |  "noOfCrystallisedPenalties": 0,
+            |  "noOfCrystalisedPenalties": 0,
             |  "estimatedPenaltyAmount": 12,
             |  "crystalisedPenaltyAmountDue": 0,
             |  "hasAnyPenaltyData": false

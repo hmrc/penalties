@@ -20,7 +20,6 @@ import connectors.parsers.ETMPPayloadParser.{ETMPPayloadResponse, GetETMPPayload
 import connectors.{AppealsConnector, ETMPConnector}
 import models.ETMPPayload
 import models.appeals.AppealSubmission
-import models.point.PointStatusEnum
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import utils.Logger.logger
 import java.time.LocalDate

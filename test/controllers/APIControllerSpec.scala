@@ -76,7 +76,7 @@ class APIControllerSpec extends SpecBase {
           |{
           |  "noOfPoints": 2,
           |  "noOfEstimatedPenalties": 2,
-          |  "noOfCrystallisedPenalties": 2,
+          |  "noOfCrystalisedPenalties": 2,
           |  "estimatedPenaltyAmount": 123.45,
           |  "crystalisedPenaltyAmountDue": 0,
           |  "hasAnyPenaltyData": false
@@ -99,7 +99,7 @@ class APIControllerSpec extends SpecBase {
           |{
           |  "noOfPoints": 4,
           |  "noOfEstimatedPenalties": 0,
-          |  "noOfCrystallisedPenalties": 0,
+          |  "noOfCrystalisedPenalties": 0,
           |  "estimatedPenaltyAmount": 0,
           |  "crystalisedPenaltyAmountDue": 0,
           |  "hasAnyPenaltyData": false
