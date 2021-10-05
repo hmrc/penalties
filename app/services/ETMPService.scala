@@ -115,6 +115,10 @@ class ETMPService @Inject()(etmpConnector: ETMPConnector,
     lSPAmountsWithEstimatedStatus + lPPAmountsWithEstimatedStatus
   }
 
+  def checkIfHasAnyPenaltyData(etmpPayload: ETMPPayload):Boolean ={
+    etmpPayload.latePaymentPenalties.exists(_.nonEmpty)  && etmpPayload.penaltyPoints.nonEmpty
+  }
+
   def getCrystallizedPenaltyAmount(payload: ETMPPayload): Int = {
     val numOfDueLSPs = payload.penaltyPoints.map(_.status).count(status => status == PointStatusEnum.Due)
     val numOfDueLPPs = payload.latePaymentPenalties.getOrElse(Seq.empty).map(_.status).count(status => status == PointStatusEnum.Due)

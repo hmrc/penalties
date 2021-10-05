@@ -63,6 +63,7 @@ class APIControllerSpec extends SpecBase {
     }
 
     s"return OK (${Status.OK}) when the call returns some data and can be parsed to the correct response" in new Setup {
+      when(mockETMPService.checkIfHasAnyPenaltyData(ArgumentMatchers.any())).thenReturn(true)
       when(mockETMPService.getNumberOfEstimatedPenalties(ArgumentMatchers.any())).thenReturn(2)
       when(mockETMPService.getPenaltyDataFromETMPForEnrolment(ArgumentMatchers.any())(ArgumentMatchers.any()))
         .thenReturn(Future.successful((Some(mockETMPPayloadForAPIResponseData), Right(GetETMPPayloadSuccessResponse(mockETMPPayloadForAPIResponseData)))))
@@ -79,7 +80,7 @@ class APIControllerSpec extends SpecBase {
           |  "noOfCrystalisedPenalties": 2,
           |  "estimatedPenaltyAmount": 123.45,
           |  "crystalisedPenaltyAmountDue": 0,
-          |  "hasAnyPenaltyData": false
+          |  "hasAnyPenaltyData": true
           |}
           |""".stripMargin
       )
@@ -87,6 +88,7 @@ class APIControllerSpec extends SpecBase {
     }
 
     s"return OK (${Status.OK}) when there are no LSP or LPP estimated penalties in etmpPayload" in new Setup {
+      when(mockETMPService.checkIfHasAnyPenaltyData(ArgumentMatchers.any())).thenReturn(false)
       when(mockETMPService.getNumberOfEstimatedPenalties(ArgumentMatchers.any())).thenReturn(0)
       when(mockETMPService.getPenaltyDataFromETMPForEnrolment(ArgumentMatchers.any())(ArgumentMatchers.any()))
         .thenReturn(Future.successful((Some(mockETMPPayloadWithNoEstimatedPenaltiesForAPIResponseData), Right(GetETMPPayloadSuccessResponse(mockETMPPayloadWithNoEstimatedPenaltiesForAPIResponseData)))))
