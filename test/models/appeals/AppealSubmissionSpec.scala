@@ -21,20 +21,26 @@ import org.scalatest.wordspec.AnyWordSpec
 import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.emailaddress.EmailAddress
 
+import java.time.LocalDateTime
+
 class AppealSubmissionSpec extends AnyWordSpec with Matchers {
   val bereavementAppealJson: JsValue = Json.parse(
     """
       |{
-      |   "submittedBy": "client",
-      |   "reasonableExcuse": "bereavement",
-      |   "honestyDeclaration": true,
+      |   "sourceSystem": "MDTP",
+      |   "taxRegime": "VAT",
+      |   "customerReferenceNo": "123456789",
+      |   "dateOfAppeal": "2020-01-01T00:00:00",
+      |   "isLPP": true,
+      |   "appealSubmittedBy": "client",
       |   "appealInformation": {
-      |             "type": "bereavement",
+      |             "reasonableExcuse": "bereavement",
       |             "dateOfEvent": "2021-04-23T18:25:43.511Z",
       |             "lateAppeal": true,
       |             "lateAppealReason": "Reason",
-      |             "whoPlannedToSubmit": "agent",
-      |             "causeOfLateSubmissionAgent": "client"
+      |             "isClientResponsibleForSubmission": false,
+      |             "isClientResponsibleForLateSubmission": true,
+      |             "honestyDeclaration": true
       |   }
       |}
       |""".stripMargin
@@ -43,9 +49,12 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
   val crimeAppealJson: JsValue = Json.parse(
     """
       |{
-      |    "submittedBy": "agent",
-      |    "reasonableExcuse": "crime",
-      |    "honestyDeclaration": true,
+      |    "sourceSystem": "MDTP",
+      |    "taxRegime": "VAT",
+      |    "customerReferenceNo": "123456789",
+      |    "dateOfAppeal": "2020-01-01T00:00:00",
+      |    "isLPP": true,
+      |    "appealSubmittedBy": "agent",
       |    "agentDetails": {
       |            "agentReferenceNo": "AGENT1",
       |            "name": "Jack",
@@ -57,13 +66,14 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       |            "agentEmailID": "Jack@aaa.com"
       |    },
       |    "appealInformation": {
-      |						"type": "crime",
+      |						 "reasonableExcuse": "crime",
+      |            "honestyDeclaration": true,
       |            "dateOfEvent": "2021-04-23T18:25:43.511Z",
-      |            "reportedIssue": true,
+      |            "reportedIssueToPolice": true,
       |            "lateAppeal": true,
       |            "lateAppealReason": "Reason",
-      |            "whoPlannedToSubmit": "agent",
-      |            "causeOfLateSubmissionAgent": "client"
+      |            "isClientResponsibleForSubmission": false,
+      |            "isClientResponsibleForLateSubmission": true
       |		}
       |}
       |""".stripMargin)
@@ -71,9 +81,12 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
   val lossOfStaffAppealJson: JsValue = Json.parse(
     """
       |{
-      |    "submittedBy": "agent",
-      |    "reasonableExcuse": "lossOfStaff",
-      |    "honestyDeclaration": true,
+      |    "sourceSystem": "MDTP",
+      |    "taxRegime": "VAT",
+      |    "customerReferenceNo": "123456789",
+      |    "dateOfAppeal": "2020-01-01T00:00:00",
+      |    "isLPP": true,
+      |    "appealSubmittedBy": "agent",
       |    "agentDetails": {
       |            "agentReferenceNo": "AGENT1",
       |            "name": "Jack",
@@ -85,12 +98,13 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       |            "agentEmailID": "Jack@aaa.com"
       |    },
       |    "appealInformation": {
-      |						"type": "lossOfStaff",
+      |						 "reasonableExcuse": "lossOfStaff",
+      |            "honestyDeclaration": true,
       |            "dateOfEvent": "2021-04-23T18:25:43.511Z",
       |            "lateAppeal": true,
       |            "lateAppealReason": "Reason",
-      |            "whoPlannedToSubmit": "agent",
-      |            "causeOfLateSubmissionAgent": "client"
+      |            "isClientResponsibleForSubmission": false,
+      |            "isClientResponsibleForLateSubmission": true
       |		}
       |}
       |""".stripMargin)
@@ -98,9 +112,12 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
   val technicalIssuesAppealJson: JsValue = Json.parse(
     """
       |{
-      |    "submittedBy": "agent",
-      |    "reasonableExcuse": "technicalIssues",
-      |    "honestyDeclaration": true,
+      |    "sourceSystem": "MDTP",
+      |    "taxRegime": "VAT",
+      |    "customerReferenceNo": "123456789",
+      |    "dateOfAppeal": "2020-01-01T00:00:00",
+      |    "isLPP": true,
+      |    "appealSubmittedBy": "agent",
       |    "agentDetails": {
       |            "agentReferenceNo": "AGENT1",
       |            "name": "Jack",
@@ -112,13 +129,14 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       |            "agentEmailID": "Jack@aaa.com"
       |    },
       |    "appealInformation": {
-      |						"type": "technicalIssues",
+      |						 "reasonableExcuse": "technicalIssues",
+      |            "honestyDeclaration": true,
       |            "startDateOfEvent": "2021-04-23T18:25:43.511Z",
       |            "endDateOfEvent": "2021-04-24T18:25:43.511Z",
       |            "lateAppeal": true,
       |            "lateAppealReason": "Reason",
-      |            "whoPlannedToSubmit": "agent",
-      |            "causeOfLateSubmissionAgent": "client"
+      |            "isClientResponsibleForSubmission": false,
+      |            "isClientResponsibleForLateSubmission": true
       |		}
       |}
       |""".stripMargin)
@@ -126,10 +144,10 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
   val technicalIssuesAppealJsonWithKeyMissing: JsValue = Json.parse(
     """
       |{
-      |    "submittedBy": "client",
-      |    "reasonableExcuse": "technicalIssues",
+      |    "appealSubmittedBy": "client",
       |    "appealInformation": {
-      |						"type": "technicalIssues",
+      |						 "reasonableExcuse": "technicalIssues",
+      |            "honestyDeclaration": true,
       |            "startDateOfEvent": "2021-04-23T18:25:43.511Z"
       |		}
       |}
@@ -138,13 +156,14 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
   val technicalIssuesAppealInformationJson: JsValue = Json.parse(
     """
       |{
-      |   "type": "technicalIssues",
+      |   "reasonableExcuse": "technicalIssues",
       |   "startDateOfEvent": "2021-04-23T18:25:43.511Z",
       |   "endDateOfEvent": "2021-04-24T18:25:43.511Z",
       |   "lateAppeal": true,
       |   "lateAppealReason": "Reason",
-      |   "whoPlannedToSubmit": "agent",
-      |   "causeOfLateSubmissionAgent": "client"
+      |   "isClientResponsibleForSubmission": false,
+      |   "isClientResponsibleForLateSubmission": true,
+      |   "honestyDeclaration": true
       |}
       |""".stripMargin
   )
@@ -152,9 +171,12 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
   val fireOrFloodAppealJson: JsValue = Json.parse(
     """
       |{
-      |    "submittedBy": "agent",
-      |    "reasonableExcuse": "ENUM_PEGA_LIST",
-      |    "honestyDeclaration": true,
+      |    "sourceSystem": "MDTP",
+      |    "taxRegime": "VAT",
+      |    "customerReferenceNo": "123456789",
+      |    "dateOfAppeal": "2020-01-01T00:00:00",
+      |    "isLPP": true,
+      |    "appealSubmittedBy": "agent",
       |    "agentDetails": {
       |            "agentReferenceNo": "AGENT1",
       |            "name": "Jack",
@@ -166,12 +188,13 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       |            "agentEmailID": "Jack@aaa.com"
       |    },
       |    "appealInformation": {
-      |						"type": "fireOrFlood",
+      |						"reasonableExcuse": "fireOrFlood",
+      |           "honestyDeclaration": true,
       |           "dateOfEvent": "2021-04-23T18:25:43.511Z",
       |           "lateAppeal": true,
       |           "lateAppealReason": "Reason",
-      |           "whoPlannedToSubmit": "agent",
-      |           "causeOfLateSubmissionAgent": "client"
+      |           "isClientResponsibleForSubmission": false,
+      |           "isClientResponsibleForLateSubmission": true
       |		}
       |}
       |""".stripMargin)
@@ -179,9 +202,12 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
   val healthAppealNoHospitalStayJson: JsValue = Json.parse(
     """
       |{
-      |    "submittedBy": "agent",
-      |    "reasonableExcuse": "health",
-      |    "honestyDeclaration": true,
+      |    "sourceSystem": "MDTP",
+      |    "taxRegime": "VAT",
+      |    "customerReferenceNo": "123456789",
+      |    "dateOfAppeal": "2020-01-01T00:00:00",
+      |    "isLPP": true,
+      |    "appealSubmittedBy": "agent",
       |    "agentDetails": {
       |            "agentReferenceNo": "AGENT1",
       |            "name": "Jack",
@@ -193,13 +219,14 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       |            "agentEmailID": "Jack@aaa.com"
       |    },
       |    "appealInformation": {
-      |           "type": "health",
+      |           "reasonableExcuse": "health",
+      |           "honestyDeclaration": true,
       |           "dateOfEvent": "2021-04-23T18:25:43.511Z",
       |           "hospitalStayInvolved": false,
       |           "eventOngoing": false,
       |           "lateAppeal": false,
-      |           "whoPlannedToSubmit": "agent",
-      |           "causeOfLateSubmissionAgent": "client"
+      |           "isClientResponsibleForSubmission": false,
+      |           "isClientResponsibleForLateSubmission": true
       |    }
       |}
       |""".stripMargin)
@@ -207,9 +234,12 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
   val healthAppealHospitalStayOngoingJson: JsValue = Json.parse(
     """
       |{
-      |    "submittedBy": "agent",
-      |    "reasonableExcuse": "health",
-      |    "honestyDeclaration": true,
+      |    "sourceSystem": "MDTP",
+      |    "taxRegime": "VAT",
+      |    "customerReferenceNo": "123456789",
+      |    "dateOfAppeal": "2020-01-01T00:00:00",
+      |    "isLPP": true,
+      |    "appealSubmittedBy": "agent",
       |    "agentDetails": {
       |            "agentReferenceNo": "AGENT1",
       |            "name": "Jack",
@@ -221,13 +251,14 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       |            "agentEmailID": "Jack@aaa.com"
       |    },
       |    "appealInformation": {
-      |           "type": "health",
+      |           "reasonableExcuse": "health",
+      |           "honestyDeclaration": true,
       |           "startDateOfEvent": "2021-04-23T18:25:43.511Z",
       |           "hospitalStayInvolved": true,
       |           "eventOngoing": true,
       |           "lateAppeal": false,
-      |           "whoPlannedToSubmit": "agent",
-      |           "causeOfLateSubmissionAgent": "client"
+      |           "isClientResponsibleForSubmission": false,
+      |           "isClientResponsibleForLateSubmission": true
       |    }
       |}
       |""".stripMargin)
@@ -235,9 +266,12 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
   val healthAppealHospitalStayEndedJson: JsValue = Json.parse(
     """
       |{
-      |    "submittedBy": "agent",
-      |    "reasonableExcuse": "health",
-      |    "honestyDeclaration": true,
+      |    "sourceSystem": "MDTP",
+      |    "taxRegime": "VAT",
+      |    "customerReferenceNo": "123456789",
+      |    "dateOfAppeal": "2020-01-01T00:00:00",
+      |    "isLPP": true,
+      |    "appealSubmittedBy": "agent",
       |    "agentDetails": {
       |            "agentReferenceNo": "AGENT1",
       |            "name": "Jack",
@@ -249,14 +283,15 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       |            "agentEmailID": "Jack@aaa.com"
       |    },
       |    "appealInformation": {
-      |           "type": "health",
+      |           "reasonableExcuse": "health",
+      |           "honestyDeclaration": true,
       |           "startDateOfEvent": "2021-04-23T18:25:43.511Z",
       |           "endDateOfEvent": "2021-04-24T18:25:43.511Z",
       |           "hospitalStayInvolved": true,
       |           "eventOngoing": false,
       |           "lateAppeal": false,
-      |           "whoPlannedToSubmit": "agent",
-      |           "causeOfLateSubmissionAgent": "client"
+      |           "isClientResponsibleForSubmission": false,
+      |           "isClientResponsibleForLateSubmission": true
       |    }
       |}
       |""".stripMargin)
@@ -264,10 +299,10 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
   val bereavementAppealJsonWithKeyMissing: JsValue = Json.parse(
     """
       |{
-      |    "submittedBy": "client",
-      |    "reasonableExcuse": "bereavement",
+      |    "appealSubmittedBy": "client",
       |    "appealInformation": {
-      |           "type": "bereavement",
+      |           "reasonableExcuse": "bereavement",
+      |           "honestyDeclaration": true,
       |           "dateOfEvent": "2021-04-23T18:25:43.511Z"
       |    }
       |}
@@ -277,12 +312,12 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
   val crimeAppealJsonWithKeyMissing: JsValue = Json.parse(
     """
       |{
-      |    "submittedBy": "client",
-      |    "reasonableExcuse": "crime",
+      |    "appealSubmittedBy": "client",
       |    "appealInformation": {
-      |						"type": "crime",
-      |            "dateOfEvent": "2021-04-23T18:25:43.511Z",
-      |            "reportedIssue": true
+      |						"reasonableExcuse": "crime",
+      |           "honestyDeclaration": true,
+      |           "dateOfEvent": "2021-04-23T18:25:43.511Z",
+      |           "reportedIssueToPolice": true
       |		}
       |}
       |""".stripMargin)
@@ -290,11 +325,11 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
   val lossOfStaffAppealJsonWithKeyMissing: JsValue = Json.parse(
     """
       |{
-      |    "submittedBy": "client",
-      |    "reasonableExcuse": "lossOfStaff",
+      |    "appealSubmittedBy": "client",
       |    "appealInformation": {
-      |						"type": "lossOfStaff",
-      |            "dateOfEvent": "2021-04-23T18:25:43.511Z"
+      |						"reasonableExcuse": "lossOfStaff",
+      |           "honestyDeclaration": true,
+      |           "dateOfEvent": "2021-04-23T18:25:43.511Z"
       |		}
       |}
       |""".stripMargin)
@@ -302,9 +337,12 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
   val otherAppealJson: JsValue = Json.parse(
     """
       |{
-      |    "submittedBy": "agent",
-      |    "reasonableExcuse": "other",
-      |    "honestyDeclaration": true,
+      |    "sourceSystem": "MDTP",
+      |    "taxRegime": "VAT",
+      |    "customerReferenceNo": "123456789",
+      |    "dateOfAppeal": "2020-01-01T00:00:00",
+      |    "isLPP": true,
+      |    "appealSubmittedBy": "agent",
       |    "agentDetails": {
       |            "agentReferenceNo": "AGENT1",
       |            "name": "Jack",
@@ -316,7 +354,8 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       |            "agentEmailID": "Jack@aaa.com"
       |    },
       |    "appealInformation": {
-      |						"type": "other",
+      |						 "reasonableExcuse": "other",
+      |            "honestyDeclaration": true,
       |            "dateOfEvent": "2021-04-23T18:25:43.511Z",
       |            "statement": "This is a reason.",
       |            "supportingEvidence": {
@@ -325,8 +364,8 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       |            },
       |            "lateAppeal": true,
       |            "lateAppealReason": "Reason",
-      |            "whoPlannedToSubmit": "agent",
-      |            "causeOfLateSubmissionAgent": "client"
+      |            "isClientResponsibleForSubmission": false,
+      |            "isClientResponsibleForLateSubmission": true
       |		}
       |}
       |""".stripMargin)
@@ -334,9 +373,12 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
   val otherAppealJsonNoEvidence: JsValue = Json.parse(
     """
       |{
-      |    "submittedBy": "agent",
-      |    "reasonableExcuse": "other",
-      |    "honestyDeclaration": true,
+      |    "sourceSystem": "MDTP",
+      |    "taxRegime": "VAT",
+      |    "customerReferenceNo": "123456789",
+      |    "dateOfAppeal": "2020-01-01T00:00:00",
+      |    "isLPP": true,
+      |    "appealSubmittedBy": "agent",
       |    "agentDetails": {
       |            "agentReferenceNo": "AGENT1",
       |            "name": "Jack",
@@ -348,13 +390,14 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       |            "agentEmailID": "Jack@aaa.com"
       |    },
       |    "appealInformation": {
-      |						"type": "other",
+      |						 "reasonableExcuse": "other",
+      |            "honestyDeclaration": true,
       |            "dateOfEvent": "2021-04-23T18:25:43.511Z",
       |            "statement": "This is a reason.",
       |            "lateAppeal": true,
       |            "lateAppealReason": "Reason",
-      |            "whoPlannedToSubmit": "agent",
-      |            "causeOfLateSubmissionAgent": "client"
+      |            "isClientResponsibleForSubmission": false,
+      |            "isClientResponsibleForLateSubmission": true
       |		}
       |}
       |""".stripMargin)
@@ -362,13 +405,17 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
   val otherAppealJsonWithKeyMissing: JsValue = Json.parse(
     """
       |{
-      |    "submittedBy": "client",
-      |    "reasonableExcuse": "other",
-      |    "honestyDeclaration": true,
+      |    "sourceSystem": "MDTP",
+      |    "taxRegime": "VAT",
+      |    "customerReferenceNo": "123456789",
+      |    "dateOfAppeal": "2020-01-01T00:00:00",
+      |    "isLPP": true,
+      |    "appealSubmittedBy": "agent",
       |    "appealInformation": {
-      |						"type": "other",
-      |            "lateAppeal": true,
-      |            "lateAppealReason": "Reason"
+      |						"reasonableExcuse": "other",
+      |           "honestyDeclaration": true,
+      |           "lateAppeal": true,
+      |           "lateAppealReason": "Reason"
       |		}
       |}
       |""".stripMargin)
@@ -376,12 +423,13 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
   val lossOfStaffAppealInformationJson: JsValue = Json.parse(
     """
       |{
-      |   "type": "lossOfStaff",
+      |   "reasonableExcuse": "lossOfStaff",
+      |   "honestyDeclaration": true,
       |   "dateOfEvent": "2021-04-23T18:25:43.511Z",
       |   "lateAppeal": true,
       |   "lateAppealReason": "Reason",
-      |   "whoPlannedToSubmit": "agent",
-      |   "causeOfLateSubmissionAgent": "client"
+      |   "isClientResponsibleForSubmission": false,
+      |   "isClientResponsibleForLateSubmission": true
       |}
       |""".stripMargin
   )
@@ -389,10 +437,15 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
   val fireOrFloodAppealJsonWithKeyMissing: JsValue = Json.parse(
     """
       |{
-      |    "submittedBy": "client",
-      |    "reasonableExcuse": "ENUM_PEGA_LIST",
+      |    "sourceSystem": "MDTP",
+      |    "taxRegime": "VAT",
+      |    "customerReferenceNo": "123456789",
+      |    "dateOfAppeal": "2020-01-01T00:00:00",
+      |    "isLPP": true,
+      |    "appealSubmittedBy": "client",
       |    "appealInformation": {
-      |						"type": "fireOrFlood",
+      |						"reasonableExcuse": "fireOrFlood",
+      |           "honestyDeclaration": true,
       |           "lateAppeal": true
       |		}
       |}
@@ -402,12 +455,13 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
   val bereavementAppealInformationJson: JsValue = Json.parse(
     """
       |{
-      |   "type": "bereavement",
+      |   "reasonableExcuse": "bereavement",
+      |   "honestyDeclaration": true,
       |   "dateOfEvent": "2021-04-23T18:25:43.511Z",
       |   "lateAppeal": true,
       |   "lateAppealReason": "Reason",
-      |   "whoPlannedToSubmit": "agent",
-      |   "causeOfLateSubmissionAgent": "client"
+      |   "isClientResponsibleForSubmission": false,
+      |   "isClientResponsibleForLateSubmission": true
       |}
       |""".stripMargin
   )
@@ -415,13 +469,14 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
   val crimeAppealInformationJson: JsValue = Json.parse(
     """
       |{
-      |   "type": "crime",
+      |   "reasonableExcuse": "crime",
+      |   "honestyDeclaration": true,
       |   "dateOfEvent": "2021-04-23T18:25:43.511Z",
-      |   "reportedIssue": true,
+      |   "reportedIssueToPolice": true,
       |   "lateAppeal": true,
       |   "lateAppealReason": "Reason",
-      |   "whoPlannedToSubmit": "agent",
-      |   "causeOfLateSubmissionAgent": "client"
+      |   "isClientResponsibleForSubmission": false,
+      |   "isClientResponsibleForLateSubmission": true
       |}
       |""".stripMargin
   )
@@ -429,12 +484,13 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
   val fireOrFloodAppealInformationJson: JsValue = Json.parse(
     """
       |{
-      |   "type": "fireOrFlood",
+      |   "reasonableExcuse": "fireOrFlood",
+      |   "honestyDeclaration": true,
       |   "dateOfEvent": "2021-04-23T18:25:43.511Z",
       |   "lateAppeal": true,
       |   "lateAppealReason": "Reason",
-      |   "whoPlannedToSubmit": "agent",
-      |   "causeOfLateSubmissionAgent": "client"
+      |   "isClientResponsibleForSubmission": false,
+      |   "isClientResponsibleForLateSubmission": true
       |}
       |""".stripMargin
   )
@@ -452,7 +508,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
     """
       |{
       |   "dateOfEvent": "2021-04-23T18:25:43.511Z",
-      |   "reportedIssue": true
+      |   "reportedIssueToPolice": true
       |}
       |""".stripMargin
   )
@@ -478,14 +534,15 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
   val healthAppealInformationHospitalStayNotOngoingJson: JsValue = Json.parse(
     """
       |{
-      |   "type": "health",
+      |   "reasonableExcuse": "health",
+      |   "honestyDeclaration": true,
       |   "startDateOfEvent": "2021-04-23T18:25:43.511Z",
       |   "endDateOfEvent": "2021-04-24T18:25:43.511Z",
       |   "eventOngoing": false,
       |   "hospitalStayInvolved": true,
       |   "lateAppeal": false,
-      |   "whoPlannedToSubmit": "agent",
-      |   "causeOfLateSubmissionAgent": "client"
+      |   "isClientResponsibleForSubmission": false,
+      |   "isClientResponsibleForLateSubmission": true
       |}
       |""".stripMargin
   )
@@ -493,13 +550,14 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
   val healthAppealInformationHospitalStayOngoingJson: JsValue = Json.parse(
     """
       |{
-      |   "type": "health",
+      |   "reasonableExcuse": "health",
+      |   "honestyDeclaration": true,
       |   "startDateOfEvent": "2021-04-23T18:25:43.511Z",
       |   "eventOngoing": true,
       |   "hospitalStayInvolved": true,
       |   "lateAppeal": false,
-      |   "whoPlannedToSubmit": "agent",
-      |   "causeOfLateSubmissionAgent": "client"
+      |   "isClientResponsibleForSubmission": false,
+      |   "isClientResponsibleForLateSubmission": true
       |}
       |""".stripMargin
   )
@@ -507,13 +565,14 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
   val healthAppealInformationNoHospitalStayJson: JsValue = Json.parse(
     """
       |{
-      |   "type": "health",
+      |   "reasonableExcuse": "health",
+      |   "honestyDeclaration": true,
       |   "dateOfEvent": "2021-04-23T18:25:43.511Z",
       |   "hospitalStayInvolved": false,
       |   "eventOngoing": false,
       |   "lateAppeal": false,
-      |   "whoPlannedToSubmit": "agent",
-      |   "causeOfLateSubmissionAgent": "client"
+      |   "isClientResponsibleForSubmission": false,
+      |   "isClientResponsibleForLateSubmission": true
       |}
       |""".stripMargin
   )
@@ -521,7 +580,8 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
   val otherAppealInformationJson: JsValue = Json.parse(
     """
       |{
-      |   "type": "other",
+      |   "reasonableExcuse": "other",
+      |   "honestyDeclaration": true,
       |   "dateOfEvent": "2021-04-23T18:25:43.511Z",
       |   "statement": "This is a statement.",
       |   "supportingEvidence": {
@@ -529,8 +589,8 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       |     "referenceId": "ref1"
       |   },
       |   "lateAppeal": false,
-      |   "whoPlannedToSubmit": "agent",
-      |   "causeOfLateSubmissionAgent": "client"
+      |   "isClientResponsibleForSubmission": false,
+      |   "isClientResponsibleForLateSubmission": true
       |}
       |""".stripMargin
   )
@@ -538,12 +598,13 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
   val otherAppealInformationJsonNoEvidence: JsValue = Json.parse(
     """
       |{
-      |   "type": "other",
+      |   "reasonableExcuse": "other",
+      |   "honestyDeclaration": true,
       |   "dateOfEvent": "2021-04-23T18:25:43.511Z",
       |   "statement": "This is a statement.",
       |   "lateAppeal": false,
-      |   "whoPlannedToSubmit": "agent",
-      |   "causeOfLateSubmissionAgent": "client"
+      |   "isClientResponsibleForSubmission": false,
+      |   "isClientResponsibleForLateSubmission": true
       |}
       |""".stripMargin
   )
@@ -551,7 +612,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
   val invalidOtherAppealInformationJson: JsValue = Json.parse(
     """
       |{
-      |   "type": "other",
+      |   "reasonableExcuse": "other",
       |   "lateAppeal": false
       |}
       |""".stripMargin)
@@ -559,7 +620,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
   val invalidHealthAppealInformationJson: JsValue = Json.parse(
     """
       |{
-      |   "type": "health",
+      |   "reasonableExcuse": "health",
       |   "eventOngoing": false,
       |   "lateAppeal": false
       |}
@@ -568,7 +629,8 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
   val obligationAppealInformationJson: JsValue = Json.parse(
     """
       |{
-      |   "type": "obligation",
+      |   "honestyDeclaration": true,
+      |   "reasonableExcuse": "obligation",
       |   "statement": "A valid statement",
       |   "supportingEvidence": {
       |     "noOfUploadedFiles": 1,
@@ -579,10 +641,11 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
   )
 
   val obligationAppealInformationJsonNoEvidence: JsValue = Json.parse(
-  """
+    """
       |{
-      |   "type": "obligation",
-      |   "statement": "A valid statement"
+      |   "statement": "A valid statement",
+      |   "reasonableExcuse": "obligation",
+      |   "honestyDeclaration": true
       |}
       |""".stripMargin)
 
@@ -596,11 +659,15 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
   val obligationAppealJson: JsValue = Json.parse(
     """
       |{
-      |   "submittedBy": "client",
-      |    "reasonableExcuse": "obligation",
-      |    "honestyDeclaration": true,
+      |    "sourceSystem": "MDTP",
+      |    "taxRegime": "VAT",
+      |    "customerReferenceNo": "123456789",
+      |    "dateOfAppeal": "2020-01-01T00:00:00",
+      |    "isLPP": true,
+      |    "appealSubmittedBy": "client",
       |    "appealInformation": {
-      |       "type": "obligation",
+      |       "reasonableExcuse": "obligation",
+      |       "honestyDeclaration": true,
       |       "statement": "A valid statement",
       |       "supportingEvidence": {
       |         "noOfUploadedFiles": 1,
@@ -614,11 +681,15 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
   val obligationAppealJsonNoEvidence: JsValue = Json.parse(
     """
       |{
-      |   "submittedBy": "client",
-      |    "reasonableExcuse": "obligation",
-      |    "honestyDeclaration": true,
+      |    "sourceSystem": "MDTP",
+      |    "taxRegime": "VAT",
+      |    "customerReferenceNo": "123456789",
+      |    "dateOfAppeal": "2020-01-01T00:00:00",
+      |    "isLPP": false,
+      |    "appealSubmittedBy": "client",
       |    "appealInformation": {
-      |       "type": "obligation",
+      |       "reasonableExcuse": "obligation",
+      |       "honestyDeclaration": true,
       |       "statement": "A valid statement"
       |    }
       |}
@@ -628,10 +699,14 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
   val obligationAppealJsonWithKeysMissing: JsValue = Json.parse(
     """
       |{
-      |    "submittedBy": "client",
-      |    "reasonableExcuse": "obligation",
-      |    "honestyDeclaration": true,
+      |    "sourceSystem": "MDTP",
+      |    "taxRegime": "VAT",
+      |    "customerReferenceNo": "123456789",
+      |    "dateOfAppeal": "2020-01-01T00:00:00",
+      |    "isLPP": true,
+      |    "appealSubmittedBy": "client",
       |    "appealInformation": {
+      |           "reasonableExcuse": "obligation",
       |						"statement": "a statement"
       |     }
       |}
@@ -656,13 +731,14 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
         val result = AppealSubmission.parseAppealInformationFromJson("bereavement", bereavementAppealInformationJson)
         result.isSuccess shouldBe true
         result.get shouldBe BereavementAppealInformation(
-          `type` = "bereavement",
           dateOfEvent = "2021-04-23T18:25:43.511Z",
           statement = None,
           lateAppeal = true,
           lateAppealReason = Some("Reason"),
-          whoPlannedToSubmit = Some("agent"),
-          causeOfLateSubmissionAgent = Some("client")
+          isClientResponsibleForSubmission = Some(false),
+          isClientResponsibleForLateSubmission = Some(true),
+          honestyDeclaration = true,
+          reasonableExcuse = "bereavement"
         )
       }
 
@@ -676,14 +752,15 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
         val result = AppealSubmission.parseAppealInformationFromJson("crime", crimeAppealInformationJson)
         result.isSuccess shouldBe true
         result.get shouldBe CrimeAppealInformation(
-          `type` = "crime",
           dateOfEvent = "2021-04-23T18:25:43.511Z",
-          reportedIssue = true,
+          reportedIssueToPolice = true,
           statement = None,
           lateAppeal = true,
           lateAppealReason = Some("Reason"),
-          whoPlannedToSubmit = Some("agent"),
-          causeOfLateSubmissionAgent = Some("client")
+          isClientResponsibleForSubmission = Some(false),
+          isClientResponsibleForLateSubmission = Some(true),
+          honestyDeclaration = true,
+          reasonableExcuse = "crime"
         )
       }
 
@@ -698,13 +775,14 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
         val result = AppealSubmission.parseAppealInformationFromJson("fireOrFlood", fireOrFloodAppealInformationJson)
         result.isSuccess shouldBe true
         result.get shouldBe FireOrFloodAppealInformation(
-          `type` = "fireOrFlood",
           dateOfEvent = "2021-04-23T18:25:43.511Z",
           statement = None,
           lateAppeal = true,
           lateAppealReason = Some("Reason"),
-          whoPlannedToSubmit = Some("agent"),
-          causeOfLateSubmissionAgent = Some("client")
+          isClientResponsibleForSubmission = Some(false),
+          isClientResponsibleForLateSubmission = Some(true),
+          honestyDeclaration = true,
+          reasonableExcuse = "fireOrFlood"
         )
       }
 
@@ -719,14 +797,15 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
         val result = AppealSubmission.parseAppealInformationFromJson("technicalIssues", technicalIssuesAppealInformationJson)
         result.isSuccess shouldBe true
         result.get shouldBe TechnicalIssuesAppealInformation(
-          `type` = "technicalIssues",
           startDateOfEvent = "2021-04-23T18:25:43.511Z",
           endDateOfEvent = "2021-04-24T18:25:43.511Z",
           statement = None,
           lateAppeal = true,
           lateAppealReason = Some("Reason"),
-          whoPlannedToSubmit = Some("agent"),
-          causeOfLateSubmissionAgent = Some("client")
+          isClientResponsibleForSubmission = Some(false),
+          isClientResponsibleForLateSubmission = Some(true),
+          honestyDeclaration = true,
+          reasonableExcuse = "technicalIssues"
         )
       }
 
@@ -742,7 +821,6 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           val result = AppealSubmission.parseAppealInformationFromJson("health", healthAppealInformationNoHospitalStayJson)
           result.isSuccess shouldBe true
           result.get shouldBe HealthAppealInformation(
-            `type` = "health",
             dateOfEvent = Some("2021-04-23T18:25:43.511Z"),
             startDateOfEvent = None,
             endDateOfEvent = None,
@@ -751,8 +829,10 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             statement = None,
             lateAppeal = false,
             lateAppealReason = None,
-            whoPlannedToSubmit = Some("agent"),
-            causeOfLateSubmissionAgent = Some("client")
+            isClientResponsibleForSubmission = Some(false),
+            isClientResponsibleForLateSubmission = Some(true),
+            honestyDeclaration = true,
+            reasonableExcuse = "health"
           )
         }
 
@@ -760,7 +840,6 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           val result = AppealSubmission.parseAppealInformationFromJson("health", healthAppealInformationHospitalStayOngoingJson)
           result.isSuccess shouldBe true
           result.get shouldBe HealthAppealInformation(
-            `type` = "health",
             dateOfEvent = None,
             startDateOfEvent = Some("2021-04-23T18:25:43.511Z"),
             endDateOfEvent = None,
@@ -769,8 +848,10 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             statement = None,
             lateAppeal = false,
             lateAppealReason = None,
-            whoPlannedToSubmit = Some("agent"),
-            causeOfLateSubmissionAgent = Some("client")
+            isClientResponsibleForSubmission = Some(false),
+            isClientResponsibleForLateSubmission = Some(true),
+            honestyDeclaration = true,
+            reasonableExcuse = "health"
           )
         }
 
@@ -778,7 +859,6 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           val result = AppealSubmission.parseAppealInformationFromJson("health", healthAppealInformationHospitalStayNotOngoingJson)
           result.isSuccess shouldBe true
           result.get shouldBe HealthAppealInformation(
-            `type` = "health",
             dateOfEvent = None,
             startDateOfEvent = Some("2021-04-23T18:25:43.511Z"),
             endDateOfEvent = Some("2021-04-24T18:25:43.511Z"),
@@ -787,8 +867,10 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             statement = None,
             lateAppeal = false,
             lateAppealReason = None,
-            whoPlannedToSubmit = Some("agent"),
-            causeOfLateSubmissionAgent = Some("client")
+            isClientResponsibleForSubmission = Some(false),
+            isClientResponsibleForLateSubmission = Some(true),
+            honestyDeclaration = true,
+            reasonableExcuse = "health"
           )
         }
       }
@@ -804,7 +886,6 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
         val result = AppealSubmission.parseAppealInformationFromJson("other", otherAppealInformationJson)
         result.isSuccess shouldBe true
         result.get shouldBe OtherAppealInformation(
-          `type` = "other",
           dateOfEvent = "2021-04-23T18:25:43.511Z",
           statement = Some("This is a statement."),
           lateAppeal = false,
@@ -812,8 +893,10 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           supportingEvidence = Some(Evidence(
             noOfUploadedFiles = 1, referenceId = Some("ref1")
           )),
-          whoPlannedToSubmit = Some("agent"),
-          causeOfLateSubmissionAgent = Some("client")
+          isClientResponsibleForSubmission = Some(false),
+          isClientResponsibleForLateSubmission = Some(true),
+          honestyDeclaration = true,
+          reasonableExcuse = "other"
         )
       }
 
@@ -821,14 +904,15 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
         val result = AppealSubmission.parseAppealInformationFromJson("other", otherAppealInformationJsonNoEvidence)
         result.isSuccess shouldBe true
         result.get shouldBe OtherAppealInformation(
-          `type` = "other",
           dateOfEvent = "2021-04-23T18:25:43.511Z",
           statement = Some("This is a statement."),
           lateAppeal = false,
           lateAppealReason = None,
           supportingEvidence = None,
-          whoPlannedToSubmit = Some("agent"),
-          causeOfLateSubmissionAgent = Some("client")
+          isClientResponsibleForSubmission = Some(false),
+          isClientResponsibleForLateSubmission = Some(true),
+          honestyDeclaration = true,
+          reasonableExcuse = "other"
         )
       }
 
@@ -843,12 +927,15 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
         val result = AppealSubmission.parseAppealInformationFromJson("obligation", obligationAppealInformationJson)
         result.isSuccess shouldBe true
         result.get shouldBe ObligationAppealInformation(
-          `type` = "obligation",
           statement = Some("A valid statement"),
           supportingEvidence = Some(Evidence(
             noOfUploadedFiles = 1,
             referenceId = Some("ref")
-          ))
+          )),
+          isClientResponsibleForSubmission = None,
+          isClientResponsibleForLateSubmission = None,
+          honestyDeclaration = true,
+          reasonableExcuse = "obligation"
         )
       }
 
@@ -856,9 +943,12 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
         val result = AppealSubmission.parseAppealInformationFromJson("obligation", obligationAppealInformationJsonNoEvidence)
         result.isSuccess shouldBe true
         result.get shouldBe ObligationAppealInformation(
-          `type` = "obligation",
           statement = Some("A valid statement"),
-          supportingEvidence = None
+          supportingEvidence = None,
+          isClientResponsibleForSubmission = None,
+          isClientResponsibleForLateSubmission = None,
+          honestyDeclaration = true,
+          reasonableExcuse = "obligation"
         )
       }
 
@@ -873,13 +963,14 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
     "for bereavement" must {
       "parse the appeal information model into a JsObject" in {
         val model = BereavementAppealInformation(
-          `type` = "bereavement",
           dateOfEvent = "2021-04-23T18:25:43.511Z",
           statement = None,
           lateAppeal = true,
           lateAppealReason = Some("Reason"),
-          whoPlannedToSubmit = Some("agent"),
-          causeOfLateSubmissionAgent = Some("client")
+          isClientResponsibleForSubmission = Some(false),
+          isClientResponsibleForLateSubmission = Some(true),
+          honestyDeclaration = true,
+          reasonableExcuse = "bereavement"
         )
         val result = AppealSubmission.parseAppealInformationToJson(model)
         result shouldBe bereavementAppealInformationJson
@@ -888,14 +979,15 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
     "for crime" must {
       "parse the appeal information model into a JsObject" in {
         val model = CrimeAppealInformation(
-          `type` = "crime",
           dateOfEvent = "2021-04-23T18:25:43.511Z",
-          reportedIssue = true,
+          reportedIssueToPolice = true,
           statement = None,
           lateAppeal = true,
           lateAppealReason = Some("Reason"),
-          whoPlannedToSubmit = Some("agent"),
-          causeOfLateSubmissionAgent = Some("client")
+          isClientResponsibleForSubmission = Some(false),
+          isClientResponsibleForLateSubmission = Some(true),
+          honestyDeclaration = true,
+          reasonableExcuse = "crime"
         )
         val result = AppealSubmission.parseAppealInformationToJson(model)
         result shouldBe crimeAppealInformationJson
@@ -905,13 +997,14 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
     "for fireOrFlood" must {
       "parse the appeal information model into a JsObject" in {
         val model = FireOrFloodAppealInformation(
-          `type` = "fireOrFlood",
           dateOfEvent = "2021-04-23T18:25:43.511Z",
           statement = None,
           lateAppeal = true,
           lateAppealReason = Some("Reason"),
-          whoPlannedToSubmit = Some("agent"),
-          causeOfLateSubmissionAgent = Some("client")
+          isClientResponsibleForSubmission = Some(false),
+          isClientResponsibleForLateSubmission = Some(true),
+          honestyDeclaration = true,
+          reasonableExcuse = "fireOrFlood"
         )
         val result = AppealSubmission.parseAppealInformationToJson(model)
         result shouldBe fireOrFloodAppealInformationJson
@@ -921,13 +1014,14 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
     "for loss of staff" must {
       "parse the appeal information model into a JsObject" in {
         val model = LossOfStaffAppealInformation(
-          `type` = "lossOfStaff",
           dateOfEvent = "2021-04-23T18:25:43.511Z",
           statement = None,
           lateAppeal = true,
           lateAppealReason = Some("Reason"),
-          whoPlannedToSubmit = Some("agent"),
-          causeOfLateSubmissionAgent = Some("client")
+          isClientResponsibleForSubmission = Some(false),
+          isClientResponsibleForLateSubmission = Some(true),
+          honestyDeclaration = true,
+          reasonableExcuse = "lossOfStaff"
         )
         val result = AppealSubmission.parseAppealInformationToJson(model)
         result shouldBe lossOfStaffAppealInformationJson
@@ -937,14 +1031,15 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
     "for technical issues" must {
       "parse the appeal information model into a JsObject" in {
         val model = TechnicalIssuesAppealInformation(
-          `type` = "technicalIssues",
           startDateOfEvent = "2021-04-23T18:25:43.511Z",
           endDateOfEvent = "2021-04-24T18:25:43.511Z",
           statement = None,
           lateAppeal = true,
           lateAppealReason = Some("Reason"),
-          whoPlannedToSubmit = Some("agent"),
-          causeOfLateSubmissionAgent = Some("client")
+          isClientResponsibleForSubmission = Some(false),
+          isClientResponsibleForLateSubmission = Some(true),
+          honestyDeclaration = true,
+          reasonableExcuse = "technicalIssues"
         )
         val result = AppealSubmission.parseAppealInformationToJson(model)
         result shouldBe technicalIssuesAppealInformationJson
@@ -954,7 +1049,6 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
     "for health" must {
       "parse the appeal information model into a JsObject (when a startDateOfEvent and endDateOfEvent is present NOT dateOfEvent)" in {
         val model = HealthAppealInformation(
-          `type` = "health",
           startDateOfEvent = Some("2021-04-23T18:25:43.511Z"),
           endDateOfEvent = Some("2021-04-24T18:25:43.511Z"),
           dateOfEvent = None,
@@ -963,8 +1057,10 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           statement = None,
           lateAppeal = false,
           lateAppealReason = None,
-          whoPlannedToSubmit = Some("agent"),
-          causeOfLateSubmissionAgent = Some("client")
+          isClientResponsibleForSubmission = Some(false),
+          isClientResponsibleForLateSubmission = Some(true),
+          honestyDeclaration = true,
+          reasonableExcuse = "health"
         )
         val result = AppealSubmission.parseAppealInformationToJson(model)
         result shouldBe healthAppealInformationHospitalStayNotOngoingJson
@@ -973,7 +1069,6 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       "parse the appeal information model into a JsObject (when a startDateOfEvent is present NOT dateOfEvent AND endDateOfEvent i.e. " +
         "event ongoing hospital stay)" in {
         val model = HealthAppealInformation(
-          `type` = "health",
           startDateOfEvent = Some("2021-04-23T18:25:43.511Z"),
           endDateOfEvent = None,
           dateOfEvent = None,
@@ -982,8 +1077,10 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           statement = None,
           lateAppeal = false,
           lateAppealReason = None,
-          whoPlannedToSubmit = Some("agent"),
-          causeOfLateSubmissionAgent = Some("client")
+          isClientResponsibleForSubmission = Some(false),
+          isClientResponsibleForLateSubmission = Some(true),
+          honestyDeclaration = true,
+          reasonableExcuse = "health"
         )
         val result = AppealSubmission.parseAppealInformationToJson(model)
         result shouldBe healthAppealInformationHospitalStayOngoingJson
@@ -992,7 +1089,6 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       "parse the appeal information model into a JsObject (when a dateOfEvent is present NOT startDateOfEvent AND endDateOfEvent i.e. " +
         "no hospital stay)" in {
         val model = HealthAppealInformation(
-          `type` = "health",
           startDateOfEvent = None,
           endDateOfEvent = None,
           dateOfEvent = Some("2021-04-23T18:25:43.511Z"),
@@ -1001,8 +1097,10 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           statement = None,
           lateAppeal = false,
           lateAppealReason = None,
-          whoPlannedToSubmit = Some("agent"),
-          causeOfLateSubmissionAgent = Some("client")
+          isClientResponsibleForSubmission = Some(false),
+          isClientResponsibleForLateSubmission = Some(true),
+          honestyDeclaration = true,
+          reasonableExcuse = "health"
         )
         val result = AppealSubmission.parseAppealInformationToJson(model)
         result shouldBe healthAppealInformationNoHospitalStayJson
@@ -1012,7 +1110,6 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
     "for other" must {
       "parse the appeal information model into a JsObject" in {
         val model = OtherAppealInformation(
-          `type` = "other",
           dateOfEvent = "2021-04-23T18:25:43.511Z",
           statement = Some("This is a statement."),
           supportingEvidence = Some(Evidence(
@@ -1020,8 +1117,10 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           )),
           lateAppeal = false,
           lateAppealReason = None,
-          whoPlannedToSubmit = Some("agent"),
-          causeOfLateSubmissionAgent = Some("client")
+          isClientResponsibleForSubmission = Some(false),
+          isClientResponsibleForLateSubmission = Some(true),
+          honestyDeclaration = true,
+          reasonableExcuse = "other"
         )
         val result = AppealSubmission.parseAppealInformationToJson(model)
         result shouldBe otherAppealInformationJson
@@ -1029,14 +1128,15 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
 
       "parse the appeal information model into a JsObject - no evidence" in {
         val model = OtherAppealInformation(
-          `type` = "other",
           dateOfEvent = "2021-04-23T18:25:43.511Z",
           statement = Some("This is a statement."),
           supportingEvidence = None,
           lateAppeal = false,
           lateAppealReason = None,
-          whoPlannedToSubmit = Some("agent"),
-          causeOfLateSubmissionAgent = Some("client")
+          isClientResponsibleForSubmission = Some(false),
+          isClientResponsibleForLateSubmission = Some(true),
+          honestyDeclaration = true,
+          reasonableExcuse = "other"
         )
         val result = AppealSubmission.parseAppealInformationToJson(model)
         result shouldBe otherAppealInformationJsonNoEvidence
@@ -1046,12 +1146,15 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
     "for obligation" must {
       "parse the appeal information model to a JsObject" in {
         val model = ObligationAppealInformation(
-          `type` = "obligation",
           statement = Some("A valid statement"),
           supportingEvidence = Some(Evidence(
             noOfUploadedFiles = 1,
             referenceId = Some("ref")
-          ))
+          )),
+          isClientResponsibleForSubmission = None,
+          isClientResponsibleForLateSubmission = None,
+          honestyDeclaration = true,
+          reasonableExcuse = "obligation"
         )
         val result = AppealSubmission.parseAppealInformationToJson(model)
         result shouldBe obligationAppealInformationJson
@@ -1059,9 +1162,12 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
 
       "parse the appeal information model to a JsObject - no evidence" in {
         val model = ObligationAppealInformation(
-          `type` = "obligation",
           statement = Some("A valid statement"),
-          supportingEvidence = None
+          supportingEvidence = None,
+          isClientResponsibleForSubmission = None,
+          isClientResponsibleForLateSubmission = None,
+          honestyDeclaration = true,
+          reasonableExcuse = "obligation"
         )
         val result = AppealSubmission.parseAppealInformationToJson(model)
         result shouldBe obligationAppealInformationJsonNoEvidence
@@ -1073,18 +1179,21 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
     "for bereavement" must {
       "parse the JSON into a model when all keys are present" in {
         val expectedResult = AppealSubmission(
-          submittedBy = "client",
-          reasonableExcuse = "bereavement",
-          honestyDeclaration = true,
+          taxRegime = "VAT",
+          customerReferenceNo = "123456789",
+          dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
+          isLPP = true,
+          appealSubmittedBy = "client",
           agentDetails = None,
           appealInformation = BereavementAppealInformation(
-            `type` = "bereavement",
             dateOfEvent = "2021-04-23T18:25:43.511Z",
             statement = None,
             lateAppeal = true,
             lateAppealReason = Some("Reason"),
-            whoPlannedToSubmit = Some("agent"),
-            causeOfLateSubmissionAgent = Some("client")
+            isClientResponsibleForSubmission = Some(false),
+            isClientResponsibleForLateSubmission = Some(true),
+            honestyDeclaration = true,
+            reasonableExcuse = "bereavement"
           )
         )
 
@@ -1101,19 +1210,22 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
     "for crime" must {
       "parse the JSON into a model when all keys are present" in {
         val expectedResult = AppealSubmission(
-          submittedBy = "agent",
-          reasonableExcuse = "crime",
-          honestyDeclaration = true,
+          taxRegime = "VAT",
+          customerReferenceNo = "123456789",
+          dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
+          isLPP = true,
+          appealSubmittedBy = "agent",
           agentDetails = agentDetails,
           appealInformation = CrimeAppealInformation(
-            `type` = "crime",
             dateOfEvent = "2021-04-23T18:25:43.511Z",
-            reportedIssue = true,
+            reportedIssueToPolice = true,
             statement = None,
             lateAppeal = true,
             lateAppealReason = Some("Reason"),
-            whoPlannedToSubmit = Some("agent"),
-            causeOfLateSubmissionAgent = Some("client")
+            isClientResponsibleForSubmission = Some(false),
+            isClientResponsibleForLateSubmission = Some(true),
+            honestyDeclaration = true,
+            reasonableExcuse = "crime"
           )
         )
 
@@ -1131,18 +1243,21 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
     "for fireOrFlood" must {
       "parse the JSON into a model when all keys are present" in {
         val expectedResult = AppealSubmission(
-          submittedBy = "agent",
-          reasonableExcuse = "ENUM_PEGA_LIST",
-          honestyDeclaration = true,
+          taxRegime = "VAT",
+          customerReferenceNo = "123456789",
+          dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
+          isLPP = true,
+          appealSubmittedBy = "agent",
           agentDetails = agentDetails,
           appealInformation = FireOrFloodAppealInformation(
-            `type` = "fireOrFlood",
             dateOfEvent = "2021-04-23T18:25:43.511Z",
             statement = None,
             lateAppeal = true,
             lateAppealReason = Some("Reason"),
-            whoPlannedToSubmit = Some("agent"),
-            causeOfLateSubmissionAgent = Some("client")
+            isClientResponsibleForSubmission = Some(false),
+            isClientResponsibleForLateSubmission = Some(true),
+            honestyDeclaration = true,
+            reasonableExcuse = "fireOrFlood"
           )
         )
 
@@ -1160,18 +1275,21 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
     "for loss of staff" must {
       "parse the JSON into a model when all keys are present" in {
         val expectedResult = AppealSubmission(
-          submittedBy = "agent",
-          reasonableExcuse = "lossOfStaff",
-          honestyDeclaration = true,
+          taxRegime = "VAT",
+          customerReferenceNo = "123456789",
+          dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
+          isLPP = true,
+          appealSubmittedBy = "agent",
           agentDetails = agentDetails,
           appealInformation = LossOfStaffAppealInformation(
-            `type` = "lossOfStaff",
             dateOfEvent = "2021-04-23T18:25:43.511Z",
             statement = None,
             lateAppeal = true,
             lateAppealReason = Some("Reason"),
-            whoPlannedToSubmit = Some("agent"),
-            causeOfLateSubmissionAgent = Some("client")
+            isClientResponsibleForSubmission = Some(false),
+            isClientResponsibleForLateSubmission = Some(true),
+            honestyDeclaration = true,
+            reasonableExcuse = "lossOfStaff"
           )
         )
 
@@ -1189,19 +1307,22 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
     "for technical issues" must {
       "parse the JSON into a model when all keys are present" in {
         val expectedResult = AppealSubmission(
-          submittedBy = "agent",
-          reasonableExcuse = "technicalIssues",
-          honestyDeclaration = true,
+          taxRegime = "VAT",
+          customerReferenceNo = "123456789",
+          dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
+          isLPP = true,
+          appealSubmittedBy = "agent",
           agentDetails = agentDetails,
           appealInformation = TechnicalIssuesAppealInformation(
-            `type` = "technicalIssues",
             startDateOfEvent = "2021-04-23T18:25:43.511Z",
             endDateOfEvent = "2021-04-24T18:25:43.511Z",
             statement = None,
             lateAppeal = true,
             lateAppealReason = Some("Reason"),
-            whoPlannedToSubmit = Some("agent"),
-            causeOfLateSubmissionAgent = Some("client")
+            isClientResponsibleForSubmission = Some(false),
+            isClientResponsibleForLateSubmission = Some(true),
+            honestyDeclaration = true,
+            reasonableExcuse = "technicalIssues"
           )
         )
 
@@ -1219,12 +1340,13 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
     "for health" must {
       "read the JSON when there was no hospital stay" in {
         val expectedResult = AppealSubmission(
-          submittedBy = "agent",
-          reasonableExcuse = "health",
-          honestyDeclaration = true,
+          taxRegime = "VAT",
+          customerReferenceNo = "123456789",
+          dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
+          isLPP = true,
+          appealSubmittedBy = "agent",
           agentDetails = agentDetails,
           appealInformation = HealthAppealInformation(
-            `type` = "health",
             startDateOfEvent = None,
             endDateOfEvent = None,
             dateOfEvent = Some("2021-04-23T18:25:43.511Z"),
@@ -1233,8 +1355,10 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             statement = None,
             lateAppeal = false,
             lateAppealReason = None,
-            whoPlannedToSubmit = Some("agent"),
-            causeOfLateSubmissionAgent = Some("client")
+            isClientResponsibleForSubmission = Some(false),
+            isClientResponsibleForLateSubmission = Some(true),
+            honestyDeclaration = true,
+            reasonableExcuse = "health"
           )
         )
         val result = Json.fromJson(healthAppealNoHospitalStayJson)(AppealSubmission.apiReads)
@@ -1244,12 +1368,13 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
 
       "read the JSON when there is an ongoing hospital stay" in {
         val expectedResult = AppealSubmission(
-          submittedBy = "agent",
-          reasonableExcuse = "health",
-          honestyDeclaration = true,
+          taxRegime = "VAT",
+          customerReferenceNo = "123456789",
+          dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
+          isLPP = true,
+          appealSubmittedBy = "agent",
           agentDetails = agentDetails,
           appealInformation = HealthAppealInformation(
-            `type` = "health",
             startDateOfEvent = Some("2021-04-23T18:25:43.511Z"),
             endDateOfEvent = None,
             dateOfEvent = None,
@@ -1258,8 +1383,10 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             statement = None,
             lateAppeal = false,
             lateAppealReason = None,
-            whoPlannedToSubmit = Some("agent"),
-            causeOfLateSubmissionAgent = Some("client")
+            isClientResponsibleForSubmission = Some(false),
+            isClientResponsibleForLateSubmission = Some(true),
+            honestyDeclaration = true,
+            reasonableExcuse = "health"
           )
         )
         val result = Json.fromJson(healthAppealHospitalStayOngoingJson)(AppealSubmission.apiReads)
@@ -1269,12 +1396,13 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
 
       "read the JSON when there has been a hospital stay" in {
         val expectedResult = AppealSubmission(
-          submittedBy = "agent",
-          reasonableExcuse = "health",
-          honestyDeclaration = true,
+          taxRegime = "VAT",
+          customerReferenceNo = "123456789",
+          dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
+          isLPP = true,
+          appealSubmittedBy = "agent",
           agentDetails = agentDetails,
           appealInformation = HealthAppealInformation(
-            `type` = "health",
             startDateOfEvent = Some("2021-04-23T18:25:43.511Z"),
             endDateOfEvent = Some("2021-04-24T18:25:43.511Z"),
             dateOfEvent = None,
@@ -1283,8 +1411,10 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             statement = None,
             lateAppeal = false,
             lateAppealReason = None,
-            whoPlannedToSubmit = Some("agent"),
-            causeOfLateSubmissionAgent = Some("client")
+            isClientResponsibleForSubmission = Some(false),
+            isClientResponsibleForLateSubmission = Some(true),
+            honestyDeclaration = true,
+            reasonableExcuse = "health"
           )
         )
         val result = Json.fromJson(healthAppealHospitalStayEndedJson)(AppealSubmission.apiReads)
@@ -1296,12 +1426,13 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
     "for other" must {
       "parse the JSON into a model when all keys are present" in {
         val expectedResult = AppealSubmission(
-          submittedBy = "agent",
-          reasonableExcuse = "other",
-          honestyDeclaration = true,
+          taxRegime = "VAT",
+          customerReferenceNo = "123456789",
+          dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
+          isLPP = true,
+          appealSubmittedBy = "agent",
           agentDetails = agentDetails,
           appealInformation = OtherAppealInformation(
-            `type` = "other",
             dateOfEvent = "2021-04-23T18:25:43.511Z",
             statement = Some("This is a reason."),
             supportingEvidence = Some(Evidence(
@@ -1309,8 +1440,10 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             )),
             lateAppeal = true,
             lateAppealReason = Some("Reason"),
-            whoPlannedToSubmit = Some("agent"),
-            causeOfLateSubmissionAgent = Some("client")
+            isClientResponsibleForSubmission = Some(false),
+            isClientResponsibleForLateSubmission = Some(true),
+            honestyDeclaration = true,
+            reasonableExcuse = "other"
           )
         )
 
@@ -1321,19 +1454,22 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
 
       "parse the JSON into a model when all keys are present - no evidence" in {
         val expectedResult = AppealSubmission(
-          submittedBy = "agent",
-          reasonableExcuse = "other",
-          honestyDeclaration = true,
+          taxRegime = "VAT",
+          customerReferenceNo = "123456789",
+          dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
+          isLPP = true,
+          appealSubmittedBy = "agent",
           agentDetails = agentDetails,
           appealInformation = OtherAppealInformation(
-            `type` = "other",
             dateOfEvent = "2021-04-23T18:25:43.511Z",
             statement = Some("This is a reason."),
             supportingEvidence = None,
             lateAppeal = true,
             lateAppealReason = Some("Reason"),
-            whoPlannedToSubmit = Some("agent"),
-            causeOfLateSubmissionAgent = Some("client")
+            isClientResponsibleForSubmission = Some(false),
+            isClientResponsibleForLateSubmission = Some(true),
+            honestyDeclaration = true,
+            reasonableExcuse = "other"
           )
         )
 
@@ -1351,17 +1487,22 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
     "for obligation" must {
       "parse the JSON into a model when all keys are present" in {
         val expectedResult = AppealSubmission(
-          submittedBy = "client",
-          reasonableExcuse = "obligation",
-          honestyDeclaration = true,
+          taxRegime = "VAT",
+          customerReferenceNo = "123456789",
+          dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
+          isLPP = true,
+          appealSubmittedBy = "client",
           agentDetails = None,
           appealInformation = ObligationAppealInformation(
-            `type` = "obligation",
             statement = Some("A valid statement"),
             supportingEvidence = Some(Evidence(
               noOfUploadedFiles = 1,
               referenceId = Some("ref")
-            ))
+            )),
+            isClientResponsibleForSubmission = None,
+            isClientResponsibleForLateSubmission = None,
+            honestyDeclaration = true,
+            reasonableExcuse = "obligation"
           )
         )
 
@@ -1372,14 +1513,17 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
 
       "parse the JSON into a model when all keys are present - no evidence" in {
         val expectedResult = AppealSubmission(
-          submittedBy = "client",
-          reasonableExcuse = "obligation",
-          honestyDeclaration = true,
+          taxRegime = "VAT",
+          customerReferenceNo = "123456789",
+          dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
+          isLPP = false,
+          appealSubmittedBy = "client",
           agentDetails = None,
           appealInformation = ObligationAppealInformation(
-            `type` = "obligation",
             statement = Some("A valid statement"),
-            supportingEvidence = None
+            supportingEvidence = None,
+            honestyDeclaration = true,
+            reasonableExcuse = "obligation"
           )
         )
 
@@ -1399,26 +1543,32 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
     "for bereavement" must {
       "write the model to JSON" in {
         val modelToCovertToJson: AppealSubmission = AppealSubmission(
-          submittedBy = "agent",
-          reasonableExcuse = "bereavement",
-          honestyDeclaration = true,
+          taxRegime = "VAT",
+          customerReferenceNo = "123456789",
+          dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
+          isLPP = false,
+          appealSubmittedBy = "agent",
           agentDetails = agentDetails,
           appealInformation = BereavementAppealInformation(
-              `type` = "bereavement",
-              dateOfEvent = "2021-04-23T18:25:43.511Z",
-              statement = None,
-              lateAppeal = true,
-              lateAppealReason = Some("Reason"),
-              whoPlannedToSubmit = Some("agent"),
-              causeOfLateSubmissionAgent = Some("client")
-            )
+            dateOfEvent = "2021-04-23T18:25:43.511Z",
+            statement = None,
+            lateAppeal = true,
+            lateAppealReason = Some("Reason"),
+            isClientResponsibleForSubmission = Some(false),
+            isClientResponsibleForLateSubmission = Some(true),
+            honestyDeclaration = true,
+            reasonableExcuse = "bereavement"
           )
+        )
         val jsonRepresentingModel: JsValue = Json.obj(
-          "submittedBy"-> "agent",
-          "reasonableExcuse" -> "bereavement",
-          "honestyDeclaration" -> true,
+          "appealSubmittedBy" -> "agent",
+          "sourceSystem" -> "MDTP",
+          "taxRegime" -> "VAT",
+          "customerReferenceNo" -> "123456789",
+          "dateOfAppeal" -> "2020-01-01T00:00:00",
+          "isLPP" -> false,
           "agentDetails" -> Json.obj(
-            "agentReferenceNo"->  "AGENT1",
+            "agentReferenceNo" -> "AGENT1",
             "name" -> "Jack",
             "addressLine1" -> "Flat 20",
             "addressLine2" -> "123 Jack street",
@@ -1428,12 +1578,13 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             "agentEmailID" -> "Jack@aaa.com"
           ),
           "appealInformation" -> Json.obj(
-            "type" -> "bereavement",
+            "reasonableExcuse" -> "bereavement",
+            "honestyDeclaration" -> true,
             "dateOfEvent" -> "2021-04-23T18:25:43.511Z",
             "lateAppeal" -> true,
             "lateAppealReason" -> "Reason",
-            "whoPlannedToSubmit" -> "agent",
-            "causeOfLateSubmissionAgent" -> "client"
+            "isClientResponsibleForSubmission" -> false,
+            "isClientResponsibleForLateSubmission" -> true
           )
         )
 
@@ -1444,27 +1595,33 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
     "for crime" must {
       "write the model to JSON" in {
         val modelToConvertToJson: AppealSubmission = AppealSubmission(
-          submittedBy = "agent",
-          reasonableExcuse = "crime",
-          honestyDeclaration = true,
+          taxRegime = "VAT",
+          customerReferenceNo = "123456789",
+          dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
+          isLPP = false,
+          appealSubmittedBy = "agent",
           agentDetails = agentDetails,
           appealInformation = CrimeAppealInformation(
-            `type` = "crime",
             dateOfEvent = "2021-04-23T18:25:43.511Z",
-            reportedIssue = true,
+            reportedIssueToPolice = true,
             statement = None,
             lateAppeal = true,
             lateAppealReason = Some("Reason"),
-            whoPlannedToSubmit = Some("agent"),
-            causeOfLateSubmissionAgent = Some("client")
+            isClientResponsibleForSubmission = Some(false),
+            isClientResponsibleForLateSubmission = Some(true),
+            honestyDeclaration = true,
+            reasonableExcuse = "crime"
           )
         )
         val jsonRepresentingModel: JsValue = Json.obj(
-          "submittedBy" -> "agent",
-          "reasonableExcuse" -> "crime",
-          "honestyDeclaration" -> true,
+          "appealSubmittedBy" -> "agent",
+          "sourceSystem" -> "MDTP",
+          "taxRegime" -> "VAT",
+          "customerReferenceNo" -> "123456789",
+          "dateOfAppeal" -> "2020-01-01T00:00:00",
+          "isLPP" -> false,
           "agentDetails" -> Json.obj(
-            "agentReferenceNo"->  "AGENT1",
+            "agentReferenceNo" -> "AGENT1",
             "name" -> "Jack",
             "addressLine1" -> "Flat 20",
             "addressLine2" -> "123 Jack street",
@@ -1474,13 +1631,14 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             "agentEmailID" -> "Jack@aaa.com"
           ),
           "appealInformation" -> Json.obj(
-            "type" -> "crime",
+            "reasonableExcuse" -> "crime",
+            "honestyDeclaration" -> true,
             "dateOfEvent" -> "2021-04-23T18:25:43.511Z",
-            "reportedIssue" -> true,
+            "reportedIssueToPolice" -> true,
             "lateAppeal" -> true,
             "lateAppealReason" -> "Reason",
-            "whoPlannedToSubmit" -> "agent",
-            "causeOfLateSubmissionAgent" -> "client"
+            "isClientResponsibleForSubmission" -> false,
+            "isClientResponsibleForLateSubmission" -> true
           )
         )
 
@@ -1492,27 +1650,33 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
     "for fireOrFlood" must {
       "write the model to Json" in {
         val modelToConvertToJson: AppealSubmission = AppealSubmission(
-          submittedBy = "agent",
-          reasonableExcuse = "fireOrFlood",
-          honestyDeclaration = true,
+          taxRegime = "VAT",
+          customerReferenceNo = "123456789",
+          dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
+          isLPP = false,
+          appealSubmittedBy = "agent",
           agentDetails = agentDetails,
           appealInformation = FireOrFloodAppealInformation(
-            `type` = "fireOrFlood",
             dateOfEvent = "2021-04-23T18:25:43.511Z",
             statement = None,
             lateAppeal = true,
             lateAppealReason = Some("Reason"),
-            whoPlannedToSubmit = Some("agent"),
-            causeOfLateSubmissionAgent = Some("client")
+            isClientResponsibleForSubmission = Some(false),
+            isClientResponsibleForLateSubmission = Some(true),
+            honestyDeclaration = true,
+            reasonableExcuse = "fireOrFlood"
           )
         )
 
         val jsonRepresentingModel: JsValue = Json.obj(
-          "submittedBy" -> "agent",
-          "reasonableExcuse" -> "fireOrFlood",
-          "honestyDeclaration" -> true,
+          "appealSubmittedBy" -> "agent",
+          "sourceSystem" -> "MDTP",
+          "taxRegime" -> "VAT",
+          "customerReferenceNo" -> "123456789",
+          "dateOfAppeal" -> "2020-01-01T00:00:00",
+          "isLPP" -> false,
           "agentDetails" -> Json.obj(
-            "agentReferenceNo"->  "AGENT1",
+            "agentReferenceNo" -> "AGENT1",
             "name" -> "Jack",
             "addressLine1" -> "Flat 20",
             "addressLine2" -> "123 Jack street",
@@ -1522,12 +1686,13 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             "agentEmailID" -> "Jack@aaa.com"
           ),
           "appealInformation" -> Json.obj(
-            "type" -> "fireOrFlood",
+            "reasonableExcuse" -> "fireOrFlood",
+            "honestyDeclaration" -> true,
             "dateOfEvent" -> "2021-04-23T18:25:43.511Z",
             "lateAppeal" -> true,
             "lateAppealReason" -> "Reason",
-            "whoPlannedToSubmit" -> "agent",
-            "causeOfLateSubmissionAgent" -> "client"
+            "isClientResponsibleForSubmission" -> false,
+            "isClientResponsibleForLateSubmission" -> true
           )
         )
 
@@ -1539,26 +1704,32 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
     "for loss of staff" must {
       "write the model to JSON" in {
         val modelToConvertToJson: AppealSubmission = AppealSubmission(
-          submittedBy = "agent",
-          reasonableExcuse = "lossOfStaff",
-          honestyDeclaration = true,
+          taxRegime = "VAT",
+          customerReferenceNo = "123456789",
+          dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
+          isLPP = false,
+          appealSubmittedBy = "agent",
           agentDetails = agentDetails,
           appealInformation = LossOfStaffAppealInformation(
-            `type` = "lossOfStaff",
             dateOfEvent = "2021-04-23T18:25:43.511Z",
             statement = None,
             lateAppeal = true,
             lateAppealReason = Some("Reason"),
-            whoPlannedToSubmit = Some("agent"),
-            causeOfLateSubmissionAgent = Some("client")
+            isClientResponsibleForSubmission = Some(false),
+            isClientResponsibleForLateSubmission = Some(true),
+            honestyDeclaration = true,
+            reasonableExcuse = "lossOfStaff"
           )
         )
         val jsonRepresentingModel: JsValue = Json.obj(
-          "submittedBy" -> "agent",
-          "reasonableExcuse" -> "lossOfStaff",
-          "honestyDeclaration" -> true,
+          "appealSubmittedBy" -> "agent",
+          "sourceSystem" -> "MDTP",
+          "taxRegime" -> "VAT",
+          "customerReferenceNo" -> "123456789",
+          "dateOfAppeal" -> "2020-01-01T00:00:00",
+          "isLPP" -> false,
           "agentDetails" -> Json.obj(
-            "agentReferenceNo"->  "AGENT1",
+            "agentReferenceNo" -> "AGENT1",
             "name" -> "Jack",
             "addressLine1" -> "Flat 20",
             "addressLine2" -> "123 Jack street",
@@ -1568,12 +1739,13 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             "agentEmailID" -> "Jack@aaa.com"
           ),
           "appealInformation" -> Json.obj(
-            "type" -> "lossOfStaff",
+            "reasonableExcuse" -> "lossOfStaff",
+            "honestyDeclaration" -> true,
             "dateOfEvent" -> "2021-04-23T18:25:43.511Z",
             "lateAppeal" -> true,
             "lateAppealReason" -> "Reason",
-            "whoPlannedToSubmit" -> "agent",
-            "causeOfLateSubmissionAgent" -> "client"
+            "isClientResponsibleForSubmission" -> false,
+            "isClientResponsibleForLateSubmission" -> true
           )
         )
 
@@ -1586,12 +1758,13 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       "write the appeal to JSON" when {
         "there has been a hospital stay - and is no longer ongoing (both start and end date) - write the appeal model to JSON" in {
           val modelToConvertToJson = AppealSubmission(
-            submittedBy = "agent",
-            reasonableExcuse = "health",
-            honestyDeclaration = true,
+            taxRegime = "VAT",
+            customerReferenceNo = "123456789",
+            dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
+            isLPP = false,
+            appealSubmittedBy = "agent",
             agentDetails = agentDetails,
             appealInformation = HealthAppealInformation(
-              `type` = "health",
               startDateOfEvent = Some("2021-04-23T18:25:43.511Z"),
               endDateOfEvent = Some("2021-04-24T18:25:43.511Z"),
               eventOngoing = false,
@@ -1600,16 +1773,21 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
               statement = None,
               lateAppeal = true,
               lateAppealReason = Some("Reason"),
-              whoPlannedToSubmit = Some("agent"),
-              causeOfLateSubmissionAgent = Some("client")
+              isClientResponsibleForSubmission = Some(false),
+              isClientResponsibleForLateSubmission = Some(true),
+              honestyDeclaration = true,
+              reasonableExcuse = "health"
             )
           )
           val jsonRepresentingModel: JsValue = Json.obj(
-            "submittedBy" -> "agent",
-            "reasonableExcuse" -> "health",
-            "honestyDeclaration" -> true,
+            "appealSubmittedBy" -> "agent",
+            "sourceSystem" -> "MDTP",
+            "taxRegime" -> "VAT",
+            "customerReferenceNo" -> "123456789",
+            "dateOfAppeal" -> "2020-01-01T00:00:00",
+            "isLPP" -> false,
             "agentDetails" -> Json.obj(
-              "agentReferenceNo"->  "AGENT1",
+              "agentReferenceNo" -> "AGENT1",
               "name" -> "Jack",
               "addressLine1" -> "Flat 20",
               "addressLine2" -> "123 Jack street",
@@ -1619,15 +1797,16 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
               "agentEmailID" -> "Jack@aaa.com"
             ),
             "appealInformation" -> Json.obj(
-              "type" -> "health",
+              "reasonableExcuse" -> "health",
+              "honestyDeclaration" -> true,
               "startDateOfEvent" -> "2021-04-23T18:25:43.511Z",
               "endDateOfEvent" -> "2021-04-24T18:25:43.511Z",
               "eventOngoing" -> false,
               "hospitalStayInvolved" -> true,
               "lateAppeal" -> true,
               "lateAppealReason" -> "Reason",
-              "whoPlannedToSubmit" -> "agent",
-              "causeOfLateSubmissionAgent" -> "client"
+              "isClientResponsibleForSubmission" -> false,
+              "isClientResponsibleForLateSubmission" -> true
             )
           )
           val result = Json.toJson(modelToConvertToJson)(AppealSubmission.apiWrites)
@@ -1636,12 +1815,13 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
 
         "there has been a hospital stay AND it is ongoing (no end date) - write the appeal model to JSON" in {
           val modelToConvertToJson = AppealSubmission(
-            submittedBy = "agent",
-            reasonableExcuse = "health",
-            honestyDeclaration = true,
+            taxRegime = "VAT",
+            customerReferenceNo = "123456789",
+            dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
+            isLPP = false,
+            appealSubmittedBy = "agent",
             agentDetails = agentDetails,
             appealInformation = HealthAppealInformation(
-              `type` = "health",
               startDateOfEvent = Some("2021-04-23T18:25:43.511Z"),
               endDateOfEvent = None,
               eventOngoing = true,
@@ -1650,16 +1830,21 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
               statement = None,
               lateAppeal = true,
               lateAppealReason = Some("Reason"),
-              whoPlannedToSubmit = Some("agent"),
-              causeOfLateSubmissionAgent = Some("client")
+              isClientResponsibleForSubmission = Some(false),
+              isClientResponsibleForLateSubmission = Some(true),
+              honestyDeclaration = true,
+              reasonableExcuse = "health"
             )
           )
           val jsonRepresentingModel: JsValue = Json.obj(
-            "submittedBy" -> "agent",
-            "reasonableExcuse" -> "health",
-            "honestyDeclaration" -> true,
+            "appealSubmittedBy" -> "agent",
+            "sourceSystem" -> "MDTP",
+            "taxRegime" -> "VAT",
+            "customerReferenceNo" -> "123456789",
+            "dateOfAppeal" -> "2020-01-01T00:00:00",
+            "isLPP" -> false,
             "agentDetails" -> Json.obj(
-              "agentReferenceNo"->  "AGENT1",
+              "agentReferenceNo" -> "AGENT1",
               "name" -> "Jack",
               "addressLine1" -> "Flat 20",
               "addressLine2" -> "123 Jack street",
@@ -1669,14 +1854,15 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
               "agentEmailID" -> "Jack@aaa.com"
             ),
             "appealInformation" -> Json.obj(
-              "type" -> "health",
+              "reasonableExcuse" -> "health",
+              "honestyDeclaration" -> true,
               "startDateOfEvent" -> "2021-04-23T18:25:43.511Z",
               "eventOngoing" -> true,
               "hospitalStayInvolved" -> true,
               "lateAppeal" -> true,
               "lateAppealReason" -> "Reason",
-              "whoPlannedToSubmit" -> "agent",
-              "causeOfLateSubmissionAgent" -> "client"
+              "isClientResponsibleForSubmission" -> false,
+              "isClientResponsibleForLateSubmission" -> true
             )
           )
           val result = Json.toJson(modelToConvertToJson)(AppealSubmission.apiWrites)
@@ -1686,12 +1872,13 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
         "there has been NO hospital stay (dateOfEvent present, eventOngoing = false, hospitalStayInvolved = false) " +
           "write the appeal model to JSON" in {
           val modelToConvertToJson = AppealSubmission(
-            submittedBy = "agent",
-            reasonableExcuse = "health",
-            honestyDeclaration = true,
+            taxRegime = "VAT",
+            customerReferenceNo = "123456789",
+            dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
+            isLPP = false,
+            appealSubmittedBy = "agent",
             agentDetails = agentDetails,
             appealInformation = HealthAppealInformation(
-              `type` = "health",
               startDateOfEvent = None,
               endDateOfEvent = None,
               eventOngoing = false,
@@ -1700,16 +1887,21 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
               statement = None,
               lateAppeal = true,
               lateAppealReason = Some("Reason"),
-              whoPlannedToSubmit = Some("agent"),
-              causeOfLateSubmissionAgent = Some("client")
+              isClientResponsibleForSubmission = Some(false),
+              isClientResponsibleForLateSubmission = Some(true),
+              honestyDeclaration = true,
+              reasonableExcuse = "health"
             )
           )
           val jsonRepresentingModel: JsValue = Json.obj(
-            "submittedBy" -> "agent",
-            "reasonableExcuse" -> "health",
-            "honestyDeclaration" -> true,
+            "appealSubmittedBy" -> "agent",
+            "sourceSystem" -> "MDTP",
+            "taxRegime" -> "VAT",
+            "customerReferenceNo" -> "123456789",
+            "dateOfAppeal" -> "2020-01-01T00:00:00",
+            "isLPP" -> false,
             "agentDetails" -> Json.obj(
-              "agentReferenceNo"->  "AGENT1",
+              "agentReferenceNo" -> "AGENT1",
               "name" -> "Jack",
               "addressLine1" -> "Flat 20",
               "addressLine2" -> "123 Jack street",
@@ -1719,14 +1911,15 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
               "agentEmailID" -> "Jack@aaa.com"
             ),
             "appealInformation" -> Json.obj(
-              "type" -> "health",
+              "reasonableExcuse" -> "health",
+              "honestyDeclaration" -> true,
               "dateOfEvent" -> "2021-04-23T18:25:43.511Z",
               "eventOngoing" -> false,
               "hospitalStayInvolved" -> false,
               "lateAppeal" -> true,
               "lateAppealReason" -> "Reason",
-              "whoPlannedToSubmit" -> "agent",
-              "causeOfLateSubmissionAgent" -> "client"
+              "isClientResponsibleForSubmission" -> false,
+              "isClientResponsibleForLateSubmission" -> true
             )
           )
           val result = Json.toJson(modelToConvertToJson)(AppealSubmission.apiWrites)
@@ -1738,28 +1931,34 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
     "for technical issues" must {
       "write the model to JSON" in {
         val modelToConvertToJson: AppealSubmission = AppealSubmission(
-          submittedBy = "agent",
-          reasonableExcuse = "technicalIssues",
-          honestyDeclaration = true,
+          taxRegime = "VAT",
+          customerReferenceNo = "123456789",
+          dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
+          isLPP = false,
+          appealSubmittedBy = "agent",
           agentDetails = agentDetails,
           appealInformation = TechnicalIssuesAppealInformation(
-            `type` = "technicalIssues",
             startDateOfEvent = "2021-04-23T18:25:43.511Z",
             endDateOfEvent = "2021-04-24T18:25:43.511Z",
             statement = None,
             lateAppeal = false,
             lateAppealReason = None,
-            whoPlannedToSubmit = Some("agent"),
-            causeOfLateSubmissionAgent = Some("client")
+            isClientResponsibleForSubmission = Some(false),
+            isClientResponsibleForLateSubmission = Some(true),
+            honestyDeclaration = true,
+            reasonableExcuse = "technicalIssues"
           )
         )
 
         val jsonRepresentingModel: JsValue = Json.obj(
-          "submittedBy" -> "agent",
-          "reasonableExcuse" -> "technicalIssues",
-          "honestyDeclaration" -> true,
+          "appealSubmittedBy" -> "agent",
+          "sourceSystem" -> "MDTP",
+          "taxRegime" -> "VAT",
+          "customerReferenceNo" -> "123456789",
+          "dateOfAppeal" -> "2020-01-01T00:00:00",
+          "isLPP" -> false,
           "agentDetails" -> Json.obj(
-            "agentReferenceNo"->  "AGENT1",
+            "agentReferenceNo" -> "AGENT1",
             "name" -> "Jack",
             "addressLine1" -> "Flat 20",
             "addressLine2" -> "123 Jack street",
@@ -1769,12 +1968,13 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             "agentEmailID" -> "Jack@aaa.com"
           ),
           "appealInformation" -> Json.obj(
-            "type" -> "technicalIssues",
+            "reasonableExcuse" -> "technicalIssues",
+            "honestyDeclaration" -> true,
             "startDateOfEvent" -> "2021-04-23T18:25:43.511Z",
             "endDateOfEvent" -> "2021-04-24T18:25:43.511Z",
             "lateAppeal" -> false,
-            "whoPlannedToSubmit" -> "agent",
-            "causeOfLateSubmissionAgent" -> "client"
+            "isClientResponsibleForSubmission" -> false,
+            "isClientResponsibleForLateSubmission" -> true
           )
         )
 
@@ -1786,12 +1986,13 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
     "for other" must {
       "write the model to JSON" in {
         val modelToConvertToJson: AppealSubmission = AppealSubmission(
-          submittedBy = "agent",
-          reasonableExcuse = "other",
-          honestyDeclaration = true,
+          taxRegime = "VAT",
+          customerReferenceNo = "123456789",
+          dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
+          isLPP = false,
+          appealSubmittedBy = "agent",
           agentDetails = agentDetails,
           appealInformation = OtherAppealInformation(
-            `type` = "other",
             dateOfEvent = "2021-04-23T18:25:43.511Z",
             statement = Some("This was the reason"),
             supportingEvidence = Some(Evidence(
@@ -1800,17 +2001,22 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             )),
             lateAppeal = false,
             lateAppealReason = None,
-            whoPlannedToSubmit = Some("agent"),
-            causeOfLateSubmissionAgent = Some("client")
+            isClientResponsibleForSubmission = Some(false),
+            isClientResponsibleForLateSubmission = Some(true),
+            honestyDeclaration = true,
+            reasonableExcuse = "other"
           )
         )
 
         val jsonRepresentingModel: JsValue = Json.obj(
-          "submittedBy" -> "agent",
-          "reasonableExcuse" -> "other",
-          "honestyDeclaration" -> true,
+          "appealSubmittedBy" -> "agent",
+          "sourceSystem" -> "MDTP",
+          "taxRegime" -> "VAT",
+          "customerReferenceNo" -> "123456789",
+          "dateOfAppeal" -> "2020-01-01T00:00:00",
+          "isLPP" -> false,
           "agentDetails" -> Json.obj(
-            "agentReferenceNo"->  "AGENT1",
+            "agentReferenceNo" -> "AGENT1",
             "name" -> "Jack",
             "addressLine1" -> "Flat 20",
             "addressLine2" -> "123 Jack street",
@@ -1820,7 +2026,8 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             "agentEmailID" -> "Jack@aaa.com"
           ),
           "appealInformation" -> Json.obj(
-            "type" -> "other",
+            "reasonableExcuse" -> "other",
+            "honestyDeclaration" -> true,
             "dateOfEvent" -> "2021-04-23T18:25:43.511Z",
             "statement" -> "This was the reason",
             "supportingEvidence" -> Json.obj(
@@ -1828,8 +2035,8 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
               "referenceId" -> "ref1"
             ),
             "lateAppeal" -> false,
-            "whoPlannedToSubmit" -> "agent",
-            "causeOfLateSubmissionAgent" -> "client"
+            "isClientResponsibleForSubmission" -> false,
+            "isClientResponsibleForLateSubmission" -> true
           )
         )
 
@@ -1839,28 +2046,34 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
 
       "write the model to JSON - no evidence" in {
         val modelToConvertToJson: AppealSubmission = AppealSubmission(
-          submittedBy = "agent",
-          reasonableExcuse = "other",
-          honestyDeclaration = true,
+          taxRegime = "VAT",
+          customerReferenceNo = "123456789",
+          dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
+          isLPP = false,
+          appealSubmittedBy = "agent",
           agentDetails = agentDetails,
           appealInformation = OtherAppealInformation(
-            `type` = "other",
             dateOfEvent = "2021-04-23T18:25:43.511Z",
             statement = Some("This was the reason"),
             supportingEvidence = None,
             lateAppeal = false,
             lateAppealReason = None,
-            whoPlannedToSubmit = Some("agent"),
-            causeOfLateSubmissionAgent = Some("client")
+            isClientResponsibleForSubmission = Some(false),
+            isClientResponsibleForLateSubmission = Some(true),
+            honestyDeclaration = true,
+            reasonableExcuse = "other"
           )
         )
 
         val jsonRepresentingModel: JsValue = Json.obj(
-          "submittedBy" -> "agent",
-          "reasonableExcuse" -> "other",
-          "honestyDeclaration" -> true,
+          "appealSubmittedBy" -> "agent",
+          "sourceSystem" -> "MDTP",
+          "taxRegime" -> "VAT",
+          "customerReferenceNo" -> "123456789",
+          "dateOfAppeal" -> "2020-01-01T00:00:00",
+          "isLPP" -> false,
           "agentDetails" -> Json.obj(
-            "agentReferenceNo"->  "AGENT1",
+            "agentReferenceNo" -> "AGENT1",
             "name" -> "Jack",
             "addressLine1" -> "Flat 20",
             "addressLine2" -> "123 Jack street",
@@ -1870,12 +2083,13 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             "agentEmailID" -> "Jack@aaa.com"
           ),
           "appealInformation" -> Json.obj(
-            "type" -> "other",
+            "reasonableExcuse" -> "other",
+            "honestyDeclaration" -> true,
             "dateOfEvent" -> "2021-04-23T18:25:43.511Z",
             "statement" -> "This was the reason",
             "lateAppeal" -> false,
-            "whoPlannedToSubmit" -> "agent",
-            "causeOfLateSubmissionAgent" -> "client"
+            "isClientResponsibleForSubmission" -> false,
+            "isClientResponsibleForLateSubmission" -> true
           )
         )
 
@@ -1885,12 +2099,13 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
 
       "write the model to JSON - for late appeal" in {
         val modelToConvertToJson: AppealSubmission = AppealSubmission(
-          submittedBy = "agent",
-          reasonableExcuse = "other",
-          honestyDeclaration = true,
+          taxRegime = "VAT",
+          customerReferenceNo = "123456789",
+          dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
+          isLPP = false,
+          appealSubmittedBy = "agent",
           agentDetails = agentDetails,
           appealInformation = OtherAppealInformation(
-            `type` = "other",
             dateOfEvent = "2021-04-23T18:25:43.511Z",
             statement = Some("This was the reason"),
             supportingEvidence = Some(Evidence(
@@ -1899,17 +2114,22 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             )),
             lateAppeal = true,
             lateAppealReason = Some("Late reason"),
-            whoPlannedToSubmit = Some("agent"),
-            causeOfLateSubmissionAgent = Some("client")
+            isClientResponsibleForSubmission = Some(false),
+            isClientResponsibleForLateSubmission = Some(true),
+            honestyDeclaration = true,
+            reasonableExcuse = "other"
           )
         )
 
         val jsonRepresentingModel: JsValue = Json.obj(
-          "submittedBy" -> "agent",
-          "reasonableExcuse" -> "other",
-          "honestyDeclaration" -> true,
+          "appealSubmittedBy" -> "agent",
+          "sourceSystem" -> "MDTP",
+          "taxRegime" -> "VAT",
+          "customerReferenceNo" -> "123456789",
+          "dateOfAppeal" -> "2020-01-01T00:00:00",
+          "isLPP" -> false,
           "agentDetails" -> Json.obj(
-            "agentReferenceNo"->  "AGENT1",
+            "agentReferenceNo" -> "AGENT1",
             "name" -> "Jack",
             "addressLine1" -> "Flat 20",
             "addressLine2" -> "123 Jack street",
@@ -1919,7 +2139,8 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             "agentEmailID" -> "Jack@aaa.com"
           ),
           "appealInformation" -> Json.obj(
-            "type" -> "other",
+            "reasonableExcuse" -> "other",
+            "honestyDeclaration" -> true,
             "dateOfEvent" -> "2021-04-23T18:25:43.511Z",
             "statement" -> "This was the reason",
             "supportingEvidence" -> Json.obj(
@@ -1928,8 +2149,8 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             ),
             "lateAppeal" -> true,
             "lateAppealReason" -> "Late reason",
-            "whoPlannedToSubmit" -> "agent",
-            "causeOfLateSubmissionAgent" -> "client"
+            "isClientResponsibleForSubmission" -> false,
+            "isClientResponsibleForLateSubmission" -> true
           )
         )
 
@@ -1941,31 +2162,38 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
     "for obligation" must {
       "write the model to JSON" in {
         val modelToCovertToJson: AppealSubmission = AppealSubmission(
-          submittedBy = "client",
-          reasonableExcuse = "obligation",
-          honestyDeclaration = true,
+          taxRegime = "VAT",
+          customerReferenceNo = "123456789",
+          dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
+          isLPP = false,
+          appealSubmittedBy = "client",
           agentDetails = None,
           appealInformation = ObligationAppealInformation(
-            `type` = "obligation",
             statement = Some("A valid statement"),
             supportingEvidence = Some(Evidence(
               noOfUploadedFiles = 1,
               referenceId = Some("ref")
-            ))
+            )),
+            honestyDeclaration = true,
+            reasonableExcuse = "obligation"
           )
         )
 
         val jsonModel: JsValue = Json.obj(
-          "submittedBy" -> "client",
-          "reasonableExcuse" -> "obligation",
-          "honestyDeclaration" -> true,
+          "appealSubmittedBy" -> "client",
+          "sourceSystem" -> "MDTP",
+          "taxRegime" -> "VAT",
+          "customerReferenceNo" -> "123456789",
+          "dateOfAppeal" -> "2020-01-01T00:00:00",
+          "isLPP" -> false,
           "appealInformation" -> Json.obj(
-            "type" -> "obligation",
             "statement" -> "A valid statement",
             "supportingEvidence" -> Json.obj(
               "noOfUploadedFiles" -> 1,
               "referenceId" -> "ref"
-            )
+            ),
+            "honestyDeclaration" -> true,
+            "reasonableExcuse" -> "obligation"
           )
         )
 
@@ -1975,24 +2203,31 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
 
       "write the model to JSON - no evidence" in {
         val modelToCovertToJson: AppealSubmission = AppealSubmission(
-          submittedBy = "client",
-          reasonableExcuse = "obligation",
-          honestyDeclaration = true,
+          taxRegime = "VAT",
+          customerReferenceNo = "123456789",
+          dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
+          isLPP = false,
+          appealSubmittedBy = "client",
           agentDetails = None,
           appealInformation = ObligationAppealInformation(
-            `type` = "obligation",
             statement = Some("A valid statement"),
-            supportingEvidence = None
+            supportingEvidence = None,
+            honestyDeclaration = true,
+            reasonableExcuse = "obligation"
           )
         )
 
         val jsonModel: JsValue = Json.obj(
-          "submittedBy" -> "client",
-          "reasonableExcuse" -> "obligation",
-          "honestyDeclaration" -> true,
+          "appealSubmittedBy" -> "client",
+          "sourceSystem" -> "MDTP",
+          "taxRegime" -> "VAT",
+          "customerReferenceNo" -> "123456789",
+          "dateOfAppeal" -> "2020-01-01T00:00:00",
+          "isLPP" -> false,
           "appealInformation" -> Json.obj(
-            "type" -> "obligation",
-            "statement" -> "A valid statement"
+            "statement" -> "A valid statement",
+            "honestyDeclaration" -> true,
+            "reasonableExcuse" -> "obligation"
           )
         )
 
@@ -2006,21 +2241,23 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
     "bereavementAppealWrites" must {
       "write the appeal model to JSON" in {
         val model = BereavementAppealInformation(
-          `type` = "bereavement",
           dateOfEvent = "2021-04-23T18:25:43.511Z",
           statement = None,
           lateAppeal = false,
           lateAppealReason = None,
-          whoPlannedToSubmit = Some("agent"),
-          causeOfLateSubmissionAgent = Some("client")
+          isClientResponsibleForSubmission = Some(false),
+          isClientResponsibleForLateSubmission = Some(true),
+          honestyDeclaration = true,
+          reasonableExcuse = "bereavement"
         )
         val result = Json.toJson(model)(BereavementAppealInformation.bereavementAppealWrites)
         result shouldBe Json.obj(
-          "type" -> "bereavement",
+          "reasonableExcuse" -> "bereavement",
           "dateOfEvent" -> "2021-04-23T18:25:43.511Z",
           "lateAppeal" -> false,
-          "whoPlannedToSubmit" -> "agent",
-          "causeOfLateSubmissionAgent" -> "client"
+          "isClientResponsibleForSubmission" -> false,
+          "isClientResponsibleForLateSubmission" -> true,
+          "honestyDeclaration" -> true
         )
       }
     }
@@ -2030,23 +2267,25 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
     "crimeAppealWrites" must {
       "write the appeal model to JSON" in {
         val model = CrimeAppealInformation(
-          `type` = "crime",
           dateOfEvent = "2021-04-23T18:25:43.511Z",
-          reportedIssue = true,
+          reportedIssueToPolice = true,
           statement = None,
           lateAppeal = false,
           lateAppealReason = None,
-          whoPlannedToSubmit = Some("agent"),
-          causeOfLateSubmissionAgent = Some("client")
+          isClientResponsibleForSubmission = Some(false),
+          isClientResponsibleForLateSubmission = Some(true),
+          honestyDeclaration = true,
+          reasonableExcuse = "crime"
         )
         val result = Json.toJson(model)(CrimeAppealInformation.crimeAppealWrites)
         result shouldBe Json.obj(
-          "type" -> "crime",
+          "reasonableExcuse" -> "crime",
           "dateOfEvent" -> "2021-04-23T18:25:43.511Z",
-          "reportedIssue" -> true,
+          "reportedIssueToPolice" -> true,
           "lateAppeal" -> false,
-          "whoPlannedToSubmit" -> "agent",
-          "causeOfLateSubmissionAgent" -> "client"
+          "isClientResponsibleForSubmission" -> false,
+          "isClientResponsibleForLateSubmission" -> true,
+          "honestyDeclaration" -> true
         )
       }
     }
@@ -2056,21 +2295,23 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
     "lossOfStaffAppealWrites" must {
       "write the appeal model to JSON" in {
         val model = LossOfStaffAppealInformation(
-          `type` = "lossOfStaff",
           dateOfEvent = "2021-04-23T18:25:43.511Z",
           statement = None,
           lateAppeal = false,
           lateAppealReason = None,
-          whoPlannedToSubmit = Some("agent"),
-          causeOfLateSubmissionAgent = Some("client")
+          isClientResponsibleForSubmission = Some(false),
+          isClientResponsibleForLateSubmission = Some(true),
+          honestyDeclaration = true,
+          reasonableExcuse = "lossOfStaff"
         )
         val result = Json.toJson(model)(LossOfStaffAppealInformation.lossOfStaffAppealWrites)
         result shouldBe Json.obj(
-          "type" -> "lossOfStaff",
+          "reasonableExcuse" -> "lossOfStaff",
           "dateOfEvent" -> "2021-04-23T18:25:43.511Z",
           "lateAppeal" -> false,
-          "whoPlannedToSubmit" -> "agent",
-          "causeOfLateSubmissionAgent" -> "client"
+          "isClientResponsibleForSubmission" -> false,
+          "isClientResponsibleForLateSubmission" -> true,
+          "honestyDeclaration" -> true
         )
       }
     }
@@ -2080,21 +2321,23 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
     "fireOrFloodAppealWrites" must {
       "write the appeal model to Json" in {
         val model = FireOrFloodAppealInformation(
-          `type` = "fireOrFlood",
           dateOfEvent = "2021-04-23T18:25:43.511Z",
           statement = None,
           lateAppeal = false,
           lateAppealReason = None,
-          whoPlannedToSubmit = Some("agent"),
-          causeOfLateSubmissionAgent = Some("client")
+          isClientResponsibleForSubmission = Some(false),
+          isClientResponsibleForLateSubmission = Some(true),
+          honestyDeclaration = true,
+          reasonableExcuse = "fireOrFlood"
         )
         val result = Json.toJson(model)(FireOrFloodAppealInformation.fireOrFloodAppealWrites)
         result shouldBe Json.obj(
-          "type" -> "fireOrFlood",
+          "reasonableExcuse" -> "fireOrFlood",
           "dateOfEvent" -> "2021-04-23T18:25:43.511Z",
           "lateAppeal" -> false,
-          "whoPlannedToSubmit" -> "agent",
-          "causeOfLateSubmissionAgent" -> "client"
+          "isClientResponsibleForSubmission" -> false,
+          "isClientResponsibleForLateSubmission" -> true,
+          "honestyDeclaration" -> true
         )
       }
     }
@@ -2104,24 +2347,26 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
     "technicalIssuesAppealWrites" must {
       "write the appeal model to JSON" in {
         val model = TechnicalIssuesAppealInformation(
-          `type` = "technicalIssues",
           startDateOfEvent = "2021-04-23T18:25:43.511Z",
           endDateOfEvent = "2021-04-24T18:25:43.511Z",
           statement = None,
           lateAppeal = true,
           lateAppealReason = Some("Reason"),
-          whoPlannedToSubmit = Some("agent"),
-          causeOfLateSubmissionAgent = Some("client")
+          isClientResponsibleForSubmission = Some(false),
+          isClientResponsibleForLateSubmission = Some(true),
+          honestyDeclaration = true,
+          reasonableExcuse = "technicalIssues"
         )
         val result = Json.toJson(model)(TechnicalIssuesAppealInformation.technicalIssuesAppealWrites)
         result shouldBe Json.obj(
-          "type" -> "technicalIssues",
+          "reasonableExcuse" -> "technicalIssues",
           "startDateOfEvent" -> "2021-04-23T18:25:43.511Z",
           "endDateOfEvent" -> "2021-04-24T18:25:43.511Z",
           "lateAppeal" -> true,
           "lateAppealReason" -> "Reason",
-          "whoPlannedToSubmit" -> "agent",
-          "causeOfLateSubmissionAgent" -> "client"
+          "isClientResponsibleForSubmission" -> false,
+          "isClientResponsibleForLateSubmission" -> true,
+          "honestyDeclaration" -> true
         )
       }
     }
@@ -2132,7 +2377,6 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       "write the appeal to JSON" when {
         "there has been a hospital stay - and is no longer ongoing (both start and end date) - write the appeal model to JSON" in {
           val model = HealthAppealInformation(
-            `type` = "health",
             startDateOfEvent = Some("2021-04-23T18:25:43.511Z"),
             endDateOfEvent = Some("2021-04-24T18:25:43.511Z"),
             eventOngoing = false,
@@ -2141,26 +2385,28 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             statement = None,
             lateAppeal = true,
             lateAppealReason = Some("Reason"),
-            whoPlannedToSubmit = Some("agent"),
-            causeOfLateSubmissionAgent = Some("client")
+            isClientResponsibleForSubmission = Some(false),
+            isClientResponsibleForLateSubmission = Some(true),
+            honestyDeclaration = true,
+            reasonableExcuse = "health"
           )
           val result = Json.toJson(model)(HealthAppealInformation.healthAppealWrites)
           result shouldBe Json.obj(
-            "type" -> "health",
+            "reasonableExcuse" -> "health",
             "startDateOfEvent" -> "2021-04-23T18:25:43.511Z",
             "endDateOfEvent" -> "2021-04-24T18:25:43.511Z",
             "eventOngoing" -> false,
             "hospitalStayInvolved" -> true,
             "lateAppeal" -> true,
             "lateAppealReason" -> "Reason",
-            "whoPlannedToSubmit" -> "agent",
-            "causeOfLateSubmissionAgent" -> "client"
+            "isClientResponsibleForSubmission" -> false,
+            "isClientResponsibleForLateSubmission" -> true,
+            "honestyDeclaration" -> true
           )
         }
 
         "there has been a hospital stay AND it is ongoing (no end date) - write the appeal model to JSON" in {
           val model = HealthAppealInformation(
-            `type` = "health",
             startDateOfEvent = Some("2021-04-23T18:25:43.511Z"),
             endDateOfEvent = None,
             eventOngoing = true,
@@ -2169,26 +2415,28 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             statement = None,
             lateAppeal = true,
             lateAppealReason = Some("Reason"),
-            whoPlannedToSubmit = Some("agent"),
-            causeOfLateSubmissionAgent = Some("client")
+            isClientResponsibleForSubmission = Some(false),
+            isClientResponsibleForLateSubmission = Some(true),
+            honestyDeclaration = true,
+            reasonableExcuse = "health"
           )
           val result = Json.toJson(model)(HealthAppealInformation.healthAppealWrites)
           result shouldBe Json.obj(
-            "type" -> "health",
+            "reasonableExcuse" -> "health",
             "startDateOfEvent" -> "2021-04-23T18:25:43.511Z",
             "eventOngoing" -> true,
             "hospitalStayInvolved" -> true,
             "lateAppeal" -> true,
             "lateAppealReason" -> "Reason",
-            "whoPlannedToSubmit" -> "agent",
-            "causeOfLateSubmissionAgent" -> "client"
+            "isClientResponsibleForSubmission" -> false,
+            "isClientResponsibleForLateSubmission" -> true,
+            "honestyDeclaration" -> true
           )
         }
 
         "there has been NO hospital stay (dateOfEvent present, eventOngoing = false, hospitalStayInvolved = false) " +
           "write the appeal model to JSON" in {
           val model = HealthAppealInformation(
-            `type` = "health",
             startDateOfEvent = None,
             endDateOfEvent = None,
             eventOngoing = false,
@@ -2197,19 +2445,22 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             statement = None,
             lateAppeal = true,
             lateAppealReason = Some("Reason"),
-            whoPlannedToSubmit = Some("agent"),
-            causeOfLateSubmissionAgent = Some("client")
+            isClientResponsibleForSubmission = Some(false),
+            isClientResponsibleForLateSubmission = Some(true),
+            honestyDeclaration = true,
+            reasonableExcuse = "health"
           )
           val result = Json.toJson(model)(HealthAppealInformation.healthAppealWrites)
           result shouldBe Json.obj(
-            "type" -> "health",
+            "reasonableExcuse" -> "health",
             "dateOfEvent" -> "2021-04-23T18:25:43.511Z",
             "eventOngoing" -> false,
             "hospitalStayInvolved" -> false,
             "lateAppeal" -> true,
             "lateAppealReason" -> "Reason",
-            "whoPlannedToSubmit" -> "agent",
-            "causeOfLateSubmissionAgent" -> "client"
+            "isClientResponsibleForSubmission" -> false,
+            "isClientResponsibleForLateSubmission" -> true,
+            "honestyDeclaration" -> true
           )
         }
       }
@@ -2220,19 +2471,20 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
     "otherAppealInformationWrites" should {
       "write to JSON - no late appeal" in {
         val modelToConvertToJson = OtherAppealInformation(
-          `type` = "other",
           dateOfEvent = "2022-01-01T13:00:00.000Z",
           statement = Some("I was late. Sorry."),
           supportingEvidence = Some(Evidence(1, Some("reference-3000"))),
           lateAppeal = false,
           lateAppealReason = None,
-          whoPlannedToSubmit = Some("agent"),
-          causeOfLateSubmissionAgent = Some("client")
+          isClientResponsibleForSubmission = Some(false),
+          isClientResponsibleForLateSubmission = Some(true),
+          honestyDeclaration = true,
+          reasonableExcuse = "other"
         )
         val expectedResult = Json.parse(
           """
             |{
-            | "type": "other",
+            | "reasonableExcuse": "other",
             | "dateOfEvent": "2022-01-01T13:00:00.000Z",
             | "statement": "I was late. Sorry.",
             | "supportingEvidence": {
@@ -2240,8 +2492,9 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             |   "referenceId": "reference-3000"
             | },
             | "lateAppeal": false,
-            | "whoPlannedToSubmit": "agent",
-            | "causeOfLateSubmissionAgent": "client"
+            | "isClientResponsibleForSubmission": false,
+            | "isClientResponsibleForLateSubmission": true,
+            | "honestyDeclaration": true
             |}
             |""".stripMargin)
         val result = Json.toJson(modelToConvertToJson)
@@ -2250,19 +2503,20 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
 
       "write to JSON - late appeal" in {
         val modelToConvertToJson = OtherAppealInformation(
-          `type` = "other",
           dateOfEvent = "2022-01-01T13:00:00.000Z",
           statement = Some("I was late. Sorry."),
           supportingEvidence = Some(Evidence(1, Some("reference-3000"))),
           lateAppeal = true,
           lateAppealReason = Some("This is a reason"),
-          whoPlannedToSubmit = Some("agent"),
-          causeOfLateSubmissionAgent = Some("client")
+          isClientResponsibleForSubmission = Some(false),
+          isClientResponsibleForLateSubmission = Some(true),
+          honestyDeclaration = true,
+          reasonableExcuse = "other"
         )
         val expectedResult = Json.parse(
           """
             |{
-            | "type": "other",
+            | "reasonableExcuse": "other",
             | "dateOfEvent": "2022-01-01T13:00:00.000Z",
             | "statement": "I was late. Sorry.",
             | "supportingEvidence": {
@@ -2271,8 +2525,9 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             | },
             | "lateAppeal": true,
             | "lateAppealReason": "This is a reason",
-            | "whoPlannedToSubmit": "agent",
-            | "causeOfLateSubmissionAgent": "client"
+            | "isClientResponsibleForSubmission": false,
+            | "isClientResponsibleForLateSubmission": true,
+            |  "honestyDeclaration": true
             |}
             |""".stripMargin)
         val result = Json.toJson(modelToConvertToJson)
@@ -2281,24 +2536,26 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
 
       "write to JSON - no evidence" in {
         val modelToConvertToJson = OtherAppealInformation(
-          `type` = "other",
           dateOfEvent = "2022-01-01T13:00:00.000Z",
           statement = Some("I was late. Sorry."),
           supportingEvidence = None,
           lateAppeal = false,
           lateAppealReason = None,
-          whoPlannedToSubmit = Some("agent"),
-          causeOfLateSubmissionAgent = Some("client")
+          isClientResponsibleForSubmission = Some(false),
+          isClientResponsibleForLateSubmission = Some(true),
+          honestyDeclaration = true,
+          reasonableExcuse = "other"
         )
         val expectedResult = Json.parse(
           """
             |{
-            | "type": "other",
+            | "reasonableExcuse": "other",
             | "dateOfEvent": "2022-01-01T13:00:00.000Z",
             | "statement": "I was late. Sorry.",
             | "lateAppeal": false,
-            | "whoPlannedToSubmit": "agent",
-            | "causeOfLateSubmissionAgent": "client"
+            | "isClientResponsibleForSubmission": false,
+            | "isClientResponsibleForLateSubmission": true,
+            | "honestyDeclaration": true
             |}
             |""".stripMargin)
         val result = Json.toJson(modelToConvertToJson)
@@ -2311,23 +2568,27 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
     "obligationAppealInformationWrites" should {
       "write to JSON" in {
         val model = ObligationAppealInformation(
-          `type` = "obligation",
           statement = Some("A valid statement"),
           supportingEvidence = Some(Evidence(
             noOfUploadedFiles = 1,
             referenceId = Some("ref")
-          ))
+          )),
+          isClientResponsibleForSubmission = None,
+          isClientResponsibleForLateSubmission = None,
+          honestyDeclaration = true,
+          reasonableExcuse = "obligation"
         )
 
         val expectedResult = Json.parse(
           """
             |{
-            |   "type": "obligation",
             |   "statement": "A valid statement",
             |   "supportingEvidence": {
             |       "noOfUploadedFiles": 1,
             |       "referenceId": "ref"
-            |   }
+            |   },
+            |   "honestyDeclaration": true,
+            |   "reasonableExcuse": "obligation"
             |}
             |""".stripMargin
         )
@@ -2338,16 +2599,20 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
 
       "write to JSON - no evidence" in {
         val model = ObligationAppealInformation(
-          `type` = "obligation",
           statement = Some("A valid statement"),
-          supportingEvidence = None
+          supportingEvidence = None,
+          isClientResponsibleForSubmission = None,
+          isClientResponsibleForLateSubmission = None,
+          honestyDeclaration = true,
+          reasonableExcuse = "obligation"
         )
 
         val expectedResult = Json.parse(
           """
             |{
-            |   "type": "obligation",
-            |   "statement": "A valid statement"
+            |   "statement": "A valid statement",
+            |   "reasonableExcuse": "obligation",
+            |   "honestyDeclaration": true
             |}
             |""".stripMargin
         )

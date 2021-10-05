@@ -267,11 +267,15 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
       val jsonToSubmit: JsValue = Json.parse(
         """
           |{
-          |    "submittedBy": "client",
-          |    "reasonableExcuse": "bereavement",
-          |    "honestyDeclaration": true,
+          |    "sourceSystem": "MDTP",
+          |    "taxRegime": "VAT",
+          |    "customerReferenceNo": "123456789",
+          |    "dateOfAppeal": "2020-01-01T00:00:00",
+          |    "isLPP": false,
+          |    "appealSubmittedBy": "client",
           |    "appealInformation": {
-          |						"type": "bereavement",
+          |						"reasonableExcuse": "bereavement",
+          |           "honestyDeclaration": true,
           |           "dateOfEvent": "2021-04-23T18:25:43.511Z",
           |						"statement": "This is a statement",
           |           "lateAppeal": false
@@ -289,13 +293,17 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
       val jsonToSubmit: JsValue = Json.parse(
         """
           |{
-          |    "submittedBy": "client",
-          |    "reasonableExcuse": "crime",
-          |    "honestyDeclaration": true,
+          |    "sourceSystem": "MDTP",
+          |    "taxRegime": "VAT",
+          |    "customerReferenceNo": "123456789",
+          |    "dateOfAppeal": "2020-01-01T00:00:00",
+          |    "isLPP": false,
+          |    "appealSubmittedBy": "client",
           |    "appealInformation": {
-          |						"type": "crime",
+          |						 "reasonableExcuse": "crime",
+          |            "honestyDeclaration": true,
           |            "dateOfEvent": "2021-04-23T18:25:43.511Z",
-          |            "reportedIssue": true,
+          |            "reportedIssueToPolice": true,
           |						 "statement": "This is a statement",
           |            "lateAppeal": false
           |		}
@@ -312,11 +320,15 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
       val jsonToSubmit: JsValue = Json.parse(
         """
           |{
-          |    "submittedBy": "client",
-          |    "reasonableExcuse": "fireOrFlood",
-          |    "honestyDeclaration": true,
+          |    "sourceSystem": "MDTP",
+          |    "taxRegime": "VAT",
+          |    "customerReferenceNo": "123456789",
+          |    "dateOfAppeal": "2020-01-01T00:00:00",
+          |    "isLPP": false,
+          |    "appealSubmittedBy": "client",
           |    "appealInformation": {
-          |          "type": "fireOrFlood",
+          |          "reasonableExcuse": "fireOrFlood",
+          |          "honestyDeclaration": true,
           |          "dateOfEvent": "2021-04-23T18:25:43.511Z",
           |          "statement": "This is a statement",
           |          "lateAppeal": false
@@ -334,11 +346,15 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
       val jsonToSubmit: JsValue = Json.parse(
         """
           |{
-          |    "submittedBy": "client",
-          |    "reasonableExcuse": "lossOfStaff",
-          |    "honestyDeclaration": true,
+          |    "sourceSystem": "MDTP",
+          |    "taxRegime": "VAT",
+          |    "customerReferenceNo": "123456789",
+          |    "dateOfAppeal": "2020-01-01T00:00:00",
+          |    "isLPP": false,
+          |    "appealSubmittedBy": "client",
           |    "appealInformation": {
-          |						"type": "lossOfStaff",
+          |						 "reasonableExcuse": "lossOfStaff",
+          |            "honestyDeclaration": true,
           |            "dateOfEvent": "2021-04-23T18:25:43.511Z",
           |						 "statement": "This is a statement",
           |            "lateAppeal": false
@@ -352,15 +368,19 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
     }
 
     "call the connector and send the appeal data received in the request body - returns OK when successful for technical issues" in {
-      mockResponseForAppealSubmissionStub(OK, "HMRC-MTD-VAT~VRN~123456789", penaltyId="123456789")
+      mockResponseForAppealSubmissionStub(OK, "HMRC-MTD-VAT~VRN~123456789", penaltyId = "123456789")
       val jsonToSubmit: JsValue = Json.parse(
         """
           |{
-          |    "submittedBy": "client",
-          |    "reasonableExcuse": "technicalIssues",
-          |    "honestyDeclaration": true,
+          |    "sourceSystem": "MDTP",
+          |    "taxRegime": "VAT",
+          |    "customerReferenceNo": "123456789",
+          |    "dateOfAppeal": "2020-01-01T00:00:00",
+          |    "isLPP": false,
+          |    "appealSubmittedBy": "client",
           |    "appealInformation": {
-          |						"type": "technicalIssues",
+          |					 	 "reasonableExcuse": "technicalIssues",
+          |            "honestyDeclaration": true,
           |            "startDateOfEvent": "2021-04-23T18:25:43.511Z",
           |            "endDateOfEvent": "2021-04-24T18:25:43.511Z",
           |						 "statement": "This is a statement",
@@ -380,11 +400,15 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
         val jsonToSubmit: JsValue = Json.parse(
           """
             |{
-            |    "submittedBy": "client",
-            |    "reasonableExcuse": "health",
-            |    "honestyDeclaration": true,
+            |    "sourceSystem": "MDTP",
+            |    "taxRegime": "VAT",
+            |    "customerReferenceNo": "123456789",
+            |    "dateOfAppeal": "2020-01-01T00:00:00",
+            |    "isLPP": false,
+            |    "appealSubmittedBy": "client",
             |    "appealInformation": {
-            |						 "type": "health",
+            |						 "reasonableExcuse": "health",
+            |            "honestyDeclaration": true,
             |            "dateOfEvent": "2021-04-23T18:25:43.511Z",
             |            "hospitalStayInvolved": false,
             |            "eventOngoing": false,
@@ -404,11 +428,15 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
         val jsonToSubmit: JsValue = Json.parse(
           """
             |{
-            |    "submittedBy": "client",
-            |    "reasonableExcuse": "health",
-            |    "honestyDeclaration": true,
+            |    "sourceSystem": "MDTP",
+            |    "taxRegime": "VAT",
+            |    "customerReferenceNo": "123456789",
+            |    "dateOfAppeal": "2020-01-01T00:00:00",
+            |    "isLPP": false,
+            |    "appealSubmittedBy": "client",
             |    "appealInformation": {
-            |						 "type": "health",
+            |						 "reasonableExcuse": "health",
+            |            "honestyDeclaration": true,
             |            "startDateOfEvent": "2021-04-23T18:25:43.511Z",
             |            "hospitalStayInvolved": true,
             |            "eventOngoing": true,
@@ -428,11 +456,15 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
         val jsonToSubmit: JsValue = Json.parse(
           """
             |{
-            |    "submittedBy": "client",
-            |    "reasonableExcuse": "health",
-            |    "honestyDeclaration": true,
+            |    "sourceSystem": "MDTP",
+            |    "taxRegime": "VAT",
+            |    "customerReferenceNo": "123456789",
+            |    "dateOfAppeal": "2020-01-01T00:00:00",
+            |    "isLPP": false,
+            |    "appealSubmittedBy": "client",
             |    "appealInformation": {
-            |						 "type": "health",
+            |						 "reasonableExcuse": "health",
+            |            "honestyDeclaration": true,
             |            "startDateOfEvent": "2021-04-23T18:25:43.511Z",
             |            "endDateOfEvent": "2021-04-23T18:25:43.511Z",
             |            "hospitalStayInvolved": true,
@@ -453,13 +485,17 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
         val jsonToSubmit: JsValue = Json.parse(
           """
             |{
-            |    "submittedBy": "client",
-            |    "reasonableExcuse": "crime",
-            |    "honestyDeclaration": true,
+            |    "sourceSystem": "MDTP",
+            |    "taxRegime": "VAT",
+            |    "customerReferenceNo": "123456789",
+            |    "dateOfAppeal": "2020-01-01T00:00:00",
+            |    "isLPP": true,
+            |    "appealSubmittedBy": "client",
             |    "appealInformation": {
-            |						"type": "crime",
+            |						 "reasonableExcuse": "crime",
+            |            "honestyDeclaration": true,
             |            "dateOfEvent": "2021-04-23T18:25:43.511Z",
-            |            "reportedIssue": true,
+            |            "reportedIssueToPolice": true,
             |						 "statement": "This is a statement",
             |            "lateAppeal": false
             |		}
@@ -494,13 +530,17 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
         val jsonToSubmit: JsValue = Json.parse(
           """
             |{
-            |    "submittedBy": "client",
-            |    "reasonableExcuse": "crime",
-            |    "honestyDeclaration": true,
+            |    "sourceSystem": "MDTP",
+            |    "taxRegime": "VAT",
+            |    "customerReferenceNo": "123456789",
+            |    "dateOfAppeal": "2020-01-01T00:00:00",
+            |    "isLPP": false,
+            |    "appealSubmittedBy": "client",
             |    "appealInformation": {
-            |						"type": "crime",
+            |						 "reasonableExcuse": "crime",
+            |            "honestyDeclaration": true,
             |            "dateOfEvent": "2021-04-23T18:25:43.511Z",
-            |            "reportedIssue": true,
+            |            "reportedIssueToPolice": true,
             |						 "statement": "This is a statement",
             |            "lateAppeal": false
             |		}

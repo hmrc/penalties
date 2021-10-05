@@ -18,19 +18,25 @@ package models.appeals
 
 import play.api.libs.json._
 
+import java.time.LocalDateTime
+
 sealed trait AppealInformation {
-  val `type`: String
   val statement: Option[String]
+  val reasonableExcuse: String
+  val honestyDeclaration: Boolean
+  val isClientResponsibleForSubmission: Option[Boolean]
+  val isClientResponsibleForLateSubmission: Option[Boolean]
 }
 
 case class BereavementAppealInformation(
-                                         `type`: String,
                                          dateOfEvent: String,
                                          statement: Option[String],
                                          lateAppeal: Boolean,
                                          lateAppealReason: Option[String],
-                                         whoPlannedToSubmit: Option[String],
-                                         causeOfLateSubmissionAgent: Option[String]
+                                         reasonableExcuse: String,
+                                         honestyDeclaration: Boolean,
+                                         isClientResponsibleForSubmission: Option[Boolean],
+                                         isClientResponsibleForLateSubmission: Option[Boolean]
                                        ) extends AppealInformation
 
 object BereavementAppealInformation {
@@ -38,9 +44,10 @@ object BereavementAppealInformation {
 
   val bereavementAppealWrites: Writes[BereavementAppealInformation] = (bereavementAppealInformation: BereavementAppealInformation) => {
     Json.obj(
-      "type" -> bereavementAppealInformation.`type`,
       "dateOfEvent" -> bereavementAppealInformation.dateOfEvent,
-      "lateAppeal" -> bereavementAppealInformation.lateAppeal
+      "lateAppeal" -> bereavementAppealInformation.lateAppeal,
+      "reasonableExcuse" -> bereavementAppealInformation.reasonableExcuse,
+      "honestyDeclaration" -> bereavementAppealInformation.honestyDeclaration
     ).deepMerge(
       bereavementAppealInformation.statement.fold(
         Json.obj()
@@ -54,30 +61,31 @@ object BereavementAppealInformation {
         lateAppealReason => Json.obj("lateAppealReason" -> lateAppealReason)
       )
     ).deepMerge(
-      bereavementAppealInformation.whoPlannedToSubmit.fold(
+      bereavementAppealInformation.isClientResponsibleForSubmission.fold(
         Json.obj()
       )(
-        whoPlannedToSubmit => Json.obj("whoPlannedToSubmit" -> whoPlannedToSubmit)
+        isClientResponsibleForSubmission => Json.obj("isClientResponsibleForSubmission" -> isClientResponsibleForSubmission)
       )
     ).deepMerge(
-      bereavementAppealInformation.causeOfLateSubmissionAgent.fold(
+      bereavementAppealInformation.isClientResponsibleForLateSubmission.fold(
         Json.obj()
       )(
-        causeOfLateSubmissionAgent => Json.obj("causeOfLateSubmissionAgent" -> causeOfLateSubmissionAgent)
+        isClientResponsibleForLateSubmission => Json.obj("isClientResponsibleForLateSubmission" -> isClientResponsibleForLateSubmission)
       )
     )
   }
 }
 
 case class CrimeAppealInformation(
-                                   `type`: String,
                                    dateOfEvent: String,
-                                   reportedIssue: Boolean,
+                                   reportedIssueToPolice: Boolean,
                                    statement: Option[String],
                                    lateAppeal: Boolean,
                                    lateAppealReason: Option[String],
-                                   whoPlannedToSubmit: Option[String],
-                                   causeOfLateSubmissionAgent: Option[String]
+                                   reasonableExcuse: String,
+                                   honestyDeclaration: Boolean,
+                                   isClientResponsibleForSubmission: Option[Boolean],
+                                   isClientResponsibleForLateSubmission: Option[Boolean]
                                  ) extends AppealInformation
 
 object CrimeAppealInformation {
@@ -85,10 +93,11 @@ object CrimeAppealInformation {
 
   val crimeAppealWrites: Writes[CrimeAppealInformation] = (crimeAppealInformation: CrimeAppealInformation) => {
     Json.obj(
-      "type" -> crimeAppealInformation.`type`,
       "dateOfEvent" -> crimeAppealInformation.dateOfEvent,
-      "reportedIssue" -> crimeAppealInformation.reportedIssue,
-      "lateAppeal" -> crimeAppealInformation.lateAppeal
+      "reportedIssueToPolice" -> crimeAppealInformation.reportedIssueToPolice,
+      "lateAppeal" -> crimeAppealInformation.lateAppeal,
+      "reasonableExcuse" -> crimeAppealInformation.reasonableExcuse,
+      "honestyDeclaration" -> crimeAppealInformation.honestyDeclaration
     ).deepMerge(
       crimeAppealInformation.statement.fold(
         Json.obj()
@@ -102,29 +111,30 @@ object CrimeAppealInformation {
         lateAppealReason => Json.obj("lateAppealReason" -> lateAppealReason)
       )
     ).deepMerge(
-      crimeAppealInformation.whoPlannedToSubmit.fold(
+      crimeAppealInformation.isClientResponsibleForSubmission.fold(
         Json.obj()
       )(
-        whoPlannedToSubmit => Json.obj("whoPlannedToSubmit" -> whoPlannedToSubmit)
+        isClientResponsibleForSubmission => Json.obj("isClientResponsibleForSubmission" -> isClientResponsibleForSubmission)
       )
     ).deepMerge(
-      crimeAppealInformation.causeOfLateSubmissionAgent.fold(
+      crimeAppealInformation.isClientResponsibleForLateSubmission.fold(
         Json.obj()
       )(
-        causeOfLateSubmissionAgent => Json.obj("causeOfLateSubmissionAgent" -> causeOfLateSubmissionAgent)
+        isClientResponsibleForLateSubmission => Json.obj("isClientResponsibleForLateSubmission" -> isClientResponsibleForLateSubmission)
       )
     )
   }
 }
 
 case class FireOrFloodAppealInformation(
-                                         `type`: String,
                                          dateOfEvent: String,
                                          statement: Option[String],
                                          lateAppeal: Boolean,
                                          lateAppealReason: Option[String],
-                                         whoPlannedToSubmit: Option[String],
-                                         causeOfLateSubmissionAgent: Option[String]
+                                         reasonableExcuse: String,
+                                         honestyDeclaration: Boolean,
+                                         isClientResponsibleForSubmission: Option[Boolean],
+                                         isClientResponsibleForLateSubmission: Option[Boolean]
                                        ) extends AppealInformation
 
 object FireOrFloodAppealInformation {
@@ -132,9 +142,10 @@ object FireOrFloodAppealInformation {
 
   val fireOrFloodAppealWrites: Writes[FireOrFloodAppealInformation] = (fireOrFloodAppealInformation: FireOrFloodAppealInformation) => {
     Json.obj(
-      "type" -> fireOrFloodAppealInformation.`type`,
       "dateOfEvent" -> fireOrFloodAppealInformation.dateOfEvent,
-      "lateAppeal" -> fireOrFloodAppealInformation.lateAppeal
+      "lateAppeal" -> fireOrFloodAppealInformation.lateAppeal,
+      "reasonableExcuse" -> fireOrFloodAppealInformation.reasonableExcuse,
+      "honestyDeclaration" -> fireOrFloodAppealInformation.honestyDeclaration
     ).deepMerge(
       fireOrFloodAppealInformation.statement.fold(
         Json.obj()
@@ -148,29 +159,30 @@ object FireOrFloodAppealInformation {
         lateAppealReason => Json.obj("lateAppealReason" -> lateAppealReason)
       )
     ).deepMerge(
-      fireOrFloodAppealInformation.whoPlannedToSubmit.fold(
+      fireOrFloodAppealInformation.isClientResponsibleForSubmission.fold(
         Json.obj()
       )(
-        whoPlannedToSubmit => Json.obj("whoPlannedToSubmit" -> whoPlannedToSubmit)
+        isClientResponsibleForSubmission => Json.obj("isClientResponsibleForSubmission" -> isClientResponsibleForSubmission)
       )
     ).deepMerge(
-      fireOrFloodAppealInformation.causeOfLateSubmissionAgent.fold(
+      fireOrFloodAppealInformation.isClientResponsibleForLateSubmission.fold(
         Json.obj()
       )(
-        causeOfLateSubmissionAgent => Json.obj("causeOfLateSubmissionAgent" -> causeOfLateSubmissionAgent)
+        isClientResponsibleForLateSubmission => Json.obj("isClientResponsibleForLateSubmission" -> isClientResponsibleForLateSubmission)
       )
     )
   }
 }
 
 case class LossOfStaffAppealInformation(
-                                         `type`: String,
                                          dateOfEvent: String,
                                          statement: Option[String],
                                          lateAppeal: Boolean,
                                          lateAppealReason: Option[String],
-                                         whoPlannedToSubmit: Option[String],
-                                         causeOfLateSubmissionAgent: Option[String]
+                                         reasonableExcuse: String,
+                                         honestyDeclaration: Boolean,
+                                         isClientResponsibleForSubmission: Option[Boolean],
+                                         isClientResponsibleForLateSubmission: Option[Boolean]
                                        ) extends AppealInformation
 
 object LossOfStaffAppealInformation {
@@ -178,9 +190,10 @@ object LossOfStaffAppealInformation {
 
   val lossOfStaffAppealWrites: Writes[LossOfStaffAppealInformation] = (lossOfStaffAppealInformation: LossOfStaffAppealInformation) => {
     Json.obj(
-      "type" -> lossOfStaffAppealInformation.`type`,
       "dateOfEvent" -> lossOfStaffAppealInformation.dateOfEvent,
-      "lateAppeal" -> lossOfStaffAppealInformation.lateAppeal
+      "lateAppeal" -> lossOfStaffAppealInformation.lateAppeal,
+      "reasonableExcuse" -> lossOfStaffAppealInformation.reasonableExcuse,
+      "honestyDeclaration" -> lossOfStaffAppealInformation.honestyDeclaration
     ).deepMerge(
       lossOfStaffAppealInformation.statement.fold(
         Json.obj()
@@ -194,30 +207,31 @@ object LossOfStaffAppealInformation {
         lateAppealReason => Json.obj("lateAppealReason" -> lateAppealReason)
       )
     ).deepMerge(
-      lossOfStaffAppealInformation.whoPlannedToSubmit.fold(
+      lossOfStaffAppealInformation.isClientResponsibleForSubmission.fold(
         Json.obj()
       )(
-        whoPlannedToSubmit => Json.obj("whoPlannedToSubmit" -> whoPlannedToSubmit)
+        isClientResponsibleForSubmission => Json.obj("isClientResponsibleForSubmission" -> isClientResponsibleForSubmission)
       )
     ).deepMerge(
-      lossOfStaffAppealInformation.causeOfLateSubmissionAgent.fold(
+      lossOfStaffAppealInformation.isClientResponsibleForLateSubmission.fold(
         Json.obj()
       )(
-        causeOfLateSubmissionAgent => Json.obj("causeOfLateSubmissionAgent" -> causeOfLateSubmissionAgent)
+        isClientResponsibleForLateSubmission => Json.obj("isClientResponsibleForLateSubmission" -> isClientResponsibleForLateSubmission)
       )
     )
   }
 }
 
 case class TechnicalIssuesAppealInformation(
-                                             `type`: String,
                                              startDateOfEvent: String,
                                              endDateOfEvent: String,
                                              statement: Option[String],
                                              lateAppeal: Boolean,
                                              lateAppealReason: Option[String],
-                                             whoPlannedToSubmit: Option[String],
-                                             causeOfLateSubmissionAgent: Option[String]
+                                             reasonableExcuse: String,
+                                             honestyDeclaration: Boolean,
+                                             isClientResponsibleForSubmission: Option[Boolean],
+                                             isClientResponsibleForLateSubmission: Option[Boolean]
                                            ) extends AppealInformation
 
 object TechnicalIssuesAppealInformation {
@@ -225,10 +239,11 @@ object TechnicalIssuesAppealInformation {
 
   val technicalIssuesAppealWrites: Writes[TechnicalIssuesAppealInformation] = (technicalIssuesAppealInformation: TechnicalIssuesAppealInformation) => {
     Json.obj(
-      "type" -> technicalIssuesAppealInformation.`type`,
       "startDateOfEvent" -> technicalIssuesAppealInformation.startDateOfEvent,
       "endDateOfEvent" -> technicalIssuesAppealInformation.endDateOfEvent,
-      "lateAppeal" -> technicalIssuesAppealInformation.lateAppeal
+      "lateAppeal" -> technicalIssuesAppealInformation.lateAppeal,
+      "reasonableExcuse" -> technicalIssuesAppealInformation.reasonableExcuse,
+      "honestyDeclaration" -> technicalIssuesAppealInformation.honestyDeclaration
     ).deepMerge(
       technicalIssuesAppealInformation.statement.fold(
         Json.obj()
@@ -242,23 +257,22 @@ object TechnicalIssuesAppealInformation {
         lateAppealReason => Json.obj("lateAppealReason" -> lateAppealReason)
       )
     ).deepMerge(
-      technicalIssuesAppealInformation.whoPlannedToSubmit.fold(
+      technicalIssuesAppealInformation.isClientResponsibleForSubmission.fold(
         Json.obj()
       )(
-        whoPlannedToSubmit => Json.obj("whoPlannedToSubmit" -> whoPlannedToSubmit)
+        isClientResponsibleForSubmission => Json.obj("isClientResponsibleForSubmission" -> isClientResponsibleForSubmission)
       )
     ).deepMerge(
-      technicalIssuesAppealInformation.causeOfLateSubmissionAgent.fold(
+      technicalIssuesAppealInformation.isClientResponsibleForLateSubmission.fold(
         Json.obj()
       )(
-        causeOfLateSubmissionAgent => Json.obj("causeOfLateSubmissionAgent" -> causeOfLateSubmissionAgent)
+        isClientResponsibleForLateSubmission => Json.obj("isClientResponsibleForLateSubmission" -> isClientResponsibleForLateSubmission)
       )
     )
   }
 }
 
 case class HealthAppealInformation(
-                                    `type`: String,
                                     hospitalStayInvolved: Boolean,
                                     dateOfEvent: Option[String],
                                     startDateOfEvent: Option[String],
@@ -267,8 +281,10 @@ case class HealthAppealInformation(
                                     statement: Option[String],
                                     lateAppeal: Boolean,
                                     lateAppealReason: Option[String],
-                                    whoPlannedToSubmit: Option[String],
-                                    causeOfLateSubmissionAgent: Option[String]
+                                    reasonableExcuse: String,
+                                    honestyDeclaration: Boolean,
+                                    isClientResponsibleForSubmission: Option[Boolean],
+                                    isClientResponsibleForLateSubmission: Option[Boolean]
                                   ) extends AppealInformation
 
 object HealthAppealInformation {
@@ -276,10 +292,11 @@ object HealthAppealInformation {
 
   val healthAppealWrites: Writes[HealthAppealInformation] = (healthAppealInformation: HealthAppealInformation) => {
     Json.obj(
-      "type" -> healthAppealInformation.`type`,
       "hospitalStayInvolved" -> healthAppealInformation.hospitalStayInvolved,
       "eventOngoing" -> healthAppealInformation.eventOngoing,
-      "lateAppeal" -> healthAppealInformation.lateAppeal
+      "lateAppeal" -> healthAppealInformation.lateAppeal,
+      "reasonableExcuse" -> healthAppealInformation.reasonableExcuse,
+      "honestyDeclaration" -> healthAppealInformation.honestyDeclaration
     ).deepMerge(
       healthAppealInformation.statement.fold(
         Json.obj()
@@ -309,30 +326,31 @@ object HealthAppealInformation {
           )
       }
     ).deepMerge(
-      healthAppealInformation.whoPlannedToSubmit.fold(
+      healthAppealInformation.isClientResponsibleForSubmission.fold(
         Json.obj()
       )(
-        whoPlannedToSubmit => Json.obj("whoPlannedToSubmit" -> whoPlannedToSubmit)
+        isClientResponsibleForSubmission => Json.obj("isClientResponsibleForSubmission" -> isClientResponsibleForSubmission)
       )
     ).deepMerge(
-      healthAppealInformation.causeOfLateSubmissionAgent.fold(
+      healthAppealInformation.isClientResponsibleForLateSubmission.fold(
         Json.obj()
       )(
-        causeOfLateSubmissionAgent => Json.obj("causeOfLateSubmissionAgent" -> causeOfLateSubmissionAgent)
+        isClientResponsibleForLateSubmission => Json.obj("isClientResponsibleForLateSubmission" -> isClientResponsibleForLateSubmission)
       )
     )
   }
 }
 
 case class OtherAppealInformation(
-                                   `type`: String,
                                    dateOfEvent: String,
                                    statement: Option[String],
                                    supportingEvidence: Option[Evidence],
                                    lateAppeal: Boolean,
                                    lateAppealReason: Option[String],
-                                   whoPlannedToSubmit: Option[String],
-                                   causeOfLateSubmissionAgent: Option[String]
+                                   reasonableExcuse: String,
+                                   honestyDeclaration: Boolean,
+                                   isClientResponsibleForSubmission: Option[Boolean],
+                                   isClientResponsibleForLateSubmission: Option[Boolean]
                                  ) extends AppealInformation
 
 object OtherAppealInformation {
@@ -341,10 +359,11 @@ object OtherAppealInformation {
 
   val otherAppealInformationWrites: Writes[OtherAppealInformation] = (otherAppealInformation: OtherAppealInformation) => {
     Json.obj(
-      "type" -> otherAppealInformation.`type`,
       "dateOfEvent" -> otherAppealInformation.dateOfEvent,
       "statement" -> otherAppealInformation.statement.get,
-      "lateAppeal" -> otherAppealInformation.lateAppeal
+      "lateAppeal" -> otherAppealInformation.lateAppeal,
+      "reasonableExcuse" -> otherAppealInformation.reasonableExcuse,
+      "honestyDeclaration" -> otherAppealInformation.honestyDeclaration
     ).deepMerge(
       otherAppealInformation.lateAppealReason.fold(
         Json.obj()
@@ -358,35 +377,40 @@ object OtherAppealInformation {
         evidence => Json.obj("supportingEvidence" -> evidence)
       )
     ).deepMerge(
-      otherAppealInformation.whoPlannedToSubmit.fold(
+      otherAppealInformation.isClientResponsibleForSubmission.fold(
         Json.obj()
       )(
-        whoPlannedToSubmit => Json.obj("whoPlannedToSubmit" -> whoPlannedToSubmit)
+        isClientResponsibleForSubmission => Json.obj("isClientResponsibleForSubmission" -> isClientResponsibleForSubmission)
       )
     ).deepMerge(
-      otherAppealInformation.causeOfLateSubmissionAgent.fold(
+      otherAppealInformation.isClientResponsibleForLateSubmission.fold(
         Json.obj()
       )(
-        causeOfLateSubmissionAgent => Json.obj("causeOfLateSubmissionAgent" -> causeOfLateSubmissionAgent)
+        isClientResponsibleForLateSubmission => Json.obj("isClientResponsibleForLateSubmission" -> isClientResponsibleForLateSubmission)
       )
     )
   }
 }
 
 case class ObligationAppealInformation(
-                                        `type`: String,
                                         statement: Option[String],
-                                        supportingEvidence: Option[Evidence]
+                                        supportingEvidence: Option[Evidence],
+                                        reasonableExcuse: String,
+                                        honestyDeclaration: Boolean,
+                                        isClientResponsibleForSubmission: Option[Boolean] = None,
+                                        isClientResponsibleForLateSubmission: Option[Boolean] = None
                                       ) extends AppealInformation
 
 object ObligationAppealInformation {
   implicit val evidenceFormatter: OFormat[Evidence] = Evidence.format
   implicit val obligationAppealInformationFormatter: OFormat[ObligationAppealInformation] = Json.format[ObligationAppealInformation]
 
-  val obligationAppealInformationWrites: Writes[ObligationAppealInformation] = (obligationAppealInformation: ObligationAppealInformation) => {
+
+  implicit val obligationAppealInformationWrites: Writes[ObligationAppealInformation] = (obligationAppealInformation: ObligationAppealInformation) => {
     Json.obj(
-      "type" -> obligationAppealInformation.`type`,
-      "statement" -> obligationAppealInformation.statement.get
+      "statement" -> obligationAppealInformation.statement.get,
+      "reasonableExcuse" -> obligationAppealInformation.reasonableExcuse,
+      "honestyDeclaration" -> obligationAppealInformation.honestyDeclaration
     ).deepMerge(
       obligationAppealInformation.supportingEvidence.fold(
         Json.obj()
@@ -398,12 +422,16 @@ object ObligationAppealInformation {
 }
 
 case class AppealSubmission(
-                             submittedBy: String,
-                             reasonableExcuse: String,
-                             honestyDeclaration: Boolean,
+                             taxRegime: String,
+                             appealSubmittedBy: String,
+                             customerReferenceNo: String,
+                             dateOfAppeal: LocalDateTime,
+                             isLPP: Boolean,
                              agentDetails: Option[AgentDetails],
                              appealInformation: AppealInformation
-                           )
+                           ) {
+  val sourceSystem: String = "MDTP"
+}
 
 object AppealSubmission {
   def parseAppealInformationFromJson(reason: String, payload: JsValue): JsResult[AppealInformation] = {
@@ -428,7 +456,7 @@ object AppealSubmission {
   }
 
   def parseAppealInformationToJson(payload: AppealInformation): JsValue = {
-    payload.`type` match {
+    payload.reasonableExcuse match {
       case "bereavement" =>
         Json.toJson(payload.asInstanceOf[BereavementAppealInformation])(BereavementAppealInformation.bereavementAppealWrites)
       case "crime" =>
@@ -450,17 +478,21 @@ object AppealSubmission {
 
   val apiReads: Reads[AppealSubmission] = (json: JsValue) => {
     for {
-      submittedBy <- (json \ "submittedBy").validate[String]
-      reasonableExcuse <- (json \ "reasonableExcuse").validate[String]
-      honestyDeclaration <- (json \ "honestyDeclaration").validate[Boolean]
+      taxRegime <- (json \ "taxRegime").validate[String]
+      appealSubmittedBy <- (json \ "appealSubmittedBy").validate[String]
+      customerReferenceNo <- (json \ "customerReferenceNo").validate[String]
+      dateOfAppeal <- (json \ "dateOfAppeal").validate[LocalDateTime]
+      isLPP <- (json \ "isLPP").validate[Boolean]
       agentDetails <- (json \ "agentDetails").validateOpt[AgentDetails]
-      appealInformationType <- (json \ "appealInformation" \ "type").validate[String]
+      appealInformationType <- (json \ "appealInformation" \ "reasonableExcuse").validate[String]
       appealInformation <- parseAppealInformationFromJson(appealInformationType, (json \ "appealInformation").get)
     } yield {
       AppealSubmission(
-        submittedBy,
-        reasonableExcuse,
-        honestyDeclaration,
+        taxRegime,
+        appealSubmittedBy,
+        customerReferenceNo,
+        dateOfAppeal,
+        isLPP,
         agentDetails,
         appealInformation
       )
@@ -469,9 +501,12 @@ object AppealSubmission {
 
   val apiWrites: Writes[AppealSubmission] = (appealSubmission: AppealSubmission) => {
     Json.obj(
-      "submittedBy" -> appealSubmission.submittedBy,
-      "reasonableExcuse" -> appealSubmission.reasonableExcuse,
-      "honestyDeclaration" -> appealSubmission.honestyDeclaration,
+      "sourceSystem" -> appealSubmission.sourceSystem,
+      "taxRegime" -> appealSubmission.taxRegime,
+      "customerReferenceNo" -> appealSubmission.customerReferenceNo,
+      "dateOfAppeal" -> appealSubmission.dateOfAppeal,
+      "isLPP" -> appealSubmission.isLPP,
+      "appealSubmittedBy" -> appealSubmission.appealSubmittedBy,
       "appealInformation" -> parseAppealInformationToJson(appealSubmission.appealInformation)
     ).deepMerge(
       appealSubmission.agentDetails.fold(
