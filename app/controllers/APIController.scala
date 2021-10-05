@@ -68,7 +68,7 @@ class APIController @Inject()(etmpService: ETMPService,
       noOfCrystalisedPenalties = crystallizedPenaltyAmount,
       estimatedPenaltyAmount = penaltyAmountWithEstimateStatus,
       crystalisedPenaltyAmountDue = BigDecimal(0),
-      hasAnyPenaltyData = false)
+      hasAnyPenaltyData = hasAnyPenaltyData)
     if(pointsTotal > 0) {
       val auditModel = UserHasPenaltyAuditModel(
         etmpPayload = etmpPayload,
@@ -77,7 +77,6 @@ class APIController @Inject()(etmpService: ETMPService,
         arn = None) //TODO: need to check this
       auditService.audit(auditModel)
     }
-      hasAnyPenaltyData = hasAnyPenaltyData)
     Ok(Json.toJson(responseData))
   }
 }
