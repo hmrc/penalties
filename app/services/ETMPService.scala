@@ -20,12 +20,13 @@ import connectors.parsers.ETMPPayloadParser.{ETMPPayloadResponse, GetETMPPayload
 import connectors.{AppealsConnector, ETMPConnector}
 import models.ETMPPayload
 import models.appeals.AppealSubmission
-import models.point.PointStatusEnum
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import utils.Logger.logger
-
 import java.time.LocalDate
+
 import javax.inject.Inject
+import models.point.PointStatusEnum
+
 import scala.concurrent.{ExecutionContext, Future}
 
 class ETMPService @Inject()(etmpConnector: ETMPConnector,
@@ -116,5 +117,11 @@ class ETMPService @Inject()(etmpConnector: ETMPConnector,
 
   def checkIfHasAnyPenaltyData(etmpPayload: ETMPPayload):Boolean ={
     etmpPayload.latePaymentPenalties.exists(_.nonEmpty)  && etmpPayload.penaltyPoints.nonEmpty
+  }
+
+  def getCrystallizedPenaltyAmount(payload: ETMPPayload): Int = {
+    val numOfDueLSPs = payload.penaltyPoints.map(_.status).count(status => status == PointStatusEnum.Due)
+    val numOfDueLPPs = payload.latePaymentPenalties.getOrElse(Seq.empty).map(_.status).count(status => status == PointStatusEnum.Due)
+    numOfDueLSPs + numOfDueLPPs
   }
 }

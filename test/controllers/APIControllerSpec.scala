@@ -19,21 +19,23 @@ package controllers
 import base.SpecBase
 import connectors.parsers.ETMPPayloadParser.{GetETMPPayloadFailureResponse, GetETMPPayloadNoContent, GetETMPPayloadSuccessResponse}
 import org.mockito.ArgumentMatchers
-import org.mockito.Mockito.{mock, reset, when}
+import org.mockito.Mockito.{mock, reset, times, verify, when}
 import play.api.http.Status
 import play.api.libs.json.Json
 import play.api.test.Helpers._
 import services.ETMPService
+import services.auditing.AuditService
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 class APIControllerSpec extends SpecBase {
   val mockETMPService: ETMPService = mock(classOf[ETMPService])
+  val mockAuditService: AuditService = mock(classOf[AuditService])
 
   class Setup() {
-    reset(mockETMPService)
-    val controller = new APIController(mockETMPService, stubControllerComponents())
+    reset(mockETMPService, mockAuditService)
+    val controller = new APIController(mockETMPService, mockAuditService, stubControllerComponents())
   }
 
   "getSummaryDataForVRN" should {
@@ -67,20 +69,22 @@ class APIControllerSpec extends SpecBase {
         .thenReturn(Future.successful((Some(mockETMPPayloadForAPIResponseData), Right(GetETMPPayloadSuccessResponse(mockETMPPayloadForAPIResponseData)))))
       when(mockETMPService.findEstimatedPenaltiesAmount(ArgumentMatchers.any()))
         .thenReturn(BigDecimal(123.45))
+      when(mockETMPService.getCrystallizedPenaltyAmount(ArgumentMatchers.any())).thenReturn(2)
       val result = controller.getSummaryDataForVRN("123456789")(fakeRequest)
       status(result) shouldBe Status.OK
       contentAsJson(result) shouldBe Json.parse(
         """
           |{
-          |  "noOfPoints": 4,
+          |  "noOfPoints": 2,
           |  "noOfEstimatedPenalties": 2,
-          |  "noOfCrystalisedPenalties": 0,
+          |  "noOfCrystalisedPenalties": 2,
           |  "estimatedPenaltyAmount": 123.45,
           |  "crystalisedPenaltyAmountDue": 0,
           |  "hasAnyPenaltyData": true
           |}
           |""".stripMargin
       )
+      verify(mockAuditService, times(1)).audit(ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
     }
 
     s"return OK (${Status.OK}) when there are no LSP or LPP estimated penalties in etmpPayload" in new Setup {
