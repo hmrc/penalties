@@ -974,17 +974,30 @@ class ETMPServiceSpec extends SpecBase {
     }
   }
 
-  "getCrystallizedPenaltyAmount" should {
+  "getNumberOfCrystallizedPenalties" should {
 
     "return the correct amount of due penalties in a payload " in new Setup {
-      val result = service.getCrystallizedPenaltyAmount(mockETMPPayloadResponseAsModelForLPPWithAdditionalPenalties)
+      val result = service.getNumberOfCrystalizedPenalties(mockETMPPayloadResponseAsModelForLPPWithAdditionalPenalties)
       result shouldBe 2
     }
 
     "return 0 when a payload has no due penalties" in new Setup {
-      val result = service.getCrystallizedPenaltyAmount(mockETMPPayloadResponseAsModel)
+      val result = service.getNumberOfCrystalizedPenalties(mockETMPPayloadResponseAsModel)
       result shouldBe 0
     }
 
+  }
+
+  "getCrystallisedPenaltyTotal" should {
+
+    "return the correct total of due penalties in a payload" in new Setup {
+      val result = service.getCrystalisedPenaltyTotal(mockETMPPayloadResponseAsModelForLPPWithAdditionalPenalties)
+      result shouldBe BigDecimal(288)
+    }
+
+    "return 0 when the payload has no due penalties" in new Setup {
+      val result = service.getCrystalisedPenaltyTotal(mockETMPPayloadResponseAsModel)
+      result shouldBe BigDecimal(0)
+    }
   }
 }

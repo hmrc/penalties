@@ -36,6 +36,35 @@ class APIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock {
       |	"penaltyPoints": [
       |		{
       |			"type": "financial",
+      |			"number": "3",
+      |     "appealStatus": "UNDER_REVIEW",
+      |     "id": "123456791",
+      |			"dateCreated": "2021-04-23T18:25:43.511",
+      |			"dateExpired": "2021-04-23T18:25:43.511",
+      |			"status": "DUE",
+      |			"period": {
+      |				"startDate": "2021-04-23T18:25:43.511",
+      |				"endDate": "2021-04-23T18:25:43.511",
+      |				"submission": {
+      |					"dueDate": "2021-04-23T18:25:43.511",
+      |					"status": "OVERDUE"
+      |				}
+      |			},
+      |			"communications": [
+      |				{
+      |					"type": "secureMessage",
+      |					"dateSent": "2021-04-23T18:25:43.511",
+      |					"documentId": "1234567890"
+      |				}
+      |			],
+      |     "financial": {
+      |        "amountDue": 400.00,
+      |        "outstandingAmountDue": 400.00,
+      |        "dueDate": "2021-04-23T18:25:43.511"
+      |     }
+      |		},
+      |  {
+      |			"type": "financial",
       |			"number": "2",
       |     "appealStatus": "UNDER_REVIEW",
       |     "id": "123456790",
@@ -91,6 +120,31 @@ class APIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock {
       |		}
       |	],
       | "latePaymentPenalties": [
+      |     {
+      |       "type": "financial",
+      |       "reason": "VAT_NOT_PAID_AFTER_30_DAYS",
+      |       "id": "1234567893",
+      |       "dateCreated": "2021-04-23T18:25:43.511",
+      |       "status": "DUE",
+      |       "period": {
+      |         "startDate": "2021-04-23T18:25:43.511",
+      |         "endDate": "2021-04-23T18:25:43.511",
+      |         "dueDate": "2021-04-23T18:25:43.511",
+      |	        "paymentStatus": "PAID"
+      |       },
+      |       "communications": [
+      |         {
+      |          "type": "letter",
+      |          "dateSent": "2021-04-23T18:25:43.511",
+      |          "documentId": "1234567890"
+      |         }
+      |       ],
+      |       "financial": {
+      |         "amountDue": 400.00,
+      |         "outstandingAmountDue": 2.00,
+      |         "dueDate": "2021-04-23T18:25:43.511"
+      |       }
+      |     },
       |     {
       |       "type": "additional",
       |       "reason": "VAT_NOT_PAID_AFTER_30_DAYS",
@@ -156,9 +210,9 @@ class APIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock {
             |{
             |  "noOfPoints": 2,
             |  "noOfEstimatedPenalties": 1,
-            |  "noOfCrystalisedPenalties": 0,
+            |  "noOfCrystalisedPenalties": 2,
             |  "estimatedPenaltyAmount": 12,
-            |  "crystalisedPenaltyAmountDue": 0,
+            |  "crystalisedPenaltyAmountDue": 800,
             |  "hasAnyPenaltyData": true
             |}
             |""".stripMargin
