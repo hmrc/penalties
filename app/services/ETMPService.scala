@@ -126,8 +126,8 @@ class ETMPService @Inject()(etmpConnector: ETMPConnector,
   }
 
   def getCrystalisedPenaltyTotal(payload: ETMPPayload):BigDecimal = {
-    val crystallisedLSPAmountDue = payload.penaltyPoints.filter(_.status == PointStatusEnum.Due).map(_.financial.map(_.amountDue).getOrElse(BigDecimal(0))).sum
-    val crystallisedLPPAmountDue = payload.latePaymentPenalties.map(_.filter(_.status == PointStatusEnum.Due).map(_.financial.amountDue).sum).getOrElse(BigDecimal(0))
+    val crystallisedLSPAmountDue = payload.penaltyPoints.filter(_.status == PointStatusEnum.Due).map(_.financial.map(_.outstandingAmountDue).getOrElse(BigDecimal(0))).sum
+    val crystallisedLPPAmountDue = payload.latePaymentPenalties.map(_.filter(_.status == PointStatusEnum.Due).map(_.financial.outstandingAmountDue).sum).getOrElse(BigDecimal(0))
     crystallisedLSPAmountDue + crystallisedLPPAmountDue
   }
 }
