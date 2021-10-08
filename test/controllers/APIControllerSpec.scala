@@ -69,7 +69,8 @@ class APIControllerSpec extends SpecBase {
         .thenReturn(Future.successful((Some(mockETMPPayloadForAPIResponseData), Right(GetETMPPayloadSuccessResponse(mockETMPPayloadForAPIResponseData)))))
       when(mockETMPService.findEstimatedPenaltiesAmount(ArgumentMatchers.any()))
         .thenReturn(BigDecimal(123.45))
-      when(mockETMPService.getCrystallizedPenaltyAmount(ArgumentMatchers.any())).thenReturn(2)
+      when(mockETMPService.getNumberOfCrystalizedPenalties(ArgumentMatchers.any())).thenReturn(2)
+      when(mockETMPService.getCrystalisedPenaltyTotal(ArgumentMatchers.any())).thenReturn(BigDecimal(288))
       val result = controller.getSummaryDataForVRN("123456789")(fakeRequest)
       status(result) shouldBe Status.OK
       contentAsJson(result) shouldBe Json.parse(
@@ -79,7 +80,7 @@ class APIControllerSpec extends SpecBase {
           |  "noOfEstimatedPenalties": 2,
           |  "noOfCrystalisedPenalties": 2,
           |  "estimatedPenaltyAmount": 123.45,
-          |  "crystalisedPenaltyAmountDue": 0,
+          |  "crystalisedPenaltyAmountDue": 288,
           |  "hasAnyPenaltyData": true
           |}
           |""".stripMargin
@@ -94,6 +95,8 @@ class APIControllerSpec extends SpecBase {
         .thenReturn(Future.successful((Some(mockETMPPayloadWithNoEstimatedPenaltiesForAPIResponseData), Right(GetETMPPayloadSuccessResponse(mockETMPPayloadWithNoEstimatedPenaltiesForAPIResponseData)))))
       when(mockETMPService.findEstimatedPenaltiesAmount(ArgumentMatchers.any()))
         .thenReturn(BigDecimal(0))
+      when(mockETMPService.getNumberOfCrystalizedPenalties(ArgumentMatchers.any())).thenReturn(0)
+      when(mockETMPService.getCrystalisedPenaltyTotal(ArgumentMatchers.any())).thenReturn(BigDecimal(0))
       val result = controller.getSummaryDataForVRN("123456789")(fakeRequest)
       status(result) shouldBe Status.OK
       contentAsJson(result) shouldBe Json.parse(

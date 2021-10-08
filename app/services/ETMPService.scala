@@ -16,16 +16,16 @@
 
 package services
 
-import connectors.parsers.ETMPPayloadParser.{ETMPPayloadResponse, GetETMPPayloadFailureResponse, GetETMPPayloadMalformed, GetETMPPayloadNoContent, GetETMPPayloadSuccessResponse}
-import connectors.{AppealsConnector, ETMPConnector}
-import models.ETMPPayload
-import models.appeals.AppealSubmission
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
-import utils.Logger.logger
 import java.time.LocalDate
 
+import connectors.parsers.ETMPPayloadParser.{ETMPPayloadResponse, GetETMPPayloadFailureResponse, GetETMPPayloadMalformed, GetETMPPayloadNoContent, GetETMPPayloadSuccessResponse}
+import connectors.{AppealsConnector, ETMPConnector}
 import javax.inject.Inject
+import models.ETMPPayload
+import models.appeals.AppealSubmission
 import models.point.PointStatusEnum
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
+import utils.Logger.logger
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -119,9 +119,15 @@ class ETMPService @Inject()(etmpConnector: ETMPConnector,
     etmpPayload.latePaymentPenalties.exists(_.nonEmpty)  && etmpPayload.penaltyPoints.nonEmpty
   }
 
-  def getCrystallizedPenaltyAmount(payload: ETMPPayload): Int = {
+  def getNumberOfCrystalizedPenalties(payload: ETMPPayload): Int = {
     val numOfDueLSPs = payload.penaltyPoints.map(_.status).count(status => status == PointStatusEnum.Due)
     val numOfDueLPPs = payload.latePaymentPenalties.getOrElse(Seq.empty).map(_.status).count(status => status == PointStatusEnum.Due)
     numOfDueLSPs + numOfDueLPPs
+  }
+
+  def getCrystalisedPenaltyTotal(payload: ETMPPayload):BigDecimal = {
+    val crystallisedLSPAmountDue = payload.penaltyPoints.filter(_.status == PointStatusEnum.Due).map(_.financial.map(_.outstandingAmountDue).getOrElse(BigDecimal(0))).sum
+    val crystallisedLPPAmountDue = payload.latePaymentPenalties.map(_.filter(_.status == PointStatusEnum.Due).map(_.financial.outstandingAmountDue).sum).getOrElse(BigDecimal(0))
+    crystallisedLSPAmountDue + crystallisedLPPAmountDue
   }
 }

@@ -115,7 +115,7 @@ trait SpecBase extends AnyWordSpec with Matchers with GuiceOneAppPerSuite {
           ),
           financial = Financial(
             amountDue = 144,
-            outstandingAmountDue = 0,
+            outstandingAmountDue = 144,
             dueDate = LocalDateTime.of(1970, 2, 8, 0, 0, 0)
           )
         )
@@ -156,7 +156,7 @@ trait SpecBase extends AnyWordSpec with Matchers with GuiceOneAppPerSuite {
           ),
           financial = Financial(
             amountDue = 144,
-            outstandingAmountDue = 0,
+            outstandingAmountDue = 144,
             dueDate = LocalDateTime.of(1970, 2, 8, 0, 0, 0)
           )
         ),
@@ -182,7 +182,7 @@ trait SpecBase extends AnyWordSpec with Matchers with GuiceOneAppPerSuite {
           ),
           financial = Financial(
             amountDue = 144,
-            outstandingAmountDue = 0,
+            outstandingAmountDue = 144,
             dueDate = LocalDateTime.of(1970, 2, 8, 0, 0, 0)
           )
         )

@@ -60,14 +60,15 @@ class APIController @Inject()(etmpService: ETMPService,
     val pointsTotal = etmpPayload.pointsTotal
     val penaltyAmountWithEstimateStatus = etmpService.findEstimatedPenaltiesAmount(etmpPayload)
     val noOfEstimatedPenalties = etmpService.getNumberOfEstimatedPenalties(etmpPayload)
-    val crystallizedPenaltyAmount = etmpService.getCrystallizedPenaltyAmount(etmpPayload)
+    val crystalizedPenaltyAmount = etmpService.getNumberOfCrystalizedPenalties(etmpPayload)
+    val crystalizedPenaltyTotal = etmpService.getCrystalisedPenaltyTotal(etmpPayload)
     val hasAnyPenaltyData = etmpService.checkIfHasAnyPenaltyData(etmpPayload)
     val responseData: APIModel = APIModel(
       noOfPoints = pointsTotal,
       noOfEstimatedPenalties = noOfEstimatedPenalties,
-      noOfCrystalisedPenalties = crystallizedPenaltyAmount,
+      noOfCrystalisedPenalties = crystalizedPenaltyAmount,
       estimatedPenaltyAmount = penaltyAmountWithEstimateStatus,
-      crystalisedPenaltyAmountDue = BigDecimal(0),
+      crystalisedPenaltyAmountDue = crystalizedPenaltyTotal,
       hasAnyPenaltyData = hasAnyPenaltyData)
     if(pointsTotal > 0) {
       val auditModel = UserHasPenaltyAuditModel(
