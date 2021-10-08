@@ -299,10 +299,12 @@ class AppealsControllerSpec extends SpecBase {
         val appealsJson: JsValue = Json.parse(
           """
             |{
-            |    "submittedBy": "client",
-            |    "penaltyId": "123456789",
-            |    "reasonableExcuse": "ENUM_PEGA_LIST",
-            |    "honestyDeclaration": true
+            |    "sourceSystem": "MDTP",
+            |    "taxRegime": "VAT",
+            |    "customerReferenceNo": "123456789",
+            |    "dateOfAppeal": "2020-01-01T00:00:00",
+            |    "isLPP": true,
+            |    "appealSubmittedBy": "client"
             |}
             |""".stripMargin)
 
@@ -319,13 +321,17 @@ class AppealsControllerSpec extends SpecBase {
         val appealsJson: JsValue = Json.parse(
           """
             |{
-            |    "submittedBy": "client",
-            |    "reasonableExcuse": "crime",
-            |    "honestyDeclaration": true,
+            |    "sourceSystem": "MDTP",
+            |    "taxRegime": "VAT",
+            |    "customerReferenceNo": "123456789",
+            |    "dateOfAppeal": "2020-01-01T00:00:00",
+            |    "isLPP": true,
+            |    "appealSubmittedBy": "client",
             |    "appealInformation": {
-            |						"type": "crime",
-            |            "dateOfEvent": "2021-04-23T18:25:43.511Z",
-            |            "reportedIssue": true,
+            |						 "reasonableExcuse": "crime",
+            |            "honestyDeclaration": true,
+            |            "startDateOfEvent": "2021-04-23T18:25:43.511Z",
+            |            "reportedIssueToPolice": true,
             |						 "statement": "This is a statement",
             |            "lateAppeal": false
             |		}
@@ -344,13 +350,17 @@ class AppealsControllerSpec extends SpecBase {
         val appealsJson: JsValue = Json.parse(
           """
             |{
-            |    "submittedBy": "client",
-            |    "reasonableExcuse": "crime",
-            |    "honestyDeclaration": true,
+            |    "sourceSystem": "MDTP",
+            |    "taxRegime": "VAT",
+            |    "customerReferenceNo": "123456789",
+            |    "dateOfAppeal": "2020-01-01T00:00:00",
+            |    "isLPP": true,
+            |    "appealSubmittedBy": "client",
             |    "appealInformation": {
-            |						"type": "crime",
-            |            "dateOfEvent": "2021-04-23T18:25:43.511Z",
-            |            "reportedIssue": true,
+            |						 "reasonableExcuse": "crime",
+            |            "honestyDeclaration": true,
+            |            "startDateOfEvent": "2021-04-23T18:25:43.511Z",
+            |            "reportedIssueToPolice": true,
             |            "lateAppeal": false
             |		}
             |}
@@ -365,12 +375,16 @@ class AppealsControllerSpec extends SpecBase {
         val appealsJson: JsValue = Json.parse(
           """
             |{
-            |    "submittedBy": "client",
-            |    "reasonableExcuse": "lossOfStaff",
-            |    "honestyDeclaration": true,
+            |    "sourceSystem": "MDTP",
+            |    "taxRegime": "VAT",
+            |    "customerReferenceNo": "123456789",
+            |    "dateOfAppeal": "2020-01-01T00:00:00",
+            |    "isLPP": true,
+            |    "appealSubmittedBy": "client",
             |    "appealInformation": {
-            |						 "type": "lossOfStaff",
-            |            "dateOfEvent": "2021-04-23T18:25:43.511Z",
+            |						 "reasonableExcuse": "lossOfStaff",
+            |            "honestyDeclaration": true,
+            |            "startDateOfEvent": "2021-04-23T18:25:43.511Z",
             |            "lateAppeal": false
             |		}
             |}
@@ -385,12 +399,16 @@ class AppealsControllerSpec extends SpecBase {
         val appealsJson: JsValue = Json.parse(
           """
             |{
-            |    "submittedBy": "client",
-            |    "reasonableExcuse": "fireOrFlood",
-            |    "honestyDeclaration": true,
+            |    "sourceSystem": "MDTP",
+            |    "taxRegime": "VAT",
+            |    "customerReferenceNo": "123456789",
+            |    "dateOfAppeal": "2020-01-01T00:00:00",
+            |    "isLPP": true,
+            |    "appealSubmittedBy": "client",
             |    "appealInformation": {
-            |						"type": "fireOrFlood",
-            |            "dateOfEvent": "2021-04-23T18:25:43.511Z",
+            |						 "reasonableExcuse": "fireOrFlood",
+            |            "honestyDeclaration": true,
+            |            "startDateOfEvent": "2021-04-23T18:25:43.511Z",
             |            "lateAppeal": false
             |		}
             |}
@@ -405,11 +423,15 @@ class AppealsControllerSpec extends SpecBase {
         val appealsJson: JsValue = Json.parse(
           """
             |{
-            |    "submittedBy": "client",
-            |    "reasonableExcuse": "technicalIssues",
-            |    "honestyDeclaration": true,
+            |    "sourceSystem": "MDTP",
+            |    "taxRegime": "VAT",
+            |    "customerReferenceNo": "123456789",
+            |    "dateOfAppeal": "2020-01-01T00:00:00",
+            |    "isLPP": true,
+            |    "appealSubmittedBy": "client",
             |    "appealInformation": {
-            |						"type": "technicalIssues",
+            |						 "reasonableExcuse": "technicalIssues",
+            |            "honestyDeclaration": true,
             |            "startDateOfEvent": "2021-04-23T18:25:43.511Z",
             |            "endDateOfEvent": "2021-04-24T18:25:43.511Z",
             |            "lateAppeal": false
@@ -427,12 +449,16 @@ class AppealsControllerSpec extends SpecBase {
           val appealsJson: JsValue = Json.parse(
             """
               |{
-              |    "submittedBy": "client",
-              |    "reasonableExcuse": "health",
-              |    "honestyDeclaration": true,
+              |    "sourceSystem": "MDTP",
+              |    "taxRegime": "VAT",
+              |    "customerReferenceNo": "123456789",
+              |    "dateOfAppeal": "2020-01-01T00:00:00",
+              |    "isLPP": true,
+              |    "appealSubmittedBy": "client",
               |    "appealInformation": {
-              |						"type": "health",
-              |            "dateOfEvent": "2021-04-23T18:25:43.511Z",
+              |						 "reasonableExcuse": "health",
+              |            "honestyDeclaration": true,
+              |            "startDateOfEvent": "2021-04-23T18:25:43.511Z",
               |            "hospitalStayInvolved": false,
               |            "eventOngoing": false,
               |            "lateAppeal": false
@@ -449,11 +475,15 @@ class AppealsControllerSpec extends SpecBase {
           val appealsJson: JsValue = Json.parse(
             """
               |{
-              |    "submittedBy": "client",
-              |    "reasonableExcuse": "health",
-              |    "honestyDeclaration": true,
+              |    "sourceSystem": "MDTP",
+              |    "taxRegime": "VAT",
+              |    "customerReferenceNo": "123456789",
+              |    "dateOfAppeal": "2020-01-01T00:00:00",
+              |    "isLPP": true,
+              |    "appealSubmittedBy": "client",
               |    "appealInformation": {
-              |						"type": "health",
+              |						 "reasonableExcuse": "health",
+              |            "honestyDeclaration": true,
               |            "startDateOfEvent": "2021-04-23T18:25:43.511Z",
               |            "hospitalStayInvolved": true,
               |            "eventOngoing": true,
@@ -471,11 +501,15 @@ class AppealsControllerSpec extends SpecBase {
           val appealsJson: JsValue = Json.parse(
             """
               |{
-              |    "submittedBy": "client",
-              |    "reasonableExcuse": "health",
-              |    "honestyDeclaration": true,
+              |    "sourceSystem": "MDTP",
+              |    "taxRegime": "VAT",
+              |    "customerReferenceNo": "123456789",
+              |    "dateOfAppeal": "2020-01-01T00:00:00",
+              |    "isLPP": true,
+              |    "appealSubmittedBy": "client",
               |    "appealInformation": {
-              |						"type": "health",
+              |						 "reasonableExcuse": "health",
+              |            "honestyDeclaration": true,
               |            "startDateOfEvent": "2021-04-23T18:25:43.511Z",
               |            "endDateOfEvent": "2021-04-23T18:25:43.511Z",
               |            "hospitalStayInvolved": true,
@@ -494,14 +528,18 @@ class AppealsControllerSpec extends SpecBase {
           val appealsJson: JsValue = Json.parse(
             """
               |{
-              |    "submittedBy": "client",
-              |    "reasonableExcuse": "crime",
-              |    "honestyDeclaration": true,
+              |    "sourceSystem": "MDTP",
+              |    "taxRegime": "VAT",
+              |    "customerReferenceNo": "123456789",
+              |    "dateOfAppeal": "2020-01-01T00:00:00",
+              |    "isLPP": true,
+              |    "appealSubmittedBy": "client",
               |    "appealInformation": {
-              |						"type": "crime",
-              |            "dateOfEvent": "2021-04-23T18:25:43.511Z",
-              |            "reportedIssue": true,
-              |            "lateAppeal": false
+              |						"reasonableExcuse": "crime",
+              |           "honestyDeclaration": true,
+              |           "startDateOfEvent": "2021-04-23T18:25:43.511Z",
+              |           "reportedIssueToPolice": true,
+              |           "lateAppeal": false
               |		}
               |}
               |""".stripMargin)

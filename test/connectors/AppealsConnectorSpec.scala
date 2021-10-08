@@ -25,6 +25,7 @@ import play.api.http.Status.OK
 import play.api.test.Helpers._
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse}
 
+import java.time.LocalDateTime
 import scala.concurrent.{ExecutionContext, Future}
 
 class AppealsConnectorSpec extends SpecBase with FeatureSwitching {
@@ -54,19 +55,22 @@ class AppealsConnectorSpec extends SpecBase with FeatureSwitching {
         ArgumentMatchers.any()))
         .thenReturn(Future.successful(HttpResponse(OK, "OK")))
       val modelToSend: AppealSubmission = AppealSubmission(
-        submittedBy = "client",
-        reasonableExcuse = "ENUM_PEGA_LIST",
-        honestyDeclaration = true,
+        taxRegime = "VAT",
+        customerReferenceNo = "123456789",
+        dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
+        isLPP = false,
+        appealSubmittedBy = "client",
         agentDetails = agentDetails,
         appealInformation = CrimeAppealInformation(
-          `type` = "crime",
-          dateOfEvent = "2021-04-23T18:25:43.511Z",
-          reportedIssue = true,
+          startDateOfEvent = "2021-04-23T18:25:43.511Z",
+          reportedIssueToPolice = true,
           statement = None,
           lateAppeal = false,
           lateAppealReason = None,
-          whoPlannedToSubmit = None,
-          causeOfLateSubmissionAgent = None
+          isClientResponsibleForSubmission = Some(false),
+          isClientResponsibleForLateSubmission = Some(true),
+          honestyDeclaration = true,
+          reasonableExcuse = "crime"
         )
       )
       val result: HttpResponse = await(connector.submitAppeal(modelToSend, "HMRC-MTD-VAT~VRN~123456789", isLPP = false, penaltyId = "1234567890")(hc))
@@ -90,19 +94,22 @@ class AppealsConnectorSpec extends SpecBase with FeatureSwitching {
         ArgumentMatchers.any()))
         .thenReturn(Future.successful(HttpResponse(OK, "OK")))
       val modelToSend: AppealSubmission = AppealSubmission(
-        submittedBy = "client",
-        reasonableExcuse = "ENUM_PEGA_LIST",
-        honestyDeclaration = true,
+        taxRegime = "VAT",
+        customerReferenceNo = "123456789",
+        dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
+        isLPP = false,
+        appealSubmittedBy = "client",
         agentDetails = agentDetails,
         appealInformation = CrimeAppealInformation(
-          `type` = "crime",
-          dateOfEvent = "2021-04-23T18:25:43.511Z",
-          reportedIssue = true,
+          startDateOfEvent = "2021-04-23T18:25:43.511Z",
+          reportedIssueToPolice = true,
           statement = None,
           lateAppeal = false,
           lateAppealReason = None,
-          whoPlannedToSubmit = None,
-          causeOfLateSubmissionAgent = None
+          isClientResponsibleForSubmission = Some(false),
+          isClientResponsibleForLateSubmission = Some(true),
+          honestyDeclaration = true,
+          reasonableExcuse = "crime"
         )
       )
       val result: HttpResponse = await(connector.submitAppeal(modelToSend, "HMRC-MTD-VAT~VRN~123456789", isLPP = false, penaltyId = "1234567890")(hc))
@@ -124,19 +131,22 @@ class AppealsConnectorSpec extends SpecBase with FeatureSwitching {
         ArgumentMatchers.any()))
         .thenReturn(Future.successful(HttpResponse(OK, "OK")))
       val modelToSend: AppealSubmission = AppealSubmission(
-        submittedBy = "client",
-        reasonableExcuse = "ENUM_PEGA_LIST",
-        honestyDeclaration = true,
+        taxRegime = "VAT",
+        customerReferenceNo = "123456789",
+        dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
+        isLPP = false,
+        appealSubmittedBy = "client",
         agentDetails = agentDetails,
         appealInformation = CrimeAppealInformation(
-          `type` = "crime",
-          dateOfEvent = "2021-04-23T18:25:43.511Z",
-          reportedIssue = true,
+          startDateOfEvent = "2021-04-23T18:25:43.511Z",
+          reportedIssueToPolice = true,
           statement = None,
           lateAppeal = false,
           lateAppealReason = None,
-          whoPlannedToSubmit = None,
-          causeOfLateSubmissionAgent = None
+          isClientResponsibleForSubmission = Some(false),
+          isClientResponsibleForLateSubmission = Some(true),
+          honestyDeclaration = true,
+          reasonableExcuse = "crime"
         )
       )
       val result: HttpResponse = await(connector.submitAppeal(modelToSend, "HMRC-MTD-VAT~VRN~123456789", isLPP = true, penaltyId = "1234567890")(HeaderCarrier()))

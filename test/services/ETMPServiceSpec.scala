@@ -103,19 +103,22 @@ class ETMPServiceSpec extends SpecBase {
 
   "submitAppeal" should {
     val modelToPassToServer: AppealSubmission = AppealSubmission(
-      submittedBy = "client",
-      reasonableExcuse = "ENUM_PEGA_LIST",
-      honestyDeclaration = true,
+      taxRegime = "VAT",
+      customerReferenceNo = "123456789",
+      dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
+      isLPP = false,
+      appealSubmittedBy = "client",
       agentDetails = None,
       appealInformation = CrimeAppealInformation(
-        `type` = "crime",
-        dateOfEvent = "2021-04-23T18:25:43.511Z",
-        reportedIssue = true,
+        startDateOfEvent = "2021-04-23T18:25:43.511Z",
+        reportedIssueToPolice = true,
+        reasonableExcuse = "crime",
+        honestyDeclaration = true,
         statement = None,
         lateAppeal = false,
         lateAppealReason = None,
-        whoPlannedToSubmit = None,
-        causeOfLateSubmissionAgent = None
+        isClientResponsibleForSubmission = None,
+        isClientResponsibleForLateSubmission = None
       )
     )
     "return the response from the connector i.e. act as a pass-through function" in new Setup {
