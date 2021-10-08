@@ -115,8 +115,8 @@ class ETMPService @Inject()(etmpConnector: ETMPConnector,
     lSPAmountsWithEstimatedStatus + lPPAmountsWithEstimatedStatus
   }
 
-  def checkIfHasAnyPenaltyData(etmpPayload: ETMPPayload):Boolean ={
-    etmpPayload.latePaymentPenalties.exists(_.nonEmpty)  && etmpPayload.penaltyPoints.nonEmpty
+  def checkIfHasAnyPenaltyData(etmpPayload: ETMPPayload): Boolean ={
+    etmpPayload.latePaymentPenalties.exists(_.nonEmpty) || etmpPayload.penaltyPoints.nonEmpty
   }
 
   def getNumberOfCrystalizedPenalties(payload: ETMPPayload): Int = {
