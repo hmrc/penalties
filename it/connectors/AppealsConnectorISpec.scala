@@ -47,7 +47,7 @@ class AppealsConnectorISpec extends IntegrationSpecCommonBase with AppealWiremoc
         appealInformation = CrimeAppealInformation(
           reasonableExcuse = "crime",
           honestyDeclaration = true,
-          dateOfEvent = "2021-04-23T18:25:43.511Z",
+          startDateOfEvent = "2021-04-23T18:25:43.511Z",
           reportedIssueToPolice = true,
           statement = None,
           lateAppeal = false,
@@ -73,7 +73,7 @@ class AppealsConnectorISpec extends IntegrationSpecCommonBase with AppealWiremoc
         appealInformation = CrimeAppealInformation(
           reasonableExcuse = "crime",
           honestyDeclaration = true,
-          dateOfEvent = "2021-04-23T18:25:43.511Z",
+          startDateOfEvent = "2021-04-23T18:25:43.511Z",
           reportedIssueToPolice = true,
           statement = None,
           lateAppeal = false,
@@ -99,7 +99,7 @@ class AppealsConnectorISpec extends IntegrationSpecCommonBase with AppealWiremoc
         appealInformation = CrimeAppealInformation(
           reasonableExcuse= "crime",
           honestyDeclaration = true,
-          dateOfEvent = "2021-04-23T18:25:43.511Z",
+          startDateOfEvent = "2021-04-23T18:25:43.511Z",
           reportedIssueToPolice = true,
           statement = None,
           lateAppeal = false,

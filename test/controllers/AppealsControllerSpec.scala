@@ -330,7 +330,7 @@ class AppealsControllerSpec extends SpecBase {
             |    "appealInformation": {
             |						 "reasonableExcuse": "crime",
             |            "honestyDeclaration": true,
-            |            "dateOfEvent": "2021-04-23T18:25:43.511Z",
+            |            "startDateOfEvent": "2021-04-23T18:25:43.511Z",
             |            "reportedIssueToPolice": true,
             |						 "statement": "This is a statement",
             |            "lateAppeal": false
@@ -359,7 +359,7 @@ class AppealsControllerSpec extends SpecBase {
             |    "appealInformation": {
             |						 "reasonableExcuse": "crime",
             |            "honestyDeclaration": true,
-            |            "dateOfEvent": "2021-04-23T18:25:43.511Z",
+            |            "startDateOfEvent": "2021-04-23T18:25:43.511Z",
             |            "reportedIssueToPolice": true,
             |            "lateAppeal": false
             |		}
@@ -384,7 +384,7 @@ class AppealsControllerSpec extends SpecBase {
             |    "appealInformation": {
             |						 "reasonableExcuse": "lossOfStaff",
             |            "honestyDeclaration": true,
-            |            "dateOfEvent": "2021-04-23T18:25:43.511Z",
+            |            "startDateOfEvent": "2021-04-23T18:25:43.511Z",
             |            "lateAppeal": false
             |		}
             |}
@@ -408,7 +408,7 @@ class AppealsControllerSpec extends SpecBase {
             |    "appealInformation": {
             |						 "reasonableExcuse": "fireOrFlood",
             |            "honestyDeclaration": true,
-            |            "dateOfEvent": "2021-04-23T18:25:43.511Z",
+            |            "startDateOfEvent": "2021-04-23T18:25:43.511Z",
             |            "lateAppeal": false
             |		}
             |}
@@ -458,7 +458,7 @@ class AppealsControllerSpec extends SpecBase {
               |    "appealInformation": {
               |						 "reasonableExcuse": "health",
               |            "honestyDeclaration": true,
-              |            "dateOfEvent": "2021-04-23T18:25:43.511Z",
+              |            "startDateOfEvent": "2021-04-23T18:25:43.511Z",
               |            "hospitalStayInvolved": false,
               |            "eventOngoing": false,
               |            "lateAppeal": false
@@ -537,7 +537,7 @@ class AppealsControllerSpec extends SpecBase {
               |    "appealInformation": {
               |						"reasonableExcuse": "crime",
               |           "honestyDeclaration": true,
-              |           "dateOfEvent": "2021-04-23T18:25:43.511Z",
+              |           "startDateOfEvent": "2021-04-23T18:25:43.511Z",
               |           "reportedIssueToPolice": true,
               |           "lateAppeal": false
               |		}

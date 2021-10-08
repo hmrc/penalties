@@ -110,7 +110,7 @@ class ETMPServiceSpec extends SpecBase {
       appealSubmittedBy = "client",
       agentDetails = None,
       appealInformation = CrimeAppealInformation(
-        dateOfEvent = "2021-04-23T18:25:43.511Z",
+        startDateOfEvent = "2021-04-23T18:25:43.511Z",
         reportedIssueToPolice = true,
         reasonableExcuse = "crime",
         honestyDeclaration = true,

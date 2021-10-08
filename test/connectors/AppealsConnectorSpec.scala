@@ -62,7 +62,7 @@ class AppealsConnectorSpec extends SpecBase with FeatureSwitching {
         appealSubmittedBy = "client",
         agentDetails = agentDetails,
         appealInformation = CrimeAppealInformation(
-          dateOfEvent = "2021-04-23T18:25:43.511Z",
+          startDateOfEvent = "2021-04-23T18:25:43.511Z",
           reportedIssueToPolice = true,
           statement = None,
           lateAppeal = false,
@@ -101,7 +101,7 @@ class AppealsConnectorSpec extends SpecBase with FeatureSwitching {
         appealSubmittedBy = "client",
         agentDetails = agentDetails,
         appealInformation = CrimeAppealInformation(
-          dateOfEvent = "2021-04-23T18:25:43.511Z",
+          startDateOfEvent = "2021-04-23T18:25:43.511Z",
           reportedIssueToPolice = true,
           statement = None,
           lateAppeal = false,
@@ -138,7 +138,7 @@ class AppealsConnectorSpec extends SpecBase with FeatureSwitching {
         appealSubmittedBy = "client",
         agentDetails = agentDetails,
         appealInformation = CrimeAppealInformation(
-          dateOfEvent = "2021-04-23T18:25:43.511Z",
+          startDateOfEvent = "2021-04-23T18:25:43.511Z",
           reportedIssueToPolice = true,
           statement = None,
           lateAppeal = false,

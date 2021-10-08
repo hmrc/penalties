@@ -276,7 +276,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
           |    "appealInformation": {
           |						"reasonableExcuse": "bereavement",
           |           "honestyDeclaration": true,
-          |           "dateOfEvent": "2021-04-23T18:25:43.511Z",
+          |           "startDateOfEvent": "2021-04-23T18:25:43.511Z",
           |						"statement": "This is a statement",
           |           "lateAppeal": false
           |		}
@@ -302,7 +302,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
           |    "appealInformation": {
           |						 "reasonableExcuse": "crime",
           |            "honestyDeclaration": true,
-          |            "dateOfEvent": "2021-04-23T18:25:43.511Z",
+          |            "startDateOfEvent": "2021-04-23T18:25:43.511Z",
           |            "reportedIssueToPolice": true,
           |						 "statement": "This is a statement",
           |            "lateAppeal": false
@@ -329,7 +329,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
           |    "appealInformation": {
           |          "reasonableExcuse": "fireOrFlood",
           |          "honestyDeclaration": true,
-          |          "dateOfEvent": "2021-04-23T18:25:43.511Z",
+          |          "startDateOfEvent": "2021-04-23T18:25:43.511Z",
           |          "statement": "This is a statement",
           |          "lateAppeal": false
           |    }
@@ -355,7 +355,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
           |    "appealInformation": {
           |						 "reasonableExcuse": "lossOfStaff",
           |            "honestyDeclaration": true,
-          |            "dateOfEvent": "2021-04-23T18:25:43.511Z",
+          |            "startDateOfEvent": "2021-04-23T18:25:43.511Z",
           |						 "statement": "This is a statement",
           |            "lateAppeal": false
           |		}
@@ -409,7 +409,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
             |    "appealInformation": {
             |						 "reasonableExcuse": "health",
             |            "honestyDeclaration": true,
-            |            "dateOfEvent": "2021-04-23T18:25:43.511Z",
+            |            "startDateOfEvent": "2021-04-23T18:25:43.511Z",
             |            "hospitalStayInvolved": false,
             |            "eventOngoing": false,
             |						 "statement": "This is a statement",
@@ -494,7 +494,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
             |    "appealInformation": {
             |						 "reasonableExcuse": "crime",
             |            "honestyDeclaration": true,
-            |            "dateOfEvent": "2021-04-23T18:25:43.511Z",
+            |            "startDateOfEvent": "2021-04-23T18:25:43.511Z",
             |            "reportedIssueToPolice": true,
             |						 "statement": "This is a statement",
             |            "lateAppeal": false
@@ -539,7 +539,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
             |    "appealInformation": {
             |						 "reasonableExcuse": "crime",
             |            "honestyDeclaration": true,
-            |            "dateOfEvent": "2021-04-23T18:25:43.511Z",
+            |            "startDateOfEvent": "2021-04-23T18:25:43.511Z",
             |            "reportedIssueToPolice": true,
             |						 "statement": "This is a statement",
             |            "lateAppeal": false

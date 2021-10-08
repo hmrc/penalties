@@ -29,7 +29,7 @@ sealed trait AppealInformation {
 }
 
 case class BereavementAppealInformation(
-                                         dateOfEvent: String,
+                                         startDateOfEvent: String,
                                          statement: Option[String],
                                          lateAppeal: Boolean,
                                          lateAppealReason: Option[String],
@@ -44,7 +44,7 @@ object BereavementAppealInformation {
 
   val bereavementAppealWrites: Writes[BereavementAppealInformation] = (bereavementAppealInformation: BereavementAppealInformation) => {
     Json.obj(
-      "dateOfEvent" -> bereavementAppealInformation.dateOfEvent,
+      "startDateOfEvent" -> bereavementAppealInformation.startDateOfEvent,
       "lateAppeal" -> bereavementAppealInformation.lateAppeal,
       "reasonableExcuse" -> bereavementAppealInformation.reasonableExcuse,
       "honestyDeclaration" -> bereavementAppealInformation.honestyDeclaration
@@ -77,7 +77,7 @@ object BereavementAppealInformation {
 }
 
 case class CrimeAppealInformation(
-                                   dateOfEvent: String,
+                                   startDateOfEvent: String,
                                    reportedIssueToPolice: Boolean,
                                    statement: Option[String],
                                    lateAppeal: Boolean,
@@ -93,7 +93,7 @@ object CrimeAppealInformation {
 
   val crimeAppealWrites: Writes[CrimeAppealInformation] = (crimeAppealInformation: CrimeAppealInformation) => {
     Json.obj(
-      "dateOfEvent" -> crimeAppealInformation.dateOfEvent,
+      "startDateOfEvent" -> crimeAppealInformation.startDateOfEvent,
       "reportedIssueToPolice" -> crimeAppealInformation.reportedIssueToPolice,
       "lateAppeal" -> crimeAppealInformation.lateAppeal,
       "reasonableExcuse" -> crimeAppealInformation.reasonableExcuse,
@@ -127,7 +127,7 @@ object CrimeAppealInformation {
 }
 
 case class FireOrFloodAppealInformation(
-                                         dateOfEvent: String,
+                                         startDateOfEvent: String,
                                          statement: Option[String],
                                          lateAppeal: Boolean,
                                          lateAppealReason: Option[String],
@@ -142,7 +142,7 @@ object FireOrFloodAppealInformation {
 
   val fireOrFloodAppealWrites: Writes[FireOrFloodAppealInformation] = (fireOrFloodAppealInformation: FireOrFloodAppealInformation) => {
     Json.obj(
-      "dateOfEvent" -> fireOrFloodAppealInformation.dateOfEvent,
+      "startDateOfEvent" -> fireOrFloodAppealInformation.startDateOfEvent,
       "lateAppeal" -> fireOrFloodAppealInformation.lateAppeal,
       "reasonableExcuse" -> fireOrFloodAppealInformation.reasonableExcuse,
       "honestyDeclaration" -> fireOrFloodAppealInformation.honestyDeclaration
@@ -175,7 +175,7 @@ object FireOrFloodAppealInformation {
 }
 
 case class LossOfStaffAppealInformation(
-                                         dateOfEvent: String,
+                                         startDateOfEvent: String,
                                          statement: Option[String],
                                          lateAppeal: Boolean,
                                          lateAppealReason: Option[String],
@@ -190,7 +190,7 @@ object LossOfStaffAppealInformation {
 
   val lossOfStaffAppealWrites: Writes[LossOfStaffAppealInformation] = (lossOfStaffAppealInformation: LossOfStaffAppealInformation) => {
     Json.obj(
-      "dateOfEvent" -> lossOfStaffAppealInformation.dateOfEvent,
+      "startDateOfEvent" -> lossOfStaffAppealInformation.startDateOfEvent,
       "lateAppeal" -> lossOfStaffAppealInformation.lateAppeal,
       "reasonableExcuse" -> lossOfStaffAppealInformation.reasonableExcuse,
       "honestyDeclaration" -> lossOfStaffAppealInformation.honestyDeclaration
@@ -274,7 +274,6 @@ object TechnicalIssuesAppealInformation {
 
 case class HealthAppealInformation(
                                     hospitalStayInvolved: Boolean,
-                                    dateOfEvent: Option[String],
                                     startDateOfEvent: Option[String],
                                     endDateOfEvent: Option[String],
                                     eventOngoing: Boolean,
@@ -311,10 +310,6 @@ object HealthAppealInformation {
       )
     ).deepMerge(
       (healthAppealInformation.hospitalStayInvolved, healthAppealInformation.eventOngoing) match {
-        case (true, true) =>
-          Json.obj(
-            "startDateOfEvent" -> healthAppealInformation.startDateOfEvent.get
-          )
         case (true, false) =>
           Json.obj(
             "startDateOfEvent" -> healthAppealInformation.startDateOfEvent.get,
@@ -322,7 +317,7 @@ object HealthAppealInformation {
           )
         case _ =>
           Json.obj(
-            "dateOfEvent" -> healthAppealInformation.dateOfEvent.get
+            "startDateOfEvent" -> healthAppealInformation.startDateOfEvent.get
           )
       }
     ).deepMerge(
@@ -342,7 +337,7 @@ object HealthAppealInformation {
 }
 
 case class OtherAppealInformation(
-                                   dateOfEvent: String,
+                                   startDateOfEvent: String,
                                    statement: Option[String],
                                    supportingEvidence: Option[Evidence],
                                    lateAppeal: Boolean,
@@ -359,7 +354,7 @@ object OtherAppealInformation {
 
   val otherAppealInformationWrites: Writes[OtherAppealInformation] = (otherAppealInformation: OtherAppealInformation) => {
     Json.obj(
-      "dateOfEvent" -> otherAppealInformation.dateOfEvent,
+      "startDateOfEvent" -> otherAppealInformation.startDateOfEvent,
       "statement" -> otherAppealInformation.statement.get,
       "lateAppeal" -> otherAppealInformation.lateAppeal,
       "reasonableExcuse" -> otherAppealInformation.reasonableExcuse,
