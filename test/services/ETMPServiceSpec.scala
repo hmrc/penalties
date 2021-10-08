@@ -956,20 +956,18 @@ class ETMPServiceSpec extends SpecBase {
       "etmp Payload has LPP and LSP" in new Setup{
         service.checkIfHasAnyPenaltyData(etmpPayloadWithLSPandLPP) shouldBe true
       }
+
+      "etmp Payload has NO LPP but has LSP" in new Setup {
+        service.checkIfHasAnyPenaltyData(etmpPayloadWithLSP) shouldBe true
+      }
+
+      "etmp Payload has LPP but has NO LSP" in new Setup {
+        service.checkIfHasAnyPenaltyData(etmpPayloadWithLPP) shouldBe true
+      }
     }
-    "return false" when{
-      "etmp Payload has NO LPP and LSP" in new Setup{
+    "return false" when {
+      "etmp Payload has NO LPP and NO LSP" in new Setup {
         service.checkIfHasAnyPenaltyData(etmpPayloadWithNOLSPandLPP) shouldBe false
-      }
-    }
-    "return false" when{
-      "etmp Payload has LPP and NO LSP" in new Setup{
-        service.checkIfHasAnyPenaltyData(etmpPayloadWithLPP) shouldBe false
-      }
-    }
-    "return false" when{
-      "etmp Payload has NO LPP but has LSP" in new Setup{
-        service.checkIfHasAnyPenaltyData(etmpPayloadWithLSP) shouldBe false
       }
     }
   }
