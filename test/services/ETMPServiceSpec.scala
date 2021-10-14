@@ -121,12 +121,21 @@ class ETMPServiceSpec extends SpecBase {
         isClientResponsibleForLateSubmission = None
       )
     )
+
     "return the response from the connector i.e. act as a pass-through function" in new Setup {
       when(mockAppealsConnector.submitAppeal(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any()))
         .thenReturn(Future.successful(HttpResponse(OK, "")))
 
       val result: HttpResponse = await(service.submitAppeal(modelToPassToServer, "HMRC-MTD-VAT~VRN~123456789", isLPP = false, penaltyId = "123456789"))
       result.status shouldBe OK
+    }
+
+    "return the response from the connector on error i.e. act as a pass-through function" in new Setup {
+      when(mockAppealsConnector.submitAppeal(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any()))
+        .thenReturn(Future.successful(HttpResponse(BAD_GATEWAY, "")))
+
+      val result: HttpResponse = await(service.submitAppeal(modelToPassToServer, "HMRC-MTD-VAT~VRN~123456789", isLPP = false, penaltyId = "123456789"))
+      result.status shouldBe BAD_GATEWAY
     }
 
     "throw an exception when the connector throws an exception" in new Setup {

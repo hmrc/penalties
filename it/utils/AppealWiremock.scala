@@ -17,6 +17,7 @@
 package utils
 
 import com.github.tomakehurst.wiremock.client.WireMock._
+import com.github.tomakehurst.wiremock.http.Fault
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
 
 trait AppealWiremock {
@@ -37,4 +38,11 @@ trait AppealWiremock {
       ))
   }
 
+  def mockResponseForAppealSubmissionStubFault(enrolmentKey: String, penaltyId: String, isLPP: Boolean = false): StubMapping = {
+    stubFor(post(urlEqualTo(s"/penalties-stub/appeals/submit?enrolmentKey=$enrolmentKey&isLPP=$isLPP&penaltyId=$penaltyId"))
+      .willReturn(
+        aResponse()
+          .withFault(Fault.CONNECTION_RESET_BY_PEER)
+      ))
+  }
 }

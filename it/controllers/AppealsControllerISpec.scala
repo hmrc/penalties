@@ -524,9 +524,36 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
       }
     }
 
-    "return ISE (500)" when {
+    "return error status code" when {
       "the call to ETMP/stub fails" in {
         mockResponseForAppealSubmissionStub(GATEWAY_TIMEOUT, "HMRC-MTD-VAT~VRN~123456789", penaltyId = "123456789")
+        val jsonToSubmit: JsValue = Json.parse(
+          """
+            |{
+            |    "sourceSystem": "MDTP",
+            |    "taxRegime": "VAT",
+            |    "customerReferenceNo": "123456789",
+            |    "dateOfAppeal": "2020-01-01T00:00:00",
+            |    "isLPP": false,
+            |    "appealSubmittedBy": "client",
+            |    "appealInformation": {
+            |						 "reasonableExcuse": "crime",
+            |            "honestyDeclaration": true,
+            |            "startDateOfEvent": "2021-04-23T18:25:43.511Z",
+            |            "reportedIssueToPolice": true,
+            |						 "statement": "This is a statement",
+            |            "lateAppeal": false
+            |		}
+            |}
+            |""".stripMargin)
+        val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=false&penaltyId=123456789").post(
+          jsonToSubmit
+        ))
+        result.status shouldBe GATEWAY_TIMEOUT
+      }
+
+      "the call to ETMP/stub has a fault" in {
+        mockResponseForAppealSubmissionStubFault("HMRC-MTD-VAT~VRN~123456789", penaltyId = "123456789")
         val jsonToSubmit: JsValue = Json.parse(
           """
             |{
