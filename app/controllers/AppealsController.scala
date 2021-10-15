@@ -28,7 +28,7 @@ import utils.Logger.logger
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, ControllerComponents, Result}
 import services.ETMPService
-import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
 import javax.inject.Inject
@@ -143,9 +143,13 @@ class AppealsController @Inject()(appConfig: AppConfig,
                     case _ =>
                       logger.error(s"[AppealsController][submitAppeal] Connector returned unknown status code: ${response.status} ")
                       logger.debug(s"[AppealsController][submitAppeal] Failure response body: ${response.body}")
-                      InternalServerError("Something went wrong.")
+                      Status(response.status)
                   }
               } recover {
+                case e: UpstreamErrorResponse =>
+                  logger.error(s"[AppealsController][submitAppeal] Received status ${e.statusCode}, with error message: ${e.getMessage()}")
+                  logger.debug(s"[AppealsController][submitAppeal] Returning ${e.statusCode} to calling service.")
+                  Status(e.statusCode)
                 case e =>
                   logger.error(s"[AppealsController][submitAppeal] Unknown exception occurred with message: ${e.getMessage}")
                   InternalServerError("Something went wrong.")

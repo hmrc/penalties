@@ -314,7 +314,7 @@ class AppealsControllerSpec extends SpecBase {
       }
     }
 
-    "return ISE (500)" when {
+    "return the error status code" when {
       "the connector calls fails" in new Setup {
         when(mockETMPService.submitAppeal(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
         (ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(HttpResponse(GATEWAY_TIMEOUT, "")))
@@ -338,8 +338,7 @@ class AppealsControllerSpec extends SpecBase {
             |}
             |""".stripMargin)
         val result: Future[Result] = controller.submitAppeal("HMRC-MTD-VAT~VRN~123456789", isLPP = false, penaltyId = "123456789")(fakeRequest.withJsonBody(appealsJson))
-        status(result) shouldBe INTERNAL_SERVER_ERROR
-        contentAsString(result) shouldBe "Something went wrong."
+        status(result) shouldBe GATEWAY_TIMEOUT
       }
     }
 

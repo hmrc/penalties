@@ -100,7 +100,8 @@ class ETMPService @Inject()(etmpConnector: ETMPConnector,
 
   def submitAppeal(appealSubmission: AppealSubmission,
                    enrolmentKey: String, isLPP: Boolean, penaltyId: String)(
-    implicit ec: ExecutionContext, hc: HeaderCarrier): Future[HttpResponse] = {appealsConnector.submitAppeal(appealSubmission, enrolmentKey, isLPP, penaltyId)
+    implicit ec: ExecutionContext, hc: HeaderCarrier): Future[HttpResponse] = {
+    appealsConnector.submitAppeal(appealSubmission, enrolmentKey, isLPP, penaltyId)
   }
 
   def getNumberOfEstimatedPenalties(etmpPayload: ETMPPayload): Int = {
