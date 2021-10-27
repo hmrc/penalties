@@ -177,7 +177,8 @@ trait IntegrationSpecCommonBase extends AnyWordSpec with Matchers with GuiceOneS
         startDate = sampleDate,
         endDate = sampleDate,
         dueDate = sampleDate,
-        paymentStatus = PaymentStatusEnum.Paid
+        paymentStatus = PaymentStatusEnum.Paid,
+        paymentReceivedDate = Some(sampleDate)
       ),
       communications = Seq(
         Communication(
@@ -205,7 +206,8 @@ trait IntegrationSpecCommonBase extends AnyWordSpec with Matchers with GuiceOneS
         startDate = sampleDate,
         endDate = sampleDate,
         dueDate = sampleDate,
-        paymentStatus = PaymentStatusEnum.Paid
+        paymentStatus = PaymentStatusEnum.Paid,
+        paymentReceivedDate = Some(sampleDate)
       ),
       communications = Seq(
         Communication(
@@ -231,7 +233,8 @@ trait IntegrationSpecCommonBase extends AnyWordSpec with Matchers with GuiceOneS
         startDate = sampleDate,
         endDate = sampleDate,
         dueDate = sampleDate,
-        paymentStatus = PaymentStatusEnum.Paid
+        paymentStatus = PaymentStatusEnum.Paid,
+        paymentReceivedDate = Some(sampleDate)
       ),
       communications = Seq(
         Communication(
@@ -277,7 +280,8 @@ trait IntegrationSpecCommonBase extends AnyWordSpec with Matchers with GuiceOneS
           startDate = sampleDate,
           endDate = sampleDate,
           dueDate = sampleDate,
-          paymentStatus = PaymentStatusEnum.Paid
+          paymentStatus = PaymentStatusEnum.Paid,
+          paymentReceivedDate = Some(sampleDate)
         ),
         communications = Seq(
           Communication(
@@ -303,7 +307,8 @@ trait IntegrationSpecCommonBase extends AnyWordSpec with Matchers with GuiceOneS
           startDate = sampleDate,
           endDate = sampleDate,
           dueDate = sampleDate,
-          paymentStatus = PaymentStatusEnum.Paid
+          paymentStatus = PaymentStatusEnum.Paid,
+          paymentReceivedDate = Some(sampleDate)
         ),
         communications = Seq(
           Communication(

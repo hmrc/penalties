@@ -111,7 +111,8 @@ class ETMPConnectorISpec extends IntegrationSpecCommonBase with ETMPWiremock wit
       |        "startDate": "2021-04-23T18:25:43.511",
       |        "endDate": "2021-04-23T18:25:43.511",
       |        "dueDate": "2021-04-23T18:25:43.511",
-      |		     "paymentStatus": "PAID"
+      |		     "paymentStatus": "PAID",
+      |        "paymentReceivedDate": "2021-04-23T18:25:43.511"
       |      },
       |      "communications": [
       |        {
@@ -206,7 +207,8 @@ class ETMPConnectorISpec extends IntegrationSpecCommonBase with ETMPWiremock wit
       |        "startDate": "2021-04-23T18:25:43.511",
       |        "endDate": "2021-04-23T18:25:43.511",
       |        "dueDate": "2021-04-23T18:25:43.511",
-      |		     "paymentStatus": "PAID"
+      |		     "paymentStatus": "PAID",
+      |        "paymentReceivedDate": "2021-04-23T18:25:43.511"
       |      },
       |      "communications": [
       |        {
@@ -232,7 +234,8 @@ class ETMPConnectorISpec extends IntegrationSpecCommonBase with ETMPWiremock wit
       |        "startDate": "2021-04-23T18:25:43.511",
       |        "endDate": "2021-04-23T18:25:43.511",
       |        "dueDate": "2021-04-23T18:25:43.511",
-      |		     "paymentStatus": "PAID"
+      |		     "paymentStatus": "PAID",
+      |        "paymentReceivedDate": "2021-04-23T18:25:43.511"
       |      },
       |      "communications": [
       |        {

@@ -266,7 +266,8 @@ class ETMPPayloadSpec extends AnyWordSpec with Matchers {
       |         "startDate": "2021-04-23T18:25:43.511",
       |         "endDate": "2021-04-23T18:25:43.511",
       |         "dueDate": "2021-04-23T18:25:43.511",
-      |	        "paymentStatus": "PAID"
+      |	        "paymentStatus": "PAID",
+      |         "paymentReceivedDate": "2021-04-23T18:25:43.511"
       |       },
       |       "communications": [
       |         {
@@ -291,7 +292,8 @@ class ETMPPayloadSpec extends AnyWordSpec with Matchers {
       |         "startDate": "2021-04-23T18:25:43.511",
       |         "endDate": "2021-04-23T18:25:43.511",
       |         "dueDate": "2021-04-23T18:25:43.511",
-      |	        "paymentStatus": "PAID"
+      |	        "paymentStatus": "PAID",
+      |         "paymentReceivedDate": "2021-04-23T18:25:43.511"
       |       },
       |       "communications": [
       |       {
@@ -477,7 +479,8 @@ class ETMPPayloadSpec extends AnyWordSpec with Matchers {
             startDate = sampleDate,
             endDate = sampleDate,
             dueDate = sampleDate,
-            paymentStatus = PaymentStatusEnum.Paid
+            paymentStatus = PaymentStatusEnum.Paid,
+            paymentReceivedDate = Some(sampleDate)
           ),
           communications = Seq(
             Communication(
@@ -503,7 +506,8 @@ class ETMPPayloadSpec extends AnyWordSpec with Matchers {
             startDate = sampleDate,
             endDate = sampleDate,
             dueDate = sampleDate,
-            paymentStatus = PaymentStatusEnum.Paid
+            paymentStatus = PaymentStatusEnum.Paid,
+            paymentReceivedDate = Some(sampleDate)
           ),
           communications = Seq(
             Communication(

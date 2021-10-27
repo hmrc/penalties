@@ -92,7 +92,7 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
           status = PointStatusEnum.Due,
           appealStatus = None,
           period = PaymentPeriod(
-            startDate = sampleDateTime1, endDate = sampleDateTime1, dueDate = sampleDateTime1, paymentStatus = PaymentStatusEnum.Due
+            startDate = sampleDateTime1, endDate = sampleDateTime1, dueDate = sampleDateTime1, paymentStatus = PaymentStatusEnum.Due, paymentReceivedDate = None
           ),
           communications = Seq.empty,
           financial = Financial(
@@ -155,7 +155,7 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
           status = PointStatusEnum.Due,
           appealStatus = None,
           period = PaymentPeriod(
-            startDate = sampleDateTime1, endDate = sampleDateTime1, dueDate = sampleDateTime1, paymentStatus = PaymentStatusEnum.Due
+            startDate = sampleDateTime1, endDate = sampleDateTime1, dueDate = sampleDateTime1, paymentStatus = PaymentStatusEnum.Due, paymentReceivedDate = None
           ),
           communications = Seq.empty,
           financial = Financial(
@@ -196,7 +196,7 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
           status = paymentStatus,
           appealStatus = None,
           period = PaymentPeriod(
-            startDate = sampleDateTime1, endDate = sampleDateTime1, dueDate = sampleDateTime1, paymentStatus = PaymentStatusEnum.Due
+            startDate = sampleDateTime1, endDate = sampleDateTime1, dueDate = sampleDateTime1, paymentStatus = PaymentStatusEnum.Due, paymentReceivedDate = None
           ),
           communications = Seq.empty,
           financial = Financial(
@@ -215,7 +215,7 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
           status = paymentStatus,
           appealStatus = None,
           period = PaymentPeriod(
-            startDate = sampleDateTime1, endDate = sampleDateTime1, dueDate = sampleDateTime1, paymentStatus = PaymentStatusEnum.Due
+            startDate = sampleDateTime1, endDate = sampleDateTime1, dueDate = sampleDateTime1, paymentStatus = PaymentStatusEnum.Due, paymentReceivedDate = None
           ),
           communications = Seq.empty,
           financial = Financial(
@@ -244,7 +244,7 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
           status = PointStatusEnum.Paid,
           appealStatus = None,
           period = PaymentPeriod(
-            startDate = sampleDateTime1, endDate = sampleDateTime1, dueDate = sampleDateTime1, paymentStatus = PaymentStatusEnum.Due
+            startDate = sampleDateTime1, endDate = sampleDateTime1, dueDate = sampleDateTime1, paymentStatus = PaymentStatusEnum.Due, paymentReceivedDate = None
           ),
           communications = Seq.empty,
           financial = Financial(
@@ -263,7 +263,7 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
           status = PointStatusEnum.Due,
           appealStatus = None,
           period = PaymentPeriod(
-            startDate = sampleDateTime1, endDate = sampleDateTime1, dueDate = sampleDateTime1, paymentStatus = PaymentStatusEnum.Due
+            startDate = sampleDateTime1, endDate = sampleDateTime1, dueDate = sampleDateTime1, paymentStatus = PaymentStatusEnum.Due, paymentReceivedDate = None
           ),
           communications = Seq.empty,
           financial = Financial(
@@ -292,7 +292,7 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
           status = PointStatusEnum.Paid,
           appealStatus = None,
           period = PaymentPeriod(
-            startDate = sampleDateTime1, endDate = sampleDateTime1, dueDate = sampleDateTime1, paymentStatus = PaymentStatusEnum.Due
+            startDate = sampleDateTime1, endDate = sampleDateTime1, dueDate = sampleDateTime1, paymentStatus = PaymentStatusEnum.Due, paymentReceivedDate = None
           ),
           communications = Seq.empty,
           financial = Financial(
@@ -311,7 +311,7 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
           status = PointStatusEnum.Due,
           appealStatus = Some(appealStatus),
           period = PaymentPeriod(
-            startDate = sampleDateTime1, endDate = sampleDateTime1, dueDate = sampleDateTime1, paymentStatus = PaymentStatusEnum.Due
+            startDate = sampleDateTime1, endDate = sampleDateTime1, dueDate = sampleDateTime1, paymentStatus = PaymentStatusEnum.Due, paymentReceivedDate = None
           ),
           communications = Seq.empty,
           financial = Financial(
