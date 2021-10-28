@@ -38,7 +38,6 @@ class PaymentPeriodSpec extends AnyWordSpec with Matchers {
     endDate = LocalDateTime.parse("2020-01-31T13:00:00.091"),
     dueDate = LocalDateTime.parse("2020-03-07T13:00:00.091"),
     paymentStatus = PaymentStatusEnum.Paid,
-    paymentReceivedDate = None
   )
 
   "be writable to JSON" in {
