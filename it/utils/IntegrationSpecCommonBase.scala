@@ -171,13 +171,13 @@ trait IntegrationSpecCommonBase extends AnyWordSpec with Matchers with GuiceOneS
       id = "1234567891",
       reason = PaymentPenaltyReasonEnum.VAT_NOT_PAID_WITHIN_30_DAYS,
       dateCreated = sampleDate,
-      status = PointStatusEnum.Active,
+      status = PointStatusEnum.Due,
       appealStatus = Some(AppealStatusEnum.Under_Review),
       period = PaymentPeriod(
         startDate = sampleDate,
         endDate = sampleDate,
         dueDate = sampleDate,
-        paymentStatus = PaymentStatusEnum.Paid
+        paymentStatus = PaymentStatusEnum.Due
       ),
       communications = Seq(
         Communication(
@@ -231,7 +231,8 @@ trait IntegrationSpecCommonBase extends AnyWordSpec with Matchers with GuiceOneS
         startDate = sampleDate,
         endDate = sampleDate,
         dueDate = sampleDate,
-        paymentStatus = PaymentStatusEnum.Paid
+        paymentStatus = PaymentStatusEnum.Paid,
+        paymentReceivedDate = Some(sampleDate)
       ),
       communications = Seq(
         Communication(
@@ -277,7 +278,8 @@ trait IntegrationSpecCommonBase extends AnyWordSpec with Matchers with GuiceOneS
           startDate = sampleDate,
           endDate = sampleDate,
           dueDate = sampleDate,
-          paymentStatus = PaymentStatusEnum.Paid
+          paymentStatus = PaymentStatusEnum.Paid,
+          paymentReceivedDate = Some(sampleDate)
         ),
         communications = Seq(
           Communication(
@@ -303,7 +305,8 @@ trait IntegrationSpecCommonBase extends AnyWordSpec with Matchers with GuiceOneS
           startDate = sampleDate,
           endDate = sampleDate,
           dueDate = sampleDate,
-          paymentStatus = PaymentStatusEnum.Paid
+          paymentStatus = PaymentStatusEnum.Paid,
+          paymentReceivedDate = Some(sampleDate)
         ),
         communications = Seq(
           Communication(

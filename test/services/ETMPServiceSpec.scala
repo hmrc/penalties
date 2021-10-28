@@ -197,7 +197,8 @@ class ETMPServiceSpec extends SpecBase {
               startDate = LocalDateTime.of(2023, 1, 1, 0, 0, 0),
               endDate = LocalDateTime.of(2023, 3, 31, 0, 0, 0),
               dueDate = LocalDateTime.of(2023, 5, 7, 0, 0, 0),
-              paymentStatus = PaymentStatusEnum.Paid
+              paymentStatus = PaymentStatusEnum.Paid,
+              paymentReceivedDate = Some(LocalDateTime.of(2023, 6, 7, 0, 0, 0))
             ),
             communications = Seq(
               Communication(
@@ -237,7 +238,8 @@ class ETMPServiceSpec extends SpecBase {
               startDate = LocalDateTime.of(2023, 1, 1, 0, 0, 0),
               endDate = LocalDateTime.of(2023, 3, 31, 0, 0, 0),
               dueDate = LocalDateTime.of(2023, 5, 7, 0, 0, 0),
-              paymentStatus = PaymentStatusEnum.Paid
+              paymentStatus = PaymentStatusEnum.Paid,
+              paymentReceivedDate = Some(LocalDateTime.of(2023, 6, 7, 0, 0, 0))
             ),
             communications = Seq(
               Communication(
@@ -263,7 +265,8 @@ class ETMPServiceSpec extends SpecBase {
               startDate = LocalDateTime.of(2023, 1, 1, 0, 0, 0),
               endDate = LocalDateTime.of(2023, 3, 31, 0, 0, 0),
               dueDate = LocalDateTime.of(2023, 5, 7, 0, 0, 0),
-              paymentStatus = PaymentStatusEnum.Paid
+              paymentStatus = PaymentStatusEnum.Paid,
+              paymentReceivedDate = Some(LocalDateTime.of(2023, 6, 7, 0, 0, 0))
             ),
             communications = Seq(
               Communication(
@@ -331,7 +334,8 @@ class ETMPServiceSpec extends SpecBase {
               startDate = LocalDateTime.of(2023, 4, 1, 0, 0, 0),
               endDate = LocalDateTime.of(2023, 6, 30, 0, 0, 0),
               dueDate = LocalDateTime.of(2023, 8, 7, 0, 0, 0),
-              paymentStatus = PaymentStatusEnum.Paid
+              paymentStatus = PaymentStatusEnum.Paid,
+              paymentReceivedDate = Some(LocalDateTime.of(2023, 9, 7, 0, 0, 0))
             ),
             communications = Seq(
               Communication(
@@ -471,7 +475,8 @@ class ETMPServiceSpec extends SpecBase {
               startDate = LocalDateTime.of(2023, 1, 1, 0, 0, 0),
               endDate = LocalDateTime.of(2023, 3, 31, 0, 0, 0),
               dueDate = LocalDateTime.of(2023, 5, 7, 0, 0, 0),
-              paymentStatus = PaymentStatusEnum.Paid
+              paymentStatus = PaymentStatusEnum.Paid,
+              paymentReceivedDate = Some(LocalDateTime.of(2023, 6, 7, 0, 0, 0))
             ),
             communications = Seq(
               Communication(
@@ -533,7 +538,8 @@ class ETMPServiceSpec extends SpecBase {
               startDate = LocalDateTime.of(2023, 1, 1, 0, 0, 0),
               endDate = LocalDateTime.of(2023, 3, 31, 0, 0, 0),
               dueDate = LocalDateTime.of(2023, 5, 7, 0, 0, 0),
-              paymentStatus = PaymentStatusEnum.Paid
+              paymentStatus = PaymentStatusEnum.Paid,
+              paymentReceivedDate = Some(LocalDateTime.of(2023, 6, 7, 0, 0, 0))
             ),
             communications = Seq(
               Communication(
@@ -627,7 +633,8 @@ class ETMPServiceSpec extends SpecBase {
               startDate = LocalDateTime.of(2023, 1, 1, 0, 0, 0),
               endDate = LocalDateTime.of(2023, 3, 31, 0, 0, 0),
               dueDate = LocalDateTime.of(2023, 5, 7, 0, 0, 0),
-              paymentStatus = PaymentStatusEnum.Paid
+              paymentStatus = PaymentStatusEnum.Paid,
+              paymentReceivedDate = Some(LocalDateTime.of(2023, 6, 7, 0, 0, 0))
             ),
             communications = Seq(
               Communication(
@@ -660,7 +667,8 @@ class ETMPServiceSpec extends SpecBase {
               startDate = LocalDateTime.of(2023, 1, 1, 0, 0, 0),
               endDate = LocalDateTime.of(2023, 3, 31, 0, 0, 0),
               dueDate = LocalDateTime.of(2023, 5, 7, 0, 0, 0),
-              paymentStatus = PaymentStatusEnum.Paid
+              paymentStatus = PaymentStatusEnum.Paid,
+              paymentReceivedDate = Some(LocalDateTime.of(2023, 6, 7, 0, 0, 0))
             ),
             communications = Seq(
               Communication(
@@ -774,7 +782,8 @@ class ETMPServiceSpec extends SpecBase {
               startDate = LocalDateTime.of(2023, 1, 1, 0, 0, 0),
               endDate = LocalDateTime.of(2023, 3, 31, 0, 0, 0),
               dueDate = LocalDateTime.of(2023, 5, 7, 0, 0, 0),
-              paymentStatus = PaymentStatusEnum.Paid
+              paymentStatus = PaymentStatusEnum.Paid,
+              paymentReceivedDate = Some(LocalDateTime.of(2023, 6, 7, 0, 0, 0))
             ),
             communications = Seq(
               Communication(
@@ -863,7 +872,8 @@ class ETMPServiceSpec extends SpecBase {
               startDate = LocalDateTime.of(2023, 1, 1, 0, 0, 0),
               endDate = LocalDateTime.of(2023, 3, 31, 0, 0, 0),
               dueDate = LocalDateTime.of(2023, 5, 7, 0, 0, 0),
-              paymentStatus = PaymentStatusEnum.Paid
+              paymentStatus = PaymentStatusEnum.Paid,
+              paymentReceivedDate = Some(LocalDateTime.of(2023, 6, 7, 0, 0, 0))
             ),
             communications = Seq(
               Communication(
@@ -935,7 +945,8 @@ class ETMPServiceSpec extends SpecBase {
               startDate = LocalDateTime.of(2023, 1, 1, 0, 0, 0),
               endDate = LocalDateTime.of(2023, 3, 31, 0, 0, 0),
               dueDate = LocalDateTime.of(2023, 5, 7, 0, 0, 0),
-              paymentStatus = PaymentStatusEnum.Paid
+              paymentStatus = PaymentStatusEnum.Paid,
+              paymentReceivedDate = Some(LocalDateTime.of(2023, 6, 7, 0, 0, 0))
             ),
             communications = Seq(
               Communication(

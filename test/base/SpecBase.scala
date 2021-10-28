@@ -104,7 +104,8 @@ trait SpecBase extends AnyWordSpec with Matchers with GuiceOneAppPerSuite {
             startDate = LocalDateTime.of(1970, 2, 8, 0, 0, 0),
             endDate = LocalDateTime.of(1970, 2, 8, 0, 0, 0),
             dueDate = LocalDateTime.of(1970, 2, 8, 0, 0, 0),
-            paymentStatus = PaymentStatusEnum.Paid
+            paymentStatus = PaymentStatusEnum.Paid,
+            paymentReceivedDate = Some(LocalDateTime.of(1970, 3, 8, 0, 0, 0))
           ),
           communications = Seq(
             Communication(
@@ -145,7 +146,8 @@ trait SpecBase extends AnyWordSpec with Matchers with GuiceOneAppPerSuite {
             startDate = LocalDateTime.of(1970, 2, 8, 0, 0, 0),
             endDate = LocalDateTime.of(1970, 2, 8, 0, 0, 0),
             dueDate = LocalDateTime.of(1970, 2, 8, 0, 0, 0),
-            paymentStatus = PaymentStatusEnum.Paid
+            paymentStatus = PaymentStatusEnum.Paid,
+            paymentReceivedDate = Some(LocalDateTime.of(1970, 3, 8, 0, 0, 0))
           ),
           communications = Seq(
             Communication(
@@ -171,7 +173,8 @@ trait SpecBase extends AnyWordSpec with Matchers with GuiceOneAppPerSuite {
             startDate = LocalDateTime.of(1970, 2, 8, 0, 0, 0),
             endDate = LocalDateTime.of(1970, 2, 8, 0, 0, 0),
             dueDate = LocalDateTime.of(1970, 2, 8, 0, 0, 0),
-            paymentStatus = PaymentStatusEnum.Paid
+            paymentStatus = PaymentStatusEnum.Paid,
+            paymentReceivedDate = Some(LocalDateTime.of(1970, 3, 8, 0, 0, 0))
           ),
           communications = Seq(
             Communication(
@@ -331,7 +334,8 @@ trait SpecBase extends AnyWordSpec with Matchers with GuiceOneAppPerSuite {
             startDate = LocalDateTime.of(1970, 2, 8, 0, 0, 0),
             endDate = LocalDateTime.of(1970, 2, 8, 0, 0, 0),
             dueDate = LocalDateTime.of(1970, 2, 8, 0, 0, 0),
-            paymentStatus = PaymentStatusEnum.Paid
+            paymentStatus = PaymentStatusEnum.Paid,
+            paymentReceivedDate = Some(LocalDateTime.of(1970, 3, 8, 0, 0, 0))
           ),
           communications = Seq(
             Communication(
@@ -357,7 +361,8 @@ trait SpecBase extends AnyWordSpec with Matchers with GuiceOneAppPerSuite {
             startDate = LocalDateTime.of(1970, 2, 8, 0, 0, 0),
             endDate = LocalDateTime.of(1970, 2, 8, 0, 0, 0),
             dueDate = LocalDateTime.of(1970, 2, 8, 0, 0, 0),
-            paymentStatus = PaymentStatusEnum.Paid
+            paymentStatus = PaymentStatusEnum.Paid,
+            paymentReceivedDate = Some(LocalDateTime.of(1970, 3, 8, 0, 0, 0))
           ),
           communications = Seq(
             Communication(
@@ -442,7 +447,8 @@ trait SpecBase extends AnyWordSpec with Matchers with GuiceOneAppPerSuite {
             startDate = LocalDateTime.of(1970, 2, 8, 0, 0, 0),
             endDate = LocalDateTime.of(1970, 2, 8, 0, 0, 0),
             dueDate = LocalDateTime.of(1970, 2, 8, 0, 0, 0),
-            paymentStatus = PaymentStatusEnum.Paid
+            paymentStatus = PaymentStatusEnum.Paid,
+            paymentReceivedDate = Some(LocalDateTime.of(1970, 3, 8, 0, 0, 0))
           ),
           communications = Seq(
             Communication(
@@ -468,7 +474,8 @@ trait SpecBase extends AnyWordSpec with Matchers with GuiceOneAppPerSuite {
             startDate = LocalDateTime.of(1970, 2, 8, 0, 0, 0),
             endDate = LocalDateTime.of(1970, 2, 8, 0, 0, 0),
             dueDate = LocalDateTime.of(1970, 2, 8, 0, 0, 0),
-            paymentStatus = PaymentStatusEnum.Paid
+            paymentStatus = PaymentStatusEnum.Paid,
+            paymentReceivedDate = Some(LocalDateTime.of(1970, 3, 8, 0, 0, 0))
           ),
           communications = Seq(
             Communication(

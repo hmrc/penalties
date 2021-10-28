@@ -24,7 +24,8 @@ case class PaymentPeriod(
                           startDate: LocalDateTime,
                           endDate: LocalDateTime,
                           dueDate: LocalDateTime,
-                          paymentStatus: PaymentStatusEnum.Value
+                          paymentStatus: PaymentStatusEnum.Value,
+                          paymentReceivedDate: Option[LocalDateTime] = None
                         )
 
 object PaymentPeriod {

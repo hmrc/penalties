@@ -29,15 +29,36 @@ class PaymentPeriodSpec extends AnyWordSpec with Matchers {
       | "startDate": "2020-01-01T13:00:00.091",
       | "endDate": "2020-01-31T13:00:00.091",
       | "dueDate": "2020-03-07T13:00:00.091",
-      | "paymentStatus": "PAID"
+      | "paymentStatus": "PAID",
+      | "paymentReceivedDate": "2020-03-07T13:00:00.091"
       |}
       |""".stripMargin)
+
+  val paymentPeriodJsonWithNoPaymentReceived: JsValue = Json.parse(
+    """
+      |{
+      | "startDate": "2020-01-01T13:00:00.091",
+      | "endDate": "2020-01-31T13:00:00.091",
+      | "dueDate": "2020-03-07T13:00:00.091",
+      | "paymentStatus": "DUE"
+      |}
+      |""".stripMargin
+  )
 
   val paymentPeriodAsModel: PaymentPeriod = PaymentPeriod(
     startDate = LocalDateTime.parse("2020-01-01T13:00:00.091"),
     endDate = LocalDateTime.parse("2020-01-31T13:00:00.091"),
     dueDate = LocalDateTime.parse("2020-03-07T13:00:00.091"),
-    paymentStatus = PaymentStatusEnum.Paid
+    paymentStatus = PaymentStatusEnum.Paid,
+    paymentReceivedDate = Some(LocalDateTime.parse("2020-03-07T13:00:00.091"))
+  )
+
+  val paymentPeriodAsModelWithNoPaymentReceived: PaymentPeriod = PaymentPeriod(
+    startDate = LocalDateTime.parse("2020-01-01T13:00:00.091"),
+    endDate = LocalDateTime.parse("2020-01-31T13:00:00.091"),
+    dueDate = LocalDateTime.parse("2020-03-07T13:00:00.091"),
+    paymentStatus = PaymentStatusEnum.Due,
+    paymentReceivedDate = None
   )
 
   "be writable to JSON" in {
@@ -45,9 +66,21 @@ class PaymentPeriodSpec extends AnyWordSpec with Matchers {
     result shouldBe paymentPeriodJson
   }
 
-  s"be readable from JSON" in {
+  "be writable to JSON when no payment has been made for the period" in {
+    val result = Json.toJson(paymentPeriodAsModelWithNoPaymentReceived)
+    result shouldBe paymentPeriodJsonWithNoPaymentReceived
+  }
+
+  "be readable from JSON" in {
     val result = Json.fromJson(paymentPeriodJson)(PaymentPeriod.format)
     result.isSuccess shouldBe true
     result.get shouldBe paymentPeriodAsModel
   }
+
+  "be readable from JSon when no payment has been made for the period" in {
+    val result = Json.fromJson(paymentPeriodJsonWithNoPaymentReceived)(PaymentPeriod.format)
+    result.isSuccess shouldBe true
+    result.get shouldBe paymentPeriodAsModelWithNoPaymentReceived
+  }
+
 }
