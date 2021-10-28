@@ -292,6 +292,31 @@ class ETMPPayloadSpec extends AnyWordSpec with Matchers {
       |         "startDate": "2021-04-23T18:25:43.511",
       |         "endDate": "2021-04-23T18:25:43.511",
       |         "dueDate": "2021-04-23T18:25:43.511",
+      |	        "paymentStatus": "DUE"
+      |       },
+      |       "communications": [
+      |       {
+      |          "type": "letter",
+      |          "dateSent": "2021-04-23T18:25:43.511",
+      |          "documentId": "1234567890"
+      |        }
+      |       ],
+      |       "financial": {
+      |         "amountDue": 400.00,
+      |         "outstandingAmountDue": 2.00,
+      |         "dueDate": "2021-04-23T18:25:43.511"
+      |       }
+      |    },
+      |    {
+      |       "type": "financial",
+      |       "reason": "VAT_NOT_PAID_WITHIN_30_DAYS",
+      |       "id": "1234567890",
+      |       "dateCreated": "2021-04-23T18:25:43.511",
+      |       "status": "ACTIVE",
+      |       "period": {
+      |         "startDate": "2021-04-23T18:25:43.511",
+      |         "endDate": "2021-04-23T18:25:43.511",
+      |         "dueDate": "2021-04-23T18:25:43.511",
       |	        "paymentStatus": "PAID",
       |         "paymentReceivedDate": "2021-04-23T18:25:43.511"
       |       },
@@ -498,6 +523,32 @@ class ETMPPayloadSpec extends AnyWordSpec with Matchers {
         LatePaymentPenalty(
           `type` = PenaltyTypeEnum.Financial,
           id = "1234567891",
+          reason = PaymentPenaltyReasonEnum.VAT_NOT_PAID_WITHIN_30_DAYS,
+          dateCreated = sampleDate,
+          status = PointStatusEnum.Active,
+          appealStatus = None,
+          period = PaymentPeriod(
+            startDate = sampleDate,
+            endDate = sampleDate,
+            dueDate = sampleDate,
+            paymentStatus = PaymentStatusEnum.Due
+          ),
+          communications = Seq(
+            Communication(
+              `type` = CommunicationTypeEnum.letter,
+              dateSent = sampleDate,
+              documentId = "1234567890"
+            )
+          ),
+          financial = Financial(
+            amountDue = 400.00,
+            outstandingAmountDue = 2.00,
+            dueDate = sampleDate
+          )
+        ),
+        LatePaymentPenalty(
+          `type` = PenaltyTypeEnum.Financial,
+          id = "1234567890",
           reason = PaymentPenaltyReasonEnum.VAT_NOT_PAID_WITHIN_30_DAYS,
           dateCreated = sampleDate,
           status = PointStatusEnum.Active,

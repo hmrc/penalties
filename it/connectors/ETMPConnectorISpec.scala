@@ -105,14 +105,13 @@ class ETMPConnectorISpec extends IntegrationSpecCommonBase with ETMPWiremock wit
       |      "reason": "VAT_NOT_PAID_WITHIN_30_DAYS",
       |      "id": "1234567891",
       |      "dateCreated": "2021-04-23T18:25:43.511",
-      |      "status": "ACTIVE",
+      |      "status": "DUE",
       |      "appealStatus": "UNDER_REVIEW",
       |      "period": {
       |        "startDate": "2021-04-23T18:25:43.511",
       |        "endDate": "2021-04-23T18:25:43.511",
       |        "dueDate": "2021-04-23T18:25:43.511",
-      |		     "paymentStatus": "PAID",
-      |        "paymentReceivedDate": "2021-04-23T18:25:43.511"
+      |		     "paymentStatus": "DUE"
       |      },
       |      "communications": [
       |        {
@@ -207,8 +206,7 @@ class ETMPConnectorISpec extends IntegrationSpecCommonBase with ETMPWiremock wit
       |        "startDate": "2021-04-23T18:25:43.511",
       |        "endDate": "2021-04-23T18:25:43.511",
       |        "dueDate": "2021-04-23T18:25:43.511",
-      |		     "paymentStatus": "PAID",
-      |        "paymentReceivedDate": "2021-04-23T18:25:43.511"
+      |		     "paymentStatus": "PAID"
       |      },
       |      "communications": [
       |        {
