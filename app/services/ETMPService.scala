@@ -16,21 +16,23 @@
 
 package services
 
-import java.time.LocalDate
-
 import connectors.parsers.ETMPPayloadParser.{ETMPPayloadResponse, GetETMPPayloadFailureResponse, GetETMPPayloadMalformed, GetETMPPayloadNoContent, GetETMPPayloadSuccessResponse}
 import connectors.{AppealsConnector, ETMPConnector}
-import javax.inject.Inject
 import models.ETMPPayload
 import models.appeals.AppealSubmission
+import models.penalty.PenaltyPeriod
 import models.point.PointStatusEnum
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import utils.Logger.logger
+import utils.PenaltyPeriodHelper
 
+import java.time.LocalDate
+import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class ETMPService @Inject()(etmpConnector: ETMPConnector,
-                            appealsConnector: AppealsConnector)
+                            appealsConnector: AppealsConnector,
+                            penaltyPeriodHelper: PenaltyPeriodHelper)
                            (implicit ec: ExecutionContext) {
 
   def getPenaltyDataFromETMPForEnrolment(enrolmentKey: String)(implicit hc: HeaderCarrier): Future[(Option[ETMPPayload], ETMPPayloadResponse) ] = {
@@ -56,7 +58,7 @@ class ETMPService @Inject()(etmpConnector: ETMPConnector,
             logger.debug(s"$startOfLogMsg - Found period for penalty - start : ${penaltyPeriod._1} to end : ${penaltyPeriod._2}")
             val isOtherLSPInSamePeriod = penaltyData.penaltyPoints.exists(
               penalty => penalty.period.exists(
-                period => period.startDate.toLocalDate == penaltyPeriod._1 && period.endDate.toLocalDate == penaltyPeriod._2 && penalty.id != penaltyId)
+                period => penaltyPeriodHelper.sortedPenaltyPeriod(period).head.startDate.toLocalDate == penaltyPeriod._1 && penaltyPeriodHelper.sortedPenaltyPeriod(period).head.endDate.toLocalDate == penaltyPeriod._2 && penalty.id != penaltyId)
             )
             val isOtherLPPInSamePeriod = penaltyData.latePaymentPenalties.exists(
               _.exists(
@@ -77,7 +79,13 @@ class ETMPService @Inject()(etmpConnector: ETMPConnector,
       optPenalty.map(penalty => (penalty.period.startDate.toLocalDate, penalty.period.endDate.toLocalDate))
     } else {
       val optPenalty = payload.penaltyPoints.find(_.id == penaltyId)
-      optPenalty.flatMap(_.period.map(period => (period.startDate.toLocalDate, period.endDate.toLocalDate)))
+      val penaltyPeriod:Seq[PenaltyPeriod] = optPenalty.flatMap(_.period).getOrElse(Seq.empty)
+      if(penaltyPeriod.nonEmpty){
+        val period:PenaltyPeriod =  penaltyPeriodHelper.sortedPenaltyPeriod(penaltyPeriod).head
+        Some(period.startDate.toLocalDate, period.endDate.toLocalDate)
+      } else {
+        None
+      }
     }
   }
 

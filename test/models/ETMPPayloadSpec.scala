@@ -54,7 +54,8 @@ class ETMPPayloadSpec extends AnyWordSpec with Matchers {
       |			"dateCreated": "2021-04-23T18:25:43.511",
       |			"dateExpired": "2021-04-23T18:25:43.511",
       |			"status": "ACTIVE",
-      |			"period": {
+      |			"period": [
+      |       {
       |				"startDate": "2021-04-23T18:25:43.511",
       |				"endDate": "2021-04-23T18:25:43.511",
       |				"submission": {
@@ -62,7 +63,8 @@ class ETMPPayloadSpec extends AnyWordSpec with Matchers {
       |					"submittedDate": "2021-04-23T18:25:43.511",
       |					"status": "SUBMITTED"
       |				}
-      |			},
+      |			}
+      |   ],
       |			"communications": [
       |				{
       |					"type": "secureMessage",
@@ -84,7 +86,8 @@ class ETMPPayloadSpec extends AnyWordSpec with Matchers {
       |			"dateExpired": "2021-04-23T18:25:43.511",
       |			"status": "ACTIVE",
       |     "reason": "reason",
-      |			"period": {
+      |			"period": [
+      |     {
       |				"startDate": "2021-04-23T18:25:43.511",
       |				"endDate": "2021-04-23T18:25:43.511",
       |				"submission": {
@@ -92,7 +95,8 @@ class ETMPPayloadSpec extends AnyWordSpec with Matchers {
       |					"submittedDate": "2021-04-23T18:25:43.511",
       |					"status": "SUBMITTED"
       |				}
-      |			},
+      |			}
+      |   ],
       |			"communications": [
       |				{
       |					"type": "letter",
@@ -138,7 +142,8 @@ class ETMPPayloadSpec extends AnyWordSpec with Matchers {
       |			"dateCreated": "2021-04-23T18:25:43.511",
       |			"dateExpired": "2021-04-23T18:25:43.511",
       |			"status": "ACTIVE",
-      |			"period": {
+      |			"period": [
+      |       {
       |				"startDate": "2021-04-23T18:25:43.511",
       |				"endDate": "2021-04-23T18:25:43.511",
       |				"submission": {
@@ -146,7 +151,8 @@ class ETMPPayloadSpec extends AnyWordSpec with Matchers {
       |					"submittedDate": "2021-04-23T18:25:43.511",
       |					"status": "SUBMITTED"
       |				}
-      |			},
+      |			}
+      |   ],
       |			"communications": [
       |				{
       |					"type": "secureMessage",
@@ -168,7 +174,8 @@ class ETMPPayloadSpec extends AnyWordSpec with Matchers {
       |			"dateExpired": "2021-04-23T18:25:43.511",
       |			"status": "ACTIVE",
       |     "reason": "reason",
-      |			"period": {
+      |			"period": [
+      |       {
       |				"startDate": "2021-04-23T18:25:43.511",
       |				"endDate": "2021-04-23T18:25:43.511",
       |				"submission": {
@@ -176,7 +183,8 @@ class ETMPPayloadSpec extends AnyWordSpec with Matchers {
       |					"submittedDate": "2021-04-23T18:25:43.511",
       |					"status": "SUBMITTED"
       |				}
-      |			},
+      |			}
+      |    ],
       |			"communications": [
       |				{
       |					"type": "letter",
@@ -207,7 +215,8 @@ class ETMPPayloadSpec extends AnyWordSpec with Matchers {
       |			"dateCreated": "2021-04-23T18:25:43.511",
       |			"dateExpired": "2021-04-23T18:25:43.511",
       |			"status": "ACTIVE",
-      |			"period": {
+      |			"period": [
+      |       {
       |				"startDate": "2021-04-23T18:25:43.511",
       |				"endDate": "2021-04-23T18:25:43.511",
       |				"submission": {
@@ -215,7 +224,8 @@ class ETMPPayloadSpec extends AnyWordSpec with Matchers {
       |					"submittedDate": "2021-04-23T18:25:43.511",
       |					"status": "SUBMITTED"
       |				}
-      |			},
+      |			}
+      |   ],
       |			"communications": [
       |				{
       |					"type": "secureMessage",
@@ -237,7 +247,8 @@ class ETMPPayloadSpec extends AnyWordSpec with Matchers {
       |			"dateExpired": "2021-04-23T18:25:43.511",
       |			"status": "ACTIVE",
       |     "reason": "reason",
-      |			"period": {
+      |			"period": [
+      |       {
       |				"startDate": "2021-04-23T18:25:43.511",
       |				"endDate": "2021-04-23T18:25:43.511",
       |				"submission": {
@@ -245,7 +256,8 @@ class ETMPPayloadSpec extends AnyWordSpec with Matchers {
       |					"submittedDate": "2021-04-23T18:25:43.511",
       |					"status": "SUBMITTED"
       |				}
-      |			},
+      |			}
+      |   ],
       |			"communications": [
       |				{
       |					"type": "letter",
@@ -354,7 +366,7 @@ class ETMPPayloadSpec extends AnyWordSpec with Matchers {
         dateExpired = Some(sampleDate),
         status = PointStatusEnum.Active,
         reason = None,
-        period = Some(PenaltyPeriod(
+        period = Some(Seq(PenaltyPeriod(
           startDate = sampleDate,
           endDate = sampleDate,
           submission = Submission(
@@ -362,7 +374,7 @@ class ETMPPayloadSpec extends AnyWordSpec with Matchers {
             submittedDate = Some(sampleDate),
             status = SubmissionStatusEnum.Submitted
           )
-        )),
+        ))),
         communications = Seq(
           Communication(
             `type` = CommunicationTypeEnum.secureMessage,
@@ -385,7 +397,7 @@ class ETMPPayloadSpec extends AnyWordSpec with Matchers {
         dateExpired = Some(sampleDate),
         status = PointStatusEnum.Active,
         reason = Some("reason"),
-        period = Some(PenaltyPeriod(
+        period = Some(Seq(PenaltyPeriod(
           startDate = sampleDate,
           endDate = sampleDate,
           submission = Submission(
@@ -393,7 +405,7 @@ class ETMPPayloadSpec extends AnyWordSpec with Matchers {
             submittedDate = Some(sampleDate),
             status = SubmissionStatusEnum.Submitted
           )
-        )),
+        ))),
         communications = Seq(
           Communication(
             `type` = CommunicationTypeEnum.letter,
@@ -439,7 +451,7 @@ class ETMPPayloadSpec extends AnyWordSpec with Matchers {
         dateExpired = Some(sampleDate),
         status = PointStatusEnum.Active,
         reason = None,
-        period = Some(PenaltyPeriod(
+        period = Some(Seq(PenaltyPeriod(
           startDate = sampleDate,
           endDate = sampleDate,
           submission = Submission(
@@ -447,7 +459,7 @@ class ETMPPayloadSpec extends AnyWordSpec with Matchers {
             submittedDate = Some(sampleDate),
             status = SubmissionStatusEnum.Submitted
           )
-        )),
+        ))),
         communications = Seq(
           Communication(
             `type` = CommunicationTypeEnum.secureMessage,
@@ -470,7 +482,7 @@ class ETMPPayloadSpec extends AnyWordSpec with Matchers {
         dateExpired = Some(sampleDate),
         status = PointStatusEnum.Active,
         reason = Some("reason"),
-        period = Some(PenaltyPeriod(
+        period = Some(Seq(PenaltyPeriod(
           startDate = sampleDate,
           endDate = sampleDate,
           submission = Submission(
@@ -478,7 +490,7 @@ class ETMPPayloadSpec extends AnyWordSpec with Matchers {
             submittedDate = Some(sampleDate),
             status = SubmissionStatusEnum.Submitted
           )
-        )),
+        ))),
         communications = Seq(
           Communication(
             `type` = CommunicationTypeEnum.letter,

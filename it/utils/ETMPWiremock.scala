@@ -39,7 +39,7 @@ trait ETMPWiremock {
       |			"dateCreated": "2021-04-23T18:25:43.511",
       |			"dateExpired": "2021-04-23T18:25:43.511",
       |			"status": "ACTIVE",
-      |			"period": {
+      |			"period": [{
       |				"startDate": "2021-04-23T18:25:43.511",
       |				"endDate": "2021-04-23T18:25:43.511",
       |				"submission": {
@@ -47,7 +47,7 @@ trait ETMPWiremock {
       |					"submittedDate": "2021-04-23T18:25:43.511",
       |					"status": "SUBMITTED"
       |				}
-      |			},
+      |			}],
       |			"communications": [
       |				{
       |					"type": "secureMessage",
@@ -68,7 +68,7 @@ trait ETMPWiremock {
       |			"dateCreated": "2021-04-23T18:25:43.511",
       |			"dateExpired": "2021-04-23T18:25:43.511",
       |			"status": "ACTIVE",
-      |			"period": {
+      |			"period": [{
       |				"startDate": "2021-04-23T18:25:43.511",
       |				"endDate": "2021-04-23T18:25:43.511",
       |				"submission": {
@@ -76,7 +76,7 @@ trait ETMPWiremock {
       |					"submittedDate": "2021-04-23T18:25:43.511",
       |					"status": "SUBMITTED"
       |				}
-      |			},
+      |			}],
       |			"communications": [
       |				{
       |					"type": "letter",

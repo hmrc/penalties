@@ -41,7 +41,7 @@ class ETMPServiceISpec extends IntegrationSpecCommonBase with ETMPWiremock {
       |				"dateCreated" : "2023-05-08T18:25:43.511Z",
       |				"dateExpired" : "2025-05-08T18:25:43.511Z",
       |				"status" : "ACTIVE",
-      |				"period" : {
+      |				"period" : [{
       |					"startDate" : "2023-01-01T18:25:43.511Z",
       |					"submission" : {
       |						"dueDate" : "2023-05-07T18:25:43.511Z",
@@ -49,7 +49,7 @@ class ETMPServiceISpec extends IntegrationSpecCommonBase with ETMPWiremock {
       |						"submittedDate" : "2023-05-12T18:25:43.511Z"
       |					},
       |					"endDate" : "2023-03-31T18:25:43.511Z"
-      |				},
+      |				}],
       |				"communications" : [
       |					{
       |						"type" : "letter",
@@ -106,7 +106,7 @@ class ETMPServiceISpec extends IntegrationSpecCommonBase with ETMPWiremock {
       |				"dateCreated" : "2022-05-08T18:25:43.511Z",
       |				"dateExpired" : "2024-05-08T18:25:43.511Z",
       |				"status" : "ACTIVE",
-      |				"period" : {
+      |				"period" : [{
       |					"startDate" : "2022-01-01T18:25:43.511Z",
       |					"submission" : {
       |						"dueDate" : "2022-05-07T18:25:43.511Z",
@@ -114,7 +114,7 @@ class ETMPServiceISpec extends IntegrationSpecCommonBase with ETMPWiremock {
       |						"submittedDate" : "2022-05-12T18:25:43.511Z"
       |					},
       |					"endDate" : "2022-03-31T18:25:43.511Z"
-      |				},
+      |				}],
       |				"communications" : [
       |					{
       |						"type" : "letter",
@@ -196,7 +196,7 @@ class ETMPServiceISpec extends IntegrationSpecCommonBase with ETMPWiremock {
       |				"dateCreated" : "2023-08-08T18:25:43.511Z",
       |				"dateExpired" : "2025-08-08T18:25:43.511Z",
       |				"status" : "ACTIVE",
-      |				"period" : {
+      |				"period" : [{
       |					"startDate" : "2023-04-01T18:25:43.511Z",
       |					"submission" : {
       |						"dueDate" : "2023-08-07T18:25:43.511Z",
@@ -204,7 +204,7 @@ class ETMPServiceISpec extends IntegrationSpecCommonBase with ETMPWiremock {
       |						"submittedDate" : "2023-08-12T18:25:43.511Z"
       |					},
       |					"endDate" : "2023-06-30T18:25:43.511Z"
-      |				},
+      |				}],
       |				"communications" : [
       |					{
       |						"type" : "letter",

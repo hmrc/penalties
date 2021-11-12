@@ -19,23 +19,25 @@ package controllers
 import config.AppConfig
 import connectors.parsers.ETMPPayloadParser.GetETMPPayloadNoContent
 import models.ETMPPayload
-import models.appeals.{AppealData, AppealSubmission, AppealTypeEnum}
 import models.appeals.AppealTypeEnum._
 import models.appeals.reasonableExcuses.ReasonableExcuse
+import models.appeals.{AppealData, AppealSubmission, AppealTypeEnum}
 import models.payment.LatePaymentPenalty
 import models.point.PenaltyPoint
-import utils.Logger.logger
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, ControllerComponents, Result}
 import services.ETMPService
 import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
+import utils.Logger.logger
+import utils.PenaltyPeriodHelper
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class AppealsController @Inject()(appConfig: AppConfig,
                                   etmpService: ETMPService,
+                                  penaltyPeriodHelper: PenaltyPeriodHelper,
                                   cc: ControllerComponents)(implicit ec: ExecutionContext)
   extends BackendController(cc) {
 
@@ -94,9 +96,9 @@ class AppealsController @Inject()(appConfig: AppConfig,
       logger.debug(s"[AppealsController][getAppealsData] Penalty ID: $penaltyIdToCheck for enrolment key: $enrolmentKey found in ETMP for $appealType.")
       val penaltyBasedOnId = lspPenaltyIdInETMPPayload.get
       val dataToReturn: AppealData = AppealData(`type` = appealType,
-        startDate = penaltyBasedOnId.period.get.startDate,
-        endDate = penaltyBasedOnId.period.get.endDate,
-        dueDate = penaltyBasedOnId.period.get.submission.dueDate,
+        startDate = penaltyBasedOnId.period.get.sortWith(penaltyPeriodHelper.sortByPenaltyStartDate(_ , _) < 0).head.startDate,
+        endDate = penaltyBasedOnId.period.get.sortWith(penaltyPeriodHelper.sortByPenaltyStartDate(_ , _) < 0).head.endDate,
+        dueDate = penaltyBasedOnId.period.get.sortWith(penaltyPeriodHelper.sortByPenaltyStartDate(_ , _) < 0).head.submission.dueDate,
         dateCommunicationSent = penaltyBasedOnId.communications.head.dateSent
       )
       Ok(Json.toJson(dataToReturn))

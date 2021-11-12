@@ -45,7 +45,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
       |				],
       |				"type" : "point",
       |				"number" : "3",
-      |				"period" : {
+      |				"period" : [{
       |					"startDate" : "2023-07-01T18:25:43.511",
       |					"submission" : {
       |						"dueDate" : "2023-11-07T18:25:43.511",
@@ -53,7 +53,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
       |						"submittedDate" : "2023-11-15T18:25:43.511"
       |					},
       |					"endDate" : "2023-09-30T18:25:43.511"
-      |				},
+      |				}],
       |				"status" : "ACTIVE",
       |				"dateExpired" : "2025-11-07T18:25:43.511",
       |				"dateCreated" : "2023-11-07T18:25:43.511",
@@ -69,7 +69,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
       |				],
       |				"type" : "point",
       |				"number" : "2",
-      |				"period" : {
+      |				"period" : [{
       |					"startDate" : "2023-04-01T18:25:43.511",
       |					"submission" : {
       |						"dueDate" : "2023-08-07T18:25:43.511",
@@ -77,7 +77,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
       |						"submittedDate" : "2023-08-15T18:25:43.511"
       |					},
       |					"endDate" : "2023-06-30T18:25:43.511"
-      |				},
+      |				}],
       |				"status" : "ACTIVE",
       |				"dateExpired" : "2025-08-07T18:25:43.511",
       |				"dateCreated" : "2023-08-07T18:25:43.511",
@@ -93,7 +93,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
       |					}
       |				],
       |				"number" : "1",
-      |				"period" : {
+      |				"period" : [{
       |					"startDate" : "2023-01-01T18:25:43.511",
       |					"submission" : {
       |						"dueDate" : "2023-05-07T18:25:43.511",
@@ -101,7 +101,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
       |						"submittedDate" : "2023-05-12T18:25:43.511"
       |					},
       |					"endDate" : "2023-03-31T18:25:43.511"
-      |				},
+      |				}],
       |				"status" : "ACTIVE",
       |				"dateCreated" : "2023-05-08T18:25:43.511",
       |				"dateExpired" : "2025-05-08T18:25:43.511",
@@ -599,7 +599,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
         |				"dateCreated" : "2023-05-08T18:25:43.511Z",
         |				"dateExpired" : "2025-05-08T18:25:43.511Z",
         |				"status" : "ACTIVE",
-        |				"period" : {
+        |				"period" : [{
         |					"startDate" : "2023-01-01T18:25:43.511Z",
         |					"submission" : {
         |						"dueDate" : "2023-05-07T18:25:43.511Z",
@@ -607,7 +607,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
         |						"submittedDate" : "2023-05-12T18:25:43.511Z"
         |					},
         |					"endDate" : "2023-03-31T18:25:43.511Z"
-        |				},
+        |				}],
         |				"communications" : [
         |					{
         |						"type" : "letter",
@@ -664,7 +664,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
         |				"dateCreated" : "2023-08-08T18:25:43.511Z",
         |				"dateExpired" : "2025-08-08T18:25:43.511Z",
         |				"status" : "ACTIVE",
-        |				"period" : {
+        |				"period" : [{
         |					"startDate" : "2023-04-01T18:25:43.511Z",
         |					"submission" : {
         |						"dueDate" : "2023-08-07T18:25:43.511Z",
@@ -672,7 +672,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
         |						"submittedDate" : "2023-08-12T18:25:43.511Z"
         |					},
         |					"endDate" : "2023-06-30T18:25:43.511Z"
-        |				},
+        |				}],
         |				"communications" : [
         |					{
         |						"type" : "letter",

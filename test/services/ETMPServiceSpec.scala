@@ -17,8 +17,8 @@
 package services
 
 import base.SpecBase
-import connectors.{AppealsConnector, ETMPConnector}
 import connectors.parsers.ETMPPayloadParser._
+import connectors.{AppealsConnector, ETMPConnector}
 import models.ETMPPayload
 import models.appeals.{AppealSubmission, CrimeAppealInformation}
 import models.communication.{Communication, CommunicationTypeEnum}
@@ -29,9 +29,11 @@ import models.point.{PenaltyPoint, PenaltyTypeEnum, PointStatusEnum}
 import models.reason.PaymentPenaltyReasonEnum
 import models.submission.{Submission, SubmissionStatusEnum}
 import org.mockito.ArgumentMatchers
+import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
 import play.api.test.Helpers._
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
+import utils.PenaltyPeriodHelper
 
 import java.time.LocalDateTime
 import scala.concurrent.{ExecutionContext, Future}
@@ -41,11 +43,13 @@ class ETMPServiceSpec extends SpecBase {
   implicit val hc: HeaderCarrier = HeaderCarrier()
   val mockEtmpConnector: ETMPConnector = mock(classOf[ETMPConnector])
   val mockAppealsConnector: AppealsConnector = mock(classOf[AppealsConnector])
+  val mockPenaltyPeriodHelper: PenaltyPeriodHelper = mock(classOf[PenaltyPeriodHelper])
 
   class Setup {
     val service = new ETMPService(
       mockEtmpConnector,
-      mockAppealsConnector
+      mockAppealsConnector,
+      mockPenaltyPeriodHelper
     )
 
     reset(mockEtmpConnector)
@@ -165,7 +169,7 @@ class ETMPServiceSpec extends SpecBase {
           dateExpired = Some(LocalDateTime.of(2025, 5, 8, 0, 0, 0)),
           status = PointStatusEnum.Active,
           reason = Some("reason"),
-          period = Some(PenaltyPeriod(
+          period = Some(Seq(PenaltyPeriod(
             startDate = LocalDateTime.of(2023, 1, 1, 0, 0, 0),
             endDate = LocalDateTime.of(2023, 3, 31, 0, 0, 0),
             submission = Submission(
@@ -173,7 +177,7 @@ class ETMPServiceSpec extends SpecBase {
               submittedDate = Some(LocalDateTime.of(2023, 5, 8, 0, 0, 0)),
               status = SubmissionStatusEnum.Submitted
             )
-          )),
+          ))),
           communications = Seq(
             Communication(
               `type` = CommunicationTypeEnum.secureMessage,
@@ -302,7 +306,7 @@ class ETMPServiceSpec extends SpecBase {
           dateExpired = Some(LocalDateTime.of(2025, 5, 8, 0, 0, 0)),
           status = PointStatusEnum.Active,
           reason = Some("reason"),
-          period = Some(PenaltyPeriod(
+          period = Some(Seq(PenaltyPeriod(
             startDate = LocalDateTime.of(2023, 1, 1, 0, 0, 0),
             endDate = LocalDateTime.of(2023, 3, 31, 0, 0, 0),
             submission = Submission(
@@ -310,7 +314,7 @@ class ETMPServiceSpec extends SpecBase {
               submittedDate = Some(LocalDateTime.of(2023, 5, 8, 0, 0, 0)),
               status = SubmissionStatusEnum.Submitted
             )
-          )),
+          ))),
           communications = Seq(
             Communication(
               `type` = CommunicationTypeEnum.secureMessage,
@@ -358,7 +362,15 @@ class ETMPServiceSpec extends SpecBase {
       "there is a LPP in the same period as the LSP" in new Setup {
         when(mockEtmpConnector.getPenaltiesDataForEnrolmentKey(ArgumentMatchers.eq("123456789"))(ArgumentMatchers.any()))
           .thenReturn(Future.successful(Right(GetETMPPayloadSuccessResponse(mockETMPPayloadResponseAsModelWithLPPSamePeriodAsLSP))))
-
+        when(mockPenaltyPeriodHelper.sortedPenaltyPeriod(any())).thenReturn(Seq(PenaltyPeriod(
+          startDate = LocalDateTime.of(2023, 1, 1, 0, 0, 0),
+          endDate = LocalDateTime.of(2023, 3, 31, 0, 0, 0),
+          submission = Submission(
+            dueDate = LocalDateTime.of(2023, 5, 7, 0, 0, 0),
+            submittedDate = Some(LocalDateTime.of(2023, 5, 8, 0, 0, 0)),
+            status = SubmissionStatusEnum.Submitted
+          )
+        )))
         val result: Future[Boolean] = service.isMultiplePenaltiesInSamePeriod("123456790", "123456789", isLPP = false)
         await(result) shouldBe true
       }
@@ -416,7 +428,14 @@ class ETMPServiceSpec extends SpecBase {
       "there is no matching period in the payload - when called with LSP" in new Setup {
         when(mockEtmpConnector.getPenaltiesDataForEnrolmentKey(ArgumentMatchers.eq("123456789"))(ArgumentMatchers.any()))
           .thenReturn(Future.successful(Right(GetETMPPayloadSuccessResponse(mockETMPPayloadResponseAsModelWithLPPDifferentPeriodAsLSP))))
-
+        when(mockPenaltyPeriodHelper.sortedPenaltyPeriod(any())).thenReturn(Seq(PenaltyPeriod(
+          startDate = LocalDateTime.of(2023, 1, 1, 0, 0, 0),
+          endDate = LocalDateTime.of(2023, 3, 31, 0, 0, 0),
+          submission = Submission(
+            dueDate = LocalDateTime.of(2023, 5, 7, 0, 0, 0),
+            submittedDate = Some(LocalDateTime.of(2023, 5, 8, 0, 0, 0)),
+            status = SubmissionStatusEnum.Submitted
+          ))))
         val result: Future[Boolean] = service.isMultiplePenaltiesInSamePeriod("123456790", "123456789", isLPP = false)
         await(result) shouldBe false
       }
@@ -449,7 +468,7 @@ class ETMPServiceSpec extends SpecBase {
           dateExpired = Some(LocalDateTime.of(1970, 1, 1, 0, 0, 0)),
           status = PointStatusEnum.Estimated,
           reason = None,
-          period = Some(PenaltyPeriod(
+          period = Some(Seq(PenaltyPeriod(
             startDate = LocalDateTime.of(1970, 1, 1, 0, 0, 0),
             endDate = LocalDateTime.of(1970, 1, 31, 0, 0, 0),
             submission = Submission(
@@ -457,7 +476,7 @@ class ETMPServiceSpec extends SpecBase {
               submittedDate = None,
               status = SubmissionStatusEnum.Overdue
             )
-          )),
+          ))),
           communications = Seq.empty,
           financial = None
           )
@@ -512,7 +531,7 @@ class ETMPServiceSpec extends SpecBase {
           dateExpired = Some(LocalDateTime.of(1970, 1, 1, 0, 0, 0)),
           status = PointStatusEnum.Due,
           reason = None,
-          period = Some(PenaltyPeriod(
+          period = Some(Seq(PenaltyPeriod(
             startDate = LocalDateTime.of(1970, 1, 1, 0, 0, 0),
             endDate = LocalDateTime.of(1970, 1, 31, 0, 0, 0),
             submission = Submission(
@@ -520,7 +539,7 @@ class ETMPServiceSpec extends SpecBase {
               submittedDate = None,
               status = SubmissionStatusEnum.Overdue
             )
-          )),
+          ))),
           communications = Seq.empty,
           financial = None
         )
@@ -590,7 +609,7 @@ class ETMPServiceSpec extends SpecBase {
           dateExpired = Some(LocalDateTime.of(2025, 5, 8, 0, 0, 0)),
           status = PointStatusEnum.Estimated,
           reason = Some("reason"),
-          period = Some(PenaltyPeriod(
+          period = Some(Seq(PenaltyPeriod(
             startDate = LocalDateTime.of(2023, 1, 1, 0, 0, 0),
             endDate = LocalDateTime.of(2023, 3, 31, 0, 0, 0),
             submission = Submission(
@@ -598,7 +617,7 @@ class ETMPServiceSpec extends SpecBase {
               submittedDate = Some(LocalDateTime.of(2023, 5, 8, 0, 0, 0)),
               status = SubmissionStatusEnum.Submitted
             )
-          )),
+          ))),
           communications = Seq(
             Communication(
               `type` = CommunicationTypeEnum.secureMessage,
@@ -696,7 +715,7 @@ class ETMPServiceSpec extends SpecBase {
           dateCreated = LocalDateTime.of(2023, 5, 8, 0, 0, 0),
           dateExpired = Some(LocalDateTime.of(2025, 5, 8, 0, 0, 0)),
           status = PointStatusEnum.Due,
-          period = Some(PenaltyPeriod(
+          period = Some(Seq(PenaltyPeriod(
             startDate = LocalDateTime.of(2023, 1, 1, 0, 0, 0),
             endDate = LocalDateTime.of(2023, 3, 31, 0, 0, 0),
             submission = Submission(
@@ -704,7 +723,7 @@ class ETMPServiceSpec extends SpecBase {
               submittedDate = Some(LocalDateTime.of(2023, 5, 8, 0, 0, 0)),
               status = SubmissionStatusEnum.Submitted
             )
-          )),
+          ))),
           communications = Seq.empty,
           financial = Some(Financial(
             amountDue = 200,
@@ -739,7 +758,7 @@ class ETMPServiceSpec extends SpecBase {
           dateExpired = Some(LocalDateTime.of(2025, 5, 8, 0, 0, 0)),
           status = PointStatusEnum.Due,
           reason = Some("reason"),
-          period = Some(PenaltyPeriod(
+          period = Some(Seq(PenaltyPeriod(
             startDate = LocalDateTime.of(2023, 1, 1, 0, 0, 0),
             endDate = LocalDateTime.of(2023, 3, 31, 0, 0, 0),
             submission = Submission(
@@ -747,7 +766,7 @@ class ETMPServiceSpec extends SpecBase {
               submittedDate = Some(LocalDateTime.of(2023, 5, 8, 0, 0, 0)),
               status = SubmissionStatusEnum.Submitted
             )
-          )),
+          ))),
           communications = Seq(
             Communication(
               `type` = CommunicationTypeEnum.secureMessage,
@@ -846,7 +865,7 @@ class ETMPServiceSpec extends SpecBase {
           dateExpired = Some(LocalDateTime.of(1970, 1, 1, 0, 0, 0)),
           status = PointStatusEnum.Estimated,
           reason = None,
-          period = Some(PenaltyPeriod(
+          period = Some(Seq(PenaltyPeriod(
             startDate = LocalDateTime.of(1970, 1, 1, 0, 0, 0),
             endDate = LocalDateTime.of(1970, 1, 31, 0, 0, 0),
             submission = Submission(
@@ -854,7 +873,7 @@ class ETMPServiceSpec extends SpecBase {
               submittedDate = None,
               status = SubmissionStatusEnum.Overdue
             )
-          )),
+          ))),
           communications = Seq.empty,
           financial = None
         )
@@ -909,7 +928,7 @@ class ETMPServiceSpec extends SpecBase {
           dateExpired = Some(LocalDateTime.of(1970, 1, 1, 0, 0, 0)),
           status = PointStatusEnum.Estimated,
           reason = None,
-          period = Some(PenaltyPeriod(
+          period = Some(Seq(PenaltyPeriod(
             startDate = LocalDateTime.of(1970, 1, 1, 0, 0, 0),
             endDate = LocalDateTime.of(1970, 1, 31, 0, 0, 0),
             submission = Submission(
@@ -917,7 +936,7 @@ class ETMPServiceSpec extends SpecBase {
               submittedDate = None,
               status = SubmissionStatusEnum.Overdue
             )
-          )),
+          ))),
           communications = Seq.empty,
           financial = None
         )
