@@ -20,6 +20,8 @@ import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import play.api.libs.json.{JsValue, Json}
 
+import java.time.LocalDate
+
 class ObligationDetailSpec extends AnyWordSpec with Matchers {
   val obligationDetailNoDateReceivedAsJson: JsValue = Json.parse(
     """
@@ -45,20 +47,20 @@ class ObligationDetailSpec extends AnyWordSpec with Matchers {
       |""".stripMargin)
 
   val obligationDetailNoDateReceivedAsModel: ObligationDetail = ObligationDetail(
-    status = "O",
-    inboundCorrespondenceFromDate = "2020-01-01",
-    inboundCorrespondenceToDate = "2020-01-31",
+    status = ComplianceStatusEnum.open,
+    inboundCorrespondenceFromDate = LocalDate.of(2020, 1, 1),
+    inboundCorrespondenceToDate = LocalDate.of(2020, 1, 31),
     inboundCorrespondenceDateReceived = None,
-    inboundCorrespondenceDueDate = "2020-03-07",
+    inboundCorrespondenceDueDate = LocalDate.of(2020, 3, 7),
     periodKey = "period1"
   )
 
   val obligationDetailReceivedAsModel: ObligationDetail = ObligationDetail(
-    status = "F",
-    inboundCorrespondenceFromDate = "2020-01-01",
-    inboundCorrespondenceToDate = "2020-01-31",
-    inboundCorrespondenceDateReceived = Some("2020-03-05"),
-    inboundCorrespondenceDueDate = "2020-03-07",
+    status = ComplianceStatusEnum.fulfilled,
+    inboundCorrespondenceFromDate = LocalDate.of(2020, 1, 1),
+    inboundCorrespondenceToDate = LocalDate.of(2020, 1, 31),
+    inboundCorrespondenceDateReceived = Some(LocalDate.of(2020, 3, 5)),
+    inboundCorrespondenceDueDate = LocalDate.of(2020, 3, 7),
     periodKey = "period1"
   )
 

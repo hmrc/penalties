@@ -18,13 +18,15 @@ package models.compliance
 
 import play.api.libs.json.{Json, OFormat}
 
+import java.time.LocalDate
+
 case class ObligationDetail(
-                              status: String,
-                              inboundCorrespondenceFromDate: String,
-                              inboundCorrespondenceToDate: String,
-                              inboundCorrespondenceDateReceived: Option[String],
-                              inboundCorrespondenceDueDate: String,
-                              periodKey: String
+                             status: ComplianceStatusEnum.Value,
+                             inboundCorrespondenceFromDate: LocalDate,
+                             inboundCorrespondenceToDate: LocalDate,
+                             inboundCorrespondenceDateReceived: Option[LocalDate],
+                             inboundCorrespondenceDueDate: LocalDate,
+                             periodKey: String
                            )
 
 object ObligationDetail {

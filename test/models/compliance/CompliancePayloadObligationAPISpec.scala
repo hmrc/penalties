@@ -20,6 +20,8 @@ import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import play.api.libs.json.{JsValue, Json}
 
+import java.time.LocalDate
+
 //TODO: rename when we switch to new API
 class CompliancePayloadObligationAPISpec extends AnyWordSpec with Matchers {
   val compliancePayloadAsJson: JsValue = Json.parse(
@@ -57,19 +59,19 @@ class CompliancePayloadObligationAPISpec extends AnyWordSpec with Matchers {
     ),
     obligationDetails = Seq(
       ObligationDetail(
-        status = "O",
-        inboundCorrespondenceFromDate = "1920-02-29",
-        inboundCorrespondenceToDate = "1920-02-29",
+        status = ComplianceStatusEnum.open,
+        inboundCorrespondenceFromDate = LocalDate.of(1920, 2, 29),
+        inboundCorrespondenceToDate = LocalDate.of(1920, 2, 29),
         inboundCorrespondenceDateReceived = None,
-        inboundCorrespondenceDueDate = "1920-02-29",
+        inboundCorrespondenceDueDate = LocalDate.of(1920, 2, 29),
         periodKey = "#001"
       ),
       ObligationDetail(
-        status = "F",
-        inboundCorrespondenceFromDate = "1920-02-29",
-        inboundCorrespondenceToDate = "1920-02-29",
-        inboundCorrespondenceDateReceived = Some("1920-02-29"),
-        inboundCorrespondenceDueDate = "1920-02-29",
+        status = ComplianceStatusEnum.fulfilled,
+        inboundCorrespondenceFromDate = LocalDate.of(1920, 2, 29),
+        inboundCorrespondenceToDate = LocalDate.of(1920, 2, 29),
+        inboundCorrespondenceDateReceived = Some(LocalDate.of(1920, 2, 29)),
+        inboundCorrespondenceDueDate = LocalDate.of(1920, 2, 29),
         periodKey = "#001"
       )
     )
