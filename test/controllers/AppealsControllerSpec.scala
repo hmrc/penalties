@@ -319,7 +319,7 @@ class AppealsControllerSpec extends SpecBase {
     "return the error status code" when {
       "the connector calls fails" in new Setup {
         when(mockETMPService.submitAppeal(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
-        (ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(HttpResponse(GATEWAY_TIMEOUT, "")))
+        (ArgumentMatchers.any())).thenReturn(Future.successful(HttpResponse(GATEWAY_TIMEOUT, "")))
         val appealsJson: JsValue = Json.parse(
           """
             |{
@@ -347,7 +347,7 @@ class AppealsControllerSpec extends SpecBase {
     "return OK (200)" when {
       "the JSON request body can be parsed and the connector returns a successful response for crime" in new Setup {
         when(mockETMPService.submitAppeal(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
-        (ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(HttpResponse(OK, "")))
+        (ArgumentMatchers.any())).thenReturn(Future.successful(HttpResponse(OK, "")))
         val appealsJson: JsValue = Json.parse(
           """
             |{
@@ -372,7 +372,7 @@ class AppealsControllerSpec extends SpecBase {
 
       "the JSON request body can be parsed and the connector returns a successful response for loss of staff" in new Setup {
         when(mockETMPService.submitAppeal(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
-        (ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(HttpResponse(OK, "")))
+        (ArgumentMatchers.any())).thenReturn(Future.successful(HttpResponse(OK, "")))
         val appealsJson: JsValue = Json.parse(
           """
             |{
@@ -396,7 +396,7 @@ class AppealsControllerSpec extends SpecBase {
 
       "the Json request body can be parsed and the connector returns a successful response for fire or flood" in new Setup {
         when(mockETMPService.submitAppeal(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
-        (ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(HttpResponse(OK, "")))
+        (ArgumentMatchers.any())).thenReturn(Future.successful(HttpResponse(OK, "")))
         val appealsJson: JsValue = Json.parse(
           """
             |{
@@ -420,7 +420,7 @@ class AppealsControllerSpec extends SpecBase {
 
       "the Json request body can be parsed and the connector returns a successful response for technical issues" in new Setup {
         when(mockETMPService.submitAppeal(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
-        (ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(HttpResponse(OK, "")))
+        (ArgumentMatchers.any())).thenReturn(Future.successful(HttpResponse(OK, "")))
         val appealsJson: JsValue = Json.parse(
           """
             |{
@@ -446,7 +446,7 @@ class AppealsControllerSpec extends SpecBase {
       "the Json request body can be parsed and the connector returns a successful response for health" when {
         "there was no hospital stay" in new Setup {
           when(mockETMPService.submitAppeal(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
-          (ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(HttpResponse(OK, "")))
+          (ArgumentMatchers.any())).thenReturn(Future.successful(HttpResponse(OK, "")))
           val appealsJson: JsValue = Json.parse(
             """
               |{
@@ -472,7 +472,7 @@ class AppealsControllerSpec extends SpecBase {
 
         "there is an ongoing hospital stay" in new Setup {
           when(mockETMPService.submitAppeal(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
-          (ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(HttpResponse(OK, "")))
+          (ArgumentMatchers.any())).thenReturn(Future.successful(HttpResponse(OK, "")))
           val appealsJson: JsValue = Json.parse(
             """
               |{
@@ -498,7 +498,7 @@ class AppealsControllerSpec extends SpecBase {
 
         "there was a hospital stay that has ended" in new Setup {
           when(mockETMPService.submitAppeal(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
-          (ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(HttpResponse(OK, "")))
+          (ArgumentMatchers.any())).thenReturn(Future.successful(HttpResponse(OK, "")))
           val appealsJson: JsValue = Json.parse(
             """
               |{
@@ -525,7 +525,7 @@ class AppealsControllerSpec extends SpecBase {
 
         "the JSON request body can be parsed and the appeal is a LPP" in new Setup {
           when(mockETMPService.submitAppeal(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
-          (ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(HttpResponse(OK, "")))
+          (ArgumentMatchers.any())).thenReturn(Future.successful(HttpResponse(OK, "")))
           val appealsJson: JsValue = Json.parse(
             """
               |{

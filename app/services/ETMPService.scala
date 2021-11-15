@@ -106,10 +106,8 @@ class ETMPService @Inject()(etmpConnector: ETMPConnector,
   }
 
   def submitAppeal(appealSubmission: AppealSubmission,
-                   enrolmentKey: String, isLPP: Boolean, penaltyId: String)(
-    implicit ec: ExecutionContext, hc: HeaderCarrier): Future[HttpResponse] = {
-    appealsConnector.submitAppeal(appealSubmission, enrolmentKey, isLPP, penaltyId)
-  }
+                   enrolmentKey: String, isLPP: Boolean, penaltyId: String)
+                  (implicit hc: HeaderCarrier): Future[HttpResponse] = appealsConnector.submitAppeal(appealSubmission, enrolmentKey, isLPP, penaltyId)
 
   def getNumberOfEstimatedPenalties(etmpPayload: ETMPPayload): Int = {
     val lppEstimatedPenalties: Int = etmpPayload.latePaymentPenalties.map(_.count(_.status == PointStatusEnum.Estimated)).getOrElse(0)

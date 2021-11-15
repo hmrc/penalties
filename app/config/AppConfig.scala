@@ -35,6 +35,12 @@ class AppConfig @Inject()(config: Configuration, servicesConfig: ServicesConfig)
 
   lazy val pegaBase: String = servicesConfig.baseUrl("pega")
 
+  lazy val desBase: String = servicesConfig.baseUrl("des")
+
+  lazy val desEnvironment: String = servicesConfig.getConfString("des.environment", "live")
+
+  lazy val desBearerToken: String = s"Bearer ${servicesConfig.getConfString("des.bearerToken", "")}"
+
   def getVATPenaltiesURL: String = {
     if(!isEnabled(CallETMP)) stubBase + "/penalties-stub/etmp/mtd-vat/"
     //TODO: change to relevant URL when implemented
@@ -61,5 +67,9 @@ class AppConfig @Inject()(config: Configuration, servicesConfig: ServicesConfig)
 
   def isReasonableExcuseEnabled(excuseName: String): Boolean = {
     config.get[Boolean](s"reasonableExcuses.$excuseName.enabled")
+  }
+
+  def getComplianceData(vrn: String, fromDate: String, toDate: String): String = {
+    desBase + s"/enterprise/obligation-data/vrn/$vrn/VATC?from=$fromDate&to=$toDate"
   }
 }

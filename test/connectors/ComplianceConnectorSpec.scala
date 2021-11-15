@@ -16,18 +16,18 @@
 
 package connectors
 
-import java.time.LocalDateTime
-
+import java.time.{LocalDate, LocalDateTime}
 import base.SpecBase
 import config.AppConfig
-import connectors.parsers.ComplianceParser.{CompliancePayloadResponse, GetCompliancePayloadFailureResponse,
-  GetCompliancePayloadMalformed, GetCompliancePayloadNoContent, GetCompliancePayloadSuccessResponse}
-import org.mockito.ArgumentMatchers
+import connectors.parsers.ComplianceParser._
+import connectors.parsers.DESComplianceParser._
+import models.compliance.{CompliancePayloadObligationAPI, ComplianceStatusEnum, ObligationDetail, ObligationIdentification}
+import org.mockito.{ArgumentCaptor, ArgumentMatchers}
 import org.mockito.Mockito._
 import play.api.http.Status
 import play.api.libs.json.Json
 import play.api.test.Helpers._
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient}
+import uk.gov.hmrc.http.{Authorization, HeaderCarrier, HttpClient}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -204,6 +204,124 @@ class ComplianceConnectorSpec extends SpecBase {
         val result: CompliancePayloadResponse =
           await(connector.getComplianceSummaryForEnrolmentKey("123456789", "mtd-vat")(HeaderCarrier()))
 
+        result.isLeft shouldBe true
+      }
+    }
+  }
+
+  "getComplianceDataFromDES" should {
+    "should return a model - when the call succeeds and the body can be parsed" in new Setup {
+      val compliancePayloadAsModel: CompliancePayloadObligationAPI = CompliancePayloadObligationAPI(
+        identification = ObligationIdentification(
+          incomeSourceType = None,
+          referenceNumber = "123456789",
+          referenceType = "VRN"
+        ),
+        obligationDetails = Seq(
+          ObligationDetail(
+            status = ComplianceStatusEnum.open,
+            inboundCorrespondenceFromDate = LocalDate.of(1920, 2, 29),
+            inboundCorrespondenceToDate = LocalDate.of(1920, 2, 29),
+            inboundCorrespondenceDateReceived = None,
+            inboundCorrespondenceDueDate = LocalDate.of(1920, 2, 29),
+            periodKey = "#001"
+          ),
+          ObligationDetail(
+            status = ComplianceStatusEnum.fulfilled,
+            inboundCorrespondenceFromDate = LocalDate.of(1920, 2, 29),
+            inboundCorrespondenceToDate = LocalDate.of(1920, 2, 29),
+            inboundCorrespondenceDateReceived = Some(LocalDate.of(1920, 2, 29)),
+            inboundCorrespondenceDueDate = LocalDate.of(1920, 2, 29),
+            periodKey = "#001"
+          )
+        )
+      )
+      when(mockAppConfig.getComplianceData(ArgumentMatchers.eq("123456789"), ArgumentMatchers.any(), ArgumentMatchers.any()))
+        .thenReturn("/123456789")
+      when(mockAppConfig.desEnvironment).thenReturn("env")
+      when(mockAppConfig.desBearerToken).thenReturn("Bearer 12345")
+      val hcArgumentCaptor: ArgumentCaptor[HeaderCarrier] = ArgumentCaptor.forClass(classOf[HeaderCarrier])
+      when(mockHttpClient.GET[DESCompliancePayloadResponse](ArgumentMatchers.eq("/123456789"),
+        ArgumentMatchers.any(),
+        ArgumentMatchers.any())
+        (ArgumentMatchers.any(),
+          hcArgumentCaptor.capture(),
+          ArgumentMatchers.any()))
+        .thenReturn(Future.successful(Right(DESCompliancePayloadSuccessResponse(compliancePayloadAsModel))))
+      val result: DESCompliancePayloadResponse =
+        await(connector.getComplianceDataFromDES("123456789", "2020-01-01", "2020-12-31")(HeaderCarrier()))
+      result.isRight shouldBe true
+      result.right.get.asInstanceOf[DESCompliancePayloadSuccessResponse] shouldBe DESCompliancePayloadSuccessResponse(compliancePayloadAsModel)
+      hcArgumentCaptor.getValue.authorization shouldBe Some(Authorization("Bearer 12345"))
+      hcArgumentCaptor.getValue.extraHeaders.find(_._1 == "Environment").get shouldBe ("Environment" -> "env")
+    }
+
+    "return a Left response" when {
+      "the call returns a OK response however the body is not parsable as a model" in new Setup {
+        when(mockAppConfig.getComplianceData(ArgumentMatchers.eq("123456789"), ArgumentMatchers.any(), ArgumentMatchers.any()))
+          .thenReturn("/123456789")
+        when(mockAppConfig.desEnvironment).thenReturn("env")
+        when(mockAppConfig.desBearerToken).thenReturn("Bearer 12345")
+        when(mockHttpClient.GET[DESCompliancePayloadResponse](ArgumentMatchers.eq("/123456789"),
+          ArgumentMatchers.any(),
+          ArgumentMatchers.any())
+          (ArgumentMatchers.any(),
+            ArgumentMatchers.any(),
+            ArgumentMatchers.any()))
+          .thenReturn(Future.successful(Left(DESCompliancePayloadMalformed)))
+        val result: DESCompliancePayloadResponse =
+          await(connector.getComplianceDataFromDES("123456789", "2020-01-01", "2020-12-31")(HeaderCarrier()))
+        result.isLeft shouldBe true
+      }
+
+      "the call returns a Not Found status" in new Setup {
+        when(mockAppConfig.getComplianceData(ArgumentMatchers.eq("123456789"), ArgumentMatchers.any(), ArgumentMatchers.any()))
+          .thenReturn("/123456789")
+        when(mockAppConfig.desEnvironment).thenReturn("env")
+        when(mockAppConfig.desBearerToken).thenReturn("Bearer 12345")
+        when(mockHttpClient.GET[DESCompliancePayloadResponse](ArgumentMatchers.eq("/123456789"),
+          ArgumentMatchers.any(),
+          ArgumentMatchers.any())
+          (ArgumentMatchers.any(),
+            ArgumentMatchers.any(),
+            ArgumentMatchers.any()))
+          .thenReturn(Future.successful(Left(DESCompliancePayloadNoData)))
+        val result: DESCompliancePayloadResponse =
+          await(connector.getComplianceDataFromDES("123456789", "2020-01-01", "2020-12-31")(HeaderCarrier()))
+        result.isLeft shouldBe true
+      }
+
+      "the call returns a ISE" in new Setup {
+        when(mockAppConfig.getComplianceData(ArgumentMatchers.eq("123456789"), ArgumentMatchers.any(), ArgumentMatchers.any()))
+          .thenReturn("/123456789")
+        when(mockAppConfig.desEnvironment).thenReturn("env")
+        when(mockAppConfig.desBearerToken).thenReturn("Bearer 12345")
+        when(mockHttpClient.GET[DESCompliancePayloadResponse](ArgumentMatchers.eq("/123456789"),
+          ArgumentMatchers.any(),
+          ArgumentMatchers.any())
+          (ArgumentMatchers.any(),
+            ArgumentMatchers.any(),
+            ArgumentMatchers.any()))
+          .thenReturn(Future.successful(Left(DESCompliancePayloadFailureResponse(INTERNAL_SERVER_ERROR))))
+        val result: DESCompliancePayloadResponse =
+          await(connector.getComplianceDataFromDES("123456789", "2020-01-01", "2020-12-31")(HeaderCarrier()))
+        result.isLeft shouldBe true
+      }
+
+      "the call returns an unmatched response" in new Setup {
+        when(mockAppConfig.getComplianceData(ArgumentMatchers.eq("123456789"), ArgumentMatchers.any(), ArgumentMatchers.any()))
+          .thenReturn("/123456789")
+        when(mockAppConfig.desEnvironment).thenReturn("env")
+        when(mockAppConfig.desBearerToken).thenReturn("Bearer 12345")
+        when(mockHttpClient.GET[DESCompliancePayloadResponse](ArgumentMatchers.eq("/123456789"),
+          ArgumentMatchers.any(),
+          ArgumentMatchers.any())
+          (ArgumentMatchers.any(),
+            ArgumentMatchers.any(),
+            ArgumentMatchers.any()))
+          .thenReturn(Future.successful(Left(DESCompliancePayloadFailureResponse(SERVICE_UNAVAILABLE))))
+        val result: DESCompliancePayloadResponse =
+          await(connector.getComplianceDataFromDES("123456789", "2020-01-01", "2020-12-31")(HeaderCarrier()))
         result.isLeft shouldBe true
       }
     }

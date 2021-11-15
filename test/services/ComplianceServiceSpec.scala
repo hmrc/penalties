@@ -18,9 +18,9 @@ package services
 
 import base.SpecBase
 import connectors.ComplianceConnector
-import connectors.parsers.ComplianceParser.{GetCompliancePayloadFailureResponse, GetCompliancePayloadMalformed,
-  GetCompliancePayloadNoContent, GetCompliancePayloadSuccessResponse}
-import models.compliance.{CompliancePayload, MissingReturn, Return, ReturnStatusEnum}
+import connectors.parsers.ComplianceParser._
+import connectors.parsers.DESComplianceParser._
+import models.compliance.{CompliancePayload, CompliancePayloadObligationAPI, MissingReturn, Return, ReturnStatusEnum}
 import org.mockito.{ArgumentCaptor, ArgumentMatchers}
 import org.mockito.Mockito._
 import play.api.http.Status
@@ -287,6 +287,34 @@ class ComplianceServiceSpec extends SpecBase {
         result.get shouldBe complianceModelRepresentingJSON
         startDateCaptor.getValue shouldBe localDateTime.minusYears(2)
         endDateCaptor.getValue shouldBe localDateTime
+      }
+    }
+  }
+
+  "getComplianceDataFromDES" should {
+    "return Left and the status code" when {
+      s"the failure model returned is $DESCompliancePayloadFailureResponse" in new Setup {
+        when(mockComplianceConnector.getComplianceDataFromDES(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any()))
+          .thenReturn(Future.successful(Left(DESCompliancePayloadFailureResponse(BAD_REQUEST))))
+        val result: Either[Int, CompliancePayloadObligationAPI] = await(service.getComplianceDataFromDES("123456789", "2020-01-31", "2020-12-31"))
+        result.isLeft shouldBe true
+        result.left.get shouldBe BAD_REQUEST
+      }
+
+      s"the failure model returned is $DESCompliancePayloadNoData" in new Setup {
+        when(mockComplianceConnector.getComplianceDataFromDES(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any()))
+          .thenReturn(Future.successful(Left(DESCompliancePayloadNoData)))
+        val result: Either[Int, CompliancePayloadObligationAPI] = await(service.getComplianceDataFromDES("123456789", "2020-01-31", "2020-12-31"))
+        result.isLeft shouldBe true
+        result.left.get shouldBe NOT_FOUND
+      }
+
+      s"the failure model returned is $DESCompliancePayloadMalformed" in new Setup {
+        when(mockComplianceConnector.getComplianceDataFromDES(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any()))
+          .thenReturn(Future.successful(Left(DESCompliancePayloadMalformed)))
+        val result: Either[Int, CompliancePayloadObligationAPI] = await(service.getComplianceDataFromDES("123456789", "2020-01-31", "2020-12-31"))
+        result.isLeft shouldBe true
+        result.left.get shouldBe INTERNAL_SERVER_ERROR
       }
     }
   }

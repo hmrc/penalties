@@ -43,4 +43,15 @@ class ComplianceController @Inject()(complianceService: ComplianceService,
       }
     }
   }
+
+  def getComplianceDataFromDES(vrn: String, fromDate: String, toDate: String): Action[AnyContent] = Action.async {
+    implicit request => {
+      complianceService.getComplianceDataFromDES(vrn, fromDate, toDate).map {
+        _.fold(
+          error => Status(error),
+          model => Ok(Json.toJson(model))
+        )
+      }
+    }
+  }
 }

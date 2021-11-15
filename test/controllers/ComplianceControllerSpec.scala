@@ -17,15 +17,15 @@
 package controllers
 
 import base.SpecBase
-import models.compliance.{CompliancePayload, MissingReturn, Return, ReturnStatusEnum}
+import models.compliance._
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
 import play.api.libs.json.Json
 import play.api.test.Helpers._
 import services.ComplianceService
-import java.time.LocalDateTime
-import java.time.temporal.ChronoUnit
 
+import java.time.{LocalDate, LocalDateTime}
+import java.time.temporal.ChronoUnit
 import play.api.mvc.Result
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -82,6 +82,50 @@ class ComplianceControllerSpec extends SpecBase {
         val result: Future[Result] = controller.getComplianceDataForEnrolmentKey(enrolmentKey)(fakeRequest)
         await(result).header.status shouldBe INTERNAL_SERVER_ERROR
       }
+    }
+  }
+
+  "getComplianceDataFromDES" should {
+    "return the status which was returned by the service" in new Setup {
+      when(mockService.getComplianceDataFromDES(ArgumentMatchers.any(), ArgumentMatchers.any(),
+        ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
+        .thenReturn(Future.successful(Left(INTERNAL_SERVER_ERROR)))
+      val result: Future[Result] = controller.getComplianceDataFromDES("123456789", "2020-01-01", "2020-12-31")(fakeRequest)
+      status(result) shouldBe INTERNAL_SERVER_ERROR
+    }
+
+    "return 200 if the service returns a model" in new Setup {
+      val compliancePayloadAsModel: CompliancePayloadObligationAPI = CompliancePayloadObligationAPI(
+        identification = ObligationIdentification(
+          incomeSourceType = None,
+          referenceNumber = "123456789",
+          referenceType = "VRN"
+        ),
+        obligationDetails = Seq(
+          ObligationDetail(
+            status = ComplianceStatusEnum.open,
+            inboundCorrespondenceFromDate = LocalDate.of(1920, 2, 29),
+            inboundCorrespondenceToDate = LocalDate.of(1920, 2, 29),
+            inboundCorrespondenceDateReceived = None,
+            inboundCorrespondenceDueDate = LocalDate.of(1920, 2, 29),
+            periodKey = "#001"
+          ),
+          ObligationDetail(
+            status = ComplianceStatusEnum.fulfilled,
+            inboundCorrespondenceFromDate = LocalDate.of(1920, 2, 29),
+            inboundCorrespondenceToDate = LocalDate.of(1920, 2, 29),
+            inboundCorrespondenceDateReceived = Some(LocalDate.of(1920, 2, 29)),
+            inboundCorrespondenceDueDate = LocalDate.of(1920, 2, 29),
+            periodKey = "#001"
+          )
+        )
+      )
+      when(mockService.getComplianceDataFromDES(ArgumentMatchers.any(), ArgumentMatchers.any(),
+        ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
+        .thenReturn(Future.successful(Right(compliancePayloadAsModel)))
+      val result: Future[Result] = controller.getComplianceDataFromDES("123456789", "2020-01-01", "2020-12-31")(fakeRequest)
+      status(result) shouldBe OK
+      contentAsJson(result) shouldBe Json.toJson(compliancePayloadAsModel)
     }
   }
 }

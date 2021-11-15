@@ -16,9 +16,10 @@
 
 package services
 
-import java.time.LocalDateTime
+import connectors.parsers.DESComplianceParser._
 
-import models.compliance.{CompliancePayload, MissingReturn, Return, ReturnStatusEnum}
+import java.time.{LocalDate, LocalDateTime}
+import models.compliance.{CompliancePayload, CompliancePayloadObligationAPI, ComplianceStatusEnum, MissingReturn, ObligationDetail, ObligationIdentification, Return, ReturnStatusEnum}
 import play.api.libs.json.Json
 import play.api.test.Helpers._
 import utils.{ComplianceWiremock, IntegrationSpecCommonBase}
@@ -161,6 +162,63 @@ class ComplianceServiceISpec extends IntegrationSpecCommonBase with ComplianceWi
         result.isDefined shouldBe true
         result.get shouldBe complianceModelRepresentingJSON
       }
+    }
+  }
+
+  "getComplianceDataFromDES" should {
+    "return Left(ISE)" when {
+      s"the connector returns $DESCompliancePayloadFailureResponse" in {
+        mockResponseForComplianceDataFromDES(INTERNAL_SERVER_ERROR, "123456789", "2020-01-01", "2020-12-31")
+        val result = await(complianceService.getComplianceDataFromDES("123456789", "2020-01-01", "2020-12-31"))
+        result.isLeft shouldBe true
+        result.left.get shouldBe INTERNAL_SERVER_ERROR
+      }
+
+      s"the connector returns $DESCompliancePayloadMalformed" in {
+        mockResponseForComplianceDataFromDES(OK, "123456789", "2020-01-01", "2020-12-31", invalidBody = true)
+        val result = await(complianceService.getComplianceDataFromDES("123456789", "2020-01-01", "2020-12-31"))
+        result.isLeft shouldBe true
+        result.left.get shouldBe INTERNAL_SERVER_ERROR
+      }
+    }
+
+    s"return Left(NOT_FOUND) when the connector returns $DESCompliancePayloadNoData" in {
+      mockResponseForComplianceDataFromDES(NOT_FOUND, "123456789", "2020-01-01", "2020-12-31")
+      val result = await(complianceService.getComplianceDataFromDES("123456789", "2020-01-01", "2020-12-31"))
+      result.isLeft shouldBe true
+      result.left.get shouldBe NOT_FOUND
+    }
+
+    s"return Right(model) when the connector returns $DESCompliancePayloadSuccessResponse" in {
+      val compliancePayloadAsModel: CompliancePayloadObligationAPI = CompliancePayloadObligationAPI(
+        identification = ObligationIdentification(
+          incomeSourceType = None,
+          referenceNumber = "123456789",
+          referenceType = "VRN"
+        ),
+        obligationDetails = Seq(
+          ObligationDetail(
+            status = ComplianceStatusEnum.open,
+            inboundCorrespondenceFromDate = LocalDate.of(1920, 2, 29),
+            inboundCorrespondenceToDate = LocalDate.of(1920, 2, 29),
+            inboundCorrespondenceDateReceived = None,
+            inboundCorrespondenceDueDate = LocalDate.of(1920, 2, 29),
+            periodKey = "#001"
+          ),
+          ObligationDetail(
+            status = ComplianceStatusEnum.fulfilled,
+            inboundCorrespondenceFromDate = LocalDate.of(1920, 2, 29),
+            inboundCorrespondenceToDate = LocalDate.of(1920, 2, 29),
+            inboundCorrespondenceDateReceived = Some(LocalDate.of(1920, 2, 29)),
+            inboundCorrespondenceDueDate = LocalDate.of(1920, 2, 29),
+            periodKey = "#001"
+          )
+        )
+      )
+      mockResponseForComplianceDataFromDES(OK, "123456789", "2020-01-01", "2020-12-31", hasBody = true)
+      val result = await(complianceService.getComplianceDataFromDES("123456789", "2020-01-01", "2020-12-31"))
+      result.isRight shouldBe true
+      result.right.get shouldBe compliancePayloadAsModel
     }
   }
 }

@@ -11,6 +11,7 @@ GET        /appeals/multiple-penalties-in-same-period   controllers.AppealsContr
 
 # Compliance
 GET        /compliance/compliance-data                  controllers.ComplianceController.getComplianceDataForEnrolmentKey(enrolmentKey: String)
+GET        /compliance/des/compliance-data              controllers.ComplianceController.getComplianceDataFromDES(vrn: String, fromDate: String, toDate: String)
 
 # External API
 GET        /vat/penalties/summary/:vrn                  controllers.APIController.getSummaryDataForVRN(vrn: String)

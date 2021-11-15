@@ -89,4 +89,37 @@ class ComplianceControllerISpec extends IntegrationSpecCommonBase with Complianc
       }
     }
   }
+
+  "getComplianceDataFromDES" should {
+    "return 200 with the associated model when the call succeeds" in {
+      mockResponseForComplianceDataFromDES(OK, "123456789", "2020-01-31", "2020-12-31", hasBody = true)
+      val result = await(buildClientForRequestToApp(uri = s"/compliance/des/compliance-data?vrn=123456789&fromDate=2020-01-31&toDate=2020-12-31").get())
+      result.status shouldBe OK
+      Json.parse(result.body) shouldBe compliancePayloadAsJson
+    }
+
+    "return 400 when the downstream service returns 400" in {
+      mockResponseForComplianceDataFromDES(BAD_REQUEST, "123456789", "2020-01-31", "2020-12-31")
+      val result = await(buildClientForRequestToApp(uri = s"/compliance/des/compliance-data?vrn=123456789&fromDate=2020-01-31&toDate=2020-12-31").get())
+      result.status shouldBe BAD_REQUEST
+    }
+
+    "return 404 when the downstream service has no data for the VRN" in {
+      mockResponseForComplianceDataFromDES(NOT_FOUND, "123456789", "2020-01-31", "2020-12-31")
+      val result = await(buildClientForRequestToApp(uri = s"/compliance/des/compliance-data?vrn=123456789&fromDate=2020-01-31&toDate=2020-12-31").get())
+      result.status shouldBe NOT_FOUND
+    }
+
+    "return 500 when the downstream service has returns 500" in {
+      mockResponseForComplianceDataFromDES(INTERNAL_SERVER_ERROR, "123456789", "2020-01-31", "2020-12-31")
+      val result = await(buildClientForRequestToApp(uri = s"/compliance/des/compliance-data?vrn=123456789&fromDate=2020-01-31&toDate=2020-12-31").get())
+      result.status shouldBe INTERNAL_SERVER_ERROR
+    }
+
+    "return 503 when the downstream service has returns 503" in {
+      mockResponseForComplianceDataFromDES(SERVICE_UNAVAILABLE, "123456789", "2020-01-31", "2020-12-31")
+      val result = await(buildClientForRequestToApp(uri = s"/compliance/des/compliance-data?vrn=123456789&fromDate=2020-01-31&toDate=2020-12-31").get())
+      result.status shouldBe SERVICE_UNAVAILABLE
+    }
+  }
 }
