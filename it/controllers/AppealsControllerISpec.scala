@@ -179,7 +179,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
       result.body shouldBe appealJson.toString()
     }
 
-    "call ETMP and compare the penalty ID provided and the penalty ID in the payload with multiple Penalty Period - return OK if there is a match" in {
+    "call ETMP and compare the penalty ID provided and the penalty ID in the payload - returning the oldest VAT period if there is multiple periods present" in {
       mockResponseForStubETMPPayloadWithMultiplePenaltyPeriod(Status.OK, "123456789")
       val result = await(buildClientForRequestToApp(uri = "/appeals-data/late-submissions?penaltyId=1234&enrolmentKey=123456789").get())
       result.status shouldBe Status.OK

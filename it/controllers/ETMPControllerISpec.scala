@@ -92,7 +92,7 @@ class ETMPControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock {
       |}
       |""".stripMargin)
 
-  val etmpPayloadWithMultipleLSP_InSameCalenderMonth: JsValue = Json.parse(
+  val etmpPayloadWithMultipleLSPInSameCalenderMonth: JsValue = Json.parse(
     """
         {
       |	"pointsTotal": 1,
@@ -154,7 +154,7 @@ class ETMPControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock {
       |}
       |""".stripMargin)
 
-  val etmpPayloadWithMultipleLSPP_InSameCalenderMonth: JsValue = Json.parse(
+  val etmpPayloadWithMultipleLSPPInSameCalenderMonth: JsValue = Json.parse(
     """
         {
       |	"pointsTotal": 1,
@@ -253,17 +253,17 @@ class ETMPControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock {
     }
 
     s"call out to ETMP and return OK (${Status.OK}) when there are multiple LSP periods in same calendar month" in {
-      mockResponseForStubETMPPayload(Status.OK, "123456789", body = Some(etmpPayloadWithMultipleLSP_InSameCalenderMonth.toString()))
+      mockResponseForStubETMPPayload(Status.OK, "123456789", body = Some(etmpPayloadWithMultipleLSPInSameCalenderMonth.toString()))
       val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/123456789").get())
       result.status shouldBe Status.OK
-      result.body shouldBe etmpPayloadWithMultipleLSP_InSameCalenderMonth.toString()
+      result.body shouldBe etmpPayloadWithMultipleLSPInSameCalenderMonth.toString()
     }
 
     s"call out to ETMP and return OK (${Status.OK}) when there are multiple LSPP periods in same calendar month" in {
-      mockResponseForStubETMPPayload(Status.OK, "123456789", body = Some(etmpPayloadWithMultipleLSPP_InSameCalenderMonth.toString()))
+      mockResponseForStubETMPPayload(Status.OK, "123456789", body = Some(etmpPayloadWithMultipleLSPPInSameCalenderMonth.toString()))
       val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/123456789").get())
       result.status shouldBe Status.OK
-      result.body shouldBe etmpPayloadWithMultipleLSPP_InSameCalenderMonth.toString()
+      result.body shouldBe etmpPayloadWithMultipleLSPPInSameCalenderMonth.toString()
     }
 
     s"call out to ETMP and return a Not Found (${Status.NOT_FOUND}) when NoContent is returned from the connector" in {
