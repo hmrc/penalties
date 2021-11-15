@@ -17,6 +17,7 @@
 package services
 
 import connectors.parsers.DESComplianceParser._
+import featureSwitches.{CallDES, FeatureSwitching}
 
 import java.time.{LocalDate, LocalDateTime}
 import models.compliance.{CompliancePayload, CompliancePayloadObligationAPI, ComplianceStatusEnum, MissingReturn, ObligationDetail, ObligationIdentification, Return, ReturnStatusEnum}
@@ -26,10 +27,14 @@ import utils.{ComplianceWiremock, IntegrationSpecCommonBase}
 
 import scala.concurrent.ExecutionContext
 
-class ComplianceServiceISpec extends IntegrationSpecCommonBase with ComplianceWiremock {
+class ComplianceServiceISpec extends IntegrationSpecCommonBase with ComplianceWiremock with FeatureSwitching {
   val complianceService: ComplianceService = injector.instanceOf[ComplianceService]
   implicit val ec: ExecutionContext = ExecutionContext.Implicits.global
   implicit val startOfLogMsg: String = ""
+
+  class Setup {
+    enableFeatureSwitch(CallDES)
+  }
 
   "getComplianceSummary" should {
     "return None" when {
@@ -167,14 +172,14 @@ class ComplianceServiceISpec extends IntegrationSpecCommonBase with ComplianceWi
 
   "getComplianceDataFromDES" should {
     "return Left(ISE)" when {
-      s"the connector returns $DESCompliancePayloadFailureResponse" in {
+      s"the connector returns $DESCompliancePayloadFailureResponse" in new Setup {
         mockResponseForComplianceDataFromDES(INTERNAL_SERVER_ERROR, "123456789", "2020-01-01", "2020-12-31")
         val result = await(complianceService.getComplianceDataFromDES("123456789", "2020-01-01", "2020-12-31"))
         result.isLeft shouldBe true
         result.left.get shouldBe INTERNAL_SERVER_ERROR
       }
 
-      s"the connector returns $DESCompliancePayloadMalformed" in {
+      s"the connector returns $DESCompliancePayloadMalformed" in new Setup {
         mockResponseForComplianceDataFromDES(OK, "123456789", "2020-01-01", "2020-12-31", invalidBody = true)
         val result = await(complianceService.getComplianceDataFromDES("123456789", "2020-01-01", "2020-12-31"))
         result.isLeft shouldBe true
@@ -182,14 +187,14 @@ class ComplianceServiceISpec extends IntegrationSpecCommonBase with ComplianceWi
       }
     }
 
-    s"return Left(NOT_FOUND) when the connector returns $DESCompliancePayloadNoData" in {
+    s"return Left(NOT_FOUND) when the connector returns $DESCompliancePayloadNoData" in new Setup {
       mockResponseForComplianceDataFromDES(NOT_FOUND, "123456789", "2020-01-01", "2020-12-31")
       val result = await(complianceService.getComplianceDataFromDES("123456789", "2020-01-01", "2020-12-31"))
       result.isLeft shouldBe true
       result.left.get shouldBe NOT_FOUND
     }
 
-    s"return Right(model) when the connector returns $DESCompliancePayloadSuccessResponse" in {
+    s"return Right(model) when the connector returns $DESCompliancePayloadSuccessResponse" in new Setup {
       val compliancePayloadAsModel: CompliancePayloadObligationAPI = CompliancePayloadObligationAPI(
         identification = ObligationIdentification(
           incomeSourceType = None,

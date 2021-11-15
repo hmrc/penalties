@@ -16,7 +16,7 @@
 
 package config
 
-import featureSwitches.{CallETMP, CallPEGA, FeatureSwitching}
+import featureSwitches.{CallDES, CallETMP, CallPEGA, FeatureSwitching}
 
 import javax.inject.{Inject, Singleton}
 import play.api.Configuration
@@ -70,6 +70,10 @@ class AppConfig @Inject()(config: Configuration, servicesConfig: ServicesConfig)
   }
 
   def getComplianceData(vrn: String, fromDate: String, toDate: String): String = {
-    desBase + s"/enterprise/obligation-data/vrn/$vrn/VATC?from=$fromDate&to=$toDate"
+    if(isEnabled(CallDES)) {
+      desBase + s"/enterprise/obligation-data/vrn/$vrn/VATC?from=$fromDate&to=$toDate"
+    } else {
+      desBase + s"/penalties-stub/enterprise/obligation-data/vrn/$vrn/VATC?from=$fromDate&to=$toDate"
+    }
   }
 }

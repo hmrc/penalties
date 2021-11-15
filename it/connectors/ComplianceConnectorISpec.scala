@@ -19,7 +19,7 @@ package connectors
 import java.time.{LocalDate, LocalDateTime}
 import connectors.parsers.ComplianceParser._
 import connectors.parsers.DESComplianceParser._
-import featureSwitches.{CallETMP, FeatureSwitching}
+import featureSwitches.{CallDES, CallETMP, FeatureSwitching}
 import models.compliance.{CompliancePayloadObligationAPI, ComplianceStatusEnum, ObligationDetail, ObligationIdentification}
 import play.api.http.Status
 import play.api.test.Helpers._
@@ -35,6 +35,7 @@ class ComplianceConnectorISpec extends IntegrationSpecCommonBase with Compliance
 
   class Setup {
     val connector: ComplianceConnector = injector.instanceOf[ComplianceConnector]
+    enableFeatureSwitch(CallDES)
   }
 
   "getPastReturnsForEnrolmentKey" should {
@@ -123,6 +124,7 @@ class ComplianceConnectorISpec extends IntegrationSpecCommonBase with Compliance
 
   "getComplianceDataFromDES" should {
     "call DES and handle a successful response" in new Setup {
+      enableFeatureSwitch(CallDES)
       val compliancePayloadAsModel: CompliancePayloadObligationAPI = CompliancePayloadObligationAPI(
         identification = ObligationIdentification(
           incomeSourceType = None,
@@ -149,6 +151,39 @@ class ComplianceConnectorISpec extends IntegrationSpecCommonBase with Compliance
         )
       )
       mockResponseForComplianceDataFromDES(Status.OK, "123456789", "2020-01-01", "2020-12-31", hasBody = true)
+      val result: DESCompliancePayloadResponse = await(connector.getComplianceDataFromDES("123456789", "2020-01-01", "2020-12-31"))
+      result.isRight shouldBe true
+      result.right.get.asInstanceOf[DESCompliancePayloadSuccessResponse].model shouldBe compliancePayloadAsModel
+    }
+
+    "call stub and handle a successful response" in new Setup {
+      disableFeatureSwitch(CallDES)
+      val compliancePayloadAsModel: CompliancePayloadObligationAPI = CompliancePayloadObligationAPI(
+        identification = ObligationIdentification(
+          incomeSourceType = None,
+          referenceNumber = "123456789",
+          referenceType = "VRN"
+        ),
+        obligationDetails = Seq(
+          ObligationDetail(
+            status = ComplianceStatusEnum.open,
+            inboundCorrespondenceFromDate = LocalDate.of(1920, 2, 29),
+            inboundCorrespondenceToDate = LocalDate.of(1920, 2, 29),
+            inboundCorrespondenceDateReceived = None,
+            inboundCorrespondenceDueDate = LocalDate.of(1920, 2, 29),
+            periodKey = "#001"
+          ),
+          ObligationDetail(
+            status = ComplianceStatusEnum.fulfilled,
+            inboundCorrespondenceFromDate = LocalDate.of(1920, 2, 29),
+            inboundCorrespondenceToDate = LocalDate.of(1920, 2, 29),
+            inboundCorrespondenceDateReceived = Some(LocalDate.of(1920, 2, 29)),
+            inboundCorrespondenceDueDate = LocalDate.of(1920, 2, 29),
+            periodKey = "#001"
+          )
+        )
+      )
+      mockResponseForComplianceDataFromStub(Status.OK, "123456789", "2020-01-01", "2020-12-31")
       val result: DESCompliancePayloadResponse = await(connector.getComplianceDataFromDES("123456789", "2020-01-01", "2020-12-31"))
       result.isRight shouldBe true
       result.right.get.asInstanceOf[DESCompliancePayloadSuccessResponse].model shouldBe compliancePayloadAsModel

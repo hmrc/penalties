@@ -29,7 +29,9 @@ import java.time.LocalDate
 class DESComplianceParserSpec extends AnyWordSpec with Matchers {
   val compliancePayloadAsJson: JsValue = Json.parse(
     """
-      |		{
+      |{
+      |   "obligations": [
+      |     {
       |			"identification": {
       |				"referenceNumber": "123456789",
       |				"referenceType": "VRN"
@@ -52,6 +54,8 @@ class DESComplianceParserSpec extends AnyWordSpec with Matchers {
       |				}
       |			]
       |		}
+      |  ]
+      |}
       |""".stripMargin)
 
   val compliancePayloadAsModel: CompliancePayloadObligationAPI = CompliancePayloadObligationAPI(

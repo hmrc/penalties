@@ -32,3 +32,7 @@ case object CallETMP extends FeatureSwitch {
 case object CallPEGA extends FeatureSwitch {
   override val name: String = s"${FeatureSwitch.prefix}.call-pega"
 }
+
+case object CallDES extends FeatureSwitch {
+  override val name: String = s"${FeatureSwitch.prefix}.call-des"
+}

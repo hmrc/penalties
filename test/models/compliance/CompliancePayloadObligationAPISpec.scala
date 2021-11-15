@@ -50,6 +50,37 @@ class CompliancePayloadObligationAPISpec extends AnyWordSpec with Matchers {
       |			]
       |		}
       |""".stripMargin)
+
+  val complianceSeqPayloadAsJson: JsValue = Json.parse(
+    """
+      |{
+      |   "obligations": [
+      |     {
+      |			"identification": {
+      |				"referenceNumber": "123456789",
+      |				"referenceType": "VRN"
+      |			},
+      |			"obligationDetails": [
+      |				{
+      |					"status": "O",
+      |					"inboundCorrespondenceFromDate": "1920-02-29",
+      |					"inboundCorrespondenceToDate": "1920-02-29",
+      |					"inboundCorrespondenceDueDate": "1920-02-29",
+      |					"periodKey": "#001"
+      |				},
+      |				{
+      |					"status": "F",
+      |					"inboundCorrespondenceFromDate": "1920-02-29",
+      |					"inboundCorrespondenceToDate": "1920-02-29",
+      |					"inboundCorrespondenceDateReceived": "1920-02-29",
+      |					"inboundCorrespondenceDueDate": "1920-02-29",
+      |					"periodKey": "#001"
+      |				}
+      |			]
+      |		}
+      |  ]
+      |}
+      |""".stripMargin)
   
   val compliancePayloadAsModel: CompliancePayloadObligationAPI = CompliancePayloadObligationAPI(
     identification = ObligationIdentification(
@@ -77,16 +108,48 @@ class CompliancePayloadObligationAPISpec extends AnyWordSpec with Matchers {
     )
   )
 
+  val seqCompliancePayloadAsModel: Seq[CompliancePayloadObligationAPI] = Seq(CompliancePayloadObligationAPI(
+    identification = ObligationIdentification(
+      incomeSourceType = None,
+      referenceNumber = "123456789",
+      referenceType = "VRN"
+    ),
+    obligationDetails = Seq(
+      ObligationDetail(
+        status = ComplianceStatusEnum.open,
+        inboundCorrespondenceFromDate = LocalDate.of(1920, 2, 29),
+        inboundCorrespondenceToDate = LocalDate.of(1920, 2, 29),
+        inboundCorrespondenceDateReceived = None,
+        inboundCorrespondenceDueDate = LocalDate.of(1920, 2, 29),
+        periodKey = "#001"
+      ),
+      ObligationDetail(
+        status = ComplianceStatusEnum.fulfilled,
+        inboundCorrespondenceFromDate = LocalDate.of(1920, 2, 29),
+        inboundCorrespondenceToDate = LocalDate.of(1920, 2, 29),
+        inboundCorrespondenceDateReceived = Some(LocalDate.of(1920, 2, 29)),
+        inboundCorrespondenceDueDate = LocalDate.of(1920, 2, 29),
+        periodKey = "#001"
+      )
+    )
+  ))
+
   "CompliancePayloadObligationAPI" should {
     "parse the model from JSON" in {
-      val result = Json.fromJson(compliancePayloadAsJson)(CompliancePayloadObligationAPI.format)
+      val result = Json.fromJson(compliancePayloadAsJson)(CompliancePayloadObligationAPI.reads)
       result.isSuccess shouldBe true
       result.get shouldBe compliancePayloadAsModel
     }
 
     "parse the model to JSON" in {
-      val result = Json.toJson(compliancePayloadAsModel)(CompliancePayloadObligationAPI.format)
+      val result = Json.toJson(compliancePayloadAsModel)(CompliancePayloadObligationAPI.writes)
       result shouldBe compliancePayloadAsJson
+    }
+
+    "parse the model from JSON to a Seq" in {
+      val result = Json.fromJson(complianceSeqPayloadAsJson)(CompliancePayloadObligationAPI.seqReads)
+      result.isSuccess shouldBe true
+      result.get shouldBe seqCompliancePayloadAsModel
     }
   }
 }

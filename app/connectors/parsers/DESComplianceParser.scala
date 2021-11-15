@@ -39,10 +39,10 @@ object DESComplianceParser {
     override def read(method: String, url: String, response: HttpResponse): DESCompliancePayloadResponse = {
       response.status match {
         case OK =>
-          response.json.validate[CompliancePayloadObligationAPI] match {
+          response.json.validate[Seq[CompliancePayloadObligationAPI]](CompliancePayloadObligationAPI.seqReads) match {
             case JsSuccess(compliancePayload, _) =>
               logger.debug(s"[DESComplianceCompliancePayloadReads][read] Json response: ${response.json}")
-              Right(DESCompliancePayloadSuccessResponse(compliancePayload))
+              Right(DESCompliancePayloadSuccessResponse(compliancePayload.head))
             case JsError(errors) =>
               logger.debug(s"[DESComplianceCompliancePayloadReads][read] Json validation errors: $errors")
               Left(DESCompliancePayloadMalformed)
