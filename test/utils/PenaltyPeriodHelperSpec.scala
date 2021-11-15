@@ -23,7 +23,6 @@ import models.submission.{Submission, SubmissionStatusEnum}
 import java.time.{LocalDate, LocalDateTime}
 
 class PenaltyPeriodHelperSpec extends SpecBase {
-  val penaltyPeriodHelper: PenaltyPeriodHelper = injector.instanceOf[PenaltyPeriodHelper]
 
   val penaltyPeriods = Seq(PenaltyPeriod(
     startDate = LocalDateTime.of(2023, 1, 16, 0, 0, 0),
@@ -46,7 +45,7 @@ class PenaltyPeriodHelperSpec extends SpecBase {
   "PenaltyPeriod Helper" should {
     "sortedPenaltyPeriod " should {
       "return sorted Penalty Period with oldest startDate " in {
-        val sortedPenaltyPeriod = penaltyPeriodHelper.sortedPenaltyPeriod(penaltyPeriods)
+        val sortedPenaltyPeriod = PenaltyPeriodHelper.sortedPenaltyPeriod(penaltyPeriods)
         sortedPenaltyPeriod.head.startDate.toLocalDate shouldBe LocalDate.of(2023, 1, 1)
         sortedPenaltyPeriod.head.endDate.toLocalDate shouldBe LocalDate.of(2023, 1, 15)
       }

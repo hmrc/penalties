@@ -37,7 +37,6 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class AppealsController @Inject()(appConfig: AppConfig,
                                   etmpService: ETMPService,
-                                  penaltyPeriodHelper: PenaltyPeriodHelper,
                                   cc: ControllerComponents)(implicit ec: ExecutionContext)
   extends BackendController(cc) {
 
@@ -96,9 +95,9 @@ class AppealsController @Inject()(appConfig: AppConfig,
       logger.debug(s"[AppealsController][getAppealsData] Penalty ID: $penaltyIdToCheck for enrolment key: $enrolmentKey found in ETMP for $appealType.")
       val penaltyBasedOnId = lspPenaltyIdInETMPPayload.get
       val dataToReturn: AppealData = AppealData(`type` = appealType,
-        startDate = penaltyBasedOnId.period.get.sortWith(penaltyPeriodHelper.sortByPenaltyStartDate(_ , _) < 0).head.startDate,
-        endDate = penaltyBasedOnId.period.get.sortWith(penaltyPeriodHelper.sortByPenaltyStartDate(_ , _) < 0).head.endDate,
-        dueDate = penaltyBasedOnId.period.get.sortWith(penaltyPeriodHelper.sortByPenaltyStartDate(_ , _) < 0).head.submission.dueDate,
+        startDate = penaltyBasedOnId.period.get.sortWith(PenaltyPeriodHelper.sortByPenaltyStartDate(_ , _) < 0).head.startDate,
+        endDate = penaltyBasedOnId.period.get.sortWith(PenaltyPeriodHelper.sortByPenaltyStartDate(_ , _) < 0).head.endDate,
+        dueDate = penaltyBasedOnId.period.get.sortWith(PenaltyPeriodHelper.sortByPenaltyStartDate(_ , _) < 0).head.submission.dueDate,
         dateCommunicationSent = penaltyBasedOnId.communications.head.dateSent
       )
       Ok(Json.toJson(dataToReturn))

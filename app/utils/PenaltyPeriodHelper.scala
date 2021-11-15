@@ -18,7 +18,7 @@ package utils
 
 import models.penalty.PenaltyPeriod
 
-class PenaltyPeriodHelper {
+object PenaltyPeriodHelper {
 
   def sortByPenaltyStartDate(p1: PenaltyPeriod, p2: PenaltyPeriod):Int = {
     p1.startDate.compareTo(p2.startDate)

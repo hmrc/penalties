@@ -31,8 +31,7 @@ import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class ETMPService @Inject()(etmpConnector: ETMPConnector,
-                            appealsConnector: AppealsConnector,
-                            penaltyPeriodHelper: PenaltyPeriodHelper)
+                            appealsConnector: AppealsConnector)
                            (implicit ec: ExecutionContext) {
 
   def getPenaltyDataFromETMPForEnrolment(enrolmentKey: String)(implicit hc: HeaderCarrier): Future[(Option[ETMPPayload], ETMPPayloadResponse) ] = {
@@ -58,7 +57,7 @@ class ETMPService @Inject()(etmpConnector: ETMPConnector,
             logger.debug(s"$startOfLogMsg - Found period for penalty - start : ${penaltyPeriod._1} to end : ${penaltyPeriod._2}")
             val isOtherLSPInSamePeriod = penaltyData.penaltyPoints.exists(
               penalty => penalty.period.exists(
-                period => penaltyPeriodHelper.sortedPenaltyPeriod(period).head.startDate.toLocalDate == penaltyPeriod._1 && penaltyPeriodHelper.sortedPenaltyPeriod(period).head.endDate.toLocalDate == penaltyPeriod._2 && penalty.id != penaltyId)
+                periods => PenaltyPeriodHelper.sortedPenaltyPeriod(periods).head.startDate.toLocalDate == penaltyPeriod._1 && PenaltyPeriodHelper.sortedPenaltyPeriod(periods).head.endDate.toLocalDate == penaltyPeriod._2 && penalty.id != penaltyId)
             )
             val isOtherLPPInSamePeriod = penaltyData.latePaymentPenalties.exists(
               _.exists(
@@ -81,7 +80,7 @@ class ETMPService @Inject()(etmpConnector: ETMPConnector,
       val optPenalty = payload.penaltyPoints.find(_.id == penaltyId)
       val penaltyPeriod:Seq[PenaltyPeriod] = optPenalty.flatMap(_.period).getOrElse(Seq.empty)
       if(penaltyPeriod.nonEmpty){
-        val period:PenaltyPeriod =  penaltyPeriodHelper.sortedPenaltyPeriod(penaltyPeriod).head
+        val period:PenaltyPeriod =  PenaltyPeriodHelper.sortedPenaltyPeriod(penaltyPeriod).head
         Some(period.startDate.toLocalDate, period.endDate.toLocalDate)
       } else {
         None

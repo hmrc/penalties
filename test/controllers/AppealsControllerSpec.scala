@@ -37,13 +37,12 @@ import scala.concurrent.Future
 class AppealsControllerSpec extends SpecBase {
   val mockETMPService: ETMPService = mock(classOf[ETMPService])
   val mockAppConfig: AppConfig = mock(classOf[AppConfig])
-  val mockPenaltyPeriodHelper: PenaltyPeriodHelper = mock(classOf[PenaltyPeriodHelper])
 
   class Setup(withRealAppConfig: Boolean = true) {
     reset(mockAppConfig)
     reset(mockETMPService)
     val controller = new AppealsController(if (withRealAppConfig) appConfig
-          else mockAppConfig, mockETMPService,mockPenaltyPeriodHelper,stubControllerComponents())
+          else mockAppConfig, mockETMPService,stubControllerComponents())
   }
 
   "getAppealsDataForLateSubmissionPenalty" should {
@@ -87,9 +86,9 @@ class AppealsControllerSpec extends SpecBase {
       status(result) shouldBe Status.OK
       val appealDataToReturn: AppealData = AppealData(
         Late_Submission,
-        mockETMPPayloadResponseAsModel.penaltyPoints.head.period.get.sortWith(mockPenaltyPeriodHelper.sortByPenaltyStartDate(_ , _) < 0).head.startDate,
-        mockETMPPayloadResponseAsModel.penaltyPoints.head.period.get.sortWith(mockPenaltyPeriodHelper.sortByPenaltyStartDate(_ , _) < 0).head.endDate,
-        mockETMPPayloadResponseAsModel.penaltyPoints.head.period.get.sortWith(mockPenaltyPeriodHelper.sortByPenaltyStartDate(_ , _) < 0).head.submission.dueDate,
+        mockETMPPayloadResponseAsModel.penaltyPoints.head.period.get.sortWith(PenaltyPeriodHelper.sortByPenaltyStartDate(_ , _) < 0).head.startDate,
+        mockETMPPayloadResponseAsModel.penaltyPoints.head.period.get.sortWith(PenaltyPeriodHelper.sortByPenaltyStartDate(_ , _) < 0).head.endDate,
+        mockETMPPayloadResponseAsModel.penaltyPoints.head.period.get.sortWith(PenaltyPeriodHelper.sortByPenaltyStartDate(_ , _) < 0).head.submission.dueDate,
         mockETMPPayloadResponseAsModel.penaltyPoints.head.communications.head.dateSent
       )
       contentAsString(result) shouldBe Json.toJson(appealDataToReturn).toString()
@@ -106,9 +105,9 @@ class AppealsControllerSpec extends SpecBase {
       status(result) shouldBe Status.OK
       val appealDataToReturn: AppealData = AppealData(
         Late_Submission,
-        mockETMPPayloadResponseAsModelMultiplePoints.penaltyPoints.last.period.get.sortWith(mockPenaltyPeriodHelper.sortByPenaltyStartDate(_ , _) < 0).head.startDate,
-        mockETMPPayloadResponseAsModelMultiplePoints.penaltyPoints.last.period.get.sortWith(mockPenaltyPeriodHelper.sortByPenaltyStartDate(_ , _) < 0).head.endDate,
-        mockETMPPayloadResponseAsModelMultiplePoints.penaltyPoints.head.period.get.sortWith(mockPenaltyPeriodHelper.sortByPenaltyStartDate(_ , _) < 0).head.submission.dueDate,
+        mockETMPPayloadResponseAsModelMultiplePoints.penaltyPoints.last.period.get.sortWith(PenaltyPeriodHelper.sortByPenaltyStartDate(_ , _) < 0).head.startDate,
+        mockETMPPayloadResponseAsModelMultiplePoints.penaltyPoints.last.period.get.sortWith(PenaltyPeriodHelper.sortByPenaltyStartDate(_ , _) < 0).head.endDate,
+        mockETMPPayloadResponseAsModelMultiplePoints.penaltyPoints.head.period.get.sortWith(PenaltyPeriodHelper.sortByPenaltyStartDate(_ , _) < 0).head.submission.dueDate,
         mockETMPPayloadResponseAsModelMultiplePoints.penaltyPoints.head.communications.head.dateSent
       )
       contentAsJson(result) shouldBe Json.toJson(appealDataToReturn)
