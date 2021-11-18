@@ -71,7 +71,7 @@ class ETMPControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock {
       |			"dateCreated": "2021-04-23T18:25:43.511",
       |			"dateExpired": "2021-04-23T18:25:43.511",
       |			"status": "ACTIVE",
-      |			"period": {
+      |			"period": [{
       |				"startDate": "2021-04-23T18:25:43.511",
       |				"endDate": "2021-04-23T18:25:43.511",
       |				"submission": {
@@ -79,7 +79,131 @@ class ETMPControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock {
       |					"submittedDate": "2021-04-23T18:25:43.511",
       |					"status": "SUBMITTED"
       |				}
+      |			}],
+      |			"communications": [
+      |				{
+      |					"type": "letter",
+      |					"dateSent": "2021-04-23T18:25:43.511",
+      |					"documentId": "1234567890"
+      |				}
+      |			]
+      |		}
+      |	]
+      |}
+      |""".stripMargin)
+
+  val etmpPayloadWithMultipleLSPInSameCalenderMonth: JsValue = Json.parse(
+    """
+        {
+      |	"pointsTotal": 1,
+      |	"lateSubmissions": 1,
+      |	"adjustmentPointsTotal": 1,
+      |	"fixedPenaltyAmount": 200,
+      |	"penaltyAmountsTotal": 400.00,
+      |	"penaltyPointsThreshold": 4,
+      |	"penaltyPoints": [
+      |		{
+      |			"type": "financial",
+      |			"number": "2",
+      |     "id": "1235",
+      |			"dateCreated": "2021-04-23T18:25:43.511",
+      |			"dateExpired": "2021-04-23T18:25:43.511",
+      |			"status": "ADDED",
+      |			"communications": [
+      |				{
+      |					"type": "secureMessage",
+      |					"dateSent": "2021-04-23T18:25:43.511",
+      |					"documentId": "1234567890"
+      |				}
+      |			]
+      |		},
+      |		{
+      |			"type": "financial",
+      |			"number": "1",
+      |     "id": "1234",
+      |			"dateCreated": "2021-01-01T18:25:43.511",
+      |			"dateExpired": "2021-01-01T18:25:43.511",
+      |			"status": "ACTIVE",
+      |			"period": [{
+      |				"startDate": "2021-01-01T18:25:43.511",
+      |				"endDate": "2021-01-15T18:25:43.511",
+      |				"submission": {
+      |					"dueDate": "2021-05-07T18:25:43.511",
+      |					"submittedDate": "2021-05-12T18:25:43.511",
+      |					"status": "SUBMITTED"
+      |				}
       |			},
+      |   {
+      |				"startDate": "2021-01-16T18:25:43.511",
+      |				"endDate": "2021-01-31T18:25:43.511",
+      |				"submission": {
+      |					"dueDate": "2021-05-23T18:25:43.511",
+      |					"submittedDate": "2021-05-25T18:25:43.511",
+      |					"status": "SUBMITTED"
+      |				}
+      |			}],
+      |			"communications": [
+      |				{
+      |					"type": "letter",
+      |					"dateSent": "2021-04-23T18:25:43.511",
+      |					"documentId": "1234567890"
+      |				}
+      |			]
+      |		}
+      |	]
+      |}
+      |""".stripMargin)
+
+  val etmpPayloadWithMultipleLSPPInSameCalenderMonth: JsValue = Json.parse(
+    """
+        {
+      |	"pointsTotal": 1,
+      |	"lateSubmissions": 1,
+      |	"adjustmentPointsTotal": 1,
+      |	"fixedPenaltyAmount": 200,
+      |	"penaltyAmountsTotal": 400.00,
+      |	"penaltyPointsThreshold": 4,
+      |	"penaltyPoints": [
+      |		{
+      |			"type": "point",
+      |			"number": "2",
+      |     "id": "1235",
+      |			"dateCreated": "2021-04-23T18:25:43.511",
+      |			"dateExpired": "2021-04-23T18:25:43.511",
+      |			"status": "ADDED",
+      |			"communications": [
+      |				{
+      |					"type": "secureMessage",
+      |					"dateSent": "2021-04-23T18:25:43.511",
+      |					"documentId": "1234567890"
+      |				}
+      |			]
+      |		},
+      |		{
+      |			"type": "point",
+      |			"number": "1",
+      |     "id": "1234",
+      |			"dateCreated": "2021-04-23T18:25:43.511",
+      |			"dateExpired": "2021-04-23T18:25:43.511",
+      |			"status": "ACTIVE",
+      |     "period": [{
+      |				"startDate": "2021-01-01T18:25:43.511",
+      |				"endDate": "2021-01-15T18:25:43.511",
+      |				"submission": {
+      |					"dueDate": "2021-05-07T18:25:43.511",
+      |					"submittedDate": "2021-05-12T18:25:43.511",
+      |					"status": "SUBMITTED"
+      |				}
+      |			},
+      |     {
+      |				"startDate": "2021-01-16T18:25:43.511",
+      |				"endDate": "2021-01-31T18:25:43.511",
+      |				"submission": {
+      |					"dueDate": "2021-05-23T18:25:43.511",
+      |					"submittedDate": "2021-05-25T18:25:43.511",
+      |					"status": "SUBMITTED"
+      |				}
+      |			}],
       |			"communications": [
       |				{
       |					"type": "letter",
@@ -126,6 +250,20 @@ class ETMPControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock {
       val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/123456789").get())
       result.status shouldBe Status.OK
       result.body shouldBe etmpPayloadAsJsonAddedPoint.toString()
+    }
+
+    s"call out to ETMP and return OK (${Status.OK}) when there are multiple LSP periods in same calendar month" in {
+      mockResponseForStubETMPPayload(Status.OK, "123456789", body = Some(etmpPayloadWithMultipleLSPInSameCalenderMonth.toString()))
+      val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/123456789").get())
+      result.status shouldBe Status.OK
+      result.body shouldBe etmpPayloadWithMultipleLSPInSameCalenderMonth.toString()
+    }
+
+    s"call out to ETMP and return OK (${Status.OK}) when there are multiple LSPP periods in same calendar month" in {
+      mockResponseForStubETMPPayload(Status.OK, "123456789", body = Some(etmpPayloadWithMultipleLSPPInSameCalenderMonth.toString()))
+      val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/123456789").get())
+      result.status shouldBe Status.OK
+      result.body shouldBe etmpPayloadWithMultipleLSPPInSameCalenderMonth.toString()
     }
 
     s"call out to ETMP and return a Not Found (${Status.NOT_FOUND}) when NoContent is returned from the connector" in {

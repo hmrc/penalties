@@ -114,7 +114,7 @@ trait IntegrationSpecCommonBase extends AnyWordSpec with Matchers with GuiceOneS
         dateExpired = Some(sampleDate),
         status = PointStatusEnum.Active,
         reason = None,
-        period = Some(PenaltyPeriod(
+        period = Some(Seq(PenaltyPeriod(
           startDate = sampleDate,
           endDate = sampleDate,
           submission = Submission(
@@ -122,7 +122,7 @@ trait IntegrationSpecCommonBase extends AnyWordSpec with Matchers with GuiceOneS
             submittedDate = Some(sampleDate),
             status = SubmissionStatusEnum.Submitted
           )
-        )),
+        ))),
         communications = Seq(
           Communication(
             `type` = CommunicationTypeEnum.secureMessage,
@@ -145,7 +145,7 @@ trait IntegrationSpecCommonBase extends AnyWordSpec with Matchers with GuiceOneS
         dateExpired = Some(sampleDate),
         status = PointStatusEnum.Active,
         reason = None,
-        period = Some(PenaltyPeriod(
+        period = Some(Seq(PenaltyPeriod(
           startDate = sampleDate,
           endDate = sampleDate,
           submission = Submission(
@@ -153,7 +153,7 @@ trait IntegrationSpecCommonBase extends AnyWordSpec with Matchers with GuiceOneS
             submittedDate = Some(sampleDate),
             status = SubmissionStatusEnum.Submitted
           )
-        )),
+        ))),
         communications = Seq(
           Communication(
             `type` = CommunicationTypeEnum.letter,

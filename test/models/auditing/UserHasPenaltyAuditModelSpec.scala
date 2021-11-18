@@ -344,7 +344,7 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
         dateExpired = Some(LocalDateTime.of(1970, 1, 1, 0, 0, 0)),
         status = PointStatusEnum.Due,
         reason = Some("reason"),
-        period = Some(PenaltyPeriod(
+        period = Some(Seq(PenaltyPeriod(
           startDate = LocalDateTime.of(1970, 1, 1, 0, 0, 0),
           endDate = LocalDateTime.of(1970, 1, 31, 0, 0, 0),
           submission = Submission(
@@ -352,7 +352,7 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
             submittedDate = Some(LocalDateTime.of(1970, 2, 7, 0, 0, 0)),
             status = SubmissionStatusEnum.Submitted
           )
-        )),
+        ))),
         communications = Seq(
           Communication(
             `type` = CommunicationTypeEnum.secureMessage,
@@ -380,7 +380,7 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
         dateExpired = Some(LocalDateTime.of(1970, 1, 1, 0, 0, 0)),
         status = PointStatusEnum.Removed,
         reason = Some("reason"),
-        period = Some(PenaltyPeriod(
+        period = Some(Seq(PenaltyPeriod(
           startDate = LocalDateTime.of(1970, 1, 1, 0, 0, 0),
           endDate = LocalDateTime.of(1970, 1, 31, 0, 0, 0),
           submission = Submission(
@@ -388,7 +388,7 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
             submittedDate = Some(LocalDateTime.of(1970, 2, 7, 0, 0, 0)),
             status = SubmissionStatusEnum.Submitted
           )
-        )),
+        ))),
         communications = Seq(
           Communication(
             `type` = CommunicationTypeEnum.secureMessage,
@@ -416,7 +416,7 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
         dateExpired = Some(LocalDateTime.of(1970, 1, 1, 0, 0, 0)),
         status = PointStatusEnum.Active,
         reason = Some("reason"),
-        period = Some(PenaltyPeriod(
+        period = Some(Seq(PenaltyPeriod(
           startDate = LocalDateTime.of(1970, 1, 1, 0, 0, 0),
           endDate = LocalDateTime.of(1970, 1, 31, 0, 0, 0),
           submission = Submission(
@@ -424,7 +424,7 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
             submittedDate = Some(LocalDateTime.of(1970, 2, 7, 0, 0, 0)),
             status = SubmissionStatusEnum.Submitted
           )
-        )),
+        ))),
         communications = Seq(
           Communication(
             `type` = CommunicationTypeEnum.secureMessage,

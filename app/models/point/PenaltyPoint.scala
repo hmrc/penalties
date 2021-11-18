@@ -33,7 +33,7 @@ case class PenaltyPoint(
                          dateExpired: Option[LocalDateTime] = None,
                          status: PointStatusEnum.Value,
                          reason: Option[String],
-                         period: Option[PenaltyPeriod] = None,
+                         period: Option[Seq[PenaltyPeriod]] = None,
                          communications: Seq[Communication],
                          financial: Option[Financial] = None
                        )

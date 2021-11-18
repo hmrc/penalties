@@ -61,7 +61,7 @@ trait SpecBase extends AnyWordSpec with Matchers with GuiceOneAppPerSuite {
         dateExpired = Some(LocalDateTime.of(1970, 1, 1, 0, 0, 0)),
         status = PointStatusEnum.Active,
         reason = Some("reason"),
-        period = Some(PenaltyPeriod(
+        period = Some(Seq(PenaltyPeriod(
           startDate = LocalDateTime.of(1970, 1, 1, 0, 0, 0),
           endDate = LocalDateTime.of(1970, 1, 31, 0, 0, 0),
           submission = Submission(
@@ -69,7 +69,7 @@ trait SpecBase extends AnyWordSpec with Matchers with GuiceOneAppPerSuite {
             submittedDate = Some(LocalDateTime.of(1970, 2, 7, 0, 0, 0)),
             status = SubmissionStatusEnum.Submitted
           )
-        )),
+        ))),
         communications = Seq(
           Communication(
             `type` = CommunicationTypeEnum.secureMessage,
@@ -210,7 +210,7 @@ trait SpecBase extends AnyWordSpec with Matchers with GuiceOneAppPerSuite {
         dateExpired = Some(LocalDateTime.of(1970, 1, 1, 0, 0, 0)),
         status = PointStatusEnum.Active,
         reason = Some("reason"),
-        period = Some(PenaltyPeriod(
+        period = Some(Seq(PenaltyPeriod(
           startDate = LocalDateTime.of(1970, 1, 1, 0, 0, 0),
           endDate = LocalDateTime.of(1970, 1, 31, 0, 0, 0),
           submission = Submission(
@@ -218,7 +218,7 @@ trait SpecBase extends AnyWordSpec with Matchers with GuiceOneAppPerSuite {
             submittedDate = Some(LocalDateTime.of(1970, 2, 7, 0, 0, 0)),
             status = SubmissionStatusEnum.Submitted
           )
-        )),
+        ))),
         communications = Seq(
           Communication(
             `type` = CommunicationTypeEnum.secureMessage,
@@ -237,7 +237,7 @@ trait SpecBase extends AnyWordSpec with Matchers with GuiceOneAppPerSuite {
         dateExpired = Some(LocalDateTime.of(1970, 1, 1, 0, 0, 0)),
         status = PointStatusEnum.Active,
         reason = Some("reason"),
-        period = Some(PenaltyPeriod(
+        period = Some(Seq(PenaltyPeriod(
           startDate = LocalDateTime.of(1970, 1, 1, 0, 0, 0),
           endDate = LocalDateTime.of(1970, 1, 31, 0, 0, 0),
           submission = Submission(
@@ -245,7 +245,7 @@ trait SpecBase extends AnyWordSpec with Matchers with GuiceOneAppPerSuite {
             submittedDate = Some(LocalDateTime.of(1970, 2, 7, 0, 0, 0)),
             status = SubmissionStatusEnum.Submitted
           )
-        )),
+        ))),
         communications = Seq(
           Communication(
             `type` = CommunicationTypeEnum.secureMessage,
@@ -275,7 +275,7 @@ trait SpecBase extends AnyWordSpec with Matchers with GuiceOneAppPerSuite {
         dateExpired = Some(LocalDateTime.of(1970, 1, 1, 0, 0, 0)),
         status = PointStatusEnum.Active,
         reason = Some("reason"),
-        period = Some(PenaltyPeriod(
+        period = Some(Seq(PenaltyPeriod(
           startDate = LocalDateTime.of(1970, 1, 1, 0, 0, 0),
           endDate = LocalDateTime.of(1970, 1, 31, 0, 0, 0),
           submission = Submission(
@@ -283,7 +283,7 @@ trait SpecBase extends AnyWordSpec with Matchers with GuiceOneAppPerSuite {
             submittedDate = Some(LocalDateTime.of(1970, 2, 7, 0, 0, 0)),
             status = SubmissionStatusEnum.Submitted
           )
-        )),
+        ))),
         communications = Seq(
           Communication(
             `type` = CommunicationTypeEnum.secureMessage,
@@ -302,7 +302,7 @@ trait SpecBase extends AnyWordSpec with Matchers with GuiceOneAppPerSuite {
         dateExpired = Some(LocalDateTime.of(1970, 1, 1, 0, 0, 0)),
         status = PointStatusEnum.Active,
         reason = Some("reason"),
-        period = Some(PenaltyPeriod(
+        period = Some(Seq(PenaltyPeriod(
           startDate = LocalDateTime.of(1970, 1, 1, 0, 0, 0),
           endDate = LocalDateTime.of(1970, 1, 31, 0, 0, 0),
           submission = Submission(
@@ -310,7 +310,7 @@ trait SpecBase extends AnyWordSpec with Matchers with GuiceOneAppPerSuite {
             submittedDate = Some(LocalDateTime.of(1970, 2, 7, 0, 0, 0)),
             status = SubmissionStatusEnum.Submitted
           )
-        )),
+        ))),
         communications = Seq(
           Communication(
             `type` = CommunicationTypeEnum.secureMessage,
@@ -400,7 +400,7 @@ trait SpecBase extends AnyWordSpec with Matchers with GuiceOneAppPerSuite {
         dateExpired = Some(LocalDateTime.of(1970, 1, 1, 0, 0, 0)),
         status = PointStatusEnum.Due,
         reason = None,
-        period = Some(PenaltyPeriod(
+        period = Some(Seq(PenaltyPeriod(
           startDate = LocalDateTime.of(1970, 1, 1, 0, 0, 0),
           endDate = LocalDateTime.of(1970, 1, 31, 0, 0, 0),
           submission = Submission(
@@ -408,7 +408,7 @@ trait SpecBase extends AnyWordSpec with Matchers with GuiceOneAppPerSuite {
             submittedDate = None,
             status = SubmissionStatusEnum.Overdue
           )
-        )),
+        ))),
         communications = Seq.empty,
         financial = None
       ),
@@ -421,7 +421,7 @@ trait SpecBase extends AnyWordSpec with Matchers with GuiceOneAppPerSuite {
         dateExpired = Some(LocalDateTime.of(1970, 1, 1, 0, 0, 0)),
         status = PointStatusEnum.Estimated,
         reason = None,
-        period = Some(PenaltyPeriod(
+        period = Some(Seq(PenaltyPeriod(
           startDate = LocalDateTime.of(1970, 1, 1, 0, 0, 0),
           endDate = LocalDateTime.of(1970, 1, 31, 0, 0, 0),
           submission = Submission(
@@ -429,7 +429,7 @@ trait SpecBase extends AnyWordSpec with Matchers with GuiceOneAppPerSuite {
             submittedDate = None,
             status = SubmissionStatusEnum.Overdue
           )
-        )),
+        ))),
         communications = Seq.empty,
         financial = None
       )
