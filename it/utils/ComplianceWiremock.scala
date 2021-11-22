@@ -62,6 +62,64 @@ trait ComplianceWiremock {
       |""".stripMargin
   )
 
+  val complianceSeqPayloadAsJson: JsValue = Json.parse(
+    """
+      |{
+      |   "obligations": [
+      |     {
+      |			"identification": {
+      |				"referenceNumber": "123456789",
+      |				"referenceType": "VRN"
+      |			},
+      |			"obligationDetails": [
+      |				{
+      |					"status": "O",
+      |					"inboundCorrespondenceFromDate": "1920-02-29",
+      |					"inboundCorrespondenceToDate": "1920-02-29",
+      |					"inboundCorrespondenceDueDate": "1920-02-29",
+      |					"periodKey": "#001"
+      |				},
+      |				{
+      |					"status": "F",
+      |					"inboundCorrespondenceFromDate": "1920-02-29",
+      |					"inboundCorrespondenceToDate": "1920-02-29",
+      |					"inboundCorrespondenceDateReceived": "1920-02-29",
+      |					"inboundCorrespondenceDueDate": "1920-02-29",
+      |					"periodKey": "#001"
+      |				}
+      |			]
+      |		}
+      |  ]
+      |}
+      |""".stripMargin)
+
+  val compliancePayloadAsJson: JsValue = Json.parse(
+    """
+      |{
+      |			"identification": {
+      |				"referenceNumber": "123456789",
+      |				"referenceType": "VRN"
+      |			},
+      |			"obligationDetails": [
+      |				{
+      |					"status": "O",
+      |					"inboundCorrespondenceFromDate": "1920-02-29",
+      |					"inboundCorrespondenceToDate": "1920-02-29",
+      |					"inboundCorrespondenceDueDate": "1920-02-29",
+      |					"periodKey": "#001"
+      |				},
+      |				{
+      |					"status": "F",
+      |					"inboundCorrespondenceFromDate": "1920-02-29",
+      |					"inboundCorrespondenceToDate": "1920-02-29",
+      |					"inboundCorrespondenceDateReceived": "1920-02-29",
+      |					"inboundCorrespondenceDueDate": "1920-02-29",
+      |					"periodKey": "#001"
+      |				}
+      |			]
+      |}
+      |""".stripMargin)
+
   def mockResponseForStubPastReturnPayload(status: Int, identifier: String, startDate: LocalDateTime, endDate: LocalDateTime,
                                            regime: String, body: Option[String] = None): StubMapping = {
     stubFor(get(urlPathEqualTo(s"/penalties-stub/compliance/previous-data/$regime/$identifier"))
@@ -95,5 +153,24 @@ trait ComplianceWiremock {
         .withBody(body.fold(complianceSummaryPayloadAsJson.toString())(identity))
         .withStatus(status)
     ))
+  }
+
+  def mockResponseForComplianceDataFromDES(status: Int, vrn: String, fromDate: String, toDate: String,
+                                           hasBody: Boolean = false, invalidBody: Boolean = false): StubMapping = {
+    stubFor(get(urlEqualTo(s"/enterprise/obligation-data/vrn/$vrn/VATC?from=$fromDate&to=$toDate"))
+      .willReturn(
+        aResponse()
+          .withStatus(status)
+          .withBody(if(invalidBody) "{}" else if(hasBody) complianceSeqPayloadAsJson.toString() else "")
+      ))
+  }
+
+  def mockResponseForComplianceDataFromStub(status: Int, vrn: String, fromDate: String, toDate: String): StubMapping = {
+    stubFor(get(urlEqualTo(s"/penalties-stub/enterprise/obligation-data/vrn/$vrn/VATC?from=$fromDate&to=$toDate"))
+      .willReturn(
+        aResponse()
+          .withStatus(status)
+          .withBody(complianceSeqPayloadAsJson.toString())
+      ))
   }
 }

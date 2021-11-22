@@ -16,7 +16,7 @@
 
 package models.compliance
 
-import play.api.libs.json.{Json, OFormat}
+import play.api.libs.json.{JsResult, JsValue, Json, OFormat, OWrites, Reads}
 
 //TODO: rename this model when we switch to new API
 case class CompliancePayloadObligationAPI(
@@ -25,5 +25,12 @@ case class CompliancePayloadObligationAPI(
                                          )
 
 object CompliancePayloadObligationAPI {
-  implicit val format: OFormat[CompliancePayloadObligationAPI] = Json.format[CompliancePayloadObligationAPI]
+  implicit val writes: OWrites[CompliancePayloadObligationAPI] = Json.writes[CompliancePayloadObligationAPI]
+  implicit val reads: Reads[CompliancePayloadObligationAPI] = Json.reads[CompliancePayloadObligationAPI]
+
+  val seqReads: Reads[Seq[CompliancePayloadObligationAPI]] = new Reads[Seq[CompliancePayloadObligationAPI]] {
+    override def reads(json: JsValue): JsResult[Seq[CompliancePayloadObligationAPI]] = {
+      (json \ "obligations").validate[Seq[CompliancePayloadObligationAPI]](Reads.seq[CompliancePayloadObligationAPI])
+    }
+  }
 }

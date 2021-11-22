@@ -16,7 +16,7 @@
 
 package config
 
-import featureSwitches.{CallETMP, CallPEGA, FeatureSwitching}
+import featureSwitches.{CallDES, CallETMP, CallPEGA, FeatureSwitching}
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
 import org.scalatest.matchers.should.Matchers
@@ -75,6 +75,24 @@ class AppConfigSpec extends AnyWordSpec with Matchers with FeatureSwitching {
         .thenReturn("localhost:0000")
       val result: String = config.getAppealSubmissionURL("HMRC-MTD-VAT~VRN~123456789", isLPP = true, penaltyId = "0000001")
       result shouldBe "localhost:0000/penalties-stub/appeals/submit?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=true&penaltyId=0000001"
+    }
+  }
+
+  "getComplianceData" should {
+    "call the stub when the feature switch is disabled" in new Setup {
+      disableFeatureSwitch(CallDES)
+      when(mockServicesConfig.baseUrl(ArgumentMatchers.any()))
+        .thenReturn("localhost:0000")
+      val result: String = config.getComplianceData("123456789", "2020-01-01", "2020-12-31")
+      result shouldBe "localhost:0000/penalties-stub/enterprise/obligation-data/vrn/123456789/VATC?from=2020-01-01&to=2020-12-31"
+    }
+
+    "call the stub when the feature switch is enabled" in new Setup {
+      enableFeatureSwitch(CallDES)
+      when(mockServicesConfig.baseUrl(ArgumentMatchers.any()))
+        .thenReturn("localhost:0000")
+      val result: String = config.getComplianceData("123456789", "2020-01-01", "2020-12-31")
+      result shouldBe "localhost:0000/enterprise/obligation-data/vrn/123456789/VATC?from=2020-01-01&to=2020-12-31"
     }
   }
 }
