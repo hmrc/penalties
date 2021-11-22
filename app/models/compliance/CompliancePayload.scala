@@ -16,18 +16,20 @@
 
 package models.compliance
 
-import play.api.libs.json.{Json, OFormat}
-
-import java.time.LocalDateTime
+import play.api.libs.json.{JsResult, JsValue, Json, OWrites, Reads}
 
 case class CompliancePayload(
-                              noOfMissingReturns: String,
-                              noOfSubmissionsReqForCompliance: String,
-                              expiryDateOfAllPenaltyPoints: LocalDateTime,
-                              missingReturns: Seq[MissingReturn],
-                              returns: Seq[Return]
-                            )
+                                            identification: ObligationIdentification,
+                                            obligationDetails: Seq[ObligationDetail]
+                                         )
 
 object CompliancePayload {
-  implicit val format: OFormat[CompliancePayload] = Json.format[CompliancePayload]
+  implicit val writes: OWrites[CompliancePayload] = Json.writes[CompliancePayload]
+  implicit val reads: Reads[CompliancePayload] = Json.reads[CompliancePayload]
+
+  val seqReads: Reads[Seq[CompliancePayload]] = new Reads[Seq[CompliancePayload]] {
+    override def reads(json: JsValue): JsResult[Seq[CompliancePayload]] = {
+      (json \ "obligations").validate[Seq[CompliancePayload]](Reads.seq[CompliancePayload])
+    }
+  }
 }

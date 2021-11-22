@@ -22,7 +22,7 @@ import play.api.libs.json.{JsString, Json}
 
 class ComplianceStatusEnumSpec extends AnyWordSpec with Matchers {
 
-  "CommunicationTypeEnum" should {
+  "ComplianceStatusEnum" should {
     "be writable to JSON for 'O'" in {
       val result = Json.toJson(ComplianceStatusEnum.open)
       result shouldBe JsString("O")

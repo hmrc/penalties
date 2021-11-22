@@ -16,8 +16,8 @@
 
 package connectors.parsers
 
-import connectors.parsers.DESComplianceParser._
-import models.compliance.{CompliancePayloadObligationAPI, ComplianceStatusEnum, ObligationDetail, ObligationIdentification}
+import connectors.parsers.ComplianceParser._
+import models.compliance.{CompliancePayload, ComplianceStatusEnum, ObligationDetail, ObligationIdentification}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import play.api.http.Status._
@@ -26,7 +26,7 @@ import uk.gov.hmrc.http.HttpResponse
 
 import java.time.LocalDate
 
-class DESComplianceParserSpec extends AnyWordSpec with Matchers {
+class ComplianceParserSpec extends AnyWordSpec with Matchers {
   val compliancePayloadAsJson: JsValue = Json.parse(
     """
       |{
@@ -58,7 +58,7 @@ class DESComplianceParserSpec extends AnyWordSpec with Matchers {
       |}
       |""".stripMargin)
 
-  val compliancePayloadAsModel: CompliancePayloadObligationAPI = CompliancePayloadObligationAPI(
+  val compliancePayloadAsModel: CompliancePayload = CompliancePayload(
     identification = ObligationIdentification(
       incomeSourceType = None,
       referenceNumber = "123456789",
@@ -84,43 +84,43 @@ class DESComplianceParserSpec extends AnyWordSpec with Matchers {
     )
   )
 
-  "DESComplianceCompliancePayloadReads" should {
-    s"return a $DESCompliancePayloadSuccessResponse when the http response is OK" in {
-      val result = DESComplianceCompliancePayloadReads.read("GET", "/", HttpResponse(200, compliancePayloadAsJson, Map.empty[String, Seq[String]]))
+  "CompliancePayloadReads" should {
+    s"return a $CompliancePayloadSuccessResponse when the http response is OK" in {
+      val result = ComplianceCompliancePayloadReads.read("GET", "/", HttpResponse(200, compliancePayloadAsJson, Map.empty[String, Seq[String]]))
       result.isRight shouldBe true
-      result.right.get shouldBe DESCompliancePayloadSuccessResponse(compliancePayloadAsModel)
+      result.right.get shouldBe CompliancePayloadSuccessResponse(compliancePayloadAsModel)
     }
 
-    s"return a $DESCompliancePayloadFailureResponse" when {
+    s"return a $CompliancePayloadFailureResponse" when {
       s"the status is $BAD_REQUEST" in {
-        val result = DESComplianceCompliancePayloadReads.read("GET", "/", HttpResponse(400, ""))
+        val result = ComplianceCompliancePayloadReads.read("GET", "/", HttpResponse(400, ""))
         result.isLeft shouldBe true
-        result.left.get shouldBe DESCompliancePayloadFailureResponse(BAD_REQUEST)
+        result.left.get shouldBe CompliancePayloadFailureResponse(BAD_REQUEST)
       }
 
       s"the status is $INTERNAL_SERVER_ERROR" in {
-        val result = DESComplianceCompliancePayloadReads.read("GET", "/", HttpResponse(500, ""))
+        val result = ComplianceCompliancePayloadReads.read("GET", "/", HttpResponse(500, ""))
         result.isLeft shouldBe true
-        result.left.get shouldBe DESCompliancePayloadFailureResponse(INTERNAL_SERVER_ERROR)
+        result.left.get shouldBe CompliancePayloadFailureResponse(INTERNAL_SERVER_ERROR)
       }
 
       s"the status is any other non-200 status" in {
-        val result = DESComplianceCompliancePayloadReads.read("GET", "/", HttpResponse(503, ""))
+        val result = ComplianceCompliancePayloadReads.read("GET", "/", HttpResponse(503, ""))
         result.isLeft shouldBe true
-        result.left.get shouldBe DESCompliancePayloadFailureResponse(SERVICE_UNAVAILABLE)
+        result.left.get shouldBe CompliancePayloadFailureResponse(SERVICE_UNAVAILABLE)
       }
     }
 
-    s"return a $DESCompliancePayloadNoData when there is no data associated to the VRN" in {
-      val result = DESComplianceCompliancePayloadReads.read("GET", "/", HttpResponse(404, ""))
+    s"return a $CompliancePayloadNoData when there is no data associated to the VRN" in {
+      val result = ComplianceCompliancePayloadReads.read("GET", "/", HttpResponse(404, ""))
       result.isLeft shouldBe true
-      result.left.get shouldBe DESCompliancePayloadNoData
+      result.left.get shouldBe CompliancePayloadNoData
     }
 
-    s"return a $DESCompliancePayloadNoData when the body is malformed" in {
-      val result = DESComplianceCompliancePayloadReads.read("GET", "/", HttpResponse(200, "{}"))
+    s"return a $CompliancePayloadNoData when the body is malformed" in {
+      val result = ComplianceCompliancePayloadReads.read("GET", "/", HttpResponse(200, "{}"))
       result.isLeft shouldBe true
-      result.left.get shouldBe DESCompliancePayloadMalformed
+      result.left.get shouldBe CompliancePayloadMalformed
     }
   }
 }

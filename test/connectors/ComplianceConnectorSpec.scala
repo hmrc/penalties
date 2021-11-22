@@ -16,19 +16,16 @@
 
 package connectors
 
-import java.time.{LocalDate, LocalDateTime}
 import base.SpecBase
 import config.AppConfig
 import connectors.parsers.ComplianceParser._
-import connectors.parsers.DESComplianceParser._
-import models.compliance.{CompliancePayloadObligationAPI, ComplianceStatusEnum, ObligationDetail, ObligationIdentification}
-import org.mockito.{ArgumentCaptor, ArgumentMatchers}
+import models.compliance.{CompliancePayload, ComplianceStatusEnum, ObligationDetail, ObligationIdentification}
 import org.mockito.Mockito._
-import play.api.http.Status
-import play.api.libs.json.Json
+import org.mockito.{ArgumentCaptor, ArgumentMatchers}
 import play.api.test.Helpers._
 import uk.gov.hmrc.http.{Authorization, HeaderCarrier, HttpClient}
 
+import java.time.{LocalDate, LocalDateTime}
 import scala.concurrent.{ExecutionContext, Future}
 
 class ComplianceConnectorSpec extends SpecBase {
@@ -50,168 +47,11 @@ class ComplianceConnectorSpec extends SpecBase {
     reset(mockAppConfig)
 
     val connector = new ComplianceConnector(mockHttpClient, mockAppConfig)
-    when(mockAppConfig.getPastReturnURL(ArgumentMatchers.any())).thenReturn("/")
-    when(mockAppConfig.getComplianceSummaryURL(ArgumentMatchers.any())).thenReturn("/")
   }
 
-  "getPastReturnsForEnrolmentKey" should {
-    "return a successful response i.e JsValue - when the call succeeds and the body can be parsed" in new Setup {
-      when(mockHttpClient.GET[CompliancePayloadResponse](ArgumentMatchers.eq(s"/123456789?startDate=$testStartDate&endDate=$testEndDate"),
-      ArgumentMatchers.any(),
-      ArgumentMatchers.any())
-        (ArgumentMatchers.any(),
-          ArgumentMatchers.any(),
-          ArgumentMatchers.any()))
-        .thenReturn(Future.successful(Right(GetCompliancePayloadSuccessResponse(Json.parse("{}")))))
-
-      val result: CompliancePayloadResponse =
-        await(connector.getPastReturnsForEnrolmentKey("123456789", testStartDate, testEndDate, "mtd-vat")(HeaderCarrier()))
-      result.isRight shouldBe true
-      result.right.get.asInstanceOf[GetCompliancePayloadSuccessResponse] shouldBe GetCompliancePayloadSuccessResponse(Json.parse("{}"))
-    }
-
-    "return a Left response" when {
-      "the call returns a OK response however the body is not parsable as a model" in new Setup {
-        when(mockHttpClient.GET[CompliancePayloadResponse](ArgumentMatchers.eq(s"/123456789?startDate=$testStartDate&endDate=$testEndDate"),
-        ArgumentMatchers.any(),
-        ArgumentMatchers.any())
-          (ArgumentMatchers.any(),
-          ArgumentMatchers.any(),
-          ArgumentMatchers.any()))
-          .thenReturn(Future.successful(Left(GetCompliancePayloadMalformed)))
-
-        val result: CompliancePayloadResponse = await(
-          connector.getPastReturnsForEnrolmentKey("123456789", testStartDate, testEndDate, "mtd-vat")(HeaderCarrier()))
-        result.isLeft shouldBe true
-      }
-
-      "the call returns a No Content status" in new Setup {
-        when(mockHttpClient.GET[CompliancePayloadResponse](ArgumentMatchers.eq(s"/123456789?startDate=$testStartDate&endDate=$testEndDate"),
-        ArgumentMatchers.any(),
-        ArgumentMatchers.any())
-          (ArgumentMatchers.any(),
-          ArgumentMatchers.any(),
-          ArgumentMatchers.any()))
-          .thenReturn(Future.successful(Left(GetCompliancePayloadNoContent)))
-
-        val result: CompliancePayloadResponse =
-          await(connector.getPastReturnsForEnrolmentKey("123456789", testStartDate, testEndDate, "mtd-vat")(HeaderCarrier()))
-
-        result.isLeft shouldBe true
-      }
-
-      "the call returns an ISE" in new Setup {
-        when(mockHttpClient.GET[CompliancePayloadResponse](ArgumentMatchers.eq(s"/123456789?startDate=$testStartDate&endDate=$testEndDate"),
-          ArgumentMatchers.any(),
-          ArgumentMatchers.any())
-          (ArgumentMatchers.any(),
-            ArgumentMatchers.any(),
-            ArgumentMatchers.any()))
-          .thenReturn(Future.successful(Left(GetCompliancePayloadFailureResponse(Status.INTERNAL_SERVER_ERROR))))
-
-        val result: CompliancePayloadResponse =
-          await(connector.getPastReturnsForEnrolmentKey("123456789", testStartDate, testEndDate, "mtd-vat")(HeaderCarrier()))
-        result.isLeft shouldBe true
-      }
-
-      "the call returns an unmatched response" in new Setup {
-        when(mockHttpClient.GET[CompliancePayloadResponse](ArgumentMatchers.eq(s"/123456789?startDate=$testStartDate&endDate=$testEndDate"),
-          ArgumentMatchers.any(),
-          ArgumentMatchers.any())
-          (ArgumentMatchers.any(),
-            ArgumentMatchers.any(),
-            ArgumentMatchers.any()))
-          .thenReturn(Future.successful(Left(GetCompliancePayloadFailureResponse(Status.BAD_GATEWAY))))
-
-        val result: CompliancePayloadResponse =
-          await(connector.getPastReturnsForEnrolmentKey("123456789", testStartDate, testEndDate, "mtd-vat")(HeaderCarrier()))
-        result.isLeft shouldBe true
-      }
-    }
-  }
-
-  "getComplianceSummaryForEnrolmentKey" should {
-    "should return a successful response i.e JsValue - when the call succeeds and the body can be parsed" in new Setup {
-      when(mockHttpClient.GET[CompliancePayloadResponse](ArgumentMatchers.eq("/123456789"),
-      ArgumentMatchers.any(),
-      ArgumentMatchers.any())
-        (ArgumentMatchers.any(),
-        ArgumentMatchers.any(),
-        ArgumentMatchers.any()))
-        .thenReturn(Future.successful(Right(GetCompliancePayloadSuccessResponse(Json.parse("{}")))))
-
-      val result: CompliancePayloadResponse =
-        await(connector.getComplianceSummaryForEnrolmentKey("123456789", "mtd-vat")(HeaderCarrier()))
-      result.isRight shouldBe true
-      result.right.get.asInstanceOf[GetCompliancePayloadSuccessResponse] shouldBe GetCompliancePayloadSuccessResponse(Json.parse("{}"))
-    }
-
-    "return a Left response" when {
-      "the call returns a OK response however the body is not parsable as a model" in new Setup {
-        when(mockHttpClient.GET[CompliancePayloadResponse](ArgumentMatchers.eq("/123456789"),
-          ArgumentMatchers.any(),
-          ArgumentMatchers.any())
-          (ArgumentMatchers.any(),
-            ArgumentMatchers.any(),
-            ArgumentMatchers.any()))
-          .thenReturn(Future.successful(Left(GetCompliancePayloadMalformed)))
-
-        val result: CompliancePayloadResponse =
-          await(connector.getComplianceSummaryForEnrolmentKey("123456789", "mtd-vat")(HeaderCarrier()))
-
-        result.isLeft shouldBe true
-      }
-
-      "the call returns a No Content status" in new Setup {
-        when(mockHttpClient.GET[CompliancePayloadResponse](ArgumentMatchers.eq("/123456789"),
-          ArgumentMatchers.any(),
-          ArgumentMatchers.any())
-          (ArgumentMatchers.any(),
-            ArgumentMatchers.any(),
-            ArgumentMatchers.any()))
-          .thenReturn(Future.successful(Left(GetCompliancePayloadNoContent)))
-
-        val result: CompliancePayloadResponse =
-          await(connector.getComplianceSummaryForEnrolmentKey("123456789", "mtd-vat")(HeaderCarrier()))
-
-        result.isLeft shouldBe true
-      }
-
-      "the call returns a ISE" in new Setup {
-        when(mockHttpClient.GET[CompliancePayloadResponse](ArgumentMatchers.eq("/123456789"),
-          ArgumentMatchers.any(),
-          ArgumentMatchers.any())
-          (ArgumentMatchers.any(),
-            ArgumentMatchers.any(),
-            ArgumentMatchers.any()))
-          .thenReturn(Future.successful(Left(GetCompliancePayloadFailureResponse(Status.INTERNAL_SERVER_ERROR))))
-
-        val result: CompliancePayloadResponse =
-          await(connector.getComplianceSummaryForEnrolmentKey("123456789", "mtd-vat")(HeaderCarrier()))
-
-        result.isLeft shouldBe true
-      }
-
-      "the call returns an unmatched response" in new Setup {
-        when(mockHttpClient.GET[CompliancePayloadResponse](ArgumentMatchers.eq("/123456789"),
-          ArgumentMatchers.any(),
-          ArgumentMatchers.any())
-          (ArgumentMatchers.any(),
-            ArgumentMatchers.any(),
-            ArgumentMatchers.any()))
-          .thenReturn(Future.successful(Left(GetCompliancePayloadFailureResponse(Status.BAD_GATEWAY))))
-
-        val result: CompliancePayloadResponse =
-          await(connector.getComplianceSummaryForEnrolmentKey("123456789", "mtd-vat")(HeaderCarrier()))
-
-        result.isLeft shouldBe true
-      }
-    }
-  }
-
-  "getComplianceDataFromDES" should {
+  "getComplianceData" should {
     "should return a model - when the call succeeds and the body can be parsed" in new Setup {
-      val compliancePayloadAsModel: CompliancePayloadObligationAPI = CompliancePayloadObligationAPI(
+      val compliancePayloadAsModel: CompliancePayload = CompliancePayload(
         identification = ObligationIdentification(
           incomeSourceType = None,
           referenceNumber = "123456789",
@@ -241,17 +81,17 @@ class ComplianceConnectorSpec extends SpecBase {
       when(mockAppConfig.desEnvironment).thenReturn("env")
       when(mockAppConfig.desBearerToken).thenReturn("Bearer 12345")
       val hcArgumentCaptor: ArgumentCaptor[HeaderCarrier] = ArgumentCaptor.forClass(classOf[HeaderCarrier])
-      when(mockHttpClient.GET[DESCompliancePayloadResponse](ArgumentMatchers.eq("/123456789"),
+      when(mockHttpClient.GET[CompliancePayloadResponse](ArgumentMatchers.eq("/123456789"),
         ArgumentMatchers.any(),
         ArgumentMatchers.any())
         (ArgumentMatchers.any(),
           hcArgumentCaptor.capture(),
           ArgumentMatchers.any()))
-        .thenReturn(Future.successful(Right(DESCompliancePayloadSuccessResponse(compliancePayloadAsModel))))
-      val result: DESCompliancePayloadResponse =
-        await(connector.getComplianceDataFromDES("123456789", "2020-01-01", "2020-12-31")(HeaderCarrier()))
+        .thenReturn(Future.successful(Right(CompliancePayloadSuccessResponse(compliancePayloadAsModel))))
+      val result: CompliancePayloadResponse =
+        await(connector.getComplianceData("123456789", "2020-01-01", "2020-12-31")(HeaderCarrier()))
       result.isRight shouldBe true
-      result.right.get.asInstanceOf[DESCompliancePayloadSuccessResponse] shouldBe DESCompliancePayloadSuccessResponse(compliancePayloadAsModel)
+      result.right.get.asInstanceOf[CompliancePayloadSuccessResponse] shouldBe CompliancePayloadSuccessResponse(compliancePayloadAsModel)
       hcArgumentCaptor.getValue.authorization shouldBe Some(Authorization("Bearer 12345"))
       hcArgumentCaptor.getValue.extraHeaders.find(_._1 == "Environment").get shouldBe ("Environment" -> "env")
     }
@@ -262,15 +102,15 @@ class ComplianceConnectorSpec extends SpecBase {
           .thenReturn("/123456789")
         when(mockAppConfig.desEnvironment).thenReturn("env")
         when(mockAppConfig.desBearerToken).thenReturn("Bearer 12345")
-        when(mockHttpClient.GET[DESCompliancePayloadResponse](ArgumentMatchers.eq("/123456789"),
+        when(mockHttpClient.GET[CompliancePayloadResponse](ArgumentMatchers.eq("/123456789"),
           ArgumentMatchers.any(),
           ArgumentMatchers.any())
           (ArgumentMatchers.any(),
             ArgumentMatchers.any(),
             ArgumentMatchers.any()))
-          .thenReturn(Future.successful(Left(DESCompliancePayloadMalformed)))
-        val result: DESCompliancePayloadResponse =
-          await(connector.getComplianceDataFromDES("123456789", "2020-01-01", "2020-12-31")(HeaderCarrier()))
+          .thenReturn(Future.successful(Left(CompliancePayloadMalformed)))
+        val result: CompliancePayloadResponse =
+          await(connector.getComplianceData("123456789", "2020-01-01", "2020-12-31")(HeaderCarrier()))
         result.isLeft shouldBe true
       }
 
@@ -279,15 +119,15 @@ class ComplianceConnectorSpec extends SpecBase {
           .thenReturn("/123456789")
         when(mockAppConfig.desEnvironment).thenReturn("env")
         when(mockAppConfig.desBearerToken).thenReturn("Bearer 12345")
-        when(mockHttpClient.GET[DESCompliancePayloadResponse](ArgumentMatchers.eq("/123456789"),
+        when(mockHttpClient.GET[CompliancePayloadResponse](ArgumentMatchers.eq("/123456789"),
           ArgumentMatchers.any(),
           ArgumentMatchers.any())
           (ArgumentMatchers.any(),
             ArgumentMatchers.any(),
             ArgumentMatchers.any()))
-          .thenReturn(Future.successful(Left(DESCompliancePayloadNoData)))
-        val result: DESCompliancePayloadResponse =
-          await(connector.getComplianceDataFromDES("123456789", "2020-01-01", "2020-12-31")(HeaderCarrier()))
+          .thenReturn(Future.successful(Left(CompliancePayloadNoData)))
+        val result: CompliancePayloadResponse =
+          await(connector.getComplianceData("123456789", "2020-01-01", "2020-12-31")(HeaderCarrier()))
         result.isLeft shouldBe true
       }
 
@@ -296,15 +136,15 @@ class ComplianceConnectorSpec extends SpecBase {
           .thenReturn("/123456789")
         when(mockAppConfig.desEnvironment).thenReturn("env")
         when(mockAppConfig.desBearerToken).thenReturn("Bearer 12345")
-        when(mockHttpClient.GET[DESCompliancePayloadResponse](ArgumentMatchers.eq("/123456789"),
+        when(mockHttpClient.GET[CompliancePayloadResponse](ArgumentMatchers.eq("/123456789"),
           ArgumentMatchers.any(),
           ArgumentMatchers.any())
           (ArgumentMatchers.any(),
             ArgumentMatchers.any(),
             ArgumentMatchers.any()))
-          .thenReturn(Future.successful(Left(DESCompliancePayloadFailureResponse(INTERNAL_SERVER_ERROR))))
-        val result: DESCompliancePayloadResponse =
-          await(connector.getComplianceDataFromDES("123456789", "2020-01-01", "2020-12-31")(HeaderCarrier()))
+          .thenReturn(Future.successful(Left(CompliancePayloadFailureResponse(INTERNAL_SERVER_ERROR))))
+        val result: CompliancePayloadResponse =
+          await(connector.getComplianceData("123456789", "2020-01-01", "2020-12-31")(HeaderCarrier()))
         result.isLeft shouldBe true
       }
 
@@ -313,15 +153,15 @@ class ComplianceConnectorSpec extends SpecBase {
           .thenReturn("/123456789")
         when(mockAppConfig.desEnvironment).thenReturn("env")
         when(mockAppConfig.desBearerToken).thenReturn("Bearer 12345")
-        when(mockHttpClient.GET[DESCompliancePayloadResponse](ArgumentMatchers.eq("/123456789"),
+        when(mockHttpClient.GET[CompliancePayloadResponse](ArgumentMatchers.eq("/123456789"),
           ArgumentMatchers.any(),
           ArgumentMatchers.any())
           (ArgumentMatchers.any(),
             ArgumentMatchers.any(),
             ArgumentMatchers.any()))
-          .thenReturn(Future.successful(Left(DESCompliancePayloadFailureResponse(SERVICE_UNAVAILABLE))))
-        val result: DESCompliancePayloadResponse =
-          await(connector.getComplianceDataFromDES("123456789", "2020-01-01", "2020-12-31")(HeaderCarrier()))
+          .thenReturn(Future.successful(Left(CompliancePayloadFailureResponse(SERVICE_UNAVAILABLE))))
+        val result: CompliancePayloadResponse =
+          await(connector.getComplianceData("123456789", "2020-01-01", "2020-12-31")(HeaderCarrier()))
         result.isLeft shouldBe true
       }
     }
