@@ -19,7 +19,6 @@ package models.appeals
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import play.api.libs.json.{JsValue, Json}
-import uk.gov.hmrc.emailaddress.EmailAddress
 
 import java.time.LocalDateTime
 
@@ -55,16 +54,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       |    "dateOfAppeal": "2020-01-01T00:00:00",
       |    "isLPP": true,
       |    "appealSubmittedBy": "agent",
-      |    "agentDetails": {
-      |            "agentReferenceNo": "AGENT1",
-      |            "name": "Jack",
-      |            "addressLine1": "Flat 20",
-      |            "addressLine2": "123 Jack street",
-      |            "addressLine4": "Birmingham",
-      |            "addressLine5": "UK",
-      |            "postCode": "AAA AAA",
-      |            "agentEmailID": "Jack@aaa.com"
-      |    },
+      |    "agentReferenceNo": "AGENT1",
       |    "appealInformation": {
       |						 "reasonableExcuse": "crime",
       |            "honestyDeclaration": true,
@@ -87,16 +77,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       |    "dateOfAppeal": "2020-01-01T00:00:00",
       |    "isLPP": true,
       |    "appealSubmittedBy": "agent",
-      |    "agentDetails": {
-      |            "agentReferenceNo": "AGENT1",
-      |            "name": "Jack",
-      |            "addressLine1": "Flat 20",
-      |            "addressLine2": "123 Jack street",
-      |            "addressLine4": "Birmingham",
-      |            "addressLine5": "UK",
-      |            "postCode": "AAA AAA",
-      |            "agentEmailID": "Jack@aaa.com"
-      |    },
+      |    "agentReferenceNo": "AGENT1",
       |    "appealInformation": {
       |						 "reasonableExcuse": "lossOfStaff",
       |            "honestyDeclaration": true,
@@ -118,16 +99,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       |    "dateOfAppeal": "2020-01-01T00:00:00",
       |    "isLPP": true,
       |    "appealSubmittedBy": "agent",
-      |    "agentDetails": {
-      |            "agentReferenceNo": "AGENT1",
-      |            "name": "Jack",
-      |            "addressLine1": "Flat 20",
-      |            "addressLine2": "123 Jack street",
-      |            "addressLine4": "Birmingham",
-      |            "addressLine5": "UK",
-      |            "postCode": "AAA AAA",
-      |            "agentEmailID": "Jack@aaa.com"
-      |    },
+      |    "agentReferenceNo": "AGENT1",
       |    "appealInformation": {
       |						 "reasonableExcuse": "technicalIssues",
       |            "honestyDeclaration": true,
@@ -177,16 +149,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       |    "dateOfAppeal": "2020-01-01T00:00:00",
       |    "isLPP": true,
       |    "appealSubmittedBy": "agent",
-      |    "agentDetails": {
-      |            "agentReferenceNo": "AGENT1",
-      |            "name": "Jack",
-      |            "addressLine1": "Flat 20",
-      |            "addressLine2": "123 Jack street",
-      |            "addressLine4": "Birmingham",
-      |            "addressLine5": "UK",
-      |            "postCode": "AAA AAA",
-      |            "agentEmailID": "Jack@aaa.com"
-      |    },
+      |    "agentReferenceNo": "AGENT1",
       |    "appealInformation": {
       |						"reasonableExcuse": "fireOrFlood",
       |           "honestyDeclaration": true,
@@ -208,16 +171,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       |    "dateOfAppeal": "2020-01-01T00:00:00",
       |    "isLPP": true,
       |    "appealSubmittedBy": "agent",
-      |    "agentDetails": {
-      |            "agentReferenceNo": "AGENT1",
-      |            "name": "Jack",
-      |            "addressLine1": "Flat 20",
-      |            "addressLine2": "123 Jack street",
-      |            "addressLine4": "Birmingham",
-      |            "addressLine5": "UK",
-      |            "postCode": "AAA AAA",
-      |            "agentEmailID": "Jack@aaa.com"
-      |    },
+      |    "agentReferenceNo": "AGENT1",
       |    "appealInformation": {
       |           "reasonableExcuse": "health",
       |           "honestyDeclaration": true,
@@ -240,16 +194,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       |    "dateOfAppeal": "2020-01-01T00:00:00",
       |    "isLPP": true,
       |    "appealSubmittedBy": "agent",
-      |    "agentDetails": {
-      |            "agentReferenceNo": "AGENT1",
-      |            "name": "Jack",
-      |            "addressLine1": "Flat 20",
-      |            "addressLine2": "123 Jack street",
-      |            "addressLine4": "Birmingham",
-      |            "addressLine5": "UK",
-      |            "postCode": "AAA AAA",
-      |            "agentEmailID": "Jack@aaa.com"
-      |    },
+      |    "agentReferenceNo": "AGENT1",
       |    "appealInformation": {
       |           "reasonableExcuse": "health",
       |           "honestyDeclaration": true,
@@ -272,16 +217,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       |    "dateOfAppeal": "2020-01-01T00:00:00",
       |    "isLPP": true,
       |    "appealSubmittedBy": "agent",
-      |    "agentDetails": {
-      |            "agentReferenceNo": "AGENT1",
-      |            "name": "Jack",
-      |            "addressLine1": "Flat 20",
-      |            "addressLine2": "123 Jack street",
-      |            "addressLine4": "Birmingham",
-      |            "addressLine5": "UK",
-      |            "postCode": "AAA AAA",
-      |            "agentEmailID": "Jack@aaa.com"
-      |    },
+      |    "agentReferenceNo": "AGENT1",
       |    "appealInformation": {
       |           "reasonableExcuse": "health",
       |           "honestyDeclaration": true,
@@ -343,16 +279,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       |    "dateOfAppeal": "2020-01-01T00:00:00",
       |    "isLPP": true,
       |    "appealSubmittedBy": "agent",
-      |    "agentDetails": {
-      |            "agentReferenceNo": "AGENT1",
-      |            "name": "Jack",
-      |            "addressLine1": "Flat 20",
-      |            "addressLine2": "123 Jack street",
-      |            "addressLine4": "Birmingham",
-      |            "addressLine5": "UK",
-      |            "postCode": "AAA AAA",
-      |            "agentEmailID": "Jack@aaa.com"
-      |    },
+      |    "agentReferenceNo": "AGENT1",
       |    "appealInformation": {
       |						 "reasonableExcuse": "other",
       |            "honestyDeclaration": true,
@@ -379,16 +306,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       |    "dateOfAppeal": "2020-01-01T00:00:00",
       |    "isLPP": true,
       |    "appealSubmittedBy": "agent",
-      |    "agentDetails": {
-      |            "agentReferenceNo": "AGENT1",
-      |            "name": "Jack",
-      |            "addressLine1": "Flat 20",
-      |            "addressLine2": "123 Jack street",
-      |            "addressLine4": "Birmingham",
-      |            "addressLine5": "UK",
-      |            "postCode": "AAA AAA",
-      |            "agentEmailID": "Jack@aaa.com"
-      |    },
+      |    "agentReferenceNo": "AGENT1",
       |    "appealInformation": {
       |						 "reasonableExcuse": "other",
       |            "honestyDeclaration": true,
@@ -712,18 +630,6 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       |}
       |""".stripMargin
   )
-
-  val agentDetails = Some(AgentDetails(
-    agentReferenceNo = "AGENT1",
-    name = "Jack",
-    addressLine1 = "Flat 20",
-    addressLine2 = Some("123 Jack street"),
-    addressLine3 = None,
-    addressLine4 = Some("Birmingham"),
-    addressLine5 = Some("UK"),
-    postCode = "AAA AAA",
-    agentEmailID = Some(EmailAddress("Jack@aaa.com"))
-  ))
 
   "parseAppealInformationFromJson" should {
     "for bereavement" must {
@@ -1177,7 +1083,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
           isLPP = true,
           appealSubmittedBy = "client",
-          agentDetails = None,
+          agentReferenceNo = None,
           appealInformation = BereavementAppealInformation(
             startDateOfEvent = "2021-04-23T18:25:43.511Z",
             statement = None,
@@ -1208,7 +1114,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
           isLPP = true,
           appealSubmittedBy = "agent",
-          agentDetails = agentDetails,
+          agentReferenceNo = Some("AGENT1"),
           appealInformation = CrimeAppealInformation(
             startDateOfEvent = "2021-04-23T18:25:43.511Z",
             reportedIssueToPolice = true,
@@ -1241,7 +1147,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
           isLPP = true,
           appealSubmittedBy = "agent",
-          agentDetails = agentDetails,
+          agentReferenceNo = Some("AGENT1"),
           appealInformation = FireOrFloodAppealInformation(
             startDateOfEvent = "2021-04-23T18:25:43.511Z",
             statement = None,
@@ -1273,7 +1179,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
           isLPP = true,
           appealSubmittedBy = "agent",
-          agentDetails = agentDetails,
+          agentReferenceNo = Some("AGENT1"),
           appealInformation = LossOfStaffAppealInformation(
             startDateOfEvent = "2021-04-23T18:25:43.511Z",
             statement = None,
@@ -1305,7 +1211,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
           isLPP = true,
           appealSubmittedBy = "agent",
-          agentDetails = agentDetails,
+          agentReferenceNo = Some("AGENT1"),
           appealInformation = TechnicalIssuesAppealInformation(
             startDateOfEvent = "2021-04-23T18:25:43.511Z",
             endDateOfEvent = "2021-04-24T18:25:43.511Z",
@@ -1338,7 +1244,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
           isLPP = true,
           appealSubmittedBy = "agent",
-          agentDetails = agentDetails,
+          agentReferenceNo = Some("AGENT1"),
           appealInformation = HealthAppealInformation(
             endDateOfEvent = None,
             startDateOfEvent = Some("2021-04-23T18:25:43.511Z"),
@@ -1365,7 +1271,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
           isLPP = true,
           appealSubmittedBy = "agent",
-          agentDetails = agentDetails,
+          agentReferenceNo = Some("AGENT1"),
           appealInformation = HealthAppealInformation(
             startDateOfEvent = Some("2021-04-23T18:25:43.511Z"),
             endDateOfEvent = None,
@@ -1392,7 +1298,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
           isLPP = true,
           appealSubmittedBy = "agent",
-          agentDetails = agentDetails,
+          agentReferenceNo = Some("AGENT1"),
           appealInformation = HealthAppealInformation(
             startDateOfEvent = Some("2021-04-23T18:25:43.511Z"),
             endDateOfEvent = Some("2021-04-24T18:25:43.511Z"),
@@ -1421,7 +1327,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
           isLPP = true,
           appealSubmittedBy = "agent",
-          agentDetails = agentDetails,
+          agentReferenceNo = Some("AGENT1"),
           appealInformation = OtherAppealInformation(
             startDateOfEvent = "2021-04-23T18:25:43.511Z",
             statement = Some("This is a reason."),
@@ -1449,7 +1355,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
           isLPP = true,
           appealSubmittedBy = "agent",
-          agentDetails = agentDetails,
+          agentReferenceNo = Some("AGENT1"),
           appealInformation = OtherAppealInformation(
             startDateOfEvent = "2021-04-23T18:25:43.511Z",
             statement = Some("This is a reason."),
@@ -1482,7 +1388,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
           isLPP = true,
           appealSubmittedBy = "client",
-          agentDetails = None,
+          agentReferenceNo = None,
           appealInformation = ObligationAppealInformation(
             statement = Some("A valid statement"),
             supportingEvidence = Some(Evidence(
@@ -1508,7 +1414,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
           isLPP = false,
           appealSubmittedBy = "client",
-          agentDetails = None,
+          agentReferenceNo = None,
           appealInformation = ObligationAppealInformation(
             statement = Some("A valid statement"),
             supportingEvidence = None,
@@ -1538,7 +1444,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
           isLPP = false,
           appealSubmittedBy = "agent",
-          agentDetails = agentDetails,
+          agentReferenceNo = Some("AGENT1"),
           appealInformation = BereavementAppealInformation(
             startDateOfEvent = "2021-04-23T18:25:43.511Z",
             statement = None,
@@ -1557,16 +1463,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           "customerReferenceNo" -> "123456789",
           "dateOfAppeal" -> "2020-01-01T00:00:00",
           "isLPP" -> false,
-          "agentDetails" -> Json.obj(
-            "agentReferenceNo" -> "AGENT1",
-            "name" -> "Jack",
-            "addressLine1" -> "Flat 20",
-            "addressLine2" -> "123 Jack street",
-            "addressLine4" -> "Birmingham",
-            "addressLine5" -> "UK",
-            "postCode" -> "AAA AAA",
-            "agentEmailID" -> "Jack@aaa.com"
-          ),
+          "agentReferenceNo" -> "AGENT1",
           "appealInformation" -> Json.obj(
             "reasonableExcuse" -> "bereavement",
             "honestyDeclaration" -> true,
@@ -1590,7 +1487,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
           isLPP = false,
           appealSubmittedBy = "agent",
-          agentDetails = agentDetails,
+          agentReferenceNo = Some("AGENT1"),
           appealInformation = CrimeAppealInformation(
             startDateOfEvent = "2021-04-23T18:25:43.511Z",
             reportedIssueToPolice = true,
@@ -1610,16 +1507,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           "customerReferenceNo" -> "123456789",
           "dateOfAppeal" -> "2020-01-01T00:00:00",
           "isLPP" -> false,
-          "agentDetails" -> Json.obj(
-            "agentReferenceNo" -> "AGENT1",
-            "name" -> "Jack",
-            "addressLine1" -> "Flat 20",
-            "addressLine2" -> "123 Jack street",
-            "addressLine4" -> "Birmingham",
-            "addressLine5" -> "UK",
-            "postCode" -> "AAA AAA",
-            "agentEmailID" -> "Jack@aaa.com"
-          ),
+          "agentReferenceNo" -> "AGENT1",
           "appealInformation" -> Json.obj(
             "reasonableExcuse" -> "crime",
             "honestyDeclaration" -> true,
@@ -1645,7 +1533,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
           isLPP = false,
           appealSubmittedBy = "agent",
-          agentDetails = agentDetails,
+          agentReferenceNo = Some("AGENT1"),
           appealInformation = FireOrFloodAppealInformation(
             startDateOfEvent = "2021-04-23T18:25:43.511Z",
             statement = None,
@@ -1665,16 +1553,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           "customerReferenceNo" -> "123456789",
           "dateOfAppeal" -> "2020-01-01T00:00:00",
           "isLPP" -> false,
-          "agentDetails" -> Json.obj(
-            "agentReferenceNo" -> "AGENT1",
-            "name" -> "Jack",
-            "addressLine1" -> "Flat 20",
-            "addressLine2" -> "123 Jack street",
-            "addressLine4" -> "Birmingham",
-            "addressLine5" -> "UK",
-            "postCode" -> "AAA AAA",
-            "agentEmailID" -> "Jack@aaa.com"
-          ),
+          "agentReferenceNo" -> "AGENT1",
           "appealInformation" -> Json.obj(
             "reasonableExcuse" -> "fireOrFlood",
             "honestyDeclaration" -> true,
@@ -1699,7 +1578,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
           isLPP = false,
           appealSubmittedBy = "agent",
-          agentDetails = agentDetails,
+          agentReferenceNo = Some("AGENT1"),
           appealInformation = LossOfStaffAppealInformation(
             startDateOfEvent = "2021-04-23T18:25:43.511Z",
             statement = None,
@@ -1718,16 +1597,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           "customerReferenceNo" -> "123456789",
           "dateOfAppeal" -> "2020-01-01T00:00:00",
           "isLPP" -> false,
-          "agentDetails" -> Json.obj(
-            "agentReferenceNo" -> "AGENT1",
-            "name" -> "Jack",
-            "addressLine1" -> "Flat 20",
-            "addressLine2" -> "123 Jack street",
-            "addressLine4" -> "Birmingham",
-            "addressLine5" -> "UK",
-            "postCode" -> "AAA AAA",
-            "agentEmailID" -> "Jack@aaa.com"
-          ),
+          "agentReferenceNo" -> "AGENT1",
           "appealInformation" -> Json.obj(
             "reasonableExcuse" -> "lossOfStaff",
             "honestyDeclaration" -> true,
@@ -1753,7 +1623,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
             isLPP = false,
             appealSubmittedBy = "agent",
-            agentDetails = agentDetails,
+            agentReferenceNo = Some("AGENT1"),
             appealInformation = HealthAppealInformation(
               startDateOfEvent = Some("2021-04-23T18:25:43.511Z"),
               endDateOfEvent = Some("2021-04-24T18:25:43.511Z"),
@@ -1775,16 +1645,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             "customerReferenceNo" -> "123456789",
             "dateOfAppeal" -> "2020-01-01T00:00:00",
             "isLPP" -> false,
-            "agentDetails" -> Json.obj(
-              "agentReferenceNo" -> "AGENT1",
-              "name" -> "Jack",
-              "addressLine1" -> "Flat 20",
-              "addressLine2" -> "123 Jack street",
-              "addressLine4" -> "Birmingham",
-              "addressLine5" -> "UK",
-              "postCode" -> "AAA AAA",
-              "agentEmailID" -> "Jack@aaa.com"
-            ),
+            "agentReferenceNo" -> "AGENT1",
             "appealInformation" -> Json.obj(
               "reasonableExcuse" -> "health",
               "honestyDeclaration" -> true,
@@ -1809,7 +1670,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
             isLPP = false,
             appealSubmittedBy = "agent",
-            agentDetails = agentDetails,
+            agentReferenceNo = Some("AGENT1"),
             appealInformation = HealthAppealInformation(
               startDateOfEvent = Some("2021-04-23T18:25:43.511Z"),
               endDateOfEvent = None,
@@ -1831,16 +1692,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             "customerReferenceNo" -> "123456789",
             "dateOfAppeal" -> "2020-01-01T00:00:00",
             "isLPP" -> false,
-            "agentDetails" -> Json.obj(
-              "agentReferenceNo" -> "AGENT1",
-              "name" -> "Jack",
-              "addressLine1" -> "Flat 20",
-              "addressLine2" -> "123 Jack street",
-              "addressLine4" -> "Birmingham",
-              "addressLine5" -> "UK",
-              "postCode" -> "AAA AAA",
-              "agentEmailID" -> "Jack@aaa.com"
-            ),
+            "agentReferenceNo" -> "AGENT1",
             "appealInformation" -> Json.obj(
               "reasonableExcuse" -> "health",
               "honestyDeclaration" -> true,
@@ -1865,7 +1717,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
             isLPP = false,
             appealSubmittedBy = "agent",
-            agentDetails = agentDetails,
+            agentReferenceNo = Some("AGENT1"),
             appealInformation = HealthAppealInformation(
               endDateOfEvent = None,
               eventOngoing = false,
@@ -1887,16 +1739,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             "customerReferenceNo" -> "123456789",
             "dateOfAppeal" -> "2020-01-01T00:00:00",
             "isLPP" -> false,
-            "agentDetails" -> Json.obj(
-              "agentReferenceNo" -> "AGENT1",
-              "name" -> "Jack",
-              "addressLine1" -> "Flat 20",
-              "addressLine2" -> "123 Jack street",
-              "addressLine4" -> "Birmingham",
-              "addressLine5" -> "UK",
-              "postCode" -> "AAA AAA",
-              "agentEmailID" -> "Jack@aaa.com"
-            ),
+            "agentReferenceNo" -> "AGENT1",
             "appealInformation" -> Json.obj(
               "reasonableExcuse" -> "health",
               "honestyDeclaration" -> true,
@@ -1923,7 +1766,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
           isLPP = false,
           appealSubmittedBy = "agent",
-          agentDetails = agentDetails,
+          agentReferenceNo = Some("AGENT1"),
           appealInformation = TechnicalIssuesAppealInformation(
             startDateOfEvent = "2021-04-23T18:25:43.511Z",
             endDateOfEvent = "2021-04-24T18:25:43.511Z",
@@ -1944,16 +1787,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           "customerReferenceNo" -> "123456789",
           "dateOfAppeal" -> "2020-01-01T00:00:00",
           "isLPP" -> false,
-          "agentDetails" -> Json.obj(
-            "agentReferenceNo" -> "AGENT1",
-            "name" -> "Jack",
-            "addressLine1" -> "Flat 20",
-            "addressLine2" -> "123 Jack street",
-            "addressLine4" -> "Birmingham",
-            "addressLine5" -> "UK",
-            "postCode" -> "AAA AAA",
-            "agentEmailID" -> "Jack@aaa.com"
-          ),
+          "agentReferenceNo" -> "AGENT1",
           "appealInformation" -> Json.obj(
             "reasonableExcuse" -> "technicalIssues",
             "honestyDeclaration" -> true,
@@ -1978,7 +1812,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
           isLPP = false,
           appealSubmittedBy = "agent",
-          agentDetails = agentDetails,
+          agentReferenceNo = Some("AGENT1"),
           appealInformation = OtherAppealInformation(
             startDateOfEvent = "2021-04-23T18:25:43.511Z",
             statement = Some("This was the reason"),
@@ -2002,16 +1836,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           "customerReferenceNo" -> "123456789",
           "dateOfAppeal" -> "2020-01-01T00:00:00",
           "isLPP" -> false,
-          "agentDetails" -> Json.obj(
-            "agentReferenceNo" -> "AGENT1",
-            "name" -> "Jack",
-            "addressLine1" -> "Flat 20",
-            "addressLine2" -> "123 Jack street",
-            "addressLine4" -> "Birmingham",
-            "addressLine5" -> "UK",
-            "postCode" -> "AAA AAA",
-            "agentEmailID" -> "Jack@aaa.com"
-          ),
+          "agentReferenceNo" -> "AGENT1",
           "appealInformation" -> Json.obj(
             "reasonableExcuse" -> "other",
             "honestyDeclaration" -> true,
@@ -2038,7 +1863,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
           isLPP = false,
           appealSubmittedBy = "agent",
-          agentDetails = agentDetails,
+          agentReferenceNo = Some("AGENT1"),
           appealInformation = OtherAppealInformation(
             startDateOfEvent = "2021-04-23T18:25:43.511Z",
             statement = Some("This was the reason"),
@@ -2059,16 +1884,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           "customerReferenceNo" -> "123456789",
           "dateOfAppeal" -> "2020-01-01T00:00:00",
           "isLPP" -> false,
-          "agentDetails" -> Json.obj(
-            "agentReferenceNo" -> "AGENT1",
-            "name" -> "Jack",
-            "addressLine1" -> "Flat 20",
-            "addressLine2" -> "123 Jack street",
-            "addressLine4" -> "Birmingham",
-            "addressLine5" -> "UK",
-            "postCode" -> "AAA AAA",
-            "agentEmailID" -> "Jack@aaa.com"
-          ),
+          "agentReferenceNo" -> "AGENT1",
           "appealInformation" -> Json.obj(
             "reasonableExcuse" -> "other",
             "honestyDeclaration" -> true,
@@ -2091,7 +1907,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
           isLPP = false,
           appealSubmittedBy = "agent",
-          agentDetails = agentDetails,
+          agentReferenceNo = Some("AGENT1"),
           appealInformation = OtherAppealInformation(
             startDateOfEvent = "2021-04-23T18:25:43.511Z",
             statement = Some("This was the reason"),
@@ -2115,16 +1931,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           "customerReferenceNo" -> "123456789",
           "dateOfAppeal" -> "2020-01-01T00:00:00",
           "isLPP" -> false,
-          "agentDetails" -> Json.obj(
-            "agentReferenceNo" -> "AGENT1",
-            "name" -> "Jack",
-            "addressLine1" -> "Flat 20",
-            "addressLine2" -> "123 Jack street",
-            "addressLine4" -> "Birmingham",
-            "addressLine5" -> "UK",
-            "postCode" -> "AAA AAA",
-            "agentEmailID" -> "Jack@aaa.com"
-          ),
+          "agentReferenceNo" -> "AGENT1",
           "appealInformation" -> Json.obj(
             "reasonableExcuse" -> "other",
             "honestyDeclaration" -> true,
@@ -2154,7 +1961,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
           isLPP = false,
           appealSubmittedBy = "client",
-          agentDetails = None,
+          agentReferenceNo = None,
           appealInformation = ObligationAppealInformation(
             statement = Some("A valid statement"),
             supportingEvidence = Some(Evidence(
@@ -2195,7 +2002,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
           isLPP = false,
           appealSubmittedBy = "client",
-          agentDetails = None,
+          agentReferenceNo = None,
           appealInformation = ObligationAppealInformation(
             statement = Some("A valid statement"),
             supportingEvidence = None,

@@ -29,11 +29,9 @@ import models.point.{PenaltyPoint, PenaltyTypeEnum, PointStatusEnum}
 import models.reason.PaymentPenaltyReasonEnum
 import models.submission.{Submission, SubmissionStatusEnum}
 import org.mockito.ArgumentMatchers
-import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
 import play.api.test.Helpers._
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
-import utils.PenaltyPeriodHelper
 
 import java.time.LocalDateTime
 import scala.concurrent.{ExecutionContext, Future}
@@ -110,7 +108,7 @@ class ETMPServiceSpec extends SpecBase {
       dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
       isLPP = false,
       appealSubmittedBy = "client",
-      agentDetails = None,
+      agentReferenceNo = None,
       appealInformation = CrimeAppealInformation(
         startDateOfEvent = "2021-04-23T18:25:43.511Z",
         reportedIssueToPolice = true,

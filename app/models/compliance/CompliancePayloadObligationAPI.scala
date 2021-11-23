@@ -16,7 +16,7 @@
 
 package models.compliance
 
-import play.api.libs.json.{JsResult, JsValue, Json, OFormat, OWrites, Reads}
+import play.api.libs.json.{JsResult, JsValue, Json, OWrites, Reads}
 
 //TODO: rename this model when we switch to new API
 case class CompliancePayloadObligationAPI(
