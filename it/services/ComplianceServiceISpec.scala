@@ -16,15 +16,13 @@
 
 package services
 
-import connectors.parsers.DESComplianceParser._
+import connectors.parsers.ComplianceParser._
 import featureSwitches.{CallDES, FeatureSwitching}
-
-import java.time.{LocalDate, LocalDateTime}
-import models.compliance.{CompliancePayload, CompliancePayloadObligationAPI, ComplianceStatusEnum, MissingReturn, ObligationDetail, ObligationIdentification, Return, ReturnStatusEnum}
-import play.api.libs.json.Json
+import models.compliance.{CompliancePayload, ComplianceStatusEnum, ObligationDetail, ObligationIdentification}
 import play.api.test.Helpers._
 import utils.{ComplianceWiremock, IntegrationSpecCommonBase}
 
+import java.time.LocalDate
 import scala.concurrent.ExecutionContext
 
 class ComplianceServiceISpec extends IntegrationSpecCommonBase with ComplianceWiremock with FeatureSwitching {
@@ -36,166 +34,32 @@ class ComplianceServiceISpec extends IntegrationSpecCommonBase with ComplianceWi
     enableFeatureSwitch(CallDES)
   }
 
-  "getComplianceSummary" should {
-    "return None" when {
-      "the connector returns an unknown response" in {
-        mockResponseForStubComplianceSummaryPayload(INTERNAL_SERVER_ERROR, "123456789", "mtd-vat", Some("{}"))
-        val result = await(complianceService.getComplianceSummary("123456789", "mtd-vat"))
-        result.isDefined shouldBe false
-      }
-    }
-
-    "return Some" when {
-      "the connector returns a success response and the data is valid" in {
-        mockResponseForStubComplianceSummaryPayload(OK, "123456789", "mtd-vat", None)
-        val result = await(complianceService.getComplianceSummary("123456789", "mtd-vat"))
-        result.isDefined shouldBe true
-        result.get shouldBe Json.parse(
-          """
-            |{
-            |   "regime":"VAT",
-            |   "VRN":"10045678976543",
-            |   "expiryDateOfAllPenaltyPoints":"2023-03-31T00:00:00.000Z",
-            |   "noOfSubmissionsReqForCompliance":"4",
-            |   "returns":[
-            |      {
-            |         "startDate":"2020-10-01T00:00:00.000Z",
-            |         "endDate":"2020-12-31T23:59:59.000Z",
-            |         "dueDate":"2021-05-07T23:59:59.000Z",
-            |         "status":"Submitted"
-            |      },
-            |      {
-            |         "startDate":"2021-04-01T00:00:00.000Z",
-            |         "endDate":"2021-06-30T23:59:59.000Z",
-            |         "dueDate":"2021-08-07T23:59:59.000Z"
-            |      }
-            |   ]
-            |}
-            |""".stripMargin
-        )
-      }
-    }
-  }
-
-  "getComplianceHistory" should {
-    "return None" when {
-      "the connector returns an unknown response" in {
-        mockResponseForStubPastReturnPayload(INTERNAL_SERVER_ERROR, "123456789", LocalDateTime.now(), LocalDateTime.now(), "mtd-vat", Some("{}"))
-        val result = await(complianceService.getComplianceHistory("123456789", LocalDateTime.now().minusYears(2), LocalDateTime.now(), "mtd-vat"))
-        result.isDefined shouldBe false
-      }
-    }
-
-    "return Some" when {
-      "the connector returns a success response and the data is valid" in {
-        mockResponseForStubPastReturnPayload(OK, "123456789", LocalDateTime.now(), LocalDateTime.now(), "mtd-vat", None)
-        val result = await(complianceService.getComplianceHistory("123456789", LocalDateTime.now().minusYears(2), LocalDateTime.now(), "mtd-vat"))
-        result.isDefined shouldBe true
-        result.get shouldBe Json.parse(
-          """
-            |{
-            |   "regime":"VAT",
-            |   "VRN":"10045678976543",
-            |   "noOfMissingReturns":"2",
-            |   "missingReturns":[
-            |      {
-            |         "startDate":"2020-10-01T00:00:00.000Z",
-            |         "endDate":"2020-12-31T23:59:59.000Z"
-            |      }
-            |   ]
-            |}
-            |""".stripMargin
-        )
-      }
-    }
-  }
-
-  "getComplianceDataForEnrolmentKey" should {
-    "return None" when {
-      "the call to get previous compliance data fails but the compliance summary call succeeds" in {
-        mockResponseForStubPastReturnPayload(INTERNAL_SERVER_ERROR, "123456789", LocalDateTime.now(), LocalDateTime.now(), "mtd-vat", Some("{}"))
-        mockResponseForStubComplianceSummaryPayload(OK, "123456789", "mtd-vat", None)
-        val result = await(complianceService.getComplianceDataForEnrolmentKey("123456789"))
-        result.isDefined shouldBe false
-      }
-
-      "the call to get compliance summary data fails but the previous compliance call succeeds" in {
-        mockResponseForStubPastReturnPayload(OK, "123456789", LocalDateTime.now(), LocalDateTime.now(), "mtd-vat", None)
-        mockResponseForStubComplianceSummaryPayload(INTERNAL_SERVER_ERROR, "123456789", "mtd-vat", Some("{}"))
-        val result = await(complianceService.getComplianceDataForEnrolmentKey("123456789"))
-        result.isDefined shouldBe false
-      }
-
-      "both the calls succeeds but the body returned is invalid" in {
-        mockResponseForStubPastReturnPayload(OK, "123456789", LocalDateTime.now(), LocalDateTime.now(), "mtd-vat", Some("{}"))
-        mockResponseForStubComplianceSummaryPayload(OK, "123456789", "mtd-vat", Some("{}"))
-        val result = await(complianceService.getComplianceDataForEnrolmentKey("123456789"))
-        result.isDefined shouldBe false
-      }
-    }
-
-    "return Some" when {
-      "both calls succeed and return valid data" in {
-        val complianceModelRepresentingJSON = CompliancePayload(
-          noOfMissingReturns = "2",
-          noOfSubmissionsReqForCompliance = "4",
-          expiryDateOfAllPenaltyPoints = LocalDateTime.of(2023, 3, 31, 0, 0, 0, 0),
-          missingReturns = Seq(
-            MissingReturn(
-              startDate = LocalDateTime.of(2020, 10, 1, 0, 0, 0, 0),
-              endDate = LocalDateTime.of(2020, 12, 31, 23, 59, 59, 0)
-            )
-          ),
-          returns = Seq(
-            Return(
-              startDate = LocalDateTime.of(2020, 10, 1, 0, 0, 0, 0),
-              endDate = LocalDateTime.of(2020, 12, 31, 23, 59, 59, 0),
-              dueDate = LocalDateTime.of(2021, 5, 7, 23, 59, 59, 0),
-              status = Some(ReturnStatusEnum.submitted)
-            ),
-            Return(
-              startDate = LocalDateTime.of(2021, 4, 1, 0, 0, 0, 0),
-              endDate = LocalDateTime.of(2021, 6, 30, 23, 59, 59, 0),
-              dueDate = LocalDateTime.of(2021, 8, 7, 23, 59, 59, 0),
-              status = None
-            )
-          )
-        )
-        mockResponseForStubPastReturnPayload(OK, "123456789", LocalDateTime.now(), LocalDateTime.now(), "mtd-vat", None)
-        mockResponseForStubComplianceSummaryPayload(OK, "123456789", "mtd-vat", None)
-        val result = await(complianceService.getComplianceDataForEnrolmentKey("HMRC-MTD-VAT~VRN~123456789"))
-        result.isDefined shouldBe true
-        result.get shouldBe complianceModelRepresentingJSON
-      }
-    }
-  }
-
-  "getComplianceDataFromDES" should {
+  "getComplianceData" should {
     "return Left(ISE)" when {
-      s"the connector returns $DESCompliancePayloadFailureResponse" in new Setup {
+      s"the connector returns $CompliancePayloadFailureResponse" in new Setup {
         mockResponseForComplianceDataFromDES(INTERNAL_SERVER_ERROR, "123456789", "2020-01-01", "2020-12-31")
-        val result = await(complianceService.getComplianceDataFromDES("123456789", "2020-01-01", "2020-12-31"))
+        val result = await(complianceService.getComplianceData("123456789", "2020-01-01", "2020-12-31"))
         result.isLeft shouldBe true
         result.left.get shouldBe INTERNAL_SERVER_ERROR
       }
 
-      s"the connector returns $DESCompliancePayloadMalformed" in new Setup {
+      s"the connector returns $CompliancePayloadMalformed" in new Setup {
         mockResponseForComplianceDataFromDES(OK, "123456789", "2020-01-01", "2020-12-31", invalidBody = true)
-        val result = await(complianceService.getComplianceDataFromDES("123456789", "2020-01-01", "2020-12-31"))
+        val result = await(complianceService.getComplianceData("123456789", "2020-01-01", "2020-12-31"))
         result.isLeft shouldBe true
         result.left.get shouldBe INTERNAL_SERVER_ERROR
       }
     }
 
-    s"return Left(NOT_FOUND) when the connector returns $DESCompliancePayloadNoData" in new Setup {
+    s"return Left(NOT_FOUND) when the connector returns $CompliancePayloadNoData" in new Setup {
       mockResponseForComplianceDataFromDES(NOT_FOUND, "123456789", "2020-01-01", "2020-12-31")
-      val result = await(complianceService.getComplianceDataFromDES("123456789", "2020-01-01", "2020-12-31"))
+      val result = await(complianceService.getComplianceData("123456789", "2020-01-01", "2020-12-31"))
       result.isLeft shouldBe true
       result.left.get shouldBe NOT_FOUND
     }
 
-    s"return Right(model) when the connector returns $DESCompliancePayloadSuccessResponse" in new Setup {
-      val compliancePayloadAsModel: CompliancePayloadObligationAPI = CompliancePayloadObligationAPI(
+    s"return Right(model) when the connector returns $CompliancePayloadSuccessResponse" in new Setup {
+      val compliancePayloadAsModel: CompliancePayload = CompliancePayload(
         identification = ObligationIdentification(
           incomeSourceType = None,
           referenceNumber = "123456789",
@@ -221,7 +85,7 @@ class ComplianceServiceISpec extends IntegrationSpecCommonBase with ComplianceWi
         )
       )
       mockResponseForComplianceDataFromDES(OK, "123456789", "2020-01-01", "2020-12-31", hasBody = true)
-      val result = await(complianceService.getComplianceDataFromDES("123456789", "2020-01-01", "2020-12-31"))
+      val result = await(complianceService.getComplianceData("123456789", "2020-01-01", "2020-12-31"))
       result.isRight shouldBe true
       result.right.get shouldBe compliancePayloadAsModel
     }

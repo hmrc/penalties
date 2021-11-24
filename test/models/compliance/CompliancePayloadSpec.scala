@@ -18,76 +18,137 @@ package models.compliance
 
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
-import play.api.libs.json.{JsObject, Json}
+import play.api.libs.json.{JsValue, Json}
 
-import java.time.LocalDateTime
-import java.time.temporal.ChronoUnit
+import java.time.LocalDate
 
 class CompliancePayloadSpec extends AnyWordSpec with Matchers {
-  val sampleDateTime: LocalDateTime = LocalDateTime.of(
-    2019, 1, 31, 23, 59, 59).plus(998, ChronoUnit.MILLIS)
+  val compliancePayloadAsJson: JsValue = Json.parse(
+    """
+      |		{
+      |			"identification": {
+      |				"referenceNumber": "123456789",
+      |				"referenceType": "VRN"
+      |			},
+      |			"obligationDetails": [
+      |				{
+      |					"status": "O",
+      |					"inboundCorrespondenceFromDate": "1920-02-29",
+      |					"inboundCorrespondenceToDate": "1920-02-29",
+      |					"inboundCorrespondenceDueDate": "1920-02-29",
+      |					"periodKey": "#001"
+      |				},
+      |				{
+      |					"status": "F",
+      |					"inboundCorrespondenceFromDate": "1920-02-29",
+      |					"inboundCorrespondenceToDate": "1920-02-29",
+      |					"inboundCorrespondenceDateReceived": "1920-02-29",
+      |					"inboundCorrespondenceDueDate": "1920-02-29",
+      |					"periodKey": "#001"
+      |				}
+      |			]
+      |		}
+      |""".stripMargin)
 
-  val regime = "VAT"
-  val vrn = "123456789"
-
-  val return1: Return = Return(sampleDateTime, sampleDateTime, sampleDateTime, Some(ReturnStatusEnum.submitted))
-  val return2: Return = Return(sampleDateTime, sampleDateTime, sampleDateTime, None)
-
-  val missingReturn1 : MissingReturn = MissingReturn(sampleDateTime, sampleDateTime)
-
-  val emptyMissingReturns:Seq[MissingReturn] = Seq.empty[MissingReturn]
-
-  val someMissingReturns: Seq[MissingReturn] = Seq[MissingReturn](missingReturn1, missingReturn1)
-
-  val returns: Seq[Return] = Seq[Return](return1, return2)
-
-  val emptyReturnsModel: CompliancePayload = CompliancePayload("0", "2", sampleDateTime, emptyMissingReturns, returns)
-
-  val someReturnsModel: CompliancePayload = CompliancePayload("2", "2", sampleDateTime, someMissingReturns, returns)
-
-  def getComplianceDataJson(missingReturns: Int, isWithRegimeAndVRN: Boolean = false):JsObject = {
-    val base = Json.obj(
-      "noOfMissingReturns" -> s"$missingReturns",
-      "noOfSubmissionsReqForCompliance"-> "2",
-      "expiryDateOfAllPenaltyPoints" -> sampleDateTime,
-      "missingReturns" -> (missingReturns match {
-        case 0 => emptyMissingReturns
-        case _ => someMissingReturns
-      }),
-      "returns" -> returns
+  val complianceSeqPayloadAsJson: JsValue = Json.parse(
+    """
+      |{
+      |   "obligations": [
+      |     {
+      |			"identification": {
+      |				"referenceNumber": "123456789",
+      |				"referenceType": "VRN"
+      |			},
+      |			"obligationDetails": [
+      |				{
+      |					"status": "O",
+      |					"inboundCorrespondenceFromDate": "1920-02-29",
+      |					"inboundCorrespondenceToDate": "1920-02-29",
+      |					"inboundCorrespondenceDueDate": "1920-02-29",
+      |					"periodKey": "#001"
+      |				},
+      |				{
+      |					"status": "F",
+      |					"inboundCorrespondenceFromDate": "1920-02-29",
+      |					"inboundCorrespondenceToDate": "1920-02-29",
+      |					"inboundCorrespondenceDateReceived": "1920-02-29",
+      |					"inboundCorrespondenceDueDate": "1920-02-29",
+      |					"periodKey": "#001"
+      |				}
+      |			]
+      |		}
+      |  ]
+      |}
+      |""".stripMargin)
+  
+  val compliancePayloadAsModel: CompliancePayload = CompliancePayload(
+    identification = ObligationIdentification(
+      incomeSourceType = None,
+      referenceNumber = "123456789",
+      referenceType = "VRN"
+    ),
+    obligationDetails = Seq(
+      ObligationDetail(
+        status = ComplianceStatusEnum.open,
+        inboundCorrespondenceFromDate = LocalDate.of(1920, 2, 29),
+        inboundCorrespondenceToDate = LocalDate.of(1920, 2, 29),
+        inboundCorrespondenceDateReceived = None,
+        inboundCorrespondenceDueDate = LocalDate.of(1920, 2, 29),
+        periodKey = "#001"
+      ),
+      ObligationDetail(
+        status = ComplianceStatusEnum.fulfilled,
+        inboundCorrespondenceFromDate = LocalDate.of(1920, 2, 29),
+        inboundCorrespondenceToDate = LocalDate.of(1920, 2, 29),
+        inboundCorrespondenceDateReceived = Some(LocalDate.of(1920, 2, 29)),
+        inboundCorrespondenceDueDate = LocalDate.of(1920, 2, 29),
+        periodKey = "#001"
+      )
     )
+  )
 
-    if(isWithRegimeAndVRN) {
-      base.deepMerge(Json.obj(
-          "regime" -> regime,
-          "VRN" -> vrn,
-      ))
-    } else {
-      base
-    }
-  }
+  val seqCompliancePayloadAsModel: Seq[CompliancePayload] = Seq(CompliancePayload(
+    identification = ObligationIdentification(
+      incomeSourceType = None,
+      referenceNumber = "123456789",
+      referenceType = "VRN"
+    ),
+    obligationDetails = Seq(
+      ObligationDetail(
+        status = ComplianceStatusEnum.open,
+        inboundCorrespondenceFromDate = LocalDate.of(1920, 2, 29),
+        inboundCorrespondenceToDate = LocalDate.of(1920, 2, 29),
+        inboundCorrespondenceDateReceived = None,
+        inboundCorrespondenceDueDate = LocalDate.of(1920, 2, 29),
+        periodKey = "#001"
+      ),
+      ObligationDetail(
+        status = ComplianceStatusEnum.fulfilled,
+        inboundCorrespondenceFromDate = LocalDate.of(1920, 2, 29),
+        inboundCorrespondenceToDate = LocalDate.of(1920, 2, 29),
+        inboundCorrespondenceDateReceived = Some(LocalDate.of(1920, 2, 29)),
+        inboundCorrespondenceDueDate = LocalDate.of(1920, 2, 29),
+        periodKey = "#001"
+      )
+    )
+  ))
 
   "CompliancePayload" should {
-    "be writeable to JSON when no missing returns" in {
-      val result = Json.toJson(emptyReturnsModel)
-      result shouldBe getComplianceDataJson(0)
-    }
-
-    "be writeable to JSON when there are missing returns" in {
-      val result = Json.toJson(someReturnsModel)
-      result shouldBe getComplianceDataJson(2)
-    }
-
-    s"be readable from JSON when no missing returns" in {
-      val result = Json.fromJson(getComplianceDataJson(0, isWithRegimeAndVRN = true))(CompliancePayload.format)
+    "parse the model from JSON" in {
+      val result = Json.fromJson(compliancePayloadAsJson)(CompliancePayload.reads)
       result.isSuccess shouldBe true
-      result.get shouldBe emptyReturnsModel
+      result.get shouldBe compliancePayloadAsModel
     }
 
-    s"be readable from JSON when there are missing returns" in {
-      val result = Json.fromJson(getComplianceDataJson(2, isWithRegimeAndVRN = true))(CompliancePayload.format)
+    "parse the model to JSON" in {
+      val result = Json.toJson(compliancePayloadAsModel)(CompliancePayload.writes)
+      result shouldBe compliancePayloadAsJson
+    }
+
+    "parse the model from JSON to a Seq" in {
+      val result = Json.fromJson(complianceSeqPayloadAsJson)(CompliancePayload.seqReads)
       result.isSuccess shouldBe true
-      result.get shouldBe someReturnsModel
+      result.get shouldBe seqCompliancePayloadAsModel
     }
   }
 }

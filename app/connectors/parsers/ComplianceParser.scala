@@ -16,43 +16,59 @@
 
 package connectors.parsers
 
-import play.api.http.Status.{INTERNAL_SERVER_ERROR, NO_CONTENT, OK}
-import play.api.libs.json.{JsError, JsSuccess, JsValue}
+import models.compliance.CompliancePayload
+import play.api.http.Status._
+import play.api.libs.json.{JsError, JsSuccess}
 import uk.gov.hmrc.http.{HttpReads, HttpResponse}
 import utils.Logger.logger
 
 object ComplianceParser {
-  sealed trait GetCompliancePayloadFailure
+  sealed trait GetCompliancePayloadFailure {
+    val message: String
+  }
   sealed trait GetCompliancePayloadSuccess {
-    val jsValue: JsValue
+    val model: CompliancePayload
   }
 
-  case class  GetCompliancePayloadSuccessResponse(jsValue: JsValue) extends GetCompliancePayloadSuccess
-  case class  GetCompliancePayloadFailureResponse(status: Int) extends GetCompliancePayloadFailure
-  case object GetCompliancePayloadNoContent extends GetCompliancePayloadFailure
-  case object GetCompliancePayloadMalformed extends GetCompliancePayloadFailure
+  case class  CompliancePayloadSuccessResponse(model: CompliancePayload) extends GetCompliancePayloadSuccess
+  case class  CompliancePayloadFailureResponse(status: Int) extends GetCompliancePayloadFailure {
+    override val message: String = s"Received status code: $status"
+  }
+  case object CompliancePayloadNoData extends GetCompliancePayloadFailure {
+    override val message: String = "Received no data from call"
+  }
+  case object CompliancePayloadMalformed extends GetCompliancePayloadFailure {
+    override val message: String = "Body received was malformed"
+  }
 
   type CompliancePayloadResponse = Either[GetCompliancePayloadFailure, GetCompliancePayloadSuccess]
 
-  implicit object CompliancePayloadReads extends HttpReads[CompliancePayloadResponse] {
+  implicit object ComplianceCompliancePayloadReads extends HttpReads[CompliancePayloadResponse] {
     override def read(method: String, url: String, response: HttpResponse): CompliancePayloadResponse = {
       response.status match {
         case OK =>
-          response.json.validate[JsValue] match {
+          response.json.validate[Seq[CompliancePayload]](CompliancePayload.seqReads) match {
             case JsSuccess(compliancePayload, _) =>
-              logger.debug(s"[CompliancePayloadReads][read] Json response: ${response.json}")
-              Right(GetCompliancePayloadSuccessResponse(compliancePayload))
+              logger.debug(s"[ComplianceCompliancePayloadReads][read] Json response: ${response.json}")
+              Right(CompliancePayloadSuccessResponse(compliancePayload.head))
             case JsError(errors) =>
-              logger.debug(s"[CompliancePayloadReads][read] Json validation errors: $errors")
-              Left(GetCompliancePayloadMalformed)
+              logger.debug(s"[ComplianceCompliancePayloadReads][read] Json validation errors: $errors")
+              Left(CompliancePayloadMalformed)
           }
-        case NO_CONTENT => Left(GetCompliancePayloadNoContent)
+        case NOT_FOUND => {
+          logger.info(s"[ComplianceParser][read] - Received not found response from . No data associated with VRN. Body: ${response.body}")
+          Left(CompliancePayloadNoData)
+        }
+        case BAD_REQUEST => {
+          logger.error(s"[ComplianceParser][read] - Failed to parse to model with response body: ${response.body} (Status: $BAD_REQUEST)")
+          Left(CompliancePayloadFailureResponse(BAD_REQUEST))
+        }
         case INTERNAL_SERVER_ERROR =>
-          logger.error(s"[CompliancePayloadReads][read] Received ISE when trying to call ETMP - with body: ${response.body}")
-          Left(GetCompliancePayloadFailureResponse(INTERNAL_SERVER_ERROR))
+          logger.error(s"[ComplianceCompliancePayloadReads][read] Received ISE when trying to call ETMP - with body: ${response.body}")
+          Left(CompliancePayloadFailureResponse(INTERNAL_SERVER_ERROR))
         case _@status =>
-          logger.error(s"[CompliancePayloadReads][read] Received unexpected response from ETMP, status code: $status and body: ${response.body}")
-          Left(GetCompliancePayloadFailureResponse(status))
+          logger.error(s"[ComplianceCompliancePayloadReads][read] Received unexpected response from ETMP, status code: $status and body: ${response.body}")
+          Left(CompliancePayloadFailureResponse(status))
       }
     }
   }

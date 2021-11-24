@@ -20,7 +20,6 @@ import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import services.ComplianceService
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
-import utils.Logger.logger
 
 import javax.inject.Inject
 import scala.concurrent.ExecutionContext
@@ -28,25 +27,9 @@ import scala.concurrent.ExecutionContext
 class ComplianceController @Inject()(complianceService: ComplianceService,
                                      cc: ControllerComponents)(implicit ec: ExecutionContext) extends BackendController(cc) {
 
-  def getComplianceDataForEnrolmentKey(enrolmentKey: String): Action[AnyContent] = Action.async {
+  def getComplianceData(vrn: String, fromDate: String, toDate: String): Action[AnyContent] = Action.async {
     implicit request => {
-      complianceService.getComplianceDataForEnrolmentKey(enrolmentKey).map {
-        _.fold(
-          NotFound(s"Could not find any compliance data for enrolment: $enrolmentKey")
-        )(
-          data => Ok(Json.toJson(data))
-        )
-      } recover {
-        case e =>
-          logger.error(s"[ComplianceController][getComplianceDataForEnrolmentKey] - Service returned exception, with message: ${e.getMessage}")
-          InternalServerError(s"Exception occurred with error: ${e.getMessage}")
-      }
-    }
-  }
-
-  def getComplianceDataFromDES(vrn: String, fromDate: String, toDate: String): Action[AnyContent] = Action.async {
-    implicit request => {
-      complianceService.getComplianceDataFromDES(vrn, fromDate, toDate).map {
+      complianceService.getComplianceData(vrn, fromDate, toDate).map {
         _.fold(
           error => Status(error),
           model => Ok(Json.toJson(model))
