@@ -23,15 +23,23 @@ import uk.gov.hmrc.http.{HttpReads, HttpResponse}
 import utils.Logger.logger
 
 object ComplianceParser {
-  sealed trait GetCompliancePayloadFailure
+  sealed trait GetCompliancePayloadFailure {
+    val message: String
+  }
   sealed trait GetCompliancePayloadSuccess {
     val model: CompliancePayload
   }
 
   case class  CompliancePayloadSuccessResponse(model: CompliancePayload) extends GetCompliancePayloadSuccess
-  case class  CompliancePayloadFailureResponse(status: Int) extends GetCompliancePayloadFailure
-  case object CompliancePayloadNoData extends GetCompliancePayloadFailure
-  case object CompliancePayloadMalformed extends GetCompliancePayloadFailure
+  case class  CompliancePayloadFailureResponse(status: Int) extends GetCompliancePayloadFailure {
+    override val message: String = s"Received status code: $status"
+  }
+  case object CompliancePayloadNoData extends GetCompliancePayloadFailure {
+    override val message: String = "Received no data from call"
+  }
+  case object CompliancePayloadMalformed extends GetCompliancePayloadFailure {
+    override val message: String = "Body received was malformed"
+  }
 
   type CompliancePayloadResponse = Either[GetCompliancePayloadFailure, GetCompliancePayloadSuccess]
 
