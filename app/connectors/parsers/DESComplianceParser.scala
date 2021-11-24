@@ -18,7 +18,7 @@ package connectors.parsers
 
 import models.compliance.CompliancePayloadObligationAPI
 import play.api.http.Status._
-import play.api.libs.json.{JsError, JsSuccess, JsValue}
+import play.api.libs.json.{JsError, JsSuccess}
 import uk.gov.hmrc.http.{HttpReads, HttpResponse}
 import utils.Logger.logger
 

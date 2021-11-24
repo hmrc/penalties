@@ -20,7 +20,6 @@ import java.time.LocalDateTime
 
 import config.AppConfig
 import models.ETMPPayload
-import models.appeals.AgentDetails
 import models.communication.{Communication, CommunicationTypeEnum}
 import models.financial.Financial
 import models.payment.{LatePaymentPenalty, PaymentPeriod, PaymentStatusEnum}
@@ -34,7 +33,6 @@ import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.inject.Injector
 import play.api.mvc.AnyContent
 import play.api.test.FakeRequest
-import uk.gov.hmrc.emailaddress.EmailAddress
 
 trait SpecBase extends AnyWordSpec with Matchers with GuiceOneAppPerSuite {
 
@@ -504,16 +502,4 @@ trait SpecBase extends AnyWordSpec with Matchers with GuiceOneAppPerSuite {
     penaltyPointsThreshold = 3,
     penaltyPoints = Seq()
   )
-
-  val agentDetails = Some(AgentDetails(
-    agentReferenceNo = "AGENT1",
-    name = "Jack",
-    addressLine1 = "Flat 20",
-    addressLine2 = Some("123 Jack street"),
-    addressLine3 = None,
-    addressLine4 = Some("Birmingham"),
-    addressLine5 = Some("UK"),
-    postCode = "AAA AAA",
-    agentEmailID = Some(EmailAddress("Jack@aaa.com"))
-  ))
 }

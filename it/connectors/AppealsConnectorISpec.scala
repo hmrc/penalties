@@ -43,7 +43,7 @@ class AppealsConnectorISpec extends IntegrationSpecCommonBase with AppealWiremoc
         dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
         isLPP = false,
         appealSubmittedBy = "client",
-        agentDetails = None,
+        agentReferenceNo = None,
         appealInformation = CrimeAppealInformation(
           reasonableExcuse = "crime",
           honestyDeclaration = true,
@@ -69,7 +69,7 @@ class AppealsConnectorISpec extends IntegrationSpecCommonBase with AppealWiremoc
         dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
         isLPP = false,
         appealSubmittedBy = "client",
-        agentDetails = None,
+        agentReferenceNo = None,
         appealInformation = CrimeAppealInformation(
           reasonableExcuse = "crime",
           honestyDeclaration = true,
@@ -95,7 +95,7 @@ class AppealsConnectorISpec extends IntegrationSpecCommonBase with AppealWiremoc
         dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
         isLPP = true,
         appealSubmittedBy = "client",
-        agentDetails = None,
+        agentReferenceNo = None,
         appealInformation = CrimeAppealInformation(
           reasonableExcuse= "crime",
           honestyDeclaration = true,

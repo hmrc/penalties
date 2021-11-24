@@ -60,7 +60,7 @@ class AppealsConnectorSpec extends SpecBase with FeatureSwitching {
         dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
         isLPP = false,
         appealSubmittedBy = "client",
-        agentDetails = agentDetails,
+        agentReferenceNo = Some("AGENT1"),
         appealInformation = CrimeAppealInformation(
           startDateOfEvent = "2021-04-23T18:25:43.511Z",
           reportedIssueToPolice = true,
@@ -99,7 +99,7 @@ class AppealsConnectorSpec extends SpecBase with FeatureSwitching {
         dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
         isLPP = false,
         appealSubmittedBy = "client",
-        agentDetails = agentDetails,
+        agentReferenceNo = Some("AGENT1"),
         appealInformation = CrimeAppealInformation(
           startDateOfEvent = "2021-04-23T18:25:43.511Z",
           reportedIssueToPolice = true,
@@ -136,7 +136,7 @@ class AppealsConnectorSpec extends SpecBase with FeatureSwitching {
         dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
         isLPP = false,
         appealSubmittedBy = "client",
-        agentDetails = agentDetails,
+        agentReferenceNo = Some("AGENT1"),
         appealInformation = CrimeAppealInformation(
           startDateOfEvent = "2021-04-23T18:25:43.511Z",
           reportedIssueToPolice = true,
