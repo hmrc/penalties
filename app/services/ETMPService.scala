@@ -16,7 +16,8 @@
 
 package services
 
-import connectors.parsers.ETMPPayloadParser.{ETMPPayloadResponse, GetETMPPayloadFailureResponse, GetETMPPayloadMalformed, GetETMPPayloadNoContent, GetETMPPayloadSuccessResponse}
+import connectors.parsers.ETMPPayloadParser.{ETMPPayloadResponse,
+  GetETMPPayloadFailureResponse, GetETMPPayloadMalformed, GetETMPPayloadNoContent, GetETMPPayloadSuccessResponse}
 import connectors.{AppealsConnector, ETMPConnector}
 import models.ETMPPayload
 import models.appeals.AppealSubmission
@@ -57,7 +58,8 @@ class ETMPService @Inject()(etmpConnector: ETMPConnector,
             logger.debug(s"$startOfLogMsg - Found period for penalty - start : ${penaltyPeriod._1} to end : ${penaltyPeriod._2}")
             val isOtherLSPInSamePeriod = penaltyData.penaltyPoints.exists(
               penalty => penalty.period.exists(
-                periods => PenaltyPeriodHelper.sortedPenaltyPeriod(periods).head.startDate.toLocalDate == penaltyPeriod._1 && PenaltyPeriodHelper.sortedPenaltyPeriod(periods).head.endDate.toLocalDate == penaltyPeriod._2 && penalty.id != penaltyId)
+                periods => PenaltyPeriodHelper.sortedPenaltyPeriod(periods).head.startDate.toLocalDate ==
+                  penaltyPeriod._1 && PenaltyPeriodHelper.sortedPenaltyPeriod(periods).head.endDate.toLocalDate == penaltyPeriod._2 && penalty.id != penaltyId)
             )
             val isOtherLPPInSamePeriod = penaltyData.latePaymentPenalties.exists(
               _.exists(
@@ -80,8 +82,8 @@ class ETMPService @Inject()(etmpConnector: ETMPConnector,
       val optPenalty = payload.penaltyPoints.find(_.id == penaltyId)
       val penaltyPeriod:Seq[PenaltyPeriod] = optPenalty.flatMap(_.period).getOrElse(Seq.empty)
       if(penaltyPeriod.nonEmpty){
-        val period:PenaltyPeriod =  PenaltyPeriodHelper.sortedPenaltyPeriod(penaltyPeriod).head
-        Some(period.startDate.toLocalDate, period.endDate.toLocalDate)
+        val period: PenaltyPeriod =  PenaltyPeriodHelper.sortedPenaltyPeriod(penaltyPeriod).head
+        Some((period.startDate.toLocalDate, period.endDate.toLocalDate))
       } else {
         None
       }
@@ -116,8 +118,10 @@ class ETMPService @Inject()(etmpConnector: ETMPConnector,
   }
 
   def findEstimatedPenaltiesAmount(etmpPayload: ETMPPayload): BigDecimal = {
-    val lSPAmountsWithEstimatedStatus = etmpPayload.penaltyPoints.filter(_.status == PointStatusEnum.Estimated).map(_.financial.map(_.outstandingAmountDue).getOrElse(BigDecimal(0))).sum
-    val lPPAmountsWithEstimatedStatus = etmpPayload.latePaymentPenalties.map(_.filter(_.status == PointStatusEnum.Estimated).map(_.financial.outstandingAmountDue).sum).getOrElse(BigDecimal(0))
+    val lSPAmountsWithEstimatedStatus =
+      etmpPayload.penaltyPoints.filter(_.status == PointStatusEnum.Estimated).map(_.financial.map(_.outstandingAmountDue).getOrElse(BigDecimal(0))).sum
+    val lPPAmountsWithEstimatedStatus =
+      etmpPayload.latePaymentPenalties.map(_.filter(_.status == PointStatusEnum.Estimated).map(_.financial.outstandingAmountDue).sum).getOrElse(BigDecimal(0))
     lSPAmountsWithEstimatedStatus + lPPAmountsWithEstimatedStatus
   }
 
@@ -132,8 +136,10 @@ class ETMPService @Inject()(etmpConnector: ETMPConnector,
   }
 
   def getCrystalisedPenaltyTotal(payload: ETMPPayload):BigDecimal = {
-    val crystallisedLSPAmountDue = payload.penaltyPoints.filter(_.status == PointStatusEnum.Due).map(_.financial.map(_.outstandingAmountDue).getOrElse(BigDecimal(0))).sum
-    val crystallisedLPPAmountDue = payload.latePaymentPenalties.map(_.filter(_.status == PointStatusEnum.Due).map(_.financial.outstandingAmountDue).sum).getOrElse(BigDecimal(0))
+    val crystallisedLSPAmountDue =
+      payload.penaltyPoints.filter(_.status == PointStatusEnum.Due).map(_.financial.map(_.outstandingAmountDue).getOrElse(BigDecimal(0))).sum
+    val crystallisedLPPAmountDue =
+      payload.latePaymentPenalties.map(_.filter(_.status == PointStatusEnum.Due).map(_.financial.outstandingAmountDue).sum).getOrElse(BigDecimal(0))
     crystallisedLSPAmountDue + crystallisedLPPAmountDue
   }
 }

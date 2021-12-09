@@ -40,7 +40,7 @@ class ETMPController @Inject()(etmpService: ETMPService,
           result._1.fold {
             result._2 match {
               case Left(GetETMPPayloadNoContent) => NotFound(s"Could not retrieve ETMP penalty data for $enrolmentKey")
-              case Left(_) => InternalServerError("Something went wrong.")
+              case _ => InternalServerError("Something went wrong.")
             }
           }(
             etmpData => {
