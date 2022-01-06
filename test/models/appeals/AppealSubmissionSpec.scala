@@ -16,6 +16,7 @@
 
 package models.appeals
 
+import models.upload.{UploadDetails, UploadJourney, UploadStatusEnum}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import play.api.libs.json.{JsValue, Json}
@@ -799,7 +800,8 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           isClientResponsibleForSubmission = Some(false),
           isClientResponsibleForLateSubmission = Some(true),
           honestyDeclaration = true,
-          reasonableExcuse = "other"
+          reasonableExcuse = "other",
+          uploadedFiles = None
         )
       }
 
@@ -815,7 +817,8 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           isClientResponsibleForSubmission = Some(false),
           isClientResponsibleForLateSubmission = Some(true),
           honestyDeclaration = true,
-          reasonableExcuse = "other"
+          reasonableExcuse = "other",
+          uploadedFiles = None
         )
       }
 
@@ -838,7 +841,8 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           isClientResponsibleForSubmission = None,
           isClientResponsibleForLateSubmission = None,
           honestyDeclaration = true,
-          reasonableExcuse = "obligation"
+          reasonableExcuse = "obligation",
+          uploadedFiles = None
         )
       }
 
@@ -851,7 +855,8 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           isClientResponsibleForSubmission = None,
           isClientResponsibleForLateSubmission = None,
           honestyDeclaration = true,
-          reasonableExcuse = "obligation"
+          reasonableExcuse = "obligation",
+          uploadedFiles = None
         )
       }
 
@@ -1019,7 +1024,8 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           isClientResponsibleForSubmission = Some(false),
           isClientResponsibleForLateSubmission = Some(true),
           honestyDeclaration = true,
-          reasonableExcuse = "other"
+          reasonableExcuse = "other",
+          uploadedFiles = None
         )
         val result = AppealSubmission.parseAppealInformationToJson(model)
         result shouldBe otherAppealInformationJson
@@ -1035,7 +1041,8 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           isClientResponsibleForSubmission = Some(false),
           isClientResponsibleForLateSubmission = Some(true),
           honestyDeclaration = true,
-          reasonableExcuse = "other"
+          reasonableExcuse = "other",
+          uploadedFiles = None
         )
         val result = AppealSubmission.parseAppealInformationToJson(model)
         result shouldBe otherAppealInformationJsonNoEvidence
@@ -1053,7 +1060,8 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           isClientResponsibleForSubmission = None,
           isClientResponsibleForLateSubmission = None,
           honestyDeclaration = true,
-          reasonableExcuse = "obligation"
+          reasonableExcuse = "obligation",
+          uploadedFiles = None
         )
         val result = AppealSubmission.parseAppealInformationToJson(model)
         result shouldBe obligationAppealInformationJson
@@ -1066,7 +1074,8 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           isClientResponsibleForSubmission = None,
           isClientResponsibleForLateSubmission = None,
           honestyDeclaration = true,
-          reasonableExcuse = "obligation"
+          reasonableExcuse = "obligation",
+          uploadedFiles = None
         )
         val result = AppealSubmission.parseAppealInformationToJson(model)
         result shouldBe obligationAppealInformationJsonNoEvidence
@@ -1339,7 +1348,8 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             isClientResponsibleForSubmission = Some(false),
             isClientResponsibleForLateSubmission = Some(true),
             honestyDeclaration = true,
-            reasonableExcuse = "other"
+            reasonableExcuse = "other",
+            uploadedFiles = None
           )
         )
 
@@ -1365,7 +1375,8 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             isClientResponsibleForSubmission = Some(false),
             isClientResponsibleForLateSubmission = Some(true),
             honestyDeclaration = true,
-            reasonableExcuse = "other"
+            reasonableExcuse = "other",
+            uploadedFiles = None
           )
         )
 
@@ -1398,7 +1409,8 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             isClientResponsibleForSubmission = None,
             isClientResponsibleForLateSubmission = None,
             honestyDeclaration = true,
-            reasonableExcuse = "obligation"
+            reasonableExcuse = "obligation",
+            uploadedFiles = None
           )
         )
 
@@ -1419,7 +1431,8 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             statement = Some("A valid statement"),
             supportingEvidence = None,
             honestyDeclaration = true,
-            reasonableExcuse = "obligation"
+            reasonableExcuse = "obligation",
+            uploadedFiles = None
           )
         )
 
@@ -1825,7 +1838,8 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             isClientResponsibleForSubmission = Some(false),
             isClientResponsibleForLateSubmission = Some(true),
             honestyDeclaration = true,
-            reasonableExcuse = "other"
+            reasonableExcuse = "other",
+            uploadedFiles = None
           )
         )
 
@@ -1873,7 +1887,8 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             isClientResponsibleForSubmission = Some(false),
             isClientResponsibleForLateSubmission = Some(true),
             honestyDeclaration = true,
-            reasonableExcuse = "other"
+            reasonableExcuse = "other",
+            uploadedFiles = None
           )
         )
 
@@ -1920,7 +1935,8 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             isClientResponsibleForSubmission = Some(false),
             isClientResponsibleForLateSubmission = Some(true),
             honestyDeclaration = true,
-            reasonableExcuse = "other"
+            reasonableExcuse = "other",
+            uploadedFiles = None
           )
         )
 
@@ -1969,7 +1985,8 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
               referenceId = Some("ref")
             )),
             honestyDeclaration = true,
-            reasonableExcuse = "obligation"
+            reasonableExcuse = "obligation",
+            uploadedFiles = None
           )
         )
 
@@ -2007,7 +2024,8 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             statement = Some("A valid statement"),
             supportingEvidence = None,
             honestyDeclaration = true,
-            reasonableExcuse = "obligation"
+            reasonableExcuse = "obligation",
+            uploadedFiles = None
           )
         )
 
@@ -2270,7 +2288,8 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           isClientResponsibleForSubmission = Some(false),
           isClientResponsibleForLateSubmission = Some(true),
           honestyDeclaration = true,
-          reasonableExcuse = "other"
+          reasonableExcuse = "other",
+          uploadedFiles = None
         )
         val expectedResult = Json.parse(
           """
@@ -2302,8 +2321,23 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           isClientResponsibleForSubmission = Some(false),
           isClientResponsibleForLateSubmission = Some(true),
           honestyDeclaration = true,
-          reasonableExcuse = "other"
-        )
+          reasonableExcuse = "other",
+          uploadedFiles = Some(Seq(
+            UploadJourney(
+              reference = "reference-3000",
+              fileStatus = UploadStatusEnum.READY,
+              downloadUrl = Some("download.file"),
+              uploadDetails = Some(UploadDetails(
+                fileName = "file1.txt",
+                fileMimeType = "text/plain",
+                uploadTimestamp = LocalDateTime.of(2018, 4, 24, 9, 30),
+                checksum = "check12345678",
+                size = 987
+              )),
+              lastUpdated = LocalDateTime.of(2018, 4, 24, 9, 30)
+            )
+          )
+        ))
         val expectedResult = Json.parse(
           """
             |{
@@ -2318,7 +2352,22 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             | "lateAppealReason": "This is a reason",
             | "isClientResponsibleForSubmission": false,
             | "isClientResponsibleForLateSubmission": true,
-            |  "honestyDeclaration": true
+            |  "honestyDeclaration": true,
+            |   "uploadedFiles":[
+            |     {
+            |       "reference":"reference-3000",
+            |       "fileStatus":"READY",
+            |       "downloadUrl":"download.file",
+            |       "uploadDetails":
+            |           {
+            |             "fileName":"file1.txt",
+            |             "fileMimeType":"text/plain",
+            |             "uploadTimestamp":"2018-04-24T09:30:00",
+            |             "checksum":"check12345678","size":987
+            |             },
+            |         "lastUpdated":"2018-04-24T09:30:00"
+            |        }
+            |       ]
             |}
             |""".stripMargin)
         val result = Json.toJson(modelToConvertToJson)
@@ -2335,7 +2384,8 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           isClientResponsibleForSubmission = Some(false),
           isClientResponsibleForLateSubmission = Some(true),
           honestyDeclaration = true,
-          reasonableExcuse = "other"
+          reasonableExcuse = "other",
+          uploadedFiles = None
         )
         val expectedResult = Json.parse(
           """
@@ -2367,8 +2417,23 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           isClientResponsibleForSubmission = None,
           isClientResponsibleForLateSubmission = None,
           honestyDeclaration = true,
-          reasonableExcuse = "obligation"
-        )
+          reasonableExcuse = "obligation",
+          uploadedFiles = Some(Seq(
+            UploadJourney(
+              reference = "ref",
+              fileStatus = UploadStatusEnum.READY,
+              downloadUrl = Some("download.file"),
+              uploadDetails = Some(UploadDetails(
+                fileName = "file1.txt",
+                fileMimeType = "text/plain",
+                uploadTimestamp = LocalDateTime.of(2018, 4, 24, 9, 30),
+                checksum = "check12345678",
+                size = 987
+              )),
+              lastUpdated = LocalDateTime.of(2018, 4, 24, 9, 30)
+            )
+          )
+        ))
 
         val expectedResult = Json.parse(
           """
@@ -2379,7 +2444,22 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             |       "referenceId": "ref"
             |   },
             |   "honestyDeclaration": true,
-            |   "reasonableExcuse": "obligation"
+            |   "reasonableExcuse": "obligation",
+            |   "uploadedFiles":[
+            |     {
+            |       "reference":"ref",
+            |       "fileStatus":"READY",
+            |       "downloadUrl":"download.file",
+            |       "uploadDetails":
+            |           {
+            |             "fileName":"file1.txt",
+            |             "fileMimeType":"text/plain",
+            |             "uploadTimestamp":"2018-04-24T09:30:00",
+            |             "checksum":"check12345678","size":987
+            |             },
+            |         "lastUpdated":"2018-04-24T09:30:00"
+            |        }
+            |       ]
             |}
             |""".stripMargin
         )
@@ -2395,7 +2475,8 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           isClientResponsibleForSubmission = None,
           isClientResponsibleForLateSubmission = None,
           honestyDeclaration = true,
-          reasonableExcuse = "obligation"
+          reasonableExcuse = "obligation",
+          uploadedFiles = None
         )
 
         val expectedResult = Json.parse(
