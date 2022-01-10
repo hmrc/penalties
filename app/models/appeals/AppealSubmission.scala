@@ -16,6 +16,7 @@
 
 package models.appeals
 
+import models.upload.UploadJourney
 import play.api.libs.json._
 
 import java.time.LocalDateTime
@@ -345,7 +346,8 @@ case class OtherAppealInformation(
                                    reasonableExcuse: String,
                                    honestyDeclaration: Boolean,
                                    isClientResponsibleForSubmission: Option[Boolean],
-                                   isClientResponsibleForLateSubmission: Option[Boolean]
+                                   isClientResponsibleForLateSubmission: Option[Boolean],
+                                   uploadedFiles: Option[Seq[UploadJourney]]
                                  ) extends AppealInformation
 
 object OtherAppealInformation {
@@ -383,6 +385,12 @@ object OtherAppealInformation {
       )(
         isClientResponsibleForLateSubmission => Json.obj("isClientResponsibleForLateSubmission" -> isClientResponsibleForLateSubmission)
       )
+    ).deepMerge(
+      otherAppealInformation.uploadedFiles.fold(
+        Json.obj()
+      )(
+        uploadedFiles => Json.obj("uploadedFiles" -> uploadedFiles)
+      )
     )
   }
 }
@@ -393,7 +401,8 @@ case class ObligationAppealInformation(
                                         reasonableExcuse: String,
                                         honestyDeclaration: Boolean,
                                         isClientResponsibleForSubmission: Option[Boolean] = None,
-                                        isClientResponsibleForLateSubmission: Option[Boolean] = None
+                                        isClientResponsibleForLateSubmission: Option[Boolean] = None,
+                                        uploadedFiles: Option[Seq[UploadJourney]]
                                       ) extends AppealInformation
 
 object ObligationAppealInformation {
@@ -411,6 +420,12 @@ object ObligationAppealInformation {
         Json.obj()
       )(
         supportingEvidence => Json.obj("supportingEvidence" -> supportingEvidence)
+      )
+    ).deepMerge(
+      obligationAppealInformation.uploadedFiles.fold(
+        Json.obj()
+      )(
+        uploadedFiles => Json.obj("uploadedFiles" -> uploadedFiles)
       )
     )
   }
