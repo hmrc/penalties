@@ -22,6 +22,8 @@ import connectors.parsers.AppealsParser.UnexpectedFailure
 import connectors.parsers.ETMPPayloadParser.{GetETMPPayloadMalformed, GetETMPPayloadNoContent, GetETMPPayloadSuccessResponse}
 import models.appeals.{AppealData, AppealResponseModel}
 import models.appeals.AppealTypeEnum.{Additional, Late_Payment, Late_Submission}
+import models.notification.{SDESAudit, SDESChecksum, SDESNotification, SDESNotificationFile, SDESProperties}
+import models.upload.{UploadDetails, UploadJourney, UploadStatusEnum}
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
 import play.api.http.Status
@@ -33,19 +35,21 @@ import uk.gov.hmrc.http.HttpResponse
 import uk.gov.hmrc.play.bootstrap.backend.http.ErrorResponse
 import utils.{PenaltyPeriodHelper, UUIDGenerator}
 
+import java.time.LocalDateTime
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 class AppealsControllerSpec extends SpecBase {
   val mockETMPService: ETMPService = mock(classOf[ETMPService])
   val mockAppConfig: AppConfig = mock(classOf[AppConfig])
-  val mockUUIDGenerator : UUIDGenerator = mock(classOf[UUIDGenerator])
+  val mockUUIDGenerator: UUIDGenerator = mock(classOf[UUIDGenerator])
+  val correlationId = "id-1234567890"
 
   class Setup(withRealAppConfig: Boolean = true) {
     reset(mockAppConfig)
     reset(mockETMPService)
     val controller = new AppealsController(if (withRealAppConfig) appConfig
-          else mockAppConfig, mockETMPService, mockUUIDGenerator, stubControllerComponents())
+    else mockAppConfig, mockETMPService, mockUUIDGenerator, stubControllerComponents())
   }
 
   "getAppealsDataForLateSubmissionPenalty" should {
@@ -89,9 +93,9 @@ class AppealsControllerSpec extends SpecBase {
       status(result) shouldBe Status.OK
       val appealDataToReturn: AppealData = AppealData(
         Late_Submission,
-        mockETMPPayloadResponseAsModel.penaltyPoints.head.period.get.sortWith(PenaltyPeriodHelper.sortByPenaltyStartDate(_ , _) < 0).head.startDate,
-        mockETMPPayloadResponseAsModel.penaltyPoints.head.period.get.sortWith(PenaltyPeriodHelper.sortByPenaltyStartDate(_ , _) < 0).head.endDate,
-        mockETMPPayloadResponseAsModel.penaltyPoints.head.period.get.sortWith(PenaltyPeriodHelper.sortByPenaltyStartDate(_ , _) < 0).head.submission.dueDate,
+        mockETMPPayloadResponseAsModel.penaltyPoints.head.period.get.sortWith(PenaltyPeriodHelper.sortByPenaltyStartDate(_, _) < 0).head.startDate,
+        mockETMPPayloadResponseAsModel.penaltyPoints.head.period.get.sortWith(PenaltyPeriodHelper.sortByPenaltyStartDate(_, _) < 0).head.endDate,
+        mockETMPPayloadResponseAsModel.penaltyPoints.head.period.get.sortWith(PenaltyPeriodHelper.sortByPenaltyStartDate(_, _) < 0).head.submission.dueDate,
         mockETMPPayloadResponseAsModel.penaltyPoints.head.communications.head.dateSent
       )
       contentAsString(result) shouldBe Json.toJson(appealDataToReturn).toString()
@@ -108,9 +112,9 @@ class AppealsControllerSpec extends SpecBase {
       status(result) shouldBe Status.OK
       val appealDataToReturn: AppealData = AppealData(
         Late_Submission,
-        mockETMPPayloadResponseAsModelMultiplePoints.penaltyPoints.last.period.get.sortWith(PenaltyPeriodHelper.sortByPenaltyStartDate(_ , _) < 0).head.startDate,
-        mockETMPPayloadResponseAsModelMultiplePoints.penaltyPoints.last.period.get.sortWith(PenaltyPeriodHelper.sortByPenaltyStartDate(_ , _) < 0).head.endDate,
-        mockETMPPayloadResponseAsModelMultiplePoints.penaltyPoints.head.period.get.sortWith(PenaltyPeriodHelper.sortByPenaltyStartDate(_ , _) < 0).head.submission.dueDate,
+        mockETMPPayloadResponseAsModelMultiplePoints.penaltyPoints.last.period.get.sortWith(PenaltyPeriodHelper.sortByPenaltyStartDate(_, _) < 0).head.startDate,
+        mockETMPPayloadResponseAsModelMultiplePoints.penaltyPoints.last.period.get.sortWith(PenaltyPeriodHelper.sortByPenaltyStartDate(_, _) < 0).head.endDate,
+        mockETMPPayloadResponseAsModelMultiplePoints.penaltyPoints.head.period.get.sortWith(PenaltyPeriodHelper.sortByPenaltyStartDate(_, _) < 0).head.submission.dueDate,
         mockETMPPayloadResponseAsModelMultiplePoints.penaltyPoints.head.communications.head.dateSent
       )
       contentAsJson(result) shouldBe Json.toJson(appealDataToReturn)
@@ -568,6 +572,60 @@ class AppealsControllerSpec extends SpecBase {
         .thenReturn(Future.successful(false))
       val result: Future[Result] = controller.getIsMultiplePenaltiesInSamePeriod("1234", "123456789", isLPP = false)(fakeRequest)
       status(result) shouldBe NO_CONTENT
+    }
+  }
+
+  "createSDESNotification" should {
+    "return an empty Seq" when {
+      "None is passed to the uploadJourney" in new Setup {
+        val result = controller.createSDESNotifications(None, "")
+        result shouldBe Seq.empty
+      }
+    }
+
+    "return a Seq of SDES notifications" when {
+      "Some uploadJourneys are passed in" in new Setup {
+        val mockDateTime: LocalDateTime = LocalDateTime.of(2020, 1, 1, 0 , 0, 0)
+        val uploads = Seq(
+          UploadJourney(reference = "ref-123",
+            fileStatus = UploadStatusEnum.READY,
+            downloadUrl = Some("/"),
+            uploadDetails = Some(UploadDetails(
+              fileName = "file1",
+              fileMimeType = "text/plain",
+              uploadTimestamp = LocalDateTime.of(2018,4,24,9,30,0),
+              checksum = "check123456789",
+              size = 1
+            )),
+            lastUpdated = mockDateTime,
+            uploadFields = Some(Map(
+              "key" -> "abcxyz",
+              "x-amz-algorithm" -> "md5"
+            ))
+          )
+        )
+
+        val expectedResult = Seq(
+          SDESNotification(
+            informationType = "S18",
+            file = SDESNotificationFile(
+              recipientOrSender = "123456789012",
+              name = "file1",
+              location = "/",
+              checksum = SDESChecksum(algorithm = "md5", value = "check123456789"),
+              size = 1,
+              properties = Seq(SDESProperties(name = "caseID", value = "PR-1234"))
+            ),
+            audit = SDESAudit(
+              correlationID = correlationId
+            )
+          )
+        )
+
+        when(mockUUIDGenerator.generateUUID).thenReturn(correlationId)
+        val result = controller.createSDESNotifications(Some(uploads), caseID = "PR-1234")
+        result shouldBe expectedResult
+      }
     }
   }
 }

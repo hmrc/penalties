@@ -157,8 +157,9 @@ class AppealsController @Inject()(appConfig: AppConfig,
                     } // maybe could be refactored further
                     logger.debug(s"[AppealsController][submitAppeal] Received caseID response: ${responseModel.caseID} from downstream.")
                     if (!seqOfNotifications.isEmpty) {
-                      //TODO make call to notification connector and include seqOfNotification.
                       seqOfNotifications.foreach(x => println(Console.BLUE + s"${x.file}"))
+                      //TODO uncomment when PRM-944 is merged
+                      // fileNotificationOrchestratorConnector.postFileNotifications(seqOfNotifications)
                     }
                     Ok("")
                   }
@@ -174,19 +175,23 @@ class AppealsController @Inject()(appConfig: AppConfig,
   def createSDESNotifications(optUploadJourney: Option[Seq[UploadJourney]], caseID: String): Seq[SDESNotification] = {
     optUploadJourney match {
       case Some(uploads) => uploads.flatMap { upload =>
-        upload.uploadDetails.map { details =>
-          val uploadAlgorithm = if (upload.uploadFields.isDefined) upload.uploadFields.get("x-amz-algorithm") else ""
-          SDESNotification(
-            informationType = "S18",
-            file = SDESNotificationFile(
-              recipientOrSender = "123456789012", // may need to be changed later on
-              name = details.fileName,
-              location = upload.downloadUrl.getOrElse(""),
-              checksum = SDESChecksum(algorithm = uploadAlgorithm, value = details.checksum),
-              size = details.size,
-              properties = Seq(SDESProperties(name = "caseID", value = caseID))
-            ),
-            audit = SDESAudit(correlationID = idGenerator.generateUUID)
+        upload.uploadDetails.flatMap { details =>
+          upload.uploadFields.map(
+            fields => {
+              val uploadAlgorithm = fields("x-amz-algorithm")
+              SDESNotification(
+                informationType = appConfig.SDESNotificationInfoType,
+                file = SDESNotificationFile(
+                  recipientOrSender = appConfig.SDESNotificationFileRecipient,
+                  name = details.fileName,
+                  location = upload.downloadUrl.getOrElse(""),
+                  checksum = SDESChecksum(algorithm = uploadAlgorithm, value = details.checksum),
+                  size = details.size,
+                  properties = Seq(SDESProperties(name = "caseID", value = caseID))
+                ),
+                audit = SDESAudit(correlationID = idGenerator.generateUUID)
+              )
+            }
           )
         }
       }
