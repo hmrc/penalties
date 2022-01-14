@@ -56,8 +56,8 @@ class AppealsConnectorISpec extends IntegrationSpecCommonBase with AppealWiremoc
           isClientResponsibleForLateSubmission = None
         )
       )
-      val result: HttpResponse = await(connector.submitAppeal(modelToSend, "HMRC-MTD-VAT~VRN~1234567890", isLPP = false, penaltyId = "1234567890"))
-      result.status shouldBe OK
+      val result = await(connector.submitAppeal(modelToSend, "HMRC-MTD-VAT~VRN~1234567890", isLPP = false, penaltyId = "1234567890"))
+      result.isRight shouldBe true
     }
 
     "Jsonify the model and send the request and return the response - when PEGA feature switch disabled, call stub" in new Setup {
@@ -82,8 +82,8 @@ class AppealsConnectorISpec extends IntegrationSpecCommonBase with AppealWiremoc
           isClientResponsibleForLateSubmission = None
         )
       )
-      val result: HttpResponse = await(connector.submitAppeal(modelToSend, "HMRC-MTD-VAT~VRN~123456789", isLPP = false, penaltyId = "123456789"))
-      result.status shouldBe OK
+      val result = await(connector.submitAppeal(modelToSend, "HMRC-MTD-VAT~VRN~123456789", isLPP = false, penaltyId = "123456789"))
+      result.isRight shouldBe true
     }
 
     "Jsonify the model and send the request and return the response - when PEGA feature switch disabled, call stub - for LPP" in new Setup {
@@ -108,8 +108,8 @@ class AppealsConnectorISpec extends IntegrationSpecCommonBase with AppealWiremoc
           isClientResponsibleForLateSubmission = None
         )
       )
-      val result: HttpResponse = await(connector.submitAppeal(modelToSend, "HMRC-MTD-VAT~VRN~123456789", isLPP = true, penaltyId = "123456789"))
-      result.status shouldBe OK
+      val result = await(connector.submitAppeal(modelToSend, "HMRC-MTD-VAT~VRN~123456789", isLPP = true, penaltyId = "123456789"))
+      result.isRight shouldBe true
     }
   }
 }

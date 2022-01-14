@@ -21,22 +21,25 @@ import connectors.parsers.ETMPPayloadParser.GetETMPPayloadNoContent
 import models.ETMPPayload
 import models.appeals.AppealTypeEnum._
 import models.appeals.reasonableExcuses.ReasonableExcuse
-import models.appeals.{AppealData, AppealSubmission, AppealTypeEnum}
+import models.appeals._
+import models.notification._
 import models.payment.LatePaymentPenalty
 import models.point.PenaltyPoint
+import models.upload.UploadJourney
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, ControllerComponents, Result}
 import services.ETMPService
-import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
+import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import utils.Logger.logger
-import utils.PenaltyPeriodHelper
+import utils.{PenaltyPeriodHelper, UUIDGenerator}
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class AppealsController @Inject()(appConfig: AppConfig,
                                   etmpService: ETMPService,
+                                  idGenerator: UUIDGenerator,
                                   cc: ControllerComponents)(implicit ec: ExecutionContext)
   extends BackendController(cc) {
 
@@ -61,7 +64,7 @@ class AppealsController @Inject()(appConfig: AppConfig,
   def getIsMultiplePenaltiesInSamePeriod(penaltyId: String, enrolmentKey: String, isLPP: Boolean): Action[AnyContent] = Action.async {
     implicit request => {
       etmpService.isMultiplePenaltiesInSamePeriod(penaltyId, enrolmentKey, isLPP).map {
-        if(_) {
+        if (_) {
           logger.info("[AppealsController][getIsMultiplePenaltiesInSamePeriod] - User has multiple penalties in same period - returning OK")
           Ok("")
         } else {
@@ -81,7 +84,7 @@ class AppealsController @Inject()(appConfig: AppConfig,
 
   def getAppealsDataForLatePaymentPenalty(penaltyId: String, enrolmentKey: String, isAdditional: Boolean): Action[AnyContent] = Action.async {
     implicit request => {
-      getAppealDataForPenalty(penaltyId, enrolmentKey, if(isAdditional) Additional else Late_Payment)
+      getAppealDataForPenalty(penaltyId, enrolmentKey, if (isAdditional) Additional else Late_Payment)
     }
   }
 
@@ -95,13 +98,13 @@ class AppealsController @Inject()(appConfig: AppConfig,
       logger.debug(s"[AppealsController][getAppealsData] Penalty ID: $penaltyIdToCheck for enrolment key: $enrolmentKey found in ETMP for $appealType.")
       val penaltyBasedOnId = lspPenaltyIdInETMPPayload.get
       val dataToReturn: AppealData = AppealData(`type` = appealType,
-        startDate = penaltyBasedOnId.period.get.sortWith(PenaltyPeriodHelper.sortByPenaltyStartDate(_ , _) < 0).head.startDate,
-        endDate = penaltyBasedOnId.period.get.sortWith(PenaltyPeriodHelper.sortByPenaltyStartDate(_ , _) < 0).head.endDate,
-        dueDate = penaltyBasedOnId.period.get.sortWith(PenaltyPeriodHelper.sortByPenaltyStartDate(_ , _) < 0).head.submission.dueDate,
+        startDate = penaltyBasedOnId.period.get.sortWith(PenaltyPeriodHelper.sortByPenaltyStartDate(_, _) < 0).head.startDate,
+        endDate = penaltyBasedOnId.period.get.sortWith(PenaltyPeriodHelper.sortByPenaltyStartDate(_, _) < 0).head.endDate,
+        dueDate = penaltyBasedOnId.period.get.sortWith(PenaltyPeriodHelper.sortByPenaltyStartDate(_, _) < 0).head.submission.dueDate,
         dateCommunicationSent = penaltyBasedOnId.communications.head.dateSent
       )
       Ok(Json.toJson(dataToReturn))
-    } else if((appealType == AppealTypeEnum.Late_Payment || appealType == AppealTypeEnum.Additional) && lppPenaltyIdInETMPPayload.isDefined) {
+    } else if ((appealType == AppealTypeEnum.Late_Payment || appealType == AppealTypeEnum.Additional) && lppPenaltyIdInETMPPayload.isDefined) {
       logger.debug(s"[AppealsController][getAppealsData] Penalty ID: $penaltyIdToCheck for enrolment key: $enrolmentKey found in ETMP for $appealType.")
       val penaltyBasedOnId = lppPenaltyIdInETMPPayload.get
       val dataToReturn: AppealData = AppealData(`type` = appealType,
@@ -137,28 +140,62 @@ class AppealsController @Inject()(appConfig: AppConfig,
             },
             appealSubmission => {
               etmpService.submitAppeal(appealSubmission, enrolmentKey, isLPP, penaltyId).map {
-                response =>
-                  response.status match {
-                    case OK =>
-                      Ok("")
-                    case _ =>
-                      logger.error(s"[AppealsController][submitAppeal] Connector returned unknown status code: ${response.status} ")
-                      logger.debug(s"[AppealsController][submitAppeal] Failure response body: ${response.body}")
-                      Status(response.status)
+                _.fold(
+                  error => {
+                    logger.error(s"[AppealsController][submitAppeal] Received status ${error.status}, with error message: ${error.body}")
+                    logger.debug(s"[AppealsController][submitAppeal] Returning ${error.status} to calling service.")
+                    Status(error.status)
+                  },
+                  responseModel => {
+                    val appeal = appealSubmission.appealInformation
+                    val seqOfNotifications = appeal match {
+                      case otherAppeal: OtherAppealInformation if otherAppeal.uploadedFiles.isDefined =>
+                        createSDESNotifications(otherAppeal.uploadedFiles, responseModel.caseID)
+                      case obligationAppeal: ObligationAppealInformation if obligationAppeal.uploadedFiles.isDefined =>
+                        createSDESNotifications(obligationAppeal.uploadedFiles, responseModel.caseID)
+                      case _ => Seq.empty
+                    } // maybe could be refactored further
+                    logger.debug(s"[AppealsController][submitAppeal] Received caseID response: ${responseModel.caseID} from downstream.")
+                    if (!seqOfNotifications.isEmpty) {
+                      seqOfNotifications.foreach(x => println(Console.BLUE + s"${x.file}"))
+                      //TODO uncomment when PRM-944 is merged
+                      // fileNotificationOrchestratorConnector.postFileNotifications(seqOfNotifications)
+                    }
+                    Ok("")
                   }
-              } recover {
-                case e: UpstreamErrorResponse =>
-                  logger.error(s"[AppealsController][submitAppeal] Received status ${e.statusCode}, with error message: ${e.getMessage()}")
-                  logger.debug(s"[AppealsController][submitAppeal] Returning ${e.statusCode} to calling service.")
-                  Status(e.statusCode)
-                case e =>
-                  logger.error(s"[AppealsController][submitAppeal] Unknown exception occurred with message: ${e.getMessage}")
-                  InternalServerError("Something went wrong.")
+                )
               }
             }
           )
         }
       )
+    }
+  }
+
+  def createSDESNotifications(optUploadJourney: Option[Seq[UploadJourney]], caseID: String): Seq[SDESNotification] = {
+    optUploadJourney match {
+      case Some(uploads) => uploads.flatMap { upload =>
+        upload.uploadDetails.flatMap { details =>
+          upload.uploadFields.map(
+            fields => {
+              val uploadAlgorithm = fields("x-amz-algorithm")
+              SDESNotification(
+                informationType = appConfig.SDESNotificationInfoType,
+                file = SDESNotificationFile(
+                  recipientOrSender = appConfig.SDESNotificationFileRecipient,
+                  name = details.fileName,
+                  location = upload.downloadUrl.getOrElse(""),
+                  checksum = SDESChecksum(algorithm = uploadAlgorithm, value = details.checksum),
+                  size = details.size,
+                  properties = Seq(SDESProperties(name = "caseID", value = caseID))
+                ),
+                audit = SDESAudit(correlationID = idGenerator.generateUUID)
+              )
+            }
+          )
+        }
+      }
+      case None => Seq.empty
     }
   }
 }

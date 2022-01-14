@@ -17,8 +17,9 @@
 package connectors
 
 import base.SpecBase
+import connectors.parsers.AppealsParser.AppealSubmissionResponse
 import featureSwitches.{CallPEGA, FeatureSwitching}
-import models.appeals.{AppealSubmission, CrimeAppealInformation}
+import models.appeals.{AppealResponseModel, AppealSubmission, CrimeAppealInformation}
 import org.mockito.{ArgumentCaptor, ArgumentMatchers}
 import org.mockito.Mockito._
 import play.api.http.Status.OK
@@ -45,7 +46,7 @@ class AppealsConnectorSpec extends SpecBase with FeatureSwitching {
     "return the response of the call - sending extra headers when calling PEGA" in new Setup {
       enableFeatureSwitch(CallPEGA)
       val argumentCaptorOtherHeaders: ArgumentCaptor[Seq[(String, String)]] = ArgumentCaptor.forClass(classOf[Seq[(String, String)]])
-      when(mockHttpClient.POST[AppealSubmission, HttpResponse](
+      when(mockHttpClient.POST[AppealSubmission, AppealSubmissionResponse](
         ArgumentMatchers.any(),
         ArgumentMatchers.any(),
         argumentCaptorOtherHeaders.capture()
@@ -53,7 +54,7 @@ class AppealsConnectorSpec extends SpecBase with FeatureSwitching {
         ArgumentMatchers.any(),
         ArgumentMatchers.any(),
         ArgumentMatchers.any()))
-        .thenReturn(Future.successful(HttpResponse(OK, "OK")))
+        .thenReturn(Future.successful(Right(appealResponseModel)))
       val modelToSend: AppealSubmission = AppealSubmission(
         taxRegime = "VAT",
         customerReferenceNo = "123456789",
@@ -73,9 +74,8 @@ class AppealsConnectorSpec extends SpecBase with FeatureSwitching {
           reasonableExcuse = "crime"
         )
       )
-      val result: HttpResponse = await(connector.submitAppeal(modelToSend, "HMRC-MTD-VAT~VRN~123456789", isLPP = false, penaltyId = "1234567890")(hc))
-      result.status shouldBe OK
-      result.body shouldBe "OK"
+      val result = await(connector.submitAppeal(modelToSend, "HMRC-MTD-VAT~VRN~123456789", isLPP = false, penaltyId = "1234567890")(hc))
+      result shouldBe Right(appealResponseModel)
       argumentCaptorOtherHeaders.getValue.find(_._1 == "Authorization").get._2 shouldBe "auth1"
       argumentCaptorOtherHeaders.getValue.find(_._1 == "CorrelationId").get._2 shouldBe "1234"
       argumentCaptorOtherHeaders.getValue.find(_._1 == "Environment").get._2 shouldBe "env"
@@ -84,7 +84,7 @@ class AppealsConnectorSpec extends SpecBase with FeatureSwitching {
     "return the response of the call - sending no extra headers when NOT calling PEGA" in new Setup {
       disableFeatureSwitch(CallPEGA)
       val argumentCaptorOtherHeaders: ArgumentCaptor[Seq[(String, String)]] = ArgumentCaptor.forClass(classOf[Seq[(String, String)]])
-      when(mockHttpClient.POST[AppealSubmission, HttpResponse](
+      when(mockHttpClient.POST[AppealSubmission, AppealSubmissionResponse](
         ArgumentMatchers.any(),
         ArgumentMatchers.any(),
         argumentCaptorOtherHeaders.capture()
@@ -92,7 +92,7 @@ class AppealsConnectorSpec extends SpecBase with FeatureSwitching {
         ArgumentMatchers.any(),
         ArgumentMatchers.any(),
         ArgumentMatchers.any()))
-        .thenReturn(Future.successful(HttpResponse(OK, "OK")))
+        .thenReturn(Future.successful(Right(appealResponseModel)))
       val modelToSend: AppealSubmission = AppealSubmission(
         taxRegime = "VAT",
         customerReferenceNo = "123456789",
@@ -112,16 +112,15 @@ class AppealsConnectorSpec extends SpecBase with FeatureSwitching {
           reasonableExcuse = "crime"
         )
       )
-      val result: HttpResponse = await(connector.submitAppeal(modelToSend, "HMRC-MTD-VAT~VRN~123456789", isLPP = false, penaltyId = "1234567890")(hc))
-      result.status shouldBe OK
-      result.body shouldBe "OK"
+      val result: AppealSubmissionResponse = await(connector.submitAppeal(modelToSend, "HMRC-MTD-VAT~VRN~123456789", isLPP = false, penaltyId = "1234567890")(hc))
+      result shouldBe Right(appealResponseModel)
       argumentCaptorOtherHeaders.getValue.exists(_._1 == "Authorization") shouldBe false
       argumentCaptorOtherHeaders.getValue.exists(_._1 == "CorrelationId") shouldBe false
       argumentCaptorOtherHeaders.getValue.exists(_._1 == "Environment") shouldBe false
     }
 
     "return the response of the call for LPP" in new Setup {
-      when(mockHttpClient.POST[AppealSubmission, HttpResponse](
+      when(mockHttpClient.POST[AppealSubmission, AppealSubmissionResponse](
         ArgumentMatchers.any(),
         ArgumentMatchers.any(),
         ArgumentMatchers.any()
@@ -129,7 +128,7 @@ class AppealsConnectorSpec extends SpecBase with FeatureSwitching {
         ArgumentMatchers.any(),
         ArgumentMatchers.any(),
         ArgumentMatchers.any()))
-        .thenReturn(Future.successful(HttpResponse(OK, "OK")))
+        .thenReturn(Future.successful(Right(appealResponseModel)))
       val modelToSend: AppealSubmission = AppealSubmission(
         taxRegime = "VAT",
         customerReferenceNo = "123456789",
@@ -149,9 +148,8 @@ class AppealsConnectorSpec extends SpecBase with FeatureSwitching {
           reasonableExcuse = "crime"
         )
       )
-      val result: HttpResponse = await(connector.submitAppeal(modelToSend, "HMRC-MTD-VAT~VRN~123456789", isLPP = true, penaltyId = "1234567890")(HeaderCarrier()))
-      result.status shouldBe OK
-      result.body shouldBe "OK"
+      val result: AppealSubmissionResponse = await(connector.submitAppeal(modelToSend, "HMRC-MTD-VAT~VRN~123456789", isLPP = true, penaltyId = "1234567890")(HeaderCarrier()))
+      result shouldBe Right(appealResponseModel)
     }
   }
 }
