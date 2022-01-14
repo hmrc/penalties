@@ -38,7 +38,11 @@ class UploadJourneySpec extends AnyWordSpec with Matchers {
       |   "checksum": "check123456789",
       |   "size": 1
       | },
-      | "lastUpdated": "2020-01-01T00:00:00"
+      | "lastUpdated": "2020-01-01T00:00:00",
+      | "uploadFields": {
+      |   "key": "abcxyz",
+      |   "algo": "md5"
+      | }
       |}
       |""".stripMargin
   )
@@ -48,7 +52,11 @@ class UploadJourneySpec extends AnyWordSpec with Matchers {
       |{
       | "reference": "123456789",
       | "fileStatus": "READY",
-      | "lastUpdated": "2020-01-01T00:00:00"
+      | "lastUpdated": "2020-01-01T00:00:00",
+      |  "uploadFields": {
+      |   "key": "abcxyz",
+      |   "algo": "md5"
+      | }
       |}
       |""".stripMargin
   )
@@ -57,7 +65,11 @@ class UploadJourneySpec extends AnyWordSpec with Matchers {
     """
       |{
       | "reference": "123456789",
-      | "lastUpdated": "2020-01-01T00:00:00"
+      | "lastUpdated": "2020-01-01T00:00:00",
+      |  "uploadFields": {
+      |   "key": "abcxyz",
+      |   "algo": "md5"
+      | }
       |}
       |""".stripMargin
   )
@@ -88,7 +100,11 @@ class UploadJourneySpec extends AnyWordSpec with Matchers {
         checksum = "check123456789",
         size = 1
       )),
-    lastUpdated = mockDateTime
+    lastUpdated = mockDateTime,
+    uploadFields = Some(Map(
+      "key" -> "abcxyz",
+      "algo" -> "md5"
+    ))
   )
 
   val uploadJourneyWithoutUrlOrUploadDetailsModel: UploadJourney = uploadJourneyModel.copy(downloadUrl = None, uploadDetails = None, lastUpdated = mockDateTime)
@@ -102,7 +118,8 @@ class UploadJourneySpec extends AnyWordSpec with Matchers {
       failureReason = FailureReasonEnum.REJECTED,
       message = "this file was rejected"
     )),
-    lastUpdated = mockDateTime
+    lastUpdated = mockDateTime,
+    uploadFields = None
   )
 
   "UploadJourneySpec" should {

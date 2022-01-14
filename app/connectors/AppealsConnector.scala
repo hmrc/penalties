@@ -17,10 +17,10 @@
 package connectors
 
 import config.AppConfig
+import connectors.parsers.AppealsParser.{AppealSubmissionResponse, AppealSubmissionResponseReads}
 import featureSwitches.CallPEGA
 import models.appeals.AppealSubmission
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse}
-import uk.gov.hmrc.http.HttpReads.Implicits
+import uk.gov.hmrc.http.{HeaderCarrier, HttpClient}
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
@@ -28,11 +28,11 @@ import scala.concurrent.{ExecutionContext, Future}
 class AppealsConnector @Inject()(httpClient: HttpClient,
                                  appConfig: AppConfig)(implicit ec: ExecutionContext) {
   def submitAppeal(appealSubmission: AppealSubmission, enrolmentKey: String, isLPP: Boolean, penaltyId: String)(
-    implicit hc: HeaderCarrier): Future[HttpResponse] = {
+    implicit hc: HeaderCarrier): Future[AppealSubmissionResponse] = {
     val isPEGASwitchEnabled: Boolean = appConfig.isEnabled(CallPEGA)
     val hcWithNoHeaders: HeaderCarrier = HeaderCarrier()
-     httpClient.POST[AppealSubmission, HttpResponse](appConfig.getAppealSubmissionURL(enrolmentKey, isLPP, penaltyId),
+     httpClient.POST[AppealSubmission, AppealSubmissionResponse](appConfig.getAppealSubmissionURL(enrolmentKey, isLPP, penaltyId),
       appealSubmission, if(isPEGASwitchEnabled) hc.otherHeaders else hcWithNoHeaders.otherHeaders)(
-       AppealSubmission.apiWrites, Implicits.readRaw, if(isPEGASwitchEnabled) hc else hcWithNoHeaders, implicitly)
+       AppealSubmission.apiWrites, AppealSubmissionResponseReads, if(isPEGASwitchEnabled) hc else hcWithNoHeaders, implicitly)
   }
 }

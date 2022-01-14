@@ -41,6 +41,9 @@ class AppConfig @Inject()(config: Configuration, servicesConfig: ServicesConfig)
 
   lazy val desBearerToken: String = s"Bearer ${servicesConfig.getConfString("des.bearerToken", "")}"
 
+  lazy val SDESNotificationInfoType: String = config.get[String]("SDESNotification.informationType")
+  lazy val SDESNotificationFileRecipient: String = config.get[String]("SDESNotification.file.recipient")
+
   def getVATPenaltiesURL: String = {
     if(!isEnabled(CallETMP)) stubBase + "/penalties-stub/etmp/mtd-vat/"
     //TODO: change to relevant URL when implemented

@@ -17,6 +17,7 @@
 package services
 
 import base.SpecBase
+import connectors.parsers.AppealsParser.UnexpectedFailure
 import connectors.parsers.ETMPPayloadParser._
 import connectors.{AppealsConnector, ETMPConnector}
 import models.ETMPPayload
@@ -124,18 +125,18 @@ class ETMPServiceSpec extends SpecBase {
 
     "return the response from the connector i.e. act as a pass-through function" in new Setup {
       when(mockAppealsConnector.submitAppeal(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any()))
-        .thenReturn(Future.successful(HttpResponse(OK, "")))
+        .thenReturn(Future.successful(Right(appealResponseModel)))
 
-      val result: HttpResponse = await(service.submitAppeal(modelToPassToServer, "HMRC-MTD-VAT~VRN~123456789", isLPP = false, penaltyId = "123456789"))
-      result.status shouldBe OK
+      val result = await(service.submitAppeal(modelToPassToServer, "HMRC-MTD-VAT~VRN~123456789", isLPP = false, penaltyId = "123456789"))
+      result shouldBe Right(appealResponseModel)
     }
 
     "return the response from the connector on error i.e. act as a pass-through function" in new Setup {
       when(mockAppealsConnector.submitAppeal(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any()))
-        .thenReturn(Future.successful(HttpResponse(BAD_GATEWAY, "")))
+        .thenReturn(Future.successful(Left(UnexpectedFailure(BAD_GATEWAY, s"Unexpected response, status $BAD_GATEWAY returned"))))
 
-      val result: HttpResponse = await(service.submitAppeal(modelToPassToServer, "HMRC-MTD-VAT~VRN~123456789", isLPP = false, penaltyId = "123456789"))
-      result.status shouldBe BAD_GATEWAY
+      val result = await(service.submitAppeal(modelToPassToServer, "HMRC-MTD-VAT~VRN~123456789", isLPP = false, penaltyId = "123456789"))
+      result shouldBe Left(UnexpectedFailure(BAD_GATEWAY, s"Unexpected response, status $BAD_GATEWAY returned"))
     }
 
     "throw an exception when the connector throws an exception" in new Setup {

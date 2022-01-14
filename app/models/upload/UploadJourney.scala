@@ -26,7 +26,8 @@ case class UploadJourney (
                           downloadUrl: Option[String] = None,
                           uploadDetails: Option[UploadDetails] = None,
                           failureDetails: Option[FailureDetails] = None,
-                          lastUpdated: LocalDateTime = LocalDateTime.now()
+                          lastUpdated: LocalDateTime = LocalDateTime.now(),
+                          uploadFields: Option[Map[String, String]] = None
                          )
 
 object UploadJourney {
@@ -40,6 +41,7 @@ object UploadJourney {
       uploadDetails <- (json \ "uploadDetails").validateOpt[UploadDetails]
       failureDetails <- (json \ "failureDetails").validateOpt[FailureDetails]
       lastUpdated <- (json \ "lastUpdated").validateOpt[LocalDateTime]
+      uploadFields <- (json \ "uploadFields").validateOpt[Map[String, String]]
     } yield {
       UploadJourney(
         reference,
@@ -47,7 +49,8 @@ object UploadJourney {
         downloadUrl,
         uploadDetails,
         failureDetails,
-        lastUpdated.fold(LocalDateTime.now)(identity)
+        lastUpdated.fold(LocalDateTime.now)(identity),
+        uploadFields
       )
     }
   }
