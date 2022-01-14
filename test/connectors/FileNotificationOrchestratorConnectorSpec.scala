@@ -16,25 +16,30 @@
 
 package connectors
 
-import models.notification.{SDESAudit, SDESChecksum, SDESNotification, SDESNotificationFile, SDESProperties}
-import play.api.http.Status
+import base.SpecBase
+import config.AppConfig
+import models.notification._
+import org.mockito.ArgumentMatchers
+import org.mockito.Mockito._
 import play.api.http.Status.OK
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
-import uk.gov.hmrc.http.HttpResponse
-import utils.{FileNotificationOrchestratorWiremock, IntegrationSpecCommonBase}
+import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse}
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
-class FileNotificationOrchestratorConnectorISpec extends IntegrationSpecCommonBase with FileNotificationOrchestratorWiremock {
-  {
+class FileNotificationOrchestratorConnectorSpec extends SpecBase {
+   val mockHttpClient: HttpClient = mock(classOf[HttpClient])
+   val mockAppConfig: AppConfig = mock(classOf[AppConfig])
+  implicit val hc: HeaderCarrier = HeaderCarrier()
   implicit val ec: ExecutionContext = ExecutionContext.Implicits.global
 
   class Setup {
-    val connector: FileNotificationOrchestratorConnector = injector.instanceOf[FileNotificationOrchestratorConnector]
+    val connector = new FileNotificationOrchestratorConnector(mockHttpClient, mockAppConfig)
+    reset(mockHttpClient)
   }
 
-  "getFileNotificationOrchestrator" should {
-    "call file notification orchestrator and handle a successful response" in new Setup {
+  "postFileNotifications" should {
+    s"return a successful response from " in new Setup {
       val model: SDESNotification = SDESNotification(
         informationType = "sample1234",
         file = SDESNotificationFile(
@@ -49,11 +54,12 @@ class FileNotificationOrchestratorConnectorISpec extends IntegrationSpecCommonBa
           correlationID = "corr12345"
         )
       )
-      mockResponseForFileNotificationOrchestrator(Status.OK)
-      val result: HttpResponse = await(connector.postFileNotifications(Seq(model)))
-      result.status shouldBe OK
-      }
-    }
-  }
+      when(mockHttpClient.POST[Seq[SDESNotification],HttpResponse](ArgumentMatchers.any(),
+        ArgumentMatchers.any()))
+        .thenReturn(Future.successful(HttpResponse(OK, "OK")))
 
+      val result: HttpResponse = await(connector.postFileNotifications(Seq(model))(HeaderCarrier()))
+       result shouldBe OK
+     }
+  }
 }

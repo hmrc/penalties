@@ -17,6 +17,7 @@
 package connectors
 
 import config.AppConfig
+import models.notification.SDESNotification
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse}
 
 import javax.inject.Inject
@@ -26,7 +27,7 @@ class FileNotificationOrchestratorConnector @Inject()(httpClient: HttpClient,
                                                       appConfig: AppConfig)
                                                      (implicit ec: ExecutionContext) {
 
-  def getFileNotificationOrchestrator()(implicit hc: HeaderCarrier): Future[HttpResponse] = {
-    httpClient.GET[HttpResponse](url = appConfig.fileNotificationOrchestrator)
+  def postFileNotifications(notifications: Seq[SDESNotification])(implicit hc: HeaderCarrier): Future[HttpResponse] = {
+    httpClient.POST[Seq[SDESNotification], HttpResponse](url = appConfig.postFileNotificationUrl, notifications)
   }
 }

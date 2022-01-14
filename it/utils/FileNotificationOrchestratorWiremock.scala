@@ -22,7 +22,7 @@ import com.github.tomakehurst.wiremock.stubbing.StubMapping
 trait FileNotificationOrchestratorWiremock {
 
   def mockResponseForFileNotificationOrchestrator(status: Int): StubMapping = {
-    stubFor(post(urlEqualTo(s"")) //TODO update url
+    stubFor(post(urlEqualTo(s"/penalties-file-notification-orchestrator/new-notifications"))
       .willReturn(
         aResponse()
           .withStatus(status)
