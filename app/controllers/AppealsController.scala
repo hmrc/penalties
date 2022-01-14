@@ -17,6 +17,7 @@
 package controllers
 
 import config.AppConfig
+import connectors.FileNotificationOrchestratorConnector
 import connectors.parsers.ETMPPayloadParser.GetETMPPayloadNoContent
 import models.ETMPPayload
 import models.appeals.AppealTypeEnum._
@@ -40,6 +41,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class AppealsController @Inject()(appConfig: AppConfig,
                                   etmpService: ETMPService,
                                   idGenerator: UUIDGenerator,
+                                  fileNotificationOrchestratorConnector: FileNotificationOrchestratorConnector,
                                   cc: ControllerComponents)(implicit ec: ExecutionContext)
   extends BackendController(cc) {
 
@@ -148,18 +150,17 @@ class AppealsController @Inject()(appConfig: AppConfig,
                   },
                   responseModel => {
                     val appeal = appealSubmission.appealInformation
+                    logger.debug(s"[AppealsController][submitAppeal] Received caseID response: ${responseModel.caseID} from downstream.")
                     val seqOfNotifications = appeal match {
                       case otherAppeal: OtherAppealInformation if otherAppeal.uploadedFiles.isDefined =>
                         createSDESNotifications(otherAppeal.uploadedFiles, responseModel.caseID)
                       case obligationAppeal: ObligationAppealInformation if obligationAppeal.uploadedFiles.isDefined =>
                         createSDESNotifications(obligationAppeal.uploadedFiles, responseModel.caseID)
                       case _ => Seq.empty
-                    } // maybe could be refactored further
-                    logger.debug(s"[AppealsController][submitAppeal] Received caseID response: ${responseModel.caseID} from downstream.")
+                    }
                     if (!seqOfNotifications.isEmpty) {
-                      seqOfNotifications.foreach(x => println(Console.BLUE + s"${x.file}"))
-                      //TODO uncomment when PRM-944 is merged
-                      // fileNotificationOrchestratorConnector.postFileNotifications(seqOfNotifications)
+                      logger.debug(s"[AppealsController][submitAppeal] Posting SDESNotifications: $seqOfNotifications to Orchestrator")
+                       fileNotificationOrchestratorConnector.postFileNotifications(seqOfNotifications)
                     }
                     Ok("")
                   }

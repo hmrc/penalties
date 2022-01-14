@@ -31,8 +31,10 @@ class AppealsConnector @Inject()(httpClient: HttpClient,
     implicit hc: HeaderCarrier): Future[AppealSubmissionResponse] = {
     val isPEGASwitchEnabled: Boolean = appConfig.isEnabled(CallPEGA)
     val hcWithNoHeaders: HeaderCarrier = HeaderCarrier()
-     httpClient.POST[AppealSubmission, AppealSubmissionResponse](appConfig.getAppealSubmissionURL(enrolmentKey, isLPP, penaltyId),
-      appealSubmission, if(isPEGASwitchEnabled) hc.otherHeaders else hcWithNoHeaders.otherHeaders)(
+     httpClient.POST[AppealSubmission, AppealSubmissionResponse](
+       appConfig.getAppealSubmissionURL(enrolmentKey, isLPP, penaltyId),
+      appealSubmission,
+       if(isPEGASwitchEnabled) hc.otherHeaders else hcWithNoHeaders.otherHeaders)(
        AppealSubmission.apiWrites, AppealSubmissionResponseReads, if(isPEGASwitchEnabled) hc else hcWithNoHeaders, implicitly)
   }
 }

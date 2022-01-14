@@ -26,6 +26,7 @@ case class SDESNotification(
 
 object SDESNotification {
   implicit val writes: Writes[SDESNotification] = Json.writes[SDESNotification]
+  val seqOfWrites: Writes[Seq[SDESNotification]] = Writes.seq
 }
 
 case class SDESAudit(correlationID: String)

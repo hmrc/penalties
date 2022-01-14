@@ -26,7 +26,7 @@ import utils.{FileNotificationOrchestratorWiremock, IntegrationSpecCommonBase}
 import scala.concurrent.ExecutionContext
 
 class FileNotificationOrchestratorConnectorISpec extends IntegrationSpecCommonBase with FileNotificationOrchestratorWiremock {
-  {
+
   implicit val ec: ExecutionContext = ExecutionContext.Implicits.global
 
   class Setup {
@@ -53,7 +53,6 @@ class FileNotificationOrchestratorConnectorISpec extends IntegrationSpecCommonBa
       val result: HttpResponse = await(connector.postFileNotifications(Seq(model)))
       result.status shouldBe OK
       }
-    }
   }
 
 }

@@ -18,6 +18,7 @@ package controllers
 
 import base.SpecBase
 import config.AppConfig
+import connectors.FileNotificationOrchestratorConnector
 import connectors.parsers.AppealsParser.UnexpectedFailure
 import connectors.parsers.ETMPPayloadParser.{GetETMPPayloadMalformed, GetETMPPayloadNoContent, GetETMPPayloadSuccessResponse}
 import models.appeals.{AppealData, AppealResponseModel}
@@ -44,12 +45,13 @@ class AppealsControllerSpec extends SpecBase {
   val mockAppConfig: AppConfig = mock(classOf[AppConfig])
   val mockUUIDGenerator: UUIDGenerator = mock(classOf[UUIDGenerator])
   val correlationId = "id-1234567890"
+  val connector: FileNotificationOrchestratorConnector = injector.instanceOf[FileNotificationOrchestratorConnector]
 
   class Setup(withRealAppConfig: Boolean = true) {
     reset(mockAppConfig)
     reset(mockETMPService)
     val controller = new AppealsController(if (withRealAppConfig) appConfig
-    else mockAppConfig, mockETMPService, mockUUIDGenerator, stubControllerComponents())
+    else mockAppConfig, mockETMPService, mockUUIDGenerator, connector, stubControllerComponents())
   }
 
   "getAppealsDataForLateSubmissionPenalty" should {

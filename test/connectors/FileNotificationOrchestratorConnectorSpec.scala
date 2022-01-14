@@ -19,7 +19,7 @@ package connectors
 import base.SpecBase
 import config.AppConfig
 import models.notification._
-import org.mockito.ArgumentMatchers
+import org.mockito.{ArgumentCaptor, ArgumentMatchers}
 import org.mockito.Mockito._
 import play.api.http.Status.OK
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
@@ -34,8 +34,8 @@ class FileNotificationOrchestratorConnectorSpec extends SpecBase {
   implicit val ec: ExecutionContext = ExecutionContext.Implicits.global
 
   class Setup {
-    val connector = new FileNotificationOrchestratorConnector(mockHttpClient, mockAppConfig)
     reset(mockHttpClient)
+    val connector = new FileNotificationOrchestratorConnector(mockHttpClient, mockAppConfig)
   }
 
   "postFileNotifications" should {
@@ -54,12 +54,19 @@ class FileNotificationOrchestratorConnectorSpec extends SpecBase {
           correlationID = "corr12345"
         )
       )
-      when(mockHttpClient.POST[Seq[SDESNotification],HttpResponse](ArgumentMatchers.any(),
+      val argumentCaptorOtherHeaders: ArgumentCaptor[Seq[(String, String)]] = ArgumentCaptor.forClass(classOf[Seq[(String, String)]])
+      when(mockHttpClient.POST[Seq[SDESNotification],HttpResponse](
+        ArgumentMatchers.any(),
+        ArgumentMatchers.any(),
+        argumentCaptorOtherHeaders.capture()
+      )(ArgumentMatchers.any(),
+        ArgumentMatchers.any(),
+        ArgumentMatchers.any(),
         ArgumentMatchers.any()))
-        .thenReturn(Future.successful(HttpResponse(OK, "OK")))
+        .thenReturn(Future.successful(HttpResponse(OK, "")))
 
       val result: HttpResponse = await(connector.postFileNotifications(Seq(model))(HeaderCarrier()))
-       result shouldBe OK
+       result.status shouldBe OK
      }
   }
 }
