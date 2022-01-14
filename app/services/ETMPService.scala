@@ -16,11 +16,12 @@
 
 package services
 
-import connectors.parsers.ETMPPayloadParser.{ETMPPayloadResponse,
-  GetETMPPayloadFailureResponse, GetETMPPayloadMalformed, GetETMPPayloadNoContent, GetETMPPayloadSuccessResponse}
+import connectors.parsers.AppealsParser
+import connectors.parsers.AppealsParser.AppealSubmissionResponse
+import connectors.parsers.ETMPPayloadParser.{ETMPPayloadResponse, GetETMPPayloadFailureResponse, GetETMPPayloadMalformed, GetETMPPayloadNoContent, GetETMPPayloadSuccessResponse}
 import connectors.{AppealsConnector, ETMPConnector}
 import models.ETMPPayload
-import models.appeals.AppealSubmission
+import models.appeals.{AppealResponseModel, AppealSubmission}
 import models.penalty.PenaltyPeriod
 import models.point.PointStatusEnum
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
@@ -109,7 +110,18 @@ class ETMPService @Inject()(etmpConnector: ETMPConnector,
 
   def submitAppeal(appealSubmission: AppealSubmission,
                    enrolmentKey: String, isLPP: Boolean, penaltyId: String)
-                  (implicit hc: HeaderCarrier): Future[HttpResponse] = appealsConnector.submitAppeal(appealSubmission, enrolmentKey, isLPP, penaltyId)
+                  (implicit hc: HeaderCarrier): Future[Either[AppealsParser.ErrorResponse, AppealResponseModel]]= appealsConnector.submitAppeal(appealSubmission, enrolmentKey, isLPP, penaltyId).flatMap{
+    _.fold(
+      error => {
+        logger.error(s"[ETMPService][submitAppeal] - Submmit appeal call failed with error: ${error.body} and status: ${error.status}")
+        Future(Left(error))
+      },
+      responseModel => {
+        logger.debug(s"[ETMPService][submitAppeal] - Retrieving response model for penalty: $penaltyId")
+        Future(Right(responseModel))
+      }
+    )
+  }
 
   def getNumberOfEstimatedPenalties(etmpPayload: ETMPPayload): Int = {
     val lppEstimatedPenalties: Int = etmpPayload.latePaymentPenalties.map(_.count(_.status == PointStatusEnum.Estimated)).getOrElse(0)

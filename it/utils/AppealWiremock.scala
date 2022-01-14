@@ -19,13 +19,23 @@ package utils
 import com.github.tomakehurst.wiremock.client.WireMock._
 import com.github.tomakehurst.wiremock.http.Fault
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
+import play.api.libs.json.{JsValue, Json}
 
 trait AppealWiremock {
+
+  val appealResponseModel: JsValue = Json.parse(
+    """
+      |{
+      | "caseID": "PR-1234567889"
+      |}
+      |""".stripMargin
+  )
 
   def mockResponseForAppealSubmissionPEGA(status: Int, penaltyId: String): StubMapping = {
     stubFor(post(urlEqualTo(s"/penalty/first-stage-appeal/$penaltyId"))
       .willReturn(
         aResponse()
+          .withBody(appealResponseModel.toString())
           .withStatus(status)
       ))
   }
@@ -34,6 +44,7 @@ trait AppealWiremock {
     stubFor(post(urlEqualTo(s"/penalties-stub/appeals/submit?enrolmentKey=$enrolmentKey&isLPP=$isLPP&penaltyId=$penaltyId"))
       .willReturn(
         aResponse()
+          .withBody(appealResponseModel.toString())
           .withStatus(status)
       ))
   }

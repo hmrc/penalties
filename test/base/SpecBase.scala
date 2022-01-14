@@ -17,9 +17,9 @@
 package base
 
 import java.time.LocalDateTime
-
 import config.AppConfig
 import models.ETMPPayload
+import models.appeals.AppealResponseModel
 import models.communication.{Communication, CommunicationTypeEnum}
 import models.financial.Financial
 import models.payment.{LatePaymentPenalty, PaymentPeriod, PaymentStatusEnum}
@@ -502,4 +502,6 @@ trait SpecBase extends AnyWordSpec with Matchers with GuiceOneAppPerSuite {
     penaltyPointsThreshold = 3,
     penaltyPoints = Seq()
   )
+
+  val appealResponseModel = AppealResponseModel("PR-123456789")
 }
