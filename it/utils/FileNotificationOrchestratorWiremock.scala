@@ -14,23 +14,19 @@
  * limitations under the License.
  */
 
-package models.notification
+package utils
 
-import play.api.libs.json.{Json, Writes}
+import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, post, stubFor, urlEqualTo}
+import com.github.tomakehurst.wiremock.stubbing.StubMapping
 
-case class SDESNotification(
-                             informationType: String,
-                             file: SDESNotificationFile,
-                             audit: SDESAudit
-                           )
+trait FileNotificationOrchestratorWiremock {
 
-object SDESNotification {
-  implicit val writes: Writes[SDESNotification] = Json.writes[SDESNotification]
-  val seqOfWrites: Writes[Seq[SDESNotification]] = Writes.seq
-}
+  def mockResponseForFileNotificationOrchestrator(status: Int): StubMapping = {
+    stubFor(post(urlEqualTo(s"/penalties-file-notification-orchestrator/new-notifications"))
+      .willReturn(
+        aResponse()
+          .withStatus(status)
+      ))
+  }
 
-case class SDESAudit(correlationID: String)
-
-object SDESAudit {
-  implicit val writes: Writes[SDESAudit] = Json.writes[SDESAudit]
 }

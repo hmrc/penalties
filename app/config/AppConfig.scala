@@ -40,6 +40,10 @@ class AppConfig @Inject()(config: Configuration, servicesConfig: ServicesConfig)
   lazy val desEnvironment: String = servicesConfig.getConfString("des.environment", "live")
 
   lazy val desBearerToken: String = s"Bearer ${servicesConfig.getConfString("des.bearerToken", "")}"
+  
+  lazy val fileNotificationOrchestrator: String = servicesConfig.baseUrl("penalties-file-notification-orchestrator")
+
+  def postFileNotificationUrl: String = s"$fileNotificationOrchestrator/penalties-file-notification-orchestrator/new-notifications"
 
   lazy val SDESNotificationInfoType: String = config.get[String]("SDESNotification.informationType")
   lazy val SDESNotificationFileRecipient: String = config.get[String]("SDESNotification.file.recipient")
