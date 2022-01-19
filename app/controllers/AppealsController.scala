@@ -160,7 +160,13 @@ class AppealsController @Inject()(appConfig: AppConfig,
                     }
                     if (!seqOfNotifications.isEmpty) {
                       logger.debug(s"[AppealsController][submitAppeal] Posting SDESNotifications: $seqOfNotifications to Orchestrator")
-                       fileNotificationOrchestratorConnector.postFileNotifications(seqOfNotifications)
+                      fileNotificationOrchestratorConnector.postFileNotifications(seqOfNotifications).map {
+                        response =>
+                          response.status match {
+                            case INTERNAL_SERVER_ERROR =>
+                              logger.info(s"[AppealsController][submitAppeal] - INTERNAL_SERVER_ERROR from postFileNotifications with body: ${response.body}")
+                          }
+                      }
                     }
                     Ok("")
                   }
