@@ -160,7 +160,15 @@ class AppealsController @Inject()(appConfig: AppConfig,
                     }
                     if (!seqOfNotifications.isEmpty) {
                       logger.debug(s"[AppealsController][submitAppeal] Posting SDESNotifications: $seqOfNotifications to Orchestrator")
-                       fileNotificationOrchestratorConnector.postFileNotifications(seqOfNotifications)
+                      fileNotificationOrchestratorConnector.postFileNotifications(seqOfNotifications).map {
+                        response =>
+                          response.status match {
+                            case OK =>
+                              logger.debug(s"[AppealsController][submitAppeal] - Received OK from file notification orchestrator")
+                            case status =>
+                              logger.error(s"[AppealsController][submitAppeal] - Received unknown response (${status}) from file notification orchestrator. Response body: ${response.body}")
+                          }
+                      }
                     }
                     Ok("")
                   }
