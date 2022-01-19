@@ -163,8 +163,10 @@ class AppealsController @Inject()(appConfig: AppConfig,
                       fileNotificationOrchestratorConnector.postFileNotifications(seqOfNotifications).map {
                         response =>
                           response.status match {
-                            case INTERNAL_SERVER_ERROR =>
-                              logger.info(s"[AppealsController][submitAppeal] - INTERNAL_SERVER_ERROR from postFileNotifications with body: ${response.body}")
+                            case OK =>
+                              logger.debug(s"[AppealsController][submitAppeal] - Received OK from file notification orchestrator")
+                            case status =>
+                              logger.error(s"[AppealsController][submitAppeal] - Received unknown response (${status}) from file notification orchestrator. Response body: ${response.body}")
                           }
                       }
                     }
