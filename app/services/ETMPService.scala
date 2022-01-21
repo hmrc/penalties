@@ -17,14 +17,13 @@
 package services
 
 import connectors.parsers.AppealsParser
-import connectors.parsers.AppealsParser.AppealSubmissionResponse
 import connectors.parsers.ETMPPayloadParser.{ETMPPayloadResponse, GetETMPPayloadFailureResponse, GetETMPPayloadMalformed, GetETMPPayloadNoContent, GetETMPPayloadSuccessResponse}
 import connectors.{AppealsConnector, ETMPConnector}
 import models.ETMPPayload
 import models.appeals.{AppealResponseModel, AppealSubmission}
 import models.penalty.PenaltyPeriod
 import models.point.PointStatusEnum
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
+import uk.gov.hmrc.http.HeaderCarrier
 import utils.Logger.logger
 import utils.PenaltyPeriodHelper
 

@@ -19,12 +19,11 @@ package connectors
 import base.SpecBase
 import connectors.parsers.AppealsParser.AppealSubmissionResponse
 import featureSwitches.{CallPEGA, FeatureSwitching}
-import models.appeals.{AppealResponseModel, AppealSubmission, CrimeAppealInformation}
-import org.mockito.{ArgumentCaptor, ArgumentMatchers}
+import models.appeals.{AppealSubmission, CrimeAppealInformation}
 import org.mockito.Mockito._
-import play.api.http.Status.OK
+import org.mockito.{ArgumentCaptor, ArgumentMatchers}
 import play.api.test.Helpers._
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse}
+import uk.gov.hmrc.http.{HeaderCarrier, HttpClient}
 
 import java.time.LocalDateTime
 import scala.concurrent.{ExecutionContext, Future}

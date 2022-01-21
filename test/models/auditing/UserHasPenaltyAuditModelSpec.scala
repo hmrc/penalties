@@ -492,6 +492,13 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
       "the user is an agent" in {
         (basicAgentModel.detail \ "agentReferenceNumber").isDefined
         (basicAgentModel.detail \ "agentReferenceNumber").validate[String].get shouldBe "ARN123"
+        (basicAgentModel.detail \ "userType").isDefined
+        (basicAgentModel.detail \ "userType").validate[String].get shouldBe "Agent"
+      }
+
+      "the user is a trader" in {
+        (basicModel.detail \ "userType").isDefined
+        (basicModel.detail \ "userType").validate[String].get shouldBe "Trader"
       }
 
       "the user has parent charges (VAT / ECN etc.) due" in {

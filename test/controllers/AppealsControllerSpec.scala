@@ -21,9 +21,9 @@ import config.AppConfig
 import connectors.FileNotificationOrchestratorConnector
 import connectors.parsers.AppealsParser.UnexpectedFailure
 import connectors.parsers.ETMPPayloadParser.{GetETMPPayloadMalformed, GetETMPPayloadNoContent, GetETMPPayloadSuccessResponse}
-import models.appeals.{AppealData, AppealResponseModel}
+import models.appeals.AppealData
 import models.appeals.AppealTypeEnum.{Additional, Late_Payment, Late_Submission}
-import models.notification.{SDESAudit, SDESChecksum, SDESNotification, SDESNotificationFile, SDESProperties}
+import models.notification._
 import models.upload.{UploadDetails, UploadJourney, UploadStatusEnum}
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
@@ -32,8 +32,6 @@ import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.Result
 import play.api.test.Helpers._
 import services.ETMPService
-import uk.gov.hmrc.http.HttpResponse
-import uk.gov.hmrc.play.bootstrap.backend.http.ErrorResponse
 import utils.{PenaltyPeriodHelper, UUIDGenerator}
 
 import java.time.LocalDateTime
