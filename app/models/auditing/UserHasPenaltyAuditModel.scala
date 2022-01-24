@@ -34,6 +34,7 @@ case class UserHasPenaltyAuditModel(
 
   override val auditType: String = "PenaltyUserHasPenalty"
   override val transactionName: String = "penalties-user-has-penalty"
+  val userType: String = if(arn.isDefined) "Agent" else "Trader"
 
   private val callingService: String = request.headers.get("User-Agent") match {
     case Some(x) if x.contains("penalties-frontend") => "penalties-frontend"
@@ -114,6 +115,7 @@ case class UserHasPenaltyAuditModel(
     "taxIdentifier" -> identifier,
     "identifierType" -> identifierType,
     "agentReferenceNumber" -> arn,
+    "userType" -> userType,
     "callingService" -> callingService,
     "penaltyInformation" -> penaltyInformation
   )
