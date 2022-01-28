@@ -17,14 +17,13 @@
 package services
 
 import connectors.parsers.AppealsParser
-import connectors.parsers.AppealsParser.AppealSubmissionResponse
 import connectors.parsers.ETMPPayloadParser.{ETMPPayloadResponse, GetETMPPayloadFailureResponse, GetETMPPayloadMalformed, GetETMPPayloadNoContent, GetETMPPayloadSuccessResponse}
 import connectors.{AppealsConnector, ETMPConnector}
 import models.ETMPPayload
 import models.appeals.{AppealResponseModel, AppealSubmission}
 import models.penalty.PenaltyPeriod
 import models.point.PointStatusEnum
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
+import uk.gov.hmrc.http.HeaderCarrier
 import utils.Logger.logger
 import utils.PenaltyPeriodHelper
 
@@ -110,17 +109,20 @@ class ETMPService @Inject()(etmpConnector: ETMPConnector,
 
   def submitAppeal(appealSubmission: AppealSubmission,
                    enrolmentKey: String, isLPP: Boolean, penaltyId: String)
-                  (implicit hc: HeaderCarrier): Future[Either[AppealsParser.ErrorResponse, AppealResponseModel]]= appealsConnector.submitAppeal(appealSubmission, enrolmentKey, isLPP, penaltyId).flatMap{
-    _.fold(
-      error => {
-        logger.error(s"[ETMPService][submitAppeal] - Submmit appeal call failed with error: ${error.body} and status: ${error.status}")
-        Future(Left(error))
-      },
-      responseModel => {
-        logger.debug(s"[ETMPService][submitAppeal] - Retrieving response model for penalty: $penaltyId")
-        Future(Right(responseModel))
-      }
-    )
+                  (implicit hc: HeaderCarrier): Future[Either[AppealsParser.ErrorResponse, AppealResponseModel]]= {
+
+    appealsConnector.submitAppeal(appealSubmission, enrolmentKey, isLPP, penaltyId, hc.otherHeaders.toMap.get("CorrelationId").get).flatMap {
+      _.fold(
+        error => {
+          logger.error(s"[ETMPService][submitAppeal] - Submit appeal call failed with error: ${error.body} and status: ${error.status}")
+          Future(Left(error))
+        },
+        responseModel => {
+          logger.debug(s"[ETMPService][submitAppeal] - Retrieving response model for penalty: $penaltyId")
+          Future(Right(responseModel))
+        }
+      )
+    }
   }
 
   def getNumberOfEstimatedPenalties(etmpPayload: ETMPPayload): Int = {

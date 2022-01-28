@@ -20,7 +20,6 @@ import featureSwitches.{CallPEGA, FeatureSwitching}
 import models.appeals.{AppealSubmission, CrimeAppealInformation}
 import play.api.http.Status
 import play.api.test.Helpers._
-import uk.gov.hmrc.http.HttpResponse
 import utils.{AppealWiremock, IntegrationSpecCommonBase}
 
 import java.time.LocalDateTime
@@ -31,6 +30,7 @@ class AppealsConnectorISpec extends IntegrationSpecCommonBase with AppealWiremoc
 
   class Setup {
     val connector: AppealsConnector = injector.instanceOf[AppealsConnector]
+    val correlationId: String = "corId"
   }
 
   "submitAppeal" should {
@@ -56,7 +56,7 @@ class AppealsConnectorISpec extends IntegrationSpecCommonBase with AppealWiremoc
           isClientResponsibleForLateSubmission = None
         )
       )
-      val result = await(connector.submitAppeal(modelToSend, "HMRC-MTD-VAT~VRN~1234567890", isLPP = false, penaltyId = "1234567890"))
+      val result = await(connector.submitAppeal(modelToSend, "HMRC-MTD-VAT~VRN~1234567890", isLPP = false, penaltyId = "1234567890", correlationId))
       result.isRight shouldBe true
     }
 
@@ -82,7 +82,7 @@ class AppealsConnectorISpec extends IntegrationSpecCommonBase with AppealWiremoc
           isClientResponsibleForLateSubmission = None
         )
       )
-      val result = await(connector.submitAppeal(modelToSend, "HMRC-MTD-VAT~VRN~123456789", isLPP = false, penaltyId = "123456789"))
+      val result = await(connector.submitAppeal(modelToSend, "HMRC-MTD-VAT~VRN~123456789", isLPP = false, penaltyId = "123456789", correlationId))
       result.isRight shouldBe true
     }
 
@@ -108,7 +108,7 @@ class AppealsConnectorISpec extends IntegrationSpecCommonBase with AppealWiremoc
           isClientResponsibleForLateSubmission = None
         )
       )
-      val result = await(connector.submitAppeal(modelToSend, "HMRC-MTD-VAT~VRN~123456789", isLPP = true, penaltyId = "123456789"))
+      val result = await(connector.submitAppeal(modelToSend, "HMRC-MTD-VAT~VRN~123456789", isLPP = true, penaltyId = "123456789", correlationId))
       result.isRight shouldBe true
     }
   }

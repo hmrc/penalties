@@ -17,11 +17,12 @@
 package services
 
 import base.SpecBase
+import connectors.parsers.AppealsParser
 import connectors.parsers.AppealsParser.UnexpectedFailure
 import connectors.parsers.ETMPPayloadParser._
 import connectors.{AppealsConnector, ETMPConnector}
 import models.ETMPPayload
-import models.appeals.{AppealSubmission, CrimeAppealInformation}
+import models.appeals.{AppealResponseModel, AppealSubmission, CrimeAppealInformation}
 import models.communication.{Communication, CommunicationTypeEnum}
 import models.financial.Financial
 import models.payment.{LatePaymentPenalty, PaymentPeriod, PaymentStatusEnum}
@@ -32,14 +33,14 @@ import models.submission.{Submission, SubmissionStatusEnum}
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
 import play.api.test.Helpers._
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
+import uk.gov.hmrc.http.HeaderCarrier
 
 import java.time.LocalDateTime
 import scala.concurrent.{ExecutionContext, Future}
 
 class ETMPServiceSpec extends SpecBase {
   implicit val ec: ExecutionContext = ExecutionContext.Implicits.global
-  implicit val hc: HeaderCarrier = HeaderCarrier()
+  implicit val hc: HeaderCarrier = HeaderCarrier(otherHeaders = Seq("CorrelationId" -> "id"))
   val mockEtmpConnector: ETMPConnector = mock(classOf[ETMPConnector])
   val mockAppealsConnector: AppealsConnector = mock(classOf[AppealsConnector])
 
@@ -124,26 +125,30 @@ class ETMPServiceSpec extends SpecBase {
     )
 
     "return the response from the connector i.e. act as a pass-through function" in new Setup {
-      when(mockAppealsConnector.submitAppeal(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any()))
-        .thenReturn(Future.successful(Right(appealResponseModel)))
+      when(mockAppealsConnector.submitAppeal(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(),
+        ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(Right(appealResponseModel)))
 
-      val result = await(service.submitAppeal(modelToPassToServer, "HMRC-MTD-VAT~VRN~123456789", isLPP = false, penaltyId = "123456789"))
+      val result: Either[AppealsParser.ErrorResponse, AppealResponseModel] = await(
+        service.submitAppeal(modelToPassToServer, "HMRC-MTD-VAT~VRN~123456789", isLPP = false, penaltyId = "123456789"))
       result shouldBe Right(appealResponseModel)
     }
 
     "return the response from the connector on error i.e. act as a pass-through function" in new Setup {
-      when(mockAppealsConnector.submitAppeal(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any()))
-        .thenReturn(Future.successful(Left(UnexpectedFailure(BAD_GATEWAY, s"Unexpected response, status $BAD_GATEWAY returned"))))
+      when(mockAppealsConnector.submitAppeal(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(),
+        ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(
+        Left(UnexpectedFailure(BAD_GATEWAY, s"Unexpected response, status $BAD_GATEWAY returned"))))
 
-      val result = await(service.submitAppeal(modelToPassToServer, "HMRC-MTD-VAT~VRN~123456789", isLPP = false, penaltyId = "123456789"))
+      val result: Either[AppealsParser.ErrorResponse, AppealResponseModel] = await(service.submitAppeal(
+        modelToPassToServer, "HMRC-MTD-VAT~VRN~123456789", isLPP = false, penaltyId = "123456789"))
       result shouldBe Left(UnexpectedFailure(BAD_GATEWAY, s"Unexpected response, status $BAD_GATEWAY returned"))
     }
 
     "throw an exception when the connector throws an exception" in new Setup {
-      when(mockAppealsConnector.submitAppeal(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any()))
-        .thenReturn(Future.failed(new Exception("Something went wrong")))
+      when(mockAppealsConnector.submitAppeal(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(),
+        ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.failed(new Exception("Something went wrong")))
 
-      val result: Exception = intercept[Exception](await(service.submitAppeal(modelToPassToServer, "HMRC-MTD-VAT~VRN~123456789", isLPP = false, penaltyId = "123456789")))
+      val result: Exception = intercept[Exception](await(service.submitAppeal(
+        modelToPassToServer, "HMRC-MTD-VAT~VRN~123456789", isLPP = false, penaltyId = "123456789")))
       result.getMessage shouldBe "Something went wrong"
     }
   }
@@ -804,27 +809,27 @@ class ETMPServiceSpec extends SpecBase {
     )
 
     "return the outstanding amount of LSPs + LPPs (only for penalties with ESTIMATE status)" in new Setup {
-      val result = service.findEstimatedPenaltiesAmount(mockETMPPayloadResponseAsModelWithEstimateLSPAndLPP)
+      val result: BigDecimal = service.findEstimatedPenaltiesAmount(mockETMPPayloadResponseAsModelWithEstimateLSPAndLPP)
       result shouldBe BigDecimal(122)
     }
 
     "return the outstanding amount of LSPs (if no LPPs with status ESTIMATE exist and only for LSPs with ESTIMATE status)" in new Setup {
-      val result = service.findEstimatedPenaltiesAmount(mockETMPPayloadResponseAsModelWithEstimateLSPAndDueLPPs)
+      val result: BigDecimal = service.findEstimatedPenaltiesAmount(mockETMPPayloadResponseAsModelWithEstimateLSPAndDueLPPs)
       result shouldBe BigDecimal(100)
     }
 
     "return the outstanding amount of LPPs (if no LSPs with status ESTIMATE exist and only for LPPs with ESTIMATE status)" in new Setup {
-      val result = service.findEstimatedPenaltiesAmount(mockETMPPayloadResponseAsModelWithDueLSPAndEstimateLPPs)
+      val result: BigDecimal = service.findEstimatedPenaltiesAmount(mockETMPPayloadResponseAsModelWithDueLSPAndEstimateLPPs)
       result shouldBe BigDecimal(22)
     }
 
     "return 0 if no LSPs or LPPs exist" in new Setup {
-      val result = service.findEstimatedPenaltiesAmount(mockETMPPayloadResponseAsModelNoPenalties)
+      val result: BigDecimal = service.findEstimatedPenaltiesAmount(mockETMPPayloadResponseAsModelNoPenalties)
       result shouldBe BigDecimal(0)
     }
 
     "return 0 if no LSPs or LPPs exist with ESTIMATE status" in new Setup {
-      val result = service.findEstimatedPenaltiesAmount(mockETMPPayloadResponseAsModelNoEstimateLSPAndLPP)
+      val result: BigDecimal = service.findEstimatedPenaltiesAmount(mockETMPPayloadResponseAsModelNoEstimateLSPAndLPP)
       result shouldBe BigDecimal(0)
     }
   }
@@ -1004,7 +1009,7 @@ class ETMPServiceSpec extends SpecBase {
     }
 
     "return 0 when a payload has no due penalties" in new Setup {
-      val result = service.getNumberOfCrystalizedPenalties(mockETMPPayloadResponseAsModel)
+      val result: Int = service.getNumberOfCrystalizedPenalties(mockETMPPayloadResponseAsModel)
       result shouldBe 0
     }
 
@@ -1013,12 +1018,12 @@ class ETMPServiceSpec extends SpecBase {
   "getCrystallisedPenaltyTotal" should {
 
     "return the correct total of due penalties in a payload" in new Setup {
-      val result = service.getCrystalisedPenaltyTotal(mockETMPPayloadResponseAsModelForLPPWithAdditionalPenalties)
+      val result: BigDecimal = service.getCrystalisedPenaltyTotal(mockETMPPayloadResponseAsModelForLPPWithAdditionalPenalties)
       result shouldBe BigDecimal(288)
     }
 
     "return 0 when the payload has no due penalties" in new Setup {
-      val result = service.getCrystalisedPenaltyTotal(mockETMPPayloadResponseAsModel)
+      val result: BigDecimal = service.getCrystalisedPenaltyTotal(mockETMPPayloadResponseAsModel)
       result shouldBe BigDecimal(0)
     }
   }

@@ -18,23 +18,38 @@ package connectors
 
 import config.AppConfig
 import connectors.parsers.AppealsParser.{AppealSubmissionResponse, AppealSubmissionResponseReads}
-import featureSwitches.CallPEGA
+import play.api.http.HeaderNames._
 import models.appeals.AppealSubmission
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient}
+import utils.Logger.logger
+import play.api.http.MimeTypes
+
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class AppealsConnector @Inject()(httpClient: HttpClient,
                                  appConfig: AppConfig)(implicit ec: ExecutionContext) {
-  def submitAppeal(appealSubmission: AppealSubmission, enrolmentKey: String, isLPP: Boolean, penaltyId: String)(
-    implicit hc: HeaderCarrier): Future[AppealSubmissionResponse] = {
-    val isPEGASwitchEnabled: Boolean = appConfig.isEnabled(CallPEGA)
-    val hcWithNoHeaders: HeaderCarrier = HeaderCarrier()
-     httpClient.POST[AppealSubmission, AppealSubmissionResponse](
-       appConfig.getAppealSubmissionURL(enrolmentKey, isLPP, penaltyId),
-      appealSubmission,
-       if(isPEGASwitchEnabled) hc.otherHeaders else hcWithNoHeaders.otherHeaders)(
-       AppealSubmission.apiWrites, AppealSubmissionResponseReads, if(isPEGASwitchEnabled) hc else hcWithNoHeaders, implicitly)
+  def submitAppeal(appealSubmission: AppealSubmission, enrolmentKey: String, isLPP: Boolean, penaltyId: String, correlationId: String): Future[AppealSubmissionResponse] = {
+
+    implicit val hc: HeaderCarrier = headersForEIS(correlationId, appConfig.pegaBearerToken, appConfig.pegaEnvironment)
+
+    println(s"------\nOther Heaeders = ${hc.otherHeaders}\n------------")
+
+    httpClient.POST[AppealSubmission, AppealSubmissionResponse](appConfig.getAppealSubmissionURL(enrolmentKey, isLPP, penaltyId), appealSubmission, hc.otherHeaders)
+  }
+
+  def headersForEIS(correlationId: String, bearerToken: String, environment: String): HeaderCarrier = {
+    val headers = Seq(
+      "Environment"      -> environment,
+      "CorrelationId" -> correlationId,
+      CONTENT_TYPE       -> MimeTypes.JSON,
+      ACCEPT             -> MimeTypes.JSON,
+      AUTHORIZATION -> s"Bearer $bearerToken"
+    )
+
+    logger.debug(s"EIS send headers $headers")
+
+    HeaderCarrier(otherHeaders = headers)
   }
 }
