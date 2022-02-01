@@ -290,7 +290,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
           |}
           |""".stripMargin
       )
-      val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=false&penaltyId=123456789").post(
+      val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=false&penaltyId=123456789&correlationId=correlationId").post(
         jsonToSubmit
       ))
       result.status shouldBe OK
@@ -316,7 +316,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
           |		}
           |}
           |""".stripMargin)
-      val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=false&penaltyId=123456789").post(
+      val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=false&penaltyId=123456789&correlationId=correlationId").post(
         jsonToSubmit
       ))
       result.status shouldBe OK
@@ -342,7 +342,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
           |    }
           |}
           |""".stripMargin)
-      val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=false&penaltyId=123456789").post(
+      val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=false&penaltyId=123456789&correlationId=correlationId").post(
         jsonToSubmit
       ))
       result.status shouldBe OK
@@ -368,7 +368,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
           |		}
           |}
           |""".stripMargin)
-      val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=false&penaltyId=123456789").post(
+      val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=false&penaltyId=123456789&correlationId=correlationId").post(
         jsonToSubmit
       ))
       result.status shouldBe OK
@@ -395,7 +395,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
           |		}
           |}
           |""".stripMargin)
-      val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=false&penaltyId=123456789").post(
+      val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=false&penaltyId=123456789&correlationId=correlationId").post(
         jsonToSubmit
       ))
       result.status shouldBe OK
@@ -424,7 +424,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
             |		}
             |}
             |""".stripMargin)
-        val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=false&penaltyId=123456789").post(
+        val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=false&penaltyId=123456789&correlationId=correlationId").post(
           jsonToSubmit
         ))
         result.status shouldBe OK
@@ -452,7 +452,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
             |		}
             |}
             |""".stripMargin)
-        val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=false&penaltyId=123456789").post(
+        val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=false&penaltyId=123456789&correlationId=correlationId").post(
           jsonToSubmit
         ))
         result.status shouldBe OK
@@ -481,7 +481,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
             |		}
             |}
             |""".stripMargin)
-        val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=false&penaltyId=123456789").post(
+        val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=false&penaltyId=123456789&correlationId=correlationId").post(
           jsonToSubmit
         ))
         result.status shouldBe OK
@@ -508,7 +508,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
             |		}
             |}
             |""".stripMargin)
-        val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=true&penaltyId=123456789").post(
+        val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=true&penaltyId=123456789&correlationId=correlationId").post(
           jsonToSubmit
         ))
         result.status shouldBe OK
@@ -517,14 +517,14 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
 
     "return BAD_REQUEST (400)" when {
       "no JSON body is in the request" in {
-        val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789").post(
+        val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&correlationId=correlationId").post(
           ""
         ))
         result.status shouldBe BAD_REQUEST
       }
 
       "JSON body is present but it can not be parsed to a model" in {
-        val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789").post(
+        val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&correlationId=correlationId").post(
           Json.parse("{}")
         ))
         result.status shouldBe BAD_REQUEST
@@ -532,7 +532,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
     }
 
     "return error status code" when {
-      "the call to ETMP/stub fails" in {
+      "the call to PEGA/stub fails" in {
         mockResponseForAppealSubmissionStub(GATEWAY_TIMEOUT, "HMRC-MTD-VAT~VRN~123456789", penaltyId = "123456789")
         val jsonToSubmit: JsValue = Json.parse(
           """
@@ -553,13 +553,13 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
             |		}
             |}
             |""".stripMargin)
-        val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=false&penaltyId=123456789").post(
+        val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=false&penaltyId=123456789&correlationId=correlationId").post(
           jsonToSubmit
         ))
         result.status shouldBe GATEWAY_TIMEOUT
       }
 
-      "the call to ETMP/stub has a fault" in {
+      "the call to PEGA/stub has a fault" in {
         mockResponseForAppealSubmissionStubFault("HMRC-MTD-VAT~VRN~123456789", penaltyId = "123456789")
         val jsonToSubmit: JsValue = Json.parse(
           """
@@ -580,7 +580,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
             |		}
             |}
             |""".stripMargin)
-        val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=false&penaltyId=123456789").post(
+        val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=false&penaltyId=123456789&correlationId=correlationId").post(
           jsonToSubmit
         ))
         result.status shouldBe INTERNAL_SERVER_ERROR

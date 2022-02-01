@@ -18,7 +18,7 @@ package services
 
 import connectors.parsers.AppealsParser
 import connectors.parsers.ETMPPayloadParser.{ETMPPayloadResponse, GetETMPPayloadFailureResponse, GetETMPPayloadMalformed, GetETMPPayloadNoContent, GetETMPPayloadSuccessResponse}
-import connectors.{AppealsConnector, ETMPConnector}
+import connectors.{PEGAConnector, ETMPConnector}
 import models.ETMPPayload
 import models.appeals.{AppealResponseModel, AppealSubmission}
 import models.penalty.PenaltyPeriod
@@ -32,7 +32,7 @@ import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class ETMPService @Inject()(etmpConnector: ETMPConnector,
-                            appealsConnector: AppealsConnector)
+                            appealsConnector: PEGAConnector)
                            (implicit ec: ExecutionContext) {
 
   def getPenaltyDataFromETMPForEnrolment(enrolmentKey: String)(implicit hc: HeaderCarrier): Future[(Option[ETMPPayload], ETMPPayloadResponse) ] = {
@@ -108,18 +108,20 @@ class ETMPService @Inject()(etmpConnector: ETMPConnector,
   }
 
   def submitAppeal(appealSubmission: AppealSubmission,
-                   enrolmentKey: String, isLPP: Boolean, penaltyId: String)
-                  (implicit hc: HeaderCarrier): Future[Either[AppealsParser.ErrorResponse, AppealResponseModel]]= appealsConnector.submitAppeal(appealSubmission, enrolmentKey, isLPP, penaltyId).flatMap{
-    _.fold(
-      error => {
-        logger.error(s"[ETMPService][submitAppeal] - Submmit appeal call failed with error: ${error.body} and status: ${error.status}")
-        Future(Left(error))
-      },
-      responseModel => {
-        logger.debug(s"[ETMPService][submitAppeal] - Retrieving response model for penalty: $penaltyId")
-        Future(Right(responseModel))
-      }
-    )
+                   enrolmentKey: String, isLPP: Boolean, penaltyId: String, correlationId: String): Future[Either[AppealsParser.ErrorResponse, AppealResponseModel]]= {
+
+    appealsConnector.submitAppeal(appealSubmission, enrolmentKey, isLPP, penaltyId, correlationId).flatMap {
+      _.fold(
+        error => {
+          logger.error(s"[ETMPService][submitAppeal] - Submit appeal call failed with error: ${error.body} and status: ${error.status}")
+          Future(Left(error))
+        },
+        responseModel => {
+          logger.debug(s"[ETMPService][submitAppeal] - Retrieving response model for penalty: $penaltyId")
+          Future(Right(responseModel))
+        }
+      )
+    }
   }
 
   def getNumberOfEstimatedPenalties(etmpPayload: ETMPPayload): Int = {
