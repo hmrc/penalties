@@ -99,10 +99,6 @@ trait IntegrationSpecCommonBase extends AnyWordSpec with Matchers with GuiceOneS
     ws.url(s"http://localhost:$port$baseUrl$uri").withFollowRedirects(false)
   }
 
-  def buildClientForRequestToAppWithCorrelationId(baseUrl: String = "/penalties", uri: String, id: String = "corId"): WSRequest = {
-    ws.url(s"http://localhost:$port$baseUrl$uri").withFollowRedirects(false).addHttpHeaders(("CorrelationId", id))
-  }
-
   val sampleDate: LocalDateTime = LocalDateTime.of(2021, 4, 23, 18, 25, 43).plus(511, ChronoUnit.MILLIS)
 
   val etmpPayloadModel: ETMPPayload = ETMPPayload(

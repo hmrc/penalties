@@ -25,7 +25,7 @@ import models.penalty.PenaltyPeriod
 import models.point.PointStatusEnum
 import uk.gov.hmrc.http.HeaderCarrier
 import utils.Logger.logger
-import utils.{Logger, PenaltyPeriodHelper}
+import utils.PenaltyPeriodHelper
 
 import java.time.LocalDate
 import javax.inject.Inject
@@ -108,12 +108,9 @@ class ETMPService @Inject()(etmpConnector: ETMPConnector,
   }
 
   def submitAppeal(appealSubmission: AppealSubmission,
-                   enrolmentKey: String, isLPP: Boolean, penaltyId: String)
-                  (implicit hc: HeaderCarrier): Future[Either[AppealsParser.ErrorResponse, AppealResponseModel]]= {
+                   enrolmentKey: String, isLPP: Boolean, penaltyId: String, correlationId: String): Future[Either[AppealsParser.ErrorResponse, AppealResponseModel]]= {
 
-    Logger.logger.debug(s"--------\nHC = $hc\nOther Headers = ${hc.otherHeaders}\nExtra Headers = ${hc.extraHeaders}")
-
-    appealsConnector.submitAppeal(appealSubmission, enrolmentKey, isLPP, penaltyId, hc.otherHeaders.toMap.get("CorrelationId").get).flatMap {
+    appealsConnector.submitAppeal(appealSubmission, enrolmentKey, isLPP, penaltyId, correlationId).flatMap {
       _.fold(
         error => {
           logger.error(s"[ETMPService][submitAppeal] - Submit appeal call failed with error: ${error.body} and status: ${error.status}")

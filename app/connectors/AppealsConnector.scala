@@ -34,8 +34,6 @@ class AppealsConnector @Inject()(httpClient: HttpClient,
 
     implicit val hc: HeaderCarrier = headersForEIS(correlationId, appConfig.pegaBearerToken, appConfig.pegaEnvironment)
 
-    println(s"------\nOther Heaeders = ${hc.otherHeaders}\n------------")
-
     httpClient.POST[AppealSubmission, AppealSubmissionResponse](appConfig.getAppealSubmissionURL(enrolmentKey, isLPP, penaltyId), appealSubmission, hc.otherHeaders)
   }
 
