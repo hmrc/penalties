@@ -35,6 +35,10 @@ class AppConfig @Inject()(config: Configuration, servicesConfig: ServicesConfig)
 
   lazy val pegaBase: String = servicesConfig.baseUrl("pega")
 
+  lazy val pegaBearerToken: String = config.get[String]("pega.bearerToken")
+
+  lazy val pegaEnvironment: String = config.get[String]("pega.environment")
+
   lazy val desBase: String = servicesConfig.baseUrl("des")
 
   lazy val desEnvironment: String = servicesConfig.getConfString("des.environment", "live")
