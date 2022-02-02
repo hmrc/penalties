@@ -385,12 +385,6 @@ object OtherAppealInformation {
       )(
         isClientResponsibleForLateSubmission => Json.obj("isClientResponsibleForLateSubmission" -> isClientResponsibleForLateSubmission)
       )
-    ).deepMerge(
-      otherAppealInformation.uploadedFiles.fold(
-        Json.obj()
-      )(
-        uploadedFiles => Json.obj("uploadedFiles" -> uploadedFiles)
-      )
     )
   }
 }
@@ -420,12 +414,6 @@ object ObligationAppealInformation {
         Json.obj()
       )(
         supportingEvidence => Json.obj("supportingEvidence" -> supportingEvidence)
-      )
-    ).deepMerge(
-      obligationAppealInformation.uploadedFiles.fold(
-        Json.obj()
-      )(
-        uploadedFiles => Json.obj("uploadedFiles" -> uploadedFiles)
       )
     )
   }
