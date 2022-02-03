@@ -40,6 +40,10 @@ class ETMPService @Inject()(etmpConnector: ETMPConnector,
     etmpConnector.getPenaltiesDataForEnrolmentKey(enrolmentKey).map {
       handleConnectorResponse(_)
     }
+//    etmpConnector.getPenaltyDetails(vatcUrl).map {
+//      // need to pass in vatcUrl from controller.
+//      //TODO handle getPenaltyDetails response
+//    }
   }
 
   def isMultiplePenaltiesInSamePeriod(penaltyId: String, enrolmentKey: String, isLPP: Boolean)(implicit hc: HeaderCarrier): Future[Boolean] = {

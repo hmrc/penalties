@@ -19,7 +19,8 @@ package connectors
 
 import config.AppConfig
 import connectors.parsers.ETMPPayloadParser.ETMPPayloadResponse
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient}
+import uk.gov.hmrc.auth.core.Enrolment
+import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse}
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
@@ -30,5 +31,9 @@ class ETMPConnector @Inject()(httpClient: HttpClient,
 
   def getPenaltiesDataForEnrolmentKey(enrolmentKey: String)(implicit hc: HeaderCarrier): Future[ETMPPayloadResponse] = {
     httpClient.GET[ETMPPayloadResponse](url = appConfig.getVATPenaltiesURL + enrolmentKey)
+  }
+
+  def getPenaltyDetails(vatcUrl: String)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
+    httpClient.GET[HttpResponse](url = appConfig.getPenaltyDetailsUrl + vatcUrl)
   }
 }

@@ -23,7 +23,7 @@ import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
 import play.api.http.Status
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient}
+import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -38,6 +38,7 @@ class ETMPConnectorSpec extends SpecBase {
 
     val connector = new ETMPConnector(mockHttpClient, mockAppConfig)
     when(mockAppConfig.getVATPenaltiesURL).thenReturn("/")
+    when(mockAppConfig.getPenaltyDetailsUrl).thenReturn("/")
   }
 
   "getPenaltiesDataForEnrolmentKey" should {
@@ -107,6 +108,34 @@ class ETMPConnectorSpec extends SpecBase {
         val result: ETMPPayloadResponse = await(connector.getPenaltiesDataForEnrolmentKey("123456789")(HeaderCarrier()))
         result.isLeft shouldBe true
       }
+    }
+  }
+
+  "getPenaltiesDetails" should {
+    "return a 200 when the call succeeds" in new Setup {
+      when(mockHttpClient.GET[HttpResponse](ArgumentMatchers.eq("/VATC/VRN/123456789"),
+        ArgumentMatchers.any(),
+        ArgumentMatchers.any())
+        (ArgumentMatchers.any(),
+          ArgumentMatchers.any(),
+          ArgumentMatchers.any()))
+        .thenReturn(Future.successful(HttpResponse(Status.OK, "")))
+
+      val result: HttpResponse = await(connector.getPenaltyDetails("VATC/VRN/123456789")(HeaderCarrier()))
+      result.status shouldBe Status.OK
+    }
+
+    s"return a 400 when the call fails" in new Setup {
+      when(mockHttpClient.GET[HttpResponse](ArgumentMatchers.eq("/FOO/BAR/123456789"),
+        ArgumentMatchers.any(),
+        ArgumentMatchers.any())
+        (ArgumentMatchers.any(),
+          ArgumentMatchers.any(),
+          ArgumentMatchers.any()))
+        .thenReturn(Future.successful(HttpResponse(Status.BAD_REQUEST, "")))
+
+      val result: HttpResponse = await(connector.getPenaltyDetails("FOO/BAR/123456789")(HeaderCarrier()))
+      result.status shouldBe Status.BAD_REQUEST
     }
   }
 }

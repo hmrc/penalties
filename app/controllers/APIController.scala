@@ -43,6 +43,7 @@ class APIController @Inject()(etmpService: ETMPService,
         Future(BadRequest(s"VRN: $vrn was not in a valid format."))
       } else {
         val enrolmentKey = RegimeHelper.constructMTDVATEnrolmentKey(vrn)
+//        val vatcUrl = RegimeHelper.constructMTDVATCUrl(vrn)
         etmpService.getPenaltyDataFromETMPForEnrolment(enrolmentKey).map {
           _._1.fold(
             NotFound(s"Unable to find data for VRN: $vrn")
