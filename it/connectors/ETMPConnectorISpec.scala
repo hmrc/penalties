@@ -21,7 +21,6 @@ import featureSwitches.{CallETMP, FeatureSwitching}
 import play.api.http.Status
 import play.api.libs.json.{JsValue, Json}
 import play.api.test.Helpers._
-import uk.gov.hmrc.http.HttpResponse
 import utils.{ETMPWiremock, IntegrationSpecCommonBase}
 
 import scala.concurrent.ExecutionContext
@@ -316,14 +315,6 @@ class ETMPConnectorISpec extends IntegrationSpecCommonBase with ETMPWiremock wit
       val result: ETMPPayloadResponse = await(connector.getPenaltiesDataForEnrolmentKey("123456789"))
       result.isLeft shouldBe true
       result.left.get shouldBe GetETMPPayloadFailureResponse(Status.GATEWAY_TIMEOUT)
-    }
-  }
-
-  "getPenaltyDetails" should {
-    "return a successful response when called" in new Setup {
-      mockResponseForNewETMPPayload(Status.OK, "VATC/VRN/123456789")
-      val result: HttpResponse = await(connector.getPenaltyDetails("/VATC/VRN/123456789"))
-      result.status shouldBe OK
     }
   }
 }
