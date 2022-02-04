@@ -114,7 +114,8 @@ class GetPenaltyDetailsSpec extends SpecBase {
         penaltyChargeDueDate = LocalDate.of(2022, 2, 1),
         penaltyStatus = LPPPenaltyStatusEnum.Posted,
         appealStatus = Some("1"),
-        communicationsDate = LocalDate.of(2022, 1, 1)
+        communicationsDate = LocalDate.of(2022, 1, 1),
+        principalChargeReference = "CHARGING12345"
       )
       result.isSuccess shouldBe true
       result.get.latePaymentPenalty.get.head shouldBe lppModel
@@ -173,7 +174,8 @@ class GetPenaltyDetailsSpec extends SpecBase {
         penaltyChargeDueDate = LocalDate.of(2022, 2, 1),
         penaltyStatus = LPPPenaltyStatusEnum.Posted,
         appealStatus = Some("1"),
-        communicationsDate = LocalDate.of(2022, 1, 1)
+        communicationsDate = LocalDate.of(2022, 1, 1),
+        principalChargeReference = "CHARGING12345"
       )
       val lspModel: LSPData = LSPData(
         summary = LSPSummary(
@@ -269,7 +271,8 @@ class GetPenaltyDetailsSpec extends SpecBase {
             penaltyChargeDueDate = LocalDate.of(2022, 2, 1),
             penaltyStatus = LPPPenaltyStatusEnum.Posted,
             appealStatus = Some("1"),
-            communicationsDate = LocalDate.of(2022, 1, 1)
+            communicationsDate = LocalDate.of(2022, 1, 1),
+            principalChargeReference = "CHARGING12345"
           )
         ))
       )
@@ -284,7 +287,8 @@ class GetPenaltyDetailsSpec extends SpecBase {
           |	    "penaltyChargeCreationDate": "2022-01-01",
           |	    "penaltyChargeDueDate": "2022-02-01",
           |	    "communicationsDate": "2022-01-01",
-          |     "appealStatus": "1"
+          |     "appealStatus": "1",
+          |     "principalChargeReference": "CHARGING12345"
           |   }
           | ]
           |}
