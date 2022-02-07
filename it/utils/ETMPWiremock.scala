@@ -197,4 +197,11 @@ trait ETMPWiremock {
         .withStatus(status)
     ))
   }
+
+  def mockResponseForNewETMPPayloadFinancialDetails(status: Int, vatcUrl: String): StubMapping = {
+    stubFor(get(urlEqualTo(s"/penalty/financial-data/$vatcUrl"))
+    .willReturn(
+      aResponse().withStatus(status)
+    ))
+  }
 }
