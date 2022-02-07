@@ -33,11 +33,19 @@ class LSPDetailsSpec extends SpecBase {
       |	"penaltyCreationDate": "2022-01-01",
       |	"penaltyExpiryDate": "2024-01-01",
       |	"communicationsDate": "2022-01-01",
-      |	"appealLevel": "1",
       |	"chargeReference": "foobar",
       |	"chargeAmount": 123.45,
       |	"chargeOutstandingAmount": 123.45,
-      |	"chargeDueDate": "2022-01-01"
+      | "chargeDueDate": "2022-01-01",
+      | "lateSubmissions": [{
+      |    "lateSubmissionID": "ID123",
+      |    "taxPeriod": "1",
+      |    "taxReturnStatus": "2",
+      |    "taxPeriodStartDate": "2022-01-01",
+      |    "taxPeriodEndDate": "2022-03-31",
+      |    "taxPeriodDueDate": "2022-05-07",
+      |    "returnReceiptDate": "2022-04-01"
+      | }]
       |}
       |""".stripMargin)
 
@@ -57,7 +65,16 @@ class LSPDetailsSpec extends SpecBase {
       |	"chargeReference": "foobar",
       |	"chargeAmount": 123.45,
       |	"chargeOutstandingAmount": 123.45,
-      |	"chargeDueDate": "2022-01-01"
+      |	"chargeDueDate": "2022-01-01",
+      |  "lateSubmissions": [{
+      |    "lateSubmissionID": "ID123",
+      |    "taxPeriod": "1",
+      |    "taxReturnStatus": "2",
+      |    "taxPeriodStartDate": "2022-01-01",
+      |    "taxPeriodEndDate": "2022-03-31",
+      |    "taxPeriodDueDate": "2022-05-07",
+      |    "returnReceiptDate": "2022-04-01"
+      |  }]
       |}
       |""".stripMargin)
 
@@ -69,7 +86,23 @@ class LSPDetailsSpec extends SpecBase {
     penaltyExpiryDate = LocalDate.of(2024, 1, 1),
     penaltyStatus = LSPPenaltyStatusEnum.Active,
     appealStatus = Some("1"),
-    communicationsDate = LocalDate.of(2022, 1, 1)
+    communicationsDate = LocalDate.of(2022, 1, 1),
+    appealLevel = Some("1"),
+    chargeReference = Some("foobar"),
+    chargeAmount = Some(123.45),
+    chargeOutstandingAmount = Some(123.45),
+    chargeDueDate = Some(LocalDate.of(2022, 1, 1)),
+    lateSubmissions = Some(Seq(
+      LateSubmission(
+        lateSubmissionID = "ID123",
+        taxPeriod = Some("1"),
+        taxReturnStatus = "2",
+        taxPeriodStartDate = Some(LocalDate.of(2022, 1, 1)),
+        taxPeriodEndDate = Some(LocalDate.of(2022, 3, 31)),
+        taxPeriodDueDate = Some(LocalDate.of(2022, 5, 7)),
+        returnReceiptDate = Some(LocalDate.of(2022, 4, 1))
+      )
+    ))
   )
 
   val modelWithoutAppealStatus: LSPDetails = LSPDetails(
@@ -80,7 +113,23 @@ class LSPDetailsSpec extends SpecBase {
     penaltyExpiryDate = LocalDate.of(2024, 1, 1),
     penaltyStatus = LSPPenaltyStatusEnum.Active,
     appealStatus = None,
-    communicationsDate = LocalDate.of(2022, 1, 1)
+    communicationsDate = LocalDate.of(2022, 1, 1),
+    appealLevel = None,
+    chargeReference = Some("foobar"),
+    chargeAmount = Some(123.45),
+    chargeOutstandingAmount = Some(123.45),
+    chargeDueDate = Some(LocalDate.of(2022, 1, 1)),
+    lateSubmissions = Some(Seq(
+      LateSubmission(
+        lateSubmissionID = "ID123",
+        taxPeriod = Some("1"),
+        taxReturnStatus = "2",
+        taxPeriodStartDate = Some(LocalDate.of(2022, 1, 1)),
+        taxPeriodEndDate = Some(LocalDate.of(2022, 3, 31)),
+        taxPeriodDueDate = Some(LocalDate.of(2022, 5, 7)),
+        returnReceiptDate = Some(LocalDate.of(2022, 4, 1))
+      )
+    ))
   )
 
   "be readable from JSON with no appeal status" in {
@@ -96,38 +145,13 @@ class LSPDetailsSpec extends SpecBase {
   }
 
   "be writable to JSON with no appeal status" in {
-    val refinedLSPDetailsWithoutAppealStatus: JsValue = Json.parse(
-      """
-        |{
-        |	"penaltyNumber": "1234ABCD",
-        |	"penaltyOrder": "1",
-        |	"penaltyCategory": "P",
-        |	"penaltyStatus": "ACTIVE",
-        |	"penaltyCreationDate": "2022-01-01",
-        |	"penaltyExpiryDate": "2024-01-01",
-        |	"communicationsDate": "2022-01-01"
-        |}
-        |""".stripMargin)
     val result = Json.toJson(modelWithoutAppealStatus)(LSPDetails.format)
-    result shouldBe refinedLSPDetailsWithoutAppealStatus
+    result shouldBe lspDetailsWithoutAppealStatus
   }
 
   "be writable to JSON with appeal status" in {
-    val refinedLSPDetailsWithAppealStatus: JsValue = Json.parse(
-      """
-        |{
-        |	"penaltyNumber": "1234ABCD",
-        |	"penaltyOrder": "1",
-        |	"penaltyCategory": "P",
-        |	"penaltyStatus": "ACTIVE",
-        |	"penaltyCreationDate": "2022-01-01",
-        |	"penaltyExpiryDate": "2024-01-01",
-        |	"communicationsDate": "2022-01-01",
-        | "appealStatus": "1"
-        |}
-        |""".stripMargin)
     val result = Json.toJson(modelWithAppealStatus)(LSPDetails.format)
-    result shouldBe refinedLSPDetailsWithAppealStatus
+    result shouldBe lspDetailsWithAppealStatus
   }
 }
 

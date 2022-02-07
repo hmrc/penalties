@@ -19,20 +19,26 @@ package models.v2.lateSubmissionPenalty
 import base.SpecBase
 import play.api.libs.json.{JsValue, Json}
 
+import java.time.LocalDate
+
 class LSPSummarySpec extends SpecBase {
   val modelAsJson: JsValue = Json.parse(
     """
       |{
       | "activePenaltyPoints": 1,
-      | "penaltyChargeAmount": 2,
-      | "regimeThreshold": 3
+      | "inactivePenaltyPoints": 2,
+      | "regimeThreshold": 3,
+      | "POCAchievementDate": "2022-01-01",
+      | "penaltyChargeAmount": 123.45
       |}
       |""".stripMargin)
 
   val model: LSPSummary = LSPSummary(
     activePenaltyPoints = 1,
-    penaltyChargeAmount = 2,
-    regimeThreshold = 3
+    inactivePenaltyPoints = 2,
+    regimeThreshold = 3,
+    POCAchievementDate = LocalDate.of(2022, 1, 1),
+    penaltyChargeAmount = 123.45
   )
 
   "be writable to JSON" in {

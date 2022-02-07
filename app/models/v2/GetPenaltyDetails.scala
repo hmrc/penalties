@@ -18,7 +18,7 @@ package models.v2
 
 import models.v2.latePaymentPenalty.LatePaymentPenalty
 import models.v2.lateSubmissionPenalty.LSPData
-import play.api.libs.json.{Format, JsResult, JsValue}
+import play.api.libs.json.{Format, JsResult, JsValue, Json}
 import utils.JsonUtils
 
 case class GetPenaltyDetails(
@@ -40,7 +40,7 @@ object GetPenaltyDetails extends JsonUtils {
     override def writes(details: GetPenaltyDetails): JsValue = {
       jsonObjNoNulls(
         "lateSubmissionPenalty" -> details.lateSubmissionPenalty,
-        "latePaymentPenalty" -> details.latePaymentPenalty
+        if(details.latePaymentPenalty.isDefined) "latePaymentPenalty" -> Json.obj("details" -> details.latePaymentPenalty) else "latePaymentPenalty" -> Json.obj()
       )
     }
   }

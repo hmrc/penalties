@@ -28,7 +28,13 @@ case class LSPDetails(
                        penaltyExpiryDate: LocalDate,
                        penaltyStatus: LSPPenaltyStatusEnum.Value,
                        appealStatus: Option[String],
-                       communicationsDate: LocalDate
+                       appealLevel: Option[String],
+                       chargeReference: Option[String],
+                       chargeAmount: Option[BigDecimal],
+                       chargeOutstandingAmount: Option[BigDecimal],
+                       chargeDueDate: Option[LocalDate],
+                       communicationsDate: LocalDate,
+                       lateSubmissions: Option[Seq[LateSubmission]]
                      )
 
 object LSPDetails {

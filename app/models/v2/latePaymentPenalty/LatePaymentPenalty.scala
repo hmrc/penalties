@@ -25,10 +25,15 @@ case class LatePaymentPenalty(
                        penaltyNumber: String,
                        penaltyChargeCreationDate: LocalDate,
                        penaltyStatus: LPPPenaltyStatusEnum.Value,
+                       penaltyAmountAccruing: BigDecimal,
+                       penaltyAmountPosted: BigDecimal,
                        appealStatus: Option[String],
                        communicationsDate: LocalDate,
                        penaltyChargeDueDate: LocalDate,
-                       principalChargeReference: String
+                       principalChargeReference: String,
+                       penaltyChargeReference: String,
+                       appealLevel: Option[String],
+                       principalChargeDueDate: LocalDate
                      )
 
 object LatePaymentPenalty {

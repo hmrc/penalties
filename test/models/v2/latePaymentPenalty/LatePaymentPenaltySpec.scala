@@ -28,13 +28,13 @@ class LatePaymentPenaltySpec extends SpecBase {
       |	"penaltyNumber": "1234ABCD",
       |	"penaltyCategory": "LPP1",
       |	"penaltyStatus": "P",
-      |	"penaltyAmountAccruing": "123.45",
-      |	"penaltyAmountPosted": "123.45",
+      |	"penaltyAmountAccruing": 123.45,
+      |	"penaltyAmountPosted": 123.45,
       |	"penaltyChargeCreationDate": "2022-01-01",
       |	"penaltyChargeDueDate": "2022-02-01",
       |	"communicationsDate": "2022-01-01",
-      |	"penaltyChargeReference": "1234DCBA",
-      |  "principalChargeDueDate": "2022-03-01",
+      |	"penaltyChargeReference": "CHARGE123456",
+      | "principalChargeDueDate": "2022-03-01",
       | "principalChargeReference": "CHARGING12345"
       |}
       |
@@ -46,8 +46,8 @@ class LatePaymentPenaltySpec extends SpecBase {
       |	"penaltyNumber": "1234ABCD",
       |	"penaltyCategory": "LPP1",
       |	"penaltyStatus": "P",
-      |	"penaltyAmountAccruing": "123.45",
-      |	"penaltyAmountPosted": "123.45",
+      |	"penaltyAmountAccruing": 123.45,
+      |	"penaltyAmountPosted": 123.45,
       |	"penaltyChargeCreationDate": "2022-01-01",
       |	"penaltyChargeDueDate": "2022-02-01",
       |	"communicationsDate": "2022-01-01",
@@ -67,7 +67,12 @@ class LatePaymentPenaltySpec extends SpecBase {
     penaltyStatus = LPPPenaltyStatusEnum.Posted,
     appealStatus = Some("1"),
     communicationsDate = LocalDate.of(2022, 1, 1),
-    principalChargeReference = "CHARGING12345"
+    principalChargeReference = "CHARGING12345",
+    penaltyChargeReference = "CHARGE123456",
+    appealLevel = Some("1"),
+    principalChargeDueDate = LocalDate.of(2022, 3, 1),
+    penaltyAmountAccruing = 123.45,
+    penaltyAmountPosted = 123.45
   )
 
   val modelWithoutAppealStatus: LatePaymentPenalty = LatePaymentPenalty(
@@ -78,7 +83,12 @@ class LatePaymentPenaltySpec extends SpecBase {
     penaltyStatus = LPPPenaltyStatusEnum.Posted,
     appealStatus = None,
     communicationsDate = LocalDate.of(2022, 1, 1),
-    principalChargeReference = "CHARGING12345"
+    principalChargeReference = "CHARGING12345",
+    penaltyChargeReference = "CHARGE123456",
+    appealLevel = None,
+    principalChargeDueDate = LocalDate.of(2022, 3, 1),
+    penaltyAmountAccruing = 123.45,
+    penaltyAmountPosted = 123.45
   )
 
     "be readable from JSON with no appeal status" in {
@@ -94,37 +104,12 @@ class LatePaymentPenaltySpec extends SpecBase {
     }
 
     "be writable to JSON with no appeal status" in {
-      val refinedLPPWithoutAppealStatus: JsValue = Json.parse(
-        """
-          |{
-          |	"penaltyNumber": "1234ABCD",
-          |	"penaltyCategory": "LPP1",
-          |	"penaltyStatus": "P",
-          |	"penaltyChargeCreationDate": "2022-01-01",
-          |	"penaltyChargeDueDate": "2022-02-01",
-          |	"communicationsDate": "2022-01-01",
-          | "principalChargeReference": "CHARGING12345"
-          |}
-          |""".stripMargin)
       val result = Json.toJson(modelWithoutAppealStatus)(LatePaymentPenalty.format)
-      result shouldBe refinedLPPWithoutAppealStatus
+      result shouldBe lppWithoutAppealStatus
     }
 
     "be writable to JSON with appeal status" in {
-      val refinedLPPWithAppealStatus: JsValue = Json.parse(
-        """
-          |{
-          |	"penaltyNumber": "1234ABCD",
-          |	"penaltyCategory": "LPP1",
-          |	"penaltyStatus": "P",
-          |	"penaltyChargeCreationDate": "2022-01-01",
-          |	"penaltyChargeDueDate": "2022-02-01",
-          |	"communicationsDate": "2022-01-01",
-          | "appealStatus": "1",
-          | "principalChargeReference": "CHARGING12345"
-          |}
-          |""".stripMargin)
       val result: JsValue = Json.toJson(modelWithAppealStatus)(LatePaymentPenalty.format)
-      result shouldBe refinedLPPWithAppealStatus
+      result shouldBe lppWithAppealStatus
     }
   }
