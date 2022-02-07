@@ -28,7 +28,7 @@ class FeatureSwitchSpec extends SpecBase {
 
   "FeatureSwitch listOfAllFeatureSwitches" should {
     "be all the featureswitches in the app" in {
-      FeatureSwitch.listOfAllFeatureSwitches shouldBe List(CallETMP, CallPEGA, CallAPI1811ETMP)
+      FeatureSwitch.listOfAllFeatureSwitches shouldBe List(CallETMP,CallPEGA, CallDES, CallAPI1812ETMP, CallAPI1811ETMP)
     }
   }
   "FeatureSwitching constants" should {
@@ -63,6 +63,31 @@ class FeatureSwitchSpec extends SpecBase {
       featureSwitching.isEnabled(CallPEGA) shouldBe false
     }
 
+    "return true if DES feature switch is enabled" in new Setup{
+      featureSwitching.enableFeatureSwitch(CallDES)
+      featureSwitching.isEnabled(CallDES) shouldBe true
+    }
+    "return false if DES feature switch is disabled" in new Setup{
+      featureSwitching.disableFeatureSwitch(CallDES)
+      featureSwitching.isEnabled(CallDES) shouldBe false
+    }
+    "return false if DES feature switch does not exist" in new Setup{
+      featureSwitching.isEnabled(CallDES) shouldBe false
+    }
+
+    "return true if CallAPI1812ETMP feature switch is enabled" in new Setup{
+      featureSwitching.enableFeatureSwitch(CallAPI1812ETMP)
+      featureSwitching.isEnabled(CallAPI1812ETMP) shouldBe true
+    }
+    "return false if CallAPI1812ETMP feature switch is disabled" in new Setup{
+      featureSwitching.disableFeatureSwitch(CallAPI1812ETMP)
+      featureSwitching.isEnabled(CallAPI1812ETMP) shouldBe false
+    }
+    "return false if CallAPI1812ETMP feature switch does not exist" in new Setup{
+      featureSwitching.isEnabled(CallAPI1812ETMP) shouldBe false
+    }
+
+
     "return true is CallAPI1811ETMP feature switch is enabled" in new Setup {
       featureSwitching.enableFeatureSwitch(CallAPI1811ETMP)
       featureSwitching.isEnabled(CallAPI1811ETMP) shouldBe true
@@ -87,6 +112,14 @@ class FeatureSwitchSpec extends SpecBase {
       featureSwitching.enableFeatureSwitch(CallPEGA)
       (sys.props get CallPEGA.name get) shouldBe "true"
     }
+    s"set ${CallDES.name} property to true" in new Setup {
+      featureSwitching.enableFeatureSwitch(CallDES)
+      (sys.props get CallDES.name get) shouldBe "true"
+    }
+    s"set ${CallAPI1812ETMP.name} property to true" in new Setup {
+      featureSwitching.enableFeatureSwitch(CallAPI1812ETMP)
+      (sys.props get CallAPI1812ETMP.name get) shouldBe "true"
+    }
     s"set ${CallAPI1811ETMP.name} property to true" in new Setup {
       featureSwitching.enableFeatureSwitch(CallAPI1811ETMP)
       (sys.props get CallAPI1811ETMP.name get) shouldBe "true"
@@ -101,6 +134,14 @@ class FeatureSwitchSpec extends SpecBase {
     s"set ${CallPEGA.name} property to false" in new Setup {
       featureSwitching.disableFeatureSwitch(CallPEGA)
       (sys.props get CallPEGA.name get) shouldBe "false"
+    }
+    s"set ${CallDES.name} property to false" in new Setup {
+      featureSwitching.disableFeatureSwitch(CallDES)
+      (sys.props get CallDES.name get) shouldBe "false"
+    }
+    s"set ${CallAPI1812ETMP.name} property to false" in new Setup {
+      featureSwitching.disableFeatureSwitch(CallAPI1812ETMP)
+      (sys.props get CallAPI1812ETMP.name get) shouldBe "false"
     }
     s"set ${CallAPI1811ETMP.name} property to false" in new Setup {
       featureSwitching.disableFeatureSwitch(CallAPI1811ETMP)
