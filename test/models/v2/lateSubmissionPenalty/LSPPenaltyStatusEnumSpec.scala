@@ -39,4 +39,9 @@ class LSPPenaltyStatusEnumSpec extends SpecBase {
     val result = Json.fromJson(JsString("INACTIVE"))(LSPPenaltyStatusEnum.format)
     result.get shouldBe LSPPenaltyStatusEnum.Inactive
   }
+
+  "return JsError when the enum is not readable" in {
+    val result = Json.fromJson(JsString("unknown"))(LSPPenaltyStatusEnum.format)
+    result.isError shouldBe true
+  }
 }

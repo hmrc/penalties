@@ -49,4 +49,9 @@ class LSPPenaltyCategoryEnumSpec extends SpecBase {
     val result = Json.fromJson(JsString("C"))(LSPPenaltyCategoryEnum.format)
     result.get shouldBe LSPPenaltyCategoryEnum.Charge
   }
+
+  "return JsError when the enum is not readable" in {
+    val result = Json.fromJson(JsString("unknown"))(LSPPenaltyCategoryEnum.format)
+    result.isError shouldBe true
+  }
 }
