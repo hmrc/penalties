@@ -28,7 +28,7 @@ class FeatureSwitchSpec extends SpecBase {
 
   "FeatureSwitch listOfAllFeatureSwitches" should {
     "be all the featureswitches in the app" in {
-      FeatureSwitch.listOfAllFeatureSwitches shouldBe List(CallETMP,CallPEGA)
+      FeatureSwitch.listOfAllFeatureSwitches shouldBe List(CallETMP, CallPEGA, CallAPI1811ETMP)
     }
   }
   "FeatureSwitching constants" should {
@@ -62,6 +62,20 @@ class FeatureSwitchSpec extends SpecBase {
     "return false if PEGA feature switch does not exist" in new Setup {
       featureSwitching.isEnabled(CallPEGA) shouldBe false
     }
+
+    "return true is CallAPI1811ETMP feature switch is enabled" in new Setup {
+      featureSwitching.enableFeatureSwitch(CallAPI1811ETMP)
+      featureSwitching.isEnabled(CallAPI1811ETMP) shouldBe true
+    }
+
+    "return false if CallAPI1811ETMP feature switch is disabled" in new Setup {
+      featureSwitching.disableFeatureSwitch(CallAPI1811ETMP)
+      featureSwitching.isEnabled(CallAPI1811ETMP) shouldBe false
+    }
+
+    "return false if CallAPI1811ETMP feature switch does not exist" in new Setup {
+      featureSwitching.isEnabled(CallAPI1811ETMP) shouldBe false
+    }
   }
 
   "FeatureSwitching enableFeatureSwitch" should {
@@ -73,6 +87,10 @@ class FeatureSwitchSpec extends SpecBase {
       featureSwitching.enableFeatureSwitch(CallPEGA)
       (sys.props get CallPEGA.name get) shouldBe "true"
     }
+    s"set ${CallAPI1811ETMP.name} property to true" in new Setup {
+      featureSwitching.enableFeatureSwitch(CallAPI1811ETMP)
+      (sys.props get CallAPI1811ETMP.name get) shouldBe "true"
+    }
   }
 
   "FeatureSwitching disableFeatureSwitch" should {
@@ -83,6 +101,10 @@ class FeatureSwitchSpec extends SpecBase {
     s"set ${CallPEGA.name} property to false" in new Setup {
       featureSwitching.disableFeatureSwitch(CallPEGA)
       (sys.props get CallPEGA.name get) shouldBe "false"
+    }
+    s"set ${CallAPI1811ETMP.name} property to false" in new Setup {
+      featureSwitching.disableFeatureSwitch(CallAPI1811ETMP)
+      (sys.props get CallAPI1811ETMP.name get) shouldBe "false"
     }
   }
 }

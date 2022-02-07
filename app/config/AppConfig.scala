@@ -16,8 +16,7 @@
 
 package config
 
-import featureSwitches.{CallDES, CallETMP, CallPEGA, FeatureSwitching}
-
+import featureSwitches.{CallDES, CallAPI1811ETMP, CallETMP, CallPEGA, FeatureSwitching}
 import javax.inject.{Inject, Singleton}
 import play.api.Configuration
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
@@ -45,6 +44,12 @@ class AppConfig @Inject()(config: Configuration, servicesConfig: ServicesConfig)
 
   lazy val desBearerToken: String = s"Bearer ${servicesConfig.getConfString("des.bearerToken", "")}"
 
+  lazy val eisBase: String = servicesConfig.baseUrl("eis")
+
+  lazy val eisEnvironment: String = servicesConfig.getConfString("eis.environment", "live")
+
+  lazy val eisBearerToken = s"Bearer ${servicesConfig.getConfString("eis.bearerToken", "live")}"
+
   lazy val fileNotificationOrchestrator: String = servicesConfig.baseUrl("penalties-file-notification-orchestrator")
 
   def postFileNotificationUrl: String = s"$fileNotificationOrchestrator/penalties-file-notification-orchestrator/new-notifications"
@@ -63,6 +68,7 @@ class AppConfig @Inject()(config: Configuration, servicesConfig: ServicesConfig)
   }
 
   def getFinancialDetailsUrl: String = {
+    if(!isEnabled(CallAPI1811ETMP)) stubBase + "/penalty/financial-data"
     etmpBase + "/penalty/financial-data"
   }
 
