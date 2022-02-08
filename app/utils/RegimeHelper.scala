@@ -49,4 +49,6 @@ object RegimeHelper {
   }
 
   def constructMTDVATEnrolmentKey(vrn: String): String = s"HMRC-MTD-VAT~VRN~$vrn"
+
+  def constructMTDVATCUrl(vrn: String): String = s"/VATC/VRN/$vrn"
 }

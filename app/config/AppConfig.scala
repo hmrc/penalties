@@ -58,6 +58,10 @@ class AppConfig @Inject()(config: Configuration, servicesConfig: ServicesConfig)
     else etmpBase + "/"
   }
 
+  def getPenaltyDetailsUrl: String = {
+    etmpBase + "/penalties/details"
+  }
+
   def getAppealSubmissionURL(enrolmentKey: String, isLPP: Boolean, penaltyId: String): String = {
     if(!isEnabled(CallPEGA)) stubBase + s"/penalties-stub/appeals/submit?enrolmentKey=$enrolmentKey&isLPP=$isLPP&penaltyId=$penaltyId"
     //TODO: change to relevant URL when implemented

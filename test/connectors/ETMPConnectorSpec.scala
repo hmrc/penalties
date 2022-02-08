@@ -38,6 +38,7 @@ class ETMPConnectorSpec extends SpecBase {
 
     val connector = new ETMPConnector(mockHttpClient, mockAppConfig)
     when(mockAppConfig.getVATPenaltiesURL).thenReturn("/")
+    when(mockAppConfig.getPenaltyDetailsUrl).thenReturn("/")
   }
 
   "getPenaltiesDataForEnrolmentKey" should {
