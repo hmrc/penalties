@@ -14,21 +14,19 @@
  * limitations under the License.
  */
 
-package connectors
-
+package connectors.v2
 
 import config.AppConfig
-import connectors.parsers.ETMPPayloadParser.ETMPPayloadResponse
 import javax.inject.Inject
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient}
+import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse}
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class ETMPConnector @Inject()(httpClient: HttpClient,
-                              appConfig: AppConfig)
-                             (implicit ec: ExecutionContext) {
+class FinancialDetailsConnector @Inject()(httpClient: HttpClient,
+                                         appConfig: AppConfig)
+                                         (implicit ec: ExecutionContext) {
 
-  def getPenaltiesDataForEnrolmentKey(enrolmentKey: String)(implicit hc: HeaderCarrier): Future[ETMPPayloadResponse] = {
-    httpClient.GET[ETMPPayloadResponse](url = appConfig.getVATPenaltiesURL + enrolmentKey)
+  def getFinancialDetails(vatcUrl: String)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
+    httpClient.GET[HttpResponse](url = appConfig.getFinancialDetailsUrl + vatcUrl)
   }
 }
