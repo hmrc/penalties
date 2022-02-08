@@ -62,7 +62,6 @@ class GetPenaltyDetailsParserSpec extends AnyWordSpec with Matchers {
 
       s"the body is malformed - returning a $Left $GetPenaltyDetailsMalformed" in {
         val result = GetPenaltyDetailsParser.GetPenaltyDetailsReads.read("GET", "/", mockOKHttpResponseWithInvalidBody)
-        println(result.left);
         result.isLeft shouldBe true
       }
     }
