@@ -39,4 +39,9 @@ class LPPPenaltyStatusEnumSpec extends SpecBase {
     val result = Json.fromJson(JsString("P"))(LPPPenaltyStatusEnum.format)
     result.get shouldBe LPPPenaltyStatusEnum.Posted
   }
+
+  "return JsError when the enum is not readable" in {
+    val result = Json.fromJson(JsString("unknown"))(LPPPenaltyStatusEnum.format)
+    result.isError shouldBe true
+  }
 }

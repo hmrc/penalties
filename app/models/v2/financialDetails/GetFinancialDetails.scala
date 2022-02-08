@@ -14,22 +14,16 @@
  * limitations under the License.
  */
 
-package models.v2.lateSubmissionPenalty
+package models.v2.financialDetails
 
 import play.api.libs.json.{Format, Json}
 
-import java.time.LocalDate
+//NOTE: Although taxPayerDetails, balanceDetails and codingDetails are provided we do not use them at this point in time.
+case class GetFinancialDetails(
+                              documentDetails: Seq[DocumentDetails],
+                              financialDetails: Seq[FinancialDetails]
+                              )
 
-case class LateSubmission(
-                           lateSubmissionID: String,
-                           taxPeriod: Option[String],
-                           taxReturnStatus: String,
-                           taxPeriodStartDate: Option[LocalDate],
-                           taxPeriodEndDate: Option[LocalDate],
-                           taxPeriodDueDate: Option[LocalDate],
-                           returnReceiptDate: Option[LocalDate]
-                         )
-
-object LateSubmission {
-  implicit val format: Format[LateSubmission] = Json.format[LateSubmission]
+object GetFinancialDetails {
+  implicit val format: Format[GetFinancialDetails] = Json.format[GetFinancialDetails]
 }

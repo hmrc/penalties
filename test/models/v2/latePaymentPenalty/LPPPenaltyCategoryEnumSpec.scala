@@ -40,4 +40,9 @@ class LPPPenaltyCategoryEnumSpec extends SpecBase {
     val result = Json.fromJson(JsString("LPP2"))(LPPPenaltyCategoryEnum.format)
     result.get shouldBe LPPPenaltyCategoryEnum.SecondPenalty
   }
+
+  "return JsError when the enum is not readable" in {
+    val result = Json.fromJson(JsString("unknown"))(LPPPenaltyCategoryEnum.format)
+    result.isError shouldBe true
+  }
 }
