@@ -17,7 +17,7 @@
 package connectors.parsers.v2
 
 import models.v2.GetPenaltyDetails
-import play.api.http.Status.{INTERNAL_SERVER_ERROR, NO_CONTENT, OK}
+import play.api.http.Status._
 import play.api.libs.json.{JsError, JsSuccess}
 import uk.gov.hmrc.http.{HttpReads, HttpResponse}
 import utils.Logger.logger
@@ -28,7 +28,6 @@ object GetPenaltyDetailsParser {
 
   case class  GetPenaltyDetailsSuccessResponse(penaltyDetails: GetPenaltyDetails) extends GetPenaltyDetailsSuccess
   case class  GetPenaltyDetailsFailureResponse(status: Int) extends GetPenaltyDetailsFailure
-  case object GetPenaltyDetailsNoContent extends GetPenaltyDetailsFailure
   case object GetPenaltyDetailsMalformed extends GetPenaltyDetailsFailure
 
   type GetPenaltyDetailsResponse = Either[GetPenaltyDetailsFailure, GetPenaltyDetailsSuccess]
@@ -45,10 +44,24 @@ object GetPenaltyDetailsParser {
               logger.debug(s"[GetPenaltyDetailsReads][read] Json validation errors: $errors")
               Left(GetPenaltyDetailsMalformed)
           }
-        case NO_CONTENT => Left(GetPenaltyDetailsNoContent)
+        case BAD_REQUEST =>
+          logger.error(s"[GetPenaltyDetailsReads][read] Bad Request when trying to call GetPenaltyDetails - with body: ${response.body}")
+          Left(GetPenaltyDetailsFailureResponse(BAD_REQUEST))
+        case NOT_FOUND =>
+          logger.error(s"[GetPenaltyDetailsReads][read] Received Not Found when trying to call GetPenaltyDetails - with body: ${response.body}")
+          Left(GetPenaltyDetailsFailureResponse(NOT_FOUND))
+        case CONFLICT =>
+          logger.error(s"[GetPenaltyDetailsReads][read] Received Conflict when trying to call GetPenaltyDetails - with body: ${response.body}")
+          Left(GetPenaltyDetailsFailureResponse(CONFLICT))
+        case UNPROCESSABLE_ENTITY =>
+          logger.error(s"[GetPenaltyDetailsReads][read] Received Unprocessable Enity when trying to call GetPenaltyDetails - with body: ${response.body}")
+          Left(GetPenaltyDetailsFailureResponse(UNPROCESSABLE_ENTITY))
         case INTERNAL_SERVER_ERROR =>
           logger.error(s"[GetPenaltyDetailsReads][read] Received ISE when trying to call GetPenaltyDetails - with body: ${response.body}")
           Left(GetPenaltyDetailsFailureResponse(INTERNAL_SERVER_ERROR))
+        case SERVICE_UNAVAILABLE =>
+          logger.error(s"[GetPenaltyDetailsReads][read] Received Service Unavailable when trying to call GetPenaltyDetails - with body: ${response.body}")
+          Left(GetPenaltyDetailsFailureResponse(SERVICE_UNAVAILABLE))
         case _@status =>
           logger.error(s"[GetPenaltyDetailsReads][read] Received unexpected response from GetPenaltyDetails, status code: $status and body: ${response.body}")
           Left(GetPenaltyDetailsFailureResponse(status))
