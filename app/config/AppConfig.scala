@@ -16,7 +16,7 @@
 
 package config
 
-import featureSwitches.{CallDES, CallAPI1811ETMP, CallETMP, CallPEGA, FeatureSwitching}
+import featureSwitches.{CallAPI1812ETMP, CallDES, CallAPI1811ETMP, CallETMP, CallPEGA, FeatureSwitching}
 import javax.inject.{Inject, Singleton}
 import play.api.Configuration
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
@@ -64,7 +64,8 @@ class AppConfig @Inject()(config: Configuration, servicesConfig: ServicesConfig)
   }
 
   def getPenaltyDetailsUrl: String = {
-    etmpBase + "/penalties/details"
+    if(!isEnabled(CallAPI1812ETMP)) stubBase + "/penalty/details/"
+    else etmpBase + "/penalty/details/"
   }
 
   def getFinancialDetailsUrl: String = {
