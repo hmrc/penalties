@@ -32,7 +32,7 @@ class PenaltyDetailsConnectorISpec extends IntegrationSpecCommonBase with ETMPWi
   "getPenaltyDetails" should {
     "return a successful response when called" in new Setup {
       enableFeatureSwitch(CallAPI1811ETMP)
-      mockResponseForGetPenaltyDetails(Status.OK, "VATC/VRN/123456789", body = Some("{}"))
+      mockResponseForGetPenaltyDetails(Status.OK, "VATC/VRN/123456789")
       val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails("VATC/VRN/123456789"))
       result.isRight shouldBe true
     }

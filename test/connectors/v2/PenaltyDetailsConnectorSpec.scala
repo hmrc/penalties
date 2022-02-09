@@ -93,7 +93,7 @@ class PenaltyDetailsConnectorSpec extends SpecBase {
       result.isLeft shouldBe true
     }
 
-    s"return a 422 when the call fails for Unprocessed Entity" in new Setup {
+    s"return a 422 when the call fails for Unprocessable Entity" in new Setup {
       when(mockHttpClient.GET[GetPenaltyDetailsResponse](ArgumentMatchers.eq("/FOO/BAR/123456789"),
         ArgumentMatchers.any(),
         ArgumentMatchers.any())
