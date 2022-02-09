@@ -17,7 +17,8 @@
 package connectors.v2
 
 import config.AppConfig
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse}
+import connectors.parsers.v2.GetPenaltyDetailsParser.GetPenaltyDetailsResponse
+import uk.gov.hmrc.http.{HeaderCarrier, HttpClient}
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
@@ -26,8 +27,8 @@ class PenaltyDetailsConnector @Inject()(httpClient: HttpClient,
                                         appConfig: AppConfig)
                                        (implicit ec: ExecutionContext) {
 
-  def getPenaltyDetails(vatcUrl: String)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
-    httpClient.GET[HttpResponse](url = appConfig.getPenaltyDetailsUrl + vatcUrl)
+  def getPenaltyDetails(vatcUrl: String)(implicit hc: HeaderCarrier): Future[GetPenaltyDetailsResponse] = {
+    httpClient.GET[GetPenaltyDetailsResponse](url = appConfig.getPenaltyDetailsUrl + vatcUrl)
   }
 
 }
