@@ -27,6 +27,7 @@ import models.penalty.PenaltyPeriod
 import models.point.{PenaltyPoint, PenaltyTypeEnum, PointStatusEnum}
 import models.reason.PaymentPenaltyReasonEnum
 import models.submission.{Submission, SubmissionStatusEnum}
+import models.v2.GetPenaltyDetails
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
@@ -504,4 +505,9 @@ trait SpecBase extends AnyWordSpec with Matchers with GuiceOneAppPerSuite {
   )
 
   val appealResponseModel = AppealResponseModel("PR-123456789")
+
+  val mockGetPenaltyDetailsModel: GetPenaltyDetails = GetPenaltyDetails(
+    lateSubmissionPenalty = None,
+    latePaymentPenalty = None
+  )
 }
