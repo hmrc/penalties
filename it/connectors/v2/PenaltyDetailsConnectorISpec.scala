@@ -17,12 +17,13 @@
 package connectors.v2
 
 
+import featureSwitches.{CallAPI1812ETMP, FeatureSwitching}
 import play.api.http.Status
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.http.HttpResponse
 import utils.{ETMPWiremock, IntegrationSpecCommonBase}
 
-class PenaltyDetailsConnectorISpec extends IntegrationSpecCommonBase with ETMPWiremock {
+class PenaltyDetailsConnectorISpec extends IntegrationSpecCommonBase with ETMPWiremock with FeatureSwitching {
 
   class Setup {
     val connector: PenaltyDetailsConnector = injector.instanceOf[PenaltyDetailsConnector]
@@ -30,8 +31,9 @@ class PenaltyDetailsConnectorISpec extends IntegrationSpecCommonBase with ETMPWi
 
   "getPenaltyDetails" should {
     "return a successful response when called" in new Setup {
+      enableFeatureSwitch(CallAPI1812ETMP)
       mockResponseForNewETMPPayload(Status.OK, "VATC/VRN/123456789")
-      val result: HttpResponse = await(connector.getPenaltyDetails("/VATC/VRN/123456789"))
+      val result: HttpResponse = await(connector.getPenaltyDetails("VATC/VRN/123456789"))
       result.status shouldBe Status.OK
     }
   }

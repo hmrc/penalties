@@ -191,7 +191,7 @@ trait ETMPWiremock {
   }
 
   def mockResponseForNewETMPPayload(status: Int, vatcUrl: String): StubMapping = {
-    stubFor(get(urlEqualTo(s"/penalties/details/$vatcUrl"))
+    stubFor(get(urlEqualTo(s"/penalty/details/$vatcUrl"))
     .willReturn(
       aResponse()
         .withStatus(status)
