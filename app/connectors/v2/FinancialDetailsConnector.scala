@@ -17,6 +17,8 @@
 package connectors.v2
 
 import config.AppConfig
+import connectors.parsers.v2.GetFinancialDetailsParser.GetFinancialDetailsResponse
+
 import javax.inject.Inject
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse}
 
@@ -26,7 +28,7 @@ class FinancialDetailsConnector @Inject()(httpClient: HttpClient,
                                          appConfig: AppConfig)
                                          (implicit ec: ExecutionContext) {
 
-  def getFinancialDetails(vatcUrl: String)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
-    httpClient.GET[HttpResponse](url = appConfig.getFinancialDetailsUrl + vatcUrl)
+  def getFinancialDetails(vatcUrl: String)(implicit hc: HeaderCarrier): Future[GetFinancialDetailsResponse] = {
+    httpClient.GET[GetFinancialDetailsResponse](url = appConfig.getFinancialDetailsUrl + vatcUrl)
   }
 }

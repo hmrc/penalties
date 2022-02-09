@@ -18,6 +18,7 @@ package connectors.v2
 
 import base.SpecBase
 import config.AppConfig
+import connectors.parsers.v2.GetFinancialDetailsParser.{GetFinancialDetailsFailureResponse, GetFinancialDetailsResponse, GetFinancialDetailsSuccessResponse}
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
 import play.api.http.Status
@@ -41,29 +42,107 @@ class FinancialDetailsConnectorSpec extends SpecBase {
 
   "getFinancialDetails" should {
     "return a 200 when the call succeeds" in new Setup {
-      when(mockHttpClient.GET[HttpResponse](ArgumentMatchers.eq("/VRN/123456789/VATC"),
+      when(mockHttpClient.GET[GetFinancialDetailsResponse](ArgumentMatchers.eq("/VATC/VRN/123456789"),
         ArgumentMatchers.any(),
         ArgumentMatchers.any())
         (ArgumentMatchers.any(),
           ArgumentMatchers.any(),
           ArgumentMatchers.any()))
-        .thenReturn(Future.successful(HttpResponse(Status.OK, "")))
+        .thenReturn(Future.successful(Right(GetFinancialDetailsSuccessResponse(mockGetFinancialDetailsModel))))
 
-      val result: HttpResponse = await(connector.getFinancialDetails("VRN/123456789/VATC")(HeaderCarrier()))
-      result.status shouldBe Status.OK
+      val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails("VATC/VRN/123456789")(HeaderCarrier()))
+      result.isRight shouldBe true
     }
 
-    s"return a 400 when the call fails" in new Setup {
-      when(mockHttpClient.GET[HttpResponse](ArgumentMatchers.eq("/FOO/123456789/BAR"),
+    s"return a 404 when the call fails for Not Found" in new Setup {
+      when(mockHttpClient.GET[GetFinancialDetailsResponse](ArgumentMatchers.eq("/FOO/BAR/123456789"),
         ArgumentMatchers.any(),
         ArgumentMatchers.any())
         (ArgumentMatchers.any(),
           ArgumentMatchers.any(),
           ArgumentMatchers.any()))
-        .thenReturn(Future.successful(HttpResponse(Status.BAD_REQUEST, "")))
+        .thenReturn(Future.successful(Left(GetFinancialDetailsFailureResponse(Status.NOT_FOUND))))
 
-      val result: HttpResponse = await(connector.getFinancialDetails("FOO/123456789/BAR")(HeaderCarrier()))
-      result.status shouldBe Status.BAD_REQUEST
+      val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails("FOO/BAR/123456789")(HeaderCarrier()))
+      result.isLeft shouldBe true
+    }
+
+    s"return a 400 when the call fails for Bad Request" in new Setup {
+      when(mockHttpClient.GET[GetFinancialDetailsResponse](ArgumentMatchers.eq("/FOO/BAR/123456789"),
+        ArgumentMatchers.any(),
+        ArgumentMatchers.any())
+        (ArgumentMatchers.any(),
+          ArgumentMatchers.any(),
+          ArgumentMatchers.any()))
+        .thenReturn(Future.successful(Left(GetFinancialDetailsFailureResponse(Status.BAD_REQUEST))))
+
+      val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails("FOO/BAR/123456789")(HeaderCarrier()))
+      result.isLeft shouldBe true
+    }
+
+    s"return a 409 when the call fails for Conflict" in new Setup {
+      when(mockHttpClient.GET[GetFinancialDetailsResponse](ArgumentMatchers.eq("/FOO/BAR/123456789"),
+        ArgumentMatchers.any(),
+        ArgumentMatchers.any())
+        (ArgumentMatchers.any(),
+          ArgumentMatchers.any(),
+          ArgumentMatchers.any()))
+        .thenReturn(Future.successful(Left(GetFinancialDetailsFailureResponse(Status.CONFLICT))))
+
+      val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails("FOO/BAR/123456789")(HeaderCarrier()))
+      result.isLeft shouldBe true
+    }
+
+    s"return a 422 when the call fails for Unprocessable Entity" in new Setup {
+      when(mockHttpClient.GET[GetFinancialDetailsResponse](ArgumentMatchers.eq("/FOO/BAR/123456789"),
+        ArgumentMatchers.any(),
+        ArgumentMatchers.any())
+        (ArgumentMatchers.any(),
+          ArgumentMatchers.any(),
+          ArgumentMatchers.any()))
+        .thenReturn(Future.successful(Left(GetFinancialDetailsFailureResponse(Status.UNPROCESSABLE_ENTITY))))
+
+      val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails("FOO/BAR/123456789")(HeaderCarrier()))
+      result.isLeft shouldBe true
+    }
+
+    s"return a 500 when the call fails for Internal Server Error" in new Setup {
+      when(mockHttpClient.GET[GetFinancialDetailsResponse](ArgumentMatchers.eq("/FOO/BAR/123456789"),
+        ArgumentMatchers.any(),
+        ArgumentMatchers.any())
+        (ArgumentMatchers.any(),
+          ArgumentMatchers.any(),
+          ArgumentMatchers.any()))
+        .thenReturn(Future.successful(Left(GetFinancialDetailsFailureResponse(Status.INTERNAL_SERVER_ERROR))))
+
+      val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails("FOO/BAR/123456789")(HeaderCarrier()))
+      result.isLeft shouldBe true
+    }
+
+    s"return a 403 when the call fails" in new Setup {
+      when(mockHttpClient.GET[GetFinancialDetailsResponse](ArgumentMatchers.eq("/FOO/BAR/123456789"),
+        ArgumentMatchers.any(),
+        ArgumentMatchers.any())
+        (ArgumentMatchers.any(),
+          ArgumentMatchers.any(),
+          ArgumentMatchers.any()))
+        .thenReturn(Future.successful(Left(GetFinancialDetailsFailureResponse(Status.FORBIDDEN))))
+
+      val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails("FOO/BAR/123456789")(HeaderCarrier()))
+      result.isLeft shouldBe true
+    }
+
+    s"return a 503 when the call fails" in new Setup {
+      when(mockHttpClient.GET[GetFinancialDetailsResponse](ArgumentMatchers.eq("/FOO/BAR/123456789"),
+        ArgumentMatchers.any(),
+        ArgumentMatchers.any())
+        (ArgumentMatchers.any(),
+          ArgumentMatchers.any(),
+          ArgumentMatchers.any()))
+        .thenReturn(Future.successful(Left(GetFinancialDetailsFailureResponse(Status.SERVICE_UNAVAILABLE))))
+
+      val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails("FOO/BAR/123456789")(HeaderCarrier()))
+      result.isLeft shouldBe true
     }
   }
 }
