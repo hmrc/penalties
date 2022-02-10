@@ -223,6 +223,92 @@ trait ETMPWiremock {
       |}
       |""".stripMargin)
 
+  val getFinancialDetailsAsJson: JsValue = Json.parse(
+    """
+      |{
+      | "documentDetails": [
+      | {
+      |   "taxYear": "2022",
+      |   "documentId": "DOC1234",
+      |   "documentDate": "2022-01-01",
+      |   "documentText": "1234",
+      |   "documentDueDate": "2022-01-01",
+      |   "documentDescription": "1234",
+      |   "formBundleNumber": "1234",
+      |   "totalAmount": 123.45,
+      |   "documentOutstandingAmount": 123.45,
+      |   "lastClearingDate": "2022-01-01",
+      |   "lastClearingReason": "1234",
+      |   "lastClearedAmount": 123.45,
+      |   "statisticalFlag": true,
+      |   "informationCode": "1",
+      |   "paymentLot": "1",
+      |   "paymentLotItem": "1",
+      |   "accruingInterestAmount": 123.45,
+      |   "interestRate": 123.45,
+      |   "interestFromDate": "2022-01-01",
+      |   "interestEndDate": "2022-01-01",
+      |   "latePaymentInterestID": "1234",
+      |   "latePaymentInterestAmount": 123.45,
+      |   "lpiWithDunningBlock": 123.45,
+      |   "interestOutstandingAmount": 123.45,
+      |   "accruingPenaltyLPP1": "1234"
+      | }
+      | ],
+      | "financialDetails": [
+      | {
+      |   "taxYear": "2022",
+      |   "documentId": "DOC1234",
+      |   "chargeType": "1234",
+      |   "mainType": "1234",
+      |   "periodKey": "123",
+      |   "periodKeyDescription": "foobar",
+      |   "taxPeriodFrom": "2022-01-01",
+      |   "taxPeriodTo": "2022-03-31",
+      |   "businessPartner": "123",
+      |   "contractAccountCategory": "1",
+      |   "contractAccount": "1",
+      |   "contractObjectType": "1",
+      |   "contractObject": "1",
+      |   "sapDocumentNumber": "1",
+      |   "sapDocumentNumberItem": "1",
+      |   "chargeReference": "1",
+      |   "mainTransaction": "1",
+      |   "subTransaction": "1",
+      |   "originalAmount": 123.45,
+      |   "outstandingAmount": 123.45,
+      |   "clearedAmount": 123.45,
+      |   "accruedInterest": 123.45,
+      |   "items": [{
+      |     "subItem": "001",
+      |     "dueDate": "2018-08-13",
+      |     "amount": 10000,
+      |     "clearingDate": "2018-08-13",
+      |     "clearingReason": "01",
+      |     "outgoingPaymentMethod": "outgoing payment",
+      |     "paymentLock": "paymentLock",
+      |     "clearingLock": "clearingLock",
+      |     "interestLock": "interestLock",
+      |     "dunningLock": "dunningLock",
+      |     "returnFlag": true,
+      |     "paymentReference": "Ab12453535",
+      |     "paymentAmount": 10000,
+      |     "paymentMethod": "Payment",
+      |     "paymentLot": "081203010024",
+      |     "paymentLotItem": "000001",
+      |     "clearingSAPDocument": "3350000253",
+      |     "codingInitiationDate": "2021-01-11",
+      |     "statisticalDocument": "G",
+      |     "returnReason": "ABCA",
+      |     "DDCollectionInProgress": "Y",
+      |     "promisetoPay": "Y"
+      |   }]
+      | }
+      | ]
+      |}
+      |""".stripMargin)
+
+
   def mockResponseForStubETMPPayload(status: Int, enrolmentKey: String, body: Option[String] = None): StubMapping = {
     stubFor(get(urlEqualTo(s"/penalties-stub/etmp/mtd-vat/$enrolmentKey"))
       .willReturn(
@@ -256,10 +342,12 @@ trait ETMPWiremock {
     ))
   }
 
-  def mockResponseForNewETMPPayloadFinancialDetails(status: Int, vatcUrl: String): StubMapping = {
+  def mockResponseForGetFinancialDetails(status: Int, vatcUrl: String, body: Option[String] = None): StubMapping = {
     stubFor(get(urlEqualTo(s"/penalty/financial-data/$vatcUrl"))
     .willReturn(
-      aResponse().withStatus(status)
+      aResponse()
+        .withBody(body.fold(getFinancialDetailsAsJson.toString())(identity))
+        .withStatus(status)
     ))
   }
 }
