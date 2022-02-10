@@ -42,7 +42,7 @@ class FinancialDetailsConnectorSpec extends SpecBase {
 
   "getFinancialDetails" should {
     "return a 200 when the call succeeds" in new Setup {
-      when(mockHttpClient.GET[GetFinancialDetailsResponse](ArgumentMatchers.eq("/VATC/VRN/123456789"),
+      when(mockHttpClient.GET[GetFinancialDetailsResponse](ArgumentMatchers.eq("/VRN/123456789/VATC"),
         ArgumentMatchers.any(),
         ArgumentMatchers.any())
         (ArgumentMatchers.any(),
@@ -50,7 +50,7 @@ class FinancialDetailsConnectorSpec extends SpecBase {
           ArgumentMatchers.any()))
         .thenReturn(Future.successful(Right(GetFinancialDetailsSuccessResponse(mockGetFinancialDetailsModel))))
 
-      val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails("VATC/VRN/123456789")(HeaderCarrier()))
+      val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails("VRN/123456789/VATC")(HeaderCarrier()))
       result.isRight shouldBe true
     }
 
