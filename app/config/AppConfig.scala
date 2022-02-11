@@ -26,29 +26,18 @@ class AppConfig @Inject()(config: Configuration, servicesConfig: ServicesConfig)
   val auditingEnabled: Boolean = config.get[Boolean]("auditing.enabled")
   val graphiteHost: String     = config.get[String]("microservice.metrics.graphite.host")
 
-  lazy val stubBase: String = servicesConfig.baseUrl("penalties-stub")
-
   lazy val appName: String = config.get[String]("appName")
+
+  lazy val eiOutboundBearerToken: String = config.get[String]("eis.outboundBearerToken")
+  lazy val eisEnvironment: String = config.get[String]("eis.environment")
+
+  lazy val stubBase: String = servicesConfig.baseUrl("penalties-stub")
 
   lazy val etmpBase: String = servicesConfig.baseUrl("etmp")
 
   lazy val pegaBase: String = servicesConfig.baseUrl("pega")
 
-  lazy val pegaBearerToken: String = config.get[String]("pega.bearerToken")
-
-  lazy val pegaEnvironment: String = config.get[String]("pega.environment")
-
   lazy val desBase: String = servicesConfig.baseUrl("des")
-
-  lazy val desEnvironment: String = servicesConfig.getConfString("des.environment", "live")
-
-  lazy val desBearerToken: String = s"Bearer ${servicesConfig.getConfString("des.bearerToken", "")}"
-
-  lazy val eisBase: String = servicesConfig.baseUrl("eis")
-
-  lazy val eisEnvironment: String = servicesConfig.getConfString("eis.environment", "live")
-
-  lazy val eisBearerToken = s"Bearer ${servicesConfig.getConfString("eis.bearerToken", "live")}"
 
   lazy val fileNotificationOrchestrator: String = servicesConfig.baseUrl("penalties-file-notification-orchestrator")
 

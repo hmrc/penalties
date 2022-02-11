@@ -78,8 +78,8 @@ class ComplianceConnectorSpec extends SpecBase {
       )
       when(mockAppConfig.getComplianceData(ArgumentMatchers.eq("123456789"), ArgumentMatchers.any(), ArgumentMatchers.any()))
         .thenReturn("/123456789")
-      when(mockAppConfig.desEnvironment).thenReturn("env")
-      when(mockAppConfig.desBearerToken).thenReturn("Bearer 12345")
+      when(mockAppConfig.eisEnvironment).thenReturn("env")
+      when(mockAppConfig.eiOutboundBearerToken).thenReturn("Bearer 12345")
       val hcArgumentCaptor: ArgumentCaptor[HeaderCarrier] = ArgumentCaptor.forClass(classOf[HeaderCarrier])
       when(mockHttpClient.GET[CompliancePayloadResponse](ArgumentMatchers.eq("/123456789"),
         ArgumentMatchers.any(),
@@ -100,8 +100,8 @@ class ComplianceConnectorSpec extends SpecBase {
       "the call returns a OK response however the body is not parsable as a model" in new Setup {
         when(mockAppConfig.getComplianceData(ArgumentMatchers.eq("123456789"), ArgumentMatchers.any(), ArgumentMatchers.any()))
           .thenReturn("/123456789")
-        when(mockAppConfig.desEnvironment).thenReturn("env")
-        when(mockAppConfig.desBearerToken).thenReturn("Bearer 12345")
+        when(mockAppConfig.eisEnvironment).thenReturn("env")
+        when(mockAppConfig.eiOutboundBearerToken).thenReturn("Bearer 12345")
         when(mockHttpClient.GET[CompliancePayloadResponse](ArgumentMatchers.eq("/123456789"),
           ArgumentMatchers.any(),
           ArgumentMatchers.any())
@@ -117,8 +117,8 @@ class ComplianceConnectorSpec extends SpecBase {
       "the call returns a Not Found status" in new Setup {
         when(mockAppConfig.getComplianceData(ArgumentMatchers.eq("123456789"), ArgumentMatchers.any(), ArgumentMatchers.any()))
           .thenReturn("/123456789")
-        when(mockAppConfig.desEnvironment).thenReturn("env")
-        when(mockAppConfig.desBearerToken).thenReturn("Bearer 12345")
+        when(mockAppConfig.eisEnvironment).thenReturn("env")
+        when(mockAppConfig.eiOutboundBearerToken).thenReturn("Bearer 12345")
         when(mockHttpClient.GET[CompliancePayloadResponse](ArgumentMatchers.eq("/123456789"),
           ArgumentMatchers.any(),
           ArgumentMatchers.any())
@@ -134,8 +134,8 @@ class ComplianceConnectorSpec extends SpecBase {
       "the call returns a ISE" in new Setup {
         when(mockAppConfig.getComplianceData(ArgumentMatchers.eq("123456789"), ArgumentMatchers.any(), ArgumentMatchers.any()))
           .thenReturn("/123456789")
-        when(mockAppConfig.desEnvironment).thenReturn("env")
-        when(mockAppConfig.desBearerToken).thenReturn("Bearer 12345")
+        when(mockAppConfig.eisEnvironment).thenReturn("env")
+        when(mockAppConfig.eiOutboundBearerToken).thenReturn("Bearer 12345")
         when(mockHttpClient.GET[CompliancePayloadResponse](ArgumentMatchers.eq("/123456789"),
           ArgumentMatchers.any(),
           ArgumentMatchers.any())
@@ -151,8 +151,8 @@ class ComplianceConnectorSpec extends SpecBase {
       "the call returns an unmatched response" in new Setup {
         when(mockAppConfig.getComplianceData(ArgumentMatchers.eq("123456789"), ArgumentMatchers.any(), ArgumentMatchers.any()))
           .thenReturn("/123456789")
-        when(mockAppConfig.desEnvironment).thenReturn("env")
-        when(mockAppConfig.desBearerToken).thenReturn("Bearer 12345")
+        when(mockAppConfig.eisEnvironment).thenReturn("env")
+        when(mockAppConfig.eiOutboundBearerToken).thenReturn("Bearer 12345")
         when(mockHttpClient.GET[CompliancePayloadResponse](ArgumentMatchers.eq("/123456789"),
           ArgumentMatchers.any(),
           ArgumentMatchers.any())
