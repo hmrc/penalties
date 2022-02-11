@@ -27,8 +27,8 @@ class ComplianceConnector @Inject()(httpClient: HttpClient,
                                    appConfig: AppConfig)
                                    (implicit ec: ExecutionContext){
   def getComplianceData(identifier: String, fromDate: String, toDate: String)(implicit hc: HeaderCarrier): Future[CompliancePayloadResponse] = {
-    val environmentHeader: String = appConfig.desEnvironment
-    val bearerToken: String = appConfig.desBearerToken
+    val environmentHeader: String = appConfig.eisEnvironment
+    val bearerToken: String = appConfig.eiOutboundBearerToken
     val headers: Seq[(String, String)] = Seq(
       "Environment" -> environmentHeader
     )
