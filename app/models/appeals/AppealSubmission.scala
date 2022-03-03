@@ -293,7 +293,6 @@ object HealthAppealInformation {
   val healthAppealWrites: Writes[HealthAppealInformation] = (healthAppealInformation: HealthAppealInformation) => {
     val healthAppealReasonForPEGA = if(healthAppealInformation.hospitalStayInvolved) "unexpectedHospitalStay" else "seriousOrLifeThreateningIllHealth"
     Json.obj(
-      "hospitalStayInvolved" -> healthAppealInformation.hospitalStayInvolved,
       "eventOngoing" -> healthAppealInformation.eventOngoing,
       "lateAppeal" -> healthAppealInformation.lateAppeal,
       "reasonableExcuse" -> healthAppealReasonForPEGA,

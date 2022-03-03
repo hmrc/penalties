@@ -19,7 +19,7 @@ package models.appeals
 import models.upload.{UploadDetails, UploadJourney, UploadStatusEnum}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
-import play.api.libs.json.{JsValue, Json}
+import play.api.libs.json.{JsObject, JsValue, Json}
 
 import java.time.LocalDateTime
 
@@ -970,7 +970,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           reasonableExcuse = "health"
         )
         val result = AppealSubmission.parseAppealInformationToJson(model)
-        result shouldBe healthAppealInformationHospitalStayNotOngoingJson
+        result shouldBe healthAppealInformationHospitalStayNotOngoingJson.as[JsObject] - "hospitalStayInvolved"
       }
 
       "parse the appeal information model into a JsObject (event ongoing hospital stay)" in {
@@ -988,7 +988,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           reasonableExcuse = "health"
         )
         val result = AppealSubmission.parseAppealInformationToJson(model)
-        result shouldBe healthAppealInformationHospitalStayOngoingJson
+        result shouldBe healthAppealInformationHospitalStayOngoingJson.as[JsObject] - "hospitalStayInvolved"
       }
 
       "parse the appeal information model into a JsObject (when a startDateOfEvent is present NOT startDateOfEvent AND endDateOfEvent i.e. " +
@@ -1007,7 +1007,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           reasonableExcuse = "health"
         )
         val result = AppealSubmission.parseAppealInformationToJson(model)
-        result shouldBe healthAppealInformationNoHospitalStayJson
+        result shouldBe healthAppealInformationNoHospitalStayJson.as[JsObject] - "hospitalStayInvolved"
       }
     }
 
@@ -1665,7 +1665,6 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
               "startDateOfEvent" -> "2021-04-23T18:25:43.511Z",
               "endDateOfEvent" -> "2021-04-24T18:25:43.511Z",
               "eventOngoing" -> false,
-              "hospitalStayInvolved" -> true,
               "lateAppeal" -> true,
               "lateAppealReason" -> "Reason",
               "isClientResponsibleForSubmission" -> false,
@@ -1711,7 +1710,6 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
               "honestyDeclaration" -> true,
               "startDateOfEvent" -> "2021-04-23T18:25:43.511Z",
               "eventOngoing" -> true,
-              "hospitalStayInvolved" -> true,
               "lateAppeal" -> true,
               "lateAppealReason" -> "Reason",
               "isClientResponsibleForSubmission" -> false,
@@ -1758,7 +1756,6 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
               "honestyDeclaration" -> true,
               "startDateOfEvent" -> "2021-04-23T18:25:43.511Z",
               "eventOngoing" -> false,
-              "hospitalStayInvolved" -> false,
               "lateAppeal" -> true,
               "lateAppealReason" -> "Reason",
               "isClientResponsibleForSubmission" -> false,
@@ -2207,7 +2204,6 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             "startDateOfEvent" -> "2021-04-23T18:25:43.511Z",
             "endDateOfEvent" -> "2021-04-24T18:25:43.511Z",
             "eventOngoing" -> false,
-            "hospitalStayInvolved" -> true,
             "lateAppeal" -> true,
             "lateAppealReason" -> "Reason",
             "isClientResponsibleForSubmission" -> false,
@@ -2235,7 +2231,6 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             "reasonableExcuse" -> "unexpectedHospitalStay",
             "startDateOfEvent" -> "2021-04-23T18:25:43.511Z",
             "eventOngoing" -> true,
-            "hospitalStayInvolved" -> true,
             "lateAppeal" -> true,
             "lateAppealReason" -> "Reason",
             "isClientResponsibleForSubmission" -> false,
@@ -2264,7 +2259,6 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             "reasonableExcuse" -> "seriousOrLifeThreateningIllHealth",
             "startDateOfEvent" -> "2021-04-23T18:25:43.511Z",
             "eventOngoing" -> false,
-            "hospitalStayInvolved" -> false,
             "lateAppeal" -> true,
             "lateAppealReason" -> "Reason",
             "isClientResponsibleForSubmission" -> false,
