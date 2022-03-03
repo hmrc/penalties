@@ -89,84 +89,6 @@ trait ETMPWiremock {
       |}
       |""".stripMargin)
 
-  val etmpPayloadAsJsonWithMultiplePenaltyPeriod: JsValue = Json.parse(
-    """
-        {
-      |	"pointsTotal": 1,
-      |	"lateSubmissions": 1,
-      |	"adjustmentPointsTotal": 1,
-      |	"fixedPenaltyAmount": 200,
-      |	"penaltyAmountsTotal": 400.00,
-      |	"penaltyPointsThreshold": 4,
-      |	"penaltyPoints": [
-      |		{
-      |			"type": "financial",
-      |			"number": "2",
-      |     "id": "1235",
-      |     "appealStatus": "UNDER_REVIEW",
-      |			"dateCreated": "2021-04-23T18:25:43.511",
-      |			"dateExpired": "2021-04-23T18:25:43.511",
-      |			"status": "ACTIVE",
-      |			"period": [{
-      |				"startDate": "2021-04-23T18:25:43.511",
-      |				"endDate": "2021-04-23T18:25:43.511",
-      |				"submission": {
-      |					"dueDate": "2021-04-23T18:25:43.511",
-      |					"submittedDate": "2021-04-23T18:25:43.511",
-      |					"status": "SUBMITTED"
-      |				}
-      |			},
-      |     {
-      |				"startDate": "2021-05-23T18:25:43.511",
-      |				"endDate": "2021-05-23T18:25:43.511",
-      |				"submission": {
-      |					"dueDate": "2021-05-23T18:25:43.511",
-      |					"submittedDate": "2021-05-23T18:25:43.511",
-      |					"status": "SUBMITTED"
-      |				}
-      |			}],
-      |			"communications": [
-      |				{
-      |					"type": "secureMessage",
-      |					"dateSent": "2021-04-23T18:25:43.511",
-      |					"documentId": "1234567890"
-      |				}
-      |			],
-      |     "financial": {
-      |        "amountDue": 400.00,
-      |        "outstandingAmountDue": 400.00,
-      |        "dueDate": "2021-04-23T18:25:43.511"
-      |     }
-      |		},
-      |		{
-      |			"type": "point",
-      |			"number": "1",
-      |     "id": "1234",
-      |			"dateCreated": "2021-04-23T18:25:43.511",
-      |			"dateExpired": "2021-04-23T18:25:43.511",
-      |			"status": "ACTIVE",
-      |			"period": [{
-      |				"startDate": "2021-04-23T18:25:43.511",
-      |				"endDate": "2021-04-23T18:25:43.511",
-      |				"submission": {
-      |					"dueDate": "2021-04-23T18:25:43.511",
-      |					"submittedDate": "2021-04-23T18:25:43.511",
-      |					"status": "SUBMITTED"
-      |				}
-      |			}],
-      |			"communications": [
-      |				{
-      |					"type": "letter",
-      |					"dateSent": "2021-04-23T18:25:43.511",
-      |					"documentId": "1234567890"
-      |				}
-      |			]
-      |		}
-      |	]
-      |}
-      |""".stripMargin)
-
-
   val getPenaltyDetailsWithLSPandLPPAsJson: JsValue = Json.parse(
     """
       |{
@@ -314,14 +236,6 @@ trait ETMPWiremock {
       .willReturn(
         aResponse()
           .withBody(body.fold(etmpPayloadAsJson.toString())(identity))
-          .withStatus(status)))
-  }
-
-  def mockResponseForStubETMPPayloadWithMultiplePenaltyPeriod(status: Int, enrolmentKey: String, body: Option[String] = None): StubMapping = {
-    stubFor(get(urlEqualTo(s"/penalties-stub/etmp/mtd-vat/$enrolmentKey"))
-      .willReturn(
-        aResponse()
-          .withBody(body.fold(etmpPayloadAsJsonWithMultiplePenaltyPeriod.toString())(identity))
           .withStatus(status)))
   }
 
