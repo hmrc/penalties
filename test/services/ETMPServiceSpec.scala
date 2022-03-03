@@ -130,7 +130,7 @@ class ETMPServiceSpec extends SpecBase {
         ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(Right(appealResponseModel)))
 
       val result: Either[AppealsParser.ErrorResponse, AppealResponseModel] = await(
-        service.submitAppeal(modelToPassToServer, "HMRC-MTD-VAT~VRN~123456789", isLPP = false, penaltyId = "123456789", correlationId = correlationId))
+        service.submitAppeal(modelToPassToServer, "HMRC-MTD-VAT~VRN~123456789", isLPP = false, penaltyNumber = "123456789", correlationId = correlationId))
       result shouldBe Right(appealResponseModel)
     }
 
@@ -140,7 +140,7 @@ class ETMPServiceSpec extends SpecBase {
         Left(UnexpectedFailure(BAD_GATEWAY, s"Unexpected response, status $BAD_GATEWAY returned"))))
 
       val result: Either[AppealsParser.ErrorResponse, AppealResponseModel] = await(service.submitAppeal(
-        modelToPassToServer, "HMRC-MTD-VAT~VRN~123456789", isLPP = false, penaltyId = "123456789", correlationId = correlationId))
+        modelToPassToServer, "HMRC-MTD-VAT~VRN~123456789", isLPP = false, penaltyNumber = "123456789", correlationId = correlationId))
       result shouldBe Left(UnexpectedFailure(BAD_GATEWAY, s"Unexpected response, status $BAD_GATEWAY returned"))
     }
 
@@ -149,7 +149,7 @@ class ETMPServiceSpec extends SpecBase {
         ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.failed(new Exception("Something went wrong")))
 
       val result: Exception = intercept[Exception](await(service.submitAppeal(
-        modelToPassToServer, "HMRC-MTD-VAT~VRN~123456789", isLPP = false, penaltyId = "123456789", correlationId = correlationId)))
+        modelToPassToServer, "HMRC-MTD-VAT~VRN~123456789", isLPP = false, penaltyNumber = "123456789", correlationId = correlationId)))
       result.getMessage shouldBe "Something went wrong"
     }
   }

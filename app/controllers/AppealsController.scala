@@ -126,7 +126,7 @@ class AppealsController @Inject()(appConfig: AppConfig,
     Ok(ReasonableExcuse.allExcusesToJson(appConfig))
   }
 
-  def submitAppeal(enrolmentKey: String, isLPP: Boolean, penaltyId: String, correlationId: String): Action[AnyContent] = Action.async {
+  def submitAppeal(enrolmentKey: String, isLPP: Boolean, penaltyNumber: String, correlationId: String): Action[AnyContent] = Action.async {
     implicit request => {
       request.body.asJson.fold({
         logger.error("[AppealsController][submitAppeal] Failed to validate request body as JSON")
@@ -141,7 +141,7 @@ class AppealsController @Inject()(appConfig: AppConfig,
               Future(BadRequest("Failed to parse to model"))
             },
             appealSubmission => {
-              etmpService.submitAppeal(appealSubmission, enrolmentKey, isLPP, penaltyId, correlationId).map {
+              etmpService.submitAppeal(appealSubmission, enrolmentKey, isLPP, penaltyNumber, correlationId).map {
                 _.fold(
                   error => {
                     logger.error(s"[AppealsController][submitAppeal] Received status ${error.status}, with error message: ${error.body}")

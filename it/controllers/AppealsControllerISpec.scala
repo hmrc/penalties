@@ -270,7 +270,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
 
   "submitAppeal" should {
     "call the connector and send the appeal data received in the request body - returns OK when successful for bereavement" in {
-      mockResponseForAppealSubmissionStub(OK, "HMRC-MTD-VAT~VRN~123456789", penaltyId = "123456789")
+      mockResponseForAppealSubmissionStub(OK, "HMRC-MTD-VAT~VRN~123456789", penaltyNumber = "123456789")
       val jsonToSubmit: JsValue = Json.parse(
         """
           |{
@@ -290,13 +290,13 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
           |}
           |""".stripMargin
       )
-      val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=false&penaltyId=123456789&correlationId=correlationId").post(
+      val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=false&penaltyNumber=123456789&correlationId=correlationId").post(
         jsonToSubmit
       ))
       result.status shouldBe OK
     }
     "call the connector and send the appeal data received in the request body - returns OK when successful for crime" in {
-      mockResponseForAppealSubmissionStub(OK, "HMRC-MTD-VAT~VRN~123456789", penaltyId = "123456789")
+      mockResponseForAppealSubmissionStub(OK, "HMRC-MTD-VAT~VRN~123456789", penaltyNumber = "123456789")
       val jsonToSubmit: JsValue = Json.parse(
         """
           |{
@@ -316,14 +316,14 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
           |		}
           |}
           |""".stripMargin)
-      val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=false&penaltyId=123456789&correlationId=correlationId").post(
+      val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=false&penaltyNumber=123456789&correlationId=correlationId").post(
         jsonToSubmit
       ))
       result.status shouldBe OK
     }
 
     "call the connector and send the appeal data received in the request body - returns OK when successful for fire or flood" in {
-      mockResponseForAppealSubmissionStub(OK, "HMRC-MTD-VAT~VRN~123456789", penaltyId = "123456789")
+      mockResponseForAppealSubmissionStub(OK, "HMRC-MTD-VAT~VRN~123456789", penaltyNumber = "123456789")
       val jsonToSubmit: JsValue = Json.parse(
         """
           |{
@@ -342,14 +342,14 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
           |    }
           |}
           |""".stripMargin)
-      val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=false&penaltyId=123456789&correlationId=correlationId").post(
+      val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=false&penaltyNumber=123456789&correlationId=correlationId").post(
         jsonToSubmit
       ))
       result.status shouldBe OK
     }
 
     "call the connector and send the appeal data received in the request body - returns OK when successful for loss of staff" in {
-      mockResponseForAppealSubmissionStub(OK, "HMRC-MTD-VAT~VRN~123456789", penaltyId = "123456789")
+      mockResponseForAppealSubmissionStub(OK, "HMRC-MTD-VAT~VRN~123456789", penaltyNumber = "123456789")
       val jsonToSubmit: JsValue = Json.parse(
         """
           |{
@@ -368,14 +368,14 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
           |		}
           |}
           |""".stripMargin)
-      val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=false&penaltyId=123456789&correlationId=correlationId").post(
+      val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=false&penaltyNumber=123456789&correlationId=correlationId").post(
         jsonToSubmit
       ))
       result.status shouldBe OK
     }
 
     "call the connector and send the appeal data received in the request body - returns OK when successful for technical issues" in {
-      mockResponseForAppealSubmissionStub(OK, "HMRC-MTD-VAT~VRN~123456789", penaltyId = "123456789")
+      mockResponseForAppealSubmissionStub(OK, "HMRC-MTD-VAT~VRN~123456789", penaltyNumber = "123456789")
       val jsonToSubmit: JsValue = Json.parse(
         """
           |{
@@ -395,7 +395,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
           |		}
           |}
           |""".stripMargin)
-      val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=false&penaltyId=123456789&correlationId=correlationId").post(
+      val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=false&penaltyNumber=123456789&correlationId=correlationId").post(
         jsonToSubmit
       ))
       result.status shouldBe OK
@@ -403,7 +403,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
 
     "call the connector and send the appeal data received in the request body - returns OK when successful for health" when {
       "there has been no hospital stay" in {
-        mockResponseForAppealSubmissionStub(OK, "HMRC-MTD-VAT~VRN~123456789", penaltyId = "123456789")
+        mockResponseForAppealSubmissionStub(OK, "HMRC-MTD-VAT~VRN~123456789", penaltyNumber = "123456789")
         val jsonToSubmit: JsValue = Json.parse(
           """
             |{
@@ -424,14 +424,14 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
             |		}
             |}
             |""".stripMargin)
-        val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=false&penaltyId=123456789&correlationId=correlationId").post(
+        val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=false&penaltyNumber=123456789&correlationId=correlationId").post(
           jsonToSubmit
         ))
         result.status shouldBe OK
       }
 
       "there is an ongoing hospital stay" in {
-        mockResponseForAppealSubmissionStub(OK, "HMRC-MTD-VAT~VRN~123456789", penaltyId = "123456789")
+        mockResponseForAppealSubmissionStub(OK, "HMRC-MTD-VAT~VRN~123456789", penaltyNumber = "123456789")
         val jsonToSubmit: JsValue = Json.parse(
           """
             |{
@@ -452,14 +452,14 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
             |		}
             |}
             |""".stripMargin)
-        val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=false&penaltyId=123456789&correlationId=correlationId").post(
+        val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=false&penaltyNumber=123456789&correlationId=correlationId").post(
           jsonToSubmit
         ))
         result.status shouldBe OK
       }
 
       "there has been a hospital stay" in {
-        mockResponseForAppealSubmissionStub(OK, "HMRC-MTD-VAT~VRN~123456789", penaltyId = "123456789")
+        mockResponseForAppealSubmissionStub(OK, "HMRC-MTD-VAT~VRN~123456789", penaltyNumber = "123456789")
         val jsonToSubmit: JsValue = Json.parse(
           """
             |{
@@ -481,14 +481,14 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
             |		}
             |}
             |""".stripMargin)
-        val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=false&penaltyId=123456789&correlationId=correlationId").post(
+        val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=false&penaltyNumber=123456789&correlationId=correlationId").post(
           jsonToSubmit
         ))
         result.status shouldBe OK
       }
 
       "call the connector and send the appeal data received in the request body - returns OK when successful for LPP" in {
-        mockResponseForAppealSubmissionStub(OK, "HMRC-MTD-VAT~VRN~123456789", isLPP = true, penaltyId = "123456789")
+        mockResponseForAppealSubmissionStub(OK, "HMRC-MTD-VAT~VRN~123456789", isLPP = true, penaltyNumber = "123456789")
         val jsonToSubmit: JsValue = Json.parse(
           """
             |{
@@ -508,7 +508,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
             |		}
             |}
             |""".stripMargin)
-        val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=true&penaltyId=123456789&correlationId=correlationId").post(
+        val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=true&penaltyNumber=123456789&correlationId=correlationId").post(
           jsonToSubmit
         ))
         result.status shouldBe OK
@@ -517,14 +517,14 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
 
     "return BAD_REQUEST (400)" when {
       "no JSON body is in the request" in {
-        val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&correlationId=correlationId").post(
+        val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=true&penaltyNumber=123456789&correlationId=correlationId").post(
           ""
         ))
         result.status shouldBe BAD_REQUEST
       }
 
       "JSON body is present but it can not be parsed to a model" in {
-        val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&correlationId=correlationId").post(
+        val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=true&penaltyNumber=123456789&correlationId=correlationId").post(
           Json.parse("{}")
         ))
         result.status shouldBe BAD_REQUEST
@@ -533,7 +533,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
 
     "return error status code" when {
       "the call to PEGA/stub fails" in {
-        mockResponseForAppealSubmissionStub(GATEWAY_TIMEOUT, "HMRC-MTD-VAT~VRN~123456789", penaltyId = "123456789")
+        mockResponseForAppealSubmissionStub(GATEWAY_TIMEOUT, "HMRC-MTD-VAT~VRN~123456789", penaltyNumber = "123456789")
         val jsonToSubmit: JsValue = Json.parse(
           """
             |{
@@ -553,14 +553,14 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
             |		}
             |}
             |""".stripMargin)
-        val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=false&penaltyId=123456789&correlationId=correlationId").post(
+        val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=false&penaltyNumber=123456789&correlationId=correlationId").post(
           jsonToSubmit
         ))
         result.status shouldBe GATEWAY_TIMEOUT
       }
 
       "the call to PEGA/stub has a fault" in {
-        mockResponseForAppealSubmissionStubFault("HMRC-MTD-VAT~VRN~123456789", penaltyId = "123456789")
+        mockResponseForAppealSubmissionStubFault("HMRC-MTD-VAT~VRN~123456789", penaltyNumber = "123456789")
         val jsonToSubmit: JsValue = Json.parse(
           """
             |{
@@ -580,7 +580,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
             |		}
             |}
             |""".stripMargin)
-        val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=false&penaltyId=123456789&correlationId=correlationId").post(
+        val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=false&penaltyNumber=123456789&correlationId=correlationId").post(
           jsonToSubmit
         ))
         result.status shouldBe INTERNAL_SERVER_ERROR
