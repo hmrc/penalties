@@ -31,8 +31,8 @@ trait AppealWiremock {
       |""".stripMargin
   )
 
-  def mockResponseForAppealSubmissionPEGA(status: Int, penaltyId: String): StubMapping = {
-    stubFor(post(urlEqualTo(s"/penalty/first-stage-appeal/$penaltyId"))
+  def mockResponseForAppealSubmissionPEGA(status: Int, penaltyNumber: String): StubMapping = {
+    stubFor(post(urlEqualTo(s"/penalty/first-stage-appeal/$penaltyNumber"))
       .willReturn(
         aResponse()
           .withBody(appealResponseModel.toString())

@@ -123,6 +123,7 @@ class PEGAConnectorSpec extends SpecBase with FeatureSwitching {
       result.otherHeaders.toMap.get("Environment").get shouldBe "env"
       result.otherHeaders.toMap.get("CorrelationId").get shouldBe "id"
       result.otherHeaders.toMap.get(AUTHORIZATION).get shouldBe "Bearer token"
+      result.otherHeaders.toMap.get("penaltyNumber").get shouldBe "penaltyNumber"
     }
   }
 }
