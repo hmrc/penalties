@@ -453,7 +453,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
   val healthAppealInformationHospitalStayNotOngoingJson: JsValue = Json.parse(
     """
       |{
-      |   "reasonableExcuse": "health",
+      |   "reasonableExcuse": "unexpectedHospitalStay",
       |   "honestyDeclaration": true,
       |   "startDateOfEvent": "2021-04-23T18:25:43.511Z",
       |   "endDateOfEvent": "2021-04-24T18:25:43.511Z",
@@ -469,7 +469,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
   val healthAppealInformationHospitalStayOngoingJson: JsValue = Json.parse(
     """
       |{
-      |   "reasonableExcuse": "health",
+      |   "reasonableExcuse": "unexpectedHospitalStay",
       |   "honestyDeclaration": true,
       |   "startDateOfEvent": "2021-04-23T18:25:43.511Z",
       |   "eventOngoing": true,
@@ -484,7 +484,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
   val healthAppealInformationNoHospitalStayJson: JsValue = Json.parse(
     """
       |{
-      |   "reasonableExcuse": "health",
+      |   "reasonableExcuse": "seriousOrLifeThreateningIllHealth",
       |   "honestyDeclaration": true,
       |   "startDateOfEvent": "2021-04-23T18:25:43.511Z",
       |   "hospitalStayInvolved": false,
@@ -738,7 +738,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             isClientResponsibleForSubmission = Some(false),
             isClientResponsibleForLateSubmission = Some(true),
             honestyDeclaration = true,
-            reasonableExcuse = "health"
+            reasonableExcuse = "seriousOrLifeThreateningIllHealth"
           )
         }
 
@@ -756,7 +756,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             isClientResponsibleForSubmission = Some(false),
             isClientResponsibleForLateSubmission = Some(true),
             honestyDeclaration = true,
-            reasonableExcuse = "health"
+            reasonableExcuse = "unexpectedHospitalStay"
           )
         }
 
@@ -774,7 +774,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             isClientResponsibleForSubmission = Some(false),
             isClientResponsibleForLateSubmission = Some(true),
             honestyDeclaration = true,
-            reasonableExcuse = "health"
+            reasonableExcuse = "unexpectedHospitalStay"
           )
         }
       }
@@ -1660,7 +1660,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             "isLPP" -> false,
             "agentReferenceNo" -> "AGENT1",
             "appealInformation" -> Json.obj(
-              "reasonableExcuse" -> "health",
+              "reasonableExcuse" -> "unexpectedHospitalStay",
               "honestyDeclaration" -> true,
               "startDateOfEvent" -> "2021-04-23T18:25:43.511Z",
               "endDateOfEvent" -> "2021-04-24T18:25:43.511Z",
@@ -1707,7 +1707,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             "isLPP" -> false,
             "agentReferenceNo" -> "AGENT1",
             "appealInformation" -> Json.obj(
-              "reasonableExcuse" -> "health",
+              "reasonableExcuse" -> "unexpectedHospitalStay",
               "honestyDeclaration" -> true,
               "startDateOfEvent" -> "2021-04-23T18:25:43.511Z",
               "eventOngoing" -> true,
@@ -1754,7 +1754,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             "isLPP" -> false,
             "agentReferenceNo" -> "AGENT1",
             "appealInformation" -> Json.obj(
-              "reasonableExcuse" -> "health",
+              "reasonableExcuse" -> "seriousOrLifeThreateningIllHealth",
               "honestyDeclaration" -> true,
               "startDateOfEvent" -> "2021-04-23T18:25:43.511Z",
               "eventOngoing" -> false,
@@ -2203,7 +2203,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           )
           val result = Json.toJson(model)(HealthAppealInformation.healthAppealWrites)
           result shouldBe Json.obj(
-            "reasonableExcuse" -> "health",
+            "reasonableExcuse" -> "unexpectedHospitalStay",
             "startDateOfEvent" -> "2021-04-23T18:25:43.511Z",
             "endDateOfEvent" -> "2021-04-24T18:25:43.511Z",
             "eventOngoing" -> false,
@@ -2232,7 +2232,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           )
           val result = Json.toJson(model)(HealthAppealInformation.healthAppealWrites)
           result shouldBe Json.obj(
-            "reasonableExcuse" -> "health",
+            "reasonableExcuse" -> "unexpectedHospitalStay",
             "startDateOfEvent" -> "2021-04-23T18:25:43.511Z",
             "eventOngoing" -> true,
             "hospitalStayInvolved" -> true,
@@ -2261,7 +2261,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           )
           val result = Json.toJson(model)(HealthAppealInformation.healthAppealWrites)
           result shouldBe Json.obj(
-            "reasonableExcuse" -> "health",
+            "reasonableExcuse" -> "seriousOrLifeThreateningIllHealth",
             "startDateOfEvent" -> "2021-04-23T18:25:43.511Z",
             "eventOngoing" -> false,
             "hospitalStayInvolved" -> false,
