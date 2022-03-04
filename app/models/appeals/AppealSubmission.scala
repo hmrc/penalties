@@ -447,10 +447,6 @@ object AppealSubmission {
         Json.fromJson(payload)(TechnicalIssuesAppealInformation.technicalIssuesAppealInformationFormatter)
       case "health" =>
         Json.fromJson(payload)(HealthAppealInformation.healthAppealInformationFormatter)
-      case "unexpectedHospitalStay" =>
-        Json.fromJson(payload)(HealthAppealInformation.healthAppealInformationFormatter)
-      case "seriousOrLifeThreateningIllHealth" =>
-        Json.fromJson(payload)(HealthAppealInformation.healthAppealInformationFormatter)
       case "other" =>
         Json.fromJson(payload)(OtherAppealInformation.otherAppealInformationFormatter)
       case "obligation" =>
@@ -471,10 +467,6 @@ object AppealSubmission {
       case "technicalIssues" =>
         Json.toJson(payload.asInstanceOf[TechnicalIssuesAppealInformation])(TechnicalIssuesAppealInformation.technicalIssuesAppealWrites)
       case "health" =>
-        Json.toJson(payload.asInstanceOf[HealthAppealInformation])(HealthAppealInformation.healthAppealWrites)
-      case "unexpectedHospitalStay" =>
-        Json.toJson(payload.asInstanceOf[HealthAppealInformation])(HealthAppealInformation.healthAppealWrites)
-      case "seriousOrLifeThreateningIllHealth" =>
         Json.toJson(payload.asInstanceOf[HealthAppealInformation])(HealthAppealInformation.healthAppealWrites)
       case "other" =>
         Json.toJson(payload.asInstanceOf[OtherAppealInformation])(OtherAppealInformation.otherAppealInformationWrites)
