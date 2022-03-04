@@ -291,11 +291,12 @@ object HealthAppealInformation {
   implicit val healthAppealInformationFormatter: OFormat[HealthAppealInformation] = Json.format[HealthAppealInformation]
 
   val healthAppealWrites: Writes[HealthAppealInformation] = (healthAppealInformation: HealthAppealInformation) => {
+    val healthAppealReasonForPEGA = if(healthAppealInformation.hospitalStayInvolved) "unexpectedHospitalStay" else "seriousOrLifeThreateningIllHealth"
     Json.obj(
       "hospitalStayInvolved" -> healthAppealInformation.hospitalStayInvolved,
       "eventOngoing" -> healthAppealInformation.eventOngoing,
       "lateAppeal" -> healthAppealInformation.lateAppeal,
-      "reasonableExcuse" -> healthAppealInformation.reasonableExcuse,
+      "reasonableExcuse" -> healthAppealReasonForPEGA,
       "honestyDeclaration" -> healthAppealInformation.honestyDeclaration
     ).deepMerge(
       healthAppealInformation.statement.fold(
