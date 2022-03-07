@@ -300,7 +300,7 @@ class AppealsControllerSpec extends SpecBase {
   "submitAppeal" should {
     "return BAD_REQUEST (400)" when {
       "the request body is not valid JSON" in new Setup {
-        val result: Future[Result] = controller.submitAppeal("HMRC-MTD-VAT~VRN~123456789", isLPP = false, penaltyId = "123456789", correlationId = correlationId)(fakeRequest)
+        val result: Future[Result] = controller.submitAppeal("HMRC-MTD-VAT~VRN~123456789", isLPP = false, penaltyNumber = "123456789", correlationId = correlationId)(fakeRequest)
         status(result) shouldBe BAD_REQUEST
         contentAsString(result) shouldBe "Invalid body received i.e. could not be parsed to JSON"
       }
@@ -318,7 +318,7 @@ class AppealsControllerSpec extends SpecBase {
             |}
             |""".stripMargin)
 
-        val result: Future[Result] = controller.submitAppeal("HMRC-MTD-VAT~VRN~123456789", isLPP = false, penaltyId = "123456789", correlationId = correlationId)(fakeRequest.withJsonBody(appealsJson))
+        val result: Future[Result] = controller.submitAppeal("HMRC-MTD-VAT~VRN~123456789", isLPP = false, penaltyNumber = "123456789", correlationId = correlationId)(fakeRequest.withJsonBody(appealsJson))
         status(result) shouldBe BAD_REQUEST
         contentAsString(result) shouldBe "Failed to parse to model"
       }
@@ -348,7 +348,7 @@ class AppealsControllerSpec extends SpecBase {
             |		}
             |}
             |""".stripMargin)
-        val result: Future[Result] = controller.submitAppeal("HMRC-MTD-VAT~VRN~123456789", isLPP = false, penaltyId = "123456789", correlationId = correlationId)(fakeRequest.withJsonBody(appealsJson))
+        val result: Future[Result] = controller.submitAppeal("HMRC-MTD-VAT~VRN~123456789", isLPP = false, penaltyNumber = "123456789", correlationId = correlationId)(fakeRequest.withJsonBody(appealsJson))
         status(result) shouldBe GATEWAY_TIMEOUT
       }
     }
@@ -375,7 +375,7 @@ class AppealsControllerSpec extends SpecBase {
             |		}
             |}
             |""".stripMargin)
-        val result: Future[Result] = controller.submitAppeal("HMRC-MTD-VAT~VRN~123456789", isLPP = false, penaltyId = "123456789", correlationId = correlationId)(fakeRequest.withJsonBody(appealsJson))
+        val result: Future[Result] = controller.submitAppeal("HMRC-MTD-VAT~VRN~123456789", isLPP = false, penaltyNumber = "123456789", correlationId = correlationId)(fakeRequest.withJsonBody(appealsJson))
         status(result) shouldBe OK
       }
 
@@ -399,7 +399,7 @@ class AppealsControllerSpec extends SpecBase {
             |		}
             |}
             |""".stripMargin)
-        val result: Future[Result] = controller.submitAppeal("HMRC-MTD-VAT~VRN~123456789", isLPP = false, penaltyId = "123456789", correlationId = correlationId)(fakeRequest.withJsonBody(appealsJson))
+        val result: Future[Result] = controller.submitAppeal("HMRC-MTD-VAT~VRN~123456789", isLPP = false, penaltyNumber = "123456789", correlationId = correlationId)(fakeRequest.withJsonBody(appealsJson))
         status(result) shouldBe OK
       }
 
@@ -423,7 +423,7 @@ class AppealsControllerSpec extends SpecBase {
             |		}
             |}
             |""".stripMargin)
-        val result: Future[Result] = controller.submitAppeal("HMRC-MTD-VAT~VRN~123456789", isLPP = false, penaltyId = "123456789", correlationId = correlationId)(fakeRequest.withJsonBody(appealsJson))
+        val result: Future[Result] = controller.submitAppeal("HMRC-MTD-VAT~VRN~123456789", isLPP = false, penaltyNumber = "123456789", correlationId = correlationId)(fakeRequest.withJsonBody(appealsJson))
         status(result) shouldBe OK
       }
 
@@ -448,7 +448,7 @@ class AppealsControllerSpec extends SpecBase {
             |		}
             |}
             |""".stripMargin)
-        val result: Future[Result] = controller.submitAppeal("HMRC-MTD-VAT~VRN~123456789", isLPP = false, penaltyId = "123456789", correlationId = correlationId)(fakeRequest.withJsonBody(appealsJson))
+        val result: Future[Result] = controller.submitAppeal("HMRC-MTD-VAT~VRN~123456789", isLPP = false, penaltyNumber = "123456789", correlationId = correlationId)(fakeRequest.withJsonBody(appealsJson))
         status(result) shouldBe OK
       }
 
@@ -475,7 +475,7 @@ class AppealsControllerSpec extends SpecBase {
               |		}
               |}
               |""".stripMargin)
-          val result: Future[Result] = controller.submitAppeal("HMRC-MTD-VAT~VRN~123456789", isLPP = false, penaltyId = "123456789", correlationId = correlationId)(fakeRequest.withJsonBody(appealsJson))
+          val result: Future[Result] = controller.submitAppeal("HMRC-MTD-VAT~VRN~123456789", isLPP = false, penaltyNumber = "123456789", correlationId = correlationId)(fakeRequest.withJsonBody(appealsJson))
           status(result) shouldBe OK
         }
 
@@ -501,7 +501,7 @@ class AppealsControllerSpec extends SpecBase {
               |		}
               |}
               |""".stripMargin)
-          val result: Future[Result] = controller.submitAppeal("HMRC-MTD-VAT~VRN~123456789", isLPP = false, penaltyId = "123456789", correlationId = correlationId)(fakeRequest.withJsonBody(appealsJson))
+          val result: Future[Result] = controller.submitAppeal("HMRC-MTD-VAT~VRN~123456789", isLPP = false, penaltyNumber = "123456789", correlationId = correlationId)(fakeRequest.withJsonBody(appealsJson))
           status(result) shouldBe OK
         }
 
@@ -528,7 +528,7 @@ class AppealsControllerSpec extends SpecBase {
               |		}
               |}
               |""".stripMargin)
-          val result: Future[Result] = controller.submitAppeal("HMRC-MTD-VAT~VRN~123456789", isLPP = false, penaltyId = "123456789", correlationId = correlationId)(fakeRequest.withJsonBody(appealsJson))
+          val result: Future[Result] = controller.submitAppeal("HMRC-MTD-VAT~VRN~123456789", isLPP = false, penaltyNumber = "123456789", correlationId = correlationId)(fakeRequest.withJsonBody(appealsJson))
           status(result) shouldBe OK
         }
 
@@ -553,7 +553,7 @@ class AppealsControllerSpec extends SpecBase {
               |		}
               |}
               |""".stripMargin)
-          val result: Future[Result] = controller.submitAppeal("HMRC-MTD-VAT~VRN~123456789", isLPP = true, penaltyId = "123456789", correlationId = correlationId)(fakeRequest.withJsonBody(appealsJson))
+          val result: Future[Result] = controller.submitAppeal("HMRC-MTD-VAT~VRN~123456789", isLPP = true, penaltyNumber = "123456789", correlationId = correlationId)(fakeRequest.withJsonBody(appealsJson))
           status(result) shouldBe OK
         }
       }

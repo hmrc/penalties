@@ -108,16 +108,16 @@ class ETMPService @Inject()(etmpConnector: ETMPConnector,
   }
 
   def submitAppeal(appealSubmission: AppealSubmission,
-                   enrolmentKey: String, isLPP: Boolean, penaltyId: String, correlationId: String): Future[Either[AppealsParser.ErrorResponse, AppealResponseModel]]= {
+                   enrolmentKey: String, isLPP: Boolean, penaltyNumber: String, correlationId: String): Future[Either[AppealsParser.ErrorResponse, AppealResponseModel]]= {
 
-    appealsConnector.submitAppeal(appealSubmission, enrolmentKey, isLPP, penaltyId, correlationId).flatMap {
+    appealsConnector.submitAppeal(appealSubmission, enrolmentKey, isLPP, penaltyNumber, correlationId).flatMap {
       _.fold(
         error => {
           logger.error(s"[ETMPService][submitAppeal] - Submit appeal call failed with error: ${error.body} and status: ${error.status}")
           Future(Left(error))
         },
         responseModel => {
-          logger.debug(s"[ETMPService][submitAppeal] - Retrieving response model for penalty: $penaltyId")
+          logger.debug(s"[ETMPService][submitAppeal] - Retrieving response model for penalty: $penaltyNumber")
           Future(Right(responseModel))
         }
       )

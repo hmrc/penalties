@@ -74,7 +74,7 @@ class PEGAConnectorSpec extends SpecBase with FeatureSwitching {
         )
       )
       val result: AppealSubmissionResponse = await(connector.submitAppeal(modelToSend,
-        "HMRC-MTD-VAT~VRN~123456789", isLPP = false, penaltyId = "1234567890", correlationId = "id"))
+        "HMRC-MTD-VAT~VRN~123456789", isLPP = false, penaltyNumber = "1234567890", correlationId = "id"))
       result shouldBe Right(appealResponseModel)
 
       argumentCaptorOtherHeaders.getValue.find(_._1 == "Authorization").get._2 shouldBe "Bearer placeholder"
@@ -112,17 +112,18 @@ class PEGAConnectorSpec extends SpecBase with FeatureSwitching {
         )
       )
       val result: AppealSubmissionResponse = await(connector.submitAppeal(modelToSend,
-        "HMRC-MTD-VAT~VRN~123456789", isLPP = true, penaltyId = "1234567890", correlationId = "id"))
+        "HMRC-MTD-VAT~VRN~123456789", isLPP = true, penaltyNumber = "1234567890", correlationId = "id"))
       result shouldBe Right(appealResponseModel)
     }
   }
 
   "headerForEIS" should {
     "return a HeaderCarrier with the correct headers" in new Setup {
-      val result: HeaderCarrier = connector.headersForEIS("id", "token", "env")
+      val result: HeaderCarrier = connector.headersForEIS("id", "token", "env", "penaltyNumber")
       result.otherHeaders.toMap.get("Environment").get shouldBe "env"
       result.otherHeaders.toMap.get("CorrelationId").get shouldBe "id"
       result.otherHeaders.toMap.get(AUTHORIZATION).get shouldBe "Bearer token"
+      result.otherHeaders.toMap.get("penaltyNumber").get shouldBe "penaltyNumber"
     }
   }
 }

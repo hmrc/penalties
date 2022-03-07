@@ -62,10 +62,10 @@ class AppConfig @Inject()(config: Configuration, servicesConfig: ServicesConfig)
     etmpBase + "/penalty/financial-data"
   }
 
-  def getAppealSubmissionURL(enrolmentKey: String, isLPP: Boolean, penaltyId: String): String = {
-    if(!isEnabled(CallPEGA)) stubBase + s"/penalties-stub/appeals/submit?enrolmentKey=$enrolmentKey&isLPP=$isLPP&penaltyId=$penaltyId"
+  def getAppealSubmissionURL(enrolmentKey: String, isLPP: Boolean, penaltyNumber: String): String = {
+    if(!isEnabled(CallPEGA)) stubBase + s"/penalties-stub/appeals/submit?enrolmentKey=$enrolmentKey&isLPP=$isLPP&penaltyNumber=$penaltyNumber"
     //TODO: change to relevant URL when implemented
-    else pegaBase + s"/penalty/first-stage-appeal/$penaltyId"
+    else pegaBase + s"/penalty/first-stage-appeal/$penaltyNumber"
   }
 
   def isReasonableExcuseEnabled(excuseName: String): Boolean = {
