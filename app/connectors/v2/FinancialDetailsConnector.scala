@@ -20,7 +20,7 @@ import config.AppConfig
 import connectors.parsers.v2.GetFinancialDetailsParser.GetFinancialDetailsResponse
 
 import javax.inject.Inject
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse}
+import uk.gov.hmrc.http.{HeaderCarrier, HttpClient}
 
 import scala.concurrent.{ExecutionContext, Future}
 
