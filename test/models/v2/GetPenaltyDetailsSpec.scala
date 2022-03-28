@@ -16,12 +16,12 @@
 
 package models.v2
 
+import java.time.LocalDate
+
 import base.SpecBase
 import models.v2.latePaymentPenalty.{LPPPenaltyCategoryEnum, LPPPenaltyStatusEnum, LatePaymentPenalty}
-import models.v2.lateSubmissionPenalty.{LSPData, LSPDetails, LSPPenaltyCategoryEnum, LSPPenaltyStatusEnum, LSPSummary, LateSubmission}
-import play.api.libs.json.{JsValue, Json}
-
-import java.time.LocalDate
+import models.v2.lateSubmissionPenalty._
+import play.api.libs.json.Json
 
 class GetPenaltyDetailsSpec extends SpecBase {
   "be readable from JSON" when {

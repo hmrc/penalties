@@ -29,7 +29,7 @@ class AppealsParserSpec extends SpecBase {
 
     private val httpMethod = "POST"
     private val url = "/"
-    val httpResponse: AnyRef with HttpResponse = HttpResponse(status, optJson, responseHeaders)
+    val httpResponse: AnyRef with HttpResponse = HttpResponse.apply(status, optJson.get, responseHeaders)
 
     def readResponse: AppealsParser.AppealSubmissionResponse = AppealsParser.AppealSubmissionResponseReads.read(httpMethod, url, httpResponse)
 
@@ -54,11 +54,11 @@ class AppealsParserSpec extends SpecBase {
       readResponse shouldBe Left(InvalidJson)
     }
 
-    s"return $BadRequest if ${Status.BAD_REQUEST} returned" in new Setup(Status.BAD_REQUEST) {
+    s"return $BadRequest if ${Status.BAD_REQUEST} returned" in new Setup(Status.BAD_REQUEST, Some(Json.parse("{}"))) {
       readResponse shouldBe Left(BadRequest)
     }
 
-    s"return $UnexpectedFailure if random non Success status code returned" in new Setup(Status.INTERNAL_SERVER_ERROR) {
+    s"return $UnexpectedFailure if random non Success status code returned" in new Setup(Status.INTERNAL_SERVER_ERROR, Some(Json.parse("{}"))) {
       readResponse shouldBe Left(UnexpectedFailure(500, "Unexpected response, status 500 returned"))
     }
   }
