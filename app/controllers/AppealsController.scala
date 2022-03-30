@@ -178,10 +178,10 @@ class AppealsController @Inject()(appConfig: AppConfig,
                 file = SDESNotificationFile(
                   recipientOrSender = appConfig.SDESNotificationFileRecipient,
                   name = details.fileName,
-                  location = upload.downloadUrl.getOrElse(""),
+                  location = upload.downloadUrl.get,
                   checksum = SDESChecksum(algorithm = uploadAlgorithm, value = details.checksum),
                   size = details.size,
-                  properties = Seq(SDESProperties(name = "caseID", value = caseID))
+                  properties = Seq(SDESProperties(name = "CaseId", value = caseID))
                 ),
                 audit = SDESAudit(correlationID = idGenerator.generateUUID)
               )
