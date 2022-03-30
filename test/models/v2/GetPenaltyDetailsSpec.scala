@@ -19,7 +19,7 @@ package models.v2
 import base.SpecBase
 import models.v2.latePaymentPenalty.{LPPPenaltyCategoryEnum, LPPPenaltyStatusEnum, LatePaymentPenalty}
 import models.v2.lateSubmissionPenalty.{LSPData, LSPDetails, LSPPenaltyCategoryEnum, LSPPenaltyStatusEnum, LSPSummary, LateSubmission}
-import play.api.libs.json.{JsValue, Json}
+import play.api.libs.json.Json
 
 import java.time.LocalDate
 
