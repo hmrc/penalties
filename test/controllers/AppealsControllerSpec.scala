@@ -600,8 +600,10 @@ class AppealsControllerSpec extends SpecBase {
               location = "/",
               checksum = SDESChecksum(algorithm = "md5", value = "check123456789"),
               size = 1,
-              properties = Seq(SDESProperties(name = "CaseId", value = "PR-1234"),
-                SDESProperties(name = "SourceFileUploadDate", value = "2018-04-24T09:30"))
+              properties = Seq(
+                SDESProperties(name = "CaseId", value = "PR-1234"),
+                SDESProperties(name = "SourceFileUploadDate", value = "2018-04-24T09:30")
+              )
             ),
             audit = SDESAudit(
               correlationID = correlationId
