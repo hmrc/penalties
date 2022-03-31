@@ -21,7 +21,7 @@ import config.AppConfig
 import connectors.parsers.ComplianceParser._
 import models.compliance.{CompliancePayload, ComplianceStatusEnum, ObligationDetail, ObligationIdentification}
 import org.mockito.Mockito._
-import org.mockito.{ArgumentCaptor, ArgumentMatchers}
+import org.mockito.{ArgumentCaptor, Matchers}
 import play.api.test.Helpers._
 import uk.gov.hmrc.http.{Authorization, HeaderCarrier, HttpClient}
 
@@ -76,17 +76,17 @@ class ComplianceConnectorSpec extends SpecBase {
           )
         )
       )
-      when(mockAppConfig.getComplianceData(ArgumentMatchers.eq("123456789"), ArgumentMatchers.any(), ArgumentMatchers.any()))
+      when(mockAppConfig.getComplianceData(Matchers.eq("123456789"), Matchers.any(), Matchers.any()))
         .thenReturn("/123456789")
       when(mockAppConfig.eisEnvironment).thenReturn("env")
       when(mockAppConfig.eiOutboundBearerToken).thenReturn("Bearer 12345")
       val hcArgumentCaptor: ArgumentCaptor[HeaderCarrier] = ArgumentCaptor.forClass(classOf[HeaderCarrier])
-      when(mockHttpClient.GET[CompliancePayloadResponse](ArgumentMatchers.eq("/123456789"),
-        ArgumentMatchers.any(),
-        ArgumentMatchers.any())
-        (ArgumentMatchers.any(),
+      when(mockHttpClient.GET[CompliancePayloadResponse](Matchers.eq("/123456789"),
+        Matchers.any(),
+        Matchers.any())
+        (Matchers.any(),
           hcArgumentCaptor.capture(),
-          ArgumentMatchers.any()))
+          Matchers.any()))
         .thenReturn(Future.successful(Right(CompliancePayloadSuccessResponse(compliancePayloadAsModel))))
       val result: CompliancePayloadResponse =
         await(connector.getComplianceData("123456789", "2020-01-01", "2020-12-31")(HeaderCarrier()))
@@ -98,16 +98,16 @@ class ComplianceConnectorSpec extends SpecBase {
 
     "return a Left response" when {
       "the call returns a OK response however the body is not parsable as a model" in new Setup {
-        when(mockAppConfig.getComplianceData(ArgumentMatchers.eq("123456789"), ArgumentMatchers.any(), ArgumentMatchers.any()))
+        when(mockAppConfig.getComplianceData(Matchers.eq("123456789"), Matchers.any(), Matchers.any()))
           .thenReturn("/123456789")
         when(mockAppConfig.eisEnvironment).thenReturn("env")
         when(mockAppConfig.eiOutboundBearerToken).thenReturn("Bearer 12345")
-        when(mockHttpClient.GET[CompliancePayloadResponse](ArgumentMatchers.eq("/123456789"),
-          ArgumentMatchers.any(),
-          ArgumentMatchers.any())
-          (ArgumentMatchers.any(),
-            ArgumentMatchers.any(),
-            ArgumentMatchers.any()))
+        when(mockHttpClient.GET[CompliancePayloadResponse](Matchers.eq("/123456789"),
+          Matchers.any(),
+          Matchers.any())
+          (Matchers.any(),
+            Matchers.any(),
+            Matchers.any()))
           .thenReturn(Future.successful(Left(CompliancePayloadMalformed)))
         val result: CompliancePayloadResponse =
           await(connector.getComplianceData("123456789", "2020-01-01", "2020-12-31")(HeaderCarrier()))
@@ -115,16 +115,16 @@ class ComplianceConnectorSpec extends SpecBase {
       }
 
       "the call returns a Not Found status" in new Setup {
-        when(mockAppConfig.getComplianceData(ArgumentMatchers.eq("123456789"), ArgumentMatchers.any(), ArgumentMatchers.any()))
+        when(mockAppConfig.getComplianceData(Matchers.eq("123456789"), Matchers.any(), Matchers.any()))
           .thenReturn("/123456789")
         when(mockAppConfig.eisEnvironment).thenReturn("env")
         when(mockAppConfig.eiOutboundBearerToken).thenReturn("Bearer 12345")
-        when(mockHttpClient.GET[CompliancePayloadResponse](ArgumentMatchers.eq("/123456789"),
-          ArgumentMatchers.any(),
-          ArgumentMatchers.any())
-          (ArgumentMatchers.any(),
-            ArgumentMatchers.any(),
-            ArgumentMatchers.any()))
+        when(mockHttpClient.GET[CompliancePayloadResponse](Matchers.eq("/123456789"),
+          Matchers.any(),
+          Matchers.any())
+          (Matchers.any(),
+            Matchers.any(),
+            Matchers.any()))
           .thenReturn(Future.successful(Left(CompliancePayloadNoData)))
         val result: CompliancePayloadResponse =
           await(connector.getComplianceData("123456789", "2020-01-01", "2020-12-31")(HeaderCarrier()))
@@ -132,16 +132,16 @@ class ComplianceConnectorSpec extends SpecBase {
       }
 
       "the call returns a ISE" in new Setup {
-        when(mockAppConfig.getComplianceData(ArgumentMatchers.eq("123456789"), ArgumentMatchers.any(), ArgumentMatchers.any()))
+        when(mockAppConfig.getComplianceData(Matchers.eq("123456789"), Matchers.any(), Matchers.any()))
           .thenReturn("/123456789")
         when(mockAppConfig.eisEnvironment).thenReturn("env")
         when(mockAppConfig.eiOutboundBearerToken).thenReturn("Bearer 12345")
-        when(mockHttpClient.GET[CompliancePayloadResponse](ArgumentMatchers.eq("/123456789"),
-          ArgumentMatchers.any(),
-          ArgumentMatchers.any())
-          (ArgumentMatchers.any(),
-            ArgumentMatchers.any(),
-            ArgumentMatchers.any()))
+        when(mockHttpClient.GET[CompliancePayloadResponse](Matchers.eq("/123456789"),
+          Matchers.any(),
+          Matchers.any())
+          (Matchers.any(),
+            Matchers.any(),
+            Matchers.any()))
           .thenReturn(Future.successful(Left(CompliancePayloadFailureResponse(INTERNAL_SERVER_ERROR))))
         val result: CompliancePayloadResponse =
           await(connector.getComplianceData("123456789", "2020-01-01", "2020-12-31")(HeaderCarrier()))
@@ -149,16 +149,16 @@ class ComplianceConnectorSpec extends SpecBase {
       }
 
       "the call returns an unmatched response" in new Setup {
-        when(mockAppConfig.getComplianceData(ArgumentMatchers.eq("123456789"), ArgumentMatchers.any(), ArgumentMatchers.any()))
+        when(mockAppConfig.getComplianceData(Matchers.eq("123456789"), Matchers.any(), Matchers.any()))
           .thenReturn("/123456789")
         when(mockAppConfig.eisEnvironment).thenReturn("env")
         when(mockAppConfig.eiOutboundBearerToken).thenReturn("Bearer 12345")
-        when(mockHttpClient.GET[CompliancePayloadResponse](ArgumentMatchers.eq("/123456789"),
-          ArgumentMatchers.any(),
-          ArgumentMatchers.any())
-          (ArgumentMatchers.any(),
-            ArgumentMatchers.any(),
-            ArgumentMatchers.any()))
+        when(mockHttpClient.GET[CompliancePayloadResponse](Matchers.eq("/123456789"),
+          Matchers.any(),
+          Matchers.any())
+          (Matchers.any(),
+            Matchers.any(),
+            Matchers.any()))
           .thenReturn(Future.successful(Left(CompliancePayloadFailureResponse(SERVICE_UNAVAILABLE))))
         val result: CompliancePayloadResponse =
           await(connector.getComplianceData("123456789", "2020-01-01", "2020-12-31")(HeaderCarrier()))

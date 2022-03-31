@@ -18,7 +18,7 @@ package controllers
 
 import base.SpecBase
 import connectors.parsers.ETMPPayloadParser.{GetETMPPayloadFailureResponse, GetETMPPayloadNoContent, GetETMPPayloadSuccessResponse}
-import org.mockito.ArgumentMatchers
+import org.mockito.Matchers
 import org.mockito.Mockito.{mock, reset, times, verify, when}
 import play.api.http.Status
 import play.api.libs.json.Json
@@ -40,21 +40,21 @@ class APIControllerSpec extends SpecBase {
 
   "getSummaryDataForVRN" should {
     s"return NOT_FOUND (${Status.NOT_FOUND}) when the call to ETMP fails" in new Setup {
-      when(mockETMPService.getPenaltyDataFromETMPForEnrolment(ArgumentMatchers.any())(ArgumentMatchers.any()))
+      when(mockETMPService.getPenaltyDataFromETMPForEnrolment(Matchers.any())(Matchers.any()))
         .thenReturn(Future.successful((None, Left(GetETMPPayloadFailureResponse(Status.INTERNAL_SERVER_ERROR)))))
       val result = controller.getSummaryDataForVRN("123456789")(fakeRequest)
       status(result) shouldBe Status.NOT_FOUND
     }
 
     s"return NOT_FOUND (${Status.NOT_FOUND}) when the call returns no data" in new Setup {
-      when(mockETMPService.getPenaltyDataFromETMPForEnrolment(ArgumentMatchers.any())(ArgumentMatchers.any()))
+      when(mockETMPService.getPenaltyDataFromETMPForEnrolment(Matchers.any())(Matchers.any()))
         .thenReturn(Future.successful((None, Left(GetETMPPayloadNoContent))))
       val result = controller.getSummaryDataForVRN("123456789")(fakeRequest)
       status(result) shouldBe Status.NOT_FOUND
     }
 
     s"return BAD_REQUEST (${Status.BAD_REQUEST}) when the user supplies an invalid VRN" in new Setup {
-      when(mockETMPService.getPenaltyDataFromETMPForEnrolment(ArgumentMatchers.any())(ArgumentMatchers.any()))
+      when(mockETMPService.getPenaltyDataFromETMPForEnrolment(Matchers.any())(Matchers.any()))
         .thenReturn(Future.successful((Some(mockETMPPayloadResponseAsModel), Right(GetETMPPayloadSuccessResponse(mockETMPPayloadResponseAsModel)))))
       val result = controller.getSummaryDataForVRN("1234567891234567890")(fakeRequest)
       status(result) shouldBe Status.BAD_REQUEST
@@ -63,14 +63,14 @@ class APIControllerSpec extends SpecBase {
     }
 
     s"return OK (${Status.OK}) when the call returns some data and can be parsed to the correct response" in new Setup {
-      when(mockETMPService.checkIfHasAnyPenaltyData(ArgumentMatchers.any())).thenReturn(true)
-      when(mockETMPService.getNumberOfEstimatedPenalties(ArgumentMatchers.any())).thenReturn(2)
-      when(mockETMPService.getPenaltyDataFromETMPForEnrolment(ArgumentMatchers.any())(ArgumentMatchers.any()))
+      when(mockETMPService.checkIfHasAnyPenaltyData(Matchers.any())).thenReturn(true)
+      when(mockETMPService.getNumberOfEstimatedPenalties(Matchers.any())).thenReturn(2)
+      when(mockETMPService.getPenaltyDataFromETMPForEnrolment(Matchers.any())(Matchers.any()))
         .thenReturn(Future.successful((Some(mockETMPPayloadForAPIResponseData), Right(GetETMPPayloadSuccessResponse(mockETMPPayloadForAPIResponseData)))))
-      when(mockETMPService.findEstimatedPenaltiesAmount(ArgumentMatchers.any()))
+      when(mockETMPService.findEstimatedPenaltiesAmount(Matchers.any()))
         .thenReturn(BigDecimal(123.45))
-      when(mockETMPService.getNumberOfCrystalizedPenalties(ArgumentMatchers.any())).thenReturn(2)
-      when(mockETMPService.getCrystalisedPenaltyTotal(ArgumentMatchers.any())).thenReturn(BigDecimal(288))
+      when(mockETMPService.getNumberOfCrystalizedPenalties(Matchers.any())).thenReturn(2)
+      when(mockETMPService.getCrystalisedPenaltyTotal(Matchers.any())).thenReturn(BigDecimal(288))
       val result = controller.getSummaryDataForVRN("123456789")(fakeRequest)
       status(result) shouldBe Status.OK
       contentAsJson(result) shouldBe Json.parse(
@@ -85,18 +85,18 @@ class APIControllerSpec extends SpecBase {
           |}
           |""".stripMargin
       )
-      verify(mockAuditService, times(1)).audit(ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
+      verify(mockAuditService, times(1)).audit(Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any())
     }
 
     s"return OK (${Status.OK}) when there are no LSP or LPP estimated penalties in etmpPayload" in new Setup {
-      when(mockETMPService.checkIfHasAnyPenaltyData(ArgumentMatchers.any())).thenReturn(false)
-      when(mockETMPService.getNumberOfEstimatedPenalties(ArgumentMatchers.any())).thenReturn(0)
-      when(mockETMPService.getPenaltyDataFromETMPForEnrolment(ArgumentMatchers.any())(ArgumentMatchers.any()))
+      when(mockETMPService.checkIfHasAnyPenaltyData(Matchers.any())).thenReturn(false)
+      when(mockETMPService.getNumberOfEstimatedPenalties(Matchers.any())).thenReturn(0)
+      when(mockETMPService.getPenaltyDataFromETMPForEnrolment(Matchers.any())(Matchers.any()))
         .thenReturn(Future.successful((Some(mockETMPPayloadWithNoEstimatedPenaltiesForAPIResponseData), Right(GetETMPPayloadSuccessResponse(mockETMPPayloadWithNoEstimatedPenaltiesForAPIResponseData)))))
-      when(mockETMPService.findEstimatedPenaltiesAmount(ArgumentMatchers.any()))
+      when(mockETMPService.findEstimatedPenaltiesAmount(Matchers.any()))
         .thenReturn(BigDecimal(0))
-      when(mockETMPService.getNumberOfCrystalizedPenalties(ArgumentMatchers.any())).thenReturn(0)
-      when(mockETMPService.getCrystalisedPenaltyTotal(ArgumentMatchers.any())).thenReturn(BigDecimal(0))
+      when(mockETMPService.getNumberOfCrystalizedPenalties(Matchers.any())).thenReturn(0)
+      when(mockETMPService.getCrystalisedPenaltyTotal(Matchers.any())).thenReturn(BigDecimal(0))
       val result = controller.getSummaryDataForVRN("123456789")(fakeRequest)
       status(result) shouldBe Status.OK
       contentAsJson(result) shouldBe Json.parse(
