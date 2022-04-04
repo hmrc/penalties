@@ -20,7 +20,7 @@ import base.SpecBase
 import config.AppConfig
 import connectors.parsers.ETMPPayloadParser.{GetETMPPayloadMalformed, GetETMPPayloadNoContent, GetETMPPayloadSuccessResponse}
 import models.ETMPPayload
-import org.mockito.ArgumentMatchers
+import org.mockito.Matchers
 import org.mockito.Mockito._
 import play.api.http.Status
 import play.api.libs.json.Json
@@ -50,17 +50,17 @@ class ETMPControllerSpec extends SpecBase {
 
   "getPenaltiesData" should {
     "call the service to retrieve data from ETMP and return OK with the body if successful" in new Setup {
-      when(mockETMPService.getPenaltyDataFromETMPForEnrolment(ArgumentMatchers.eq(sampleMTDVATEnrolmentKey))(ArgumentMatchers.any()))
+      when(mockETMPService.getPenaltyDataFromETMPForEnrolment(Matchers.eq(sampleMTDVATEnrolmentKey))(Matchers.any()))
         .thenReturn(Future.successful((Some(mockETMPPayloadResponseAsModel), Right(GetETMPPayloadSuccessResponse(mockETMPPayloadResponseAsModel)))))
       val result: Future[Result] = controller.getPenaltiesData(sampleMTDVATEnrolmentKey)(fakeRequest)
       status(result) shouldBe Status.OK
       contentAsJson(result) shouldBe Json.toJson(mockETMPPayloadResponseAsModel)
       verify(mockAuditService)
-        .audit(ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
+        .audit(Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any())
     }
 
     "call the service and return an ISE if there is a failure to do with processing" in new Setup {
-      when(mockETMPService.getPenaltyDataFromETMPForEnrolment(ArgumentMatchers.eq(sampleMTDVATEnrolmentKey))(ArgumentMatchers.any()))
+      when(mockETMPService.getPenaltyDataFromETMPForEnrolment(Matchers.eq(sampleMTDVATEnrolmentKey))(Matchers.any()))
         .thenReturn(Future.successful((None, Left(GetETMPPayloadMalformed))))
 
       val result: Future[Result] = controller.getPenaltiesData(sampleMTDVATEnrolmentKey)(fakeRequest)
@@ -69,7 +69,7 @@ class ETMPControllerSpec extends SpecBase {
     }
 
     "call the service and return a NotFound if there is a NoContent is returned from the connector" in new Setup {
-      when(mockETMPService.getPenaltyDataFromETMPForEnrolment(ArgumentMatchers.eq(sampleMTDVATEnrolmentKey))(ArgumentMatchers.any()))
+      when(mockETMPService.getPenaltyDataFromETMPForEnrolment(Matchers.eq(sampleMTDVATEnrolmentKey))(Matchers.any()))
         .thenReturn(Future.successful((None, Left(GetETMPPayloadNoContent))))
 
       val result: Future[Result] = controller.getPenaltiesData(sampleMTDVATEnrolmentKey)(fakeRequest)
@@ -78,23 +78,23 @@ class ETMPControllerSpec extends SpecBase {
     }
 
     "audit the response when user has > 0 penalties" in new Setup {
-      when(mockETMPService.getPenaltyDataFromETMPForEnrolment(ArgumentMatchers.eq(sampleMTDVATEnrolmentKey))(ArgumentMatchers.any()))
+      when(mockETMPService.getPenaltyDataFromETMPForEnrolment(Matchers.eq(sampleMTDVATEnrolmentKey))(Matchers.any()))
         .thenReturn(Future.successful((Some(mockETMPPayloadResponseAsModel), Right(GetETMPPayloadSuccessResponse(mockETMPPayloadResponseAsModel)))))
       val result: Future[Result] = controller.getPenaltiesData(sampleMTDVATEnrolmentKey)(fakeRequest)
       status(result) shouldBe Status.OK
       contentAsJson(result) shouldBe Json.toJson(mockETMPPayloadResponseAsModel)
       verify(mockAuditService)
-        .audit(ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
+        .audit(Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any())
     }
 
     "NOT audit the response when user has 0 penalties" in new Setup {
-      when(mockETMPService.getPenaltyDataFromETMPForEnrolment(ArgumentMatchers.eq(sampleMTDVATEnrolmentKey))(ArgumentMatchers.any()))
+      when(mockETMPService.getPenaltyDataFromETMPForEnrolment(Matchers.eq(sampleMTDVATEnrolmentKey))(Matchers.any()))
         .thenReturn(Future.successful((Some(etmpPayloadWithNoPenalties), Right(GetETMPPayloadSuccessResponse(etmpPayloadWithNoPenalties)))))
       val result: Future[Result] = controller.getPenaltiesData(sampleMTDVATEnrolmentKey)(fakeRequest)
       status(result) shouldBe Status.OK
       contentAsJson(result) shouldBe Json.toJson(etmpPayloadWithNoPenalties)
       verify(mockAuditService, times(0))
-        .audit(ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
+        .audit(Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any())
     }
   }
 }

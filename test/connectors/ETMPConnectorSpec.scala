@@ -19,7 +19,7 @@ package connectors
 import base.SpecBase
 import config.AppConfig
 import connectors.parsers.ETMPPayloadParser._
-import org.mockito.ArgumentMatchers
+import org.mockito.Matchers
 import org.mockito.Mockito._
 import play.api.http.Status
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
@@ -42,12 +42,12 @@ class ETMPConnectorSpec extends SpecBase {
 
   "getPenaltiesDataForEnrolmentKey" should {
     s"return a successful response i.e. GetETMPPayloadSuccess - when the call succeeds and the body can be parsed" in new Setup {
-      when(mockHttpClient.GET[ETMPPayloadResponse](ArgumentMatchers.eq("/123456789"),
-        ArgumentMatchers.any(),
-        ArgumentMatchers.any())
-        (ArgumentMatchers.any(),
-        ArgumentMatchers.any(),
-        ArgumentMatchers.any()))
+      when(mockHttpClient.GET[ETMPPayloadResponse](Matchers.eq("/123456789"),
+        Matchers.any(),
+        Matchers.any())
+        (Matchers.any(),
+        Matchers.any(),
+        Matchers.any()))
         .thenReturn(Future.successful(Right(GetETMPPayloadSuccessResponse(mockETMPPayloadResponseAsModel))))
 
       val result: ETMPPayloadResponse = await(connector.getPenaltiesDataForEnrolmentKey("123456789")(HeaderCarrier()))
@@ -57,12 +57,12 @@ class ETMPConnectorSpec extends SpecBase {
 
     "return a Left response" when {
       "the call returns an OK response however the body is not parsable as a model" in new Setup {
-        when(mockHttpClient.GET[ETMPPayloadResponse](ArgumentMatchers.eq("/123456789"),
-          ArgumentMatchers.any(),
-          ArgumentMatchers.any())
-          (ArgumentMatchers.any(),
-            ArgumentMatchers.any(),
-            ArgumentMatchers.any()))
+        when(mockHttpClient.GET[ETMPPayloadResponse](Matchers.eq("/123456789"),
+          Matchers.any(),
+          Matchers.any())
+          (Matchers.any(),
+            Matchers.any(),
+            Matchers.any()))
           .thenReturn(Future.successful(Left(GetETMPPayloadMalformed)))
 
         val result: ETMPPayloadResponse = await(connector.getPenaltiesDataForEnrolmentKey("123456789")(HeaderCarrier()))
@@ -70,12 +70,12 @@ class ETMPConnectorSpec extends SpecBase {
       }
 
       "the call returns a No Content status" in new Setup {
-        when(mockHttpClient.GET[ETMPPayloadResponse](ArgumentMatchers.eq("/123456789"),
-          ArgumentMatchers.any(),
-          ArgumentMatchers.any())
-          (ArgumentMatchers.any(),
-            ArgumentMatchers.any(),
-            ArgumentMatchers.any()))
+        when(mockHttpClient.GET[ETMPPayloadResponse](Matchers.eq("/123456789"),
+          Matchers.any(),
+          Matchers.any())
+          (Matchers.any(),
+            Matchers.any(),
+            Matchers.any()))
           .thenReturn(Future.successful(Left(GetETMPPayloadNoContent)))
 
         val result: ETMPPayloadResponse = await(connector.getPenaltiesDataForEnrolmentKey("123456789")(HeaderCarrier()))
@@ -83,12 +83,12 @@ class ETMPConnectorSpec extends SpecBase {
       }
 
       "the call returns an ISE" in new Setup {
-        when(mockHttpClient.GET[ETMPPayloadResponse](ArgumentMatchers.eq("/123456789"),
-          ArgumentMatchers.any(),
-          ArgumentMatchers.any())
-          (ArgumentMatchers.any(),
-            ArgumentMatchers.any(),
-            ArgumentMatchers.any()))
+        when(mockHttpClient.GET[ETMPPayloadResponse](Matchers.eq("/123456789"),
+          Matchers.any(),
+          Matchers.any())
+          (Matchers.any(),
+            Matchers.any(),
+            Matchers.any()))
           .thenReturn(Future.successful(Left(GetETMPPayloadFailureResponse(Status.INTERNAL_SERVER_ERROR))))
 
         val result: ETMPPayloadResponse = await(connector.getPenaltiesDataForEnrolmentKey("123456789")(HeaderCarrier()))
@@ -96,12 +96,12 @@ class ETMPConnectorSpec extends SpecBase {
       }
 
       "the call returns an unmatched response" in new Setup {
-        when(mockHttpClient.GET[ETMPPayloadResponse](ArgumentMatchers.eq("/123456789"),
-          ArgumentMatchers.any(),
-          ArgumentMatchers.any())
-          (ArgumentMatchers.any(),
-            ArgumentMatchers.any(),
-            ArgumentMatchers.any()))
+        when(mockHttpClient.GET[ETMPPayloadResponse](Matchers.eq("/123456789"),
+          Matchers.any(),
+          Matchers.any())
+          (Matchers.any(),
+            Matchers.any(),
+            Matchers.any()))
           .thenReturn(Future.successful(Left(GetETMPPayloadFailureResponse(Status.BAD_GATEWAY))))
 
         val result: ETMPPayloadResponse = await(connector.getPenaltiesDataForEnrolmentKey("123456789")(HeaderCarrier()))

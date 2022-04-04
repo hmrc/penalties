@@ -19,7 +19,7 @@ package connectors.v2
 import base.SpecBase
 import config.AppConfig
 import connectors.parsers.v2.GetFinancialDetailsParser.{GetFinancialDetailsFailureResponse, GetFinancialDetailsResponse, GetFinancialDetailsSuccessResponse}
-import org.mockito.ArgumentMatchers
+import org.mockito.Matchers
 import org.mockito.Mockito._
 import play.api.http.Status
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
@@ -42,12 +42,12 @@ class FinancialDetailsConnectorSpec extends SpecBase {
 
   "getFinancialDetails" should {
     "return a 200 when the call succeeds" in new Setup {
-      when(mockHttpClient.GET[GetFinancialDetailsResponse](ArgumentMatchers.eq("/VRN/123456789/VATC"),
-        ArgumentMatchers.any(),
-        ArgumentMatchers.any())
-        (ArgumentMatchers.any(),
-          ArgumentMatchers.any(),
-          ArgumentMatchers.any()))
+      when(mockHttpClient.GET[GetFinancialDetailsResponse](Matchers.eq("/VRN/123456789/VATC"),
+        Matchers.any(),
+        Matchers.any())
+        (Matchers.any(),
+          Matchers.any(),
+          Matchers.any()))
         .thenReturn(Future.successful(Right(GetFinancialDetailsSuccessResponse(mockGetFinancialDetailsModel))))
 
       val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails("VRN/123456789/VATC")(HeaderCarrier()))
@@ -55,12 +55,12 @@ class FinancialDetailsConnectorSpec extends SpecBase {
     }
 
     s"return a 404 when the call fails for Not Found" in new Setup {
-      when(mockHttpClient.GET[GetFinancialDetailsResponse](ArgumentMatchers.eq("/FOO/BAR/123456789"),
-        ArgumentMatchers.any(),
-        ArgumentMatchers.any())
-        (ArgumentMatchers.any(),
-          ArgumentMatchers.any(),
-          ArgumentMatchers.any()))
+      when(mockHttpClient.GET[GetFinancialDetailsResponse](Matchers.eq("/FOO/BAR/123456789"),
+        Matchers.any(),
+        Matchers.any())
+        (Matchers.any(),
+          Matchers.any(),
+          Matchers.any()))
         .thenReturn(Future.successful(Left(GetFinancialDetailsFailureResponse(Status.NOT_FOUND))))
 
       val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails("FOO/BAR/123456789")(HeaderCarrier()))
@@ -68,12 +68,12 @@ class FinancialDetailsConnectorSpec extends SpecBase {
     }
 
     s"return a 400 when the call fails for Bad Request" in new Setup {
-      when(mockHttpClient.GET[GetFinancialDetailsResponse](ArgumentMatchers.eq("/FOO/BAR/123456789"),
-        ArgumentMatchers.any(),
-        ArgumentMatchers.any())
-        (ArgumentMatchers.any(),
-          ArgumentMatchers.any(),
-          ArgumentMatchers.any()))
+      when(mockHttpClient.GET[GetFinancialDetailsResponse](Matchers.eq("/FOO/BAR/123456789"),
+        Matchers.any(),
+        Matchers.any())
+        (Matchers.any(),
+          Matchers.any(),
+          Matchers.any()))
         .thenReturn(Future.successful(Left(GetFinancialDetailsFailureResponse(Status.BAD_REQUEST))))
 
       val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails("FOO/BAR/123456789")(HeaderCarrier()))
@@ -81,12 +81,12 @@ class FinancialDetailsConnectorSpec extends SpecBase {
     }
 
     s"return a 409 when the call fails for Conflict" in new Setup {
-      when(mockHttpClient.GET[GetFinancialDetailsResponse](ArgumentMatchers.eq("/FOO/BAR/123456789"),
-        ArgumentMatchers.any(),
-        ArgumentMatchers.any())
-        (ArgumentMatchers.any(),
-          ArgumentMatchers.any(),
-          ArgumentMatchers.any()))
+      when(mockHttpClient.GET[GetFinancialDetailsResponse](Matchers.eq("/FOO/BAR/123456789"),
+        Matchers.any(),
+        Matchers.any())
+        (Matchers.any(),
+          Matchers.any(),
+          Matchers.any()))
         .thenReturn(Future.successful(Left(GetFinancialDetailsFailureResponse(Status.CONFLICT))))
 
       val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails("FOO/BAR/123456789")(HeaderCarrier()))
@@ -94,12 +94,12 @@ class FinancialDetailsConnectorSpec extends SpecBase {
     }
 
     s"return a 422 when the call fails for Unprocessable Entity" in new Setup {
-      when(mockHttpClient.GET[GetFinancialDetailsResponse](ArgumentMatchers.eq("/FOO/BAR/123456789"),
-        ArgumentMatchers.any(),
-        ArgumentMatchers.any())
-        (ArgumentMatchers.any(),
-          ArgumentMatchers.any(),
-          ArgumentMatchers.any()))
+      when(mockHttpClient.GET[GetFinancialDetailsResponse](Matchers.eq("/FOO/BAR/123456789"),
+        Matchers.any(),
+        Matchers.any())
+        (Matchers.any(),
+          Matchers.any(),
+          Matchers.any()))
         .thenReturn(Future.successful(Left(GetFinancialDetailsFailureResponse(Status.UNPROCESSABLE_ENTITY))))
 
       val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails("FOO/BAR/123456789")(HeaderCarrier()))
@@ -107,12 +107,12 @@ class FinancialDetailsConnectorSpec extends SpecBase {
     }
 
     s"return a 500 when the call fails for Internal Server Error" in new Setup {
-      when(mockHttpClient.GET[GetFinancialDetailsResponse](ArgumentMatchers.eq("/FOO/BAR/123456789"),
-        ArgumentMatchers.any(),
-        ArgumentMatchers.any())
-        (ArgumentMatchers.any(),
-          ArgumentMatchers.any(),
-          ArgumentMatchers.any()))
+      when(mockHttpClient.GET[GetFinancialDetailsResponse](Matchers.eq("/FOO/BAR/123456789"),
+        Matchers.any(),
+        Matchers.any())
+        (Matchers.any(),
+          Matchers.any(),
+          Matchers.any()))
         .thenReturn(Future.successful(Left(GetFinancialDetailsFailureResponse(Status.INTERNAL_SERVER_ERROR))))
 
       val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails("FOO/BAR/123456789")(HeaderCarrier()))
@@ -120,12 +120,12 @@ class FinancialDetailsConnectorSpec extends SpecBase {
     }
 
     s"return a 403 when the call fails" in new Setup {
-      when(mockHttpClient.GET[GetFinancialDetailsResponse](ArgumentMatchers.eq("/FOO/BAR/123456789"),
-        ArgumentMatchers.any(),
-        ArgumentMatchers.any())
-        (ArgumentMatchers.any(),
-          ArgumentMatchers.any(),
-          ArgumentMatchers.any()))
+      when(mockHttpClient.GET[GetFinancialDetailsResponse](Matchers.eq("/FOO/BAR/123456789"),
+        Matchers.any(),
+        Matchers.any())
+        (Matchers.any(),
+          Matchers.any(),
+          Matchers.any()))
         .thenReturn(Future.successful(Left(GetFinancialDetailsFailureResponse(Status.FORBIDDEN))))
 
       val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails("FOO/BAR/123456789")(HeaderCarrier()))
@@ -133,12 +133,12 @@ class FinancialDetailsConnectorSpec extends SpecBase {
     }
 
     s"return a 503 when the call fails" in new Setup {
-      when(mockHttpClient.GET[GetFinancialDetailsResponse](ArgumentMatchers.eq("/FOO/BAR/123456789"),
-        ArgumentMatchers.any(),
-        ArgumentMatchers.any())
-        (ArgumentMatchers.any(),
-          ArgumentMatchers.any(),
-          ArgumentMatchers.any()))
+      when(mockHttpClient.GET[GetFinancialDetailsResponse](Matchers.eq("/FOO/BAR/123456789"),
+        Matchers.any(),
+        Matchers.any())
+        (Matchers.any(),
+          Matchers.any(),
+          Matchers.any()))
         .thenReturn(Future.successful(Left(GetFinancialDetailsFailureResponse(Status.SERVICE_UNAVAILABLE))))
 
       val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails("FOO/BAR/123456789")(HeaderCarrier()))

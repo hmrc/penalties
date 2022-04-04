@@ -5,14 +5,14 @@ import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin.publishingSettings
 
 val appName = "penalties"
 
-val silencerVersion = "1.7.1"
+val silencerVersion = "1.7.8"
 
 lazy val microservice = Project(appName, file("."))
   .enablePlugins(play.sbt.PlayScala, SbtAutoBuildPlugin, SbtGitVersioning, SbtDistributablesPlugin)
   .settings(
     majorVersion                     := 0,
     PlayKeys.playDefaultPort         := 9182,
-    scalaVersion                     := "2.12.12",
+    scalaVersion                     := "2.12.15",
     libraryDependencies              ++= AppDependencies.compile ++ AppDependencies.test,
     // ***************
     // Use the silencer plugin to suppress warnings
@@ -31,6 +31,6 @@ lazy val microservice = Project(appName, file("."))
     ScoverageKeys.coverageExcludedPackages := "controllers.testOnly.*",
     ScoverageKeys.coverageExcludedFiles := "<empty>;Reverse.*;..*components.*;" +
       ".*Routes.*;.*ControllerConfiguration;.*Modules;",
-    ScoverageKeys.coverageMinimum := 90,
+    ScoverageKeys.coverageMinimumStmtTotal := 90,
     ScoverageKeys.coverageFailOnMinimum := false,
     ScoverageKeys.coverageHighlighting := true)

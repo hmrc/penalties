@@ -20,7 +20,7 @@ import base.SpecBase
 import connectors.ComplianceConnector
 import connectors.parsers.ComplianceParser._
 import models.compliance.CompliancePayload
-import org.mockito.ArgumentMatchers
+import org.mockito.Matchers
 import org.mockito.Mockito._
 import play.api.test.Helpers._
 import uk.gov.hmrc.http.HeaderCarrier
@@ -40,7 +40,7 @@ class ComplianceServiceSpec extends SpecBase {
   "getComplianceData" should {
     "return Left and the status code" when {
       s"the failure model returned is $CompliancePayloadFailureResponse" in new Setup {
-        when(mockComplianceConnector.getComplianceData(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any()))
+        when(mockComplianceConnector.getComplianceData(Matchers.any(), Matchers.any(), Matchers.any())(Matchers.any()))
           .thenReturn(Future.successful(Left(CompliancePayloadFailureResponse(BAD_REQUEST))))
         val result: Either[Int, CompliancePayload] = await(service.getComplianceData("123456789", "2020-01-31", "2020-12-31"))
         result.isLeft shouldBe true
@@ -48,7 +48,7 @@ class ComplianceServiceSpec extends SpecBase {
       }
 
       s"the failure model returned is $CompliancePayloadNoData" in new Setup {
-        when(mockComplianceConnector.getComplianceData(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any()))
+        when(mockComplianceConnector.getComplianceData(Matchers.any(), Matchers.any(), Matchers.any())(Matchers.any()))
           .thenReturn(Future.successful(Left(CompliancePayloadNoData)))
         val result: Either[Int, CompliancePayload] = await(service.getComplianceData("123456789", "2020-01-31", "2020-12-31"))
         result.isLeft shouldBe true
@@ -56,7 +56,7 @@ class ComplianceServiceSpec extends SpecBase {
       }
 
       s"the failure model returned is $CompliancePayloadMalformed" in new Setup {
-        when(mockComplianceConnector.getComplianceData(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any()))
+        when(mockComplianceConnector.getComplianceData(Matchers.any(), Matchers.any(), Matchers.any())(Matchers.any()))
           .thenReturn(Future.successful(Left(CompliancePayloadMalformed)))
         val result: Either[Int, CompliancePayload] = await(service.getComplianceData("123456789", "2020-01-31", "2020-12-31"))
         result.isLeft shouldBe true

@@ -30,7 +30,7 @@ import models.penalty.PenaltyPeriod
 import models.point.{PenaltyPoint, PenaltyTypeEnum, PointStatusEnum}
 import models.reason.PaymentPenaltyReasonEnum
 import models.submission.{Submission, SubmissionStatusEnum}
-import org.mockito.ArgumentMatchers
+import org.mockito.Matchers
 import org.mockito.Mockito._
 import play.api.test.Helpers._
 import uk.gov.hmrc.http.HeaderCarrier
@@ -57,7 +57,7 @@ class ETMPServiceSpec extends SpecBase {
 
   "getPenaltyDataFromETMPForEnrolment" should {
     s"call the connector and return a $Some when the request is successful" in new Setup {
-      when(mockEtmpConnector.getPenaltiesDataForEnrolmentKey(ArgumentMatchers.eq("123456789"))(ArgumentMatchers.any()))
+      when(mockEtmpConnector.getPenaltiesDataForEnrolmentKey(Matchers.eq("123456789"))(Matchers.any()))
         .thenReturn(Future.successful(Right(GetETMPPayloadSuccessResponse(mockETMPPayloadResponseAsModel))))
 
       val result: (Option[ETMPPayload], ETMPPayloadResponse) = await(service.getPenaltyDataFromETMPForEnrolment("123456789"))
@@ -66,7 +66,7 @@ class ETMPServiceSpec extends SpecBase {
     }
 
     s"return $None when the connector returns No Content ($NO_CONTENT)" in new Setup {
-      when(mockEtmpConnector.getPenaltiesDataForEnrolmentKey(ArgumentMatchers.eq("123456789"))(ArgumentMatchers.any()))
+      when(mockEtmpConnector.getPenaltiesDataForEnrolmentKey(Matchers.eq("123456789"))(Matchers.any()))
         .thenReturn(Future.successful(Left(GetETMPPayloadNoContent)))
 
       val result: (Option[ETMPPayload], ETMPPayloadResponse) = await(service.getPenaltyDataFromETMPForEnrolment("123456789"))
@@ -76,7 +76,7 @@ class ETMPServiceSpec extends SpecBase {
     }
 
     s"return $None when the response body is malformed" in new Setup {
-      when(mockEtmpConnector.getPenaltiesDataForEnrolmentKey(ArgumentMatchers.eq("123456789"))(ArgumentMatchers.any()))
+      when(mockEtmpConnector.getPenaltiesDataForEnrolmentKey(Matchers.eq("123456789"))(Matchers.any()))
         .thenReturn(Future.successful(Left(GetETMPPayloadMalformed)))
 
       val result: (Option[ETMPPayload], ETMPPayloadResponse) = await(service.getPenaltyDataFromETMPForEnrolment("123456789"))
@@ -86,7 +86,7 @@ class ETMPServiceSpec extends SpecBase {
     }
 
     s"return $None when the connector receives an unmatched status code" in new Setup {
-      when(mockEtmpConnector.getPenaltiesDataForEnrolmentKey(ArgumentMatchers.eq("123456789"))(ArgumentMatchers.any()))
+      when(mockEtmpConnector.getPenaltiesDataForEnrolmentKey(Matchers.eq("123456789"))(Matchers.any()))
         .thenReturn(Future.successful(Left(GetETMPPayloadFailureResponse(IM_A_TEAPOT))))
 
       val result: (Option[ETMPPayload], ETMPPayloadResponse) = await(service.getPenaltyDataFromETMPForEnrolment("123456789"))
@@ -96,7 +96,7 @@ class ETMPServiceSpec extends SpecBase {
     }
 
     s"throw an exception when something unknown has happened" in new Setup {
-      when(mockEtmpConnector.getPenaltiesDataForEnrolmentKey(ArgumentMatchers.eq("123456789"))(ArgumentMatchers.any()))
+      when(mockEtmpConnector.getPenaltiesDataForEnrolmentKey(Matchers.eq("123456789"))(Matchers.any()))
         .thenReturn(Future.failed(new Exception("Something has gone wrong.")))
 
       val result: Exception = intercept[Exception](await(service.getPenaltyDataFromETMPForEnrolment("123456789")))
@@ -126,8 +126,8 @@ class ETMPServiceSpec extends SpecBase {
     )
 
     "return the response from the connector i.e. act as a pass-through function" in new Setup {
-      when(mockAppealsConnector.submitAppeal(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(),
-        ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(Right(appealResponseModel)))
+      when(mockAppealsConnector.submitAppeal(Matchers.any(), Matchers.any(), Matchers.any(),
+        Matchers.any(), Matchers.any())).thenReturn(Future.successful(Right(appealResponseModel)))
 
       val result: Either[AppealsParser.ErrorResponse, AppealResponseModel] = await(
         service.submitAppeal(modelToPassToServer, "HMRC-MTD-VAT~VRN~123456789", isLPP = false, penaltyNumber = "123456789", correlationId = correlationId))
@@ -135,8 +135,8 @@ class ETMPServiceSpec extends SpecBase {
     }
 
     "return the response from the connector on error i.e. act as a pass-through function" in new Setup {
-      when(mockAppealsConnector.submitAppeal(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(),
-        ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(
+      when(mockAppealsConnector.submitAppeal(Matchers.any(), Matchers.any(), Matchers.any(),
+        Matchers.any(), Matchers.any())).thenReturn(Future.successful(
         Left(UnexpectedFailure(BAD_GATEWAY, s"Unexpected response, status $BAD_GATEWAY returned"))))
 
       val result: Either[AppealsParser.ErrorResponse, AppealResponseModel] = await(service.submitAppeal(
@@ -145,8 +145,8 @@ class ETMPServiceSpec extends SpecBase {
     }
 
     "throw an exception when the connector throws an exception" in new Setup {
-      when(mockAppealsConnector.submitAppeal(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(),
-        ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.failed(new Exception("Something went wrong")))
+      when(mockAppealsConnector.submitAppeal(Matchers.any(), Matchers.any(), Matchers.any(),
+        Matchers.any(), Matchers.any())).thenReturn(Future.failed(new Exception("Something went wrong")))
 
       val result: Exception = intercept[Exception](await(service.submitAppeal(
         modelToPassToServer, "HMRC-MTD-VAT~VRN~123456789", isLPP = false, penaltyNumber = "123456789", correlationId = correlationId)))

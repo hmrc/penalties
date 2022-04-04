@@ -21,7 +21,7 @@ import connectors.parsers.AppealsParser.AppealSubmissionResponse
 import featureSwitches.{CallPEGA, FeatureSwitching}
 import models.appeals.{AppealSubmission, CrimeAppealInformation}
 import org.mockito.Mockito._
-import org.mockito.{ArgumentCaptor, ArgumentMatchers}
+import org.mockito.{ArgumentCaptor, Matchers}
 import play.api.test.Helpers._
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient}
 
@@ -46,13 +46,13 @@ class PEGAConnectorSpec extends SpecBase with FeatureSwitching {
       enableFeatureSwitch(CallPEGA)
       val argumentCaptorOtherHeaders: ArgumentCaptor[Seq[(String, String)]] = ArgumentCaptor.forClass(classOf[Seq[(String, String)]])
       when(mockHttpClient.POST[AppealSubmission, AppealSubmissionResponse](
-        ArgumentMatchers.any(),
-        ArgumentMatchers.any(),
+        Matchers.any(),
+        Matchers.any(),
         argumentCaptorOtherHeaders.capture()
-      )(ArgumentMatchers.any(),
-        ArgumentMatchers.any(),
-        ArgumentMatchers.any(),
-        ArgumentMatchers.any()))
+      )(Matchers.any(),
+        Matchers.any(),
+        Matchers.any(),
+        Matchers.any()))
         .thenReturn(Future.successful(Right(appealResponseModel)))
       val modelToSend: AppealSubmission = AppealSubmission(
         taxRegime = "VAT",
@@ -84,13 +84,13 @@ class PEGAConnectorSpec extends SpecBase with FeatureSwitching {
 
     "return the response of the call for LPP" in new Setup {
       when(mockHttpClient.POST[AppealSubmission, AppealSubmissionResponse](
-        ArgumentMatchers.any(),
-        ArgumentMatchers.any(),
-        ArgumentMatchers.any()
-      )(ArgumentMatchers.any(),
-        ArgumentMatchers.any(),
-        ArgumentMatchers.any(),
-        ArgumentMatchers.any()))
+        Matchers.any(),
+        Matchers.any(),
+        Matchers.any()
+      )(Matchers.any(),
+        Matchers.any(),
+        Matchers.any(),
+        Matchers.any()))
         .thenReturn(Future.successful(Right(appealResponseModel)))
       val modelToSend: AppealSubmission = AppealSubmission(
         taxRegime = "VAT",
