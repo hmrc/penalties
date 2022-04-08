@@ -5,8 +5,7 @@ The backend for the penalties services such as `penalties-frontend` and `penalti
 
 - Retrieving penalties and compliance data
 - The retrieval and submission of appeals
-- Providing other teams with penalties summary data 
-- 
+- Providing other teams with penalties summary data
 
 ## Running
 
@@ -27,10 +26,22 @@ To start the service use the `./run.sh` script.
 
 The payload must be pre-existing in Mongo before attempting a retrieval.
 
-###`GET        /vat/penalties/summary/:vrn`
+#### `GET        /vat/penalties/summary/:vrn`
 Retrieve penalties summary information belonging to a vrn.
 
 Example vrn: `123456789`
+
+Example payload:
+```
+{
+  "noOfPoints": 3,
+  "noOfEstimatedPenalties": 2,
+  "noOfCrystalisedPenalties": 1,
+  "estimatedPenaltyAmount": 123.45,
+  "crystalisedPenaltyAmountDue": 54.32,
+  "hasAnyPenaltyData": true
+}
+```
 
 | Scenario | Status |
 | --- | --- |
@@ -38,7 +49,7 @@ Example vrn: `123456789`
 | Invalid vrn format | 400 |
 | No data found for vrn | 404 |
 
-###`GET        /etmp/penalties/:enrolmentKey`
+#### `GET        /etmp/penalties/:enrolmentKey`
 Get data for penalties belonging to an enrolment key. 
 
 Example enrolmentKey format: `HMRC-MTD-VAT~VRN~123456789`
@@ -50,7 +61,7 @@ Example enrolmentKey format: `HMRC-MTD-VAT~VRN~123456789`
 | No data found for vrn | 404 |
 
 ### Appeals:
-### `GET        /appeals-data/late-submissions`
+#### `GET        /appeals-data/late-submissions`
 
 Get Late submission penalty data for an appeal.
 
@@ -66,7 +77,7 @@ Example url - `/appeals-data/late-submissions?penaltyId=1234567890&enrolementKey
 | No data found for penaltyId | 404 |
 | Internal server error | 500 |
 
-### `GET        /appeals-data/late-payments`
+#### `GET        /appeals-data/late-payments`
 
 Get Late payment penalty data for an appeal.
 
@@ -84,7 +95,7 @@ Example url - `/appeals-data/late-submissions?penaltyId=1234567890&enrolementKey
 | No data found for penaltyId | 404 |
 | Internal server error | 500 |
 
-### `GET        /appeals-data/reasonable-excuses`
+#### `GET        /appeals-data/reasonable-excuses`
 
 Get list of reasonable excuses used to make an appeal.
 
@@ -93,7 +104,7 @@ Get list of reasonable excuses used to make an appeal.
 | Successful retrieval | 200 |
 
 
-### `POST       /appeals/submit-appeal`
+#### `POST       /appeals/submit-appeal`
 
 Submit an appeal for a penalty.
 
@@ -103,6 +114,29 @@ Url format - `/appeals/submit-appeal?{enrolmentKey}=[keyValue]&{isLPP}=[boolValu
 
 Example url - `/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~224060020&isLPP=false&penaltyNumber=123456786&correlationId=a8010aef-9253-45a8-b8ac-c843dc2d3318`
 
+Example payload:
+```
+{
+    "sourceSystem": "MDTP",
+    "taxRegime": "VAT",
+    "customerReferenceNo": "123456789",
+    "dateOfAppeal": "2020-01-01T00:00:00",
+    "isLPP": true,
+    "appealSubmittedBy": "agent",
+    "agentReferenceNo": "AGENT1",
+    "appealInformation": {
+            "reasonableExcuse": "crime",
+            "honestyDeclaration": true,
+            "startDateOfEvent": "2021-04-23T18:25:43.511Z",
+            "reportedIssueToPolice": true,
+            "lateAppeal": true,
+            "lateAppealReason": "Reason",
+            "isClientResponsibleForSubmission": false,
+            "isClientResponsibleForLateSubmission": true
+    }
+}
+```
+
 | Scenario | Status |
 | --- | --- |
 | Successful post | 200 |
@@ -110,7 +144,7 @@ Example url - `/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~224060020&is
 | Internal server error | 500 |
 
 ### Compliance
-### `GET        /compliance/des/compliance-data`
+#### `GET        /compliance/des/compliance-data`
 Get compliance data of penalty for vrn in a period.
 
 Takes in query params `vrn`, `fromDate` and `toDate`
