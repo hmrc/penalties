@@ -145,6 +145,85 @@ trait ETMPWiremock {
       |}
       |""".stripMargin)
 
+  val getPenaltyDetailsWithLSPandLPPAsJsonv3: JsValue = Json.parse(
+    """
+      |{
+      | "totalisations": {
+      |   "LSPTotalValue": 200,
+      |   "penalisedPrincipalTotal": 2000,
+      |   "LPPPostedTotal": 165.25,
+      |   "LPPEstimatedTotal": 15.26,
+      |   "LPIPostedTotal": 1968.2,
+      |   "LPIEstimatedTotal": 7
+      | },
+      | "lateSubmissionPenalty": {
+      |   "summary": {
+      |     "activePenaltyPoints": 10,
+      |     "inactivePenaltyPoints": 12,
+      |     "regimeThreshold": 10,
+      |     "penaltyChargeAmount": 684.25
+      |   },
+      |   "details": [
+      |     {
+      |       "penaltyNumber": "12345678901234",
+      |       "penaltyOrder": "01",
+      |       "penaltyCategory": "P",
+      |       "penaltyStatus": "ACTIVE",
+      |       "FAPIndicator": "X",
+      |       "penaltyCreationDate": "2022-10-30",
+      |       "penaltyExpiryDate": "2022-10-30",
+      |       "expiryReason": "FAP",
+      |       "communicationsDate": "2022-10-30",
+      |       "lateSubmissions": [
+      |         {
+      |           "taxPeriodStartDate": "2022-01-01",
+      |           "taxPeriodEndDate": "2022-12-31",
+      |           "taxPeriodDueDate": "2023-02-07",
+      |           "returnReceiptDate": "2023-02-01"
+      |         }
+      |       ],
+      |       "appealInformation": [
+      |         {
+      |           "appealStatus": "99",
+      |           "appealLevel": "01"
+      |         }
+      |       ],
+      |       "chargeDueDate": "2022-10-30",
+      |       "chargeOutstandingAmount": "2022-10-30",
+      |       "chargeAmount": "2022-10-30"
+      |   }]
+      | },
+      | "latePaymentPenalty": {
+      |     "details": [{
+      |       "penaltyCategory": "LPP1",
+      |       "penaltyStatus": "A",
+      |       "penaltyAmountPaid": 1001.45,
+      |       "penaltyAmountOutstanding": 99.99,
+      |       "LPP1LRCalculationAmount": 99.99,
+      |       "LPP1LRDays": "15",
+      |       "LPP1LRPercentage": 2.00,
+      |       "LPP1HRCalculationAmount": 99.99,
+      |       "LPP1HRDays": "31",
+      |       "LPP1HRPercentage": 2.00,
+      |       "LPP2Days": "31",
+      |       "LPP2Percentage": 4.00,
+      |       "penaltyChargeCreationDate": "2022-10-30",
+      |       "communicationsDate": "2022-10-30",
+      |       "penaltyChargeDueDate": "2022-10-30",
+      |       "principalChargeReference": "1234567890",
+      |       "appealInformation":
+      |       {
+      |         "appealStatus": "99",
+      |         "appealLevel": "01"
+      |       },
+      |       "principalChargeBillingFrom": "2022-10-30",
+      |       "principalChargeBillingTo": "2022-10-30",
+      |       "principalChargeDueDate": "2022-10-30"
+      |   }]
+      | }
+      |}
+      |""".stripMargin)
+
   val getFinancialDetailsAsJson: JsValue = Json.parse(
     """
       |{
@@ -254,6 +333,15 @@ trait ETMPWiremock {
         .withBody(body.fold(getPenaltyDetailsWithLSPandLPPAsJson.toString())(identity))
         .withStatus(status)
     ))
+  }
+
+  def mockResponseForGetPenaltyDetailsv3(status: Int, vatcUrl: String, body: Option[String] = None): StubMapping = {
+    stubFor(get(urlEqualTo(s"/penalty/details/$vatcUrl"))
+      .willReturn(
+        aResponse()
+          .withBody(body.fold(getPenaltyDetailsWithLSPandLPPAsJsonv3.toString())(identity))
+          .withStatus(status)
+      ))
   }
 
   def mockResponseForGetFinancialDetails(status: Int, vatcUrl: String, body: Option[String] = None): StubMapping = {
