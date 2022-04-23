@@ -22,10 +22,10 @@ import play.api.http.Status
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import utils.{ETMPWiremock, IntegrationSpecCommonBase}
 
-class PenaltyDetailsConnectorISpec extends IntegrationSpecCommonBase with ETMPWiremock with FeatureSwitching {
+class GetPenaltyDetailsConnectorISpec extends IntegrationSpecCommonBase with ETMPWiremock with FeatureSwitching {
 
   class Setup {
-    val connector: PenaltyDetailsConnector = injector.instanceOf[PenaltyDetailsConnector]
+    val connector: GetPenaltyDetailsConnector = injector.instanceOf[GetPenaltyDetailsConnector]
   }
 
   "getPenaltyDetails" should {

@@ -23,7 +23,7 @@ import uk.gov.hmrc.http.{HeaderCarrier, HttpClient}
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class PenaltyDetailsConnector @Inject()(httpClient: HttpClient,
+class GetPenaltyDetailsConnector @Inject()(httpClient: HttpClient,
                                         appConfig: AppConfig)
                                        (implicit ec: ExecutionContext) {
 
