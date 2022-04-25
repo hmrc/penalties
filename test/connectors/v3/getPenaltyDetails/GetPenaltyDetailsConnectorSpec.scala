@@ -28,7 +28,7 @@ import uk.gov.hmrc.http.{HeaderCarrier, HttpClient}
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class PenaltyDetailsConnectorSpec extends SpecBase {
+class GetPenaltyDetailsConnectorSpec extends SpecBase {
   implicit val ec: ExecutionContext = ExecutionContext.Implicits.global
   val mockHttpClient: HttpClient = mock(classOf[HttpClient])
   val mockAppConfig: AppConfig = mock(classOf[AppConfig])
@@ -37,7 +37,7 @@ class PenaltyDetailsConnectorSpec extends SpecBase {
     reset(mockHttpClient)
     reset(mockAppConfig)
 
-    val connector = new PenaltyDetailsConnector(mockHttpClient, mockAppConfig)
+    val connector = new GetPenaltyDetailsConnector(mockHttpClient, mockAppConfig)
     when(mockAppConfig.getPenaltyDetailsUrl).thenReturn("/")
   }
 
@@ -139,5 +139,4 @@ class PenaltyDetailsConnectorSpec extends SpecBase {
       result.isLeft shouldBe true
     }
   }
-
 }
