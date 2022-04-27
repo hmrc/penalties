@@ -189,8 +189,8 @@ trait ETMPWiremock {
       |         }
       |       ],
       |       "chargeDueDate": "2022-10-30",
-      |       "chargeOutstandingAmount": "2022-10-30",
-      |       "chargeAmount": "2022-10-30"
+      |       "chargeOutstandingAmount": 200,
+      |       "chargeAmount": 200
       |   }]
       | },
       | "latePaymentPenalty": {
@@ -212,10 +212,10 @@ trait ETMPWiremock {
       |       "penaltyChargeDueDate": "2022-10-30",
       |       "principalChargeReference": "1234567890",
       |       "appealInformation":
-      |       {
+      |       [{
       |         "appealStatus": "99",
       |         "appealLevel": "01"
-      |       },
+      |       }],
       |       "principalChargeBillingFrom": "2022-10-30",
       |       "principalChargeBillingTo": "2022-10-30",
       |       "principalChargeDueDate": "2022-10-30"

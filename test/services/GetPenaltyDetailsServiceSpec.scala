@@ -88,8 +88,8 @@ class GetPenaltyDetailsServiceSpec extends SpecBase {
                 )
               ),
               chargeDueDate = Some(LocalDate.of(2022, 10, 30)),
-              chargeOutstandingAmount = Some(LocalDate.of(2022, 10, 30)),
-              chargeAmount = Some(LocalDate.of(2022, 10, 30))
+              chargeOutstandingAmount = Some(200),
+              chargeAmount = Some(200)
             )
           )
         )
@@ -102,7 +102,7 @@ class GetPenaltyDetailsServiceSpec extends SpecBase {
               principalChargeReference = "1234567890",
               penaltyChargeCreationDate = LocalDate.of(2022, 10, 30),
               penaltyStatus = LPPPenaltyStatusEnum.Accruing,
-              appealInformation = Some(AppealInformation(appealStatus = Some("99"), appealLevel = Some("01"))),
+              appealInformation = Some(Seq(AppealInformation(appealStatus = Some("99"), appealLevel = Some("01")))),
               principalChargeBillingFrom = LocalDate.of(2022, 10, 30),
               principalChargeBillingTo = LocalDate.of(2022, 10, 30),
               principalChargeDueDate = LocalDate.of(2022, 10, 30),
