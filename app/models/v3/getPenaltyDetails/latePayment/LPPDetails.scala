@@ -26,7 +26,7 @@ case class LPPDetails(
                       principalChargeReference: String, //used in place of penaltyNumber
                       penaltyChargeCreationDate: LocalDate,
                       penaltyStatus: LPPPenaltyStatusEnum.Value,
-                      appealInformation: Option[AppealInformation],
+                      appealInformation: Option[Seq[AppealInformation]],
                       principalChargeBillingFrom: LocalDate,
                       principalChargeBillingTo: LocalDate,
                       principalChargeDueDate: LocalDate,

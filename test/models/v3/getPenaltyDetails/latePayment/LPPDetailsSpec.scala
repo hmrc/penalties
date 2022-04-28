@@ -46,10 +46,10 @@ class LPPDetailsSpec extends SpecBase {
       |   "penaltyChargeDueDate": "2022-10-30",
       |   "principalChargeReference": "1234567890",
       |   "appealInformation":
-      |   {
+      |   [{
       |     "appealStatus": "99",
       |     "appealLevel": "01"
-      |   },
+      |   }],
       |   "principalChargeDocNumber": "123456789012",
       |   "principalChargeMainTransaction": "4700",
       |   "principalChargeSubTransaction": "1174",
@@ -80,10 +80,10 @@ class LPPDetailsSpec extends SpecBase {
       |   "penaltyChargeDueDate": "2022-10-30",
       |   "principalChargeReference": "1234567890",
       |   "appealInformation":
-      |   {
+      |   [{
       |     "appealStatus": "99",
       |     "appealLevel": "01"
-      |   },
+      |   }],
       |   "principalChargeBillingFrom": "2022-10-30",
       |   "principalChargeBillingTo": "2022-10-30",
       |   "principalChargeDueDate": "2022-10-30"
@@ -96,7 +96,7 @@ class LPPDetailsSpec extends SpecBase {
     principalChargeReference = "1234567890",
     penaltyChargeCreationDate = LocalDate.of(2022, 10, 30),
     penaltyStatus = LPPPenaltyStatusEnum.Accruing,
-    appealInformation = Some(AppealInformation(appealStatus = Some("99"), appealLevel = Some("01"))),
+    appealInformation = Some(Seq(AppealInformation(appealStatus = Some("99"), appealLevel = Some("01")))),
     principalChargeBillingFrom = LocalDate.of(2022, 10, 30),
     principalChargeBillingTo = LocalDate.of(2022, 10, 30),
     principalChargeDueDate = LocalDate.of(2022, 10, 30),

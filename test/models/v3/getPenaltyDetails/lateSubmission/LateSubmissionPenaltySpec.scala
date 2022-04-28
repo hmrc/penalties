@@ -61,8 +61,8 @@ class LateSubmissionPenaltySpec extends SpecBase {
       |       }
       |     ],
       |     "chargeDueDate": "2022-10-30",
-      |     "chargeOutstandingAmount": "2022-10-30",
-      |     "chargeAmount": "2022-10-30"
+      |     "chargeOutstandingAmount": 200,
+      |     "chargeAmount": 200
       |   }
       | ]
       |}
@@ -103,8 +103,8 @@ class LateSubmissionPenaltySpec extends SpecBase {
       |       }
       |     ],
       |     "chargeDueDate": "2022-10-30",
-      |     "chargeOutstandingAmount": "2022-10-30",
-      |     "chargeAmount": "2022-10-30"
+      |     "chargeOutstandingAmount": 200,
+      |     "chargeAmount": 200
       |   }
       | ]
       |}
@@ -146,8 +146,8 @@ class LateSubmissionPenaltySpec extends SpecBase {
           )
         ),
         chargeDueDate = Some(LocalDate.of(2022, 10, 30)),
-        chargeOutstandingAmount = Some(LocalDate.of(2022, 10, 30)),
-        chargeAmount = Some(LocalDate.of(2022, 10, 30))
+        chargeOutstandingAmount = Some(200),
+        chargeAmount = Some(200)
       )
     )
   )

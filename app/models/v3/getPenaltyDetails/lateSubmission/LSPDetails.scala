@@ -34,8 +34,8 @@ case class LSPDetails(
                        expiryReason: Option[String],
                        appealInformation: Option[Seq[AppealInformation]],
                        chargeDueDate: Option[LocalDate],
-                       chargeOutstandingAmount: Option[LocalDate],
-                       chargeAmount: Option[LocalDate]
+                       chargeOutstandingAmount: Option[BigDecimal],
+                       chargeAmount: Option[BigDecimal]
                      )
 
 object LSPDetails {
