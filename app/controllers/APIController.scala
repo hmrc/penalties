@@ -16,24 +16,32 @@
 
 package controllers
 
-import javax.inject.Inject
+import connectors.parsers.v3.getPenaltyDetails.GetPenaltyDetailsParser
+import connectors.parsers.v3.getPenaltyDetails.GetPenaltyDetailsParser.GetPenaltyDetailsSuccessResponse
+import featureSwitches.{CallAPI1812ETMP, FeatureSwitching}
 import models.ETMPPayload
 import models.api.APIModel
 import models.auditing.UserHasPenaltyAuditModel
+import models.auditing.v2.{UserHasPenaltyAuditModel => AuditModelV2}
+import models.v3.getPenaltyDetails.GetPenaltyDetails
 import play.api.libs.json.Json
-import play.api.mvc.{Action, AnyContent, ControllerComponents, Request, Result}
-import services.ETMPService
+import play.api.mvc._
+import services.{ETMPService, GetPenaltyDetailsService}
 import services.auditing.AuditService
+import services.v2.APIService
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
+import utils.Logger.logger
 import utils.RegimeHelper
 
+import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.matching.Regex
 
 class APIController @Inject()(etmpService: ETMPService,
                               auditService: AuditService,
-                              cc: ControllerComponents)(implicit ec: ExecutionContext)
-  extends BackendController(cc) {
+                              apiService: APIService,
+                              getPenaltyDetailsService: GetPenaltyDetailsService,
+                              cc: ControllerComponents)(implicit ec: ExecutionContext) extends BackendController(cc) with FeatureSwitching {
 
   private val vrnRegex: Regex = "^[0-9]{1,9}$".r
 
@@ -43,14 +51,37 @@ class APIController @Inject()(etmpService: ETMPService,
         Future(BadRequest(s"VRN: $vrn was not in a valid format."))
       } else {
         val enrolmentKey = RegimeHelper.constructMTDVATEnrolmentKey(vrn)
-        etmpService.getPenaltyDataFromETMPForEnrolment(enrolmentKey).map {
-          _._1.fold(
-            NotFound(s"Unable to find data for VRN: $vrn")
-          )(
-            etmpPayload => {
-              returnResponseForAPI(etmpPayload, enrolmentKey)
+        if(!isEnabled(CallAPI1812ETMP)) {
+          etmpService.getPenaltyDataFromETMPForEnrolment(enrolmentKey).map {
+            _._1.fold(
+              NotFound(s"Unable to find data for VRN: $vrn")
+            )(
+              etmpPayload => {
+                returnResponseForAPI(etmpPayload, enrolmentKey)
+              }
+            )
           }
-          )
+        } else {
+          getPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(enrolmentKey).map {
+            _.fold({
+              case GetPenaltyDetailsParser.GetPenaltyDetailsFailureResponse(status) if status == NOT_FOUND => {
+                logger.info(s"[APIController][getSummaryDataForVRN] - 1812 call returned 404 for VRN: $vrn")
+                NotFound(s"A downstream call returned 404 for VRN: $vrn")
+              }
+              case GetPenaltyDetailsParser.GetPenaltyDetailsFailureResponse(status) => {
+                logger.info(s"[APIController][getSummaryDataForVRN] - 1812 call returned an unexpected status: $status")
+                InternalServerError(s"A downstream call returned an unexpected status: $status")
+              }
+              case GetPenaltyDetailsParser.GetPenaltyDetailsMalformed => {
+                logger.error(s"[APIController][getSummaryDataForVRN] - Failed to parse penalty details response")
+                InternalServerError(s"We were unable to parse penalty data.")
+              }
+            },
+              success => {
+                returnResponseForAPI(success.asInstanceOf[GetPenaltyDetailsSuccessResponse].penaltyDetails, enrolmentKey)
+              }
+            )
+          }
         }
       }
     }
@@ -73,6 +104,31 @@ class APIController @Inject()(etmpService: ETMPService,
     if(pointsTotal > 0) {
       val auditModel = UserHasPenaltyAuditModel(
         etmpPayload = etmpPayload,
+        identifier = RegimeHelper.getIdentifierFromEnrolmentKey(enrolmentKey),
+        identifierType = RegimeHelper.getIdentifierTypeFromEnrolmentKey(enrolmentKey),
+        arn = None) //TODO: need to check this
+      auditService.audit(auditModel)
+    }
+    Ok(Json.toJson(responseData))
+  }
+
+  private def returnResponseForAPI(penaltyDetails: GetPenaltyDetails, enrolmentKey: String)(implicit request: Request[_]): Result = {
+    val pointsTotal = penaltyDetails.lateSubmissionPenalty.map(_.summary.activePenaltyPoints).getOrElse(0)
+    val penaltyAmountWithEstimateStatus = apiService.findEstimatedPenaltiesAmount(penaltyDetails)
+    val noOfEstimatedPenalties = apiService.getNumberOfEstimatedPenalties(penaltyDetails)
+    val crystallisedPenaltyAmount = apiService.getNumberOfCrystallisedPenalties(penaltyDetails)
+    val crystallisedPenaltyTotal = apiService.getCrystallisedPenaltyTotal(penaltyDetails)
+    val hasAnyPenaltyData = apiService.checkIfHasAnyPenaltyData(penaltyDetails)
+    val responseData: APIModel = APIModel(
+      noOfPoints = pointsTotal,
+      noOfEstimatedPenalties = noOfEstimatedPenalties,
+      noOfCrystalisedPenalties = crystallisedPenaltyAmount,
+      estimatedPenaltyAmount = penaltyAmountWithEstimateStatus,
+      crystalisedPenaltyAmountDue = crystallisedPenaltyTotal,
+      hasAnyPenaltyData = hasAnyPenaltyData)
+    if(pointsTotal > 0) {
+      val auditModel = AuditModelV2(
+        penaltyDetails = penaltyDetails,
         identifier = RegimeHelper.getIdentifierFromEnrolmentKey(enrolmentKey),
         identifierType = RegimeHelper.getIdentifierTypeFromEnrolmentKey(enrolmentKey),
         arn = None) //TODO: need to check this

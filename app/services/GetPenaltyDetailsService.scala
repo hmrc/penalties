@@ -16,9 +16,8 @@
 
 package services
 
-import connectors.parsers.v3.getPenaltyDetails.GetPenaltyDetailsParser.{GetPenaltyDetailsFailureResponse, GetPenaltyDetailsMalformed, GetPenaltyDetailsResponse, GetPenaltyDetailsSuccessResponse}
+import connectors.parsers.v3.getPenaltyDetails.GetPenaltyDetailsParser._
 import connectors.v3.getPenaltyDetails.GetPenaltyDetailsConnector
-import models.v3.getPenaltyDetails.GetPenaltyDetails
 import uk.gov.hmrc.http.HeaderCarrier
 import utils.Logger.logger
 
@@ -28,7 +27,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class GetPenaltyDetailsService @Inject()(getPenaltyDetailsConnector: GetPenaltyDetailsConnector)
                                         (implicit ec: ExecutionContext){
 
-  def getDataFromPenaltyServiceForVATCVRN(vatcUrl: String)(implicit hc: HeaderCarrier): Future[(Option[GetPenaltyDetails], GetPenaltyDetailsResponse) ] = {
+  def getDataFromPenaltyServiceForVATCVRN(vatcUrl: String)(implicit hc: HeaderCarrier): Future[GetPenaltyDetailsResponse] = {
     implicit val startOfLogMsg: String = "[GetPenaltyDetailsService][getDataFromPenaltyServiceForVATCVRN]"
     getPenaltyDetailsConnector.getPenaltyDetails(vatcUrl).map {
       handleConnectorResponse(_)
@@ -36,17 +35,17 @@ class GetPenaltyDetailsService @Inject()(getPenaltyDetailsConnector: GetPenaltyD
   }
 
   private def handleConnectorResponse(connectorResponse: GetPenaltyDetailsResponse)
-                                     (implicit startOfLogMsg: String): (Option[GetPenaltyDetails], GetPenaltyDetailsResponse) = {
+                                     (implicit startOfLogMsg: String): GetPenaltyDetailsResponse = {
     connectorResponse match {
       case res@Right(_@GetPenaltyDetailsSuccessResponse(penaltyDetails)) =>
         logger.debug(s"$startOfLogMsg - Got a success response from the connector. Parsed model: $penaltyDetails")
-        (Some(penaltyDetails), res)
+        res
       case res@Left(GetPenaltyDetailsMalformed) =>
         logger.info(s"$startOfLogMsg - Failed to parse HTTP response into model.")
-        (None, res)
+        res
       case res@Left(GetPenaltyDetailsFailureResponse(_)) =>
         logger.error(s"$startOfLogMsg - Unknown status returned from connector.")
-        (None, res)
+        res
     }
   }
 }
