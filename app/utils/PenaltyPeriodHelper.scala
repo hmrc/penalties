@@ -17,11 +17,16 @@
 package utils
 
 import models.penalty.PenaltyPeriod
+import models.v3.getPenaltyDetails.lateSubmission.LateSubmission
 
 object PenaltyPeriodHelper {
 
-  def sortByPenaltyStartDate(p1: PenaltyPeriod, p2: PenaltyPeriod):Int = {
+  def sortByPenaltyStartDate(p1: PenaltyPeriod, p2: PenaltyPeriod): Int = {
     p1.startDate.compareTo(p2.startDate)
+  }
+
+  def sortByPenaltyStartDate(p1: LateSubmission, p2: LateSubmission): Int = {
+    p1.taxPeriodStartDate.get.compareTo(p2.taxPeriodStartDate.get)
   }
 
   def sortedPenaltyPeriod(penaltyPeriod: Seq[PenaltyPeriod]):Seq[PenaltyPeriod]= {

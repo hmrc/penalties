@@ -19,6 +19,9 @@ package controllers
 import config.AppConfig
 import connectors.FileNotificationOrchestratorConnector
 import connectors.parsers.ETMPPayloadParser.GetETMPPayloadNoContent
+import connectors.parsers.v3.getPenaltyDetails.GetPenaltyDetailsParser
+import connectors.parsers.v3.getPenaltyDetails.GetPenaltyDetailsParser.GetPenaltyDetailsSuccessResponse
+import featureSwitches.{CallAPI1812ETMP, FeatureSwitching}
 import models.ETMPPayload
 import models.appeals.AppealTypeEnum._
 import models.appeals.reasonableExcuses.ReasonableExcuse
@@ -27,36 +30,66 @@ import models.notification._
 import models.payment.LatePaymentPenalty
 import models.point.PenaltyPoint
 import models.upload.UploadJourney
+import models.v3.getPenaltyDetails.GetPenaltyDetails
+import models.v3.getPenaltyDetails.latePayment.LPPDetails
+import models.v3.getPenaltyDetails.lateSubmission.LSPDetails
+import models.appeals.v2.{AppealData => V2AppealData}
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, ControllerComponents, Result}
-import services.ETMPService
+import services.{ETMPService, GetPenaltyDetailsService}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import utils.Logger.logger
-import utils.{PenaltyPeriodHelper, UUIDGenerator}
+import utils.{PenaltyPeriodHelper, RegimeHelper, UUIDGenerator}
 
-import javax.inject.Inject
+import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
+@Singleton
 class AppealsController @Inject()(appConfig: AppConfig,
                                   etmpService: ETMPService,
+                                  getPenaltyDetailsService: GetPenaltyDetailsService,
                                   idGenerator: UUIDGenerator,
                                   fileNotificationOrchestratorConnector: FileNotificationOrchestratorConnector,
                                   cc: ControllerComponents)(implicit ec: ExecutionContext)
-  extends BackendController(cc) {
+  extends BackendController(cc) with FeatureSwitching {
 
   private def getAppealDataForPenalty(penaltyId: String,
                                       enrolmentKey: String, penaltyType: AppealTypeEnum.Value)(implicit hc: HeaderCarrier): Future[Result] = {
-    etmpService.getPenaltyDataFromETMPForEnrolment(enrolmentKey).map {
-      result => {
-        result._1.fold {
-          result._2 match {
-            case Left(GetETMPPayloadNoContent) => NotFound(s"Could not retrieve ETMP penalty data for $enrolmentKey")
-            case _ => InternalServerError("Something went wrong.")
+    if (!isEnabled(CallAPI1812ETMP)) {
+      etmpService.getPenaltyDataFromETMPForEnrolment(enrolmentKey).map {
+        result => {
+          result._1.fold {
+            result._2 match {
+              case Left(GetETMPPayloadNoContent) => NotFound(s"Could not retrieve ETMP penalty data for $enrolmentKey")
+              case _ => InternalServerError("Something went wrong.")
+            }
+          }(
+            etmpData => {
+              checkAndReturnResponseForPenaltyData(etmpData, penaltyId, enrolmentKey, penaltyType)
+            }
+          )
+        }
+      }
+    } else {
+      val vrn = RegimeHelper.getIdentifierFromEnrolmentKey(enrolmentKey)
+      getPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(vrn).map {
+        _.fold({
+          case GetPenaltyDetailsParser.GetPenaltyDetailsFailureResponse(status) if status == NOT_FOUND => {
+            logger.info(s"[AppealsController][getAppealDataForPenalty] - 1812 call returned 404 for enrolment key: $enrolmentKey")
+            NotFound(s"A downstream call returned 404 for VRN: $vrn")
           }
-        }(
-          etmpData => {
-            checkAndReturnResponseForPenaltyData(etmpData, penaltyId, enrolmentKey, penaltyType)
+          case GetPenaltyDetailsParser.GetPenaltyDetailsFailureResponse(status) => {
+            logger.info(s"[AppealsController][getAppealDataForPenalty] - 1812 call returned an unexpected status: $status")
+            InternalServerError(s"A downstream call returned an unexpected status: $status")
+          }
+          case GetPenaltyDetailsParser.GetPenaltyDetailsMalformed => {
+            logger.error(s"[AppealsController][getAppealDataForPenalty] - Failed to parse penalty details response")
+            InternalServerError(s"We were unable to parse penalty data.")
+          }
+        },
+          success => {
+            checkAndReturnResponseForPenaltyData(success.asInstanceOf[GetPenaltyDetailsSuccessResponse].penaltyDetails, penaltyId, enrolmentKey, penaltyType)
           }
         )
       }
@@ -99,6 +132,46 @@ class AppealsController @Inject()(appConfig: AppConfig,
         endDate = penaltyBasedOnId.period.endDate,
         dueDate = penaltyBasedOnId.period.dueDate,
         dateCommunicationSent = penaltyBasedOnId.communications.head.dateSent
+      )
+      Ok(Json.toJson(dataToReturn))
+    } else {
+      logger.info("[AppealsController][getAppealsData] Data retrieved for enrolment but provided penalty ID was not found. Returning 404.")
+      NotFound("Penalty ID was not found in users penalties.")
+    }
+  }
+
+  private def checkAndReturnResponseForPenaltyData(penaltyDetails: GetPenaltyDetails,
+                                                   penaltyIdToCheck: String,
+                                                   enrolmentKey: String,
+                                                   appealType: AppealTypeEnum.Value): Result = {
+    val lspPenaltyIdInPenaltyDetailsPayload: Option[LSPDetails] = penaltyDetails.lateSubmissionPenalty.flatMap {
+      _.details.find(_.penaltyNumber == penaltyIdToCheck)
+    }
+    val lppPenaltyIdInPenaltyDetailsPayload: Option[LPPDetails] = penaltyDetails.latePaymentPenalty.flatMap {
+      _.details.flatMap(_.find(_.principalChargeReference == penaltyIdToCheck))
+    }
+
+    if (appealType == AppealTypeEnum.Late_Submission && lspPenaltyIdInPenaltyDetailsPayload.isDefined) {
+      logger.debug(s"[AppealsController][getAppealsData] Penalty ID: $penaltyIdToCheck for enrolment key: $enrolmentKey found in ETMP for $appealType.")
+      val penaltyBasedOnId = lspPenaltyIdInPenaltyDetailsPayload.get
+      val sortedDate = penaltyBasedOnId.lateSubmissions.get.sortWith(PenaltyPeriodHelper.sortByPenaltyStartDate(_, _) < 0).head
+      val dataToReturn: V2AppealData = V2AppealData(
+        `type` = appealType,
+        startDate = sortedDate.taxPeriodStartDate.get,
+        endDate = sortedDate.taxPeriodEndDate.get,
+        dueDate = sortedDate.taxPeriodDueDate.get,
+        dateCommunicationSent = penaltyBasedOnId.communicationsDate
+      )
+      Ok(Json.toJson(dataToReturn))
+    } else if ((appealType == AppealTypeEnum.Late_Payment || appealType == AppealTypeEnum.Additional) && lppPenaltyIdInPenaltyDetailsPayload.isDefined) {
+      logger.debug(s"[AppealsController][getAppealsData] Penalty ID: $penaltyIdToCheck for enrolment key: $enrolmentKey found in ETMP for $appealType.")
+      val penaltyBasedOnId = lppPenaltyIdInPenaltyDetailsPayload.get
+      val dataToReturn: V2AppealData = V2AppealData(
+        `type` = appealType,
+        startDate = penaltyBasedOnId.principalChargeBillingFrom,
+        endDate = penaltyBasedOnId.principalChargeBillingTo,
+        dueDate = penaltyBasedOnId.principalChargeDueDate,
+        dateCommunicationSent = penaltyBasedOnId.communicationsDate
       )
       Ok(Json.toJson(dataToReturn))
     } else {
@@ -183,7 +256,7 @@ class AppealsController @Inject()(appConfig: AppConfig,
                   size = details.size,
                   properties = Seq(
                     SDESProperties(name = "CaseId", value = caseID),
-                    SDESProperties(name= "SourceFileUploadDate", value = details.uploadTimestamp.toString)
+                    SDESProperties(name = "SourceFileUploadDate", value = details.uploadTimestamp.toString)
                   )
                 ),
                 audit = SDESAudit(correlationID = idGenerator.generateUUID)
