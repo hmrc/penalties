@@ -128,29 +128,27 @@ class GetPenaltyDetailsServiceSpec extends SpecBase {
       when(mockGetPenaltyDetailsConnector.getPenaltyDetails(Matchers.eq("123456789"))(any()))
         .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(mockGetPenaltyDetailsResponseAsModel))))
 
-      val result: (Option[GetPenaltyDetails], GetPenaltyDetailsResponse) = await(service.getDataFromPenaltyServiceForVATCVRN("123456789"))
-      result._1.isDefined shouldBe true
-      result._1.get shouldBe mockGetPenaltyDetailsResponseAsModel
+      val result: GetPenaltyDetailsResponse = await(service.getDataFromPenaltyServiceForVATCVRN("123456789"))
+      result.isRight shouldBe true
+      result.right.get shouldBe GetPenaltyDetailsSuccessResponse(mockGetPenaltyDetailsResponseAsModel)
     }
 
     s"return $None when the response body is malformed" in new Setup {
       when(mockGetPenaltyDetailsConnector.getPenaltyDetails(Matchers.eq("123456789"))(any()))
         .thenReturn(Future.successful(Left(GetPenaltyDetailsMalformed)))
 
-      val result: (Option[GetPenaltyDetails], GetPenaltyDetailsResponse) = await(service.getDataFromPenaltyServiceForVATCVRN("123456789"))
-      result._1.isDefined shouldBe false
-      result._2.isLeft shouldBe true
-      result._2.left.get shouldBe GetPenaltyDetailsMalformed
+      val result: GetPenaltyDetailsResponse = await(service.getDataFromPenaltyServiceForVATCVRN("123456789"))
+      result.isLeft shouldBe true
+      result.left.get shouldBe GetPenaltyDetailsMalformed
     }
 
     s"return $None when the connector receives an unmatched status code" in new Setup {
       when(mockGetPenaltyDetailsConnector.getPenaltyDetails(Matchers.eq("123456789"))(any()))
         .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(IM_A_TEAPOT))))
 
-      val result: (Option[GetPenaltyDetails], GetPenaltyDetailsResponse) = await(service.getDataFromPenaltyServiceForVATCVRN("123456789"))
-      result._1.isDefined shouldBe false
-      result._2.isLeft shouldBe true
-      result._2.left.get shouldBe GetPenaltyDetailsFailureResponse(IM_A_TEAPOT)
+      val result: GetPenaltyDetailsResponse = await(service.getDataFromPenaltyServiceForVATCVRN("123456789"))
+      result.isLeft shouldBe true
+      result.left.get shouldBe GetPenaltyDetailsFailureResponse(IM_A_TEAPOT)
     }
 
     s"throw an exception when something unknown has happened" in new Setup {

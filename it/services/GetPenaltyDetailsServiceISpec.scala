@@ -16,7 +16,7 @@
 
 package services
 
-import connectors.parsers.v3.getPenaltyDetails.GetPenaltyDetailsParser.{GetPenaltyDetailsFailureResponse, GetPenaltyDetailsMalformed}
+import connectors.parsers.v3.getPenaltyDetails.GetPenaltyDetailsParser.{GetPenaltyDetailsFailureResponse, GetPenaltyDetailsMalformed, GetPenaltyDetailsSuccessResponse}
 import models.v3.getPenaltyDetails.latePayment.{LPPDetails, LPPPenaltyCategoryEnum, LPPPenaltyStatusEnum, LatePaymentPenalty}
 import models.v3.getPenaltyDetails.lateSubmission._
 import models.v3.getPenaltyDetails.{AppealInformation, GetPenaltyDetails, Totalisations}
@@ -116,9 +116,8 @@ class GetPenaltyDetailsServiceISpec extends IntegrationSpecCommonBase with ETMPW
     s"call the connector and return a tuple - first is the $Some result and second is the parser result - successful result" in {
       mockResponseForGetPenaltyDetailsv3(Status.OK, "123456789")
       val result = await(service.getDataFromPenaltyServiceForVATCVRN("123456789"))
-      result._1.isDefined shouldBe true
-      result._2.isRight shouldBe true
-      result._1.get shouldBe getPenaltyDetailsModel
+      result.isRight shouldBe true
+      result.right.get shouldBe GetPenaltyDetailsSuccessResponse(getPenaltyDetailsModel)
     }
 
     s"the response body is not well formed - second tuple value: $GetPenaltyDetailsMalformed" in {
@@ -130,17 +129,15 @@ class GetPenaltyDetailsServiceISpec extends IntegrationSpecCommonBase with ETMPW
            }
           """))
       val result = await(service.getDataFromPenaltyServiceForVATCVRN("123456789"))
-      result._1.isDefined shouldBe false
-      result._2.isLeft shouldBe true
-      result._2.left.get shouldBe GetPenaltyDetailsMalformed
+      result.isLeft shouldBe true
+      result.left.get shouldBe GetPenaltyDetailsMalformed
     }
 
     s"an unknown response is returned from the connector - second tuple value: $GetPenaltyDetailsFailureResponse" in {
       mockResponseForGetPenaltyDetailsv3(Status.IM_A_TEAPOT, "123456789")
       val result = await(service.getDataFromPenaltyServiceForVATCVRN("123456789"))
-      result._1.isDefined shouldBe false
-      result._2.isLeft shouldBe true
-      result._2.left.get shouldBe GetPenaltyDetailsFailureResponse(Status.IM_A_TEAPOT)
+      result.isLeft shouldBe true
+      result.left.get shouldBe GetPenaltyDetailsFailureResponse(Status.IM_A_TEAPOT)
     }
   }
 }
