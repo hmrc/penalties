@@ -30,6 +30,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class GetPenaltyDetailsConnectorSpec extends SpecBase {
   implicit val ec: ExecutionContext = ExecutionContext.Implicits.global
+  implicit val hc: HeaderCarrier = HeaderCarrier()
   val mockHttpClient: HttpClient = mock(classOf[HttpClient])
   val mockAppConfig: AppConfig = mock(classOf[AppConfig])
 
@@ -38,7 +39,9 @@ class GetPenaltyDetailsConnectorSpec extends SpecBase {
     reset(mockAppConfig)
 
     val connector = new GetPenaltyDetailsConnector(mockHttpClient, mockAppConfig)
-    when(mockAppConfig.getPenaltyDetailsUrl).thenReturn("/")
+    when(mockAppConfig.getPenaltyDetailsUrl).thenReturn("/penalty/details/VATC/VRN/")
+    when(mockAppConfig.eisEnvironment).thenReturn("env")
+    when(mockAppConfig.eiOutboundBearerToken).thenReturn("token")
   }
 
   val mockGetPenaltyDetailsModelAPI1812: GetPenaltyDetails = GetPenaltyDetails(
@@ -49,7 +52,7 @@ class GetPenaltyDetailsConnectorSpec extends SpecBase {
 
   "getPenaltiesDetails" should {
     "return a 200 when the call succeeds" in new Setup {
-      when(mockHttpClient.GET[GetPenaltyDetailsResponse](Matchers.eq("/VATC/VRN/123456789"),
+      when(mockHttpClient.GET[GetPenaltyDetailsResponse](Matchers.eq("/penalty/details/VATC/VRN/123456789"),
         Matchers.any(),
         Matchers.any())
         (Matchers.any(),
@@ -57,12 +60,12 @@ class GetPenaltyDetailsConnectorSpec extends SpecBase {
           Matchers.any()))
         .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(mockGetPenaltyDetailsModelAPI1812))))
 
-      val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails("VATC/VRN/123456789")(HeaderCarrier()))
+      val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails("123456789"))
       result.isRight shouldBe true
     }
 
     s"return a 404 when the call fails for Not Found" in new Setup {
-      when(mockHttpClient.GET[GetPenaltyDetailsResponse](Matchers.eq("/FOO/BAR/123456789"),
+      when(mockHttpClient.GET[GetPenaltyDetailsResponse](Matchers.eq("/penalty/details/VATC/VRN/123456789"),
         Matchers.any(),
         Matchers.any())
         (Matchers.any(),
@@ -70,12 +73,12 @@ class GetPenaltyDetailsConnectorSpec extends SpecBase {
           Matchers.any()))
         .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(Status.NOT_FOUND))))
 
-      val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails("FOO/BAR/123456789")(HeaderCarrier()))
+      val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails("123456789"))
       result.isLeft shouldBe true
     }
 
     s"return a 400 when the call fails for Bad Request" in new Setup {
-      when(mockHttpClient.GET[GetPenaltyDetailsResponse](Matchers.eq("/FOO/BAR/123456789"),
+      when(mockHttpClient.GET[GetPenaltyDetailsResponse](Matchers.eq("/penalty/details/VATC/VRN/123456789"),
         Matchers.any(),
         Matchers.any())
         (Matchers.any(),
@@ -83,12 +86,12 @@ class GetPenaltyDetailsConnectorSpec extends SpecBase {
           Matchers.any()))
         .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(Status.BAD_REQUEST))))
 
-      val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails("FOO/BAR/123456789")(HeaderCarrier()))
+      val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails("123456789"))
       result.isLeft shouldBe true
     }
 
     s"return a 409 when the call fails for Conflict" in new Setup {
-      when(mockHttpClient.GET[GetPenaltyDetailsResponse](Matchers.eq("/FOO/BAR/123456789"),
+      when(mockHttpClient.GET[GetPenaltyDetailsResponse](Matchers.eq("/penalty/details/VATC/VRN/123456789"),
         Matchers.any(),
         Matchers.any())
         (Matchers.any(),
@@ -96,12 +99,12 @@ class GetPenaltyDetailsConnectorSpec extends SpecBase {
           Matchers.any()))
         .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(Status.CONFLICT))))
 
-      val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails("FOO/BAR/123456789")(HeaderCarrier()))
+      val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails("123456789"))
       result.isLeft shouldBe true
     }
 
     s"return a 422 when the call fails for Unprocessable Entity" in new Setup {
-      when(mockHttpClient.GET[GetPenaltyDetailsResponse](Matchers.eq("/FOO/BAR/123456789"),
+      when(mockHttpClient.GET[GetPenaltyDetailsResponse](Matchers.eq("/penalty/details/VATC/VRN/123456789"),
         Matchers.any(),
         Matchers.any())
         (Matchers.any(),
@@ -109,12 +112,12 @@ class GetPenaltyDetailsConnectorSpec extends SpecBase {
           Matchers.any()))
         .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(Status.UNPROCESSABLE_ENTITY))))
 
-      val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails("FOO/BAR/123456789")(HeaderCarrier()))
+      val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails("123456789"))
       result.isLeft shouldBe true
     }
 
     s"return a 500 when the call fails for Internal Server Error" in new Setup {
-      when(mockHttpClient.GET[GetPenaltyDetailsResponse](Matchers.eq("/FOO/BAR/123456789"),
+      when(mockHttpClient.GET[GetPenaltyDetailsResponse](Matchers.eq("/penalty/details/VATC/VRN/123456789"),
         Matchers.any(),
         Matchers.any())
         (Matchers.any(),
@@ -122,12 +125,12 @@ class GetPenaltyDetailsConnectorSpec extends SpecBase {
           Matchers.any()))
         .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(Status.INTERNAL_SERVER_ERROR))))
 
-      val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails("FOO/BAR/123456789")(HeaderCarrier()))
+      val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails("123456789"))
       result.isLeft shouldBe true
     }
 
     s"return a 503 when the call fails" in new Setup {
-      when(mockHttpClient.GET[GetPenaltyDetailsResponse](Matchers.eq("/FOO/BAR/123456789"),
+      when(mockHttpClient.GET[GetPenaltyDetailsResponse](Matchers.eq("/penalty/details/VATC/VRN/123456789"),
         Matchers.any(),
         Matchers.any())
         (Matchers.any(),
@@ -135,7 +138,7 @@ class GetPenaltyDetailsConnectorSpec extends SpecBase {
           Matchers.any()))
         .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(Status.SERVICE_UNAVAILABLE))))
 
-      val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails("FOO/BAR/123456789")(HeaderCarrier()))
+      val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails("123456789"))
       result.isLeft shouldBe true
     }
   }

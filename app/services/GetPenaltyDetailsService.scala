@@ -28,9 +28,9 @@ import scala.concurrent.{ExecutionContext, Future}
 class GetPenaltyDetailsService @Inject()(getPenaltyDetailsConnector: GetPenaltyDetailsConnector)
                                         (implicit ec: ExecutionContext){
 
-  def getDataFromPenaltyServiceForVATCVRN(vatcUrl: String)(implicit hc: HeaderCarrier): Future[(Option[GetPenaltyDetails], GetPenaltyDetailsResponse) ] = {
+  def getDataFromPenaltyServiceForVATCVRN(vrn: String)(implicit hc: HeaderCarrier): Future[(Option[GetPenaltyDetails], GetPenaltyDetailsResponse) ] = {
     implicit val startOfLogMsg: String = "[GetPenaltyDetailsService][getDataFromPenaltyServiceForVATCVRN]"
-    getPenaltyDetailsConnector.getPenaltyDetails(vatcUrl).map {
+    getPenaltyDetailsConnector.getPenaltyDetails(vrn).map {
       handleConnectorResponse(_)
     }
   }
