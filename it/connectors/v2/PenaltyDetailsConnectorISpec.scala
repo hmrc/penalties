@@ -32,8 +32,8 @@ class PenaltyDetailsConnectorISpec extends IntegrationSpecCommonBase with ETMPWi
   "getPenaltyDetails" should {
     "return a successful response when called" in new Setup {
       enableFeatureSwitch(CallAPI1811ETMP)
-      mockResponseForGetPenaltyDetails(Status.OK, "VATC/VRN/123456789")
-      val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails("VATC/VRN/123456789"))
+      mockResponseForGetPenaltyDetails(Status.OK, "123456789")
+      val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails("123456789"))
       result.isRight shouldBe true
     }
 
@@ -46,56 +46,56 @@ class PenaltyDetailsConnectorISpec extends IntegrationSpecCommonBase with ETMPWi
              }
            }
           """
-      mockResponseForGetPenaltyDetails(Status.OK, "VATC/VRN/123456789", body = Some(malformedBody))
-      val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails("VATC/VRN/123456789"))
+      mockResponseForGetPenaltyDetails(Status.OK, "123456789", body = Some(malformedBody))
+      val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails("123456789"))
       result.isLeft shouldBe true
       result.left.get shouldBe GetPenaltyDetailsMalformed
     }
 
     s"return a $GetPenaltyDetailsFailureResponse when the response status is ISE (${Status.INTERNAL_SERVER_ERROR})" in new Setup {
       enableFeatureSwitch(CallAPI1811ETMP)
-      mockResponseForGetPenaltyDetails(Status.INTERNAL_SERVER_ERROR, "VATC/VRN/123456789")
-      val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails("VATC/VRN/123456789"))
+      mockResponseForGetPenaltyDetails(Status.INTERNAL_SERVER_ERROR, "123456789")
+      val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails("123456789"))
       result.isLeft shouldBe true
       result.left.get.asInstanceOf[GetPenaltyDetailsFailureResponse].status shouldBe Status.INTERNAL_SERVER_ERROR
     }
 
     s"return a $GetPenaltyDetailsFailureResponse when the response status is ISE (${Status.SERVICE_UNAVAILABLE})" in new Setup {
       enableFeatureSwitch(CallAPI1811ETMP)
-      mockResponseForGetPenaltyDetails(Status.SERVICE_UNAVAILABLE, "VATC/VRN/123456789")
-      val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails("VATC/VRN/123456789"))
+      mockResponseForGetPenaltyDetails(Status.SERVICE_UNAVAILABLE, "123456789")
+      val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails("123456789"))
       result.isLeft shouldBe true
       result.left.get.asInstanceOf[GetPenaltyDetailsFailureResponse].status shouldBe Status.SERVICE_UNAVAILABLE
      }
 
     s"return a $GetPenaltyDetailsFailureResponse when the response status is NOT FOUND (${Status.NOT_FOUND})" in new Setup {
       enableFeatureSwitch(CallAPI1811ETMP)
-      mockResponseForGetPenaltyDetails(Status.NOT_FOUND, "VATC/VRN/123456789")
-      val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails("VATC/VRN/123456789"))
+      mockResponseForGetPenaltyDetails(Status.NOT_FOUND, "123456789")
+      val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails("123456789"))
       result.isLeft shouldBe true
       result.left.get.asInstanceOf[GetPenaltyDetailsFailureResponse].status shouldBe Status.NOT_FOUND
     }
 
     s"return a $GetPenaltyDetailsFailureResponse when the response status is CONFLICT (${Status.CONFLICT})" in new Setup {
       enableFeatureSwitch(CallAPI1811ETMP)
-      mockResponseForGetPenaltyDetails(Status.CONFLICT, "VATC/VRN/123456789")
-      val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails("VATC/VRN/123456789"))
+      mockResponseForGetPenaltyDetails(Status.CONFLICT, "123456789")
+      val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails("123456789"))
       result.isLeft shouldBe true
       result.left.get.asInstanceOf[GetPenaltyDetailsFailureResponse].status shouldBe Status.CONFLICT
     }
 
     s"return a $GetPenaltyDetailsFailureResponse when the response status is UNPROCESSABLE ENTITY (${Status.UNPROCESSABLE_ENTITY})" in new Setup {
       enableFeatureSwitch(CallAPI1811ETMP)
-      mockResponseForGetPenaltyDetails(Status.UNPROCESSABLE_ENTITY, "VATC/VRN/123456789")
-      val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails("VATC/VRN/123456789"))
+      mockResponseForGetPenaltyDetails(Status.UNPROCESSABLE_ENTITY, "123456789")
+      val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails("123456789"))
       result.isLeft shouldBe true
       result.left.get.asInstanceOf[GetPenaltyDetailsFailureResponse].status shouldBe Status.UNPROCESSABLE_ENTITY
     }
 
     s"return a $GetPenaltyDetailsFailureResponse when the response status is ISE (${Status.BAD_REQUEST})" in new Setup {
       enableFeatureSwitch(CallAPI1811ETMP)
-      mockResponseForGetPenaltyDetails(Status.BAD_REQUEST, "VATC/VRN/123456789")
-      val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails("VATC/VRN/123456789"))
+      mockResponseForGetPenaltyDetails(Status.BAD_REQUEST, "123456789")
+      val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails("123456789"))
       result.isLeft shouldBe true
       result.left.get.asInstanceOf[GetPenaltyDetailsFailureResponse].status shouldBe Status.BAD_REQUEST
     }

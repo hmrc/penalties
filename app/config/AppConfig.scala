@@ -53,8 +53,8 @@ class AppConfig @Inject()(config: Configuration, servicesConfig: ServicesConfig)
   }
 
   def getPenaltyDetailsUrl: String = {
-    if(!isEnabled(CallAPI1812ETMP)) stubBase + "/penalty/details/"
-    else etmpBase + "/penalty/details/"
+    if(!isEnabled(CallAPI1812ETMP)) stubBase + "/penalty/details/VATC/VRN/"
+    else etmpBase + "/penalty/details/VATC/VRN/"
   }
 
   def getFinancialDetailsUrl: String = {
