@@ -17,13 +17,15 @@
 package controllers
 
 import com.github.tomakehurst.wiremock.client.WireMock.{postRequestedFor, urlEqualTo}
+import featureSwitches.{CallAPI1812ETMP, FeatureSwitching}
+
 import scala.collection.JavaConverters._
 import play.api.http.Status
 import play.api.libs.json.{JsValue, Json}
 import play.api.test.Helpers._
 import utils.{ETMPWiremock, IntegrationSpecCommonBase}
 
-class ETMPControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock {
+class ETMPControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock with FeatureSwitching {
   val controller: ETMPController = injector.instanceOf[ETMPController]
 
   val etmpPayloadAsJsonWithNoPoints: JsValue = Json.parse(
@@ -217,81 +219,242 @@ class ETMPControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock {
       |""".stripMargin)
 
   "getPenaltiesData" should {
-    s"call out to ETMP and return OK (${Status.OK}) when successful" in {
-      mockResponseForStubETMPPayload(Status.OK, "123456789")
-      val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/123456789").get())
-      result.status shouldBe Status.OK
-      result.body shouldBe etmpPayloadAsJson.toString()
+    disableFeatureSwitch(CallAPI1812ETMP)
+    "call stub data when 1812 feature is disabled" must {
+      s"call out to ETMP and return OK (${Status.OK}) when successful" in {
+        mockResponseForStubETMPPayload(Status.OK, "123456789")
+        val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/123456789").get())
+        result.status shouldBe Status.OK
+        result.body shouldBe etmpPayloadAsJson.toString()
+      }
+
+      s"call out to ETMP and return OK (${Status.OK}) when successful for LPP" in {
+        mockResponseForStubETMPPayload(Status.OK, "123456789", body = Some(Json.toJson(etmpPayloadModelWithLPP).toString))
+        val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/123456789").get())
+        result.status shouldBe Status.OK
+        result.body shouldBe Json.toJson(etmpPayloadModelWithLPP).toString
+      }
+
+      s"call out to ETMP and return OK (${Status.OK}) when successful for LPP with additional penalties" in {
+        mockResponseForStubETMPPayload(Status.OK, "123456789", body = Some(Json.toJson(etmpPayloadModelWithLPPAndAdditionalPenalties).toString))
+        val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/123456789").get())
+        result.status shouldBe Status.OK
+        result.body shouldBe Json.toJson(etmpPayloadModelWithLPPAndAdditionalPenalties).toString
+      }
+
+      s"call out to ETMP and return OK (${Status.OK}) when successful with VAT overview section present" in {
+        mockResponseForStubETMPPayload(Status.OK, "123456789", body = Some(Json.toJson(etmpPayloadModelWithVATOverview).toString))
+        val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/123456789").get())
+        result.status shouldBe Status.OK
+        result.body shouldBe Json.toJson(etmpPayloadModelWithVATOverview).toString
+      }
+
+      s"call out to ETMP and return OK (${Status.OK}) when there is added points i.e. no period" in {
+        mockResponseForStubETMPPayload(Status.OK, "123456789", body = Some(etmpPayloadAsJsonAddedPoint.toString()))
+        val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/123456789").get())
+        result.status shouldBe Status.OK
+        result.body shouldBe etmpPayloadAsJsonAddedPoint.toString()
+      }
+
+      s"call out to ETMP and return OK (${Status.OK}) when there are multiple LSP periods in same calendar month" in {
+        mockResponseForStubETMPPayload(Status.OK, "123456789", body = Some(etmpPayloadWithMultipleLSPInSameCalenderMonth.toString()))
+        val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/123456789").get())
+        result.status shouldBe Status.OK
+        result.body shouldBe etmpPayloadWithMultipleLSPInSameCalenderMonth.toString()
+      }
+
+      s"call out to ETMP and return OK (${Status.OK}) when there are multiple LSPP periods in same calendar month" in {
+        mockResponseForStubETMPPayload(Status.OK, "123456789", body = Some(etmpPayloadWithMultipleLSPPInSameCalenderMonth.toString()))
+        val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/123456789").get())
+        result.status shouldBe Status.OK
+        result.body shouldBe etmpPayloadWithMultipleLSPPInSameCalenderMonth.toString()
+      }
+
+      s"call out to ETMP and return a Not Found (${Status.NOT_FOUND}) when NoContent is returned from the connector" in {
+        mockResponseForStubETMPPayload(Status.NO_CONTENT, "123456789", body = Some(""))
+        val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/123456789").get())
+        result.status shouldBe Status.NOT_FOUND
+      }
+
+      s"call out to ETMP and return a ISE (${Status.INTERNAL_SERVER_ERROR}) when an issue has occurred i.e. invalid json response" in {
+        mockResponseForStubETMPPayload(Status.OK, "123456789", body = Some("{}"))
+        val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/123456789").get())
+        result.status shouldBe Status.INTERNAL_SERVER_ERROR
+        result.body shouldBe "Something went wrong."
+      }
+
+      "audit the response when the user has > 0 penalties" in {
+        mockResponseForStubETMPPayload(Status.OK, "123456789")
+        val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/123456789").get())
+        result.status shouldBe Status.OK
+        result.body shouldBe etmpPayloadAsJson.toString()
+        wireMockServer.findAll(postRequestedFor(urlEqualTo("/write/audit"))).asScala.toList.exists(_.getBodyAsString.contains("UserHasPenalty")) shouldBe true
+      }
+
+      "NOT audit the response when the user has 0 penalties" in {
+        mockResponseForStubETMPPayload(Status.OK, "123456789", body = Some(etmpPayloadAsJsonWithNoPoints.toString()))
+        val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/123456789").get())
+        result.status shouldBe Status.OK
+        result.body shouldBe etmpPayloadAsJsonWithNoPoints.toString()
+        wireMockServer.findAll(postRequestedFor(urlEqualTo("/write/audit"))).asScala.toList.exists(_.getBodyAsString.contains("UserHasPenalty")) shouldBe false
+      }
+    }
+  }
+
+  "call API 1812 when call 1812 feature is enabled" must {
+    val getPenaltyDetailsJson: JsValue = Json.parse(
+      """
+        |{
+        | "totalisations": {
+        |   "LSPTotalValue": 200,
+        |   "penalisedPrincipalTotal": 2000,
+        |   "LPPPostedTotal": 165.25,
+        |   "LPPEstimatedTotal": 15.26,
+        |   "LPIPostedTotal": 1968.2,
+        |   "LPIEstimatedTotal": 7
+        | },
+        | "lateSubmissionPenalty": {
+        |   "summary": {
+        |     "activePenaltyPoints": 2,
+        |     "inactivePenaltyPoints": 0,
+        |     "regimeThreshold": 5,
+        |     "penaltyChargeAmount": 200.00
+        |   },
+        |   "details": []
+        | },
+        | "latePaymentPenalty": {
+        |     "details": [
+        |       {
+        |          "penaltyCategory": "LPP2",
+        |          "penaltyStatus": "A",
+        |          "penaltyAmountPaid": 44.21,
+        |          "penaltyAmountOutstanding": 100,
+        |          "LPP1LRCalculationAmount": 99.99,
+        |          "LPP1LRDays": "15",
+        |          "LPP1LRPercentage": 2.00,
+        |          "LPP1HRCalculationAmount": 99.99,
+        |          "LPP1HRDays": "31",
+        |          "LPP1HRPercentage": 2.00,
+        |          "LPP2Days": "31",
+        |          "LPP2Percentage": 4.00,
+        |          "penaltyChargeCreationDate": "2022-10-30",
+        |          "communicationsDate": "2022-10-30",
+        |          "penaltyChargeDueDate": "2022-10-30",
+        |          "principalChargeReference": "1234567890",
+        |          "principalChargeBillingFrom": "2022-10-30",
+        |          "principalChargeBillingTo": "2022-10-30",
+        |          "principalChargeDueDate": "2022-10-30"
+        |       },
+        |       {
+        |          "penaltyCategory": "LPP2",
+        |          "penaltyStatus": "A",
+        |          "penaltyAmountPaid": 100.00,
+        |          "penaltyAmountOutstanding": 23.45,
+        |          "LPP1LRCalculationAmount": 99.99,
+        |          "LPP1LRDays": "15",
+        |          "LPP1LRPercentage": 2.00,
+        |          "LPP1HRCalculationAmount": 99.99,
+        |          "LPP1HRDays": "31",
+        |          "LPP1HRPercentage": 2.00,
+        |          "LPP2Days": "31",
+        |          "LPP2Percentage": 4.00,
+        |          "penaltyChargeCreationDate": "2022-10-30",
+        |          "communicationsDate": "2022-10-30",
+        |          "penaltyChargeDueDate": "2022-10-30",
+        |          "principalChargeReference": "1234567890",
+        |          "principalChargeBillingFrom": "2022-10-30",
+        |          "principalChargeBillingTo": "2022-10-30",
+        |          "principalChargeDueDate": "2022-10-30"
+        |       },
+        |       {
+        |          "penaltyCategory": "LPP1",
+        |          "penaltyStatus": "P",
+        |          "penaltyAmountPaid": 0,
+        |          "penaltyAmountOutstanding": 144.00,
+        |          "LPP1LRCalculationAmount": 99.99,
+        |          "LPP1LRDays": "15",
+        |          "LPP1LRPercentage": 2.00,
+        |          "LPP1HRCalculationAmount": 99.99,
+        |          "LPP1HRDays": "31",
+        |          "LPP1HRPercentage": 2.00,
+        |          "LPP2Days": "31",
+        |          "LPP2Percentage": 4.00,
+        |          "penaltyChargeCreationDate": "2022-10-30",
+        |          "communicationsDate": "2022-10-30",
+        |          "penaltyChargeDueDate": "2022-10-30",
+        |          "principalChargeReference": "1234567890",
+        |          "principalChargeBillingFrom": "2022-10-30",
+        |          "principalChargeBillingTo": "2022-10-30",
+        |          "principalChargeDueDate": "2022-10-30"
+        |       },
+        |       {
+        |          "penaltyCategory": "LPP1",
+        |          "penaltyStatus": "P",
+        |          "penaltyAmountPaid": 0,
+        |          "penaltyAmountOutstanding": 144.00,
+        |          "LPP1LRCalculationAmount": 99.99,
+        |          "LPP1LRDays": "15",
+        |          "LPP1LRPercentage": 2.00,
+        |          "LPP1HRCalculationAmount": 99.99,
+        |          "LPP1HRDays": "31",
+        |          "LPP1HRPercentage": 2.00,
+        |          "LPP2Days": "31",
+        |          "LPP2Percentage": 4.00,
+        |          "penaltyChargeCreationDate": "2022-10-30",
+        |          "communicationsDate": "2022-10-30",
+        |          "penaltyChargeDueDate": "2022-10-30",
+        |          "principalChargeReference": "1234567890",
+        |          "principalChargeBillingFrom": "2022-10-30",
+        |          "principalChargeBillingTo": "2022-10-30",
+        |          "principalChargeDueDate": "2022-10-30"
+        |       }
+        |   ]
+        | }
+        |}
+        |""".stripMargin)
+
+    s"return OK (${Status.OK})" when {
+      "the get penalty details call succeeds" in {
+        enableFeatureSwitch(CallAPI1812ETMP)
+        mockResponseForGetPenaltyDetailsv3(Status.OK, "123456789", body = Some(getPenaltyDetailsJson.toString()))
+        val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/123456789").get)
+        result.status shouldBe OK
+      }
     }
 
-    s"call out to ETMP and return OK (${Status.OK}) when successful for LPP" in {
-      mockResponseForStubETMPPayload(Status.OK, "123456789", body = Some(Json.toJson(etmpPayloadModelWithLPP).toString))
-      val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/123456789").get())
-      result.status shouldBe Status.OK
-      result.body shouldBe Json.toJson(etmpPayloadModelWithLPP).toString
+    s"return BAD_REQUEST (${Status.NOT_FOUND})" when {
+      "the user supplies an invalid VRN" in {
+        enableFeatureSwitch(CallAPI1812ETMP)
+        mockResponseForGetPenaltyDetailsv3(Status.OK, "123456789", body = Some(getPenaltyDetailsJson.toString()))
+        val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/123456789123456789").get)
+        result.status shouldBe NOT_FOUND
+      }
     }
 
-    s"call out to ETMP and return OK (${Status.OK}) when successful for LPP with additional penalties" in {
-      mockResponseForStubETMPPayload(Status.OK, "123456789", body = Some(Json.toJson(etmpPayloadModelWithLPPAndAdditionalPenalties).toString))
-      val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/123456789").get())
-      result.status shouldBe Status.OK
-      result.body shouldBe Json.toJson(etmpPayloadModelWithLPPAndAdditionalPenalties).toString
-    }
-
-    s"call out to ETMP and return OK (${Status.OK}) when successful with VAT overview section present" in {
-      mockResponseForStubETMPPayload(Status.OK, "123456789", body = Some(Json.toJson(etmpPayloadModelWithVATOverview).toString))
-      val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/123456789").get())
-      result.status shouldBe Status.OK
-      result.body shouldBe Json.toJson(etmpPayloadModelWithVATOverview).toString
-    }
-
-    s"call out to ETMP and return OK (${Status.OK}) when there is added points i.e. no period" in {
-      mockResponseForStubETMPPayload(Status.OK, "123456789", body = Some(etmpPayloadAsJsonAddedPoint.toString()))
-      val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/123456789").get())
-      result.status shouldBe Status.OK
-      result.body shouldBe etmpPayloadAsJsonAddedPoint.toString()
-    }
-
-    s"call out to ETMP and return OK (${Status.OK}) when there are multiple LSP periods in same calendar month" in {
-      mockResponseForStubETMPPayload(Status.OK, "123456789", body = Some(etmpPayloadWithMultipleLSPInSameCalenderMonth.toString()))
-      val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/123456789").get())
-      result.status shouldBe Status.OK
-      result.body shouldBe etmpPayloadWithMultipleLSPInSameCalenderMonth.toString()
-    }
-
-    s"call out to ETMP and return OK (${Status.OK}) when there are multiple LSPP periods in same calendar month" in {
-      mockResponseForStubETMPPayload(Status.OK, "123456789", body = Some(etmpPayloadWithMultipleLSPPInSameCalenderMonth.toString()))
-      val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/123456789").get())
-      result.status shouldBe Status.OK
-      result.body shouldBe etmpPayloadWithMultipleLSPPInSameCalenderMonth.toString()
-    }
-
-    s"call out to ETMP and return a Not Found (${Status.NOT_FOUND}) when NoContent is returned from the connector" in {
-      mockResponseForStubETMPPayload(Status.NO_CONTENT, "123456789", body = Some(""))
-      val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/123456789").get())
-      result.status shouldBe Status.NOT_FOUND
-    }
-
-    s"call out to ETMP and return a ISE (${Status.INTERNAL_SERVER_ERROR}) when an issue has occurred i.e. invalid json response" in {
-      mockResponseForStubETMPPayload(Status.OK, "123456789", body = Some("{}"))
-      val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/123456789").get())
-      result.status shouldBe Status.INTERNAL_SERVER_ERROR
-      result.body shouldBe "Something went wrong."
+    s"return ISE (${Status.INTERNAL_SERVER_ERROR})" when {
+      "the get penalty details call fails" in {
+        enableFeatureSwitch(CallAPI1812ETMP)
+        mockResponseForGetPenaltyDetailsv3(Status.INTERNAL_SERVER_ERROR, "123456789", body = Some(""))
+        val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/123456789").get)
+        result.status shouldBe INTERNAL_SERVER_ERROR
+      }
     }
 
     "audit the response when the user has > 0 penalties" in {
-      mockResponseForStubETMPPayload(Status.OK, "123456789")
+      enableFeatureSwitch(CallAPI1812ETMP)
+      mockResponseForGetPenaltyDetailsv3(Status.OK, "123456789")
       val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/123456789").get())
       result.status shouldBe Status.OK
-      result.body shouldBe etmpPayloadAsJson.toString()
+      result.body shouldBe getPenaltyDetailsWithLSPandLPPAsJsonv3.toString()
       wireMockServer.findAll(postRequestedFor(urlEqualTo("/write/audit"))).asScala.toList.exists(_.getBodyAsString.contains("UserHasPenalty")) shouldBe true
     }
 
     "NOT audit the response when the user has 0 penalties" in {
-      mockResponseForStubETMPPayload(Status.OK, "123456789", body = Some(etmpPayloadAsJsonWithNoPoints.toString()))
+      enableFeatureSwitch(CallAPI1812ETMP)
+      mockResponseForGetPenaltyDetailsv3(Status.OK, "123456789", body = Some(getPenaltyDetailsWithNoPointsAsJsonv3.toString()))
       val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/123456789").get())
       result.status shouldBe Status.OK
-      result.body shouldBe etmpPayloadAsJsonWithNoPoints.toString()
+      result.body shouldBe getPenaltyDetailsWithNoPointsAsJsonv3.toString()
       wireMockServer.findAll(postRequestedFor(urlEqualTo("/write/audit"))).asScala.toList.exists(_.getBodyAsString.contains("UserHasPenalty")) shouldBe false
     }
   }
