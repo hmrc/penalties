@@ -30,6 +30,7 @@ class FinancialDetailsConnectorISpec extends IntegrationSpecCommonBase with ETMP
 
   "getFinancialDetails" should {
     "return a successful response when called" in new Setup {
+      enableFeatureSwitch(CallAPI1811ETMP)
       mockResponseForGetFinancialDetails(Status.OK, "VRN/123456789/VATC")
       val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails("/VRN/123456789/VATC"))
       result.isRight shouldBe true

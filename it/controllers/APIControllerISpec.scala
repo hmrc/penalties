@@ -16,7 +16,7 @@
 
 package controllers
 
-import featureSwitches.{CallAPI1812ETMP, FeatureSwitching}
+import featureSwitches.{FeatureSwitching, UseAPI1812Model}
 import play.api.http.Status
 import play.api.libs.json.{JsValue, Json}
 import play.api.test.Helpers._
@@ -201,7 +201,7 @@ class APIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock wit
       |""".stripMargin)
 
   "getSummaryDataForVRN" should {
-    disableFeatureSwitch(CallAPI1812ETMP)
+    disableFeatureSwitch(UseAPI1812Model)
     "call stub data when 1812 feature is disabled" must {
       s"return OK (${Status.OK})" when {
         "the ETMP call succeeds" in {
@@ -359,8 +359,8 @@ class APIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock wit
 
       s"return OK (${Status.OK})" when {
         "the get penalty details call succeeds" in {
-          enableFeatureSwitch(CallAPI1812ETMP)
-          mockResponseForGetPenaltyDetailsv3(Status.OK, "123456789", body = Some(getPenaltyDetailsJson.toString()))
+          enableFeatureSwitch(UseAPI1812Model)
+          mockStubResponseForGetPenaltyDetailsv3(Status.OK, "123456789", body = Some(getPenaltyDetailsJson.toString()))
           val result = await(buildClientForRequestToApp(uri = "/vat/penalties/summary/123456789").get)
           result.status shouldBe OK
           Json.parse(result.body) shouldBe Json.parse(
@@ -380,7 +380,7 @@ class APIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock wit
 
       s"return BAD_REQUEST (${Status.BAD_REQUEST})" when {
         "the user supplies an invalid VRN" in {
-          enableFeatureSwitch(CallAPI1812ETMP)
+          enableFeatureSwitch(UseAPI1812Model)
           val result = await(buildClientForRequestToApp(uri = "/vat/penalties/summary/123456789123456789").get)
           result.status shouldBe BAD_REQUEST
         }
@@ -388,8 +388,8 @@ class APIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock wit
 
       s"return ISE (${Status.INTERNAL_SERVER_ERROR})" when {
         "the get penalty details call fails" in {
-          enableFeatureSwitch(CallAPI1812ETMP)
-          mockResponseForGetPenaltyDetailsv3(Status.INTERNAL_SERVER_ERROR, "123456789", body = Some(""))
+          enableFeatureSwitch(UseAPI1812Model)
+          mockStubResponseForGetPenaltyDetailsv3(Status.INTERNAL_SERVER_ERROR, "123456789", body = Some(""))
           val result = await(buildClientForRequestToApp(uri = "/vat/penalties/summary/123456789").get)
           result.status shouldBe INTERNAL_SERVER_ERROR
         }
@@ -397,8 +397,8 @@ class APIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock wit
 
       s"return NOT_FOUND (${Status.NOT_FOUND})" when {
         "the get penalty details call returns 404" in {
-          enableFeatureSwitch(CallAPI1812ETMP)
-          mockResponseForGetPenaltyDetailsv3(Status.NOT_FOUND, "123456789", body = Some(""))
+          enableFeatureSwitch(UseAPI1812Model)
+          mockStubResponseForGetPenaltyDetailsv3(Status.NOT_FOUND, "123456789", body = Some(""))
           val result = await(buildClientForRequestToApp(uri = "/vat/penalties/summary/123456789").get)
           result.status shouldBe NOT_FOUND
         }

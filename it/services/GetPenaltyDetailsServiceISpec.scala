@@ -16,7 +16,7 @@
 
 package services
 
-import connectors.parsers.v3.getPenaltyDetails.GetPenaltyDetailsParser.{GetPenaltyDetailsFailureResponse, GetPenaltyDetailsMalformed, GetPenaltyDetailsSuccessResponse}
+import connectors.parsers.v3.getPenaltyDetails.GetPenaltyDetailsParser._
 import models.v3.getPenaltyDetails.latePayment.{LPPDetails, LPPPenaltyCategoryEnum, LPPPenaltyStatusEnum, LatePaymentPenalty}
 import models.v3.getPenaltyDetails.lateSubmission._
 import models.v3.getPenaltyDetails.{AppealInformation, GetPenaltyDetails, Totalisations}
@@ -29,7 +29,7 @@ import java.time.LocalDate
 class GetPenaltyDetailsServiceISpec extends IntegrationSpecCommonBase with ETMPWiremock {
   val service: GetPenaltyDetailsService = injector.instanceOf[GetPenaltyDetailsService]
 
-  "getDataFromPenaltyServiceForVATCVRN" should {
+  "getDataFromPenaltyServiceForVATCVRN" when {
     val getPenaltyDetailsModel: GetPenaltyDetails = GetPenaltyDetails(
       totalisations = Some(
         Totalisations(
@@ -113,15 +113,15 @@ class GetPenaltyDetailsServiceISpec extends IntegrationSpecCommonBase with ETMPW
         )
       ))
     )
-    s"call the connector and return a tuple - first is the $Some result and second is the parser result - successful result" in {
-      mockResponseForGetPenaltyDetailsv3(Status.OK, "123456789")
+    s"call the connector and return a successful result" in {
+      mockStubResponseForGetPenaltyDetailsv3(Status.OK, "123456789")
       val result = await(service.getDataFromPenaltyServiceForVATCVRN("123456789"))
       result.isRight shouldBe true
       result.right.get shouldBe GetPenaltyDetailsSuccessResponse(getPenaltyDetailsModel)
     }
 
-    s"the response body is not well formed - second tuple value: $GetPenaltyDetailsMalformed" in {
-      mockResponseForGetPenaltyDetailsv3(Status.OK, "123456789", body = Some("""
+    s"the response body is not well formed: $GetPenaltyDetailsMalformed" in {
+      mockStubResponseForGetPenaltyDetailsv3(Status.OK, "123456789", body = Some("""
           {
            "lateSubmissionPenalty": {
              "summary": {}
@@ -133,8 +133,8 @@ class GetPenaltyDetailsServiceISpec extends IntegrationSpecCommonBase with ETMPW
       result.left.get shouldBe GetPenaltyDetailsMalformed
     }
 
-    s"an unknown response is returned from the connector - second tuple value: $GetPenaltyDetailsFailureResponse" in {
-      mockResponseForGetPenaltyDetailsv3(Status.IM_A_TEAPOT, "123456789")
+    s"an unknown response is returned from the connector - $GetPenaltyDetailsFailureResponse" in {
+      mockStubResponseForGetPenaltyDetailsv3(Status.IM_A_TEAPOT, "123456789")
       val result = await(service.getDataFromPenaltyServiceForVATCVRN("123456789"))
       result.isLeft shouldBe true
       result.left.get shouldBe GetPenaltyDetailsFailureResponse(Status.IM_A_TEAPOT)
