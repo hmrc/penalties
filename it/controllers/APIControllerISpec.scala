@@ -16,12 +16,13 @@
 
 package controllers
 
+import featureSwitches.{CallAPI1812ETMP, FeatureSwitching}
 import play.api.http.Status
 import play.api.libs.json.{JsValue, Json}
 import play.api.test.Helpers._
 import utils.{ETMPWiremock, IntegrationSpecCommonBase}
 
-class APIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock {
+class APIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock with FeatureSwitching {
   val controller: APIController = injector.instanceOf[APIController]
 
   val etmpPayloadAsJsonWithEstimatedLPP: JsValue = Json.parse(
@@ -200,44 +201,207 @@ class APIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock {
       |""".stripMargin)
 
   "getSummaryDataForVRN" should {
-    s"return OK (${Status.OK})" when {
-      "the ETMP call succeeds" in {
-        mockResponseForStubETMPPayload(Status.OK, "HMRC-MTD-VAT~VRN~123456789", body = Some(etmpPayloadAsJsonWithEstimatedLPP.toString()))
-        val result = await(buildClientForRequestToApp(uri = "/vat/penalties/summary/123456789").get)
-        result.status shouldBe OK
-        Json.parse(result.body) shouldBe Json.parse(
-          """
-            |{
-            |  "noOfPoints": 2,
-            |  "noOfEstimatedPenalties": 1,
-            |  "noOfCrystalisedPenalties": 2,
-            |  "estimatedPenaltyAmount": 12,
-            |  "crystalisedPenaltyAmountDue": 402,
-            |  "hasAnyPenaltyData": true
-            |}
-            |""".stripMargin
-        )
+    disableFeatureSwitch(CallAPI1812ETMP)
+    "call stub data when 1812 feature is disabled" must {
+      s"return OK (${Status.OK})" when {
+        "the ETMP call succeeds" in {
+          mockResponseForStubETMPPayload(Status.OK, "HMRC-MTD-VAT~VRN~123456789", body = Some(etmpPayloadAsJsonWithEstimatedLPP.toString()))
+          val result = await(buildClientForRequestToApp(uri = "/vat/penalties/summary/123456789").get)
+          result.status shouldBe OK
+          Json.parse(result.body) shouldBe Json.parse(
+            """
+              |{
+              |  "noOfPoints": 2,
+              |  "noOfEstimatedPenalties": 1,
+              |  "noOfCrystalisedPenalties": 2,
+              |  "estimatedPenaltyAmount": 12,
+              |  "crystalisedPenaltyAmountDue": 402,
+              |  "hasAnyPenaltyData": true
+              |}
+              |""".stripMargin
+          )
+        }
+      }
+
+      s"return BAD_REQUEST (${Status.BAD_REQUEST})" when {
+        "the user supplies an invalid VRN" in {
+          val result = await(buildClientForRequestToApp(uri = "/vat/penalties/summary/123456789123456789").get)
+          result.status shouldBe BAD_REQUEST
+        }
+      }
+
+      s"return NOT_FOUND (${Status.NOT_FOUND})" when {
+        "the ETMP call fails" in {
+          mockResponseForStubETMPPayload(Status.INTERNAL_SERVER_ERROR, "HMRC-MTD-VAT~VRN~123456789", body = Some(""))
+          val result = await(buildClientForRequestToApp(uri = "/vat/penalties/summary/123456789").get)
+          result.status shouldBe NOT_FOUND
+        }
+
+        "the ETMP call returns nothing" in {
+          mockResponseForStubETMPPayload(Status.OK, "HMRC-MTD-VAT~VRN~123456789", body = Some("{}"))
+          val result = await(buildClientForRequestToApp(uri = "/vat/penalties/summary/123456789").get)
+          result.status shouldBe NOT_FOUND
+        }
       }
     }
 
-    s"return BAD_REQUEST (${Status.BAD_REQUEST})" when {
-      "the user supplies an invalid VRN" in {
-        val result = await(buildClientForRequestToApp(uri = "/vat/penalties/summary/123456789123456789").get)
-        result.status shouldBe BAD_REQUEST
-      }
-    }
+    "call API 1812 when call 1812 feature is enabled" must {
+      val getPenaltyDetailsJson: JsValue = Json.parse(
+        """
+          |{
+          | "totalisations": {
+          |   "LSPTotalValue": 200,
+          |   "penalisedPrincipalTotal": 2000,
+          |   "LPPPostedTotal": 165.25,
+          |   "LPPEstimatedTotal": 15.26,
+          |   "LPIPostedTotal": 1968.2,
+          |   "LPIEstimatedTotal": 7
+          | },
+          | "lateSubmissionPenalty": {
+          |   "summary": {
+          |     "activePenaltyPoints": 2,
+          |     "inactivePenaltyPoints": 0,
+          |     "regimeThreshold": 5,
+          |     "penaltyChargeAmount": 200.00
+          |   },
+          |   "details": []
+          | },
+          | "latePaymentPenalty": {
+          |     "details": [
+          |       {
+          |          "penaltyCategory": "LPP2",
+          |          "penaltyStatus": "A",
+          |          "penaltyAmountPaid": 44.21,
+          |          "penaltyAmountOutstanding": 100,
+          |          "LPP1LRCalculationAmount": 99.99,
+          |          "LPP1LRDays": "15",
+          |          "LPP1LRPercentage": 2.00,
+          |          "LPP1HRCalculationAmount": 99.99,
+          |          "LPP1HRDays": "31",
+          |          "LPP1HRPercentage": 2.00,
+          |          "LPP2Days": "31",
+          |          "LPP2Percentage": 4.00,
+          |          "penaltyChargeCreationDate": "2022-10-30",
+          |          "communicationsDate": "2022-10-30",
+          |          "penaltyChargeDueDate": "2022-10-30",
+          |          "principalChargeReference": "1234567890",
+          |          "principalChargeBillingFrom": "2022-10-30",
+          |          "principalChargeBillingTo": "2022-10-30",
+          |          "principalChargeDueDate": "2022-10-30"
+          |       },
+          |       {
+          |          "penaltyCategory": "LPP2",
+          |          "penaltyStatus": "A",
+          |          "penaltyAmountPaid": 100.00,
+          |          "penaltyAmountOutstanding": 23.45,
+          |          "LPP1LRCalculationAmount": 99.99,
+          |          "LPP1LRDays": "15",
+          |          "LPP1LRPercentage": 2.00,
+          |          "LPP1HRCalculationAmount": 99.99,
+          |          "LPP1HRDays": "31",
+          |          "LPP1HRPercentage": 2.00,
+          |          "LPP2Days": "31",
+          |          "LPP2Percentage": 4.00,
+          |          "penaltyChargeCreationDate": "2022-10-30",
+          |          "communicationsDate": "2022-10-30",
+          |          "penaltyChargeDueDate": "2022-10-30",
+          |          "principalChargeReference": "1234567890",
+          |          "principalChargeBillingFrom": "2022-10-30",
+          |          "principalChargeBillingTo": "2022-10-30",
+          |          "principalChargeDueDate": "2022-10-30"
+          |       },
+          |       {
+          |          "penaltyCategory": "LPP1",
+          |          "penaltyStatus": "P",
+          |          "penaltyAmountPaid": 0,
+          |          "penaltyAmountOutstanding": 144.00,
+          |          "LPP1LRCalculationAmount": 99.99,
+          |          "LPP1LRDays": "15",
+          |          "LPP1LRPercentage": 2.00,
+          |          "LPP1HRCalculationAmount": 99.99,
+          |          "LPP1HRDays": "31",
+          |          "LPP1HRPercentage": 2.00,
+          |          "LPP2Days": "31",
+          |          "LPP2Percentage": 4.00,
+          |          "penaltyChargeCreationDate": "2022-10-30",
+          |          "communicationsDate": "2022-10-30",
+          |          "penaltyChargeDueDate": "2022-10-30",
+          |          "principalChargeReference": "1234567890",
+          |          "principalChargeBillingFrom": "2022-10-30",
+          |          "principalChargeBillingTo": "2022-10-30",
+          |          "principalChargeDueDate": "2022-10-30"
+          |       },
+          |       {
+          |          "penaltyCategory": "LPP1",
+          |          "penaltyStatus": "P",
+          |          "penaltyAmountPaid": 0,
+          |          "penaltyAmountOutstanding": 144.00,
+          |          "LPP1LRCalculationAmount": 99.99,
+          |          "LPP1LRDays": "15",
+          |          "LPP1LRPercentage": 2.00,
+          |          "LPP1HRCalculationAmount": 99.99,
+          |          "LPP1HRDays": "31",
+          |          "LPP1HRPercentage": 2.00,
+          |          "LPP2Days": "31",
+          |          "LPP2Percentage": 4.00,
+          |          "penaltyChargeCreationDate": "2022-10-30",
+          |          "communicationsDate": "2022-10-30",
+          |          "penaltyChargeDueDate": "2022-10-30",
+          |          "principalChargeReference": "1234567890",
+          |          "principalChargeBillingFrom": "2022-10-30",
+          |          "principalChargeBillingTo": "2022-10-30",
+          |          "principalChargeDueDate": "2022-10-30"
+          |       }
+          |   ]
+          | }
+          |}
+          |""".stripMargin)
 
-    s"return NOT_FOUND (${Status.NOT_FOUND})" when {
-      "the ETMP call fails" in {
-        mockResponseForStubETMPPayload(Status.INTERNAL_SERVER_ERROR, "HMRC-MTD-VAT~VRN~123456789", body = Some(""))
-        val result = await(buildClientForRequestToApp(uri = "/vat/penalties/summary/123456789").get)
-        result.status shouldBe NOT_FOUND
+      s"return OK (${Status.OK})" when {
+        "the get penalty details call succeeds" in {
+          enableFeatureSwitch(CallAPI1812ETMP)
+          mockResponseForGetPenaltyDetailsv3(Status.OK, "123456789", body = Some(getPenaltyDetailsJson.toString()))
+          val result = await(buildClientForRequestToApp(uri = "/vat/penalties/summary/123456789").get)
+          result.status shouldBe OK
+          Json.parse(result.body) shouldBe Json.parse(
+            """
+              |{
+              |  "noOfPoints": 2,
+              |  "noOfEstimatedPenalties": 2,
+              |  "noOfCrystalisedPenalties": 2,
+              |  "estimatedPenaltyAmount": 123.45,
+              |  "crystalisedPenaltyAmountDue": 288,
+              |  "hasAnyPenaltyData": true
+              |}
+              |""".stripMargin
+          )
+        }
       }
 
-      "the ETMP call returns nothing" in {
-        mockResponseForStubETMPPayload(Status.OK, "HMRC-MTD-VAT~VRN~123456789", body = Some("{}"))
-        val result = await(buildClientForRequestToApp(uri = "/vat/penalties/summary/123456789").get)
-        result.status shouldBe NOT_FOUND
+      s"return BAD_REQUEST (${Status.BAD_REQUEST})" when {
+        "the user supplies an invalid VRN" in {
+          enableFeatureSwitch(CallAPI1812ETMP)
+          val result = await(buildClientForRequestToApp(uri = "/vat/penalties/summary/123456789123456789").get)
+          result.status shouldBe BAD_REQUEST
+        }
+      }
+
+      s"return ISE (${Status.INTERNAL_SERVER_ERROR})" when {
+        "the get penalty details call fails" in {
+          enableFeatureSwitch(CallAPI1812ETMP)
+          mockResponseForGetPenaltyDetailsv3(Status.INTERNAL_SERVER_ERROR, "123456789", body = Some(""))
+          val result = await(buildClientForRequestToApp(uri = "/vat/penalties/summary/123456789").get)
+          result.status shouldBe INTERNAL_SERVER_ERROR
+        }
+      }
+
+      s"return NOT_FOUND (${Status.NOT_FOUND})" when {
+        "the get penalty details call returns 404" in {
+          enableFeatureSwitch(CallAPI1812ETMP)
+          mockResponseForGetPenaltyDetailsv3(Status.NOT_FOUND, "123456789", body = Some(""))
+          val result = await(buildClientForRequestToApp(uri = "/vat/penalties/summary/123456789").get)
+          result.status shouldBe NOT_FOUND
+        }
       }
     }
   }
