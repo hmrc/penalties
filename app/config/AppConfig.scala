@@ -53,13 +53,13 @@ class AppConfig @Inject()(config: Configuration, servicesConfig: ServicesConfig)
   }
 
   def getPenaltyDetailsUrl: String = {
-    if(!isEnabled(CallAPI1812ETMP)) stubBase + "/penalty/details/VATC/VRN/"
+    if(!isEnabled(CallAPI1812ETMP)) stubBase + "/penalties-stub/penalty/details/VATC/VRN/"
     else etmpBase + "/penalty/details/VATC/VRN/"
   }
 
   def getFinancialDetailsUrl: String = {
-    if(!isEnabled(CallAPI1811ETMP)) stubBase + "/penalty/financial-data"
-    etmpBase + "/penalty/financial-data"
+    if(!isEnabled(CallAPI1811ETMP)) stubBase + "/penalties-stub/penalty/financial-data"
+    else etmpBase + "/penalty/financial-data"
   }
 
   def getAppealSubmissionURL(enrolmentKey: String, isLPP: Boolean, penaltyNumber: String): String = {

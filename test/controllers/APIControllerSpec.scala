@@ -19,7 +19,7 @@ package controllers
 import base.SpecBase
 import connectors.parsers.ETMPPayloadParser._
 import connectors.parsers.v3.getPenaltyDetails.GetPenaltyDetailsParser._
-import featureSwitches.{CallAPI1812ETMP, FeatureSwitching}
+import featureSwitches.{FeatureSwitching, UseAPI1812Model}
 import models.v3.getPenaltyDetails.GetPenaltyDetails
 import models.v3.getPenaltyDetails.latePayment._
 import models.v3.getPenaltyDetails.lateSubmission.{LSPSummary, LateSubmissionPenalty}
@@ -46,7 +46,7 @@ class APIControllerSpec extends SpecBase with FeatureSwitching {
     reset(mockETMPService, mockAuditService, mockAPIService)
     val controller = new APIController(mockETMPService, mockAuditService, mockAPIService,
       mockGetPenaltyDetailsService, stubControllerComponents())
-    if(isFSEnabled) enableFeatureSwitch(CallAPI1812ETMP) else disableFeatureSwitch(CallAPI1812ETMP)
+    if(isFSEnabled) enableFeatureSwitch(UseAPI1812Model) else disableFeatureSwitch(UseAPI1812Model)
   }
 
   "getSummaryDataForVRN" should {

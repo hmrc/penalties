@@ -18,7 +18,7 @@ package controllers
 
 import connectors.parsers.v3.getPenaltyDetails.GetPenaltyDetailsParser
 import connectors.parsers.v3.getPenaltyDetails.GetPenaltyDetailsParser.GetPenaltyDetailsSuccessResponse
-import featureSwitches.{CallAPI1812ETMP, FeatureSwitching}
+import featureSwitches.{FeatureSwitching, UseAPI1812Model}
 import models.ETMPPayload
 import models.api.APIModel
 import models.auditing.UserHasPenaltyAuditModel
@@ -26,9 +26,9 @@ import models.auditing.v2.{UserHasPenaltyAuditModel => AuditModelV2}
 import models.v3.getPenaltyDetails.GetPenaltyDetails
 import play.api.libs.json.Json
 import play.api.mvc._
-import services.{ETMPService, GetPenaltyDetailsService}
 import services.auditing.AuditService
 import services.v2.APIService
+import services.{ETMPService, GetPenaltyDetailsService}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import utils.Logger.logger
 import utils.RegimeHelper
@@ -51,7 +51,7 @@ class APIController @Inject()(etmpService: ETMPService,
         Future(BadRequest(s"VRN: $vrn was not in a valid format."))
       } else {
         val enrolmentKey = RegimeHelper.constructMTDVATEnrolmentKey(vrn)
-        if(!isEnabled(CallAPI1812ETMP)) {
+        if(!isEnabled(UseAPI1812Model)) {
           etmpService.getPenaltyDataFromETMPForEnrolment(enrolmentKey).map {
             _._1.fold(
               NotFound(s"Unable to find data for VRN: $vrn")
