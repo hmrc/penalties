@@ -126,7 +126,7 @@ class APIController @Inject()(etmpService: ETMPService,
       estimatedPenaltyAmount = penaltyAmountWithEstimateStatus,
       crystalisedPenaltyAmountDue = crystallisedPenaltyTotal,
       hasAnyPenaltyData = hasAnyPenaltyData)
-    if(pointsTotal > 0) {
+    if(hasAnyPenaltyData) {
       val auditModel = AuditModelV2(
         penaltyDetails = penaltyDetails,
         identifier = RegimeHelper.getIdentifierFromEnrolmentKey(enrolmentKey),
