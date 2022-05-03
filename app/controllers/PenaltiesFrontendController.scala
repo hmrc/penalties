@@ -19,7 +19,7 @@ package controllers
 import connectors.parsers.ETMPPayloadParser.GetETMPPayloadNoContent
 import connectors.parsers.v3.getPenaltyDetails.GetPenaltyDetailsParser
 import connectors.parsers.v3.getPenaltyDetails.GetPenaltyDetailsParser.GetPenaltyDetailsSuccessResponse
-import featureSwitches.{CallAPI1812ETMP, FeatureSwitching}
+import featureSwitches.{FeatureSwitching, UseAPI1812Model}
 
 import javax.inject.Inject
 import models.auditing.UserHasPenaltyAuditModel
@@ -35,7 +35,7 @@ import utils.RegimeHelper
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class ETMPController @Inject()(etmpService: ETMPService,
+class PenaltiesFrontendController @Inject()(etmpService: ETMPService,
                                auditService: AuditService,
                                getPenaltyDetailsService: GetPenaltyDetailsService,
                                cc: ControllerComponents)
@@ -43,7 +43,7 @@ class ETMPController @Inject()(etmpService: ETMPService,
 
   def getPenaltiesData(enrolmentKey: String, arn: Option[String] = None): Action[AnyContent] = Action.async {
     implicit request => {
-      if(!isEnabled(CallAPI1812ETMP)) {
+      if(!isEnabled(UseAPI1812Model)) {
         etmpService.getPenaltyDataFromETMPForEnrolment(enrolmentKey).map {
           result => {
             result._1.fold {
@@ -68,15 +68,15 @@ class ETMPController @Inject()(etmpService: ETMPService,
         getPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(enrolmentKey).map {
           _.fold({
             case GetPenaltyDetailsParser.GetPenaltyDetailsFailureResponse(status) if status == NOT_FOUND => {
-              logger.info(s"[ETMPController][getPenaltiesData] - 1812 call returned 404 for VRN: $enrolmentKey")
+              logger.info(s"[PenaltiesFrontendController][getPenaltiesData] - 1812 call returned 404 for VRN: $enrolmentKey")
               NotFound(s"A downstream call returned 404 for VRN: $enrolmentKey")
             }
             case GetPenaltyDetailsParser.GetPenaltyDetailsFailureResponse(status) => {
-              logger.info(s"[ETMPController][getPenaltiesData] - 1812 call returned an unexpected status: $status")
+              logger.info(s"[PenaltiesFrontendController][getPenaltiesData] - 1812 call returned an unexpected status: $status")
               InternalServerError(s"A downstream call returned an unexpected status: $status")
             }
             case GetPenaltyDetailsParser.GetPenaltyDetailsMalformed => {
-              logger.error(s"[ETMPController][getPenaltiesData] - Failed to parse penalty details response")
+              logger.error(s"[PenaltiesFrontendController][getPenaltiesData] - Failed to parse penalty details response")
               InternalServerError(s"We were unable to parse penalty data.")
             }
           },

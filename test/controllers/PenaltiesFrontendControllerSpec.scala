@@ -20,7 +20,7 @@ import base.SpecBase
 import config.AppConfig
 import connectors.parsers.ETMPPayloadParser.{GetETMPPayloadMalformed, GetETMPPayloadNoContent, GetETMPPayloadSuccessResponse}
 import connectors.parsers.v3.getPenaltyDetails.GetPenaltyDetailsParser.{GetPenaltyDetailsFailureResponse, GetPenaltyDetailsSuccessResponse}
-import featureSwitches.{CallAPI1812ETMP, FeatureSwitching}
+import featureSwitches.{FeatureSwitching, UseAPI1812Model}
 import models.ETMPPayload
 import models.v3.getPenaltyDetails.GetPenaltyDetails
 import models.v3.getPenaltyDetails.latePayment.{LPPDetails, LPPPenaltyCategoryEnum, LPPPenaltyStatusEnum, LatePaymentPenalty}
@@ -31,13 +31,13 @@ import play.api.http.Status
 import play.api.libs.json.Json
 import play.api.mvc.Result
 import play.api.test.Helpers._
-import services.{ETMPService, GetPenaltyDetailsService}
 import services.auditing.AuditService
+import services.{ETMPService, GetPenaltyDetailsService}
 
 import java.time.LocalDate
 import scala.concurrent.Future
 
-class ETMPControllerSpec extends SpecBase with FeatureSwitching {
+class PenaltiesFrontendControllerSpec extends SpecBase with FeatureSwitching {
   val mockAppConfig: AppConfig = mock(classOf[AppConfig])
   val mockETMPService: ETMPService = mock(classOf[ETMPService])
   val mockAuditService: AuditService = mock(classOf[AuditService])
@@ -48,13 +48,13 @@ class ETMPControllerSpec extends SpecBase with FeatureSwitching {
 
   class Setup(isFSEnabled: Boolean = false) {
     reset(mockAppConfig, mockETMPService, mockAuditService)
-    val controller: ETMPController = new ETMPController(
+    val controller: PenaltiesFrontendController = new PenaltiesFrontendController(
       mockETMPService,
       mockAuditService,
       mockGetPenaltyDetailsService,
       stubControllerComponents()
     )
-    if(isFSEnabled) enableFeatureSwitch(CallAPI1812ETMP) else disableFeatureSwitch(CallAPI1812ETMP)
+    if(isFSEnabled) enableFeatureSwitch(UseAPI1812Model) else disableFeatureSwitch(UseAPI1812Model)
   }
 
   "getPenaltiesData" should {

@@ -17,7 +17,7 @@
 package controllers
 
 import com.github.tomakehurst.wiremock.client.WireMock.{postRequestedFor, urlEqualTo}
-import featureSwitches.{CallAPI1812ETMP, FeatureSwitching}
+import featureSwitches.{FeatureSwitching, UseAPI1812Model}
 
 import scala.collection.JavaConverters._
 import play.api.http.Status
@@ -25,8 +25,8 @@ import play.api.libs.json.{JsValue, Json}
 import play.api.test.Helpers._
 import utils.{ETMPWiremock, IntegrationSpecCommonBase}
 
-class ETMPControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock with FeatureSwitching {
-  val controller: ETMPController = injector.instanceOf[ETMPController]
+class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock with FeatureSwitching {
+  val controller: PenaltiesFrontendController = injector.instanceOf[PenaltiesFrontendController]
 
   val etmpPayloadAsJsonWithNoPoints: JsValue = Json.parse(
     """
@@ -219,7 +219,7 @@ class ETMPControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock wi
       |""".stripMargin)
 
   "getPenaltiesData" should {
-    disableFeatureSwitch(CallAPI1812ETMP)
+    disableFeatureSwitch(UseAPI1812Model)
     "call stub data when 1812 feature is disabled" must {
       s"call out to ETMP and return OK (${Status.OK}) when successful" in {
         mockResponseForStubETMPPayload(Status.OK, "123456789")
@@ -415,8 +415,8 @@ class ETMPControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock wi
 
     s"return OK (${Status.OK})" when {
       "the get penalty details call succeeds" in {
-        enableFeatureSwitch(CallAPI1812ETMP)
-        mockResponseForGetPenaltyDetailsv3(Status.OK, "123456789", body = Some(getPenaltyDetailsJson.toString()))
+        enableFeatureSwitch(UseAPI1812Model)
+        mockStubResponseForGetPenaltyDetailsv3(Status.OK, "123456789", body = Some(getPenaltyDetailsJson.toString()))
         val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/123456789").get)
         result.status shouldBe OK
       }
@@ -424,8 +424,8 @@ class ETMPControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock wi
 
     s"return BAD_REQUEST (${Status.NOT_FOUND})" when {
       "the user supplies an invalid VRN" in {
-        enableFeatureSwitch(CallAPI1812ETMP)
-        mockResponseForGetPenaltyDetailsv3(Status.OK, "123456789", body = Some(getPenaltyDetailsJson.toString()))
+        enableFeatureSwitch(UseAPI1812Model)
+        mockStubResponseForGetPenaltyDetailsv3(Status.OK, "123456789", body = Some(getPenaltyDetailsJson.toString()))
         val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/123456789123456789").get)
         result.status shouldBe NOT_FOUND
       }
@@ -433,16 +433,16 @@ class ETMPControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock wi
 
     s"return ISE (${Status.INTERNAL_SERVER_ERROR})" when {
       "the get penalty details call fails" in {
-        enableFeatureSwitch(CallAPI1812ETMP)
-        mockResponseForGetPenaltyDetailsv3(Status.INTERNAL_SERVER_ERROR, "123456789", body = Some(""))
+        enableFeatureSwitch(UseAPI1812Model)
+        mockStubResponseForGetPenaltyDetailsv3(Status.INTERNAL_SERVER_ERROR, "123456789", body = Some(""))
         val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/123456789").get)
         result.status shouldBe INTERNAL_SERVER_ERROR
       }
     }
 
     "audit the response when the user has > 0 penalties" in {
-      enableFeatureSwitch(CallAPI1812ETMP)
-      mockResponseForGetPenaltyDetailsv3(Status.OK, "123456789")
+      enableFeatureSwitch(UseAPI1812Model)
+      mockStubResponseForGetPenaltyDetailsv3(Status.OK, "123456789")
       val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/123456789").get())
       result.status shouldBe Status.OK
       result.body shouldBe getPenaltyDetailsWithLSPandLPPAsJsonv3.toString()
@@ -450,8 +450,8 @@ class ETMPControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock wi
     }
 
     "NOT audit the response when the user has 0 penalties" in {
-      enableFeatureSwitch(CallAPI1812ETMP)
-      mockResponseForGetPenaltyDetailsv3(Status.OK, "123456789", body = Some(getPenaltyDetailsWithNoPointsAsJsonv3.toString()))
+      enableFeatureSwitch(UseAPI1812Model)
+      mockStubResponseForGetPenaltyDetailsv3(Status.OK, "123456789", body = Some(getPenaltyDetailsWithNoPointsAsJsonv3.toString()))
       val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/123456789").get())
       result.status shouldBe Status.OK
       result.body shouldBe getPenaltyDetailsWithNoPointsAsJsonv3.toString()
