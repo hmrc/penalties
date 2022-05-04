@@ -21,7 +21,7 @@ import connectors.FileNotificationOrchestratorConnector
 import connectors.parsers.ETMPPayloadParser.GetETMPPayloadNoContent
 import connectors.parsers.v3.getPenaltyDetails.GetPenaltyDetailsParser
 import connectors.parsers.v3.getPenaltyDetails.GetPenaltyDetailsParser.GetPenaltyDetailsSuccessResponse
-import featureSwitches.{CallAPI1812ETMP, FeatureSwitching}
+import featureSwitches.{FeatureSwitching, UseAPI1812Model}
 import models.ETMPPayload
 import models.appeals.AppealTypeEnum._
 import models.appeals.reasonableExcuses.ReasonableExcuse
@@ -56,7 +56,7 @@ class AppealsController @Inject()(appConfig: AppConfig,
 
   private def getAppealDataForPenalty(penaltyId: String,
                                       enrolmentKey: String, penaltyType: AppealTypeEnum.Value)(implicit hc: HeaderCarrier): Future[Result] = {
-    if (!isEnabled(CallAPI1812ETMP)) {
+    if (!isEnabled(UseAPI1812Model)) {
       etmpService.getPenaltyDataFromETMPForEnrolment(enrolmentKey).map {
         result => {
           result._1.fold {

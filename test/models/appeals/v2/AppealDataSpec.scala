@@ -21,7 +21,7 @@ import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import play.api.libs.json.{JsResult, JsValue, Json}
 
-import java.time.{LocalDate, LocalDateTime}
+import java.time.LocalDate
 
 class AppealDataSpec extends AnyWordSpec with Matchers {
   val modelAsJson: JsValue = Json.parse(

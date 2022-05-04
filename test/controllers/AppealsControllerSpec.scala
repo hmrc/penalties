@@ -22,7 +22,7 @@ import connectors.FileNotificationOrchestratorConnector
 import connectors.parsers.AppealsParser.UnexpectedFailure
 import connectors.parsers.ETMPPayloadParser.{GetETMPPayloadMalformed, GetETMPPayloadNoContent, GetETMPPayloadSuccessResponse}
 import connectors.parsers.v3.getPenaltyDetails.GetPenaltyDetailsParser.{GetPenaltyDetailsFailureResponse, GetPenaltyDetailsSuccessResponse}
-import featureSwitches.{CallAPI1812ETMP, FeatureSwitching}
+import featureSwitches.{UseAPI1812Model, FeatureSwitching}
 import models.appeals.AppealData
 import models.appeals.AppealTypeEnum.{Additional, Late_Payment, Late_Submission}
 import models.notification._
@@ -57,7 +57,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching {
     reset(mockAppConfig, mockETMPService, mockGetPenaltyDetailsService)
     val controller = new AppealsController(if (withRealAppConfig) appConfig
     else mockAppConfig, mockETMPService, mockGetPenaltyDetailsService, mockUUIDGenerator, connector, stubControllerComponents())
-    if(isFSEnabled) enableFeatureSwitch(CallAPI1812ETMP) else disableFeatureSwitch(CallAPI1812ETMP)
+    if(isFSEnabled) enableFeatureSwitch(UseAPI1812Model) else disableFeatureSwitch(UseAPI1812Model)
   }
 
   "getAppealsDataForLateSubmissionPenalty" should {
