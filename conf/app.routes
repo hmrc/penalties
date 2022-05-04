@@ -1,6 +1,6 @@
 # microservice specific routes
 
-GET        /etmp/penalties/:enrolmentKey                controllers.PenaltiesFrontendController.getPenaltiesData(enrolmentKey: String, arn: Option[String] ?= None)
+GET        /etmp/penalties/:enrolmentKey                controllers.PenaltiesFrontendController.getPenaltiesData(enrolmentKey: String, arn: Option[String] ?= None, newApiModel: Boolean)
 
 # Appeals
 GET        /appeals-data/late-submissions               controllers.AppealsController.getAppealsDataForLateSubmissionPenalty(penaltyId: String, enrolmentKey: String)

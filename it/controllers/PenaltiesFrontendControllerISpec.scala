@@ -17,7 +17,6 @@
 package controllers
 
 import com.github.tomakehurst.wiremock.client.WireMock.{postRequestedFor, urlEqualTo}
-import featureSwitches.{FeatureSwitching, UseAPI1812Model}
 
 import scala.collection.JavaConverters._
 import play.api.http.Status
@@ -25,7 +24,7 @@ import play.api.libs.json.{JsValue, Json}
 import play.api.test.Helpers._
 import utils.{ETMPWiremock, IntegrationSpecCommonBase}
 
-class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock with FeatureSwitching {
+class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock{
   val controller: PenaltiesFrontendController = injector.instanceOf[PenaltiesFrontendController]
 
   val etmpPayloadAsJsonWithNoPoints: JsValue = Json.parse(
@@ -219,73 +218,72 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
       |""".stripMargin)
 
   "getPenaltiesData" should {
-    disableFeatureSwitch(UseAPI1812Model)
     "call stub data when 1812 feature is disabled" must {
       s"call out to ETMP and return OK (${Status.OK}) when successful" in {
         mockResponseForStubETMPPayload(Status.OK, "123456789")
-        val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/123456789").get())
+        val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/123456789?newApiModel=false").get())
         result.status shouldBe Status.OK
         result.body shouldBe etmpPayloadAsJson.toString()
       }
 
       s"call out to ETMP and return OK (${Status.OK}) when successful for LPP" in {
         mockResponseForStubETMPPayload(Status.OK, "123456789", body = Some(Json.toJson(etmpPayloadModelWithLPP).toString))
-        val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/123456789").get())
+        val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/123456789?newApiModel=false").get())
         result.status shouldBe Status.OK
         result.body shouldBe Json.toJson(etmpPayloadModelWithLPP).toString
       }
 
       s"call out to ETMP and return OK (${Status.OK}) when successful for LPP with additional penalties" in {
         mockResponseForStubETMPPayload(Status.OK, "123456789", body = Some(Json.toJson(etmpPayloadModelWithLPPAndAdditionalPenalties).toString))
-        val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/123456789").get())
+        val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/123456789?newApiModel=false").get())
         result.status shouldBe Status.OK
         result.body shouldBe Json.toJson(etmpPayloadModelWithLPPAndAdditionalPenalties).toString
       }
 
       s"call out to ETMP and return OK (${Status.OK}) when successful with VAT overview section present" in {
         mockResponseForStubETMPPayload(Status.OK, "123456789", body = Some(Json.toJson(etmpPayloadModelWithVATOverview).toString))
-        val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/123456789").get())
+        val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/123456789?newApiModel=false").get())
         result.status shouldBe Status.OK
         result.body shouldBe Json.toJson(etmpPayloadModelWithVATOverview).toString
       }
 
       s"call out to ETMP and return OK (${Status.OK}) when there is added points i.e. no period" in {
         mockResponseForStubETMPPayload(Status.OK, "123456789", body = Some(etmpPayloadAsJsonAddedPoint.toString()))
-        val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/123456789").get())
+        val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/123456789?newApiModel=false").get())
         result.status shouldBe Status.OK
         result.body shouldBe etmpPayloadAsJsonAddedPoint.toString()
       }
 
       s"call out to ETMP and return OK (${Status.OK}) when there are multiple LSP periods in same calendar month" in {
         mockResponseForStubETMPPayload(Status.OK, "123456789", body = Some(etmpPayloadWithMultipleLSPInSameCalenderMonth.toString()))
-        val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/123456789").get())
+        val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/123456789?newApiModel=false").get())
         result.status shouldBe Status.OK
         result.body shouldBe etmpPayloadWithMultipleLSPInSameCalenderMonth.toString()
       }
 
       s"call out to ETMP and return OK (${Status.OK}) when there are multiple LSPP periods in same calendar month" in {
         mockResponseForStubETMPPayload(Status.OK, "123456789", body = Some(etmpPayloadWithMultipleLSPPInSameCalenderMonth.toString()))
-        val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/123456789").get())
+        val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/123456789?newApiModel=false").get())
         result.status shouldBe Status.OK
         result.body shouldBe etmpPayloadWithMultipleLSPPInSameCalenderMonth.toString()
       }
 
       s"call out to ETMP and return a Not Found (${Status.NOT_FOUND}) when NoContent is returned from the connector" in {
         mockResponseForStubETMPPayload(Status.NO_CONTENT, "123456789", body = Some(""))
-        val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/123456789").get())
+        val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/123456789?newApiModel=false").get())
         result.status shouldBe Status.NOT_FOUND
       }
 
       s"call out to ETMP and return a ISE (${Status.INTERNAL_SERVER_ERROR}) when an issue has occurred i.e. invalid json response" in {
         mockResponseForStubETMPPayload(Status.OK, "123456789", body = Some("{}"))
-        val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/123456789").get())
+        val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/123456789?newApiModel=false").get())
         result.status shouldBe Status.INTERNAL_SERVER_ERROR
         result.body shouldBe "Something went wrong."
       }
 
       "audit the response when the user has > 0 penalties" in {
         mockResponseForStubETMPPayload(Status.OK, "123456789")
-        val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/123456789").get())
+        val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/123456789?newApiModel=false").get())
         result.status shouldBe Status.OK
         result.body shouldBe etmpPayloadAsJson.toString()
         wireMockServer.findAll(postRequestedFor(urlEqualTo("/write/audit"))).asScala.toList.exists(_.getBodyAsString.contains("UserHasPenalty")) shouldBe true
@@ -293,7 +291,7 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
 
       "NOT audit the response when the user has 0 penalties" in {
         mockResponseForStubETMPPayload(Status.OK, "123456789", body = Some(etmpPayloadAsJsonWithNoPoints.toString()))
-        val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/123456789").get())
+        val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/123456789?newApiModel=false").get())
         result.status shouldBe Status.OK
         result.body shouldBe etmpPayloadAsJsonWithNoPoints.toString()
         wireMockServer.findAll(postRequestedFor(urlEqualTo("/write/audit"))).asScala.toList.exists(_.getBodyAsString.contains("UserHasPenalty")) shouldBe false
@@ -415,44 +413,39 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
 
     s"return OK (${Status.OK})" when {
       "the get penalty details call succeeds" in {
-        enableFeatureSwitch(UseAPI1812Model)
         mockStubResponseForGetPenaltyDetailsv3(Status.OK, "123456789", body = Some(getPenaltyDetailsJson.toString()))
-        val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/123456789").get)
+        val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/123456789?newApiModel=true").get)
         result.status shouldBe OK
       }
     }
 
     s"return BAD_REQUEST (${Status.NOT_FOUND})" when {
       "the user supplies an invalid VRN" in {
-        enableFeatureSwitch(UseAPI1812Model)
         mockStubResponseForGetPenaltyDetailsv3(Status.OK, "123456789", body = Some(getPenaltyDetailsJson.toString()))
-        val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/123456789123456789").get)
+        val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/123456789123456789?newApiModel=true").get)
         result.status shouldBe NOT_FOUND
       }
     }
 
     s"return ISE (${Status.INTERNAL_SERVER_ERROR})" when {
       "the get penalty details call fails" in {
-        enableFeatureSwitch(UseAPI1812Model)
         mockStubResponseForGetPenaltyDetailsv3(Status.INTERNAL_SERVER_ERROR, "123456789", body = Some(""))
-        val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/123456789").get)
+        val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/123456789?newApiModel=true").get)
         result.status shouldBe INTERNAL_SERVER_ERROR
       }
     }
 
     "audit the response when the user has > 0 penalties" in {
-      enableFeatureSwitch(UseAPI1812Model)
       mockStubResponseForGetPenaltyDetailsv3(Status.OK, "123456789")
-      val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/123456789").get())
+      val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/123456789?newApiModel=true").get())
       result.status shouldBe Status.OK
       result.body shouldBe getPenaltyDetailsWithLSPandLPPAsJsonv3.toString()
       wireMockServer.findAll(postRequestedFor(urlEqualTo("/write/audit"))).asScala.toList.exists(_.getBodyAsString.contains("UserHasPenalty")) shouldBe true
     }
 
     "NOT audit the response when the user has 0 penalties" in {
-      enableFeatureSwitch(UseAPI1812Model)
       mockStubResponseForGetPenaltyDetailsv3(Status.OK, "123456789", body = Some(getPenaltyDetailsWithNoPointsAsJsonv3.toString()))
-      val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/123456789").get())
+      val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/123456789?newApiModel=true").get())
       result.status shouldBe Status.OK
       result.body shouldBe getPenaltyDetailsWithNoPointsAsJsonv3.toString()
       wireMockServer.findAll(postRequestedFor(urlEqualTo("/write/audit"))).asScala.toList.exists(_.getBodyAsString.contains("UserHasPenalty")) shouldBe false

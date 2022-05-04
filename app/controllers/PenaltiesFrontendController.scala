@@ -19,31 +19,29 @@ package controllers
 import connectors.parsers.ETMPPayloadParser.GetETMPPayloadNoContent
 import connectors.parsers.v3.getPenaltyDetails.GetPenaltyDetailsParser
 import connectors.parsers.v3.getPenaltyDetails.GetPenaltyDetailsParser.GetPenaltyDetailsSuccessResponse
-import featureSwitches.{FeatureSwitching, UseAPI1812Model}
-
-import javax.inject.Inject
 import models.auditing.UserHasPenaltyAuditModel
 import models.auditing.v2.{UserHasPenaltyAuditModel => AuditModelV2}
 import models.v3.getPenaltyDetails.GetPenaltyDetails
 import play.api.libs.json.Json
-import play.api.mvc.{Action, AnyContent, ControllerComponents, Request, Result}
-import services.{ETMPService, GetPenaltyDetailsService}
+import play.api.mvc._
 import services.auditing.AuditService
+import services.{ETMPService, GetPenaltyDetailsService}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import utils.Logger.logger
 import utils.RegimeHelper
 
+import javax.inject.Inject
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class PenaltiesFrontendController @Inject()(etmpService: ETMPService,
                                auditService: AuditService,
                                getPenaltyDetailsService: GetPenaltyDetailsService,
                                cc: ControllerComponents)
-  extends BackendController(cc) with FeatureSwitching {
+  extends BackendController(cc){
 
-  def getPenaltiesData(enrolmentKey: String, arn: Option[String] = None): Action[AnyContent] = Action.async {
+  def getPenaltiesData(enrolmentKey: String, arn: Option[String] = None, newApiModel: Boolean = false): Action[AnyContent] = Action.async {
     implicit request => {
-      if(!isEnabled(UseAPI1812Model)) {
+      if(!newApiModel) {
         etmpService.getPenaltyDataFromETMPForEnrolment(enrolmentKey).map {
           result => {
             result._1.fold {

@@ -20,7 +20,6 @@ import base.SpecBase
 import config.AppConfig
 import connectors.parsers.ETMPPayloadParser.{GetETMPPayloadMalformed, GetETMPPayloadNoContent, GetETMPPayloadSuccessResponse}
 import connectors.parsers.v3.getPenaltyDetails.GetPenaltyDetailsParser.{GetPenaltyDetailsFailureResponse, GetPenaltyDetailsSuccessResponse}
-import featureSwitches.{FeatureSwitching, UseAPI1812Model}
 import models.ETMPPayload
 import models.v3.getPenaltyDetails.GetPenaltyDetails
 import models.v3.getPenaltyDetails.latePayment.{LPPDetails, LPPPenaltyCategoryEnum, LPPPenaltyStatusEnum, LatePaymentPenalty}
@@ -37,7 +36,7 @@ import services.{ETMPService, GetPenaltyDetailsService}
 import java.time.LocalDate
 import scala.concurrent.Future
 
-class PenaltiesFrontendControllerSpec extends SpecBase with FeatureSwitching {
+class PenaltiesFrontendControllerSpec extends SpecBase{
   val mockAppConfig: AppConfig = mock(classOf[AppConfig])
   val mockETMPService: ETMPService = mock(classOf[ETMPService])
   val mockAuditService: AuditService = mock(classOf[AuditService])
@@ -54,7 +53,6 @@ class PenaltiesFrontendControllerSpec extends SpecBase with FeatureSwitching {
       mockGetPenaltyDetailsService,
       stubControllerComponents()
     )
-    if(isFSEnabled) enableFeatureSwitch(UseAPI1812Model) else disableFeatureSwitch(UseAPI1812Model)
   }
 
   "getPenaltiesData" should {
@@ -238,14 +236,14 @@ class PenaltiesFrontendControllerSpec extends SpecBase with FeatureSwitching {
     s"return ISE (${Status.INTERNAL_SERVER_ERROR}) when the call fails" in new Setup(isFSEnabled = true) {
       when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(Matchers.any())(Matchers.any()))
         .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(Status.INTERNAL_SERVER_ERROR))))
-      val result = controller.getPenaltiesData("123456789")(fakeRequest)
+      val result = controller.getPenaltiesData("123456789", Some(""),true)(fakeRequest)
       status(result) shouldBe Status.INTERNAL_SERVER_ERROR
     }
 
     s"return NOT_FOUND (${Status.NOT_FOUND}) when the call returns no data" in new Setup(isFSEnabled = true) {
       when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(Matchers.any())(Matchers.any()))
         .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(Status.NOT_FOUND))))
-      val result = controller.getPenaltiesData("123456789")(fakeRequest)
+      val result = controller.getPenaltiesData("123456789", Some(""),true)(fakeRequest)
       status(result) shouldBe Status.NOT_FOUND
     }
 
@@ -254,7 +252,7 @@ class PenaltiesFrontendControllerSpec extends SpecBase with FeatureSwitching {
       when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(Matchers.any())(Matchers.any()))
         .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetailsFullAPIResponse))))
 
-      val result = controller.getPenaltiesData("123456789")(fakeRequest)
+      val result = controller.getPenaltiesData("123456789", Some(""),true)(fakeRequest)
       status(result) shouldBe Status.OK
       contentAsJson(result) shouldBe Json.parse(
       """
@@ -338,7 +336,7 @@ class PenaltiesFrontendControllerSpec extends SpecBase with FeatureSwitching {
       when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(Matchers.any())(Matchers.any()))
         .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetailsNoEstimatedLPPs))))
 
-      val result = controller.getPenaltiesData("123456789")(fakeRequest)
+      val result = controller.getPenaltiesData("123456789", Some(""),true)(fakeRequest)
       status(result) shouldBe Status.OK
       contentAsJson(result) shouldBe Json.parse(
         """
