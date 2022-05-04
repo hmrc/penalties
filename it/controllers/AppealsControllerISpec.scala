@@ -16,13 +16,14 @@
 
 package controllers
 
+import featureSwitches.{CallAPI1812ETMP, FeatureSwitching}
 import play.api.http.Status
 import play.api.libs.json.{JsValue, Json}
 import play.api.test.Helpers.await
 import utils.{AppealWiremock, ETMPWiremock, IntegrationSpecCommonBase}
 import play.api.test.Helpers._
 
-class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock with AppealWiremock {
+class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock with AppealWiremock with FeatureSwitching {
   val controller: AppealsController = injector.instanceOf[AppealsController]
 
   val lspAndLppBodyToReturnFromETMP: JsValue = Json.parse(
@@ -171,50 +172,323 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
       |}
       |""".stripMargin)
 
+  val appealV2Json: JsValue = Json.parse(
+    """
+      |{
+      |  "type": "LATE_SUBMISSION",
+      |  "startDate": "2023-01-01",
+      |  "endDate": "2023-12-31",
+      |  "dueDate": "2024-02-07",
+      |  "dateCommunicationSent": "2024-02-08"
+      |}
+      |""".stripMargin)
+
+  val appealV2JsonLPP: JsValue = Json.parse(
+    """
+      |{
+      |  "type": "LATE_PAYMENT",
+      |	 "startDate": "2022-01-01",
+      |	 "endDate" : "2022-12-31",
+      |	 "dueDate" : "2023-02-07",
+      |  "dateCommunicationSent": "2023-02-08"
+      |}
+      |""".stripMargin)
+
+  val appealV2JsonLPPAdditional: JsValue = Json.parse(
+    """
+      |{
+      |  "type": "ADDITIONAL",
+      |	 "startDate": "2024-01-01",
+      |	 "endDate" : "2024-12-31",
+      |	 "dueDate" : "2025-02-07",
+      |  "dateCommunicationSent": "2025-02-08"
+      |}
+      |""".stripMargin)
+
+  val getPenaltyDetailsJson: JsValue = Json.parse(
+    """
+      |{
+      | "totalisations": {
+      |   "LSPTotalValue": 200,
+      |   "penalisedPrincipalTotal": 2000,
+      |   "LPPPostedTotal": 165.25,
+      |   "LPPEstimatedTotal": 15.26,
+      |   "LPIPostedTotal": 1968.2,
+      |   "LPIEstimatedTotal": 7
+      | },
+      | "lateSubmissionPenalty": {
+      |   "summary": {
+      |     "activePenaltyPoints": 2,
+      |     "inactivePenaltyPoints": 0,
+      |     "regimeThreshold": 5,
+      |     "penaltyChargeAmount": 200.00
+      |   },
+      |   "details": [
+      |     {
+      |       "penaltyNumber": "123456789",
+      |       "penaltyOrder": "01",
+      |       "penaltyCategory": "P",
+      |       "penaltyStatus": "ACTIVE",
+      |       "FAPIndicator": "X",
+      |       "penaltyCreationDate": "2022-10-30",
+      |       "penaltyExpiryDate": "2022-10-30",
+      |       "triggeringProcess": "XYZ",
+      |       "expiryReason": "FAP",
+      |       "chargeReference": "CHARGE123",
+      |       "communicationsDate": "2024-02-08",
+      |       "lateSubmissions": [
+      |         {
+      |           "taxPeriodStartDate": "2023-01-01",
+      |           "taxPeriodEndDate": "2023-12-31",
+      |           "taxPeriodDueDate": "2024-02-07",
+      |           "returnReceiptDate": "2024-02-01"
+      |         }
+      |       ],
+      |       "appealInformation": [
+      |         {
+      |         "appealStatus": "99",
+      |         "appealLevel": "01"
+      |         }
+      |       ],
+      |       "chargeDueDate": "2022-10-30",
+      |       "chargeOutstandingAmount": 200,
+      |       "chargeAmount": 200
+      |     },
+      |     {
+      |       "penaltyNumber": "123456788",
+      |       "penaltyOrder": "01",
+      |       "penaltyCategory": "P",
+      |       "penaltyStatus": "ACTIVE",
+      |       "FAPIndicator": "X",
+      |       "penaltyCreationDate": "2022-10-30",
+      |       "penaltyExpiryDate": "2022-10-30",
+      |       "triggeringProcess": "XYZ",
+      |       "expiryReason": "FAP",
+      |       "chargeReference": "CHARGE123",
+      |       "communicationsDate": "2022-10-30",
+      |       "lateSubmissions": [
+      |         {
+      |           "taxPeriodStartDate": "2022-01-01",
+      |           "taxPeriodEndDate": "2022-12-31",
+      |           "taxPeriodDueDate": "2023-02-07",
+      |           "returnReceiptDate": "2023-02-01"
+      |         }
+      |       ],
+      |       "appealInformation": [
+      |         {
+      |         "appealStatus": "99",
+      |         "appealLevel": "01"
+      |         }
+      |       ],
+      |       "chargeDueDate": "2022-10-30",
+      |       "chargeOutstandingAmount": 200,
+      |       "chargeAmount": 200
+      |     }
+      |   ]
+      | },
+      | "latePaymentPenalty": {
+      |     "details": [
+      |       {
+      |          "penaltyCategory": "LPP2",
+      |          "penaltyStatus": "A",
+      |          "penaltyAmountPaid": 44.21,
+      |          "penaltyAmountOutstanding": 100,
+      |          "LPP1LRCalculationAmount": 99.99,
+      |          "LPP1LRDays": "15",
+      |          "LPP1LRPercentage": 2.00,
+      |          "LPP1HRCalculationAmount": 99.99,
+      |          "LPP1HRDays": "31",
+      |          "LPP1HRPercentage": 2.00,
+      |          "LPP2Days": "31",
+      |          "LPP2Percentage": 4.00,
+      |          "penaltyChargeCreationDate": "2022-10-30",
+      |          "communicationsDate": "2026-02-08",
+      |          "penaltyChargeDueDate": "2022-10-30",
+      |          "principalChargeReference": "1234567893",
+      |          "principalChargeBillingFrom": "2025-01-01",
+      |          "principalChargeBillingTo": "2025-12-31",
+      |          "principalChargeDueDate": "2026-02-07"
+      |       },
+      |       {
+      |          "penaltyCategory": "LPP2",
+      |          "penaltyStatus": "A",
+      |          "penaltyAmountPaid": 100.00,
+      |          "penaltyAmountOutstanding": 23.45,
+      |          "LPP1LRCalculationAmount": 99.99,
+      |          "LPP1LRDays": "15",
+      |          "LPP1LRPercentage": 2.00,
+      |          "LPP1HRCalculationAmount": 99.99,
+      |          "LPP1HRDays": "31",
+      |          "LPP1HRPercentage": 2.00,
+      |          "LPP2Days": "31",
+      |          "LPP2Percentage": 4.00,
+      |          "penaltyChargeCreationDate": "2022-10-30",
+      |          "communicationsDate": "2025-02-08",
+      |          "penaltyChargeDueDate": "2022-10-30",
+      |          "principalChargeReference": "1234567892",
+      |          "principalChargeBillingFrom": "2024-01-01",
+      |          "principalChargeBillingTo": "2024-12-31",
+      |          "principalChargeDueDate": "2025-02-07"
+      |       },
+      |       {
+      |          "penaltyCategory": "LPP1",
+      |          "penaltyStatus": "P",
+      |          "penaltyAmountPaid": 0,
+      |          "penaltyAmountOutstanding": 144.00,
+      |          "LPP1LRCalculationAmount": 99.99,
+      |          "LPP1LRDays": "15",
+      |          "LPP1LRPercentage": 2.00,
+      |          "LPP1HRCalculationAmount": 99.99,
+      |          "LPP1HRDays": "31",
+      |          "LPP1HRPercentage": 2.00,
+      |          "LPP2Days": "31",
+      |          "LPP2Percentage": 4.00,
+      |          "penaltyChargeCreationDate": "2022-10-30",
+      |          "communicationsDate": "2022-10-30",
+      |          "penaltyChargeDueDate": "2022-10-30",
+      |          "principalChargeReference": "1234567891",
+      |          "principalChargeBillingFrom": "2023-01-01",
+      |          "principalChargeBillingTo": "2023-12-31",
+      |          "principalChargeDueDate": "2024-02-07"
+      |       },
+      |       {
+      |          "penaltyCategory": "LPP1",
+      |          "penaltyStatus": "P",
+      |          "penaltyAmountPaid": 0,
+      |          "penaltyAmountOutstanding": 144.00,
+      |          "LPP1LRCalculationAmount": 99.99,
+      |          "LPP1LRDays": "15",
+      |          "LPP1LRPercentage": 2.00,
+      |          "LPP1HRCalculationAmount": 99.99,
+      |          "LPP1HRDays": "31",
+      |          "LPP1HRPercentage": 2.00,
+      |          "LPP2Days": "31",
+      |          "LPP2Percentage": 4.00,
+      |          "penaltyChargeCreationDate": "2022-10-30",
+      |          "communicationsDate": "2023-02-08",
+      |          "penaltyChargeDueDate": "2022-10-30",
+      |          "principalChargeReference": "1234567890",
+      |          "principalChargeBillingFrom": "2022-01-01",
+      |          "principalChargeBillingTo": "2022-12-31",
+      |          "principalChargeDueDate": "2023-02-07"
+      |       }
+      |   ]
+      | }
+      |}
+      |""".stripMargin)
+
   "getAppealsDataForLateSubmissionPenalty" should {
-    "call ETMP and compare the penalty ID provided and the penalty ID in the payload - return OK if there is a match" in {
-      mockResponseForStubETMPPayload(Status.OK, "123456789")
-      val result = await(buildClientForRequestToApp(uri = "/appeals-data/late-submissions?penaltyId=1234&enrolmentKey=123456789").get())
-      result.status shouldBe Status.OK
-      result.body shouldBe appealJson.toString()
+
+    "when the 1812 feature switch is disabled" must {
+      "call ETMP and compare the penalty ID provided and the penalty ID in the payload - return OK if there is a match" in {
+        disableFeatureSwitch(CallAPI1812ETMP)
+        mockResponseForStubETMPPayload(Status.OK, "123456789")
+        val result = await(buildClientForRequestToApp(uri = "/appeals-data/late-submissions?penaltyId=1234&enrolmentKey=123456789").get())
+        result.status shouldBe Status.OK
+        result.body shouldBe appealJson.toString()
+      }
+
+      "return NOT_FOUND when the penalty ID given does not match the penalty ID in the payload" in {
+        disableFeatureSwitch(CallAPI1812ETMP)
+        mockResponseForStubETMPPayload(Status.OK, "123456789")
+        val result = await(buildClientForRequestToApp(uri = "/appeals-data/late-submissions?penaltyId=0001&enrolmentKey=123456789").get())
+        result.status shouldBe Status.NOT_FOUND
+      }
+
+      "return an ISE when the call to ETMP fails" in {
+        disableFeatureSwitch(CallAPI1812ETMP)
+        val result = await(buildClientForRequestToApp(uri = "/appeals-data/late-submissions?penaltyId=0001&enrolmentKey=123456789").get())
+        result.status shouldBe Status.INTERNAL_SERVER_ERROR
+      }
     }
 
-    "return NOT_FOUND when the penalty ID given does not match the penalty ID in the payload" in {
-      mockResponseForStubETMPPayload(Status.OK, "123456789")
-      val result = await(buildClientForRequestToApp(uri = "/appeals-data/late-submissions?penaltyId=0001&enrolmentKey=123456789").get())
-      result.status shouldBe Status.NOT_FOUND
-    }
+    "when the 1812 feature switch is enabled" must {
+      "call ETMP and compare the penalty ID provided and the penalty ID in the payload - return OK if there is a match" in {
+        enableFeatureSwitch(CallAPI1812ETMP)
+        mockResponseForGetPenaltyDetailsv3(Status.OK, "123456789", Some(getPenaltyDetailsJson.toString()))
+        val result = await(buildClientForRequestToApp(uri = "/appeals-data/late-submissions?penaltyId=123456789&enrolmentKey=HMRC-MTD-VAT~VRN~123456789").get())
+        result.status shouldBe Status.OK
+        result.body shouldBe appealV2Json.toString()
+      }
 
-    "return an ISE when the call to ETMP fails" in {
-      val result = await(buildClientForRequestToApp(uri = "/appeals-data/late-submissions?penaltyId=0001&enrolmentKey=123456789").get())
-      result.status shouldBe Status.INTERNAL_SERVER_ERROR
+      "return NOT_FOUND when the penalty ID given does not match the penalty ID in the payload" in {
+        enableFeatureSwitch(CallAPI1812ETMP)
+        mockResponseForGetPenaltyDetailsv3(Status.OK, "123456789", Some(getPenaltyDetailsJson.toString()))
+        val result = await(buildClientForRequestToApp(uri = "/appeals-data/late-submissions?penaltyId=0001&enrolmentKey=HMRC-MTD-VAT~VRN~123456789").get())
+        result.status shouldBe Status.NOT_FOUND
+      }
+
+      "return an ISE when the call to ETMP fails" in {
+        enableFeatureSwitch(CallAPI1812ETMP)
+        mockResponseForGetPenaltyDetailsv3(Status.INTERNAL_SERVER_ERROR, "123456789", Some(""))
+        val result = await(buildClientForRequestToApp(uri = "/appeals-data/late-submissions?penaltyId=0001&enrolmentKey=HMRC-MTD-VAT~VRN~123456789").get())
+        result.status shouldBe Status.INTERNAL_SERVER_ERROR
+      }
     }
   }
 
   "getAppealsDataForLatePaymentPenalty" should {
-    "call ETMP and compare the penalty ID provided and the penalty ID in the payload - return OK if there is a match" in {
-      mockResponseForStubETMPPayload(Status.OK, "123456789", Some(lspAndLppBodyToReturnFromETMP.toString()))
-      val result = await(buildClientForRequestToApp(uri = "/appeals-data/late-payments?penaltyId=1234&enrolmentKey=123456789&isAdditional=false").get())
-      result.status shouldBe Status.OK
-      result.body shouldBe appealJsonLPP.toString()
+    "when the 1812 feature switch is disabled" must {
+      "call ETMP and compare the penalty ID provided and the penalty ID in the payload - return OK if there is a match" in {
+        disableFeatureSwitch(CallAPI1812ETMP)
+        mockResponseForStubETMPPayload(Status.OK, "123456789", Some(lspAndLppBodyToReturnFromETMP.toString()))
+        val result = await(buildClientForRequestToApp(uri = "/appeals-data/late-payments?penaltyId=1234&enrolmentKey=123456789&isAdditional=false").get())
+        result.status shouldBe Status.OK
+        result.body shouldBe appealJsonLPP.toString()
+      }
+
+      "call ETMP and compare the penalty ID provided and the penalty ID in the payload for Additional- return OK if there is a match" in {
+        disableFeatureSwitch(CallAPI1812ETMP)
+        mockResponseForStubETMPPayload(Status.OK, "123456789", Some(lspAndLppBodyToReturnFromETMP.toString()))
+        val result = await(buildClientForRequestToApp(uri = "/appeals-data/late-payments?penaltyId=1234&enrolmentKey=123456789&isAdditional=true").get())
+        result.status shouldBe Status.OK
+        result.body shouldBe appealJsonLPPAdditional.toString()
+      }
+
+      "return NOT_FOUND when the penalty ID given does not match the penalty ID in the payload" in {
+        disableFeatureSwitch(CallAPI1812ETMP)
+        mockResponseForStubETMPPayload(Status.OK, "123456789", Some(lspAndLppBodyToReturnFromETMP.toString()))
+        val result = await(buildClientForRequestToApp(uri = "/appeals-data/late-payments?penaltyId=0001&enrolmentKey=123456789&isAdditional=false").get())
+        result.status shouldBe Status.NOT_FOUND
+      }
+
+      "return an ISE when the call to ETMP fails" in {
+        disableFeatureSwitch(CallAPI1812ETMP)
+        val result = await(buildClientForRequestToApp(uri = "/appeals-data/late-payments?penaltyId=0001&enrolmentKey=123456789&isAdditional=false").get())
+        result.status shouldBe Status.INTERNAL_SERVER_ERROR
+      }
     }
 
-    "call ETMP and compare the penalty ID provided and the penalty ID in the payload for Additional- return OK if there is a match" in {
-      mockResponseForStubETMPPayload(Status.OK, "123456789", Some(lspAndLppBodyToReturnFromETMP.toString()))
-      val result = await(buildClientForRequestToApp(uri = "/appeals-data/late-payments?penaltyId=1234&enrolmentKey=123456789&isAdditional=true").get())
-      result.status shouldBe Status.OK
-      result.body shouldBe appealJsonLPPAdditional.toString()
-    }
+    "when the 1812 feature switch is enabled" must {
+      "call ETMP and compare the penalty ID provided and the penalty ID in the payload - return OK if there is a match" in {
+        enableFeatureSwitch(CallAPI1812ETMP)
+        mockResponseForGetPenaltyDetailsv3(Status.OK, "123456789", Some(getPenaltyDetailsJson.toString()))
+        val result = await(buildClientForRequestToApp(uri = "/appeals-data/late-payments?penaltyId=1234567890&enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isAdditional=false").get())
+        result.status shouldBe Status.OK
+        result.body shouldBe appealV2JsonLPP.toString()
+      }
 
-    "return NOT_FOUND when the penalty ID given does not match the penalty ID in the payload" in {
-      mockResponseForStubETMPPayload(Status.OK, "123456789", Some(lspAndLppBodyToReturnFromETMP.toString()))
-      val result = await(buildClientForRequestToApp(uri = "/appeals-data/late-payments?penaltyId=0001&enrolmentKey=123456789&isAdditional=false").get())
-      result.status shouldBe Status.NOT_FOUND
-    }
+      "call ETMP and compare the penalty ID provided and the penalty ID in the payload for Additional - return OK if there is a match" in {
+        enableFeatureSwitch(CallAPI1812ETMP)
+        mockResponseForGetPenaltyDetailsv3(Status.OK, "123456789", Some(getPenaltyDetailsJson.toString()))
+        val result = await(buildClientForRequestToApp(uri = "/appeals-data/late-payments?penaltyId=1234567892&enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isAdditional=true").get())
+        result.status shouldBe Status.OK
+        result.body shouldBe appealV2JsonLPPAdditional.toString()
+      }
 
-    "return an ISE when the call to ETMP fails" in {
-      val result = await(buildClientForRequestToApp(uri = "/appeals-data/late-payments?penaltyId=0001&enrolmentKey=123456789&isAdditional=false").get())
-      result.status shouldBe Status.INTERNAL_SERVER_ERROR
+      "return NOT_FOUND when the penalty ID given does not match the penalty ID in the payload" in {
+        enableFeatureSwitch(CallAPI1812ETMP)
+        mockResponseForGetPenaltyDetailsv3(Status.OK, "123456789", Some(getPenaltyDetailsJson.toString()))
+        val result = await(buildClientForRequestToApp(uri = "/appeals-data/late-payments?penaltyId=0001&enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isAdditional=false").get())
+        result.status shouldBe Status.NOT_FOUND
+      }
+
+      "return an ISE when the call to ETMP fails" in {
+        enableFeatureSwitch(CallAPI1812ETMP)
+        mockResponseForGetPenaltyDetailsv3(Status.INTERNAL_SERVER_ERROR, "123456789", Some(""))
+        val result = await(buildClientForRequestToApp(uri = "/appeals-data/late-payments?penaltyId=0001&enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isAdditional=false").get())
+        result.status shouldBe Status.INTERNAL_SERVER_ERROR
+      }
     }
   }
 
