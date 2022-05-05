@@ -21,11 +21,12 @@ import connectors.FileNotificationOrchestratorConnector
 import connectors.parsers.ETMPPayloadParser.GetETMPPayloadNoContent
 import connectors.parsers.v3.getPenaltyDetails.GetPenaltyDetailsParser
 import connectors.parsers.v3.getPenaltyDetails.GetPenaltyDetailsParser.GetPenaltyDetailsSuccessResponse
-import featureSwitches.{CallAPI1812ETMP, FeatureSwitching}
+import featureSwitches.FeatureSwitching
 import models.ETMPPayload
 import models.appeals.AppealTypeEnum._
-import models.appeals.reasonableExcuses.ReasonableExcuse
 import models.appeals._
+import models.appeals.reasonableExcuses.ReasonableExcuse
+import models.appeals.v2.{AppealData => V2AppealData}
 import models.notification._
 import models.payment.LatePaymentPenalty
 import models.point.PenaltyPoint
@@ -33,7 +34,6 @@ import models.upload.UploadJourney
 import models.v3.getPenaltyDetails.GetPenaltyDetails
 import models.v3.getPenaltyDetails.latePayment.LPPDetails
 import models.v3.getPenaltyDetails.lateSubmission.LSPDetails
-import models.appeals.v2.{AppealData => V2AppealData}
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, ControllerComponents, Result}
 import services.{ETMPService, GetPenaltyDetailsService}
@@ -54,9 +54,9 @@ class AppealsController @Inject()(appConfig: AppConfig,
                                   cc: ControllerComponents)(implicit ec: ExecutionContext)
   extends BackendController(cc) with FeatureSwitching {
 
-  private def getAppealDataForPenalty(penaltyId: String,
-                                      enrolmentKey: String, penaltyType: AppealTypeEnum.Value)(implicit hc: HeaderCarrier): Future[Result] = {
-    if (!isEnabled(CallAPI1812ETMP)) {
+  private def getAppealDataForPenalty(penaltyId: String, enrolmentKey: String,
+                                      penaltyType: AppealTypeEnum.Value, useNewApiModel: Boolean)(implicit hc: HeaderCarrier): Future[Result] = {
+    if (!useNewApiModel) {
       etmpService.getPenaltyDataFromETMPForEnrolment(enrolmentKey).map {
         result => {
           result._1.fold {
@@ -96,15 +96,16 @@ class AppealsController @Inject()(appConfig: AppConfig,
     }
   }
 
-  def getAppealsDataForLateSubmissionPenalty(penaltyId: String, enrolmentKey: String): Action[AnyContent] = Action.async {
+  def getAppealsDataForLateSubmissionPenalty(penaltyId: String, enrolmentKey: String, useNewApiModel: Boolean): Action[AnyContent] = Action.async {
     implicit request => {
-      getAppealDataForPenalty(penaltyId, enrolmentKey, Late_Submission)
+      getAppealDataForPenalty(penaltyId, enrolmentKey, Late_Submission, useNewApiModel)
     }
   }
 
-  def getAppealsDataForLatePaymentPenalty(penaltyId: String, enrolmentKey: String, isAdditional: Boolean): Action[AnyContent] = Action.async {
+  def getAppealsDataForLatePaymentPenalty(penaltyId: String, enrolmentKey: String, isAdditional: Boolean,
+                                          useNewApiModel: Boolean): Action[AnyContent] = Action.async {
     implicit request => {
-      getAppealDataForPenalty(penaltyId, enrolmentKey, if (isAdditional) Additional else Late_Payment)
+      getAppealDataForPenalty(penaltyId, enrolmentKey, if (isAdditional) Additional else Late_Payment, useNewApiModel)
     }
   }
 
