@@ -3,8 +3,8 @@
 GET        /etmp/penalties/:enrolmentKey                controllers.ETMPController.getPenaltiesData(enrolmentKey: String, arn: Option[String] ?= None)
 
 # Appeals
-GET        /appeals-data/late-submissions               controllers.AppealsController.getAppealsDataForLateSubmissionPenalty(penaltyId: String, enrolmentKey: String)
-GET        /appeals-data/late-payments                  controllers.AppealsController.getAppealsDataForLatePaymentPenalty(penaltyId: String, enrolmentKey: String, isAdditional: Boolean)
+GET        /appeals-data/late-submissions               controllers.AppealsController.getAppealsDataForLateSubmissionPenalty(penaltyId: String, enrolmentKey: String, useNewApiModel: Boolean)
+GET        /appeals-data/late-payments                  controllers.AppealsController.getAppealsDataForLatePaymentPenalty(penaltyId: String, enrolmentKey: String, isAdditional: Boolean, useNewApiModel: Boolean)
 GET        /appeals-data/reasonable-excuses             controllers.AppealsController.getReasonableExcuses
 POST       /appeals/submit-appeal                       controllers.AppealsController.submitAppeal(enrolmentKey: String, isLPP: Boolean, penaltyNumber: String, correlationId: String)
 
