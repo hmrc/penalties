@@ -169,11 +169,10 @@ trait ETMPWiremock {
       |       "penaltyOrder": "01",
       |       "penaltyCategory": "P",
       |       "penaltyStatus": "ACTIVE",
-      |       "FAPIndicator": "X",
       |       "penaltyCreationDate": "2022-10-30",
       |       "penaltyExpiryDate": "2022-10-30",
-      |       "expiryReason": "FAP",
       |       "communicationsDate": "2022-10-30",
+      |       "FAPIndicator": "X",
       |       "lateSubmissions": [
       |         {
       |           "taxPeriodStartDate": "2022-01-01",
@@ -182,6 +181,7 @@ trait ETMPWiremock {
       |           "returnReceiptDate": "2023-02-01"
       |         }
       |       ],
+      |       "expiryReason": "FAP",
       |       "appealInformation": [
       |         {
       |           "appealStatus": "99",
@@ -196,21 +196,9 @@ trait ETMPWiremock {
       | "latePaymentPenalty": {
       |     "details": [{
       |       "penaltyCategory": "LPP1",
+      |       "principalChargeReference":"1234567890",
+      |       "penaltyChargeCreationDate":"2022-10-30",
       |       "penaltyStatus": "A",
-      |       "penaltyAmountPaid": 1001.45,
-      |       "penaltyAmountOutstanding": 99.99,
-      |       "LPP1LRCalculationAmount": 99.99,
-      |       "LPP1LRDays": "15",
-      |       "LPP1LRPercentage": 2.00,
-      |       "LPP1HRCalculationAmount": 99.99,
-      |       "LPP1HRDays": "31",
-      |       "LPP1HRPercentage": 2.00,
-      |       "LPP2Days": "31",
-      |       "LPP2Percentage": 4.00,
-      |       "penaltyChargeCreationDate": "2022-10-30",
-      |       "communicationsDate": "2022-10-30",
-      |       "penaltyChargeDueDate": "2022-10-30",
-      |       "principalChargeReference": "1234567890",
       |       "appealInformation":
       |       [{
       |         "appealStatus": "99",
@@ -218,11 +206,47 @@ trait ETMPWiremock {
       |       }],
       |       "principalChargeBillingFrom": "2022-10-30",
       |       "principalChargeBillingTo": "2022-10-30",
-      |       "principalChargeDueDate": "2022-10-30"
+      |       "principalChargeDueDate": "2022-10-30",
+      |       "communicationsDate": "2022-10-30",
+      |       "penaltyAmountOutstanding": 99.99,
+      |       "penaltyAmountPaid": 1001.45,
+      |       "LPP1LRDays": "15",
+      |       "LPP1HRDays": "31",
+      |       "LPP2Days": "31",
+      |       "LPP1HRCalculationAmount": 99.99,
+      |       "LPP1LRCalculationAmount": 99.99,
+      |       "LPP2Percentage": 4.00,
+      |       "LPP1LRPercentage": 2.00,
+      |       "LPP1HRPercentage": 2.00,
+      |       "penaltyChargeDueDate": "2022-10-30"
       |   }]
       | }
       |}
       |""".stripMargin)
+
+    val getPenaltyDetailsWithNoPointsAsJsonv3: JsValue = Json.parse(
+      """
+        |{
+        | "totalisations": {
+        |   "LSPTotalValue": 0,
+        |   "penalisedPrincipalTotal": 0,
+        |   "LPPPostedTotal": 0.00,
+        |   "LPIPostedTotal": 0.00
+        | },
+        | "lateSubmissionPenalty": {
+        |   "summary": {
+        |     "activePenaltyPoints": 0,
+        |     "inactivePenaltyPoints": 0,
+        |     "regimeThreshold": 0,
+        |     "penaltyChargeAmount": 0.00
+        |   },
+        |   "details": []
+        |   },
+        |   "latePaymentPenalty":{
+        |      "details":[]
+        | }
+        |}
+        |""".stripMargin)
 
   val getFinancialDetailsAsJson: JsValue = Json.parse(
     """
