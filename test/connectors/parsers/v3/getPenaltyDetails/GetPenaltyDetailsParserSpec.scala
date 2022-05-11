@@ -17,14 +17,17 @@
 package connectors.parsers.v3.getPenaltyDetails
 
 import GetPenaltyDetailsParser.{GetPenaltyDetailsFailureResponse, GetPenaltyDetailsMalformed, GetPenaltyDetailsSuccessResponse}
+import base.LogCapturing
+import models.PagerDutyHelper.PagerDutyKeys
 import models.v3.getPenaltyDetails.GetPenaltyDetails
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import play.api.http.Status
 import play.api.libs.json.Json
 import uk.gov.hmrc.http.HttpResponse
+import utils.Logger.logger
 
-class GetPenaltyDetailsParserSpec extends AnyWordSpec with Matchers {
+class GetPenaltyDetailsParserSpec extends AnyWordSpec with Matchers with LogCapturing {
 
   val mockGetPenaltyDetailsModelv3: GetPenaltyDetails = GetPenaltyDetails(
     totalisations = None,
@@ -88,10 +91,16 @@ class GetPenaltyDetailsParserSpec extends AnyWordSpec with Matchers {
       result.left.get.asInstanceOf[GetPenaltyDetailsFailureResponse].status shouldBe Status.CONFLICT
     }
 
-    s"parse an UNPROCESSABLE ENTITY (${Status.UNPROCESSABLE_ENTITY}) response" in {
-      val result = GetPenaltyDetailsParser.GetPenaltyDetailsReads.read("GET", "/", mockUnprocessableEnityHttpResponse)
-      result.isLeft shouldBe true
-      result.left.get.asInstanceOf[GetPenaltyDetailsFailureResponse].status shouldBe Status.UNPROCESSABLE_ENTITY
+    s"parse an UNPROCESSABLE ENTITY (${Status.UNPROCESSABLE_ENTITY}) response - and log a PagerDuty" in {
+      withCaptureOfLoggingFrom(logger) {
+        logs => {
+          val result = GetPenaltyDetailsParser.GetPenaltyDetailsReads.read("GET", "/", mockUnprocessableEnityHttpResponse)
+          logs.exists(_.getMessage.contains(PagerDutyKeys.RECEIVED_422_FROM_ETMP.toString)) shouldBe true
+          result.isLeft shouldBe true
+          result.left.get.asInstanceOf[GetPenaltyDetailsFailureResponse].status shouldBe Status.UNPROCESSABLE_ENTITY
+        }
+      }
+
     }
 
     s"parse an INTERNAL SERVER ERROR (${Status.INTERNAL_SERVER_ERROR}) response" in {

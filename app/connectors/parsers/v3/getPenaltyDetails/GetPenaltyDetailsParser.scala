@@ -16,6 +16,7 @@
 
 package connectors.parsers.v3.getPenaltyDetails
 
+import models.PagerDutyHelper
 import models.v3.getPenaltyDetails.GetPenaltyDetails
 import play.api.http.Status.{BAD_REQUEST, CONFLICT, INTERNAL_SERVER_ERROR, NOT_FOUND, OK, SERVICE_UNAVAILABLE, UNPROCESSABLE_ENTITY}
 import play.api.libs.json.{JsError, JsSuccess}
@@ -44,8 +45,13 @@ object GetPenaltyDetailsParser {
               logger.debug(s"[GetPenaltyDetailsReads][read] Json validation errors: $errors")
               Left(GetPenaltyDetailsMalformed)
           }
-        case status@(NOT_FOUND | BAD_REQUEST | CONFLICT | UNPROCESSABLE_ENTITY | INTERNAL_SERVER_ERROR | SERVICE_UNAVAILABLE) => {
+        case status@(NOT_FOUND | BAD_REQUEST | CONFLICT | INTERNAL_SERVER_ERROR | SERVICE_UNAVAILABLE) => {
           logger.error(s"[GetPenaltyDetailsReads][read] Received $status when trying to call GetPenaltyDetails - with body: ${response.body}")
+          Left(GetPenaltyDetailsFailureResponse(status))
+        }
+        case status@UNPROCESSABLE_ENTITY => {
+          logger.error(s"[GetPenaltyDetailsReads][read] Received 422 when trying to call GetPenaltyDetails - with body: ${response.body}")
+          PagerDutyHelper.log("Received 422 from ETMP - see parser logs", PagerDutyHelper.PagerDutyKeys.RECEIVED_422_FROM_ETMP)
           Left(GetPenaltyDetailsFailureResponse(status))
         }
         case _@status =>
