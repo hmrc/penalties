@@ -55,7 +55,10 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       |    "dateOfAppeal": "2020-01-01T00:00:00",
       |    "isLPP": true,
       |    "appealSubmittedBy": "agent",
-      |    "agentReferenceNo": "AGENT1",
+      |    "agentDetails": {
+      |       "agentReferenceNo": "AGENT1",
+      |       "isExcuseRelatedToAgent": true
+      |    },
       |    "appealInformation": {
       |						 "reasonableExcuse": "crime",
       |            "honestyDeclaration": true,
@@ -78,7 +81,10 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       |    "dateOfAppeal": "2020-01-01T00:00:00",
       |    "isLPP": true,
       |    "appealSubmittedBy": "agent",
-      |    "agentReferenceNo": "AGENT1",
+      |    "agentDetails": {
+      |       "agentReferenceNo": "AGENT1",
+      |       "isExcuseRelatedToAgent": true
+      |    },
       |    "appealInformation": {
       |						 "reasonableExcuse": "lossOfStaff",
       |            "honestyDeclaration": true,
@@ -100,7 +106,10 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       |    "dateOfAppeal": "2020-01-01T00:00:00",
       |    "isLPP": true,
       |    "appealSubmittedBy": "agent",
-      |    "agentReferenceNo": "AGENT1",
+      |    "agentDetails": {
+      |       "agentReferenceNo": "AGENT1",
+      |       "isExcuseRelatedToAgent": true
+      |    },
       |    "appealInformation": {
       |						 "reasonableExcuse": "technicalIssues",
       |            "honestyDeclaration": true,
@@ -150,7 +159,10 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       |    "dateOfAppeal": "2020-01-01T00:00:00",
       |    "isLPP": true,
       |    "appealSubmittedBy": "agent",
-      |    "agentReferenceNo": "AGENT1",
+      |    "agentDetails": {
+      |       "agentReferenceNo": "AGENT1",
+      |       "isExcuseRelatedToAgent": true
+      |    },
       |    "appealInformation": {
       |						"reasonableExcuse": "fireOrFlood",
       |           "honestyDeclaration": true,
@@ -172,7 +184,10 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       |    "dateOfAppeal": "2020-01-01T00:00:00",
       |    "isLPP": true,
       |    "appealSubmittedBy": "agent",
-      |    "agentReferenceNo": "AGENT1",
+      |    "agentDetails": {
+      |       "agentReferenceNo": "AGENT1",
+      |       "isExcuseRelatedToAgent": true
+      |    },
       |    "appealInformation": {
       |           "reasonableExcuse": "health",
       |           "honestyDeclaration": true,
@@ -195,7 +210,10 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       |    "dateOfAppeal": "2020-01-01T00:00:00",
       |    "isLPP": true,
       |    "appealSubmittedBy": "agent",
-      |    "agentReferenceNo": "AGENT1",
+      |    "agentDetails": {
+      |       "agentReferenceNo": "AGENT1",
+      |       "isExcuseRelatedToAgent": true
+      |    },
       |    "appealInformation": {
       |           "reasonableExcuse": "health",
       |           "honestyDeclaration": true,
@@ -218,7 +236,10 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       |    "dateOfAppeal": "2020-01-01T00:00:00",
       |    "isLPP": true,
       |    "appealSubmittedBy": "agent",
-      |    "agentReferenceNo": "AGENT1",
+      |    "agentDetails": {
+      |       "agentReferenceNo": "AGENT1",
+      |       "isExcuseRelatedToAgent": true
+      |    },
       |    "appealInformation": {
       |           "reasonableExcuse": "health",
       |           "honestyDeclaration": true,
@@ -280,7 +301,10 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       |    "dateOfAppeal": "2020-01-01T00:00:00",
       |    "isLPP": true,
       |    "appealSubmittedBy": "agent",
-      |    "agentReferenceNo": "AGENT1",
+      |    "agentDetails": {
+      |       "agentReferenceNo": "AGENT1",
+      |       "isExcuseRelatedToAgent": true
+      |    },
       |    "appealInformation": {
       |						 "reasonableExcuse": "other",
       |            "honestyDeclaration": true,
@@ -307,7 +331,10 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       |    "dateOfAppeal": "2020-01-01T00:00:00",
       |    "isLPP": true,
       |    "appealSubmittedBy": "agent",
-      |    "agentReferenceNo": "AGENT1",
+      |    "agentDetails": {
+      |       "agentReferenceNo": "AGENT1",
+      |       "isExcuseRelatedToAgent": true
+      |    },
       |    "appealInformation": {
       |						 "reasonableExcuse": "other",
       |            "honestyDeclaration": true,
@@ -1092,7 +1119,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
           isLPP = true,
           appealSubmittedBy = "client",
-          agentReferenceNo = None,
+          agentDetails = None,
           appealInformation = BereavementAppealInformation(
             startDateOfEvent = "2021-04-23T18:25:43.511Z",
             statement = None,
@@ -1123,7 +1150,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
           isLPP = true,
           appealSubmittedBy = "agent",
-          agentReferenceNo = Some("AGENT1"),
+          agentDetails = Some(AgentDetails(agentReferenceNo = "AGENT1", isExcuseRelatedToAgent = true)),
           appealInformation = CrimeAppealInformation(
             startDateOfEvent = "2021-04-23T18:25:43.511Z",
             reportedIssueToPolice = true,
@@ -1156,7 +1183,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
           isLPP = true,
           appealSubmittedBy = "agent",
-          agentReferenceNo = Some("AGENT1"),
+          agentDetails = Some(AgentDetails(agentReferenceNo = "AGENT1", isExcuseRelatedToAgent = true)),
           appealInformation = FireOrFloodAppealInformation(
             startDateOfEvent = "2021-04-23T18:25:43.511Z",
             statement = None,
@@ -1188,7 +1215,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
           isLPP = true,
           appealSubmittedBy = "agent",
-          agentReferenceNo = Some("AGENT1"),
+          agentDetails = Some(AgentDetails(agentReferenceNo = "AGENT1", isExcuseRelatedToAgent = true)),
           appealInformation = LossOfStaffAppealInformation(
             startDateOfEvent = "2021-04-23T18:25:43.511Z",
             statement = None,
@@ -1220,7 +1247,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
           isLPP = true,
           appealSubmittedBy = "agent",
-          agentReferenceNo = Some("AGENT1"),
+          agentDetails = Some(AgentDetails(agentReferenceNo = "AGENT1", isExcuseRelatedToAgent = true)),
           appealInformation = TechnicalIssuesAppealInformation(
             startDateOfEvent = "2021-04-23T18:25:43.511Z",
             endDateOfEvent = "2021-04-24T18:25:43.511Z",
@@ -1253,7 +1280,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
           isLPP = true,
           appealSubmittedBy = "agent",
-          agentReferenceNo = Some("AGENT1"),
+          agentDetails = Some(AgentDetails(agentReferenceNo = "AGENT1", isExcuseRelatedToAgent = true)),
           appealInformation = HealthAppealInformation(
             endDateOfEvent = None,
             startDateOfEvent = Some("2021-04-23T18:25:43.511Z"),
@@ -1280,7 +1307,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
           isLPP = true,
           appealSubmittedBy = "agent",
-          agentReferenceNo = Some("AGENT1"),
+          agentDetails = Some(AgentDetails(agentReferenceNo = "AGENT1", isExcuseRelatedToAgent = true)),
           appealInformation = HealthAppealInformation(
             startDateOfEvent = Some("2021-04-23T18:25:43.511Z"),
             endDateOfEvent = None,
@@ -1307,7 +1334,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
           isLPP = true,
           appealSubmittedBy = "agent",
-          agentReferenceNo = Some("AGENT1"),
+          agentDetails = Some(AgentDetails(agentReferenceNo = "AGENT1", isExcuseRelatedToAgent = true)),
           appealInformation = HealthAppealInformation(
             startDateOfEvent = Some("2021-04-23T18:25:43.511Z"),
             endDateOfEvent = Some("2021-04-24T18:25:43.511Z"),
@@ -1336,7 +1363,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
           isLPP = true,
           appealSubmittedBy = "agent",
-          agentReferenceNo = Some("AGENT1"),
+          agentDetails = Some(AgentDetails(agentReferenceNo = "AGENT1", isExcuseRelatedToAgent = true)),
           appealInformation = OtherAppealInformation(
             startDateOfEvent = "2021-04-23T18:25:43.511Z",
             statement = Some("This is a reason."),
@@ -1365,7 +1392,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
           isLPP = true,
           appealSubmittedBy = "agent",
-          agentReferenceNo = Some("AGENT1"),
+          agentDetails = Some(AgentDetails(agentReferenceNo = "AGENT1", isExcuseRelatedToAgent = true)),
           appealInformation = OtherAppealInformation(
             startDateOfEvent = "2021-04-23T18:25:43.511Z",
             statement = Some("This is a reason."),
@@ -1399,7 +1426,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
           isLPP = true,
           appealSubmittedBy = "client",
-          agentReferenceNo = None,
+          agentDetails = None,
           appealInformation = ObligationAppealInformation(
             statement = Some("A valid statement"),
             supportingEvidence = Some(Evidence(
@@ -1426,7 +1453,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
           isLPP = false,
           appealSubmittedBy = "client",
-          agentReferenceNo = None,
+          agentDetails = None,
           appealInformation = ObligationAppealInformation(
             statement = Some("A valid statement"),
             supportingEvidence = None,
@@ -1457,7 +1484,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
           isLPP = false,
           appealSubmittedBy = "agent",
-          agentReferenceNo = Some("AGENT1"),
+          agentDetails = Some(AgentDetails(agentReferenceNo = "AGENT1", isExcuseRelatedToAgent = true)),
           appealInformation = BereavementAppealInformation(
             startDateOfEvent = "2021-04-23T18:25:43.511Z",
             statement = None,
@@ -1476,7 +1503,10 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           "customerReferenceNo" -> "123456789",
           "dateOfAppeal" -> "2020-01-01T00:00:00",
           "isLPP" -> false,
-          "agentReferenceNo" -> "AGENT1",
+          "agentDetails" -> Json.obj(
+            "agentReferenceNo" -> "AGENT1",
+            "isExcuseRelatedToAgent" -> true
+          ),
           "appealInformation" -> Json.obj(
             "reasonableExcuse" -> "bereavement",
             "honestyDeclaration" -> true,
@@ -1500,7 +1530,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
           isLPP = false,
           appealSubmittedBy = "agent",
-          agentReferenceNo = Some("AGENT1"),
+          agentDetails = Some(AgentDetails(agentReferenceNo = "AGENT1", isExcuseRelatedToAgent = true)),
           appealInformation = CrimeAppealInformation(
             startDateOfEvent = "2021-04-23T18:25:43.511Z",
             reportedIssueToPolice = true,
@@ -1520,7 +1550,10 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           "customerReferenceNo" -> "123456789",
           "dateOfAppeal" -> "2020-01-01T00:00:00",
           "isLPP" -> false,
-          "agentReferenceNo" -> "AGENT1",
+          "agentDetails" -> Json.obj(
+            "agentReferenceNo" -> "AGENT1",
+            "isExcuseRelatedToAgent" -> true
+          ),
           "appealInformation" -> Json.obj(
             "reasonableExcuse" -> "crime",
             "honestyDeclaration" -> true,
@@ -1546,7 +1579,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
           isLPP = false,
           appealSubmittedBy = "agent",
-          agentReferenceNo = Some("AGENT1"),
+          agentDetails = Some(AgentDetails(agentReferenceNo = "AGENT1", isExcuseRelatedToAgent = true)),
           appealInformation = FireOrFloodAppealInformation(
             startDateOfEvent = "2021-04-23T18:25:43.511Z",
             statement = None,
@@ -1566,7 +1599,10 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           "customerReferenceNo" -> "123456789",
           "dateOfAppeal" -> "2020-01-01T00:00:00",
           "isLPP" -> false,
-          "agentReferenceNo" -> "AGENT1",
+          "agentDetails" -> Json.obj(
+            "agentReferenceNo" -> "AGENT1",
+            "isExcuseRelatedToAgent" -> true
+          ),
           "appealInformation" -> Json.obj(
             "reasonableExcuse" -> "fireOrFlood",
             "honestyDeclaration" -> true,
@@ -1591,7 +1627,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
           isLPP = false,
           appealSubmittedBy = "agent",
-          agentReferenceNo = Some("AGENT1"),
+          agentDetails = Some(AgentDetails(agentReferenceNo = "AGENT1", isExcuseRelatedToAgent = true)),
           appealInformation = LossOfStaffAppealInformation(
             startDateOfEvent = "2021-04-23T18:25:43.511Z",
             statement = None,
@@ -1610,7 +1646,10 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           "customerReferenceNo" -> "123456789",
           "dateOfAppeal" -> "2020-01-01T00:00:00",
           "isLPP" -> false,
-          "agentReferenceNo" -> "AGENT1",
+          "agentDetails" -> Json.obj(
+            "agentReferenceNo" -> "AGENT1",
+            "isExcuseRelatedToAgent" -> true
+          ),
           "appealInformation" -> Json.obj(
             "reasonableExcuse" -> "lossOfStaff",
             "honestyDeclaration" -> true,
@@ -1636,7 +1675,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
             isLPP = false,
             appealSubmittedBy = "agent",
-            agentReferenceNo = Some("AGENT1"),
+            agentDetails = Some(AgentDetails(agentReferenceNo = "AGENT1", isExcuseRelatedToAgent = true)),
             appealInformation = HealthAppealInformation(
               startDateOfEvent = Some("2021-04-23T18:25:43.511Z"),
               endDateOfEvent = Some("2021-04-24T18:25:43.511Z"),
@@ -1658,7 +1697,10 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             "customerReferenceNo" -> "123456789",
             "dateOfAppeal" -> "2020-01-01T00:00:00",
             "isLPP" -> false,
-            "agentReferenceNo" -> "AGENT1",
+            "agentDetails" -> Json.obj(
+              "agentReferenceNo" -> "AGENT1",
+              "isExcuseRelatedToAgent" -> true
+            ),
             "appealInformation" -> Json.obj(
               "reasonableExcuse" -> "unexpectedHospitalStay",
               "honestyDeclaration" -> true,
@@ -1682,7 +1724,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
             isLPP = false,
             appealSubmittedBy = "agent",
-            agentReferenceNo = Some("AGENT1"),
+            agentDetails = Some(AgentDetails(agentReferenceNo = "AGENT1", isExcuseRelatedToAgent = true)),
             appealInformation = HealthAppealInformation(
               startDateOfEvent = Some("2021-04-23T18:25:43.511Z"),
               endDateOfEvent = None,
@@ -1704,7 +1746,10 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             "customerReferenceNo" -> "123456789",
             "dateOfAppeal" -> "2020-01-01T00:00:00",
             "isLPP" -> false,
-            "agentReferenceNo" -> "AGENT1",
+            "agentDetails" -> Json.obj(
+              "agentReferenceNo" -> "AGENT1",
+              "isExcuseRelatedToAgent" -> true
+            ),
             "appealInformation" -> Json.obj(
               "reasonableExcuse" -> "unexpectedHospitalStay",
               "honestyDeclaration" -> true,
@@ -1728,7 +1773,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
             isLPP = false,
             appealSubmittedBy = "agent",
-            agentReferenceNo = Some("AGENT1"),
+            agentDetails = Some(AgentDetails(agentReferenceNo = "AGENT1", isExcuseRelatedToAgent = true)),
             appealInformation = HealthAppealInformation(
               endDateOfEvent = None,
               eventOngoing = false,
@@ -1750,7 +1795,10 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             "customerReferenceNo" -> "123456789",
             "dateOfAppeal" -> "2020-01-01T00:00:00",
             "isLPP" -> false,
-            "agentReferenceNo" -> "AGENT1",
+            "agentDetails" -> Json.obj(
+              "agentReferenceNo" -> "AGENT1",
+              "isExcuseRelatedToAgent" -> true
+            ),
             "appealInformation" -> Json.obj(
               "reasonableExcuse" -> "seriousOrLifeThreateningIllHealth",
               "honestyDeclaration" -> true,
@@ -1776,7 +1824,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
           isLPP = false,
           appealSubmittedBy = "agent",
-          agentReferenceNo = Some("AGENT1"),
+          agentDetails = Some(AgentDetails(agentReferenceNo = "AGENT1", isExcuseRelatedToAgent = true)),
           appealInformation = TechnicalIssuesAppealInformation(
             startDateOfEvent = "2021-04-23T18:25:43.511Z",
             endDateOfEvent = "2021-04-24T18:25:43.511Z",
@@ -1797,7 +1845,10 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           "customerReferenceNo" -> "123456789",
           "dateOfAppeal" -> "2020-01-01T00:00:00",
           "isLPP" -> false,
-          "agentReferenceNo" -> "AGENT1",
+          "agentDetails" -> Json.obj(
+            "agentReferenceNo" -> "AGENT1",
+            "isExcuseRelatedToAgent" -> true
+          ),
           "appealInformation" -> Json.obj(
             "reasonableExcuse" -> "technicalIssues",
             "honestyDeclaration" -> true,
@@ -1822,7 +1873,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
           isLPP = false,
           appealSubmittedBy = "agent",
-          agentReferenceNo = Some("AGENT1"),
+          agentDetails = Some(AgentDetails(agentReferenceNo = "AGENT1", isExcuseRelatedToAgent = true)),
           appealInformation = OtherAppealInformation(
             startDateOfEvent = "2021-04-23T18:25:43.511Z",
             statement = Some("This was the reason"),
@@ -1847,7 +1898,10 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           "customerReferenceNo" -> "123456789",
           "dateOfAppeal" -> "2020-01-01T00:00:00",
           "isLPP" -> false,
-          "agentReferenceNo" -> "AGENT1",
+          "agentDetails" -> Json.obj(
+            "agentReferenceNo" -> "AGENT1",
+            "isExcuseRelatedToAgent" -> true
+          ),
           "appealInformation" -> Json.obj(
             "reasonableExcuse" -> "other",
             "honestyDeclaration" -> true,
@@ -1874,7 +1928,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
           isLPP = false,
           appealSubmittedBy = "agent",
-          agentReferenceNo = Some("AGENT1"),
+          agentDetails = Some(AgentDetails(agentReferenceNo = "AGENT1", isExcuseRelatedToAgent = true)),
           appealInformation = OtherAppealInformation(
             startDateOfEvent = "2021-04-23T18:25:43.511Z",
             statement = Some("This was the reason"),
@@ -1896,7 +1950,10 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           "customerReferenceNo" -> "123456789",
           "dateOfAppeal" -> "2020-01-01T00:00:00",
           "isLPP" -> false,
-          "agentReferenceNo" -> "AGENT1",
+          "agentDetails" -> Json.obj(
+            "agentReferenceNo" -> "AGENT1",
+            "isExcuseRelatedToAgent" -> true
+          ),
           "appealInformation" -> Json.obj(
             "reasonableExcuse" -> "other",
             "honestyDeclaration" -> true,
@@ -1919,7 +1976,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
           isLPP = false,
           appealSubmittedBy = "agent",
-          agentReferenceNo = Some("AGENT1"),
+          agentDetails = Some(AgentDetails(agentReferenceNo = "AGENT1", isExcuseRelatedToAgent = true)),
           appealInformation = OtherAppealInformation(
             startDateOfEvent = "2021-04-23T18:25:43.511Z",
             statement = Some("This was the reason"),
@@ -1944,7 +2001,10 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           "customerReferenceNo" -> "123456789",
           "dateOfAppeal" -> "2020-01-01T00:00:00",
           "isLPP" -> false,
-          "agentReferenceNo" -> "AGENT1",
+          "agentDetails" -> Json.obj(
+            "agentReferenceNo" -> "AGENT1",
+            "isExcuseRelatedToAgent" -> true
+          ),
           "appealInformation" -> Json.obj(
             "reasonableExcuse" -> "other",
             "honestyDeclaration" -> true,
@@ -1974,7 +2034,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
           isLPP = false,
           appealSubmittedBy = "client",
-          agentReferenceNo = None,
+          agentDetails = None,
           appealInformation = ObligationAppealInformation(
             statement = Some("A valid statement"),
             supportingEvidence = Some(Evidence(
@@ -2016,7 +2076,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
           isLPP = false,
           appealSubmittedBy = "client",
-          agentReferenceNo = None,
+          agentDetails = None,
           appealInformation = ObligationAppealInformation(
             statement = Some("A valid statement"),
             supportingEvidence = None,

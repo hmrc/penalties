@@ -19,7 +19,7 @@ package connectors
 import base.SpecBase
 import connectors.parsers.AppealsParser.AppealSubmissionResponse
 import featureSwitches.{CallPEGA, FeatureSwitching}
-import models.appeals.{AppealSubmission, CrimeAppealInformation}
+import models.appeals.{AgentDetails, AppealSubmission, CrimeAppealInformation}
 import org.mockito.Mockito._
 import org.mockito.{ArgumentCaptor, Matchers}
 import play.api.test.Helpers._
@@ -60,7 +60,7 @@ class PEGAConnectorSpec extends SpecBase with FeatureSwitching {
         dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
         isLPP = false,
         appealSubmittedBy = "client",
-        agentReferenceNo = Some("AGENT1"),
+        agentDetails = Some(AgentDetails(agentReferenceNo = "AGENT1", isExcuseRelatedToAgent = true)),
         appealInformation = CrimeAppealInformation(
           startDateOfEvent = "2021-04-23T18:25:43.511Z",
           reportedIssueToPolice = true,
@@ -98,7 +98,7 @@ class PEGAConnectorSpec extends SpecBase with FeatureSwitching {
         dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
         isLPP = false,
         appealSubmittedBy = "client",
-        agentReferenceNo = Some("AGENT1"),
+        agentDetails = Some(AgentDetails(agentReferenceNo = "AGENT1", isExcuseRelatedToAgent = true)),
         appealInformation = CrimeAppealInformation(
           startDateOfEvent = "2021-04-23T18:25:43.511Z",
           reportedIssueToPolice = true,
