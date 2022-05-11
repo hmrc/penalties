@@ -311,8 +311,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       |            "startDateOfEvent": "2021-04-23T18:25:43.511Z",
       |            "statement": "This is a reason.",
       |            "supportingEvidence": {
-      |             "noOfUploadedFiles": 1,
-      |             "referenceId": "ref1"
+      |             "noOfUploadedFiles": 1
       |            },
       |            "lateAppeal": true,
       |            "lateAppealReason": "Reason",
@@ -531,8 +530,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       |   "startDateOfEvent": "2021-04-23T18:25:43.511Z",
       |   "statement": "This is a statement.",
       |   "supportingEvidence": {
-      |     "noOfUploadedFiles": 1,
-      |     "referenceId": "ref1"
+      |     "noOfUploadedFiles": 1
       |   },
       |   "lateAppeal": false,
       |   "isClientResponsibleForSubmission": false,
@@ -579,8 +577,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       |   "reasonableExcuse": "obligation",
       |   "statement": "A valid statement",
       |   "supportingEvidence": {
-      |     "noOfUploadedFiles": 1,
-      |     "referenceId": "ref"
+      |     "noOfUploadedFiles": 1
       |   }
       |}
       |""".stripMargin
@@ -616,8 +613,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       |       "honestyDeclaration": true,
       |       "statement": "A valid statement",
       |       "supportingEvidence": {
-      |         "noOfUploadedFiles": 1,
-      |         "referenceId": "ref"
+      |         "noOfUploadedFiles": 1
       |       }
       |    }
       |}
@@ -821,9 +817,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           statement = Some("This is a statement."),
           lateAppeal = false,
           lateAppealReason = None,
-          supportingEvidence = Some(Evidence(
-            noOfUploadedFiles = 1, referenceId = Some("ref1")
-          )),
+          supportingEvidence = Some(Evidence(noOfUploadedFiles = 1)),
           isClientResponsibleForSubmission = Some(false),
           isClientResponsibleForLateSubmission = Some(true),
           honestyDeclaration = true,
@@ -861,10 +855,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
         result.isSuccess shouldBe true
         result.get shouldBe ObligationAppealInformation(
           statement = Some("A valid statement"),
-          supportingEvidence = Some(Evidence(
-            noOfUploadedFiles = 1,
-            referenceId = Some("ref")
-          )),
+          supportingEvidence = Some(Evidence(noOfUploadedFiles = 1)),
           isClientResponsibleForSubmission = None,
           isClientResponsibleForLateSubmission = None,
           honestyDeclaration = true,
@@ -1043,9 +1034,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
         val model = OtherAppealInformation(
           startDateOfEvent = "2021-04-23T18:25:43.511Z",
           statement = Some("This is a statement."),
-          supportingEvidence = Some(Evidence(
-            noOfUploadedFiles = 1, referenceId = Some("ref1")
-          )),
+          supportingEvidence = Some(Evidence(noOfUploadedFiles = 1)),
           lateAppeal = false,
           lateAppealReason = None,
           isClientResponsibleForSubmission = Some(false),
@@ -1080,10 +1069,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       "parse the appeal information model to a JsObject" in {
         val model = ObligationAppealInformation(
           statement = Some("A valid statement"),
-          supportingEvidence = Some(Evidence(
-            noOfUploadedFiles = 1,
-            referenceId = Some("ref")
-          )),
+          supportingEvidence = Some(Evidence(noOfUploadedFiles = 1)),
           isClientResponsibleForSubmission = None,
           isClientResponsibleForLateSubmission = None,
           honestyDeclaration = true,
@@ -1367,9 +1353,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           appealInformation = OtherAppealInformation(
             startDateOfEvent = "2021-04-23T18:25:43.511Z",
             statement = Some("This is a reason."),
-            supportingEvidence = Some(Evidence(
-              noOfUploadedFiles = 1, referenceId = Some("ref1")
-            )),
+            supportingEvidence = Some(Evidence(noOfUploadedFiles = 1)),
             lateAppeal = true,
             lateAppealReason = Some("Reason"),
             isClientResponsibleForSubmission = Some(false),
@@ -1429,10 +1413,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           agentDetails = None,
           appealInformation = ObligationAppealInformation(
             statement = Some("A valid statement"),
-            supportingEvidence = Some(Evidence(
-              noOfUploadedFiles = 1,
-              referenceId = Some("ref")
-            )),
+            supportingEvidence = Some(Evidence(noOfUploadedFiles = 1)),
             isClientResponsibleForSubmission = None,
             isClientResponsibleForLateSubmission = None,
             honestyDeclaration = true,
@@ -1877,10 +1858,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           appealInformation = OtherAppealInformation(
             startDateOfEvent = "2021-04-23T18:25:43.511Z",
             statement = Some("This was the reason"),
-            supportingEvidence = Some(Evidence(
-              noOfUploadedFiles = 1,
-              referenceId = Some("ref1")
-            )),
+            supportingEvidence = Some(Evidence(noOfUploadedFiles = 1)),
             lateAppeal = false,
             lateAppealReason = None,
             isClientResponsibleForSubmission = Some(false),
@@ -1907,10 +1885,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             "honestyDeclaration" -> true,
             "startDateOfEvent" -> "2021-04-23T18:25:43.511Z",
             "statement" -> "This was the reason",
-            "supportingEvidence" -> Json.obj(
-              "noOfUploadedFiles" -> 1,
-              "referenceId" -> "ref1"
-            ),
+            "supportingEvidence" -> Json.obj("noOfUploadedFiles" -> 1),
             "lateAppeal" -> false,
             "isClientResponsibleForSubmission" -> false,
             "isClientResponsibleForLateSubmission" -> true
@@ -1980,10 +1955,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           appealInformation = OtherAppealInformation(
             startDateOfEvent = "2021-04-23T18:25:43.511Z",
             statement = Some("This was the reason"),
-            supportingEvidence = Some(Evidence(
-              noOfUploadedFiles = 1,
-              referenceId = Some("ref1")
-            )),
+            supportingEvidence = Some(Evidence(noOfUploadedFiles = 1)),
             lateAppeal = true,
             lateAppealReason = Some("Late reason"),
             isClientResponsibleForSubmission = Some(false),
@@ -2010,10 +1982,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             "honestyDeclaration" -> true,
             "startDateOfEvent" -> "2021-04-23T18:25:43.511Z",
             "statement" -> "This was the reason",
-            "supportingEvidence" -> Json.obj(
-              "noOfUploadedFiles" -> 1,
-              "referenceId" -> "ref1"
-            ),
+            "supportingEvidence" -> Json.obj("noOfUploadedFiles" -> 1),
             "lateAppeal" -> true,
             "lateAppealReason" -> "Late reason",
             "isClientResponsibleForSubmission" -> false,
@@ -2037,10 +2006,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           agentDetails = None,
           appealInformation = ObligationAppealInformation(
             statement = Some("A valid statement"),
-            supportingEvidence = Some(Evidence(
-              noOfUploadedFiles = 1,
-              referenceId = Some("ref")
-            )),
+            supportingEvidence = Some(Evidence(noOfUploadedFiles = 1)),
             honestyDeclaration = true,
             reasonableExcuse = "obligation",
             uploadedFiles = None
@@ -2057,8 +2023,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           "appealInformation" -> Json.obj(
             "statement" -> "A valid statement",
             "supportingEvidence" -> Json.obj(
-              "noOfUploadedFiles" -> 1,
-              "referenceId" -> "ref"
+              "noOfUploadedFiles" -> 1
             ),
             "honestyDeclaration" -> true,
             "reasonableExcuse" -> "obligation"
@@ -2336,7 +2301,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
         val modelToConvertToJson = OtherAppealInformation(
           startDateOfEvent = "2022-01-01T13:00:00.000Z",
           statement = Some("I was late. Sorry."),
-          supportingEvidence = Some(Evidence(1, Some("reference-3000"))),
+          supportingEvidence = Some(Evidence(noOfUploadedFiles = 1)),
           lateAppeal = false,
           lateAppealReason = None,
           isClientResponsibleForSubmission = Some(false),
@@ -2352,8 +2317,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             | "startDateOfEvent": "2022-01-01T13:00:00.000Z",
             | "statement": "I was late. Sorry.",
             | "supportingEvidence": {
-            |   "noOfUploadedFiles": 1,
-            |   "referenceId": "reference-3000"
+            |   "noOfUploadedFiles": 1
             | },
             | "lateAppeal": false,
             | "isClientResponsibleForSubmission": false,
@@ -2369,7 +2333,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
         val modelToConvertToJson = OtherAppealInformation(
           startDateOfEvent = "2022-01-01T13:00:00.000Z",
           statement = Some("I was late. Sorry."),
-          supportingEvidence = Some(Evidence(1, Some("reference-3000"))),
+          supportingEvidence = Some(Evidence(noOfUploadedFiles = 1)),
           lateAppeal = true,
           lateAppealReason = Some("This is a reason"),
           isClientResponsibleForSubmission = Some(false),
@@ -2399,8 +2363,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             | "startDateOfEvent": "2022-01-01T13:00:00.000Z",
             | "statement": "I was late. Sorry.",
             | "supportingEvidence": {
-            |   "noOfUploadedFiles": 1,
-            |   "referenceId": "reference-3000"
+            |   "noOfUploadedFiles": 1
             | },
             | "lateAppeal": true,
             | "lateAppealReason": "This is a reason",
@@ -2464,10 +2427,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       "write to JSON" in {
         val model = ObligationAppealInformation(
           statement = Some("A valid statement"),
-          supportingEvidence = Some(Evidence(
-            noOfUploadedFiles = 1,
-            referenceId = Some("ref")
-          )),
+          supportingEvidence = Some(Evidence(noOfUploadedFiles = 1)),
           isClientResponsibleForSubmission = None,
           isClientResponsibleForLateSubmission = None,
           honestyDeclaration = true,
@@ -2494,8 +2454,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             |{
             |   "statement": "A valid statement",
             |   "supportingEvidence": {
-            |       "noOfUploadedFiles": 1,
-            |       "referenceId": "ref"
+            |       "noOfUploadedFiles": 1
             |   },
             |   "honestyDeclaration": true,
             |   "reasonableExcuse": "obligation",
