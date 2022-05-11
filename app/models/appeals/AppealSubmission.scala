@@ -424,8 +424,8 @@ case class AppealSubmission(
                              appealSubmittedBy: String,
                              customerReferenceNo: String,
                              dateOfAppeal: LocalDateTime,
+                             agentDetails: Option[AgentDetails],
                              isLPP: Boolean,
-                             agentReferenceNo: Option[String],
                              appealInformation: AppealInformation
                            ) {
   val sourceSystem: String = "MDTP"
@@ -481,8 +481,8 @@ object AppealSubmission {
       customerReferenceNo <- (json \ "customerReferenceNo").validate[String]
       dateOfAppeal <- (json \ "dateOfAppeal").validate[LocalDateTime]
       isLPP <- (json \ "isLPP").validate[Boolean]
-      optAgentReferenceNo <- (json \ "agentReferenceNo").validateOpt[String]
       appealInformationType <- (json \ "appealInformation" \ "reasonableExcuse").validate[String]
+      agentDetails <- (json \ "agentDetails").validateOpt[AgentDetails]
       appealInformation <- parseAppealInformationFromJson(appealInformationType, (json \ "appealInformation").get)
     } yield {
       AppealSubmission(
@@ -490,8 +490,8 @@ object AppealSubmission {
         appealSubmittedBy,
         customerReferenceNo,
         dateOfAppeal,
+        agentDetails,
         isLPP,
-        optAgentReferenceNo,
         appealInformation
       )
     }
@@ -507,11 +507,7 @@ object AppealSubmission {
       "appealSubmittedBy" -> appealSubmission.appealSubmittedBy,
       "appealInformation" -> parseAppealInformationToJson(appealSubmission.appealInformation)
     ).deepMerge(
-      appealSubmission.agentReferenceNo.fold(
-        Json.obj()
-      )(
-        agentReferenceNo => Json.obj("agentReferenceNo" -> agentReferenceNo)
-      )
+        appealSubmission.agentDetails.fold(Json.obj())(agentDetails => Json.obj("agentDetails" -> agentDetails))
     )
   }
 }
