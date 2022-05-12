@@ -21,43 +21,24 @@ import org.scalatest.wordspec.AnyWordSpec
 import play.api.libs.json.{JsValue, Json}
 
 class EvidenceSpec extends AnyWordSpec with Matchers {
-  val evidenceModelAsJsonNoReference: JsValue = Json.parse(
+  val evidenceModelAsJson: JsValue = Json.parse(
     """
       |{
       |   "noOfUploadedFiles": 1
       |}
       |""".stripMargin)
 
-  val evidenceModelAsJsonWithReference: JsValue = Json.parse(
-    """
-      |{
-      |   "noOfUploadedFiles": 1,
-      |   "referenceId": "ref1"
-      |}
-      |""".stripMargin)
 
-  val evidenceModelWithNoReference: Evidence = Evidence(1, None)
-  val evidenceModelWithReference: Evidence = Evidence(1, Some("ref1"))
+  val evidenceModel: Evidence = Evidence(noOfUploadedFiles = 1)
 
-  "be writable to JSON (with reference)" in {
-    val result = Json.toJson(evidenceModelWithReference)(Evidence.format)
-    result shouldBe evidenceModelAsJsonWithReference
+  "be writable to JSON" in {
+    val result = Json.toJson(evidenceModel)(Evidence.format)
+    result shouldBe evidenceModelAsJson
   }
 
-  "be readable from JSON (with reference)" in {
-    val result = Json.fromJson(evidenceModelAsJsonWithReference)(Evidence.format)
+  "be readable from JSON" in {
+    val result = Json.fromJson(evidenceModelAsJson)(Evidence.format)
     result.isSuccess shouldBe true
-    result.get shouldBe evidenceModelWithReference
-  }
-
-  "be writable to JSON (without reference)" in {
-    val result = Json.toJson(evidenceModelWithNoReference)(Evidence.format)
-    result shouldBe evidenceModelAsJsonNoReference
-  }
-
-  "be readable from JSON (without reference)" in {
-    val result = Json.fromJson(evidenceModelAsJsonNoReference)(Evidence.format)
-    result.isSuccess shouldBe true
-    result.get shouldBe evidenceModelWithNoReference
+    result.get shouldBe evidenceModel
   }
 }
