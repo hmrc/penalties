@@ -351,6 +351,7 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
             LPPDetails(
               penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
               principalChargeReference = "123456789",
+              penaltyChargeReference = Some("1234567891"),
               penaltyChargeCreationDate = LocalDate.of(2022, 1, 1),
               penaltyStatus = LPPPenaltyStatusEnum.Posted,
               appealInformation = None,
@@ -373,6 +374,7 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
             LPPDetails(
               penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
               principalChargeReference = "123456789",
+              penaltyChargeReference = Some("1234567890"),
               penaltyChargeCreationDate = LocalDate.of(2022, 1, 1),
               penaltyStatus = LPPPenaltyStatusEnum.Posted,
               appealInformation = None,
@@ -415,6 +417,7 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
             LPPDetails(
               penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
               principalChargeReference = "123456789",
+              penaltyChargeReference = Some("1234567891"),
               penaltyChargeCreationDate = LocalDate.of(2022, 1, 1),
               penaltyStatus = LPPPenaltyStatusEnum.Posted,
               appealInformation = None,
@@ -437,6 +440,7 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
             LPPDetails(
               penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
               principalChargeReference = "123456789",
+              penaltyChargeReference = Some("1234567890"),
               penaltyChargeCreationDate = LocalDate.of(2022, 1, 1),
               penaltyStatus = LPPPenaltyStatusEnum.Posted,
               appealInformation = None,
@@ -479,6 +483,7 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
             LPPDetails(
               penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
               principalChargeReference = "123456789",
+              penaltyChargeReference = Some("1234567891"),
               penaltyChargeCreationDate = LocalDate.of(2022, 1, 1),
               penaltyStatus = LPPPenaltyStatusEnum.Posted,
               appealInformation = None,
@@ -501,6 +506,7 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
             LPPDetails(
               penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
               principalChargeReference = "123456789",
+              penaltyChargeReference = Some("1234567890"),
               penaltyChargeCreationDate = LocalDate.of(2022, 1, 1),
               penaltyStatus = LPPPenaltyStatusEnum.Posted,
               appealInformation = Some(
@@ -550,6 +556,7 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
             LPPDetails(
               penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
               principalChargeReference = "123456789",
+              penaltyChargeReference = Some("1234567891"),
               penaltyChargeCreationDate = LocalDate.of(2022, 1, 1),
               penaltyStatus = LPPPenaltyStatusEnum.Posted,
               appealInformation = None,
@@ -572,6 +579,7 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
             LPPDetails(
               penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
               principalChargeReference = "123456789",
+              penaltyChargeReference = Some("1234567890"),
               penaltyChargeCreationDate = LocalDate.of(2022, 1, 1),
               penaltyStatus = LPPPenaltyStatusEnum.Posted,
               appealInformation = Some(
@@ -621,6 +629,7 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
             LPPDetails(
               penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
               principalChargeReference = "123456789",
+              penaltyChargeReference = Some("1234567891"),
               penaltyChargeCreationDate = LocalDate.of(2022, 1, 1),
               penaltyStatus = LPPPenaltyStatusEnum.Posted,
               appealInformation = None,
@@ -643,6 +652,7 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
             LPPDetails(
               penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
               principalChargeReference = "123456789",
+              penaltyChargeReference = Some("1234567890"),
               penaltyChargeCreationDate = LocalDate.of(2022, 1, 1),
               penaltyStatus = LPPPenaltyStatusEnum.Posted,
               appealInformation = None,

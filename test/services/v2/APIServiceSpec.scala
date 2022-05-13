@@ -42,6 +42,7 @@ class APIServiceSpec extends SpecBase {
                   LPPDetails(
                     penaltyCategory = LPPPenaltyCategoryEnum.SecondPenalty,
                     principalChargeReference = "123456789",
+                    penaltyChargeReference = Some("123456789"),
                     penaltyChargeCreationDate = LocalDate.of(2022, 1, 1),
                     penaltyStatus = LPPPenaltyStatusEnum.Accruing,
                     appealInformation = None,
@@ -64,6 +65,7 @@ class APIServiceSpec extends SpecBase {
                   LPPDetails(
                     penaltyCategory = LPPPenaltyCategoryEnum.SecondPenalty,
                     principalChargeReference = "123456788",
+                    penaltyChargeReference = Some("123456788"),
                     penaltyChargeCreationDate = LocalDate.of(2022, 1, 1),
                     penaltyStatus = LPPPenaltyStatusEnum.Accruing,
                     appealInformation = None,
@@ -104,6 +106,7 @@ class APIServiceSpec extends SpecBase {
                   LPPDetails(
                     penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
                     principalChargeReference = "123456789",
+                    penaltyChargeReference = Some("123456789"),
                     penaltyChargeCreationDate = LocalDate.of(2022, 1, 1),
                     penaltyStatus = LPPPenaltyStatusEnum.Posted,
                     appealInformation = None,
@@ -126,6 +129,7 @@ class APIServiceSpec extends SpecBase {
                   LPPDetails(
                     penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
                     principalChargeReference = "123456788",
+                    penaltyChargeReference = Some("123456788"),
                     penaltyChargeCreationDate = LocalDate.of(2022, 1, 1),
                     penaltyStatus = LPPPenaltyStatusEnum.Posted,
                     appealInformation = None,
@@ -168,6 +172,7 @@ class APIServiceSpec extends SpecBase {
                 LPPDetails(
                   penaltyCategory = LPPPenaltyCategoryEnum.SecondPenalty,
                   principalChargeReference = "123456788",
+                  penaltyChargeReference = Some("123456789"),
                   penaltyChargeCreationDate = LocalDate.of(2022, 1, 1),
                   penaltyStatus = LPPPenaltyStatusEnum.Accruing,
                   appealInformation = None,
@@ -190,6 +195,7 @@ class APIServiceSpec extends SpecBase {
                 LPPDetails(
                   penaltyCategory = LPPPenaltyCategoryEnum.SecondPenalty,
                   principalChargeReference = "123456788",
+                  penaltyChargeReference = Some("123456788"),
                   penaltyChargeCreationDate = LocalDate.of(2022, 1, 1),
                   penaltyStatus = LPPPenaltyStatusEnum.Accruing,
                   appealInformation = None,
@@ -239,6 +245,7 @@ class APIServiceSpec extends SpecBase {
                 LPPDetails(
                   penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
                   principalChargeReference = "123456788",
+                  penaltyChargeReference = Some("123456789"),
                   penaltyChargeCreationDate = LocalDate.of(2022, 1, 1),
                   penaltyStatus = LPPPenaltyStatusEnum.Posted,
                   appealInformation = None,
@@ -309,6 +316,7 @@ class APIServiceSpec extends SpecBase {
                   LPPDetails(
                     penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
                     principalChargeReference = "123456789",
+                    penaltyChargeReference = Some("123456789"),
                     penaltyChargeCreationDate = LocalDate.of(2022, 1, 1),
                     penaltyStatus = LPPPenaltyStatusEnum.Posted,
                     appealInformation = None,
@@ -383,6 +391,7 @@ class APIServiceSpec extends SpecBase {
                   LPPDetails(
                     penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
                     principalChargeReference = "123456789",
+                    penaltyChargeReference = Some("123456789"),
                     penaltyChargeCreationDate = LocalDate.of(2022, 1, 1),
                     penaltyStatus = LPPPenaltyStatusEnum.Posted,
                     appealInformation = None,
@@ -434,6 +443,7 @@ class APIServiceSpec extends SpecBase {
                 LPPDetails(
                   penaltyCategory = LPPPenaltyCategoryEnum.SecondPenalty,
                   principalChargeReference = "123456789",
+                  penaltyChargeReference = Some("123456789"),
                   penaltyChargeCreationDate = LocalDate.of(2022, 1, 1),
                   penaltyStatus = LPPPenaltyStatusEnum.Accruing,
                   appealInformation = None,
@@ -456,6 +466,7 @@ class APIServiceSpec extends SpecBase {
                 LPPDetails(
                   penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
                   principalChargeReference = "123456789",
+                  penaltyChargeReference = Some("123456788"),
                   penaltyChargeCreationDate = LocalDate.of(2022, 1, 1),
                   penaltyStatus = LPPPenaltyStatusEnum.Posted,
                   appealInformation = None,
@@ -495,6 +506,7 @@ class APIServiceSpec extends SpecBase {
                 LPPDetails(
                   penaltyCategory = LPPPenaltyCategoryEnum.SecondPenalty,
                   principalChargeReference = "123456789",
+                  penaltyChargeReference = Some("123456789"),
                   penaltyChargeCreationDate = LocalDate.of(2022, 1, 1),
                   penaltyStatus = LPPPenaltyStatusEnum.Accruing,
                   appealInformation = None,
@@ -517,6 +529,7 @@ class APIServiceSpec extends SpecBase {
                 LPPDetails(
                   penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
                   principalChargeReference = "123456789",
+                  penaltyChargeReference = Some("123456788"),
                   penaltyChargeCreationDate = LocalDate.of(2022, 1, 1),
                   penaltyStatus = LPPPenaltyStatusEnum.Posted,
                   appealInformation = None,
@@ -603,6 +616,7 @@ class APIServiceSpec extends SpecBase {
                 LPPDetails(
                   penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
                   principalChargeReference = "123456789",
+                  penaltyChargeReference = Some("123456789"),
                   penaltyChargeCreationDate = LocalDate.of(2022, 1, 1),
                   penaltyStatus = LPPPenaltyStatusEnum.Posted,
                   appealInformation = None,
@@ -685,6 +699,7 @@ class APIServiceSpec extends SpecBase {
                 LPPDetails(
                   penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
                   principalChargeReference = "123456789",
+                  penaltyChargeReference = Some("123456789"),
                   penaltyChargeCreationDate = LocalDate.of(2022, 1, 1),
                   penaltyStatus = LPPPenaltyStatusEnum.Posted,
                   appealInformation = None,

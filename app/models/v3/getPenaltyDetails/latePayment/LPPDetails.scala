@@ -23,7 +23,8 @@ import java.time.LocalDate
 
 case class LPPDetails(
                       penaltyCategory: LPPPenaltyCategoryEnum.Value,
-                      principalChargeReference: String, //used in place of penaltyNumber
+                      penaltyChargeReference: Option[String],
+                      principalChargeReference: String,
                       penaltyChargeCreationDate: LocalDate,
                       penaltyStatus: LPPPenaltyStatusEnum.Value,
                       appealInformation: Option[Seq[AppealInformation]],

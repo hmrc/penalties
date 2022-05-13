@@ -90,6 +90,7 @@ class GetPenaltyDetailsServiceISpec extends IntegrationSpecCommonBase with ETMPW
             LPPDetails(
               penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
               principalChargeReference = "1234567890",
+              penaltyChargeReference = Some("1234567890"),
               penaltyChargeCreationDate = LocalDate.of(2022, 10, 30),
               penaltyStatus = LPPPenaltyStatusEnum.Accruing,
               appealInformation = Some(Seq(AppealInformation(appealStatus = Some("99"), appealLevel = Some("01")))),

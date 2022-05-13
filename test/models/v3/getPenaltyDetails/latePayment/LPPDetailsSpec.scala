@@ -63,6 +63,7 @@ class LPPDetailsSpec extends SpecBase {
   val jsonRepresentingModel: JsValue = Json.parse(
     """
       |{
+      |   "penaltyChargeReference": "12345678901234",
       |   "penaltyCategory": "LPP1",
       |   "penaltyStatus": "A",
       |   "penaltyAmountPaid": 1001.45,
@@ -94,6 +95,7 @@ class LPPDetailsSpec extends SpecBase {
   val model: LPPDetails = LPPDetails(
     penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
     principalChargeReference = "1234567890",
+    penaltyChargeReference = Some("12345678901234"),
     penaltyChargeCreationDate = LocalDate.of(2022, 10, 30),
     penaltyStatus = LPPPenaltyStatusEnum.Accruing,
     appealInformation = Some(Seq(AppealInformation(appealStatus = Some("99"), appealLevel = Some("01")))),
