@@ -29,7 +29,7 @@ case class LSPDetails(
                        penaltyCreationDate: LocalDate,
                        penaltyExpiryDate: LocalDate,
                        communicationsDate: LocalDate,
-                       FAPIndicator: String,
+                       FAPIndicator: Option[String],
                        lateSubmissions: Option[Seq[LateSubmission]],
                        expiryReason: Option[String],
                        appealInformation: Option[Seq[AppealInformation]],

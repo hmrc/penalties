@@ -146,7 +146,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching {
                 penaltyCreationDate = LocalDate.of(2022, 4, 1),
                 penaltyExpiryDate = LocalDate.of(2022, 4, 1),
                 communicationsDate = LocalDate.of(2022, 5, 8),
-                FAPIndicator = "",
+                FAPIndicator = None,
                 lateSubmissions = Some(
                   Seq(
                     LateSubmission(
@@ -171,7 +171,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching {
                 penaltyCreationDate = LocalDate.of(2022, 4, 1),
                 penaltyExpiryDate = LocalDate.of(2022, 4, 1),
                 communicationsDate = LocalDate.of(2022, 4, 1),
-                FAPIndicator = "",
+                FAPIndicator = None,
                 lateSubmissions = Some(
                   Seq(
                     LateSubmission(

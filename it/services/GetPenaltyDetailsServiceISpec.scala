@@ -58,7 +58,7 @@ class GetPenaltyDetailsServiceISpec extends IntegrationSpecCommonBase with ETMPW
               penaltyCreationDate = LocalDate.of(2022, 10, 30),
               penaltyExpiryDate = LocalDate.of(2022, 10, 30),
               communicationsDate = LocalDate.of(2022, 10, 30),
-              FAPIndicator = "X",
+              FAPIndicator = Some("X"),
               lateSubmissions = Some(
                 Seq(
                   LateSubmission(
