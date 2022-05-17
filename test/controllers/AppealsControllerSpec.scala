@@ -354,6 +354,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching {
                 LPPDetails(
                   penaltyCategory = LPPPenaltyCategoryEnum.SecondPenalty,
                   principalChargeReference = "123456801",
+                  penaltyChargeReference = Some("1234567891"),
                   penaltyChargeCreationDate = LocalDate.of(2022, 1, 1),
                   penaltyStatus = LPPPenaltyStatusEnum.Accruing,
                   appealInformation = None,
@@ -376,6 +377,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching {
                 LPPDetails(
                   penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
                   principalChargeReference = "123456800",
+                  penaltyChargeReference = Some("1234567890"),
                   penaltyChargeCreationDate = LocalDate.of(2022, 1, 1),
                   penaltyStatus = LPPPenaltyStatusEnum.Posted,
                   appealInformation = None,
@@ -437,7 +439,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching {
       }
 
       s"return OK (${Status.OK}) when the call to ETMP succeeds and the penalty ID matches" in new Setup {
-        val samplePenaltyId: String = "123456800"
+        val samplePenaltyId: String = "1234567890"
         val sampleEnrolmentKey: String = "HMRC-MTD-VAT~VRN~123456789"
         val vrn: String = "123456789"
         when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(Matchers.eq(vrn))(Matchers.any()))
@@ -457,7 +459,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching {
       }
 
       s"return OK (${Status.OK}) when the call to ETMP succeeds and the penalty ID matches for Additional penalty" in new Setup {
-        val samplePenaltyId: String = "123456801"
+        val samplePenaltyId: String = "1234567891"
         val sampleEnrolmentKey: String = "HMRC-MTD-VAT~VRN~123456789"
         val vrn: String = "123456789"
         when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(Matchers.eq(vrn))(Matchers.any()))

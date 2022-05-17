@@ -196,6 +196,7 @@ trait ETMPWiremock {
       | "latePaymentPenalty": {
       |     "details": [{
       |       "penaltyCategory": "LPP1",
+      |       "penaltyChargeReference": "1234567890",
       |       "principalChargeReference":"1234567890",
       |       "penaltyChargeCreationDate":"2022-10-30",
       |       "penaltyStatus": "A",

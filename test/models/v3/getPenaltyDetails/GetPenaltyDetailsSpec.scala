@@ -79,6 +79,7 @@ class GetPenaltyDetailsSpec extends SpecBase {
       | "latePaymentPenalty": {
       |     "details": [{
       |       "penaltyChargeReference": "12345678901234",
+      |       "penaltyChargeReference": "1234567890",
       |       "penaltyCategory": "LPP1",
       |       "penaltyStatus": "A",
       |       "penaltyAmountAccruing": 99.99,
@@ -163,6 +164,7 @@ class GetPenaltyDetailsSpec extends SpecBase {
       | },
       | "latePaymentPenalty": {
       |     "details": [{
+      |       "penaltyChargeReference": "1234567890",
       |       "penaltyCategory": "LPP1",
       |       "penaltyStatus": "A",
       |       "penaltyAmountPaid": 1001.45,
@@ -252,6 +254,7 @@ class GetPenaltyDetailsSpec extends SpecBase {
           LPPDetails(
             penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
             principalChargeReference = "1234567890",
+            penaltyChargeReference = Some("1234567890"),
             penaltyChargeCreationDate = LocalDate.of(2022, 10, 30),
             penaltyStatus = LPPPenaltyStatusEnum.Accruing,
             appealInformation = Some(Seq(AppealInformation(appealStatus = Some("99"), appealLevel = Some("01")))),

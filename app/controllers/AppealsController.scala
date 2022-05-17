@@ -149,7 +149,7 @@ class AppealsController @Inject()(appConfig: AppConfig,
       _.details.find(_.penaltyNumber == penaltyIdToCheck)
     }
     val lppPenaltyIdInPenaltyDetailsPayload: Option[LPPDetails] = penaltyDetails.latePaymentPenalty.flatMap {
-      _.details.flatMap(_.find(_.principalChargeReference == penaltyIdToCheck))
+      _.details.flatMap(_.find(_.penaltyChargeReference.contains(penaltyIdToCheck)))
     }
 
     if (appealType == AppealTypeEnum.Late_Submission && lspPenaltyIdInPenaltyDetailsPayload.isDefined) {

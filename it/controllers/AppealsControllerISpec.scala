@@ -288,6 +288,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
       | "latePaymentPenalty": {
       |     "details": [
       |       {
+      |          "penaltyChargeReference": "1234567890",
       |          "penaltyCategory": "LPP2",
       |          "penaltyStatus": "A",
       |          "penaltyAmountPaid": 44.21,
@@ -309,6 +310,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
       |          "principalChargeDueDate": "2026-02-07"
       |       },
       |       {
+      |          "penaltyChargeReference": "1234567889",
       |          "penaltyCategory": "LPP2",
       |          "penaltyStatus": "A",
       |          "penaltyAmountPaid": 100.00,
@@ -330,6 +332,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
       |          "principalChargeDueDate": "2025-02-07"
       |       },
       |       {
+      |          "penaltyChargeReference": "1234567888",
       |          "penaltyCategory": "LPP1",
       |          "penaltyStatus": "P",
       |          "penaltyAmountPaid": 0,
@@ -351,6 +354,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
       |          "principalChargeDueDate": "2024-02-07"
       |       },
       |       {
+      |          "penaltyChargeReference": "1234567887",
       |          "penaltyCategory": "LPP1",
       |          "penaltyStatus": "P",
       |          "penaltyAmountPaid": 0,
@@ -451,14 +455,14 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
     "when the 1812 feature switch is enabled" must {
       "call ETMP and compare the penalty ID provided and the penalty ID in the payload - return OK if there is a match" in {
         mockStubResponseForGetPenaltyDetailsv3(Status.OK, "123456789", Some(getPenaltyDetailsJson.toString()))
-        val result = await(buildClientForRequestToApp(uri = "/appeals-data/late-payments?penaltyId=1234567890&enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isAdditional=false&useNewApiModel=true").get())
+        val result = await(buildClientForRequestToApp(uri = "/appeals-data/late-payments?penaltyId=1234567887&enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isAdditional=false&useNewApiModel=true").get())
         result.status shouldBe Status.OK
         result.body shouldBe appealV2JsonLPP.toString()
       }
 
       "call ETMP and compare the penalty ID provided and the penalty ID in the payload for Additional - return OK if there is a match" in {
         mockStubResponseForGetPenaltyDetailsv3(Status.OK, "123456789", Some(getPenaltyDetailsJson.toString()))
-        val result = await(buildClientForRequestToApp(uri = "/appeals-data/late-payments?penaltyId=1234567892&enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isAdditional=true&useNewApiModel=true").get())
+        val result = await(buildClientForRequestToApp(uri = "/appeals-data/late-payments?penaltyId=1234567889&enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isAdditional=true&useNewApiModel=true").get())
         result.status shouldBe Status.OK
         result.body shouldBe appealV2JsonLPPAdditional.toString()
       }

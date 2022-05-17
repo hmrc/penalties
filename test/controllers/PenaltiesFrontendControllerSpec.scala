@@ -36,7 +36,7 @@ import services.{ETMPService, GetPenaltyDetailsService}
 import java.time.LocalDate
 import scala.concurrent.Future
 
-class PenaltiesFrontendControllerSpec extends SpecBase{
+class PenaltiesFrontendControllerSpec extends SpecBase {
   val mockAppConfig: AppConfig = mock(classOf[AppConfig])
   val mockETMPService: ETMPService = mock(classOf[ETMPService])
   val mockAuditService: AuditService = mock(classOf[AuditService])
@@ -143,6 +143,7 @@ class PenaltiesFrontendControllerSpec extends SpecBase{
               LPPDetails(
                 penaltyCategory = LPPPenaltyCategoryEnum.SecondPenalty,
                 principalChargeReference = "12345678",
+                penaltyChargeReference = Some("1234567892"),
                 penaltyChargeCreationDate = LocalDate.of(2022, 1, 1),
                 penaltyStatus = LPPPenaltyStatusEnum.Accruing,
                 appealInformation = None,
@@ -165,6 +166,7 @@ class PenaltiesFrontendControllerSpec extends SpecBase{
               LPPDetails(
                 penaltyCategory = LPPPenaltyCategoryEnum.SecondPenalty,
                 principalChargeReference = "12345677",
+                penaltyChargeReference = Some("1234567891"),
                 penaltyChargeCreationDate = LocalDate.of(2022, 1, 1),
                 penaltyStatus = LPPPenaltyStatusEnum.Accruing,
                 appealInformation = None,
@@ -187,6 +189,7 @@ class PenaltiesFrontendControllerSpec extends SpecBase{
               LPPDetails(
                 penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
                 principalChargeReference = "12345676",
+                penaltyChargeReference = Some("1234567890"),
                 penaltyChargeCreationDate = LocalDate.of(2022, 1, 1),
                 penaltyStatus = LPPPenaltyStatusEnum.Posted,
                 appealInformation = None,
@@ -209,6 +212,7 @@ class PenaltiesFrontendControllerSpec extends SpecBase{
               LPPDetails(
                 penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
                 principalChargeReference = "12345675",
+                penaltyChargeReference = Some("1234567889"),
                 penaltyChargeCreationDate = LocalDate.of(2022, 1, 1),
                 penaltyStatus = LPPPenaltyStatusEnum.Posted,
                 appealInformation = None,
@@ -236,14 +240,14 @@ class PenaltiesFrontendControllerSpec extends SpecBase{
     s"return ISE (${Status.INTERNAL_SERVER_ERROR}) when the call fails" in new Setup(isFSEnabled = true) {
       when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(Matchers.any())(Matchers.any()))
         .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(Status.INTERNAL_SERVER_ERROR))))
-      val result = controller.getPenaltiesData("123456789", Some(""),true)(fakeRequest)
+      val result = controller.getPenaltiesData("123456789", Some(""), true)(fakeRequest)
       status(result) shouldBe Status.INTERNAL_SERVER_ERROR
     }
 
     s"return NOT_FOUND (${Status.NOT_FOUND}) when the call returns no data" in new Setup(isFSEnabled = true) {
       when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(Matchers.any())(Matchers.any()))
         .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(Status.NOT_FOUND))))
-      val result = controller.getPenaltiesData("123456789", Some(""),true)(fakeRequest)
+      val result = controller.getPenaltiesData("123456789", Some(""), true)(fakeRequest)
       status(result) shouldBe Status.NOT_FOUND
     }
 
@@ -252,81 +256,85 @@ class PenaltiesFrontendControllerSpec extends SpecBase{
       when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(Matchers.any())(Matchers.any()))
         .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetailsFullAPIResponse))))
 
-      val result = controller.getPenaltiesData("123456789", Some(""),true)(fakeRequest)
+      val result = controller.getPenaltiesData("123456789", Some(""), true)(fakeRequest)
       status(result) shouldBe Status.OK
       contentAsJson(result) shouldBe Json.parse(
-      """
-        |{
-        | "lateSubmissionPenalty":
-        | {
-        |   "summary":
-        |     {
-        |       "activePenaltyPoints":2,
-        |       "inactivePenaltyPoints":0,
-        |       "regimeThreshold":4,
-        |       "penaltyChargeAmount":200
-        |      },
-        |     "details":[]
-        | },
-        |  "latePaymentPenalty":
-        |   {
-        |     "details":[
-        |       {
-        |         "penaltyCategory":"LPP2",
-        |         "principalChargeReference":"12345678",
-        |         "penaltyChargeCreationDate":"2022-01-01",
-        |         "penaltyStatus":"A",
-        |         "principalChargeBillingFrom":"2022-01-01",
-        |         "principalChargeBillingTo":"2022-01-01",
-        |         "principalChargeDueDate":"2022-01-01",
-        |         "communicationsDate":"2022-01-01",
-        |         "penaltyAmountOutstanding":100,
-        |         "penaltyAmountPaid":44.21,
-        |         "penaltyChargeDueDate":"2022-01-01"
-        |         },
-        |         {
-        |         "penaltyCategory":"LPP2",
-        |         "principalChargeReference":"12345677",
-        |         "penaltyChargeCreationDate":"2022-01-01",
-        |         "penaltyStatus":"A",
-        |         "principalChargeBillingFrom":"2022-01-01",
-        |         "principalChargeBillingTo":"2022-01-01",
-        |         "principalChargeDueDate":"2022-01-01",
-        |         "communicationsDate":"2022-01-01",
-        |         "penaltyAmountOutstanding":23.45,
-        |         "penaltyAmountPaid":100,
-        |         "penaltyChargeDueDate":"2022-01-01"
-        |         },
-        |         {
-        |         "penaltyCategory":"LPP1",
-        |         "principalChargeReference":"12345676",
-        |         "penaltyChargeCreationDate":"2022-01-01",
-        |         "penaltyStatus":"P",
-        |         "principalChargeBillingFrom":"2022-01-01",
-        |         "principalChargeBillingTo":"2022-01-01",
-        |         "principalChargeDueDate":"2022-01-01",
-        |         "communicationsDate":"2022-01-01",
-        |         "penaltyAmountOutstanding":144,
-        |         "penaltyAmountPaid":0.21,
-        |         "penaltyChargeDueDate":"2022-01-01"
-        |         },
-        |         {
-        |         "penaltyCategory":"LPP1",
-        |         "principalChargeReference":"12345675",
-        |         "penaltyChargeCreationDate":"2022-01-01",
-        |         "penaltyStatus":"P",
-        |         "principalChargeBillingFrom":"2022-01-01",
-        |         "principalChargeBillingTo":"2022-01-01",
-        |         "principalChargeDueDate":"2022-01-01",
-        |         "communicationsDate":"2022-01-01",
-        |         "penaltyAmountOutstanding":144,
-        |         "penaltyAmountPaid":0.21,
-        |         "penaltyChargeDueDate":"2022-01-01"
-        |         }
-        |         ]
-        |         }
-        |         }
-        |""".stripMargin
+        """
+          |{
+          | "lateSubmissionPenalty":
+          | {
+          |   "summary":
+          |     {
+          |       "activePenaltyPoints": 2,
+          |       "inactivePenaltyPoints": 0,
+          |       "regimeThreshold": 4,
+          |       "penaltyChargeAmount": 200
+          |      },
+          |     "details": []
+          | },
+          |  "latePaymentPenalty":
+          |   {
+          |     "details":[
+          |       {
+          |         "penaltyCategory": "LPP2",
+          |         "penaltyChargeReference": "1234567892",
+          |         "principalChargeReference": "12345678",
+          |         "penaltyChargeCreationDate": "2022-01-01",
+          |         "penaltyStatus": "A",
+          |         "principalChargeBillingFrom": "2022-01-01",
+          |         "principalChargeBillingTo": "2022-01-01",
+          |         "principalChargeDueDate": "2022-01-01",
+          |         "communicationsDate": "2022-01-01",
+          |         "penaltyAmountOutstanding": 100,
+          |         "penaltyAmountPaid": 44.21,
+          |         "penaltyChargeDueDate": "2022-01-01"
+          |       },
+          |       {
+          |         "penaltyCategory": "LPP2",
+          |         "penaltyChargeReference": "1234567891",
+          |         "principalChargeReference": "12345677",
+          |         "penaltyChargeCreationDate": "2022-01-01",
+          |         "penaltyStatus": "A",
+          |         "principalChargeBillingFrom": "2022-01-01",
+          |         "principalChargeBillingTo": "2022-01-01",
+          |         "principalChargeDueDate": "2022-01-01",
+          |         "communicationsDate": "2022-01-01",
+          |         "penaltyAmountOutstanding": 23.45,
+          |         "penaltyAmountPaid": 100,
+          |         "penaltyChargeDueDate": "2022-01-01"
+          |       },
+          |       {
+          |         "penaltyCategory": "LPP1",
+          |         "penaltyChargeReference": "1234567890",
+          |         "principalChargeReference": "12345676",
+          |         "penaltyChargeCreationDate": "2022-01-01",
+          |         "penaltyStatus": "P",
+          |         "principalChargeBillingFrom": "2022-01-01",
+          |         "principalChargeBillingTo": "2022-01-01",
+          |         "principalChargeDueDate": "2022-01-01",
+          |         "communicationsDate": "2022-01-01",
+          |         "penaltyAmountOutstanding": 144,
+          |         "penaltyAmountPaid": 0.21,
+          |         "penaltyChargeDueDate": "2022-01-01"
+          |       },
+          |       {
+          |         "penaltyCategory": "LPP1",
+          |         "penaltyChargeReference": "1234567889",
+          |         "principalChargeReference": "12345675",
+          |         "penaltyChargeCreationDate": "2022-01-01",
+          |         "penaltyStatus": "P",
+          |         "principalChargeBillingFrom": "2022-01-01",
+          |         "principalChargeBillingTo": "2022-01-01",
+          |         "principalChargeDueDate": "2022-01-01",
+          |         "communicationsDate": "2022-01-01",
+          |         "penaltyAmountOutstanding": 144,
+          |         "penaltyAmountPaid": 0.21,
+          |         "penaltyChargeDueDate": "2022-01-01"
+          |       }
+          |    ]
+          |  }
+          |}
+          |""".stripMargin
       )
       verify(mockAuditService, times(1)).audit(Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any())
     }
@@ -336,7 +344,7 @@ class PenaltiesFrontendControllerSpec extends SpecBase{
       when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(Matchers.any())(Matchers.any()))
         .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetailsNoEstimatedLPPs))))
 
-      val result = controller.getPenaltiesData("123456789", Some(""),true)(fakeRequest)
+      val result = controller.getPenaltiesData("123456789", Some(""), true)(fakeRequest)
       status(result) shouldBe Status.OK
       contentAsJson(result) shouldBe Json.parse(
         """

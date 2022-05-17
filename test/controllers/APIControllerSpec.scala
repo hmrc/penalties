@@ -163,6 +163,7 @@ class APIControllerSpec extends SpecBase with FeatureSwitching {
                 LPPDetails(
                   penaltyCategory = LPPPenaltyCategoryEnum.SecondPenalty,
                   principalChargeReference = "12345678",
+                  penaltyChargeReference = Some("1234567893"),
                   penaltyChargeCreationDate = LocalDate.of(2022, 1, 1),
                   penaltyStatus = LPPPenaltyStatusEnum.Accruing,
                   appealInformation = None,
@@ -185,6 +186,7 @@ class APIControllerSpec extends SpecBase with FeatureSwitching {
                 LPPDetails(
                   penaltyCategory = LPPPenaltyCategoryEnum.SecondPenalty,
                   principalChargeReference = "12345677",
+                  penaltyChargeReference = Some("1234567892"),
                   penaltyChargeCreationDate = LocalDate.of(2022, 1, 1),
                   penaltyStatus = LPPPenaltyStatusEnum.Accruing,
                   appealInformation = None,
@@ -207,6 +209,7 @@ class APIControllerSpec extends SpecBase with FeatureSwitching {
                 LPPDetails(
                   penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
                   principalChargeReference = "12345676",
+                  penaltyChargeReference = Some("1234567891"),
                   penaltyChargeCreationDate = LocalDate.of(2022, 1, 1),
                   penaltyStatus = LPPPenaltyStatusEnum.Posted,
                   appealInformation = None,
@@ -229,6 +232,7 @@ class APIControllerSpec extends SpecBase with FeatureSwitching {
                 LPPDetails(
                   penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
                   principalChargeReference = "12345675",
+                  penaltyChargeReference = Some("1234567890"),
                   penaltyChargeCreationDate = LocalDate.of(2022, 1, 1),
                   penaltyStatus = LPPPenaltyStatusEnum.Posted,
                   appealInformation = None,
