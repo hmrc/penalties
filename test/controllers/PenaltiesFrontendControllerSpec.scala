@@ -161,7 +161,8 @@ class PenaltiesFrontendControllerSpec extends SpecBase {
                 LPP2Percentage = None,
                 LPP1LRPercentage = None,
                 LPP1HRPercentage = None,
-                penaltyChargeDueDate = LocalDate.of(2022, 1, 1)
+                penaltyChargeDueDate = LocalDate.of(2022, 1, 1),
+                principalChargeLatestClearing = None
               ),
               LPPDetails(
                 penaltyCategory = LPPPenaltyCategoryEnum.SecondPenalty,
@@ -184,7 +185,8 @@ class PenaltiesFrontendControllerSpec extends SpecBase {
                 LPP2Percentage = None,
                 LPP1LRPercentage = None,
                 LPP1HRPercentage = None,
-                penaltyChargeDueDate = LocalDate.of(2022, 1, 1)
+                penaltyChargeDueDate = LocalDate.of(2022, 1, 1),
+                principalChargeLatestClearing = None
               ),
               LPPDetails(
                 penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
@@ -207,7 +209,8 @@ class PenaltiesFrontendControllerSpec extends SpecBase {
                 LPP2Percentage = None,
                 LPP1LRPercentage = None,
                 LPP1HRPercentage = None,
-                penaltyChargeDueDate = LocalDate.of(2022, 1, 1)
+                penaltyChargeDueDate = LocalDate.of(2022, 1, 1),
+                principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1))
               ),
               LPPDetails(
                 penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
@@ -230,7 +233,8 @@ class PenaltiesFrontendControllerSpec extends SpecBase {
                 LPP2Percentage = None,
                 LPP1LRPercentage = None,
                 LPP1HRPercentage = None,
-                penaltyChargeDueDate = LocalDate.of(2022, 1, 1)
+                penaltyChargeDueDate = LocalDate.of(2022, 1, 1),
+                principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1))
               )
             )
           )
@@ -315,7 +319,8 @@ class PenaltiesFrontendControllerSpec extends SpecBase {
           |         "communicationsDate": "2022-01-01",
           |         "penaltyAmountOutstanding": 144,
           |         "penaltyAmountPaid": 0.21,
-          |         "penaltyChargeDueDate": "2022-01-01"
+          |         "penaltyChargeDueDate": "2022-01-01",
+          |         "principalChargeLatestClearing": "2022-01-01"
           |       },
           |       {
           |         "penaltyCategory": "LPP1",
@@ -329,7 +334,8 @@ class PenaltiesFrontendControllerSpec extends SpecBase {
           |         "communicationsDate": "2022-01-01",
           |         "penaltyAmountOutstanding": 144,
           |         "penaltyAmountPaid": 0.21,
-          |         "penaltyChargeDueDate": "2022-01-01"
+          |         "penaltyChargeDueDate": "2022-01-01",
+          |         "principalChargeLatestClearing": "2022-01-01"
           |       }
           |    ]
           |  }

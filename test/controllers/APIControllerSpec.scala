@@ -181,7 +181,8 @@ class APIControllerSpec extends SpecBase with FeatureSwitching {
                   LPP2Percentage = None,
                   LPP1LRPercentage = None,
                   LPP1HRPercentage = None,
-                  penaltyChargeDueDate = LocalDate.of(2022, 1, 1)
+                  penaltyChargeDueDate = LocalDate.of(2022, 1, 1),
+                  principalChargeLatestClearing = None
                 ),
                 LPPDetails(
                   penaltyCategory = LPPPenaltyCategoryEnum.SecondPenalty,
@@ -204,7 +205,8 @@ class APIControllerSpec extends SpecBase with FeatureSwitching {
                   LPP2Percentage = None,
                   LPP1LRPercentage = None,
                   LPP1HRPercentage = None,
-                  penaltyChargeDueDate = LocalDate.of(2022, 1, 1)
+                  penaltyChargeDueDate = LocalDate.of(2022, 1, 1),
+                  principalChargeLatestClearing = None
                 ),
                 LPPDetails(
                   penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
@@ -227,7 +229,8 @@ class APIControllerSpec extends SpecBase with FeatureSwitching {
                   LPP2Percentage = None,
                   LPP1LRPercentage = None,
                   LPP1HRPercentage = None,
-                  penaltyChargeDueDate = LocalDate.of(2022, 1, 1)
+                  penaltyChargeDueDate = LocalDate.of(2022, 1, 1),
+                  principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1))
                 ),
                 LPPDetails(
                   penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
@@ -250,7 +253,8 @@ class APIControllerSpec extends SpecBase with FeatureSwitching {
                   LPP2Percentage = None,
                   LPP1LRPercentage = None,
                   LPP1HRPercentage = None,
-                  penaltyChargeDueDate = LocalDate.of(2022, 1, 1)
+                  penaltyChargeDueDate = LocalDate.of(2022, 1, 1),
+                  principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1))
                 )
               )
             )

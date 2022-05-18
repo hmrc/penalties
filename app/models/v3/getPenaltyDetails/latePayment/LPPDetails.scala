@@ -42,7 +42,8 @@ case class LPPDetails(
                       LPP2Percentage: Option[BigDecimal],
                       LPP1LRPercentage: Option[BigDecimal],
                       LPP1HRPercentage: Option[BigDecimal],
-                      penaltyChargeDueDate: LocalDate
+                      penaltyChargeDueDate: LocalDate,
+                      principalChargeLatestClearing: Option[LocalDate]
                      )
 
 object LPPDetails {
