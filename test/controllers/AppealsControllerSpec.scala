@@ -372,7 +372,8 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching {
                   LPP2Percentage = None,
                   LPP1LRPercentage = None,
                   LPP1HRPercentage = None,
-                  penaltyChargeDueDate = LocalDate.of(2022, 8, 7)
+                  penaltyChargeDueDate = LocalDate.of(2022, 8, 7),
+                  principalChargeLatestClearing = None
                 ),
                 LPPDetails(
                   penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
@@ -395,7 +396,8 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching {
                   LPP2Percentage = None,
                   LPP1LRPercentage = None,
                   LPP1HRPercentage = None,
-                  penaltyChargeDueDate = LocalDate.of(2022, 8, 7)
+                  penaltyChargeDueDate = LocalDate.of(2022, 8, 7),
+                  principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1))
                 )
               )
             )
