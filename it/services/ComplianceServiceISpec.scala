@@ -16,8 +16,8 @@
 
 package services
 
+import config.featureSwitches.{CallDES, FeatureSwitching}
 import connectors.parsers.ComplianceParser._
-import featureSwitches.{CallDES, FeatureSwitching}
 import models.compliance.{CompliancePayload, ComplianceStatusEnum, ObligationDetail, ObligationIdentification}
 import play.api.test.Helpers._
 import utils.{ComplianceWiremock, IntegrationSpecCommonBase}

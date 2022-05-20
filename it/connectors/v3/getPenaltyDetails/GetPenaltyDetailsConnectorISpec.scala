@@ -16,8 +16,8 @@
 
 package connectors.v3.getPenaltyDetails
 
+import config.featureSwitches.{CallAPI1812ETMP, FeatureSwitching}
 import connectors.parsers.v3.getPenaltyDetails.GetPenaltyDetailsParser.{GetPenaltyDetailsFailureResponse, GetPenaltyDetailsMalformed, GetPenaltyDetailsResponse}
-import featureSwitches.{CallAPI1812ETMP, FeatureSwitching}
 import play.api.http.Status
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.http.HeaderCarrier

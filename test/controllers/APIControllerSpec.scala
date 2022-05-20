@@ -17,14 +17,15 @@
 package controllers
 
 import base.SpecBase
+import config.featureSwitches.{FeatureSwitching, UseAPI1812Model}
 import connectors.parsers.ETMPPayloadParser._
 import connectors.parsers.v3.getPenaltyDetails.GetPenaltyDetailsParser._
-import featureSwitches.{FeatureSwitching, UseAPI1812Model}
 import models.v3.getPenaltyDetails.GetPenaltyDetails
 import models.v3.getPenaltyDetails.latePayment._
 import models.v3.getPenaltyDetails.lateSubmission.{LSPSummary, LateSubmissionPenalty}
 import org.mockito.Matchers
 import org.mockito.Mockito._
+import play.api.Configuration
 import play.api.http.Status
 import play.api.libs.json.Json
 import play.api.test.Helpers._
@@ -41,6 +42,7 @@ class APIControllerSpec extends SpecBase with FeatureSwitching {
   val mockAuditService: AuditService = mock(classOf[AuditService])
   val mockAPIService: APIService = mock(classOf[APIService])
   val mockGetPenaltyDetailsService: GetPenaltyDetailsService = mock(classOf[GetPenaltyDetailsService])
+  implicit val config: Configuration = appConfig.config
 
   class Setup(isFSEnabled: Boolean = false) {
     reset(mockETMPService, mockAuditService, mockAPIService)

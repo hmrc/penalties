@@ -33,7 +33,7 @@ class ComplianceServiceSpec extends SpecBase {
   implicit val hc: HeaderCarrier = HeaderCarrier()
 
   class Setup {
-    val service = new ComplianceService(mockComplianceConnector)
+    val service = new ComplianceService(mockComplianceConnector)(appConfig.config)
     reset(mockComplianceConnector)
   }
 

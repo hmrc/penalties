@@ -16,7 +16,7 @@
 
 package controllers
 
-import featureSwitches.{CallDES, FeatureSwitching}
+import config.featureSwitches.{CallDES, FeatureSwitching}
 import play.api.libs.json.Json
 import play.api.test.Helpers._
 import utils.{ComplianceWiremock, IntegrationSpecCommonBase}

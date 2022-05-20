@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package featureSwitches
+package config.featureSwitches
 
 sealed trait FeatureSwitch {
   val name: String

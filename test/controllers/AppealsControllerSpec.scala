@@ -18,11 +18,11 @@ package controllers
 
 import base.SpecBase
 import config.AppConfig
+import config.featureSwitches.FeatureSwitching
 import connectors.FileNotificationOrchestratorConnector
 import connectors.parsers.AppealsParser.UnexpectedFailure
 import connectors.parsers.ETMPPayloadParser.{GetETMPPayloadMalformed, GetETMPPayloadNoContent, GetETMPPayloadSuccessResponse}
 import connectors.parsers.v3.getPenaltyDetails.GetPenaltyDetailsParser.{GetPenaltyDetailsFailureResponse, GetPenaltyDetailsSuccessResponse}
-import featureSwitches.FeatureSwitching
 import models.appeals.AppealData
 import models.appeals.AppealTypeEnum.{Additional, Late_Payment, Late_Submission}
 import models.appeals.v2.{AppealData => V2AppealData}
@@ -34,6 +34,7 @@ import models.v3.getPenaltyDetails.lateSubmission._
 import org.mockito.Matchers
 import org.mockito.Matchers.any
 import org.mockito.Mockito._
+import play.api.Configuration
 import play.api.http.Status
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.Result
@@ -52,6 +53,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching {
   val mockGetPenaltyDetailsService: GetPenaltyDetailsService = mock(classOf[GetPenaltyDetailsService])
   val correlationId = "id-1234567890"
   val connector: FileNotificationOrchestratorConnector = injector.instanceOf[FileNotificationOrchestratorConnector]
+  implicit val config: Configuration = mockAppConfig.config
 
   class Setup(withRealAppConfig: Boolean = true) {
     reset(mockAppConfig, mockETMPService, mockGetPenaltyDetailsService)

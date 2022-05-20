@@ -17,11 +17,11 @@
 package controllers
 
 import config.AppConfig
+import config.featureSwitches.FeatureSwitching
 import connectors.FileNotificationOrchestratorConnector
 import connectors.parsers.ETMPPayloadParser.GetETMPPayloadNoContent
 import connectors.parsers.v3.getPenaltyDetails.GetPenaltyDetailsParser
 import connectors.parsers.v3.getPenaltyDetails.GetPenaltyDetailsParser.GetPenaltyDetailsSuccessResponse
-import featureSwitches.FeatureSwitching
 import models.ETMPPayload
 import models.appeals.AppealTypeEnum._
 import models.appeals._
@@ -34,6 +34,7 @@ import models.upload.UploadJourney
 import models.v3.getPenaltyDetails.GetPenaltyDetails
 import models.v3.getPenaltyDetails.latePayment.LPPDetails
 import models.v3.getPenaltyDetails.lateSubmission.LSPDetails
+import play.api.Configuration
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, ControllerComponents, Result}
 import services.{ETMPService, GetPenaltyDetailsService}
@@ -46,12 +47,12 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class AppealsController @Inject()(appConfig: AppConfig,
+class AppealsController @Inject()(val appConfig: AppConfig,
                                   etmpService: ETMPService,
                                   getPenaltyDetailsService: GetPenaltyDetailsService,
                                   idGenerator: UUIDGenerator,
                                   fileNotificationOrchestratorConnector: FileNotificationOrchestratorConnector,
-                                  cc: ControllerComponents)(implicit ec: ExecutionContext)
+                                  cc: ControllerComponents)(implicit ec: ExecutionContext, val config: Configuration)
   extends BackendController(cc) with FeatureSwitching {
 
   private def getAppealDataForPenalty(penaltyId: String, enrolmentKey: String,
