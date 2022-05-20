@@ -17,20 +17,31 @@
 package connectors
 
 import connectors.parsers.ETMPPayloadParser.{ETMPPayloadResponse, GetETMPPayloadFailureResponse, GetETMPPayloadMalformed, GetETMPPayloadNoContent, GetETMPPayloadSuccessResponse}
-import featureSwitches.{CallETMP, FeatureSwitching}
+import featureSwitches.CallETMP
+import play.api.Application
 import play.api.http.Status
+import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.{JsValue, Json}
 import play.api.test.Helpers._
 import utils.{ETMPWiremock, IntegrationSpecCommonBase}
 
 import scala.concurrent.ExecutionContext
 
-class ETMPConnectorISpec extends IntegrationSpecCommonBase with ETMPWiremock with FeatureSwitching {
+class ETMPConnectorISpec extends IntegrationSpecCommonBase with ETMPWiremock {
 
   implicit val ec: ExecutionContext = ExecutionContext.Implicits.global
 
-  class Setup {
-    val connector: ETMPConnector = injector.instanceOf[ETMPConnector]
+  class Setup(isFSEnabled: Option[Boolean] = None) {
+    val localApp: Application = {
+      if (isFSEnabled.isDefined) {
+        new GuiceApplicationBuilder()
+          .configure(configForApp + (CallETMP.name -> isFSEnabled.get))
+          .build()
+      } else {
+        app
+      }
+    }
+    val connector: ETMPConnector = localApp.injector.instanceOf[ETMPConnector]
   }
 
   val etmpPayloadWithLPP: JsValue = Json.parse(
@@ -253,68 +264,61 @@ class ETMPConnectorISpec extends IntegrationSpecCommonBase with ETMPWiremock wit
 
 
   "getPenaltiesDataForEnrolmentKey" should {
-    "call ETMP when the feature switch is enabled and handle a successful response" in new Setup {
-      enableFeatureSwitch(CallETMP)
+    "call ETMP when the feature switch is enabled and handle a successful response" in new Setup(isFSEnabled = Some(true)) {
       mockResponseForETMPPayload(Status.OK, "123456789")
       val result: ETMPPayloadResponse = await(connector.getPenaltiesDataForEnrolmentKey("123456789"))
       result.isRight shouldBe true
       result.right.get.asInstanceOf[GetETMPPayloadSuccessResponse].etmpPayload shouldBe etmpPayloadModel
     }
 
-    "call ETMP when the feature switch is enabled and handle a successful response (with LPP)" in new Setup {
-      enableFeatureSwitch(CallETMP)
+    "call ETMP when the feature switch is enabled and handle a successful response (with LPP)" in new Setup(isFSEnabled = Some(true)) {
       mockResponseForETMPPayload(Status.OK, "123456789", Some(etmpPayloadWithLPP.toString()))
       val result: ETMPPayloadResponse = await(connector.getPenaltiesDataForEnrolmentKey("123456789"))
       result.isRight shouldBe true
       result.right.get.asInstanceOf[GetETMPPayloadSuccessResponse].etmpPayload shouldBe etmpPayloadModelWithLPP
     }
 
-    "call ETMP when the feature switch is enabled and handle a successful response (with LPP and additional penalty)" in new Setup {
-      enableFeatureSwitch(CallETMP)
+    "call ETMP when the feature switch is enabled and handle a successful response (with LPP and additional penalty)" in new Setup(isFSEnabled = Some(true)) {
       mockResponseForETMPPayload(Status.OK, "123456789", Some(etmpPayloadWithLPPAndAdditionalPenalty.toString()))
       val result: ETMPPayloadResponse = await(connector.getPenaltiesDataForEnrolmentKey("123456789"))
       result.isRight shouldBe true
       result.right.get.asInstanceOf[GetETMPPayloadSuccessResponse].etmpPayload shouldBe etmpPayloadModelWithLPPAndAdditionalPenalties
     }
 
-    "call the stub when the feature switch is disabled and handle a successful response" in new Setup {
-      disableFeatureSwitch(CallETMP)
-      mockResponseForStubETMPPayload(Status.OK, "123456789")
-      val result: ETMPPayloadResponse = await(connector.getPenaltiesDataForEnrolmentKey("123456789"))
-      result.isRight shouldBe true
-      result.right.get.asInstanceOf[GetETMPPayloadSuccessResponse].etmpPayload shouldBe etmpPayloadModel
-    }
-
-    s"return a $GetETMPPayloadMalformed when the JSON is malformed" in new Setup {
-      enableFeatureSwitch(CallETMP)
+    s"return a $GetETMPPayloadMalformed when the JSON is malformed" in new Setup(isFSEnabled = Some(true)) {
       mockResponseForETMPPayload(Status.OK, "123456789", body = Some("{}"))
       val result: ETMPPayloadResponse = await(connector.getPenaltiesDataForEnrolmentKey("123456789"))
       result.isLeft shouldBe true
       result.left.get shouldBe GetETMPPayloadMalformed
     }
 
-    s"return a $GetETMPPayloadNoContent when the response status is No Content (${Status.NO_CONTENT})" in new Setup {
-      enableFeatureSwitch(CallETMP)
+    s"return a $GetETMPPayloadNoContent when the response status is No Content (${Status.NO_CONTENT})" in new Setup(isFSEnabled = Some(true)) {
       mockResponseForETMPPayload(Status.NO_CONTENT, "123456789", body = Some("{}"))
       val result: ETMPPayloadResponse = await(connector.getPenaltiesDataForEnrolmentKey("123456789"))
       result.isLeft shouldBe true
       result.left.get shouldBe GetETMPPayloadNoContent
     }
 
-    s"return a $GetETMPPayloadFailureResponse when the response status is ISE (${Status.INTERNAL_SERVER_ERROR})" in new Setup {
-      enableFeatureSwitch(CallETMP)
+    s"return a $GetETMPPayloadFailureResponse when the response status is ISE (${Status.INTERNAL_SERVER_ERROR})" in new Setup(isFSEnabled = Some(true)) {
       mockResponseForETMPPayload(Status.INTERNAL_SERVER_ERROR, "123456789")
       val result: ETMPPayloadResponse = await(connector.getPenaltiesDataForEnrolmentKey("123456789"))
       result.isLeft shouldBe true
       result.left.get shouldBe GetETMPPayloadFailureResponse(Status.INTERNAL_SERVER_ERROR)
     }
 
-    s"return a $GetETMPPayloadFailureResponse when the response status is unmatched i.e. Gateway Timeout (${Status.GATEWAY_TIMEOUT})" in new Setup {
-      enableFeatureSwitch(CallETMP)
+    s"return a $GetETMPPayloadFailureResponse when the response status is unmatched i.e. Gateway Timeout (${Status.GATEWAY_TIMEOUT})" in
+      new Setup(isFSEnabled = Some(true)) {
       mockResponseForETMPPayload(Status.GATEWAY_TIMEOUT, "123456789")
       val result: ETMPPayloadResponse = await(connector.getPenaltiesDataForEnrolmentKey("123456789"))
       result.isLeft shouldBe true
       result.left.get shouldBe GetETMPPayloadFailureResponse(Status.GATEWAY_TIMEOUT)
+    }
+
+    "call the stub when the feature switch is disabled and handle a successful response" in new Setup(isFSEnabled = Some(false)) {
+      mockResponseForStubETMPPayload(Status.OK, "123456789")
+      val result: ETMPPayloadResponse = await(connector.getPenaltiesDataForEnrolmentKey("123456789"))
+      result.isRight shouldBe true
+      result.right.get.asInstanceOf[GetETMPPayloadSuccessResponse].etmpPayload shouldBe etmpPayloadModel
     }
   }
 }

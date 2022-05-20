@@ -16,13 +16,14 @@
 
 package config
 
-import featureSwitches.{CallAPI1812ETMP, CallDES, CallAPI1811ETMP, CallETMP, CallPEGA, FeatureSwitching}
+import featureSwitches.{CallAPI1811ETMP, CallAPI1812ETMP, CallDES, CallETMP, CallPEGA, FeatureSwitch}
+
 import javax.inject.{Inject, Singleton}
 import play.api.Configuration
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
 @Singleton
-class AppConfig @Inject()(config: Configuration, servicesConfig: ServicesConfig) extends FeatureSwitching {
+class AppConfig @Inject()(config: Configuration, servicesConfig: ServicesConfig) {
   val auditingEnabled: Boolean = config.get[Boolean]("auditing.enabled")
   val graphiteHost: String     = config.get[String]("microservice.metrics.graphite.host")
 
@@ -47,23 +48,23 @@ class AppConfig @Inject()(config: Configuration, servicesConfig: ServicesConfig)
   lazy val SDESNotificationFileRecipient: String = config.get[String]("SDESNotification.file.recipient")
 
   def getVATPenaltiesURL: String = {
-    if(!isEnabled(CallETMP)) stubBase + "/penalties-stub/etmp/mtd-vat/"
+    if(!isFeatureSwitchEnabled(CallETMP)) stubBase + "/penalties-stub/etmp/mtd-vat/"
     //TODO: change to relevant URL when implemented
     else etmpBase + "/"
   }
 
   def getPenaltyDetailsUrl: String = {
-    if(!isEnabled(CallAPI1812ETMP)) stubBase + "/penalties-stub/penalty/details/VATC/VRN/"
+    if(!isFeatureSwitchEnabled(CallAPI1812ETMP)) stubBase + "/penalties-stub/penalty/details/VATC/VRN/"
     else etmpBase + "/penalty/details/VATC/VRN/"
   }
 
   def getFinancialDetailsUrl: String = {
-    if(!isEnabled(CallAPI1811ETMP)) stubBase + "/penalties-stub/penalty/financial-data"
+    if(!isFeatureSwitchEnabled(CallAPI1811ETMP)) stubBase + "/penalties-stub/penalty/financial-data"
     else etmpBase + "/penalty/financial-data"
   }
 
   def getAppealSubmissionURL(enrolmentKey: String, isLPP: Boolean, penaltyNumber: String): String = {
-    if(!isEnabled(CallPEGA)) stubBase + s"/penalties-stub/appeals/submit?enrolmentKey=$enrolmentKey&isLPP=$isLPP&penaltyNumber=$penaltyNumber"
+    if(!isFeatureSwitchEnabled(CallPEGA)) stubBase + s"/penalties-stub/appeals/submit?enrolmentKey=$enrolmentKey&isLPP=$isLPP&penaltyNumber=$penaltyNumber"
     //TODO: change to relevant URL when implemented
     else pegaBase + s"/penalty/first-stage-appeal/$penaltyNumber"
   }
@@ -73,10 +74,14 @@ class AppConfig @Inject()(config: Configuration, servicesConfig: ServicesConfig)
   }
 
   def getComplianceData(vrn: String, fromDate: String, toDate: String): String = {
-    if(isEnabled(CallDES)) {
+    if(isFeatureSwitchEnabled(CallDES)) {
       desBase + s"/enterprise/obligation-data/vrn/$vrn/VATC?from=$fromDate&to=$toDate"
     } else {
       desBase + s"/penalties-stub/enterprise/obligation-data/vrn/$vrn/VATC?from=$fromDate&to=$toDate"
     }
   }
+
+  def isFeatureSwitchEnabled(path: String): Boolean = config.get[Boolean](path)
+
+  private def isFeatureSwitchEnabled(featureSwitch: FeatureSwitch): Boolean = isFeatureSwitchEnabled(featureSwitch.name)
 }

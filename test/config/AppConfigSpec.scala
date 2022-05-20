@@ -16,15 +16,16 @@
 
 package config
 
-import featureSwitches.{CallAPI1811ETMP, CallAPI1812ETMP, CallDES, CallETMP, CallPEGA, FeatureSwitching}
+import featureSwitches._
 import org.mockito.Matchers
+import org.mockito.Matchers.any
 import org.mockito.Mockito._
 import org.scalatest.matchers.should.{Matchers => ShouldMatchers}
 import org.scalatest.wordspec.AnyWordSpec
 import play.api.Configuration
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
-class AppConfigSpec extends AnyWordSpec with ShouldMatchers with FeatureSwitching {
+class AppConfigSpec extends AnyWordSpec with ShouldMatchers {
   val mockConfiguration: Configuration = mock(classOf[Configuration])
   val mockServicesConfig: ServicesConfig = mock(classOf[ServicesConfig])
   class Setup {
@@ -35,7 +36,8 @@ class AppConfigSpec extends AnyWordSpec with ShouldMatchers with FeatureSwitchin
 
   "getVATPenaltiesURL" should {
     "call ETMP when the feature switch is enabled" in new Setup {
-      enableFeatureSwitch(CallETMP)
+      when(mockConfiguration.get[Boolean](Matchers.eq(CallETMP.name))(any()))
+        .thenReturn(true)
       when(mockServicesConfig.baseUrl(Matchers.any()))
         .thenReturn("localhost:0000")
       val result: String = config.getVATPenaltiesURL
@@ -44,7 +46,8 @@ class AppConfigSpec extends AnyWordSpec with ShouldMatchers with FeatureSwitchin
     }
 
     "call the stub when the feature switch is disabled" in new Setup {
-      disableFeatureSwitch(CallETMP)
+      when(mockConfiguration.get[Boolean](Matchers.eq(CallETMP.name))(any()))
+        .thenReturn(false)
       when(mockServicesConfig.baseUrl(Matchers.any()))
         .thenReturn("localhost:0000")
       val result: String = config.getVATPenaltiesURL
@@ -54,7 +57,8 @@ class AppConfigSpec extends AnyWordSpec with ShouldMatchers with FeatureSwitchin
 
   "getPenaltyDetailsUrl" should {
     "call ETMP when the feature switch is enabled" in new Setup {
-      enableFeatureSwitch(CallAPI1812ETMP)
+      when(mockConfiguration.get[Boolean](Matchers.eq(CallAPI1812ETMP.name))(any()))
+        .thenReturn(true)
       when(mockServicesConfig.baseUrl(Matchers.any()))
         .thenReturn("localhost:0000")
       val result: String = config.getPenaltyDetailsUrl
@@ -63,7 +67,8 @@ class AppConfigSpec extends AnyWordSpec with ShouldMatchers with FeatureSwitchin
     }
 
     "call the stub when the feature switch is disabled" in new Setup {
-      disableFeatureSwitch(CallAPI1812ETMP)
+      when(mockConfiguration.get[Boolean](Matchers.eq(CallAPI1812ETMP.name))(any()))
+        .thenReturn(false)
       when(mockServicesConfig.baseUrl(Matchers.any()))
         .thenReturn("localhost:0000")
       val result: String = config.getPenaltyDetailsUrl
@@ -73,7 +78,8 @@ class AppConfigSpec extends AnyWordSpec with ShouldMatchers with FeatureSwitchin
 
   "getFinancialDetailsUrl" should {
     "call ETMP when the feature switch is enabled" in new Setup {
-      enableFeatureSwitch(CallAPI1811ETMP)
+      when(mockConfiguration.get[Boolean](Matchers.eq(CallAPI1811ETMP.name))(any()))
+        .thenReturn(true)
       when(mockServicesConfig.baseUrl(Matchers.any()))
         .thenReturn("localhost:0000")
       val result: String = config.getFinancialDetailsUrl
@@ -82,7 +88,8 @@ class AppConfigSpec extends AnyWordSpec with ShouldMatchers with FeatureSwitchin
     }
 
     "call the stub when the feature switch is disabled" in new Setup {
-      disableFeatureSwitch(CallAPI1811ETMP)
+      when(mockConfiguration.get[Boolean](Matchers.eq(CallAPI1811ETMP.name))(any()))
+        .thenReturn(false)
       when(mockServicesConfig.baseUrl(Matchers.any()))
         .thenReturn("localhost:0000")
       val result: String = config.getFinancialDetailsUrl
@@ -91,8 +98,9 @@ class AppConfigSpec extends AnyWordSpec with ShouldMatchers with FeatureSwitchin
   }
 
   "getAppealSubmissionURL" should {
-    "call ETMP when the feature switch is enabled" in new Setup {
-      enableFeatureSwitch(CallPEGA)
+    "call PEGA when the feature switch is enabled" in new Setup {
+      when(mockConfiguration.get[Boolean](Matchers.eq(CallPEGA.name))(any()))
+        .thenReturn(true)
       when(mockServicesConfig.baseUrl(Matchers.any()))
         .thenReturn("localhost:0000")
       val result: String = config.getAppealSubmissionURL("HMRC-MTD-VAT~VRN~123456789", isLPP = false, penaltyNumber = "0000001")
@@ -100,7 +108,8 @@ class AppConfigSpec extends AnyWordSpec with ShouldMatchers with FeatureSwitchin
     }
 
     "call the stub when the feature switch is disabled" in new Setup {
-      disableFeatureSwitch(CallPEGA)
+      when(mockConfiguration.get[Boolean](Matchers.eq(CallPEGA.name))(any()))
+        .thenReturn(false)
       when(mockServicesConfig.baseUrl(Matchers.any()))
         .thenReturn("localhost:0000")
       val result: String = config.getAppealSubmissionURL("HMRC-MTD-VAT~VRN~123456789", isLPP = false, penaltyNumber = "0000001")
@@ -108,7 +117,8 @@ class AppConfigSpec extends AnyWordSpec with ShouldMatchers with FeatureSwitchin
     }
 
     "call the stub when the feature switch is disabled - for LPP" in new Setup {
-      disableFeatureSwitch(CallPEGA)
+      when(mockConfiguration.get[Boolean](Matchers.eq(CallPEGA.name))(any()))
+        .thenReturn(false)
       when(mockServicesConfig.baseUrl(Matchers.any()))
         .thenReturn("localhost:0000")
       val result: String = config.getAppealSubmissionURL("HMRC-MTD-VAT~VRN~123456789", isLPP = true, penaltyNumber = "0000001")
@@ -118,7 +128,8 @@ class AppConfigSpec extends AnyWordSpec with ShouldMatchers with FeatureSwitchin
 
   "getComplianceData" should {
     "call the stub when the feature switch is disabled" in new Setup {
-      disableFeatureSwitch(CallDES)
+      when(mockConfiguration.get[Boolean](Matchers.eq(CallDES.name))(any()))
+        .thenReturn(false)
       when(mockServicesConfig.baseUrl(Matchers.any()))
         .thenReturn("localhost:0000")
       val result: String = config.getComplianceData("123456789", "2020-01-01", "2020-12-31")
@@ -126,7 +137,8 @@ class AppConfigSpec extends AnyWordSpec with ShouldMatchers with FeatureSwitchin
     }
 
     "call the stub when the feature switch is enabled" in new Setup {
-      enableFeatureSwitch(CallDES)
+      when(mockConfiguration.get[Boolean](Matchers.eq(CallDES.name))(any()))
+        .thenReturn(true)
       when(mockServicesConfig.baseUrl(Matchers.any()))
         .thenReturn("localhost:0000")
       val result: String = config.getComplianceData("123456789", "2020-01-01", "2020-12-31")

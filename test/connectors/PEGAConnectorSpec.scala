@@ -18,7 +18,7 @@ package connectors
 
 import base.SpecBase
 import connectors.parsers.AppealsParser.AppealSubmissionResponse
-import featureSwitches.{CallPEGA, FeatureSwitching}
+import featureSwitches.FeatureSwitching
 import models.appeals.{AgentDetails, AppealSubmission, CrimeAppealInformation}
 import org.mockito.Mockito._
 import org.mockito.{ArgumentCaptor, Matchers}
@@ -43,7 +43,6 @@ class PEGAConnectorSpec extends SpecBase with FeatureSwitching {
 
   "submitAppeal with headers" should {
     "return the response of the call - including extra headers" in new Setup {
-      enableFeatureSwitch(CallPEGA)
       val argumentCaptorOtherHeaders: ArgumentCaptor[Seq[(String, String)]] = ArgumentCaptor.forClass(classOf[Seq[(String, String)]])
       when(mockHttpClient.POST[AppealSubmission, AppealSubmissionResponse](
         Matchers.any(),

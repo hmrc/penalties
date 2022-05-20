@@ -21,7 +21,6 @@ import connectors.FileNotificationOrchestratorConnector
 import connectors.parsers.ETMPPayloadParser.GetETMPPayloadNoContent
 import connectors.parsers.v3.getPenaltyDetails.GetPenaltyDetailsParser
 import connectors.parsers.v3.getPenaltyDetails.GetPenaltyDetailsParser.GetPenaltyDetailsSuccessResponse
-import featureSwitches.FeatureSwitching
 import models.ETMPPayload
 import models.appeals.AppealTypeEnum._
 import models.appeals._
@@ -52,7 +51,7 @@ class AppealsController @Inject()(appConfig: AppConfig,
                                   idGenerator: UUIDGenerator,
                                   fileNotificationOrchestratorConnector: FileNotificationOrchestratorConnector,
                                   cc: ControllerComponents)(implicit ec: ExecutionContext)
-  extends BackendController(cc) with FeatureSwitching {
+  extends BackendController(cc) {
 
   private def getAppealDataForPenalty(penaltyId: String, enrolmentKey: String,
                                       penaltyType: AppealTypeEnum.Value, useNewApiModel: Boolean)(implicit hc: HeaderCarrier): Future[Result] = {

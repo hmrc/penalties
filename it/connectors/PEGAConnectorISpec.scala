@@ -16,26 +16,37 @@
 
 package connectors
 
-import featureSwitches.{CallPEGA, FeatureSwitching}
+import featureSwitches.CallPEGA
 import models.appeals.{AppealSubmission, CrimeAppealInformation}
+import play.api.Application
 import play.api.http.Status
+import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.Helpers._
 import utils.{AppealWiremock, IntegrationSpecCommonBase}
 
 import java.time.LocalDateTime
 import scala.concurrent.ExecutionContext
 
-class PEGAConnectorISpec extends IntegrationSpecCommonBase with AppealWiremock with FeatureSwitching {
+class PEGAConnectorISpec extends IntegrationSpecCommonBase with AppealWiremock {
   implicit val ec: ExecutionContext = ExecutionContext.Implicits.global
 
-  class Setup {
-    val connector: PEGAConnector = injector.instanceOf[PEGAConnector]
+  class Setup(isFSEnabled: Option[Boolean] = None) {
+    val localApp: Application = {
+      if (isFSEnabled.isDefined) {
+        new GuiceApplicationBuilder()
+          .configure(configForApp + (CallPEGA.name -> isFSEnabled.get))
+          .build()
+      } else {
+        app
+      }
+    }
+    val connector: PEGAConnector = localApp.injector.instanceOf[PEGAConnector]
     val correlationId: String = "corId"
   }
 
   "submitAppeal" should {
-    "Jsonify the model and send the request and return the response with Headers- when PEGA feature switch enabled, call PEGA" in new Setup {
-      enableFeatureSwitch(CallPEGA)
+    "Jsonify the model and send the request and return the response with Headers- when PEGA feature switch enabled, call PEGA" in
+      new Setup(isFSEnabled = Some(true)) {
       mockResponseForAppealSubmissionPEGA(Status.OK, "1234567890")
       val modelToSend: AppealSubmission = AppealSubmission(
         taxRegime = "VAT",
@@ -60,8 +71,8 @@ class PEGAConnectorISpec extends IntegrationSpecCommonBase with AppealWiremock w
       result.isRight shouldBe true
     }
 
-    "Jsonify the model and send the request and return the response - when PEGA feature switch disabled, call stub" in new Setup {
-      disableFeatureSwitch(CallPEGA)
+    "Jsonify the model and send the request and return the response - when PEGA feature switch disabled, call stub" in
+      new Setup(isFSEnabled = Some(false)) {
       mockResponseForAppealSubmissionStub(Status.OK, "HMRC-MTD-VAT~VRN~123456789", penaltyNumber = "123456789")
       val modelToSend: AppealSubmission = AppealSubmission(
         taxRegime = "VAT",
@@ -86,8 +97,8 @@ class PEGAConnectorISpec extends IntegrationSpecCommonBase with AppealWiremock w
       result.isRight shouldBe true
     }
 
-    "Jsonify the model and send the request and return the response - when PEGA feature switch disabled, call stub - for LPP" in new Setup {
-      disableFeatureSwitch(CallPEGA)
+    "Jsonify the model and send the request and return the response - when PEGA feature switch disabled, call stub - for LPP" in
+      new Setup(isFSEnabled = Some(false)) {
       mockResponseForAppealSubmissionStub(Status.OK, "HMRC-MTD-VAT~VRN~123456789", isLPP = true, penaltyNumber = "123456789")
       val modelToSend: AppealSubmission = AppealSubmission  (
         taxRegime = "VAT",

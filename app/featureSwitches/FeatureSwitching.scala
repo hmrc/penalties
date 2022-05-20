@@ -16,18 +16,12 @@
 
 package featureSwitches
 
+import config.AppConfig
+
 trait FeatureSwitching {
-  val FEATURE_SWITCH_ON = "true"
-  val FEATURE_SWITCH_OFF = "false"
+  implicit val appConfig: AppConfig
 
-  def isEnabled(featureSwitch: FeatureSwitch): Boolean =
-    sys.props get featureSwitch.name contains FEATURE_SWITCH_ON
-
-  def enableFeatureSwitch(featureSwitch: FeatureSwitch): Unit =
-    sys.props += featureSwitch.name -> FEATURE_SWITCH_ON
-
-  def disableFeatureSwitch(featureSwitch: FeatureSwitch): Unit =
-    sys.props += featureSwitch.name -> FEATURE_SWITCH_OFF
+  def isEnabled(featureSwitch: FeatureSwitch): Boolean = appConfig.isFeatureSwitchEnabled(featureSwitch.name)
 }
 
 

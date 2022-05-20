@@ -16,13 +16,12 @@
 
 package controllers
 
-import featureSwitches.FeatureSwitching
 import play.api.http.Status
 import play.api.libs.json.{JsValue, Json}
 import play.api.test.Helpers._
 import utils.{AppealWiremock, ETMPWiremock, IntegrationSpecCommonBase}
 
-class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock with AppealWiremock with FeatureSwitching {
+class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock with AppealWiremock {
   val controller: AppealsController = injector.instanceOf[AppealsController]
 
   val lspAndLppBodyToReturnFromETMP: JsValue = Json.parse(

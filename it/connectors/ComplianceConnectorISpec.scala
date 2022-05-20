@@ -17,29 +17,37 @@
 package connectors
 
 import connectors.parsers.ComplianceParser._
-import featureSwitches.{CallDES, FeatureSwitching}
+import featureSwitches.CallDES
 import models.compliance.{CompliancePayload, ComplianceStatusEnum, ObligationDetail, ObligationIdentification}
+import play.api.Application
 import play.api.http.Status
+import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.Helpers._
 import utils.{ComplianceWiremock, IntegrationSpecCommonBase}
 
 import java.time.{LocalDate, LocalDateTime}
 import scala.concurrent.ExecutionContext
 
-class ComplianceConnectorISpec extends IntegrationSpecCommonBase with ComplianceWiremock with FeatureSwitching {
-
+class ComplianceConnectorISpec extends IntegrationSpecCommonBase with ComplianceWiremock {
   implicit val ec: ExecutionContext = ExecutionContext.Implicits.global
   val testStartDate: LocalDateTime = LocalDateTime.of(2021,1,1, 1,0,0)
   val testEndDate: LocalDateTime = LocalDateTime.of(2021,1,8,1,0,0)
 
-  class Setup {
-    val connector: ComplianceConnector = injector.instanceOf[ComplianceConnector]
-    enableFeatureSwitch(CallDES)
+  class Setup(isFSEnabled: Option[Boolean] = None) {
+    val localApp: Application = {
+      if (isFSEnabled.isDefined) {
+        new GuiceApplicationBuilder()
+          .configure(configForApp + (CallDES.name -> isFSEnabled.get))
+          .build()
+      } else {
+        app
+      }
+    }
+    val connector: ComplianceConnector = localApp.injector.instanceOf[ComplianceConnector]
   }
 
   "getComplianceData" should {
-    "call DES and handle a successful response" in new Setup {
-      enableFeatureSwitch(CallDES)
+    "call DES and handle a successful response" in new Setup(isFSEnabled = Some(true)) {
       val compliancePayloadAsModel: CompliancePayload = CompliancePayload(
         identification = ObligationIdentification(
           incomeSourceType = None,
@@ -71,8 +79,29 @@ class ComplianceConnectorISpec extends IntegrationSpecCommonBase with Compliance
       result.right.get.asInstanceOf[CompliancePayloadSuccessResponse].model shouldBe compliancePayloadAsModel
     }
 
-    "call stub and handle a successful response" in new Setup {
-      disableFeatureSwitch(CallDES)
+    s"return a $CompliancePayloadNoData when the response status is Not Found (${Status.NOT_FOUND})" in new Setup(isFSEnabled = Some(true)) {
+      mockResponseForComplianceDataFromDES(Status.NOT_FOUND, "123456789", "2020-01-01", "2020-12-31")
+      val result: CompliancePayloadResponse = await(connector.getComplianceData("123456789", "2020-01-01", "2020-12-31"))
+      result.isLeft shouldBe true
+      result.left.get shouldBe CompliancePayloadNoData
+    }
+
+    s"return a $CompliancePayloadFailureResponse when the response status is ISE (${Status.INTERNAL_SERVER_ERROR})" in new Setup(isFSEnabled = Some(true)) {
+      mockResponseForComplianceDataFromDES(Status.INTERNAL_SERVER_ERROR, "123456789", "2020-01-01", "2020-12-31")
+      val result: CompliancePayloadResponse = await(connector.getComplianceData("123456789", "2020-01-01", "2020-12-31"))
+      result.isLeft shouldBe true
+      result.left.get shouldBe CompliancePayloadFailureResponse(Status.INTERNAL_SERVER_ERROR)
+    }
+
+    s"return a $CompliancePayloadFailureResponse when the response status is unmatched i.e. Gateway Timeout (${Status.SERVICE_UNAVAILABLE})" in
+      new Setup(isFSEnabled = Some(true)) {
+      mockResponseForComplianceDataFromDES(Status.SERVICE_UNAVAILABLE,"123456789", "2020-01-01", "2020-12-31")
+      val result: CompliancePayloadResponse = await(connector.getComplianceData("123456789", "2020-01-01","2020-12-31"))
+      result.isLeft shouldBe true
+      result.left.get shouldBe CompliancePayloadFailureResponse(Status.SERVICE_UNAVAILABLE)
+    }
+
+    "call stub and handle a successful response" in new Setup(isFSEnabled = Some(false)) {
       val compliancePayloadAsModel: CompliancePayload = CompliancePayload(
         identification = ObligationIdentification(
           incomeSourceType = None,
@@ -102,27 +131,6 @@ class ComplianceConnectorISpec extends IntegrationSpecCommonBase with Compliance
       val result: CompliancePayloadResponse = await(connector.getComplianceData("123456789", "2020-01-01", "2020-12-31"))
       result.isRight shouldBe true
       result.right.get.asInstanceOf[CompliancePayloadSuccessResponse].model shouldBe compliancePayloadAsModel
-    }
-
-    s"return a $CompliancePayloadNoData when the response status is Not Found (${Status.NOT_FOUND})" in new Setup {
-      mockResponseForComplianceDataFromDES(Status.NOT_FOUND, "123456789", "2020-01-01", "2020-12-31")
-      val result: CompliancePayloadResponse = await(connector.getComplianceData("123456789", "2020-01-01", "2020-12-31"))
-      result.isLeft shouldBe true
-      result.left.get shouldBe CompliancePayloadNoData
-    }
-
-    s"return a $CompliancePayloadFailureResponse when the response status is ISE (${Status.INTERNAL_SERVER_ERROR})" in new Setup {
-      mockResponseForComplianceDataFromDES(Status.INTERNAL_SERVER_ERROR, "123456789", "2020-01-01", "2020-12-31")
-      val result: CompliancePayloadResponse = await(connector.getComplianceData("123456789", "2020-01-01", "2020-12-31"))
-      result.isLeft shouldBe true
-      result.left.get shouldBe CompliancePayloadFailureResponse(Status.INTERNAL_SERVER_ERROR)
-    }
-
-    s"return a $CompliancePayloadFailureResponse when the response status is unmatched i.e. Gateway Timeout (${Status.SERVICE_UNAVAILABLE})" in new Setup {
-      mockResponseForComplianceDataFromDES(Status.SERVICE_UNAVAILABLE,"123456789", "2020-01-01", "2020-12-31")
-      val result: CompliancePayloadResponse = await(connector.getComplianceData("123456789", "2020-01-01","2020-12-31"))
-      result.isLeft shouldBe true
-      result.left.get shouldBe CompliancePayloadFailureResponse(Status.SERVICE_UNAVAILABLE)
     }
   }
 }

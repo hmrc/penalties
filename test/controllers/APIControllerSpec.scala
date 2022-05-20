@@ -17,6 +17,7 @@
 package controllers
 
 import base.SpecBase
+import config.AppConfig
 import connectors.parsers.ETMPPayloadParser._
 import connectors.parsers.v3.getPenaltyDetails.GetPenaltyDetailsParser._
 import featureSwitches.{FeatureSwitching, UseAPI1812Model}
@@ -41,12 +42,13 @@ class APIControllerSpec extends SpecBase with FeatureSwitching {
   val mockAuditService: AuditService = mock(classOf[AuditService])
   val mockAPIService: APIService = mock(classOf[APIService])
   val mockGetPenaltyDetailsService: GetPenaltyDetailsService = mock(classOf[GetPenaltyDetailsService])
+  val mockAppConfig: AppConfig = mock(classOf[AppConfig])
 
   class Setup(isFSEnabled: Boolean = false) {
-    reset(mockETMPService, mockAuditService, mockAPIService)
+    reset(mockETMPService, mockAuditService, mockAPIService, mockAppConfig)
     val controller = new APIController(mockETMPService, mockAuditService, mockAPIService,
-      mockGetPenaltyDetailsService, stubControllerComponents())
-    if(isFSEnabled) enableFeatureSwitch(UseAPI1812Model) else disableFeatureSwitch(UseAPI1812Model)
+      mockGetPenaltyDetailsService, stubControllerComponents())(implicitly, mockAppConfig)
+    when(mockAppConfig.isFeatureSwitchEnabled(UseAPI1812Model.name)).thenReturn(isFSEnabled)
   }
 
   "getSummaryDataForVRN" should {

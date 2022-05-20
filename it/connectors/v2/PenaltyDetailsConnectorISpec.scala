@@ -18,27 +18,30 @@ package connectors.v2
 
 
 import connectors.parsers.v2.GetPenaltyDetailsParser.{GetPenaltyDetailsFailureResponse, GetPenaltyDetailsMalformed, GetPenaltyDetailsResponse}
-import featureSwitches.{CallAPI1811ETMP, FeatureSwitching}
+import featureSwitches.CallAPI1812ETMP
+import play.api.Application
 import play.api.http.Status
+import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import utils.{ETMPWiremock, IntegrationSpecCommonBase}
 
-class PenaltyDetailsConnectorISpec extends IntegrationSpecCommonBase with ETMPWiremock with FeatureSwitching {
+class PenaltyDetailsConnectorISpec extends IntegrationSpecCommonBase with ETMPWiremock {
 
   class Setup {
+    val localApp: Application = new GuiceApplicationBuilder()
+      .configure(configForApp + (CallAPI1812ETMP.name -> true))
+      .build()
     val connector: PenaltyDetailsConnector = injector.instanceOf[PenaltyDetailsConnector]
   }
 
   "getPenaltyDetails" should {
     "return a successful response when called" in new Setup {
-      enableFeatureSwitch(CallAPI1811ETMP)
       mockResponseForGetPenaltyDetails(Status.OK, "123456789")
       val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails("123456789"))
       result.isRight shouldBe true
     }
 
     s"return a $GetPenaltyDetailsMalformed response when called" in new Setup {
-      enableFeatureSwitch(CallAPI1811ETMP)
       val malformedBody =  """
           {
            "lateSubmissionPenalty": {
@@ -53,7 +56,6 @@ class PenaltyDetailsConnectorISpec extends IntegrationSpecCommonBase with ETMPWi
     }
 
     s"return a $GetPenaltyDetailsFailureResponse when the response status is ISE (${Status.INTERNAL_SERVER_ERROR})" in new Setup {
-      enableFeatureSwitch(CallAPI1811ETMP)
       mockResponseForGetPenaltyDetails(Status.INTERNAL_SERVER_ERROR, "123456789")
       val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails("123456789"))
       result.isLeft shouldBe true
@@ -61,7 +63,6 @@ class PenaltyDetailsConnectorISpec extends IntegrationSpecCommonBase with ETMPWi
     }
 
     s"return a $GetPenaltyDetailsFailureResponse when the response status is ISE (${Status.SERVICE_UNAVAILABLE})" in new Setup {
-      enableFeatureSwitch(CallAPI1811ETMP)
       mockResponseForGetPenaltyDetails(Status.SERVICE_UNAVAILABLE, "123456789")
       val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails("123456789"))
       result.isLeft shouldBe true
@@ -69,7 +70,6 @@ class PenaltyDetailsConnectorISpec extends IntegrationSpecCommonBase with ETMPWi
      }
 
     s"return a $GetPenaltyDetailsFailureResponse when the response status is NOT FOUND (${Status.NOT_FOUND})" in new Setup {
-      enableFeatureSwitch(CallAPI1811ETMP)
       mockResponseForGetPenaltyDetails(Status.NOT_FOUND, "123456789")
       val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails("123456789"))
       result.isLeft shouldBe true
@@ -77,7 +77,6 @@ class PenaltyDetailsConnectorISpec extends IntegrationSpecCommonBase with ETMPWi
     }
 
     s"return a $GetPenaltyDetailsFailureResponse when the response status is CONFLICT (${Status.CONFLICT})" in new Setup {
-      enableFeatureSwitch(CallAPI1811ETMP)
       mockResponseForGetPenaltyDetails(Status.CONFLICT, "123456789")
       val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails("123456789"))
       result.isLeft shouldBe true
@@ -85,7 +84,6 @@ class PenaltyDetailsConnectorISpec extends IntegrationSpecCommonBase with ETMPWi
     }
 
     s"return a $GetPenaltyDetailsFailureResponse when the response status is UNPROCESSABLE ENTITY (${Status.UNPROCESSABLE_ENTITY})" in new Setup {
-      enableFeatureSwitch(CallAPI1811ETMP)
       mockResponseForGetPenaltyDetails(Status.UNPROCESSABLE_ENTITY, "123456789")
       val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails("123456789"))
       result.isLeft shouldBe true
@@ -93,7 +91,6 @@ class PenaltyDetailsConnectorISpec extends IntegrationSpecCommonBase with ETMPWi
     }
 
     s"return a $GetPenaltyDetailsFailureResponse when the response status is ISE (${Status.BAD_REQUEST})" in new Setup {
-      enableFeatureSwitch(CallAPI1811ETMP)
       mockResponseForGetPenaltyDetails(Status.BAD_REQUEST, "123456789")
       val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails("123456789"))
       result.isLeft shouldBe true

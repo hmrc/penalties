@@ -16,6 +16,7 @@
 
 package controllers
 
+import config.AppConfig
 import connectors.parsers.v3.getPenaltyDetails.GetPenaltyDetailsParser
 import connectors.parsers.v3.getPenaltyDetails.GetPenaltyDetailsParser.GetPenaltyDetailsSuccessResponse
 import featureSwitches.{FeatureSwitching, UseAPI1812Model}
@@ -41,7 +42,7 @@ class APIController @Inject()(etmpService: ETMPService,
                               auditService: AuditService,
                               apiService: APIService,
                               getPenaltyDetailsService: GetPenaltyDetailsService,
-                              cc: ControllerComponents)(implicit ec: ExecutionContext) extends BackendController(cc) with FeatureSwitching {
+                              cc: ControllerComponents)(implicit ec: ExecutionContext, val appConfig: AppConfig) extends BackendController(cc) with FeatureSwitching {
 
   private val vrnRegex: Regex = "^[0-9]{1,9}$".r
 

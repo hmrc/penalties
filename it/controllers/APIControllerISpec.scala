@@ -16,14 +16,32 @@
 
 package controllers
 
-import featureSwitches.{FeatureSwitching, UseAPI1812Model}
+import featureSwitches.UseAPI1812Model
+import play.api.Application
 import play.api.http.Status
+import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.{JsValue, Json}
+import play.api.mvc.Result
+import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import utils.{ETMPWiremock, IntegrationSpecCommonBase}
 
-class APIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock with FeatureSwitching {
-  val controller: APIController = injector.instanceOf[APIController]
+import scala.concurrent.Future
+
+class APIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock {
+
+  class Setup(isFSEnabled: Option[Boolean] = None) {
+    val localApp: Application = {
+      if (isFSEnabled.isDefined) {
+        new GuiceApplicationBuilder()
+          .configure(configForApp + (UseAPI1812Model.name -> isFSEnabled.get))
+          .build()
+      } else {
+        app
+      }
+    }
+    val controller: APIController = localApp.injector.instanceOf[APIController]
+  }
 
   val etmpPayloadAsJsonWithEstimatedLPP: JsValue = Json.parse(
     """
@@ -201,14 +219,13 @@ class APIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock wit
       |""".stripMargin)
 
   "getSummaryDataForVRN" should {
-    disableFeatureSwitch(UseAPI1812Model)
     "call stub data when 1812 feature is disabled" must {
       s"return OK (${Status.OK})" when {
-        "the ETMP call succeeds" in {
+        "the ETMP call succeeds" in new Setup(isFSEnabled = Some(false)) {
           mockResponseForStubETMPPayload(Status.OK, "HMRC-MTD-VAT~VRN~123456789", body = Some(etmpPayloadAsJsonWithEstimatedLPP.toString()))
-          val result = await(buildClientForRequestToApp(uri = "/vat/penalties/summary/123456789").get)
-          result.status shouldBe OK
-          Json.parse(result.body) shouldBe Json.parse(
+          val result: Future[Result] = controller.getSummaryDataForVRN("123456789")(FakeRequest())
+          await(result).header.status shouldBe OK
+          Json.parse(contentAsString(result)) shouldBe Json.parse(
             """
               |{
               |  "noOfPoints": 2,
@@ -224,23 +241,23 @@ class APIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock wit
       }
 
       s"return BAD_REQUEST (${Status.BAD_REQUEST})" when {
-        "the user supplies an invalid VRN" in {
-          val result = await(buildClientForRequestToApp(uri = "/vat/penalties/summary/123456789123456789").get)
-          result.status shouldBe BAD_REQUEST
+        "the user supplies an invalid VRN" in new Setup(isFSEnabled = Some(false)) {
+          val result: Result = await(controller.getSummaryDataForVRN("123456789123456789")(FakeRequest()))
+          result.header.status shouldBe BAD_REQUEST
         }
       }
 
       s"return NOT_FOUND (${Status.NOT_FOUND})" when {
-        "the ETMP call fails" in {
+        "the ETMP call fails" in new Setup(isFSEnabled = Some(false)) {
           mockResponseForStubETMPPayload(Status.INTERNAL_SERVER_ERROR, "HMRC-MTD-VAT~VRN~123456789", body = Some(""))
-          val result = await(buildClientForRequestToApp(uri = "/vat/penalties/summary/123456789").get)
-          result.status shouldBe NOT_FOUND
+          val result: Result = await(controller.getSummaryDataForVRN("123456789")(FakeRequest()))
+          result.header.status shouldBe NOT_FOUND
         }
 
-        "the ETMP call returns nothing" in {
+        "the ETMP call returns nothing" in new Setup(isFSEnabled = Some(false)) {
           mockResponseForStubETMPPayload(Status.OK, "HMRC-MTD-VAT~VRN~123456789", body = Some("{}"))
-          val result = await(buildClientForRequestToApp(uri = "/vat/penalties/summary/123456789").get)
-          result.status shouldBe NOT_FOUND
+          val result: Result = await(controller.getSummaryDataForVRN("123456789")(FakeRequest()))
+          result.header.status shouldBe NOT_FOUND
         }
       }
     }
@@ -358,12 +375,11 @@ class APIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock wit
           |""".stripMargin)
 
       s"return OK (${Status.OK})" when {
-        "the get penalty details call succeeds" in {
-          enableFeatureSwitch(UseAPI1812Model)
+        "the get penalty details call succeeds" in new Setup(isFSEnabled = Some(true)) {
           mockStubResponseForGetPenaltyDetailsv3(Status.OK, "123456789", body = Some(getPenaltyDetailsJson.toString()))
-          val result = await(buildClientForRequestToApp(uri = "/vat/penalties/summary/123456789").get)
-          result.status shouldBe OK
-          Json.parse(result.body) shouldBe Json.parse(
+          val result: Future[Result] = controller.getSummaryDataForVRN("123456789")(FakeRequest())
+          await(result).header.status shouldBe OK
+          Json.parse(contentAsString(result)) shouldBe Json.parse(
             """
               |{
               |  "noOfPoints": 2,
@@ -379,28 +395,25 @@ class APIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock wit
       }
 
       s"return BAD_REQUEST (${Status.BAD_REQUEST})" when {
-        "the user supplies an invalid VRN" in {
-          enableFeatureSwitch(UseAPI1812Model)
-          val result = await(buildClientForRequestToApp(uri = "/vat/penalties/summary/123456789123456789").get)
-          result.status shouldBe BAD_REQUEST
+        "the user supplies an invalid VRN" in new Setup(isFSEnabled = Some(true)) {
+          val result: Result = await(controller.getSummaryDataForVRN("123456789123456789")(FakeRequest()))
+          result.header.status shouldBe BAD_REQUEST
         }
       }
 
       s"return ISE (${Status.INTERNAL_SERVER_ERROR})" when {
-        "the get penalty details call fails" in {
-          enableFeatureSwitch(UseAPI1812Model)
+        "the get penalty details call fails" in new Setup(isFSEnabled = Some(true)) {
           mockStubResponseForGetPenaltyDetailsv3(Status.INTERNAL_SERVER_ERROR, "123456789", body = Some(""))
-          val result = await(buildClientForRequestToApp(uri = "/vat/penalties/summary/123456789").get)
-          result.status shouldBe INTERNAL_SERVER_ERROR
+          val result: Result = await(controller.getSummaryDataForVRN("123456789")(FakeRequest()))
+          result.header.status shouldBe INTERNAL_SERVER_ERROR
         }
       }
 
       s"return NOT_FOUND (${Status.NOT_FOUND})" when {
-        "the get penalty details call returns 404" in {
-          enableFeatureSwitch(UseAPI1812Model)
+        "the get penalty details call returns 404" in new Setup(isFSEnabled = Some(true)) {
           mockStubResponseForGetPenaltyDetailsv3(Status.NOT_FOUND, "123456789", body = Some(""))
-          val result = await(buildClientForRequestToApp(uri = "/vat/penalties/summary/123456789").get)
-          result.status shouldBe NOT_FOUND
+          val result: Result = await(controller.getSummaryDataForVRN("123456789")(FakeRequest()))
+          result.header.status shouldBe NOT_FOUND
         }
       }
     }

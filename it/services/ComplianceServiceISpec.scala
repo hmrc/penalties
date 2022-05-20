@@ -17,21 +17,25 @@
 package services
 
 import connectors.parsers.ComplianceParser._
-import featureSwitches.{CallDES, FeatureSwitching}
+import featureSwitches.CallDES
 import models.compliance.{CompliancePayload, ComplianceStatusEnum, ObligationDetail, ObligationIdentification}
+import play.api.Application
+import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.Helpers._
 import utils.{ComplianceWiremock, IntegrationSpecCommonBase}
 
 import java.time.LocalDate
 import scala.concurrent.ExecutionContext
 
-class ComplianceServiceISpec extends IntegrationSpecCommonBase with ComplianceWiremock with FeatureSwitching {
-  val complianceService: ComplianceService = injector.instanceOf[ComplianceService]
+class ComplianceServiceISpec extends IntegrationSpecCommonBase with ComplianceWiremock {
   implicit val ec: ExecutionContext = ExecutionContext.Implicits.global
   implicit val startOfLogMsg: String = ""
 
   class Setup {
-    enableFeatureSwitch(CallDES)
+    val localApp: Application = new GuiceApplicationBuilder()
+      .configure(configForApp + (CallDES.name -> true))
+      .build()
+    val complianceService: ComplianceService = localApp.injector.instanceOf[ComplianceService]
   }
 
   "getComplianceData" should {
