@@ -414,7 +414,7 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
     s"return OK (${Status.OK})" when {
       "the get penalty details call succeeds" in {
         mockStubResponseForGetPenaltyDetailsv3(Status.OK, "123456789", body = Some(getPenaltyDetailsJson.toString()))
-        val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/123456789?newApiModel=true").get)
+        val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/HMRC-MTD-VAT~VRN~123456789?newApiModel=true").get)
         result.status shouldBe OK
       }
     }
@@ -430,14 +430,14 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
     s"return ISE (${Status.INTERNAL_SERVER_ERROR})" when {
       "the get penalty details call fails" in {
         mockStubResponseForGetPenaltyDetailsv3(Status.INTERNAL_SERVER_ERROR, "123456789", body = Some(""))
-        val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/123456789?newApiModel=true").get)
+        val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/HMRC-MTD-VAT~VRN~123456789?newApiModel=true").get)
         result.status shouldBe INTERNAL_SERVER_ERROR
       }
     }
 
     "audit the response when the user has > 0 penalties" in {
       mockStubResponseForGetPenaltyDetailsv3(Status.OK, "123456789")
-      val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/123456789?newApiModel=true").get())
+      val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/HMRC-MTD-VAT~VRN~123456789?newApiModel=true").get())
       result.status shouldBe Status.OK
       result.body shouldBe getPenaltyDetailsWithLSPandLPPAsJsonv3.toString()
       wireMockServer.findAll(postRequestedFor(urlEqualTo("/write/audit"))).asScala.toList.exists(_.getBodyAsString.contains("UserHasPenalty")) shouldBe true
@@ -445,7 +445,7 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
 
     "NOT audit the response when the user has 0 penalties" in {
       mockStubResponseForGetPenaltyDetailsv3(Status.OK, "123456789", body = Some(getPenaltyDetailsWithNoPointsAsJsonv3.toString()))
-      val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/123456789?newApiModel=true").get())
+      val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/HMRC-MTD-VAT~VRN~123456789?newApiModel=true").get())
       result.status shouldBe Status.OK
       result.body shouldBe getPenaltyDetailsWithNoPointsAsJsonv3.toString()
       wireMockServer.findAll(postRequestedFor(urlEqualTo("/write/audit"))).asScala.toList.exists(_.getBodyAsString.contains("UserHasPenalty")) shouldBe false
