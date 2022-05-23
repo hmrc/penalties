@@ -19,6 +19,7 @@ package utils
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 import com.codahale.metrics.SharedMetricRegistries
+import config.AppConfig
 import helpers.WiremockHelper
 import models.ETMPPayload
 import models.appeals.AppealStatusEnum
@@ -33,7 +34,7 @@ import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, TestSuite}
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
-import play.api.Application
+import play.api.{Application, Configuration}
 import play.api.inject.Injector
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.ws.{WSClient, WSRequest}
@@ -92,6 +93,10 @@ trait IntegrationSpecCommonBase extends AnyWordSpec with Matchers with GuiceOneS
   override lazy val app: Application = new GuiceApplicationBuilder()
     .configure(configForApp)
     .build()
+
+  implicit val appConfig: AppConfig = injector.instanceOf[AppConfig]
+
+  implicit val config: Configuration = appConfig.config
 
   lazy val ws: WSClient = app.injector.instanceOf[WSClient]
 

@@ -16,13 +16,14 @@
 
 package config
 
-import featureSwitches.{CallAPI1812ETMP, CallDES, CallAPI1811ETMP, CallETMP, CallPEGA, FeatureSwitching}
+import config.featureSwitches._
+
 import javax.inject.{Inject, Singleton}
 import play.api.Configuration
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
 @Singleton
-class AppConfig @Inject()(config: Configuration, servicesConfig: ServicesConfig) extends FeatureSwitching {
+class AppConfig @Inject()(val config: Configuration, servicesConfig: ServicesConfig) extends FeatureSwitching {
   val auditingEnabled: Boolean = config.get[Boolean]("auditing.enabled")
   val graphiteHost: String     = config.get[String]("microservice.metrics.graphite.host")
 

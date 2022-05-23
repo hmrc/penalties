@@ -17,8 +17,8 @@
 package connectors.v2
 
 
+import config.featureSwitches.{CallAPI1811ETMP, FeatureSwitching}
 import connectors.parsers.v2.GetPenaltyDetailsParser.{GetPenaltyDetailsFailureResponse, GetPenaltyDetailsMalformed, GetPenaltyDetailsResponse}
-import featureSwitches.{CallAPI1811ETMP, FeatureSwitching}
 import play.api.http.Status
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import utils.{ETMPWiremock, IntegrationSpecCommonBase}

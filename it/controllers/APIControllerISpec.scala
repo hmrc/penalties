@@ -16,7 +16,7 @@
 
 package controllers
 
-import featureSwitches.{FeatureSwitching, UseAPI1812Model}
+import config.featureSwitches.{FeatureSwitching, UseAPI1812Model}
 import play.api.http.Status
 import play.api.libs.json.{JsValue, Json}
 import play.api.test.Helpers._

@@ -16,14 +16,15 @@
 
 package controllers
 
+import config.featureSwitches.{FeatureSwitching, UseAPI1812Model}
 import connectors.parsers.v3.getPenaltyDetails.GetPenaltyDetailsParser
 import connectors.parsers.v3.getPenaltyDetails.GetPenaltyDetailsParser.GetPenaltyDetailsSuccessResponse
-import featureSwitches.{FeatureSwitching, UseAPI1812Model}
 import models.ETMPPayload
 import models.api.APIModel
 import models.auditing.UserHasPenaltyAuditModel
 import models.auditing.v2.{UserHasPenaltyAuditModel => AuditModelV2}
 import models.v3.getPenaltyDetails.GetPenaltyDetails
+import play.api.Configuration
 import play.api.libs.json.Json
 import play.api.mvc._
 import services.auditing.AuditService
@@ -41,7 +42,7 @@ class APIController @Inject()(etmpService: ETMPService,
                               auditService: AuditService,
                               apiService: APIService,
                               getPenaltyDetailsService: GetPenaltyDetailsService,
-                              cc: ControllerComponents)(implicit ec: ExecutionContext) extends BackendController(cc) with FeatureSwitching {
+                              cc: ControllerComponents)(implicit ec: ExecutionContext, val config: Configuration) extends BackendController(cc) with FeatureSwitching {
 
   private val vrnRegex: Regex = "^[0-9]{1,9}$".r
 

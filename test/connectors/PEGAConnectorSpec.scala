@@ -17,11 +17,12 @@
 package connectors
 
 import base.SpecBase
+import config.featureSwitches.{CallPEGA, FeatureSwitching}
 import connectors.parsers.AppealsParser.AppealSubmissionResponse
-import featureSwitches.{CallPEGA, FeatureSwitching}
 import models.appeals.{AgentDetails, AppealSubmission, CrimeAppealInformation}
 import org.mockito.Mockito._
 import org.mockito.{ArgumentCaptor, Matchers}
+import play.api.Configuration
 import play.api.test.Helpers._
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient}
 
@@ -31,6 +32,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class PEGAConnectorSpec extends SpecBase with FeatureSwitching {
   val mockHttpClient: HttpClient = mock(classOf[HttpClient])
   implicit val hc: HeaderCarrier = HeaderCarrier(otherHeaders = Seq("CorrelationId" -> "id"))
+  implicit val config: Configuration = appConfig.config
 
   class Setup {
     val connector = new PEGAConnector(

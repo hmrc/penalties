@@ -16,10 +16,11 @@
 
 package services
 
+import config.featureSwitches.FeatureSwitching
 import connectors.ComplianceConnector
 import connectors.parsers.ComplianceParser
-import featureSwitches.FeatureSwitching
 import models.compliance.CompliancePayload
+import play.api.Configuration
 import play.api.http.Status._
 import uk.gov.hmrc.http.HeaderCarrier
 import utils.Logger.logger
@@ -27,7 +28,7 @@ import utils.Logger.logger
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class ComplianceService @Inject()(complianceConnector: ComplianceConnector) extends FeatureSwitching {
+class ComplianceService @Inject()(complianceConnector: ComplianceConnector)(implicit val config: Configuration) extends FeatureSwitching {
 
   def getComplianceData(vrn: String, startDate: String, endDate: String)
                        (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Either[Int, CompliancePayload]] = {

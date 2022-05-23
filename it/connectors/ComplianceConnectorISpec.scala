@@ -16,8 +16,8 @@
 
 package connectors
 
+import config.featureSwitches.{CallDES, FeatureSwitching}
 import connectors.parsers.ComplianceParser._
-import featureSwitches.{CallDES, FeatureSwitching}
 import models.compliance.{CompliancePayload, ComplianceStatusEnum, ObligationDetail, ObligationIdentification}
 import play.api.http.Status
 import play.api.test.Helpers._

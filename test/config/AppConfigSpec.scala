@@ -16,7 +16,7 @@
 
 package config
 
-import featureSwitches.{CallAPI1811ETMP, CallAPI1812ETMP, CallDES, CallETMP, CallPEGA, FeatureSwitching}
+import config.featureSwitches._
 import org.mockito.Matchers
 import org.mockito.Mockito._
 import org.scalatest.matchers.should.{Matchers => ShouldMatchers}
@@ -27,6 +27,8 @@ import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 class AppConfigSpec extends AnyWordSpec with ShouldMatchers with FeatureSwitching {
   val mockConfiguration: Configuration = mock(classOf[Configuration])
   val mockServicesConfig: ServicesConfig = mock(classOf[ServicesConfig])
+  implicit val config: Configuration = mockConfiguration
+
   class Setup {
     reset(mockConfiguration)
     reset(mockServicesConfig)
