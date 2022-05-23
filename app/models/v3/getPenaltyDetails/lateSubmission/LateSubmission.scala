@@ -24,7 +24,8 @@ case class LateSubmission(
                            taxPeriodStartDate: Option[LocalDate],
                            taxPeriodEndDate: Option[LocalDate],
                            taxPeriodDueDate: Option[LocalDate],
-                           returnReceiptDate: Option[LocalDate]
+                           returnReceiptDate: Option[LocalDate],
+                           taxReturnStatus: TaxReturnStatusEnum.Value
                          )
 
 object LateSubmission {

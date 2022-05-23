@@ -65,7 +65,8 @@ class GetPenaltyDetailsServiceISpec extends IntegrationSpecCommonBase with ETMPW
                     taxPeriodStartDate = Some(LocalDate.of(2022, 1, 1)),
                     taxPeriodEndDate = Some(LocalDate.of(2022, 12, 31)),
                     taxPeriodDueDate = Some(LocalDate.of(2023, 2, 7)),
-                    returnReceiptDate = Some(LocalDate.of(2023, 2, 1))
+                    returnReceiptDate = Some(LocalDate.of(2023, 2, 1)),
+                    taxReturnStatus = TaxReturnStatusEnum.Fulfilled
                   )
                 )
               ),

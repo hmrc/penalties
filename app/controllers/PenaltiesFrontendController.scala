@@ -29,8 +29,9 @@ import services.{ETMPService, GetPenaltyDetailsService}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import utils.Logger.logger
 import utils.RegimeHelper
-
 import javax.inject.Inject
+import utils.RegimeHelper.getIdentifierFromEnrolmentKey
+
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class PenaltiesFrontendController @Inject()(etmpService: ETMPService,
@@ -63,7 +64,7 @@ class PenaltiesFrontendController @Inject()(etmpService: ETMPService,
           }
         }
       } else {
-        val vrn:String = RegimeHelper.getIdentifierFromEnrolmentKey(enrolmentKey)
+        val vrn: String = RegimeHelper.getIdentifierFromEnrolmentKey(enrolmentKey)
         getPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(vrn).map {
           _.fold({
             case GetPenaltyDetailsParser.GetPenaltyDetailsFailureResponse(status) if status == NOT_FOUND => {

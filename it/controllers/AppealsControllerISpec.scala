@@ -240,7 +240,8 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
       |           "taxPeriodStartDate": "2023-01-01",
       |           "taxPeriodEndDate": "2023-12-31",
       |           "taxPeriodDueDate": "2024-02-07",
-      |           "returnReceiptDate": "2024-02-01"
+      |           "returnReceiptDate": "2024-02-01",
+      |           "taxReturnStatus": "Fulfilled"
       |         }
       |       ],
       |       "appealInformation": [
@@ -270,7 +271,8 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
       |           "taxPeriodStartDate": "2022-01-01",
       |           "taxPeriodEndDate": "2022-12-31",
       |           "taxPeriodDueDate": "2023-02-07",
-      |           "returnReceiptDate": "2023-02-01"
+      |           "returnReceiptDate": "2023-02-01",
+      |           "taxReturnStatus": "Fulfilled"
       |         }
       |       ],
       |       "appealInformation": [
