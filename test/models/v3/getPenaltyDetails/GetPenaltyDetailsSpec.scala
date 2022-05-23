@@ -18,9 +18,8 @@ package models.v3.getPenaltyDetails
 
 import base.SpecBase
 import models.v3.getPenaltyDetails.latePayment.{LPPDetails, LPPPenaltyCategoryEnum, LPPPenaltyStatusEnum, LatePaymentPenalty}
-import models.v3.getPenaltyDetails.lateSubmission.{LSPDetails, LSPPenaltyCategoryEnum, LSPPenaltyStatusEnum, LSPSummary, LateSubmission, LateSubmissionPenalty}
+import models.v3.getPenaltyDetails.lateSubmission.{LSPDetails, LSPPenaltyCategoryEnum, LSPPenaltyStatusEnum, LSPSummary, LateSubmission, LateSubmissionPenalty, TaxReturnStatusEnum}
 import play.api.libs.json.{JsResult, JsValue, Json}
-
 import java.time.LocalDate
 
 class GetPenaltyDetailsSpec extends SpecBase {
@@ -61,7 +60,8 @@ class GetPenaltyDetailsSpec extends SpecBase {
       |           "taxPeriodStartDate": "2022-01-01",
       |           "taxPeriodEndDate": "2022-12-31",
       |           "taxPeriodDueDate": "2023-02-07",
-      |           "returnReceiptDate": "2023-02-01"
+      |           "returnReceiptDate": "2023-02-01",
+      |           "taxReturnStatus": "Fulfilled"
       |         }
       |       ],
       |       "appealInformation": [
@@ -148,7 +148,8 @@ class GetPenaltyDetailsSpec extends SpecBase {
       |           "taxPeriodStartDate": "2022-01-01",
       |           "taxPeriodEndDate": "2022-12-31",
       |           "taxPeriodDueDate": "2023-02-07",
-      |           "returnReceiptDate": "2023-02-01"
+      |           "returnReceiptDate": "2023-02-01",
+      |           "taxReturnStatus": "Fulfilled"
       |         }
       |       ],
       |       "appealInformation": [
@@ -229,7 +230,8 @@ class GetPenaltyDetailsSpec extends SpecBase {
                   taxPeriodStartDate = Some(LocalDate.of(2022, 1, 1)),
                   taxPeriodEndDate = Some(LocalDate.of(2022, 12, 31)),
                   taxPeriodDueDate = Some(LocalDate.of(2023, 2, 7)),
-                  returnReceiptDate = Some(LocalDate.of(2023, 2, 1))
+                  returnReceiptDate = Some(LocalDate.of(2023, 2, 1)),
+                  taxReturnStatus = TaxReturnStatusEnum.Fulfilled
                 )
               )
             ),

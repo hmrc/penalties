@@ -155,7 +155,8 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching {
                       taxPeriodStartDate = Some(LocalDate.of(2022, 1, 1)),
                       taxPeriodEndDate = Some(LocalDate.of(2022, 3, 31)),
                       taxPeriodDueDate = Some(LocalDate.of(2022, 5, 7)),
-                      returnReceiptDate = Some(LocalDate.of(2022, 5, 9))
+                      returnReceiptDate = Some(LocalDate.of(2022, 5, 9)),
+                      taxReturnStatus = TaxReturnStatusEnum.Fulfilled
                     )
                   )
                 ),
@@ -180,7 +181,8 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching {
                       taxPeriodStartDate = Some(LocalDate.of(2022, 4, 1)),
                       taxPeriodEndDate = Some(LocalDate.of(2022, 6, 30)),
                       taxPeriodDueDate = Some(LocalDate.of(2022, 8, 7)),
-                      returnReceiptDate = Some(LocalDate.of(2022, 8, 9))
+                      returnReceiptDate = Some(LocalDate.of(2022, 8, 9)),
+                      taxReturnStatus = TaxReturnStatusEnum.Fulfilled
                     )
                   )
                 ),

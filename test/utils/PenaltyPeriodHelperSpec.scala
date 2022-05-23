@@ -19,8 +19,7 @@ package utils
 import base.SpecBase
 import models.penalty.PenaltyPeriod
 import models.submission.{Submission, SubmissionStatusEnum}
-import models.v3.getPenaltyDetails.lateSubmission.LateSubmission
-
+import models.v3.getPenaltyDetails.lateSubmission.{LateSubmission, TaxReturnStatusEnum}
 import java.time.{LocalDate, LocalDateTime}
 
 class PenaltyPeriodHelperSpec extends SpecBase {
@@ -54,10 +53,10 @@ class PenaltyPeriodHelperSpec extends SpecBase {
   "sortByPenaltyStartDate" should {
     "return -1 when the first period is earlier than the second period" in {
       val earlierSubmission = LateSubmission(
-        taxPeriodStartDate = Some(LocalDate.of(2022, 1, 1)), taxPeriodEndDate = None, taxPeriodDueDate = None, returnReceiptDate = None
+        taxPeriodStartDate = Some(LocalDate.of(2022, 1, 1)), taxPeriodEndDate = None, taxPeriodDueDate = None, returnReceiptDate = None, taxReturnStatus = TaxReturnStatusEnum.Open
       )
       val laterSubmission = LateSubmission(
-        taxPeriodStartDate = Some(LocalDate.of(2022, 1, 2)), taxPeriodEndDate = None, taxPeriodDueDate = None, returnReceiptDate = None
+        taxPeriodStartDate = Some(LocalDate.of(2022, 1, 2)), taxPeriodEndDate = None, taxPeriodDueDate = None, returnReceiptDate = None,  taxReturnStatus = TaxReturnStatusEnum.Open
       )
       val result = PenaltyPeriodHelper.sortByPenaltyStartDate(earlierSubmission, laterSubmission)
       result shouldBe -1
@@ -65,7 +64,7 @@ class PenaltyPeriodHelperSpec extends SpecBase {
 
     "return 0 when the first period is equal to the second period" in {
       val submission = LateSubmission(
-        taxPeriodStartDate = Some(LocalDate.of(2022, 1, 1)), taxPeriodEndDate = None, taxPeriodDueDate = None, returnReceiptDate = None
+        taxPeriodStartDate = Some(LocalDate.of(2022, 1, 1)), taxPeriodEndDate = None, taxPeriodDueDate = None, returnReceiptDate = None,  taxReturnStatus = TaxReturnStatusEnum.Open
       )
       val result = PenaltyPeriodHelper.sortByPenaltyStartDate(submission, submission)
       result shouldBe 0
@@ -73,10 +72,10 @@ class PenaltyPeriodHelperSpec extends SpecBase {
 
     "return 1 when the first period is later than the second period" in {
       val earlierSubmission = LateSubmission(
-        taxPeriodStartDate = Some(LocalDate.of(2022, 1, 1)), taxPeriodEndDate = None, taxPeriodDueDate = None, returnReceiptDate = None
+        taxPeriodStartDate = Some(LocalDate.of(2022, 1, 1)), taxPeriodEndDate = None, taxPeriodDueDate = None, returnReceiptDate = None,  taxReturnStatus = TaxReturnStatusEnum.Open
       )
       val laterSubmission = LateSubmission(
-        taxPeriodStartDate = Some(LocalDate.of(2022, 1, 2)), taxPeriodEndDate = None, taxPeriodDueDate = None, returnReceiptDate = None
+        taxPeriodStartDate = Some(LocalDate.of(2022, 1, 2)), taxPeriodEndDate = None, taxPeriodDueDate = None, returnReceiptDate = None,  taxReturnStatus = TaxReturnStatusEnum.Open
       )
       val result = PenaltyPeriodHelper.sortByPenaltyStartDate(laterSubmission, earlierSubmission)
       result shouldBe 1

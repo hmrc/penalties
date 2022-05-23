@@ -21,14 +21,14 @@ import connectors.parsers.v3.getPenaltyDetails.GetPenaltyDetailsParser.{GetPenal
 import connectors.v3.getPenaltyDetails.GetPenaltyDetailsConnector
 import models.v3.getPenaltyDetails.{AppealInformation, GetPenaltyDetails, Totalisations}
 import models.v3.getPenaltyDetails.latePayment.{LPPDetails, LPPPenaltyCategoryEnum, LPPPenaltyStatusEnum, LatePaymentPenalty}
-import models.v3.getPenaltyDetails.lateSubmission.{LSPDetails, LSPPenaltyCategoryEnum, LSPPenaltyStatusEnum, LSPSummary, LateSubmission, LateSubmissionPenalty}
+import models.v3.getPenaltyDetails.lateSubmission.{LSPDetails, LSPPenaltyCategoryEnum, LSPPenaltyStatusEnum, LSPSummary, LateSubmission, LateSubmissionPenalty, TaxReturnStatusEnum}
 import org.mockito.Matchers
 import org.mockito.Matchers.any
 import org.mockito.Mockito.{mock, reset, when}
 import play.api.test.Helpers.{IM_A_TEAPOT, await, defaultAwaitTimeout}
 import uk.gov.hmrc.http.HeaderCarrier
-
 import java.time.LocalDate
+
 import scala.concurrent.{ExecutionContext, Future}
 
 class GetPenaltyDetailsServiceSpec extends SpecBase {
@@ -76,7 +76,8 @@ class GetPenaltyDetailsServiceSpec extends SpecBase {
                     taxPeriodStartDate = Some(LocalDate.of(2022, 1, 1)),
                     taxPeriodEndDate = Some(LocalDate.of(2022, 12, 31)),
                     taxPeriodDueDate = Some(LocalDate.of(2023, 2, 7)),
-                    returnReceiptDate = Some(LocalDate.of(2023, 2, 1))
+                    returnReceiptDate = Some(LocalDate.of(2023, 2, 1)),
+                    taxReturnStatus = TaxReturnStatusEnum.Fulfilled
                   )
                 )
               ),
