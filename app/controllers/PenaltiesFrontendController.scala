@@ -63,11 +63,12 @@ class PenaltiesFrontendController @Inject()(etmpService: ETMPService,
           }
         }
       } else {
-        getPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(enrolmentKey).map {
+        val vrn:String = RegimeHelper.getIdentifierFromEnrolmentKey(enrolmentKey)
+        getPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(vrn).map {
           _.fold({
             case GetPenaltyDetailsParser.GetPenaltyDetailsFailureResponse(status) if status == NOT_FOUND => {
-              logger.info(s"[PenaltiesFrontendController][getPenaltiesData] - 1812 call returned 404 for VRN: $enrolmentKey")
-              NotFound(s"A downstream call returned 404 for VRN: $enrolmentKey")
+              logger.info(s"[PenaltiesFrontendController][getPenaltiesData] - 1812 call returned 404 for VRN: $vrn")
+              NotFound(s"A downstream call returned 404 for VRN: $vrn")
             }
             case GetPenaltyDetailsParser.GetPenaltyDetailsFailureResponse(status) => {
               logger.info(s"[PenaltiesFrontendController][getPenaltiesData] - 1812 call returned an unexpected status: $status")
