@@ -274,12 +274,12 @@ object TechnicalIssuesAppealInformation {
 }
 
 case class HealthAppealInformation(
-                                    hospitalStayInvolved: Boolean,
                                     startDateOfEvent: Option[String],
                                     endDateOfEvent: Option[String],
                                     eventOngoing: Boolean,
                                     statement: Option[String],
                                     lateAppeal: Boolean,
+                                    hospitalStayInvolved: Boolean,
                                     lateAppealReason: Option[String],
                                     reasonableExcuse: String,
                                     honestyDeclaration: Boolean,
@@ -291,11 +291,11 @@ object HealthAppealInformation {
   implicit val healthAppealInformationFormatter: OFormat[HealthAppealInformation] = Json.format[HealthAppealInformation]
 
   val healthAppealWrites: Writes[HealthAppealInformation] = (healthAppealInformation: HealthAppealInformation) => {
-    val healthAppealReasonForPEGA = if(healthAppealInformation.hospitalStayInvolved) "unexpectedHospitalStay" else "seriousOrLifeThreateningIllHealth"
-    Json.obj(
-      "eventOngoing" -> healthAppealInformation.eventOngoing,
+    val healthReason = if (healthAppealInformation.hospitalStayInvolved) "unexpectedHospitalStay" else "seriousOrLifeThreateningIllHealth"
+
+    val baseHealthInfoJson = Json.obj(
       "lateAppeal" -> healthAppealInformation.lateAppeal,
-      "reasonableExcuse" -> healthAppealReasonForPEGA,
+      "reasonableExcuse" -> healthReason,
       "honestyDeclaration" -> healthAppealInformation.honestyDeclaration
     ).deepMerge(
       healthAppealInformation.statement.fold(
@@ -310,18 +310,6 @@ object HealthAppealInformation {
         lateAppealReason => Json.obj("lateAppealReason" -> lateAppealReason)
       )
     ).deepMerge(
-      (healthAppealInformation.hospitalStayInvolved, healthAppealInformation.eventOngoing) match {
-        case (true, false) =>
-          Json.obj(
-            "startDateOfEvent" -> healthAppealInformation.startDateOfEvent.get,
-            "endDateOfEvent" -> healthAppealInformation.endDateOfEvent.get
-          )
-        case _ =>
-          Json.obj(
-            "startDateOfEvent" -> healthAppealInformation.startDateOfEvent.get
-          )
-      }
-    ).deepMerge(
       healthAppealInformation.isClientResponsibleForSubmission.fold(
         Json.obj()
       )(
@@ -334,6 +322,26 @@ object HealthAppealInformation {
         isClientResponsibleForLateSubmission => Json.obj("isClientResponsibleForLateSubmission" -> isClientResponsibleForLateSubmission)
       )
     )
+
+    val additionalHealthInfo = (healthAppealInformation.hospitalStayInvolved, healthAppealInformation.eventOngoing) match {
+      case (true, true) =>
+        Json.obj(
+          "startDateOfEvent" -> healthAppealInformation.startDateOfEvent.get,
+          "eventOngoing" -> healthAppealInformation.eventOngoing
+        )
+      case (true, false) =>
+        Json.obj(
+          "startDateOfEvent" -> healthAppealInformation.startDateOfEvent.get,
+          "eventOngoing" -> healthAppealInformation.eventOngoing,
+          "endDateOfEvent" -> healthAppealInformation.endDateOfEvent.get
+        )
+      case _ =>
+        Json.obj(
+          "startDateOfEvent" -> healthAppealInformation.startDateOfEvent.get
+        )
+    }
+
+    baseHealthInfoJson deepMerge additionalHealthInfo
   }
 }
 
@@ -507,7 +515,7 @@ object AppealSubmission {
       "appealSubmittedBy" -> appealSubmission.appealSubmittedBy,
       "appealInformation" -> parseAppealInformationToJson(appealSubmission.appealInformation)
     ).deepMerge(
-        appealSubmission.agentDetails.fold(Json.obj())(agentDetails => Json.obj("agentDetails" -> agentDetails))
+      appealSubmission.agentDetails.fold(Json.obj())(agentDetails => Json.obj("agentDetails" -> agentDetails))
     )
   }
 }
