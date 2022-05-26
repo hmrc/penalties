@@ -18,6 +18,7 @@ package models.auditing.v2
 
 import models.auditing.JsonAuditModel
 import models.v3.getPenaltyDetails.GetPenaltyDetails
+import models.v3.getPenaltyDetails.appealInfo.AppealStatusEnum
 import models.v3.getPenaltyDetails.latePayment.LPPDetails
 import models.v3.getPenaltyDetails.lateSubmission.{LSPDetails, LSPPenaltyCategoryEnum, LSPPenaltyStatusEnum}
 import play.api.libs.json.JsValue
@@ -75,7 +76,7 @@ case class UserHasPenaltyAuditModel(
   )).getOrElse(0)
 
   private val amountOfLSPsUnderAppeal: Int = penaltyDetails.lateSubmissionPenalty.map(_.details.count(point =>
-    point.appealInformation.exists(_.exists(_.appealStatus.contains("A"))))).getOrElse(0)
+    point.appealInformation.exists(_.exists(_.appealStatus.contains(AppealStatusEnum.Under_Appeal))))).getOrElse(0)
 
   private val lspDetail: JsValue = jsonObjNoNulls(
     "penaltyPointsThreshold" -> penaltyDetails.lateSubmissionPenalty.map(_.summary.regimeThreshold),
@@ -85,16 +86,16 @@ case class UserHasPenaltyAuditModel(
   )
 
   private val numberOfPaidLPPs: Int = penaltyDetails.latePaymentPenalty.flatMap(_.details.map(_.count(lpp =>
-    lpp.penaltyAmountOutstanding.contains(0) && !lpp.appealInformation.exists(_.exists(_.appealStatus.contains("B")))))).getOrElse(0)
+    lpp.penaltyAmountOutstanding.contains(0) && !lpp.appealInformation.exists(_.exists(_.appealStatus.contains(AppealStatusEnum.Upheld)))))).getOrElse(0)
 
   private val numberOfUnpaidLPPs: Int = penaltyDetails.latePaymentPenalty.flatMap(_.details.map(_.count(point =>
-    !point.penaltyAmountOutstanding.contains(0) && !point.appealInformation.exists(_.exists(_.appealStatus.contains("B")))))).getOrElse(0)
+    !point.penaltyAmountOutstanding.contains(0) && !point.appealInformation.exists(_.exists(_.appealStatus.contains(AppealStatusEnum.Upheld)))))).getOrElse(0)
 
   private val totalNumberOfLPPs: Int = penaltyDetails.latePaymentPenalty.flatMap(_.details.map(
-    _.count(point => !point.appealInformation.exists(_.exists(_.appealStatus.contains("B")))))).getOrElse(0)
+    _.count(point => !point.appealInformation.exists(_.exists(_.appealStatus.contains(AppealStatusEnum.Upheld)))))).getOrElse(0)
 
   private val amountOfLPPsUnderAppeal: Int = penaltyDetails.latePaymentPenalty.flatMap(_.details.map(_.count(point =>
-    point.appealInformation.exists(_.exists(_.appealStatus.contains("A")))))).getOrElse(0)
+    point.appealInformation.exists(_.exists(_.appealStatus.contains(AppealStatusEnum.Under_Appeal)))))).getOrElse(0)
 
   private val lppDetail: JsValue = jsonObjNoNulls(
     "numberOfPaidPenalties" -> numberOfPaidLPPs,
