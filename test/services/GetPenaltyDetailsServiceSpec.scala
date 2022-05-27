@@ -19,7 +19,8 @@ package services
 import base.SpecBase
 import connectors.parsers.v3.getPenaltyDetails.GetPenaltyDetailsParser.{GetPenaltyDetailsFailureResponse, GetPenaltyDetailsMalformed, GetPenaltyDetailsResponse, GetPenaltyDetailsSuccessResponse}
 import connectors.v3.getPenaltyDetails.GetPenaltyDetailsConnector
-import models.v3.getPenaltyDetails.{AppealInformation, GetPenaltyDetails, Totalisations}
+import models.v3.getPenaltyDetails.appealInfo.{AppealInformationType, AppealLevelEnum, AppealStatusEnum}
+import models.v3.getPenaltyDetails.{GetPenaltyDetails, Totalisations}
 import models.v3.getPenaltyDetails.latePayment.{LPPDetails, LPPPenaltyCategoryEnum, LPPPenaltyStatusEnum, LatePaymentPenalty}
 import models.v3.getPenaltyDetails.lateSubmission.{LSPDetails, LSPPenaltyCategoryEnum, LSPPenaltyStatusEnum, LSPSummary, LateSubmission, LateSubmissionPenalty, TaxReturnStatusEnum}
 import org.mockito.Matchers
@@ -27,8 +28,8 @@ import org.mockito.Matchers.any
 import org.mockito.Mockito.{mock, reset, when}
 import play.api.test.Helpers.{IM_A_TEAPOT, await, defaultAwaitTimeout}
 import uk.gov.hmrc.http.HeaderCarrier
-import java.time.LocalDate
 
+import java.time.LocalDate
 import scala.concurrent.{ExecutionContext, Future}
 
 class GetPenaltyDetailsServiceSpec extends SpecBase {
@@ -84,9 +85,7 @@ class GetPenaltyDetailsServiceSpec extends SpecBase {
               expiryReason = Some("FAP"),
               appealInformation = Some(
                 Seq(
-                  AppealInformation(
-                    appealStatus = Some("99"), appealLevel = Some("01")
-                  )
+                    AppealInformationType(appealStatus = Some(AppealStatusEnum.Unappealable), appealLevel = Some(AppealLevelEnum.HMRC))
                 )
               ),
               chargeDueDate = Some(LocalDate.of(2022, 10, 30)),
@@ -105,7 +104,7 @@ class GetPenaltyDetailsServiceSpec extends SpecBase {
               penaltyChargeReference = Some("123456789"),
               penaltyChargeCreationDate = LocalDate.of(2022, 10, 30),
               penaltyStatus = LPPPenaltyStatusEnum.Accruing,
-              appealInformation = Some(Seq(AppealInformation(appealStatus = Some("99"), appealLevel = Some("01")))),
+              appealInformation = Some(Seq(AppealInformationType(appealStatus = Some(AppealStatusEnum.Unappealable), appealLevel = Some(AppealLevelEnum.HMRC)))),
               principalChargeBillingFrom = LocalDate.of(2022, 10, 30),
               principalChargeBillingTo = LocalDate.of(2022, 10, 30),
               principalChargeDueDate = LocalDate.of(2022, 10, 30),

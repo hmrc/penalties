@@ -18,6 +18,7 @@ package models.auditing.v2
 
 import base.{LogCapturing, SpecBase}
 import models.v3.getPenaltyDetails._
+import models.v3.getPenaltyDetails.appealInfo.{AppealInformationType, AppealLevelEnum, AppealStatusEnum}
 import models.v3.getPenaltyDetails.latePayment.{LPPDetails, LPPPenaltyCategoryEnum, LPPPenaltyStatusEnum, LatePaymentPenalty}
 import models.v3.getPenaltyDetails.lateSubmission._
 import utils.Logger
@@ -163,11 +164,7 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
           lateSubmissions = None,
           expiryReason = None,
           appealInformation = Some(Seq(
-            AppealInformation(
-              appealStatus = Some("A"),
-              appealLevel = Some("01")
-            ))
-          ),
+            AppealInformationType(appealStatus = Some(AppealStatusEnum.Under_Appeal), appealLevel = Some(AppealLevelEnum.HMRC)))),
           chargeDueDate = None,
           chargeOutstandingAmount = None,
           chargeAmount = None
@@ -184,11 +181,7 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
           lateSubmissions = None,
           expiryReason = None,
           appealInformation = Some(Seq(
-            AppealInformation(
-              appealStatus = Some("A"),
-              appealLevel = Some("01")
-            ))
-          ),
+            AppealInformationType(appealStatus = Some(AppealStatusEnum.Under_Appeal), appealLevel = Some(AppealLevelEnum.HMRC)))),
           chargeDueDate = None,
           chargeOutstandingAmount = None,
           chargeAmount = None
@@ -225,11 +218,7 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
           lateSubmissions = None,
           expiryReason = None,
           appealInformation = Some(Seq(
-            AppealInformation(
-              appealStatus = Some("B"),
-              appealLevel = Some("01")
-            ))
-          ),
+            AppealInformationType(appealStatus = Some(AppealStatusEnum.Upheld), appealLevel = Some(AppealLevelEnum.HMRC)))),
           chargeDueDate = None,
           chargeOutstandingAmount = None,
           chargeAmount = None
@@ -246,10 +235,7 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
           lateSubmissions = None,
           expiryReason = None,
           appealInformation = Some(Seq(
-            AppealInformation(
-              appealStatus = Some("B"),
-              appealLevel = Some("01")
-            ))
+            AppealInformationType(appealStatus = Some(AppealStatusEnum.Upheld), appealLevel = Some(AppealLevelEnum.HMRC)))
           ),
           chargeDueDate = None,
           chargeOutstandingAmount = None,
@@ -304,10 +290,7 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
           expiryReason = None,
           appealInformation = Some(
             Seq(
-              AppealInformation(
-                appealStatus = Some("B"),
-                appealLevel = Some("01")
-              )
+              AppealInformationType(appealStatus = Some(AppealStatusEnum.Upheld), appealLevel = Some(AppealLevelEnum.HMRC))
             )
           ),
           chargeDueDate = Some(LocalDate.of(2022, 1, 1)),
@@ -516,10 +499,7 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
               penaltyStatus = LPPPenaltyStatusEnum.Posted,
               appealInformation = Some(
                 Seq(
-                  AppealInformation(
-                    appealStatus = Some("A"),
-                    appealLevel = Some("01")
-                  )
+                  AppealInformationType(appealStatus = Some(AppealStatusEnum.Under_Appeal), appealLevel = Some(AppealLevelEnum.HMRC))
                 )
               ),
               principalChargeBillingFrom = LocalDate.of(2022, 1, 1),
@@ -591,10 +571,7 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
               penaltyStatus = LPPPenaltyStatusEnum.Posted,
               appealInformation = Some(
                 Seq(
-                  AppealInformation(
-                    appealStatus = Some("B"),
-                    appealLevel = Some("01")
-                  )
+                  AppealInformationType(appealStatus = Some(AppealStatusEnum.Upheld), appealLevel = Some(AppealLevelEnum.HMRC))
                 )
               ),
               principalChargeBillingFrom = LocalDate.of(2022, 1, 1),

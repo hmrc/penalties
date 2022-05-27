@@ -16,7 +16,7 @@
 
 package models.v3.getPenaltyDetails.latePayment
 
-import models.v3.getPenaltyDetails.AppealInformation
+import models.v3.getPenaltyDetails.appealInfo.AppealInformationType
 import play.api.libs.json.{Json, OFormat}
 
 import java.time.LocalDate
@@ -27,7 +27,7 @@ case class LPPDetails(
                       principalChargeReference: String,
                       penaltyChargeCreationDate: LocalDate,
                       penaltyStatus: LPPPenaltyStatusEnum.Value,
-                      appealInformation: Option[Seq[AppealInformation]],
+                      appealInformation: Option[Seq[AppealInformationType]],
                       principalChargeBillingFrom: LocalDate,
                       principalChargeBillingTo: LocalDate,
                       principalChargeDueDate: LocalDate,

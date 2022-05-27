@@ -17,7 +17,7 @@
 package models.v3.getPenaltyDetails.latePayment
 
 import base.SpecBase
-import models.v3.getPenaltyDetails.AppealInformation
+import models.v3.getPenaltyDetails.appealInfo.{AppealInformationType, AppealLevelEnum, AppealStatusEnum}
 import play.api.libs.json.{JsResult, JsValue, Json}
 
 import java.time.LocalDate
@@ -98,7 +98,7 @@ class LPPDetailsSpec extends SpecBase {
     penaltyChargeReference = Some("12345678901234"),
     penaltyChargeCreationDate = LocalDate.of(2022, 10, 30),
     penaltyStatus = LPPPenaltyStatusEnum.Accruing,
-    appealInformation = Some(Seq(AppealInformation(appealStatus = Some("99"), appealLevel = Some("01")))),
+    appealInformation = Some(Seq(AppealInformationType(appealStatus = Some(AppealStatusEnum.Unappealable), appealLevel = Some(AppealLevelEnum.HMRC)))),
     principalChargeBillingFrom = LocalDate.of(2022, 10, 30),
     principalChargeBillingTo = LocalDate.of(2022, 10, 30),
     principalChargeDueDate = LocalDate.of(2022, 10, 30),

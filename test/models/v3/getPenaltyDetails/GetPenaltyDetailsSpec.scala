@@ -17,9 +17,11 @@
 package models.v3.getPenaltyDetails
 
 import base.SpecBase
+import models.v3.getPenaltyDetails.appealInfo.{AppealInformationType, AppealLevelEnum, AppealStatusEnum}
 import models.v3.getPenaltyDetails.latePayment.{LPPDetails, LPPPenaltyCategoryEnum, LPPPenaltyStatusEnum, LatePaymentPenalty}
 import models.v3.getPenaltyDetails.lateSubmission.{LSPDetails, LSPPenaltyCategoryEnum, LSPPenaltyStatusEnum, LSPSummary, LateSubmission, LateSubmissionPenalty, TaxReturnStatusEnum}
 import play.api.libs.json.{JsResult, JsValue, Json}
+
 import java.time.LocalDate
 
 class GetPenaltyDetailsSpec extends SpecBase {
@@ -238,9 +240,7 @@ class GetPenaltyDetailsSpec extends SpecBase {
             expiryReason = Some("FAP"),
             appealInformation = Some(
               Seq(
-                AppealInformation(
-                  appealStatus = Some("99"), appealLevel = Some("01")
-                )
+                AppealInformationType(appealStatus = Some(AppealStatusEnum.Unappealable), appealLevel = Some(AppealLevelEnum.HMRC))
               )
             ),
             chargeDueDate = Some(LocalDate.of(2022, 10, 30)),
@@ -259,7 +259,7 @@ class GetPenaltyDetailsSpec extends SpecBase {
             penaltyChargeReference = Some("1234567890"),
             penaltyChargeCreationDate = LocalDate.of(2022, 10, 30),
             penaltyStatus = LPPPenaltyStatusEnum.Accruing,
-            appealInformation = Some(Seq(AppealInformation(appealStatus = Some("99"), appealLevel = Some("01")))),
+            appealInformation = Some(Seq(AppealInformationType(appealStatus = Some(AppealStatusEnum.Unappealable), appealLevel = Some(AppealLevelEnum.HMRC)))),
             principalChargeBillingFrom = LocalDate.of(2022, 10, 30),
             principalChargeBillingTo = LocalDate.of(2022, 10, 30),
             principalChargeDueDate = LocalDate.of(2022, 10, 30),

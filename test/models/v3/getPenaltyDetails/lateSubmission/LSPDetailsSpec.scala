@@ -17,7 +17,7 @@
 package models.v3.getPenaltyDetails.lateSubmission
 
 import base.SpecBase
-import models.v3.getPenaltyDetails.AppealInformation
+import models.v3.getPenaltyDetails.appealInfo.{AppealInformationType, AppealLevelEnum, AppealStatusEnum}
 import play.api.libs.json.{JsResult, JsValue, Json}
 
 import java.time.LocalDate
@@ -79,9 +79,7 @@ class LSPDetailsSpec extends SpecBase {
     expiryReason = Some("FAP"),
     appealInformation = Some(
       Seq(
-        AppealInformation(
-          appealStatus = Some("99"), appealLevel = Some("01")
-        )
+        AppealInformationType(appealStatus = Some(AppealStatusEnum.Unappealable), appealLevel = Some(AppealLevelEnum.HMRC))
       )
     ),
     chargeDueDate = Some(LocalDate.of(2022, 10, 30)),

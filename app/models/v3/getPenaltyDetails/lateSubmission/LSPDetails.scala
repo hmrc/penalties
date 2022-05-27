@@ -16,7 +16,7 @@
 
 package models.v3.getPenaltyDetails.lateSubmission
 
-import models.v3.getPenaltyDetails.AppealInformation
+import models.v3.getPenaltyDetails.appealInfo.AppealInformationType
 import play.api.libs.json.{Format, Json}
 
 import java.time.LocalDate
@@ -32,7 +32,7 @@ case class LSPDetails(
                        FAPIndicator: Option[String],
                        lateSubmissions: Option[Seq[LateSubmission]],
                        expiryReason: Option[String],
-                       appealInformation: Option[Seq[AppealInformation]],
+                       appealInformation: Option[Seq[AppealInformationType]],
                        chargeDueDate: Option[LocalDate],
                        chargeOutstandingAmount: Option[BigDecimal],
                        chargeAmount: Option[BigDecimal]

@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
-package models.v3.getPenaltyDetails
+package models.v3.getPenaltyDetails.appealInfo
 
 import play.api.libs.json.{Json, OFormat}
 
-case class AppealInformation(
-                              appealStatus: Option[String],
-                              appealLevel: Option[String]
-                            )
+case class AppealInformationType(
+                                  appealStatus: Option[AppealStatusEnum.Value],
+                                  appealLevel: Option[AppealLevelEnum.Value]
+                                )
 
-object AppealInformation {
-  implicit val format: OFormat[AppealInformation] = Json.format[AppealInformation]
+object AppealInformationType {
+  implicit val format: OFormat[AppealInformationType] = Json.format[AppealInformationType]
 }
