@@ -19,7 +19,7 @@ package models.v3.getPenaltyDetails.appealInfo
 import base.SpecBase
 import play.api.libs.json.{JsString, Json}
 
-class AppealLevelEnumTest extends SpecBase {
+class AppealLevelEnumSpec extends SpecBase {
   "AppealLevelEnum" should {
     "be writable to JSON for appeal level '01'" in {
       val result = Json.toJson(AppealLevelEnum.HMRC)(AppealLevelEnum.format)

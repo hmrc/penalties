@@ -164,7 +164,7 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
           lateSubmissions = None,
           expiryReason = None,
           appealInformation = Some(Seq(
-            AppealInformationType(appealStatus = Some(AppealStatusEnum.Under_Appeal), appealLevel = Some(AppealLevelEnum.HMRC)))          ),
+            AppealInformationType(appealStatus = Some(AppealStatusEnum.Under_Appeal), appealLevel = Some(AppealLevelEnum.HMRC)))),
           chargeDueDate = None,
           chargeOutstandingAmount = None,
           chargeAmount = None
