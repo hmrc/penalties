@@ -271,9 +271,16 @@ class APIControllerSpec extends SpecBase with FeatureSwitching {
         status(result) shouldBe Status.INTERNAL_SERVER_ERROR
       }
 
-      s"return NOT_FOUND (${Status.NOT_FOUND}) when the call returns no data" in new Setup(isFSEnabled = true) {
+      s"return NOT_FOUND (${Status.NOT_FOUND}) when the call returns not found" in new Setup(isFSEnabled = true) {
         when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(Matchers.any())(Matchers.any()))
           .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(Status.NOT_FOUND))))
+        val result = controller.getSummaryDataForVRN("123456789")(fakeRequest)
+        status(result) shouldBe Status.NOT_FOUND
+      }
+
+      s"return NOT_FOUND (${Status.NOT_FOUND}) when the call returns no data" in new Setup(isFSEnabled = true) {
+        when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(Matchers.any())(Matchers.any()))
+          .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(Status.NO_CONTENT))))
         val result = controller.getSummaryDataForVRN("123456789")(fakeRequest)
         status(result) shouldBe Status.NOT_FOUND
       }

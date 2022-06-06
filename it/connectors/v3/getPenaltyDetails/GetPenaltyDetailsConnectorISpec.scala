@@ -78,6 +78,14 @@ class GetPenaltyDetailsConnectorISpec extends IntegrationSpecCommonBase with ETM
       result.left.get.asInstanceOf[GetPenaltyDetailsFailureResponse].status shouldBe Status.NOT_FOUND
     }
 
+    s"return a $GetPenaltyDetailsFailureResponse when the response status is NO CONTENT (${Status.NO_CONTENT})" in new Setup {
+      enableFeatureSwitch(CallAPI1812ETMP)
+      mockResponseForGetPenaltyDetailsv3(Status.NO_CONTENT, "123456789")
+      val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails("123456789"))
+      result.isLeft shouldBe true
+      result.left.get.asInstanceOf[GetPenaltyDetailsFailureResponse].status shouldBe Status.NO_CONTENT
+    }
+
     s"return a $GetPenaltyDetailsFailureResponse when the response status is CONFLICT (${Status.CONFLICT})" in new Setup {
       enableFeatureSwitch(CallAPI1812ETMP)
       mockResponseForGetPenaltyDetailsv3(Status.CONFLICT, "123456789")

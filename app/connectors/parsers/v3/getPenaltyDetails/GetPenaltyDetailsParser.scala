@@ -18,7 +18,7 @@ package connectors.parsers.v3.getPenaltyDetails
 
 import models.PagerDutyHelper
 import models.v3.getPenaltyDetails.GetPenaltyDetails
-import play.api.http.Status.{BAD_REQUEST, CONFLICT, INTERNAL_SERVER_ERROR, NOT_FOUND, OK, SERVICE_UNAVAILABLE, UNPROCESSABLE_ENTITY}
+import play.api.http.Status._
 import play.api.libs.json.{JsError, JsSuccess}
 import uk.gov.hmrc.http.{HttpReads, HttpResponse}
 import utils.Logger.logger
@@ -47,6 +47,10 @@ object GetPenaltyDetailsParser {
           }
         case status@(NOT_FOUND | BAD_REQUEST | CONFLICT | INTERNAL_SERVER_ERROR | SERVICE_UNAVAILABLE) => {
           logger.error(s"[GetPenaltyDetailsReads][read] Received $status when trying to call GetPenaltyDetails - with body: ${response.body}")
+          Left(GetPenaltyDetailsFailureResponse(status))
+        }
+        case status@NO_CONTENT => {
+          logger.debug(s"[GetPenaltyDetailsReads][read] Received 204 when calling ETMP")
           Left(GetPenaltyDetailsFailureResponse(status))
         }
         case status@UNPROCESSABLE_ENTITY => {
