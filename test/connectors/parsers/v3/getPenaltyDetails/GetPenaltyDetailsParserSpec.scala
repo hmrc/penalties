@@ -53,6 +53,7 @@ class GetPenaltyDetailsParserSpec extends AnyWordSpec with Matchers with LogCapt
   val mockISEHttpResponse: HttpResponse = HttpResponse.apply(status = Status.INTERNAL_SERVER_ERROR, body = "Something went wrong.")
   val mockBadRequestHttpResponse: HttpResponse = HttpResponse.apply(status = Status.BAD_REQUEST, body = "Bad Request.")
   val mockNotFoundHttpResponse: HttpResponse = HttpResponse.apply(status = Status.NOT_FOUND, body = "Not Found.")
+  val mockNoContentHttpResponse: HttpResponse = HttpResponse.apply(status = Status.NO_CONTENT, body = "")
   val mockConflictHttpResponse: HttpResponse = HttpResponse.apply(status = Status.CONFLICT, body = "Conflict.")
   val mockUnprocessableEnityHttpResponse: HttpResponse = HttpResponse.apply(status = Status.UNPROCESSABLE_ENTITY, body = "Unprocessable Entity.")
   val mockServiceUnavailableHttpResponse: HttpResponse = HttpResponse.apply(status = Status.SERVICE_UNAVAILABLE, body = "Service Unavailable.")
@@ -73,19 +74,25 @@ class GetPenaltyDetailsParserSpec extends AnyWordSpec with Matchers with LogCapt
       }
     }
 
-    s"parse an BAD REQUEST (${Status.BAD_REQUEST}) response" in {
+    s"parse a BAD REQUEST (${Status.BAD_REQUEST}) response" in {
       val result = GetPenaltyDetailsParser.GetPenaltyDetailsReads.read("GET", "/", mockBadRequestHttpResponse)
       result.isLeft shouldBe true
       result.left.get.asInstanceOf[GetPenaltyDetailsFailureResponse].status shouldBe Status.BAD_REQUEST
     }
 
-    s"parse an NOT FOUND (${Status.NOT_FOUND}) response" in {
+    s"parse a NOT FOUND (${Status.NOT_FOUND}) response" in {
       val result = GetPenaltyDetailsParser.GetPenaltyDetailsReads.read("GET", "/", mockNotFoundHttpResponse)
       result.isLeft shouldBe true
       result.left.get.asInstanceOf[GetPenaltyDetailsFailureResponse].status shouldBe Status.NOT_FOUND
     }
 
-    s"parse an Conflict (${Status.CONFLICT}) response" in {
+    s"parse a NO CONTENT (${Status.NO_CONTENT}) response" in {
+      val result = GetPenaltyDetailsParser.GetPenaltyDetailsReads.read("GET", "/", mockNoContentHttpResponse)
+      result.isLeft shouldBe true
+      result.left.get.asInstanceOf[GetPenaltyDetailsFailureResponse].status shouldBe Status.NO_CONTENT
+    }
+
+    s"parse a Conflict (${Status.CONFLICT}) response" in {
       val result = GetPenaltyDetailsParser.GetPenaltyDetailsReads.read("GET", "/", mockConflictHttpResponse)
       result.isLeft shouldBe true
       result.left.get.asInstanceOf[GetPenaltyDetailsFailureResponse].status shouldBe Status.CONFLICT
@@ -109,7 +116,7 @@ class GetPenaltyDetailsParserSpec extends AnyWordSpec with Matchers with LogCapt
       result.left.get.asInstanceOf[GetPenaltyDetailsFailureResponse].status shouldBe Status.INTERNAL_SERVER_ERROR
     }
 
-    s"parse an SERVICE UNAVAILABLE (${Status.SERVICE_UNAVAILABLE}) response" in {
+    s"parse a SERVICE UNAVAILABLE (${Status.SERVICE_UNAVAILABLE}) response" in {
       val result = GetPenaltyDetailsParser.GetPenaltyDetailsReads.read("GET", "/", mockServiceUnavailableHttpResponse)
       result.isLeft shouldBe true
       result.left.get.asInstanceOf[GetPenaltyDetailsFailureResponse].status shouldBe Status.SERVICE_UNAVAILABLE

@@ -30,7 +30,6 @@ import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import utils.Logger.logger
 import utils.RegimeHelper
 import javax.inject.Inject
-import utils.RegimeHelper.getIdentifierFromEnrolmentKey
 
 import scala.concurrent.ExecutionContext.Implicits.global
 

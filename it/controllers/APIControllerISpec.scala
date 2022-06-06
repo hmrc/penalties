@@ -402,6 +402,13 @@ class APIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock wit
           val result = await(buildClientForRequestToApp(uri = "/vat/penalties/summary/123456789").get)
           result.status shouldBe NOT_FOUND
         }
+
+        "the get penalty details call returns 204" in {
+          enableFeatureSwitch(UseAPI1812Model)
+          mockStubResponseForGetPenaltyDetailsv3(Status.NO_CONTENT, "123456789", body = Some(""))
+          val result = await(buildClientForRequestToApp(uri = "/vat/penalties/summary/123456789").get)
+          result.status shouldBe NOT_FOUND
+        }
       }
     }
   }

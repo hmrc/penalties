@@ -65,8 +65,8 @@ class APIController @Inject()(etmpService: ETMPService,
         } else {
           getPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(vrn).map {
             _.fold({
-              case GetPenaltyDetailsParser.GetPenaltyDetailsFailureResponse(status) if status == NOT_FOUND => {
-                logger.info(s"[APIController][getSummaryDataForVRN] - 1812 call returned 404 for VRN: $vrn")
+              case GetPenaltyDetailsParser.GetPenaltyDetailsFailureResponse(status) if status == NOT_FOUND || status == NO_CONTENT => {
+                logger.info(s"[APIController][getSummaryDataForVRN] - 1812 call returned $status for VRN: $vrn")
                 NotFound(s"A downstream call returned 404 for VRN: $vrn")
               }
               case GetPenaltyDetailsParser.GetPenaltyDetailsFailureResponse(status) => {
