@@ -22,7 +22,7 @@ import play.api.http.Status
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import utils.{ETMPWiremock, IntegrationSpecCommonBase}
 
-class FinancialDetailsConnectorISpec extends IntegrationSpecCommonBase with ETMPWiremock with FeatureSwitching{
+class FinancialDetailsConnectorISpec extends IntegrationSpecCommonBase with ETMPWiremock with FeatureSwitching {
 
   class Setup {
     val connector: FinancialDetailsConnector = injector.instanceOf[FinancialDetailsConnector]
