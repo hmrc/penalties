@@ -17,11 +17,13 @@
 package connectors.parsers.v3.getPenaltyDetails
 
 import models.PagerDutyHelper
-import models.v3.getPenaltyDetails.GetPenaltyDetails
+import models.v3.getPenaltyDetails.{FailureCodeEnum, FailureResponse, GetPenaltyDetails}
 import play.api.http.Status._
-import play.api.libs.json.{JsError, JsSuccess}
+import play.api.libs.json.{JsError, JsSuccess, JsValue}
 import uk.gov.hmrc.http.{HttpReads, HttpResponse}
 import utils.Logger.logger
+
+import scala.util.Try
 
 object GetPenaltyDetailsParser {
   sealed trait GetPenaltyDetailsFailure
@@ -30,6 +32,7 @@ object GetPenaltyDetailsParser {
   case class  GetPenaltyDetailsSuccessResponse(penaltyDetails: GetPenaltyDetails) extends GetPenaltyDetailsSuccess
   case class  GetPenaltyDetailsFailureResponse(status: Int) extends GetPenaltyDetailsFailure
   case object GetPenaltyDetailsMalformed extends GetPenaltyDetailsFailure
+  case object GetPenaltyDetailsNoContent extends GetPenaltyDetailsFailure
 
   type GetPenaltyDetailsResponse = Either[GetPenaltyDetailsFailure, GetPenaltyDetailsSuccess]
 
@@ -45,6 +48,12 @@ object GetPenaltyDetailsParser {
               logger.debug(s"[GetPenaltyDetailsReads][read] Json validation errors: $errors")
               Left(GetPenaltyDetailsMalformed)
           }
+        case NOT_FOUND if response.body.nonEmpty => {
+          Try(handleNotFoundStatusBody(response.json)).fold(parseError => {
+            logger.error(s"[GetPenaltyDetailsReads][read] Could not parse 404 body with error ${parseError.getMessage}")
+            Left(GetPenaltyDetailsFailureResponse(NOT_FOUND))
+          }, identity)
+        }
         case status@(NOT_FOUND | BAD_REQUEST | CONFLICT | INTERNAL_SERVER_ERROR | SERVICE_UNAVAILABLE) => {
           logger.error(s"[GetPenaltyDetailsReads][read] Received $status when trying to call GetPenaltyDetails - with body: ${response.body}")
           Left(GetPenaltyDetailsFailureResponse(status))
@@ -63,6 +72,24 @@ object GetPenaltyDetailsParser {
           Left(GetPenaltyDetailsFailureResponse(status))
       }
     }
+  }
+
+  private def handleNotFoundStatusBody(responseBody: JsValue): GetPenaltyDetailsResponse = {
+    (responseBody \ "failures").validate[Seq[FailureResponse]].fold(
+      errors => {
+        logger.debug(s"[GetPenaltyDetailsReads][read] - Parsing errors: $errors")
+        logger.error(s"[GetPenaltyDetailsReads][read] - Could not parse 404 body returned from GetPenaltyDetails call")
+        Left(GetPenaltyDetailsFailureResponse(NOT_FOUND))
+      },
+      failures => {
+        if(failures.exists(_.code.equals(FailureCodeEnum.NoDataFound))) {
+          Left(GetPenaltyDetailsNoContent)
+        } else {
+          logger.error(s"[GetPenaltyDetailsReads][read] - Received following errors from GetPenaltyDetails 404 call: $failures")
+          Left(GetPenaltyDetailsFailureResponse(NOT_FOUND))
+        }
+      }
+    )
   }
 }
 
