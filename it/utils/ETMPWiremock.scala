@@ -335,6 +335,95 @@ trait ETMPWiremock {
       |}
       |""".stripMargin)
 
+  val getFinancialDetailsAsJsonv3: JsValue = Json.parse(
+    """
+      |{
+      | "documentDetails": [{
+      |   "documentId": "documentId",
+      |   "accruingInterestAmount": 123.45,
+      |   "interestOutstandingAmount": 123.45,
+      |      "taxYear": "taxYear",
+      |      "documentDate": "2021-01-11",
+      |      "documentText": "documentText",
+      |      "documentDueDate": "2021-01-11",
+      |      "documentDescription": "documentDescription",
+      |      "formBundleNumber": "formBundleNumber",
+      |      "totalAmount": 123.45,
+      |      "documentOutstandingAmount": 123.45,
+      |      "lastClearingDate": "2021-01-11",
+      |      "lastClearingReason": "lastClearingReason",
+      |      "lastClearedAmount": 123.45,
+      |      "statisticalFlag": true,
+      |      "informationCode": "informationCode",
+      |      "paymentLot": "paymentLot",
+      |      "paymentLotItem": "paymentLotItem",
+      |      "interestRate": 123.45,
+      |      "interestFromDate": "2021-01-11",
+      |      "interestEndDate": "2021-01-11",
+      |      "latePaymentInterestID": "latePaymentInterestID",
+      |      "latePaymentInterestAmount": 123.45,
+      |      "lpiWithDunningBlock": 123.45,
+      |      "accruingPenaltyLPP1": "accruingPenaltyLPP1"
+      |   }
+      | ],
+      | "financialDetails": [
+      |   {
+      |     "documentId": "1234",
+      |     "taxPeriodFrom": "2021-01-11",
+      |     "taxPeriodTo": "2021-01-11",
+      |     "items": [
+      |       {
+      |         "dueDate": "2021-01-11",
+      |         "clearingDate": "2021-01-11",
+      |         "metaData": {
+      |           "subItem": "subItem",
+      |           "amount": 123.45,
+      |           "clearingReason" : "clearingReason",
+      |           "outgoingPaymentMethod": "outgoingPaymentMethod",
+      |           "paymentLock": "paymentLock",
+      |           "clearingLock": "clearingLock",
+      |           "interestLock": "interestLock",
+      |           "dunningLock": "dunningLock",
+      |           "returnFlag": true,
+      |           "paymentReference": "paymentReference",
+      |           "paymentAmount": "paymentAmount",
+      |           "paymentMethod": "paymentMethod",
+      |           "paymentLot": "paymentLot",
+      |           "paymentLotItem": "paymentLotItem",
+      |           "clearingSAPDocument": "clearingSAPDocument",
+      |           "codingInitiationDate": "2021-01-11",
+      |           "statisticalDocument": "statisticalDocument",
+      |           "DDCollectionInProgress": true,
+      |           "returnReason": "returnReason",
+      |           "promisetoPay": "promisetoPay"
+      |         }
+      |       }
+      |     ],
+      |     "originalAmount": 123.45,
+      |     "outstandingAmount": 123.45,
+      |      "taxYear": "taxYear",
+      |      "chargeType": "chargeType",
+      |      "mainType": "mainType",
+      |      "periodKey": "periodKey",
+      |      "periodKeyDescription": "periodKeyDescription",
+      |      "businessPartner": "businessPartner",
+      |      "contractAccountCategory": "contractAccountCategory",
+      |      "contractAccount": "contractAccount",
+      |      "contractObjectType": "contractObjectType",
+      |      "contractObject": "contractObject",
+      |      "sapDocumentNumber": "sapDocumentNumber",
+      |      "sapDocumentNumberItem": "sapDocumentNumberItem",
+      |      "chargeReference": "chargeReference",
+      |      "mainTransaction": "mainTransaction",
+      |      "subTransaction" : "subTransaction",
+      |      "clearedAmount": 123.45,
+      |      "accruedInterest": 123.45
+      |   }
+      | ]
+      |}
+      |""".stripMargin
+  )
+
 
   def mockResponseForStubETMPPayload(status: Int, enrolmentKey: String, body: Option[String] = None): StubMapping = {
     stubFor(get(urlEqualTo(s"/penalties-stub/etmp/mtd-vat/$enrolmentKey"))
@@ -395,5 +484,23 @@ trait ETMPWiremock {
           .withBody(body.fold(getFinancialDetailsAsJson.toString())(identity))
           .withStatus(status)
       ))
+  }
+
+  def mockReponseForGetFinancialDetailsv3(status: Int, vatcUrl: String, body: Option[String] = None): StubMapping = {
+    stubFor(get(urlEqualTo(s"/penalties-stub/penalty/financial-data/$vatcUrl"))
+      .willReturn(
+        aResponse()
+          .withBody(body.fold(getFinancialDetailsAsJsonv3.toString())(identity))
+          .withStatus(status)
+      ))
+  }
+
+  def mockResponseForGetFinancialDetailsv3(status: Int, vatcUrl: String, body: Option[String] = None): StubMapping = {
+    stubFor(get(urlEqualTo(s"/penalty/financial-data/$vatcUrl"))
+    .willReturn(
+      aResponse()
+        .withBody(body.fold(getFinancialDetailsAsJsonv3.toString())(identity))
+        .withStatus(status)
+    ))
   }
 }
