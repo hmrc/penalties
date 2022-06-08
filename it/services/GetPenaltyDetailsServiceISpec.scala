@@ -137,6 +137,24 @@ class GetPenaltyDetailsServiceISpec extends IntegrationSpecCommonBase with ETMPW
       result.left.get shouldBe GetPenaltyDetailsMalformed
     }
 
+    s"the response body contains NO_DATA_FOUND for 404 response - returning $GetPenaltyDetailsNoContent" in {
+      val noDataFoundBody =
+        """
+          |{
+          | "failures": [
+          |   {
+          |     "code": "NO_DATA_FOUND",
+          |     "reason": "This is a reason"
+          |   }
+          | ]
+          |}
+          |""".stripMargin
+      mockStubResponseForGetPenaltyDetailsv3(Status.NOT_FOUND, "123456789", body = Some(noDataFoundBody))
+      val result = await(service.getDataFromPenaltyServiceForVATCVRN("123456789"))
+      result.isLeft shouldBe true
+      result.left.get shouldBe GetPenaltyDetailsNoContent
+    }
+
     s"an unknown response is returned from the connector - $GetPenaltyDetailsFailureResponse" in {
       mockStubResponseForGetPenaltyDetailsv3(Status.IM_A_TEAPOT, "123456789")
       val result = await(service.getDataFromPenaltyServiceForVATCVRN("123456789"))

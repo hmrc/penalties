@@ -427,6 +427,25 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
       }
     }
 
+    s"return NO_CONTENT (${Status.NO_CONTENT})" when {
+      "the call returns 404 with NO_DATA_FOUND in body" in {
+        val noDataFoundBody =
+          """
+            |{
+            | "failures": [
+            |   {
+            |     "code": "NO_DATA_FOUND",
+            |     "reason": "This is a reason"
+            |   }
+            | ]
+            |}
+            |""".stripMargin
+        mockStubResponseForGetPenaltyDetailsv3(Status.NOT_FOUND, "123456789", body = Some(noDataFoundBody))
+        val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/HMRC-MTD-VAT~VRN~123456789?newApiModel=true").get)
+        result.status shouldBe NO_CONTENT
+      }
+    }
+
     s"return ISE (${Status.INTERNAL_SERVER_ERROR})" when {
       "the get penalty details call fails" in {
         mockStubResponseForGetPenaltyDetailsv3(Status.INTERNAL_SERVER_ERROR, "123456789", body = Some(""))
