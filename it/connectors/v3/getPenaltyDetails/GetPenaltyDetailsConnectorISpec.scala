@@ -17,7 +17,7 @@
 package connectors.v3.getPenaltyDetails
 
 import config.featureSwitches.{CallAPI1812ETMP, FeatureSwitching}
-import connectors.parsers.v3.getPenaltyDetails.GetPenaltyDetailsParser.{GetPenaltyDetailsFailureResponse, GetPenaltyDetailsMalformed, GetPenaltyDetailsResponse}
+import connectors.parsers.v3.getPenaltyDetails.GetPenaltyDetailsParser.{GetPenaltyDetailsFailureResponse, GetPenaltyDetailsMalformed, GetPenaltyDetailsNoContent, GetPenaltyDetailsResponse}
 import play.api.http.Status
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.http.HeaderCarrier
@@ -76,6 +76,25 @@ class GetPenaltyDetailsConnectorISpec extends IntegrationSpecCommonBase with ETM
       val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails("123456789"))
       result.isLeft shouldBe true
       result.left.get.asInstanceOf[GetPenaltyDetailsFailureResponse].status shouldBe Status.NOT_FOUND
+    }
+
+    s"return a $GetPenaltyDetailsNoContent when the response status is NOT FOUND (${Status.NOT_FOUND}) but with NO_DATA_FOUND in JSON body" in new Setup {
+      enableFeatureSwitch(CallAPI1812ETMP)
+      val noDataFoundBody =
+        """
+          |{
+          | "failures": [
+          |   {
+          |     "code": "NO_DATA_FOUND",
+          |     "reason": "Some reason"
+          |   }
+          | ]
+          |}
+          |""".stripMargin
+      mockResponseForGetPenaltyDetailsv3(Status.NOT_FOUND, "123456789", body = Some(noDataFoundBody))
+      val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails("123456789"))
+      result.isLeft shouldBe true
+      result.left.get shouldBe GetPenaltyDetailsNoContent
     }
 
     s"return a $GetPenaltyDetailsFailureResponse when the response status is NO CONTENT (${Status.NO_CONTENT})" in new Setup {

@@ -16,7 +16,7 @@
 
 package connectors.parsers.v3.getPenaltyDetails
 
-import GetPenaltyDetailsParser.{GetPenaltyDetailsFailureResponse, GetPenaltyDetailsMalformed, GetPenaltyDetailsSuccessResponse}
+import GetPenaltyDetailsParser.{GetPenaltyDetailsFailureResponse, GetPenaltyDetailsMalformed, GetPenaltyDetailsNoContent, GetPenaltyDetailsSuccessResponse}
 import base.LogCapturing
 import models.PagerDutyHelper.PagerDutyKeys
 import models.v3.getPenaltyDetails.GetPenaltyDetails
@@ -50,9 +50,24 @@ class GetPenaltyDetailsParserSpec extends AnyWordSpec with Matchers with LogCapt
         |""".stripMargin
     ), headers = Map.empty)
 
+  val mockNotFoundHttpResponseJsonBody: HttpResponse = HttpResponse.apply(status = Status.NOT_FOUND, json = Json.parse(
+    """
+      |{
+      | "failures": [
+      |   {
+      |     "code": "NO_DATA_FOUND",
+      |     "reason": "Some reason"
+      |   }
+      | ]
+      |}
+      |""".stripMargin
+  ), headers = Map.empty)
+
+
   val mockISEHttpResponse: HttpResponse = HttpResponse.apply(status = Status.INTERNAL_SERVER_ERROR, body = "Something went wrong.")
   val mockBadRequestHttpResponse: HttpResponse = HttpResponse.apply(status = Status.BAD_REQUEST, body = "Bad Request.")
   val mockNotFoundHttpResponse: HttpResponse = HttpResponse.apply(status = Status.NOT_FOUND, body = "Not Found.")
+  val mockNotFoundHttpResponseNoBody: HttpResponse = HttpResponse.apply(status = Status.NOT_FOUND, body = "")
   val mockNoContentHttpResponse: HttpResponse = HttpResponse.apply(status = Status.NO_CONTENT, body = "")
   val mockConflictHttpResponse: HttpResponse = HttpResponse.apply(status = Status.CONFLICT, body = "Conflict.")
   val mockUnprocessableEnityHttpResponse: HttpResponse = HttpResponse.apply(status = Status.UNPROCESSABLE_ENTITY, body = "Unprocessable Entity.")
@@ -80,8 +95,20 @@ class GetPenaltyDetailsParserSpec extends AnyWordSpec with Matchers with LogCapt
       result.left.get.asInstanceOf[GetPenaltyDetailsFailureResponse].status shouldBe Status.BAD_REQUEST
     }
 
-    s"parse a NOT FOUND (${Status.NOT_FOUND}) response" in {
+    s"parse a NOT FOUND (${Status.NOT_FOUND}) response with invalid JSON body" in {
       val result = GetPenaltyDetailsParser.GetPenaltyDetailsReads.read("GET", "/", mockNotFoundHttpResponse)
+      result.isLeft shouldBe true
+      result.left.get.asInstanceOf[GetPenaltyDetailsFailureResponse].status shouldBe Status.NOT_FOUND
+    }
+
+    s"parse a NOT FOUND (${Status.NOT_FOUND}) response with JSON body returned (return $GetPenaltyDetailsNoContent)" in {
+      val result = GetPenaltyDetailsParser.GetPenaltyDetailsReads.read("GET", "/", mockNotFoundHttpResponseJsonBody)
+      result.isLeft shouldBe true
+      result.left.get shouldBe GetPenaltyDetailsNoContent
+    }
+
+    s"parse a NOT FOUND (${Status.NOT_FOUND}) response with no body" in {
+      val result = GetPenaltyDetailsParser.GetPenaltyDetailsReads.read("GET", "/", mockNotFoundHttpResponseNoBody)
       result.isLeft shouldBe true
       result.left.get.asInstanceOf[GetPenaltyDetailsFailureResponse].status shouldBe Status.NOT_FOUND
     }

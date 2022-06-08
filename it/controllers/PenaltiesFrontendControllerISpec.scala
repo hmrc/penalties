@@ -419,7 +419,7 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
       }
     }
 
-    s"return BAD_REQUEST (${Status.NOT_FOUND})" when {
+    s"return NOT_FOUND (${Status.NOT_FOUND})" when {
       "the user supplies an invalid VRN" in {
         mockStubResponseForGetPenaltyDetailsv3(Status.OK, "123456789", body = Some(getPenaltyDetailsJson.toString()))
         val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/123456789123456789?newApiModel=true").get)
