@@ -14,25 +14,27 @@
  * limitations under the License.
  */
 
-package connectors.v2
+package connectors.v3.getFinancialDetails
 
 import config.featureSwitches.{CallAPI1811ETMP, FeatureSwitching}
-import connectors.parsers.v2.GetFinancialDetailsParser.{GetFinancialDetailsFailureResponse, GetFinancialDetailsMalformed, GetFinancialDetailsResponse}
+import connectors.parsers.v3.getFinancialDetails.GetFinancialDetailsParser._
 import play.api.http.Status
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
+import uk.gov.hmrc.http.HeaderCarrier
 import utils.{ETMPWiremock, IntegrationSpecCommonBase}
 
-class FinancialDetailsConnectorISpec extends IntegrationSpecCommonBase with ETMPWiremock with FeatureSwitching {
+class GetFinancialDetailsConnectorISpec extends IntegrationSpecCommonBase with ETMPWiremock with FeatureSwitching {
 
   class Setup {
     val connector: FinancialDetailsConnector = injector.instanceOf[FinancialDetailsConnector]
+    implicit val hc: HeaderCarrier = HeaderCarrier()
   }
 
   "getFinancialDetails" should {
     "return a successful response when called" in new Setup {
       enableFeatureSwitch(CallAPI1811ETMP)
-      mockResponseForGetFinancialDetails(Status.OK, "VRN/123456789/VATC")
-      val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails("/VRN/123456789/VATC"))
+      mockResponseForGetFinancialDetailsv3(Status.OK, "VRN/123456789/VATC")
+      val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails("/VRN/123456789/VATC")(hc))
       result.isRight shouldBe true
     }
 
@@ -53,7 +55,7 @@ class FinancialDetailsConnectorISpec extends IntegrationSpecCommonBase with ETMP
 
     s"return a $GetFinancialDetailsFailureResponse when the response status is ISE (${Status.INTERNAL_SERVER_ERROR})" in new Setup {
       enableFeatureSwitch(CallAPI1811ETMP)
-      mockResponseForGetFinancialDetails(Status.INTERNAL_SERVER_ERROR, "VRN/123456789/VATC")
+      mockResponseForGetFinancialDetailsv3(Status.INTERNAL_SERVER_ERROR, "VRN/123456789/VATC")
       val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails("/VRN/123456789/VATC"))
       result.isLeft shouldBe true
       result.left.get.asInstanceOf[GetFinancialDetailsFailureResponse].status shouldBe Status.INTERNAL_SERVER_ERROR
@@ -61,7 +63,7 @@ class FinancialDetailsConnectorISpec extends IntegrationSpecCommonBase with ETMP
 
     s"return a $GetFinancialDetailsFailureResponse when the response status is ISE (${Status.SERVICE_UNAVAILABLE})" in new Setup {
       enableFeatureSwitch(CallAPI1811ETMP)
-      mockResponseForGetFinancialDetails(Status.SERVICE_UNAVAILABLE, "VRN/123456789/VATC")
+      mockResponseForGetFinancialDetailsv3(Status.SERVICE_UNAVAILABLE, "VRN/123456789/VATC")
       val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails("/VRN/123456789/VATC"))
       result.isLeft shouldBe true
       result.left.get.asInstanceOf[GetFinancialDetailsFailureResponse].status shouldBe Status.SERVICE_UNAVAILABLE
@@ -69,7 +71,7 @@ class FinancialDetailsConnectorISpec extends IntegrationSpecCommonBase with ETMP
 
     s"return a $GetFinancialDetailsFailureResponse when the response status is NOT FOUND (${Status.NOT_FOUND})" in new Setup {
       enableFeatureSwitch(CallAPI1811ETMP)
-      mockResponseForGetFinancialDetails(Status.NOT_FOUND, "VRN/123456789/VATC")
+      mockResponseForGetFinancialDetailsv3(Status.NOT_FOUND, "VRN/123456789/VATC")
       val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails("/VRN/123456789/VATC"))
       result.isLeft shouldBe true
       result.left.get.asInstanceOf[GetFinancialDetailsFailureResponse].status shouldBe Status.NOT_FOUND
@@ -77,7 +79,7 @@ class FinancialDetailsConnectorISpec extends IntegrationSpecCommonBase with ETMP
 
     s"return a $GetFinancialDetailsFailureResponse when the response status is CONFLICT (${Status.CONFLICT})" in new Setup {
       enableFeatureSwitch(CallAPI1811ETMP)
-      mockResponseForGetFinancialDetails(Status.CONFLICT, "VRN/123456789/VATC")
+      mockResponseForGetFinancialDetailsv3(Status.CONFLICT, "VRN/123456789/VATC")
       val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails("/VRN/123456789/VATC"))
       result.isLeft shouldBe true
       result.left.get.asInstanceOf[GetFinancialDetailsFailureResponse].status shouldBe Status.CONFLICT
@@ -85,7 +87,7 @@ class FinancialDetailsConnectorISpec extends IntegrationSpecCommonBase with ETMP
 
     s"return a $GetFinancialDetailsFailureResponse when the response status is UNPROCESSABLE ENTITY (${Status.UNPROCESSABLE_ENTITY})" in new Setup {
       enableFeatureSwitch(CallAPI1811ETMP)
-      mockResponseForGetFinancialDetails(Status.UNPROCESSABLE_ENTITY, "VRN/123456789/VATC")
+      mockResponseForGetFinancialDetailsv3(Status.UNPROCESSABLE_ENTITY, "VRN/123456789/VATC")
       val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails("/VRN/123456789/VATC"))
       result.isLeft shouldBe true
       result.left.get.asInstanceOf[GetFinancialDetailsFailureResponse].status shouldBe Status.UNPROCESSABLE_ENTITY
@@ -93,7 +95,7 @@ class FinancialDetailsConnectorISpec extends IntegrationSpecCommonBase with ETMP
 
     s"return a $GetFinancialDetailsFailureResponse when the response status is BAD REQUEST (${Status.BAD_REQUEST})" in new Setup {
       enableFeatureSwitch(CallAPI1811ETMP)
-      mockResponseForGetFinancialDetails(Status.BAD_REQUEST, "VRN/123456789/VATC")
+      mockResponseForGetFinancialDetailsv3(Status.BAD_REQUEST, "VRN/123456789/VATC")
       val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails("/VRN/123456789/VATC"))
       result.isLeft shouldBe true
       result.left.get.asInstanceOf[GetFinancialDetailsFailureResponse].status shouldBe Status.BAD_REQUEST
@@ -101,7 +103,7 @@ class FinancialDetailsConnectorISpec extends IntegrationSpecCommonBase with ETMP
 
     s"return a $GetFinancialDetailsFailureResponse when the response status is FORBIDDEN (${Status.FORBIDDEN})" in new Setup {
       enableFeatureSwitch(CallAPI1811ETMP)
-      mockResponseForGetFinancialDetails(Status.FORBIDDEN, "VRN/123456789/VATC")
+      mockResponseForGetFinancialDetailsv3(Status.FORBIDDEN, "VRN/123456789/VATC")
       val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails("/VRN/123456789/VATC"))
       result.isLeft shouldBe true
       result.left.get.asInstanceOf[GetFinancialDetailsFailureResponse].status shouldBe Status.FORBIDDEN
