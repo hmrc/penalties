@@ -30,7 +30,7 @@ import uk.gov.hmrc.http.{HeaderCarrier, HttpClient}
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class FinancialDetailsConnectorSpec extends SpecBase {
+class GetFinancialDetailsConnectorSpec extends SpecBase {
   implicit val ec: ExecutionContext = ExecutionContext.Implicits.global
   val mockHttpClient: HttpClient = mock(classOf[HttpClient])
   val mockAppConfig: AppConfig = mock(classOf[AppConfig])
@@ -39,7 +39,7 @@ class FinancialDetailsConnectorSpec extends SpecBase {
     reset(mockHttpClient)
     reset(mockAppConfig)
 
-    val connector = new FinancialDetailsConnector(mockHttpClient, mockAppConfig)
+    val connector = new GetFinancialDetailsConnector(mockHttpClient, mockAppConfig)
     when(mockAppConfig.getFinancialDetailsUrl).thenReturn("/")
   }
   

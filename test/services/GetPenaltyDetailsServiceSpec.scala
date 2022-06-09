@@ -126,6 +126,7 @@ class GetPenaltyDetailsServiceSpec extends SpecBase {
         )
       ))
     )
+
     s"call the connector and return a $GetPenaltyDetailsSuccessResponse when the request is successful" in new Setup {
       when(mockGetPenaltyDetailsConnector.getPenaltyDetails(Matchers.eq("123456789"))(any()))
         .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(mockGetPenaltyDetailsResponseAsModel))))

@@ -23,9 +23,9 @@ import uk.gov.hmrc.http.{HeaderCarrier, HttpClient}
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class FinancialDetailsConnector @Inject()(httpClient: HttpClient,
-                                          appConfig: AppConfig)
-                                         (implicit ec: ExecutionContext) {
+class GetFinancialDetailsConnector @Inject()(httpClient: HttpClient,
+                                             appConfig: AppConfig)
+                                            (implicit ec: ExecutionContext) {
 
   def getFinancialDetails(vatcUrl: String)(implicit hc: HeaderCarrier): Future[GetFinancialDetailsResponse] = {
     httpClient.GET[GetFinancialDetailsResponse](url = appConfig.getFinancialDetailsUrl + vatcUrl)

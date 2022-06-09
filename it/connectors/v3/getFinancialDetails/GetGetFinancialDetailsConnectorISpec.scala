@@ -23,10 +23,10 @@ import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.http.HeaderCarrier
 import utils.{ETMPWiremock, IntegrationSpecCommonBase}
 
-class GetFinancialDetailsConnectorISpec extends IntegrationSpecCommonBase with ETMPWiremock with FeatureSwitching {
+class GetGetFinancialDetailsConnectorISpec extends IntegrationSpecCommonBase with ETMPWiremock with FeatureSwitching {
 
   class Setup {
-    val connector: FinancialDetailsConnector = injector.instanceOf[FinancialDetailsConnector]
+    val connector: GetFinancialDetailsConnector = injector.instanceOf[GetFinancialDetailsConnector]
     implicit val hc: HeaderCarrier = HeaderCarrier()
   }
 
