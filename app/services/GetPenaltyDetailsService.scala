@@ -40,6 +40,9 @@ class GetPenaltyDetailsService @Inject()(getPenaltyDetailsConnector: GetPenaltyD
       case res@Right(_@GetPenaltyDetailsSuccessResponse(penaltyDetails)) =>
         logger.debug(s"$startOfLogMsg - Got a success response from the connector. Parsed model: $penaltyDetails")
         res
+      case res@Left(GetPenaltyDetailsNoContent) =>
+        logger.debug(s"$startOfLogMsg - Got a 404 response and no data was found for GetPenaltyDetails call")
+        res
       case res@Left(GetPenaltyDetailsMalformed) =>
         logger.info(s"$startOfLogMsg - Failed to parse HTTP response into model.")
         res

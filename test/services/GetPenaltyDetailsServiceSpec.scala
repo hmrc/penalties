@@ -17,7 +17,7 @@
 package services
 
 import base.SpecBase
-import connectors.parsers.v3.getPenaltyDetails.GetPenaltyDetailsParser.{GetPenaltyDetailsFailureResponse, GetPenaltyDetailsMalformed, GetPenaltyDetailsResponse, GetPenaltyDetailsSuccessResponse}
+import connectors.parsers.v3.getPenaltyDetails.GetPenaltyDetailsParser.{GetPenaltyDetailsFailureResponse, GetPenaltyDetailsMalformed, GetPenaltyDetailsNoContent, GetPenaltyDetailsResponse, GetPenaltyDetailsSuccessResponse}
 import connectors.v3.getPenaltyDetails.GetPenaltyDetailsConnector
 import models.v3.getPenaltyDetails.appealInfo.{AppealInformationType, AppealLevelEnum, AppealStatusEnum}
 import models.v3.getPenaltyDetails.{GetPenaltyDetails, Totalisations}
@@ -126,7 +126,7 @@ class GetPenaltyDetailsServiceSpec extends SpecBase {
         )
       ))
     )
-    s"call the connector and return a $Some when the request is successful" in new Setup {
+    s"call the connector and return a $GetPenaltyDetailsSuccessResponse when the request is successful" in new Setup {
       when(mockGetPenaltyDetailsConnector.getPenaltyDetails(Matchers.eq("123456789"))(any()))
         .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(mockGetPenaltyDetailsResponseAsModel))))
 
@@ -135,7 +135,7 @@ class GetPenaltyDetailsServiceSpec extends SpecBase {
       result.right.get shouldBe GetPenaltyDetailsSuccessResponse(mockGetPenaltyDetailsResponseAsModel)
     }
 
-    s"return $None when the response body is malformed" in new Setup {
+    s"return $GetPenaltyDetailsMalformed when the response body is malformed" in new Setup {
       when(mockGetPenaltyDetailsConnector.getPenaltyDetails(Matchers.eq("123456789"))(any()))
         .thenReturn(Future.successful(Left(GetPenaltyDetailsMalformed)))
 
@@ -144,7 +144,16 @@ class GetPenaltyDetailsServiceSpec extends SpecBase {
       result.left.get shouldBe GetPenaltyDetailsMalformed
     }
 
-    s"return $None when the connector receives an unmatched status code" in new Setup {
+    s"return $GetPenaltyDetailsNoContent when the response body contains NO_DATA_FOUND" in new Setup {
+      when(mockGetPenaltyDetailsConnector.getPenaltyDetails(Matchers.eq("123456789"))(any()))
+        .thenReturn(Future.successful(Left(GetPenaltyDetailsNoContent)))
+
+      val result: GetPenaltyDetailsResponse = await(service.getDataFromPenaltyServiceForVATCVRN("123456789"))
+      result.isLeft shouldBe true
+      result.left.get shouldBe GetPenaltyDetailsNoContent
+    }
+
+    s"return $GetPenaltyDetailsFailureResponse when the connector receives an unmatched status code" in new Setup {
       when(mockGetPenaltyDetailsConnector.getPenaltyDetails(Matchers.eq("123456789"))(any()))
         .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(IM_A_TEAPOT))))
 

@@ -19,7 +19,7 @@ package controllers
 import base.SpecBase
 import config.AppConfig
 import connectors.parsers.ETMPPayloadParser.{GetETMPPayloadMalformed, GetETMPPayloadNoContent, GetETMPPayloadSuccessResponse}
-import connectors.parsers.v3.getPenaltyDetails.GetPenaltyDetailsParser.{GetPenaltyDetailsFailureResponse, GetPenaltyDetailsSuccessResponse}
+import connectors.parsers.v3.getPenaltyDetails.GetPenaltyDetailsParser.{GetPenaltyDetailsFailureResponse, GetPenaltyDetailsNoContent, GetPenaltyDetailsSuccessResponse}
 import models.ETMPPayload
 import models.v3.getPenaltyDetails.GetPenaltyDetails
 import models.v3.getPenaltyDetails.latePayment.{LPPDetails, LPPPenaltyCategoryEnum, LPPPenaltyStatusEnum, LatePaymentPenalty}
@@ -253,6 +253,13 @@ class PenaltiesFrontendControllerSpec extends SpecBase {
         .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(Status.NOT_FOUND))))
       val result = controller.getPenaltiesData("123456789", Some(""), true)(fakeRequest)
       status(result) shouldBe Status.NOT_FOUND
+    }
+
+    s"return NO_CONTENT (${Status.NO_CONTENT}) when the call returns no data (DATA_NOT_FOUND response)" in new Setup(isFSEnabled = true) {
+      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(Matchers.any())(Matchers.any()))
+        .thenReturn(Future.successful(Left(GetPenaltyDetailsNoContent)))
+      val result = controller.getPenaltiesData("123456789", Some(""), true)(fakeRequest)
+      status(result) shouldBe Status.NO_CONTENT
     }
 
     s"return OK (${Status.OK}) when the call returns some data and can be parsed to the correct response" in new Setup(isFSEnabled = true) {
