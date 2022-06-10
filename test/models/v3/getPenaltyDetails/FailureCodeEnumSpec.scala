@@ -17,6 +17,7 @@
 package models.v3.getPenaltyDetails
 
 import base.SpecBase
+import models.v3.FailureCodeEnum
 import play.api.libs.json.{JsString, Json}
 
 class FailureCodeEnumSpec extends SpecBase {

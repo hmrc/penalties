@@ -29,7 +29,7 @@ class GetFinancialDetailsService @Inject()(getFinancialDetailsConnector: GetFina
 
   def getDataFromFinancialServiceForVATVCN(vrn: String)(implicit hc: HeaderCarrier): Future[GetFinancialDetailsResponse] = {
     implicit val startOfLogMsg: String = "[GetFinancialDetailsService][getDataFromFinancialServiceForVATVCN]"
-    getFinancialDetailsConnector.getFinancialDetails(s"/VRN/$vrn/VATC").map {
+    getFinancialDetailsConnector.getFinancialDetails(vrn).map {
       handleConnectorResponse(_)
     }
   }

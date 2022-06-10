@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package models.v3.getPenaltyDetails
+package models.v3
 
-import play.api.libs.json.{Format, JsError, JsResult, JsString, JsSuccess, JsValue}
+import play.api.libs.json._
 
 object FailureCodeEnum extends Enumeration {
   val NoDataFound: FailureCodeEnum.Value = Value("NO_DATA_FOUND")

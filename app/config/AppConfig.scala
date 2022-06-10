@@ -59,7 +59,7 @@ class AppConfig @Inject()(val config: Configuration, servicesConfig: ServicesCon
   }
 
   def getFinancialDetailsUrl: String = {
-    if(!isEnabled(CallAPI1811ETMP)) stubBase + "/penalties-stub/penalty/financial-data"
+    if(!isEnabled(CallAPI1811ETMP)) stubBase + "/penalties-stub/penalty/financial-data/"
     else etmpBase + "/penalty/financial-data"
   }
 

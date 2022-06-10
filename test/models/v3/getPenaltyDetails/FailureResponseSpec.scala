@@ -17,6 +17,8 @@
 package models.v3.getPenaltyDetails
 
 import base.SpecBase
+import models.v3
+import models.v3.{FailureCodeEnum, FailureResponse}
 import play.api.libs.json.{JsValue, Json}
 
 class FailureResponseSpec extends SpecBase {
@@ -28,7 +30,7 @@ class FailureResponseSpec extends SpecBase {
       |}
       |""".stripMargin)
 
-  val model: FailureResponse = FailureResponse(
+  val model: FailureResponse = v3.FailureResponse(
     code = FailureCodeEnum.NoDataFound, reason = "This is some reason"
   )
 
