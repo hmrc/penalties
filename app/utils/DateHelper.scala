@@ -16,11 +16,16 @@
 
 package utils
 
-import java.time.LocalDateTime
+import java.time.{LocalDate, LocalDateTime}
+
 import javax.inject.Inject
 
 class DateHelper @Inject()() {
   def dateTimeNow(): LocalDateTime = {
     LocalDateTime.now()
+  }
+
+  def dateNow(): LocalDate = {
+    LocalDate.now()
   }
 }

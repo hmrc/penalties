@@ -111,15 +111,15 @@ class GetFinancialDetailsServiceISpec extends IntegrationSpecCommonBase with ETM
         )
       ))
     )
-    s"call the connector and return a successful result" in {
-      mockStubReponseForGetFinancialDetailsv3(Status.OK, "123456789")
-      val result = await(service.getDataFromFinancialServiceForVATVCN("123456789"))
+    "call the connector and return a successful result" in {
+      mockStubReponseForGetFinancialDetailsv3(Status.OK, s"123456789?dateFrom=${LocalDate.now()}&dateTo=${LocalDate.now()}&onlyOpenItems=false&includeStatistical=true&includeLocks=false&calculateAccruedInterest=true&removePOA=false&customerPaymentInformation=false")
+      val result = await(service.getDataFromFinancialServiceForVATVCN("123456789", LocalDate.now(), LocalDate.now()))
       result.isRight shouldBe true
       result.right.get shouldBe GetFinancialDetailsSuccessResponse(getFinancialDetailsModel)
     }
 
     s"the response body is not well formed: $GetFinancialDetailsMalformed" in {
-      mockStubReponseForGetFinancialDetailsv3(Status.OK, "123456789", body = Some(
+      mockStubReponseForGetFinancialDetailsv3(Status.OK, s"123456789?dateFrom=${LocalDate.now()}&dateTo=${LocalDate.now()}&onlyOpenItems=false&includeStatistical=true&includeLocks=false&calculateAccruedInterest=true&removePOA=false&customerPaymentInformation=false", body = Some(
         """
           {
            "documentDetails": [
@@ -129,7 +129,7 @@ class GetFinancialDetailsServiceISpec extends IntegrationSpecCommonBase with ETM
            ]
           }
           """))
-      val result = await(service.getDataFromFinancialServiceForVATVCN("123456789"))
+      val result = await(service.getDataFromFinancialServiceForVATVCN("123456789", LocalDate.now(), LocalDate.now()))
       result.isLeft shouldBe true
       result.left.get shouldBe GetFinancialDetailsMalformed
     }
@@ -146,15 +146,15 @@ class GetFinancialDetailsServiceISpec extends IntegrationSpecCommonBase with ETM
           | ]
           |}
           |""".stripMargin
-      mockStubReponseForGetFinancialDetailsv3(Status.NOT_FOUND, "123456789", body = Some(noDataFoundBody))
-      val result = await(service.getDataFromFinancialServiceForVATVCN("123456789"))
+      mockStubReponseForGetFinancialDetailsv3(Status.NOT_FOUND, s"123456789?dateFrom=${LocalDate.now()}&dateTo=${LocalDate.now()}&onlyOpenItems=false&includeStatistical=true&includeLocks=false&calculateAccruedInterest=true&removePOA=false&customerPaymentInformation=false", body = Some(noDataFoundBody))
+      val result = await(service.getDataFromFinancialServiceForVATVCN("123456789", LocalDate.now(), LocalDate.now()))
       result.isLeft shouldBe true
       result.left.get shouldBe GetFinancialDetailsNoContent
     }
 
     s"an unknown response is returned from the connector - $GetFinancialDetailsFailureResponse" in {
-      mockStubReponseForGetFinancialDetailsv3(Status.IM_A_TEAPOT, "123456789")
-      val result = await(service.getDataFromFinancialServiceForVATVCN("123456789"))
+      mockStubReponseForGetFinancialDetailsv3(Status.IM_A_TEAPOT, s"123456789?dateFrom=${LocalDate.now()}&dateTo=${LocalDate.now()}&onlyOpenItems=false&includeStatistical=true&includeLocks=false&calculateAccruedInterest=true&removePOA=false&customerPaymentInformation=false")
+      val result = await(service.getDataFromFinancialServiceForVATVCN("123456789", LocalDate.now(), LocalDate.now()))
       result.isLeft shouldBe true
       result.left.get shouldBe GetFinancialDetailsFailureResponse(Status.IM_A_TEAPOT)
     }

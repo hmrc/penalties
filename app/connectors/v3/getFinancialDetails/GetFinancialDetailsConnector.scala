@@ -16,6 +16,9 @@
 
 package connectors.v3.getFinancialDetails
 
+import java.time.LocalDate
+import java.util.UUID.randomUUID
+
 import config.AppConfig
 import connectors.parsers.v3.getFinancialDetails.GetFinancialDetailsParser.GetFinancialDetailsResponse
 import javax.inject.Inject
@@ -27,7 +30,11 @@ class GetFinancialDetailsConnector @Inject()(httpClient: HttpClient,
                                              appConfig: AppConfig)
                                             (implicit ec: ExecutionContext) {
 
-  def getFinancialDetails(vatcUrl: String)(implicit hc: HeaderCarrier): Future[GetFinancialDetailsResponse] = {
-    httpClient.GET[GetFinancialDetailsResponse](url = appConfig.getFinancialDetailsUrl + vatcUrl)
+  def getFinancialDetails(vrn: String, dateFrom: LocalDate, dateTo: LocalDate)(implicit hc: HeaderCarrier): Future[GetFinancialDetailsResponse] = {
+    val headers = Seq("Authorization" -> s"Bearer ${appConfig.eiOutboundBearerToken}",
+      "CorrelationId" -> randomUUID().toString, "Enviroment" -> appConfig.eisEnvironment)
+
+    httpClient.GET[GetFinancialDetailsResponse](url =
+      appConfig.getFinancialDetailsUrl + vrn + appConfig.queryParametersForGetFinancialDetail(dateFrom, dateTo), headers = headers)
   }
 }

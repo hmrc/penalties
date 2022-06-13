@@ -34,6 +34,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class GetFinancialDetailsServiceSpec extends SpecBase {
   implicit val ec: ExecutionContext = ExecutionContext.Implicits.global
   implicit val hc: HeaderCarrier = HeaderCarrier()
+  val dateTimeNow = LocalDate.now()
   val mockGetFinancialDetailsConnector: GetFinancialDetailsConnector = mock(classOf[GetFinancialDetailsConnector])
   class Setup {
     val service = new GetFinancialDetailsService(mockGetFinancialDetailsConnector)
@@ -126,10 +127,10 @@ class GetFinancialDetailsServiceSpec extends SpecBase {
     )
 
     s"call the connector and return a $GetFinancialDetailsSuccessResponse when the request is successful" in new Setup {
-      when(mockGetFinancialDetailsConnector.getFinancialDetails(Matchers.eq("123456789"))(any()))
+      when(mockGetFinancialDetailsConnector.getFinancialDetails(Matchers.eq("123456789"), Matchers.eq(LocalDate.now()), Matchers.eq(LocalDate.now()))(any()))
         .thenReturn(Future.successful(Right(GetFinancialDetailsSuccessResponse(mockGetFinancialDetailsResponseAsModel))))
 
-      val result: GetFinancialDetailsResponse = await(service.getDataFromFinancialServiceForVATVCN("123456789"))
+      val result: GetFinancialDetailsResponse = await(service.getDataFromFinancialServiceForVATVCN("123456789", LocalDate.now(), LocalDate.now()))
       result.isRight shouldBe true
       result.right.get shouldBe GetFinancialDetailsSuccessResponse(mockGetFinancialDetailsResponseAsModel)
     }

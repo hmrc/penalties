@@ -14,11 +14,9 @@
  * limitations under the License.
  */
 
-package models.v3.getPenaltyDetails
+package models.v3
 
 import base.SpecBase
-import models.v3
-import models.v3.{FailureCodeEnum, FailureResponse}
 import play.api.libs.json.{JsValue, Json}
 
 class FailureResponseSpec extends SpecBase {
@@ -30,7 +28,7 @@ class FailureResponseSpec extends SpecBase {
       |}
       |""".stripMargin)
 
-  val model: FailureResponse = v3.FailureResponse(
+  val model: FailureResponse = FailureResponse(
     code = FailureCodeEnum.NoDataFound, reason = "This is some reason"
   )
 

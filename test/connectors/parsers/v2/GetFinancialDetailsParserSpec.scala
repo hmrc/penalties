@@ -44,6 +44,16 @@ class GetFinancialDetailsParserSpec extends AnyWordSpec with Matchers {
         | }
         |""".stripMargin
     ), headers = Map.empty)
+  val mockNotFoundHttpResponseWithBody: HttpResponse = HttpResponse.apply(status = Status.NOT_FOUND, json = Json.parse(
+    """
+      |{
+      | "documentDetails": [{
+      |   "summary": {
+      |     }
+      |   }]
+      | }
+      |""".stripMargin
+  ), headers = Map.empty)
 
   val mockISEHttpResponse: HttpResponse = HttpResponse.apply(status = Status.INTERNAL_SERVER_ERROR, body = "Something went wrong.")
   val mockBadRequestHttpResponse: HttpResponse = HttpResponse.apply(status = Status.BAD_REQUEST, body = "Bad Request.")
@@ -84,6 +94,12 @@ class GetFinancialDetailsParserSpec extends AnyWordSpec with Matchers {
 
     s"parse an NOT FOUND (${Status.NOT_FOUND}) response" in {
       val result = GetFinancialDetailsParser.GetFinancialDetailsReads.read("GET", "/", mockNotFoundHttpResponse)
+      result.isLeft shouldBe true
+      result.left.get.asInstanceOf[GetFinancialDetailsFailureResponse].status shouldBe Status.NOT_FOUND
+    }
+
+    s"parse an NOT FOUND (${Status.NOT_FOUND}) response if body is not empty" in {
+      val result = GetFinancialDetailsParser.GetFinancialDetailsReads.read("GET", "/", mockNotFoundHttpResponseWithBody)
       result.isLeft shouldBe true
       result.left.get.asInstanceOf[GetFinancialDetailsFailureResponse].status shouldBe Status.NOT_FOUND
     }

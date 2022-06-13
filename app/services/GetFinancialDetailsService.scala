@@ -16,6 +16,8 @@
 
 package services
 
+import java.time.LocalDate
+
 import connectors.parsers.v3.getFinancialDetails.GetFinancialDetailsParser._
 import connectors.v3.getFinancialDetails.GetFinancialDetailsConnector
 import javax.inject.Inject
@@ -27,9 +29,9 @@ import scala.concurrent.{ExecutionContext, Future}
 class GetFinancialDetailsService @Inject()(getFinancialDetailsConnector: GetFinancialDetailsConnector)
                                           (implicit ec: ExecutionContext){
 
-  def getDataFromFinancialServiceForVATVCN(vrn: String)(implicit hc: HeaderCarrier): Future[GetFinancialDetailsResponse] = {
+  def getDataFromFinancialServiceForVATVCN(vrn: String,dateFrom: LocalDate, dateTo: LocalDate)(implicit hc: HeaderCarrier): Future[GetFinancialDetailsResponse] = {
     implicit val startOfLogMsg: String = "[GetFinancialDetailsService][getDataFromFinancialServiceForVATVCN]"
-    getFinancialDetailsConnector.getFinancialDetails(vrn).map {
+    getFinancialDetailsConnector.getFinancialDetails(vrn, dateFrom, dateTo).map {
       handleConnectorResponse(_)
     }
   }
