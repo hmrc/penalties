@@ -41,9 +41,10 @@ class GetFinancialDetailsConnectorSpec extends SpecBase {
   class Setup {
     reset(mockHttpClient)
     reset(mockAppConfig)
+    reset(mockDateHelper)
 
     val connector = new GetFinancialDetailsConnector(mockHttpClient, mockAppConfig)
-    when(mockAppConfig.getFinancialDetailsUrl).thenReturn("/")
+    when(mockAppConfig.getFinancialDetailsUrlv3(Matchers.any())).thenReturn("/VRN/123456789/VATC")
     when(mockAppConfig.eiOutboundBearerToken).thenReturn("1234")
     when(mockAppConfig.eisEnvironment).thenReturn("asdf")
     when(mockAppConfig.queryParametersForGetFinancialDetail(Matchers.any(), Matchers.any())).thenReturn("?foo=bar")
@@ -141,12 +142,12 @@ class GetFinancialDetailsConnectorSpec extends SpecBase {
           Matchers.any()))
         .thenReturn(Future.successful(Right(GetFinancialDetailsSuccessResponse(mockGetFinancialDetailsModelAPI1811))))
 
-      val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails("VRN/123456789/VATC", LocalDate.of(2022, 1, 1), LocalDate.of(2022, 1, 1))(HeaderCarrier()))
+      val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails("123456789", LocalDate.of(2022, 1, 1), LocalDate.of(2022, 1, 1))(HeaderCarrier()))
       result.isRight shouldBe true
     }
 
     s"return a 404 when the call fails for Not Found" in new Setup {
-      when(mockHttpClient.GET[GetFinancialDetailsResponse](Matchers.eq("/FOO/BAR/123456789?foo=bar"),
+      when(mockHttpClient.GET[GetFinancialDetailsResponse](Matchers.eq("/VRN/123456789/VATC?foo=bar"),
         Matchers.any(),
         Matchers.any())
         (Matchers.any(),
@@ -159,7 +160,7 @@ class GetFinancialDetailsConnectorSpec extends SpecBase {
     }
 
     s"return a 400 when the call fails for Bad Request" in new Setup {
-      when(mockHttpClient.GET[GetFinancialDetailsResponse](Matchers.eq("/FOO/BAR/123456789?foo=bar"),
+      when(mockHttpClient.GET[GetFinancialDetailsResponse](Matchers.eq("/VRN/123456789/VATC?foo=bar"),
         Matchers.any(),
         Matchers.any())
         (Matchers.any(),
@@ -172,7 +173,7 @@ class GetFinancialDetailsConnectorSpec extends SpecBase {
     }
 
     s"return a 409 when the call fails for Conflict" in new Setup {
-      when(mockHttpClient.GET[GetFinancialDetailsResponse](Matchers.eq("/FOO/BAR/123456789?foo=bar"),
+      when(mockHttpClient.GET[GetFinancialDetailsResponse](Matchers.eq("/VRN/123456789/VATC?foo=bar"),
         Matchers.any(),
         Matchers.any())
         (Matchers.any(),
@@ -185,7 +186,7 @@ class GetFinancialDetailsConnectorSpec extends SpecBase {
     }
 
     s"return a 422 when the call fails for Unprocessable Entity" in new Setup {
-      when(mockHttpClient.GET[GetFinancialDetailsResponse](Matchers.eq("/FOO/BAR/123456789?foo=bar"),
+      when(mockHttpClient.GET[GetFinancialDetailsResponse](Matchers.eq("/VRN/123456789/VATC?foo=bar"),
         Matchers.any(),
         Matchers.any())
         (Matchers.any(),
@@ -198,7 +199,7 @@ class GetFinancialDetailsConnectorSpec extends SpecBase {
     }
 
     s"return a 500 when the call fails for Internal Server Error" in new Setup {
-      when(mockHttpClient.GET[GetFinancialDetailsResponse](Matchers.eq("/FOO/BAR/123456789?foo=bar"),
+      when(mockHttpClient.GET[GetFinancialDetailsResponse](Matchers.eq("/VRN/123456789/VATC?foo=bar"),
         Matchers.any(),
         Matchers.any())
         (Matchers.any(),
@@ -211,7 +212,7 @@ class GetFinancialDetailsConnectorSpec extends SpecBase {
     }
 
     s"return a 403 when the call fails" in new Setup {
-      when(mockHttpClient.GET[GetFinancialDetailsResponse](Matchers.eq("/FOO/BAR/123456789?foo=bar"),
+      when(mockHttpClient.GET[GetFinancialDetailsResponse](Matchers.eq("/VRN/123456789/VATC?foo=bar"),
         Matchers.any(),
         Matchers.any())
         (Matchers.any(),
@@ -224,7 +225,7 @@ class GetFinancialDetailsConnectorSpec extends SpecBase {
     }
 
     s"return a 503 when the call fails" in new Setup {
-      when(mockHttpClient.GET[GetFinancialDetailsResponse](Matchers.eq("/FOO/BAR/123456789?foo=bar"),
+      when(mockHttpClient.GET[GetFinancialDetailsResponse](Matchers.eq("/VRN/123456789/VATC?foo=bar"),
         Matchers.any(),
         Matchers.any())
         (Matchers.any(),

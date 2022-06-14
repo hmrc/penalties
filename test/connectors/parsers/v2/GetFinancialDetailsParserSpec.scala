@@ -47,11 +47,13 @@ class GetFinancialDetailsParserSpec extends AnyWordSpec with Matchers {
   val mockNotFoundHttpResponseWithBody: HttpResponse = HttpResponse.apply(status = Status.NOT_FOUND, json = Json.parse(
     """
       |{
-      | "documentDetails": [{
-      |   "summary": {
-      |     }
-      |   }]
-      | }
+      | "failures":[
+      |   {
+      |     "code": "NO_DATA_FOUND",
+      |     "reason": "This is a reason"
+      |   }
+      | ]
+      |}
       |""".stripMargin
   ), headers = Map.empty)
 

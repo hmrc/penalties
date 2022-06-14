@@ -26,6 +26,7 @@ import connectors.parsers.v3.getFinancialDetails.GetFinancialDetailsParser._
 import models.v3.getFinancialDetails.{DocumentDetails, DocumentDetailsMetadata, FinancialDetails, FinancialDetailsMetadata, FinancialItem, FinancialItemMetadata, GetFinancialDetails}
 import org.mockito.Matchers
 import org.mockito.Matchers.any
+import play.api.http.Status.IM_A_TEAPOT
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -34,7 +35,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class GetFinancialDetailsServiceSpec extends SpecBase {
   implicit val ec: ExecutionContext = ExecutionContext.Implicits.global
   implicit val hc: HeaderCarrier = HeaderCarrier()
-  val dateTimeNow = LocalDate.now()
+  val dateTimeNow: LocalDate = LocalDate.now()
   val mockGetFinancialDetailsConnector: GetFinancialDetailsConnector = mock(classOf[GetFinancialDetailsConnector])
   class Setup {
     val service = new GetFinancialDetailsService(mockGetFinancialDetailsConnector)
@@ -133,6 +134,41 @@ class GetFinancialDetailsServiceSpec extends SpecBase {
       val result: GetFinancialDetailsResponse = await(service.getDataFromFinancialServiceForVATVCN("123456789", LocalDate.now(), LocalDate.now()))
       result.isRight shouldBe true
       result.right.get shouldBe GetFinancialDetailsSuccessResponse(mockGetFinancialDetailsResponseAsModel)
+    }
+
+    s"call the connector and return $GetFinancialDetailsNoContent when the response body contains NO_DATA_FOUND" in new Setup {
+      when(mockGetFinancialDetailsConnector.getFinancialDetails(Matchers.eq("123456789"), Matchers.eq(LocalDate.now()), Matchers.eq(LocalDate.now()))(any()))
+        .thenReturn(Future.successful(Left(GetFinancialDetailsNoContent)))
+
+      val result: GetFinancialDetailsResponse = await(service.getDataFromFinancialServiceForVATVCN("123456789", LocalDate.now(), LocalDate.now()))
+      result.isLeft shouldBe true
+      result.left.get shouldBe GetFinancialDetailsNoContent
+    }
+
+    s"call the connector and return $GetFinancialDetailsMalformed when the response body is malformed" in new Setup {
+      when(mockGetFinancialDetailsConnector.getFinancialDetails(Matchers.eq("123456789"), Matchers.eq(LocalDate.now()), Matchers.eq(LocalDate.now()))(any()))
+        .thenReturn(Future.successful(Left(GetFinancialDetailsMalformed)))
+
+      val result: GetFinancialDetailsResponse = await(service.getDataFromFinancialServiceForVATVCN("123456789", LocalDate.now(), LocalDate.now()))
+      result.isLeft shouldBe true
+      result.left.get shouldBe GetFinancialDetailsMalformed
+    }
+
+    s"call the connector and return $GetFinancialDetailsFailureResponse when an unknown status is returned" in new Setup {
+      when(mockGetFinancialDetailsConnector.getFinancialDetails(Matchers.eq("123456789"), Matchers.eq(LocalDate.now()), Matchers.eq(LocalDate.now()))(any()))
+        .thenReturn(Future.successful(Left(GetFinancialDetailsFailureResponse(IM_A_TEAPOT))))
+
+      val result: GetFinancialDetailsResponse = await(service.getDataFromFinancialServiceForVATVCN("123456789", LocalDate.now(), LocalDate.now()))
+      result.isLeft shouldBe true
+      result.left.get shouldBe GetFinancialDetailsFailureResponse(IM_A_TEAPOT)
+    }
+
+    s"throw an exception when something unknown has happened" in new Setup {
+      when(mockGetFinancialDetailsConnector.getFinancialDetails(Matchers.eq("123456789"), Matchers.eq(LocalDate.now()), Matchers.eq(LocalDate.now()))(any()))
+        .thenReturn(Future.failed(new Exception("Something has gone wrong.")))
+
+      val result: Exception = intercept[Exception](await(service.getDataFromFinancialServiceForVATVCN("123456789", LocalDate.now(), LocalDate.now())))
+      result.getMessage shouldBe "Something has gone wrong."
     }
   }
 }
