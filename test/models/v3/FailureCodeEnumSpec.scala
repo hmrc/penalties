@@ -14,18 +14,19 @@
  * limitations under the License.
  */
 
-package utils
+package models.v3
 
-import java.time.{LocalDate, LocalDateTime}
+import base.SpecBase
+import play.api.libs.json.{JsString, Json}
 
-import javax.inject.Inject
-
-class DateHelper @Inject()() {
-  def dateTimeNow(): LocalDateTime = {
-    LocalDateTime.now()
+class FailureCodeEnumSpec extends SpecBase {
+  "be writable to JSON for 'NO_DATA_FOUND'" in {
+    val result = Json.toJson(FailureCodeEnum.NoDataFound)
+    result shouldBe JsString("NO_DATA_FOUND")
   }
 
-  def dateNow(): LocalDate = {
-    LocalDate.now()
+  "be readable from JSON for 'NO_DATA_FOUND'" in {
+    val result = Json.fromJson(JsString("NO_DATA_FOUND"))(FailureCodeEnum.format)
+    result.get shouldBe FailureCodeEnum.NoDataFound
   }
 }

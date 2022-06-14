@@ -88,7 +88,7 @@ class AppConfigSpec extends AnyWordSpec with ShouldMatchers with FeatureSwitchin
       when(mockServicesConfig.baseUrl(Matchers.any()))
         .thenReturn("localhost:0000")
       val result: String = config.getFinancialDetailsUrl
-      result shouldBe "localhost:0000/penalties-stub/penalty/financial-data"
+      result shouldBe "localhost:0000/penalties-stub/penalty/financial-data/"
     }
   }
 

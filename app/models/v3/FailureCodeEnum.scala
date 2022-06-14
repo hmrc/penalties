@@ -14,12 +14,23 @@
  * limitations under the License.
  */
 
-package models.v3.getPenaltyDetails
+package models.v3
 
-import play.api.libs.json.{Format, Json}
+import play.api.libs.json._
 
-case class FailureResponse(code: FailureCodeEnum.Value, reason: String)
+object FailureCodeEnum extends Enumeration {
+  val NoDataFound: FailureCodeEnum.Value = Value("NO_DATA_FOUND")
 
-object FailureResponse {
-  implicit val format: Format[FailureResponse] = Json.format[FailureResponse]
+  implicit val format: Format[FailureCodeEnum.Value] = new Format[FailureCodeEnum.Value] {
+    override def writes(o: FailureCodeEnum.Value): JsValue = {
+      JsString(o.toString)
+    }
+
+    override def reads(json: JsValue): JsResult[FailureCodeEnum.Value] = {
+      json.as[String].toUpperCase match {
+        case "NO_DATA_FOUND" => JsSuccess(NoDataFound)
+        case e => JsError(s"$e not recognised")
+      }
+    }
+  }
 }

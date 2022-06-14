@@ -17,7 +17,8 @@
 package connectors.parsers.v3.getPenaltyDetails
 
 import models.PagerDutyHelper
-import models.v3.getPenaltyDetails.{FailureCodeEnum, FailureResponse, GetPenaltyDetails}
+import models.v3.{FailureCodeEnum, FailureResponse}
+import models.v3.getPenaltyDetails.GetPenaltyDetails
 import play.api.http.Status._
 import play.api.libs.json.{JsError, JsSuccess, JsValue}
 import uk.gov.hmrc.http.{HttpReads, HttpResponse}

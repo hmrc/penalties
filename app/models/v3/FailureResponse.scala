@@ -14,19 +14,12 @@
  * limitations under the License.
  */
 
-package models.v3.getPenaltyDetails
+package models.v3
 
-import base.SpecBase
-import play.api.libs.json.{JsString, Json}
+import play.api.libs.json.{Format, Json}
 
-class FailureCodeEnumSpec extends SpecBase {
-  "be writable to JSON for 'NO_DATA_FOUND'" in {
-    val result = Json.toJson(FailureCodeEnum.NoDataFound)
-    result shouldBe JsString("NO_DATA_FOUND")
-  }
+case class FailureResponse(code: FailureCodeEnum.Value, reason: String)
 
-  "be readable from JSON for 'NO_DATA_FOUND'" in {
-    val result = Json.fromJson(JsString("NO_DATA_FOUND"))(FailureCodeEnum.format)
-    result.get shouldBe FailureCodeEnum.NoDataFound
-  }
+object FailureResponse {
+  implicit val format: Format[FailureResponse] = Json.format[FailureResponse]
 }

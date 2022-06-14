@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package models.v3.getPenaltyDetails
+package models.v3
 
 import base.SpecBase
 import play.api.libs.json.{JsValue, Json}

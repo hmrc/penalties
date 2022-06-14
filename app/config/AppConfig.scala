@@ -16,8 +16,9 @@
 
 package config
 
-import config.featureSwitches._
+import java.time.LocalDate
 
+import config.featureSwitches._
 import javax.inject.{Inject, Singleton}
 import play.api.Configuration
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
@@ -26,6 +27,15 @@ import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 class AppConfig @Inject()(val config: Configuration, servicesConfig: ServicesConfig) extends FeatureSwitching {
   val auditingEnabled: Boolean = config.get[Boolean]("auditing.enabled")
   val graphiteHost: String     = config.get[String]("microservice.metrics.graphite.host")
+
+  def queryParametersForGetFinancialDetail(dateFrom: LocalDate, dateTo: LocalDate): String = {
+    s"?dateFrom=$dateFrom&dateTo=$dateTo&onlyOpenItems=${config.get[Boolean]("eis.onlyOpenItems")}" +
+      s"&includeStatistical=${config.get[Boolean]("eis.includeStatistical")}" +
+      s"&includeLocks=${config.get[Boolean]("eis.includeLocks")}" +
+      s"&calculateAccruedInterest=${config.get[Boolean]("eis.calculateAccruedInterest")}" +
+      s"&removePOA=${config.get[Boolean]("eis.removePOA")}" +
+      s"&customerPaymentInformation=${config.get[Boolean]("eis.customerPaymentInformation")}"
+  }
 
   lazy val appName: String = config.get[String]("appName")
 
@@ -59,8 +69,13 @@ class AppConfig @Inject()(val config: Configuration, servicesConfig: ServicesCon
   }
 
   def getFinancialDetailsUrl: String = {
-    if(!isEnabled(CallAPI1811ETMP)) stubBase + "/penalties-stub/penalty/financial-data"
+    if(!isEnabled(CallAPI1811ETMP)) stubBase + "/penalties-stub/penalty/financial-data/"
     else etmpBase + "/penalty/financial-data"
+  }
+
+  def getFinancialDetailsUrlv3(vrn: String): String = {
+    if(!isEnabled(CallAPI1811ETMP)) stubBase + s"/penalties-stub/penalty/financial-data/VRN/$vrn/VATC"
+    else etmpBase + s"/penalty/financial-data/VRN/$vrn/VATC"
   }
 
   def getAppealSubmissionURL(enrolmentKey: String, isLPP: Boolean, penaltyNumber: String): String = {

@@ -16,11 +16,14 @@
 
 package connectors.parsers.v3.getFinancialDetails
 
+import models.v3.{FailureCodeEnum, FailureResponse}
 import models.v3.getFinancialDetails.GetFinancialDetails
 import play.api.http.Status._
-import play.api.libs.json.{JsError, JsSuccess}
+import play.api.libs.json.{JsError, JsSuccess, JsValue}
 import uk.gov.hmrc.http.{HttpReads, HttpResponse}
 import utils.Logger.logger
+
+import scala.util.Try
 
 object GetFinancialDetailsParser {
   sealed trait GetFinancialDetailsFailure
@@ -29,6 +32,7 @@ object GetFinancialDetailsParser {
   case class  GetFinancialDetailsSuccessResponse(FinancialDetails: GetFinancialDetails) extends GetFinancialDetailsSuccess
   case class  GetFinancialDetailsFailureResponse(status: Int) extends GetFinancialDetailsFailure
   case object GetFinancialDetailsMalformed extends GetFinancialDetailsFailure
+  case object GetFinancialDetailsNoContent extends GetFinancialDetailsFailure
 
   type GetFinancialDetailsResponse = Either[GetFinancialDetailsFailure, GetFinancialDetailsSuccess]
 
@@ -44,6 +48,12 @@ object GetFinancialDetailsParser {
               logger.debug(s"[GetFinancialDetailsReads][read] Json validation errors: $errors")
               Left(GetFinancialDetailsMalformed)
           }
+        case NOT_FOUND if response.body.nonEmpty => {
+          Try(handleNotFoundStatusBody(response.json)).fold(parseError => {
+            logger.error(s"[GetFinancialDetailsReads][read] Could not parse 404 body with error ${parseError.getMessage}")
+            Left(GetFinancialDetailsFailureResponse(NOT_FOUND))
+          }, identity)
+        }
         case status@(BAD_REQUEST | FORBIDDEN | NOT_FOUND | CONFLICT | UNPROCESSABLE_ENTITY | INTERNAL_SERVER_ERROR | SERVICE_UNAVAILABLE) => {
           logger.error(s"[GetFinancialDetailsReads][read] Received $status when trying to call GetFinancialDetails - with body: ${response.body}")
           Left(GetFinancialDetailsFailureResponse(status))
@@ -53,6 +63,24 @@ object GetFinancialDetailsParser {
           Left(GetFinancialDetailsFailureResponse(status))
       }
     }
+  }
+
+  private def handleNotFoundStatusBody(responseBody: JsValue) = {
+    (responseBody \ "failures").validate[Seq[FailureResponse]].fold(
+      errors => {
+        logger.debug(s"[GetFinancialDetailsReads][read] - Parsing errors: $errors")
+        logger.error(s"[GetFinancialDetailsReads][read] - Could not parse 404 body returned from GetFinancialDetails call")
+        Left(GetFinancialDetailsFailureResponse(NOT_FOUND))
+      },
+      failures => {
+        if(failures.exists(_.code.equals(FailureCodeEnum.NoDataFound))) {
+          Left(GetFinancialDetailsNoContent)
+        } else {
+          logger.error(s"[GetFinancialDetailsReads][read] - Received following errors from GetFinancialDetails 404 call: $failures")
+          Left(GetFinancialDetailsFailureResponse(NOT_FOUND))
+        }
+      }
+    )
   }
 }
 

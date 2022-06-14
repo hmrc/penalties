@@ -338,87 +338,84 @@ trait ETMPWiremock {
   val getFinancialDetailsAsJsonv3: JsValue = Json.parse(
     """
       |{
-      | "documentDetails": [{
-      |   "documentId": "documentId",
+      | "documentDetails": [
+      | {
+      |   "taxYear": "2022",
+      |   "documentId": "0002",
+      |   "documentDate": "2022-10-30",
+      |   "documentText": "Document Text",
+      |   "documentDueDate": "2022-10-30",
+      |   "documentDescription": "Document Description",
+      |   "formBundleNumber": "1234",
+      |   "totalAmount": 123.45,
+      |   "documentOutstandingAmount": 543.21,
+      |   "lastClearingDate": "2022-10-30",
+      |   "lastClearingReason": "last Clearing Reason",
+      |   "lastClearedAmount": 123.45,
+      |   "statisticalFlag": true,
+      |   "informationCode": "A",
+      |   "paymentLot": "81203010024",
+      |   "paymentLotItem": "000001",
       |   "accruingInterestAmount": 123.45,
-      |   "interestOutstandingAmount": 123.45,
-      |      "taxYear": "taxYear",
-      |      "documentDate": "2021-01-11",
-      |      "documentText": "documentText",
-      |      "documentDueDate": "2021-01-11",
-      |      "documentDescription": "documentDescription",
-      |      "formBundleNumber": "formBundleNumber",
-      |      "totalAmount": 123.45,
-      |      "documentOutstandingAmount": 123.45,
-      |      "lastClearingDate": "2021-01-11",
-      |      "lastClearingReason": "lastClearingReason",
-      |      "lastClearedAmount": 123.45,
-      |      "statisticalFlag": true,
-      |      "informationCode": "informationCode",
-      |      "paymentLot": "paymentLot",
-      |      "paymentLotItem": "paymentLotItem",
-      |      "interestRate": 123.45,
-      |      "interestFromDate": "2021-01-11",
-      |      "interestEndDate": "2021-01-11",
-      |      "latePaymentInterestID": "latePaymentInterestID",
-      |      "latePaymentInterestAmount": 123.45,
-      |      "lpiWithDunningBlock": 123.45,
-      |      "accruingPenaltyLPP1": "accruingPenaltyLPP1"
-      |   }
+      |   "interestRate": 543.21,
+      |   "interestFromDate": "2022-10-30",
+      |   "interestEndDate": "2022-10-30",
+      |   "latePaymentInterestID": "1234567890123456",
+      |   "latePaymentInterestAmount": 123.45,
+      |   "lpiWithDunningBlock": 543.21,
+      |   "interestOutstandingAmount": 543.21,
+      |   "accruingPenaltyLPP1": "Interest Rate"
+      | }
       | ],
       | "financialDetails": [
-      |   {
-      |     "documentId": "1234",
-      |     "taxPeriodFrom": "2021-01-11",
-      |     "taxPeriodTo": "2021-01-11",
-      |     "items": [
-      |       {
-      |         "dueDate": "2021-01-11",
-      |         "clearingDate": "2021-01-11",
-      |         "metaData": {
-      |           "subItem": "subItem",
-      |           "amount": 123.45,
-      |           "clearingReason" : "clearingReason",
-      |           "outgoingPaymentMethod": "outgoingPaymentMethod",
-      |           "paymentLock": "paymentLock",
-      |           "clearingLock": "clearingLock",
-      |           "interestLock": "interestLock",
-      |           "dunningLock": "dunningLock",
-      |           "returnFlag": true,
-      |           "paymentReference": "paymentReference",
-      |           "paymentAmount": "paymentAmount",
-      |           "paymentMethod": "paymentMethod",
-      |           "paymentLot": "paymentLot",
-      |           "paymentLotItem": "paymentLotItem",
-      |           "clearingSAPDocument": "clearingSAPDocument",
-      |           "codingInitiationDate": "2021-01-11",
-      |           "statisticalDocument": "statisticalDocument",
-      |           "DDCollectionInProgress": true,
-      |           "returnReason": "returnReason",
-      |           "promisetoPay": "promisetoPay"
-      |         }
-      |       }
-      |     ],
-      |     "originalAmount": 123.45,
-      |     "outstandingAmount": 123.45,
-      |      "taxYear": "taxYear",
-      |      "chargeType": "chargeType",
-      |      "mainType": "mainType",
-      |      "periodKey": "periodKey",
-      |      "periodKeyDescription": "periodKeyDescription",
-      |      "businessPartner": "businessPartner",
-      |      "contractAccountCategory": "contractAccountCategory",
-      |      "contractAccount": "contractAccount",
-      |      "contractObjectType": "contractObjectType",
-      |      "contractObject": "contractObject",
-      |      "sapDocumentNumber": "sapDocumentNumber",
-      |      "sapDocumentNumberItem": "sapDocumentNumberItem",
-      |      "chargeReference": "chargeReference",
-      |      "mainTransaction": "mainTransaction",
-      |      "subTransaction" : "subTransaction",
-      |      "clearedAmount": 123.45,
-      |      "accruedInterest": 123.45
-      |   }
+      | {
+      |   "taxYear": "2022",
+      |   "documentId": "0001",
+      |   "chargeType": "PAYE",
+      |   "mainType": "2100",
+      |   "periodKey": "13RL",
+      |   "periodKeyDescription": "abcde",
+      |   "taxPeriodFrom": "2022-10-30",
+      |   "taxPeriodTo": "2022-10-30",
+      |   "businessPartner": "6622334455",
+      |   "contractAccountCategory": "02",
+      |   "contractAccount": "X",
+      |   "contractObjectType": "ABCD",
+      |   "contractObject": "00000003000000002757",
+      |   "sapDocumentNumber": "1040000872",
+      |   "sapDocumentNumberItem": "XM00",
+      |   "chargeReference": "XM002610011594",
+      |   "mainTransaction": "1234",
+      |   "subTransaction": "5678",
+      |   "originalAmount": 123.45,
+      |   "outstandingAmount": 543.21,
+      |   "clearedAmount": 123.45,
+      |   "accruedInterest": 543.21,
+      |   "items": [{
+      |     "subItem": "001",
+      |     "dueDate": "2022-10-30",
+      |     "amount": 123.45,
+      |     "clearingDate": "2022-10-30",
+      |     "clearingReason": "01",
+      |     "outgoingPaymentMethod": "outgoing Payment",
+      |     "paymentLock": "paymentLock",
+      |     "clearingLock": "clearingLock",
+      |     "interestLock": "interestLock",
+      |     "dunningLock": "dunningLock",
+      |     "returnFlag": true,
+      |     "paymentReference": "Ab12453535",
+      |     "paymentAmount": 543.21,
+      |     "paymentMethod": "Payment",
+      |     "paymentLot": "81203010024",
+      |     "paymentLotItem": "000001",
+      |     "clearingSAPDocument": "3350000253",
+      |     "codingInitiationDate": "2022-10-30",
+      |     "statisticalDocument": "S",
+      |     "returnReason": "ABCA",
+      |     "DDCollectionInProgress": true,
+      |     "promisetoPay": "promisetoPay"
+      |   }]
+      | }
       | ]
       |}
       |""".stripMargin
@@ -486,7 +483,7 @@ trait ETMPWiremock {
       ))
   }
 
-  def mockReponseForGetFinancialDetailsv3(status: Int, vatcUrl: String, body: Option[String] = None): StubMapping = {
+  def mockStubReponseForGetFinancialDetailsv3(status: Int, vatcUrl: String, body: Option[String] = None): StubMapping = {
     stubFor(get(urlEqualTo(s"/penalties-stub/penalty/financial-data/$vatcUrl"))
       .willReturn(
         aResponse()

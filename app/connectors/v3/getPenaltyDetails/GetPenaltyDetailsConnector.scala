@@ -30,7 +30,8 @@ class GetPenaltyDetailsConnector @Inject()(httpClient: HttpClient,
                                           (implicit ec: ExecutionContext) {
 
   def getPenaltyDetails(vrn: String)(implicit hc: HeaderCarrier): Future[GetPenaltyDetailsResponse] = {
-    val eisHeaders = Seq("Authorization" -> s"Bearer ${appConfig.eiOutboundBearerToken}", "CorrelationId" -> randomUUID().toString, "Environment" -> appConfig.eisEnvironment)
+    val eisHeaders = Seq("Authorization" -> s"Bearer ${appConfig.eiOutboundBearerToken}",
+      "CorrelationId" -> randomUUID().toString, "Environment" -> appConfig.eisEnvironment)
 
     val url = appConfig.getPenaltyDetailsUrl + vrn
 
