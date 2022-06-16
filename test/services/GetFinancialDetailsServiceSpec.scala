@@ -18,12 +18,11 @@ package services
 
 import base.SpecBase
 import connectors.v3.getFinancialDetails.GetFinancialDetailsConnector
-import models.v3.getFinancialDetails
 import org.mockito.Mockito.{mock, reset, when}
 import java.time.LocalDate
 
 import connectors.parsers.v3.getFinancialDetails.GetFinancialDetailsParser._
-import models.v3.getFinancialDetails.{DocumentDetails, DocumentDetailsMetadata, FinancialDetails, FinancialDetailsMetadata, FinancialItem, FinancialItemMetadata, GetFinancialDetails}
+import models.v3.getFinancialDetails._
 import org.mockito.Matchers
 import org.mockito.Matchers.any
 import play.api.http.Status.IM_A_TEAPOT

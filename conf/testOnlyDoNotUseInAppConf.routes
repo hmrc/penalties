@@ -12,3 +12,4 @@
 # Add all the application routes to the prod.routes file
 ->         /                                              prod.Routes
 GET        /penalties/test-only/feature-switch            controllers.testOnly.FeatureSwitchController.enableOrDisableFeature(name: String, enable: Boolean)
+GET        /penalties/test-only/time-machine-now          controllers.testOnly.FeatureSwitchController.setTimeMachineDate(dateToSet: Option[String])

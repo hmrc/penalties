@@ -21,6 +21,8 @@ import org.mockito.Matchers.any
 import org.mockito.Mockito.{mock, reset, when}
 import play.api.Configuration
 
+import java.time.LocalDate
+
 class FeatureSwitchSpec extends SpecBase {
 
   val mockConfig: Configuration = mock(classOf[Configuration])
@@ -30,7 +32,8 @@ class FeatureSwitchSpec extends SpecBase {
     val featureSwitching: FeatureSwitching = new FeatureSwitching {
       override implicit val config: Configuration = mockConfig
     }
-    FeatureSwitch.listOfAllFeatureSwitches.map(sys.props -= _.name)
+    FeatureSwitch.listOfAllFeatureSwitches.foreach(sys.props -= _.name)
+    sys.props -= featureSwitching.TIME_MACHINE_NOW
   }
 
   "FeatureSwitch listOfAllFeatureSwitches" should {
@@ -200,6 +203,61 @@ class FeatureSwitchSpec extends SpecBase {
       featureSwitching.disableFeatureSwitch(UseAPI1812Model)
       (sys.props get UseAPI1812Model.name get) shouldBe "false"
     }
+  }
 
+  "FeatureSwitching setTimeMachineDate" should {
+    lazy val dateNow: LocalDate = LocalDate.now()
+    s"set the date when the parameter is $Some" in new Setup {
+      val dateMinus1Day: LocalDate = dateNow.minusDays(1)
+      (sys.props get featureSwitching.TIME_MACHINE_NOW) shouldBe None
+      featureSwitching.setTimeMachineDate(Some(dateMinus1Day))
+      (sys.props get featureSwitching.TIME_MACHINE_NOW) shouldBe Some(dateMinus1Day.toString)
+    }
+
+    s"overwrite an existing date when the parameter is $Some" in new Setup {
+      val dateMinus1Day: LocalDate = dateNow.minusDays(1)
+      val dateMinus2Days: LocalDate = dateNow.minusDays(2)
+      featureSwitching.setTimeMachineDate(Some(dateMinus1Day))
+      (sys.props get featureSwitching.TIME_MACHINE_NOW) shouldBe Some(dateMinus1Day.toString)
+      featureSwitching.setTimeMachineDate(Some(dateMinus2Days))
+      (sys.props get featureSwitching.TIME_MACHINE_NOW) shouldBe Some(dateMinus2Days.toString)
+    }
+
+    s"remove an existing date when the parameter is $None" in new Setup {
+      featureSwitching.setTimeMachineDate(Some(dateNow))
+      (sys.props get featureSwitching.TIME_MACHINE_NOW) shouldBe Some(dateNow.toString)
+      featureSwitching.setTimeMachineDate(None)
+      (sys.props get featureSwitching.TIME_MACHINE_NOW) shouldBe None
+    }
+  }
+
+  "FeatureSwitching getTimeMachineDate" should {
+    lazy val dateNowMinus1Day: LocalDate = LocalDate.now().minusDays(1)
+    s"get the date when it exists in system properties" in new Setup {
+      featureSwitching.setTimeMachineDate(Some(dateNowMinus1Day))
+      (sys.props get featureSwitching.TIME_MACHINE_NOW) shouldBe Some(dateNowMinus1Day.toString)
+      featureSwitching.getTimeMachineDate shouldBe dateNowMinus1Day
+    }
+
+    s"get the date from config when the key value exists and is non-empty" in new Setup {
+      (sys.props get featureSwitching.TIME_MACHINE_NOW) shouldBe None
+      when(mockConfig.getOptional[String](any())(any()))
+        .thenReturn(Some(dateNowMinus1Day.toString))
+      featureSwitching.getTimeMachineDate shouldBe dateNowMinus1Day
+    }
+
+    s"get the date from the system when it does not exist in properties nor in config (value empty)" in new Setup {
+      (sys.props get featureSwitching.TIME_MACHINE_NOW) shouldBe None
+      when(mockConfig.getOptional[String](any())(any()))
+        .thenReturn(Some(""))
+      featureSwitching.getTimeMachineDate shouldBe LocalDate.now()
+    }
+
+    s"get the date from the system when it does not exist in properties nor in config (kv not present)" in new Setup {
+      (sys.props get featureSwitching.TIME_MACHINE_NOW) shouldBe None
+      when(mockConfig.getOptional[String](any())(any()))
+        .thenReturn(None)
+      featureSwitching.getTimeMachineDate shouldBe LocalDate.now()
+    }
   }
 }
