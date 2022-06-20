@@ -16,10 +16,10 @@
 
 package services
 
-import java.time.LocalDate
-
+import config.featureSwitches.FeatureSwitching
 import connectors.parsers.v3.getFinancialDetails.GetFinancialDetailsParser._
 import connectors.v3.getFinancialDetails.GetFinancialDetailsConnector
+import play.api.Configuration
 import javax.inject.Inject
 import uk.gov.hmrc.http.HeaderCarrier
 import utils.Logger.logger
@@ -27,10 +27,11 @@ import utils.Logger.logger
 import scala.concurrent.{ExecutionContext, Future}
 
 class GetFinancialDetailsService @Inject()(getFinancialDetailsConnector: GetFinancialDetailsConnector)
-                                          (implicit ec: ExecutionContext){
+                                          (implicit ec: ExecutionContext, val config: Configuration) extends FeatureSwitching {
 
-  def getDataFromFinancialServiceForVATVCN(vrn: String, dateFrom: LocalDate, dateTo: LocalDate)
-                                          (implicit hc: HeaderCarrier): Future[GetFinancialDetailsResponse] = {
+  def getDataFromFinancialServiceForVATVCN(vrn: String)(implicit hc: HeaderCarrier): Future[GetFinancialDetailsResponse] = {
+    val dateFrom = getTimeMachineDate.minusYears(2)
+    val dateTo = getTimeMachineDate
     implicit val startOfLogMsg: String = "[GetFinancialDetailsService][getDataFromFinancialServiceForVATVCN]"
     getFinancialDetailsConnector.getFinancialDetails(vrn, dateFrom, dateTo).map {
       handleConnectorResponse(_)
