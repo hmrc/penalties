@@ -20,7 +20,7 @@ import config.featureSwitches.{CallAPI1812ETMP, FeatureSwitching}
 import connectors.parsers.v3.getPenaltyDetails.GetPenaltyDetailsParser.{GetPenaltyDetailsFailureResponse, GetPenaltyDetailsMalformed, GetPenaltyDetailsNoContent, GetPenaltyDetailsResponse}
 import play.api.http.Status
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
-import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import utils.{ETMPWiremock, IntegrationSpecCommonBase}
 
 class GetPenaltyDetailsConnectorISpec extends IntegrationSpecCommonBase with ETMPWiremock with FeatureSwitching {
@@ -127,6 +127,31 @@ class GetPenaltyDetailsConnectorISpec extends IntegrationSpecCommonBase with ETM
       val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails("123456789"))
       result.isLeft shouldBe true
       result.left.get.asInstanceOf[GetPenaltyDetailsFailureResponse].status shouldBe Status.BAD_REQUEST
+    }
+  }
+
+  "getPenaltyDetailsForAPI" should {
+    "return a 200 response" in new Setup {
+      enableFeatureSwitch(CallAPI1812ETMP)
+      mockResponseForGetPenaltyDetailsv3(Status.OK, "123456789?dateLimitParam=09")
+      val result: HttpResponse = await(connector.getPenaltyDetailsForAPI("123456789", dateLimitParam = Some("09")))
+      result.status shouldBe Status.OK
+    }
+
+    "handle a UpstreamErrorResponse" when {
+      "a 4xx error is returned" in new Setup {
+        enableFeatureSwitch(CallAPI1812ETMP)
+        mockResponseForGetPenaltyDetailsv3(Status.FORBIDDEN, "123456789?dateLimitParam=09")
+        val result: HttpResponse = await(connector.getPenaltyDetailsForAPI("123456789", dateLimitParam = Some("09")))
+        result.status shouldBe Status.FORBIDDEN
+      }
+
+      "a 5xx error is returned" in new Setup {
+        enableFeatureSwitch(CallAPI1812ETMP)
+        mockResponseForGetPenaltyDetailsv3(Status.BAD_GATEWAY, "123456789?dateLimitParam=09")
+        val result: HttpResponse = await(connector.getPenaltyDetailsForAPI("123456789", dateLimitParam = Some("09")))
+        result.status shouldBe Status.BAD_GATEWAY
+      }
     }
   }
 }
