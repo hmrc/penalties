@@ -20,7 +20,7 @@ import base.SpecBase
 import connectors.parsers.AppealsParser.{BadRequest, InvalidJson, UnexpectedFailure}
 import models.appeals.AppealResponseModel
 import play.api.http.Status
-import play.api.libs.json.{JsValue, Json}
+import play.api.libs.json.{JsString, JsValue, Json}
 import uk.gov.hmrc.http.HttpResponse
 
 class AppealsParserSpec extends SpecBase {
@@ -29,7 +29,7 @@ class AppealsParserSpec extends SpecBase {
 
     private val httpMethod = "POST"
     private val url = "/"
-    val httpResponse: AnyRef with HttpResponse = HttpResponse(status, optJson, responseHeaders)
+    val httpResponse: AnyRef with HttpResponse = HttpResponse.apply(status, optJson.getOrElse(JsString("")), responseHeaders)
 
     def readResponse: AppealsParser.AppealSubmissionResponse = AppealsParser.AppealSubmissionResponseReads.read(httpMethod, url, httpResponse)
 

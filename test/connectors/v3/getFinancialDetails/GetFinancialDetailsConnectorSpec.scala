@@ -17,7 +17,6 @@
 package connectors.v3.getFinancialDetails
 
 import java.time.LocalDate
-
 import base.SpecBase
 import config.AppConfig
 import connectors.parsers.v3.getFinancialDetails.GetFinancialDetailsParser._
@@ -25,9 +24,11 @@ import models.v3.getFinancialDetails._
 import org.mockito.Matchers
 import org.mockito.Mockito._
 import play.api.http.Status
-import play.api.test.Helpers.{await, defaultAwaitTimeout}
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient}
+import play.api.libs.json.Json
+import play.api.test.Helpers._
+import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse}
 import utils.DateHelper
+import uk.gov.hmrc.http._
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -155,7 +156,7 @@ class GetFinancialDetailsConnectorSpec extends SpecBase {
           Matchers.any()))
         .thenReturn(Future.successful(Left(GetFinancialDetailsFailureResponse(Status.NOT_FOUND))))
 
-      val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails("FOO/BAR/123456789", LocalDate.of(2022, 1, 1), LocalDate.of(2022, 1, 1))(HeaderCarrier()))
+      val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails("123456789", LocalDate.of(2022, 1, 1), LocalDate.of(2022, 1, 1))(HeaderCarrier()))
       result.isLeft shouldBe true
     }
 
@@ -168,7 +169,7 @@ class GetFinancialDetailsConnectorSpec extends SpecBase {
           Matchers.any()))
         .thenReturn(Future.successful(Left(GetFinancialDetailsFailureResponse(Status.BAD_REQUEST))))
 
-      val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails("FOO/BAR/123456789", LocalDate.of(2022, 1, 1), LocalDate.of(2022, 1, 1))(HeaderCarrier()))
+      val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails("123456789", LocalDate.of(2022, 1, 1), LocalDate.of(2022, 1, 1))(HeaderCarrier()))
       result.isLeft shouldBe true
     }
 
@@ -181,7 +182,7 @@ class GetFinancialDetailsConnectorSpec extends SpecBase {
           Matchers.any()))
         .thenReturn(Future.successful(Left(GetFinancialDetailsFailureResponse(Status.CONFLICT))))
 
-      val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails("FOO/BAR/123456789", LocalDate.of(2022, 1, 1), LocalDate.of(2022, 1, 1))(HeaderCarrier()))
+      val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails("123456789", LocalDate.of(2022, 1, 1), LocalDate.of(2022, 1, 1))(HeaderCarrier()))
       result.isLeft shouldBe true
     }
 
@@ -194,7 +195,7 @@ class GetFinancialDetailsConnectorSpec extends SpecBase {
           Matchers.any()))
         .thenReturn(Future.successful(Left(GetFinancialDetailsFailureResponse(Status.UNPROCESSABLE_ENTITY))))
 
-      val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails("FOO/BAR/123456789", LocalDate.of(2022, 1, 1), LocalDate.of(2022, 1, 1))(HeaderCarrier()))
+      val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails("123456789", LocalDate.of(2022, 1, 1), LocalDate.of(2022, 1, 1))(HeaderCarrier()))
       result.isLeft shouldBe true
     }
 
@@ -207,7 +208,7 @@ class GetFinancialDetailsConnectorSpec extends SpecBase {
           Matchers.any()))
         .thenReturn(Future.successful(Left(GetFinancialDetailsFailureResponse(Status.INTERNAL_SERVER_ERROR))))
 
-      val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails("FOO/BAR/123456789", LocalDate.of(2022, 1, 1), LocalDate.of(2022, 1, 1))(HeaderCarrier()))
+      val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails("123456789", LocalDate.of(2022, 1, 1), LocalDate.of(2022, 1, 1))(HeaderCarrier()))
       result.isLeft shouldBe true
     }
 
@@ -220,7 +221,7 @@ class GetFinancialDetailsConnectorSpec extends SpecBase {
           Matchers.any()))
         .thenReturn(Future.successful(Left(GetFinancialDetailsFailureResponse(Status.FORBIDDEN))))
 
-      val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails("FOO/BAR/123456789", LocalDate.of(2022, 1, 1), LocalDate.of(2022, 1, 1))(HeaderCarrier()))
+      val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails("123456789", LocalDate.of(2022, 1, 1), LocalDate.of(2022, 1, 1))(HeaderCarrier()))
       result.isLeft shouldBe true
     }
 
@@ -233,8 +234,136 @@ class GetFinancialDetailsConnectorSpec extends SpecBase {
           Matchers.any()))
         .thenReturn(Future.successful(Left(GetFinancialDetailsFailureResponse(Status.SERVICE_UNAVAILABLE))))
 
-      val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails("FOO/BAR/123456789", LocalDate.of(2022, 1, 1), LocalDate.of(2022, 1, 1))(HeaderCarrier()))
+      val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails("123456789", LocalDate.of(2022, 1, 1), LocalDate.of(2022, 1, 1))(HeaderCarrier()))
       result.isLeft shouldBe true
+    }
+  }
+
+  "getFinancialDetailsForAPI" should {
+    val queryParams = s"?docNumber=DOC1&dateFrom=2022-01-01&dateTo=2024-01-01&onlyOpenItems=false&includeStatistical=false" +
+      s"&includeLocks=false&calculateAccruedInterest=false&removePOA=false&customerPaymentInformation=true"
+    val queryParamsNoOptionals = s"?onlyOpenItems=false&includeStatistical=false" +
+      s"&includeLocks=false&calculateAccruedInterest=false&removePOA=false&customerPaymentInformation=true"
+    "return a 200 when the call succeeds" in new Setup {
+      when(mockHttpClient.GET[HttpResponse](Matchers.eq(s"/VRN/123456789/VATC$queryParams"),
+        Matchers.any(),
+        Matchers.any())
+        (Matchers.any(),
+          Matchers.any(),
+          Matchers.any()))
+        .thenReturn(Future.successful(HttpResponse.apply(status = Status.OK, json = Json.toJson(mockGetFinancialDetailsModelAPI1811), headers =  Map.empty)))
+
+      val result: HttpResponse = await(connector.getFinancialDetailsForAPI(
+        vrn = "123456789",
+        docNumber = Some("DOC1"),
+        dateFrom = Some("2022-01-01"),
+        dateTo = Some("2024-01-01"),
+        onlyOpenItems = false,
+        includeStatistical = false,
+        includeLocks = false,
+        calculateAccruedInterest = false,
+        removePOA = false,
+        customerPaymentInformation = true
+      )(HeaderCarrier()))
+      result.status shouldBe Status.OK
+      Json.parse(result.body) shouldBe Json.toJson(mockGetFinancialDetailsModelAPI1811)
+    }
+
+    "return a 200 when the call succeeds - with only mandatory fields" in new Setup {
+      when(mockHttpClient.GET[HttpResponse](Matchers.eq(s"/VRN/123456789/VATC$queryParamsNoOptionals"),
+        Matchers.any(),
+        Matchers.any())
+        (Matchers.any(),
+          Matchers.any(),
+          Matchers.any()))
+        .thenReturn(Future.successful(HttpResponse.apply(status = Status.OK, json = Json.toJson(mockGetFinancialDetailsModelAPI1811), headers =  Map.empty)))
+
+      val result: HttpResponse = await(connector.getFinancialDetailsForAPI(
+        vrn = "123456789",
+        docNumber = None,
+        dateFrom = None,
+        dateTo = None,
+        onlyOpenItems = false,
+        includeStatistical = false,
+        includeLocks = false,
+        calculateAccruedInterest = false,
+        removePOA = false,
+        customerPaymentInformation = true
+      )(HeaderCarrier()))
+      result.status shouldBe Status.OK
+      Json.parse(result.body) shouldBe Json.toJson(mockGetFinancialDetailsModelAPI1811)
+    }
+
+    s"return a 403 when the call fails for Not Found (for 4xx errors)" in new Setup {
+      when(mockHttpClient.GET[HttpResponse](Matchers.eq(s"/VRN/123456789/VATC$queryParams"),
+        Matchers.any(),
+        Matchers.any())
+        (Matchers.any(),
+          Matchers.any(),
+          Matchers.any()))
+        .thenReturn(Future.failed(UpstreamErrorResponse.apply("You shall not pass", Status.FORBIDDEN)))
+
+      val result: HttpResponse = await(connector.getFinancialDetailsForAPI(
+        vrn = "123456789",
+        docNumber = Some("DOC1"),
+        dateFrom = Some("2022-01-01"),
+        dateTo = Some("2024-01-01"),
+        onlyOpenItems = false,
+        includeStatistical = false,
+        includeLocks = false,
+        calculateAccruedInterest = false,
+        removePOA = false,
+        customerPaymentInformation = true
+      )(HeaderCarrier()))
+      result.status shouldBe Status.FORBIDDEN
+    }
+
+    s"return a 500 when the call fails for Internal Server Error (for 5xx errors)" in new Setup {
+      when(mockHttpClient.GET[HttpResponse](Matchers.eq(s"/VRN/123456789/VATC$queryParams"),
+        Matchers.any(),
+        Matchers.any())
+        (Matchers.any(),
+          Matchers.any(),
+          Matchers.any()))
+        .thenReturn(Future.failed(UpstreamErrorResponse.apply("Oops :(", Status.INTERNAL_SERVER_ERROR)))
+
+      val result: HttpResponse = await(connector.getFinancialDetailsForAPI(
+        vrn = "123456789",
+        docNumber = Some("DOC1"),
+        dateFrom = Some("2022-01-01"),
+        dateTo = Some("2024-01-01"),
+        onlyOpenItems = false,
+        includeStatistical = false,
+        includeLocks = false,
+        calculateAccruedInterest = false,
+        removePOA = false,
+        customerPaymentInformation = true
+      )(HeaderCarrier()))
+      result.status shouldBe Status.INTERNAL_SERVER_ERROR
+    }
+
+    "return a 500 when the call fails due to an unexpected exception" in new Setup {
+      when(mockHttpClient.GET[HttpResponse](Matchers.eq(s"/VRN/123456789/VATC$queryParams"),
+        Matchers.any(),
+        Matchers.any())
+        (Matchers.any(),
+          Matchers.any(),
+          Matchers.any()))
+        .thenReturn(Future.failed(new Exception("Something weird happened")))
+
+      val result: HttpResponse = await(connector.getFinancialDetailsForAPI(
+        vrn = "123456789",
+        docNumber = Some("DOC1"),
+        dateFrom = Some("2022-01-01"),
+        dateTo = Some("2024-01-01"),
+        onlyOpenItems = false,
+        includeStatistical = false,
+        includeLocks = false,
+        calculateAccruedInterest = false,
+        removePOA = false,
+        customerPaymentInformation = true
+      )(HeaderCarrier()))
+      result.status shouldBe Status.INTERNAL_SERVER_ERROR
     }
   }
 }

@@ -17,12 +17,11 @@
 package connectors.v3.getFinancialDetails
 
 import java.time.LocalDate
-
 import config.featureSwitches.{CallAPI1811ETMP, FeatureSwitching}
 import connectors.parsers.v3.getFinancialDetails.GetFinancialDetailsParser._
 import play.api.http.Status
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
-import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import utils.{ETMPWiremock, IntegrationSpecCommonBase}
 
 class GetFinancialDetailsConnectorISpec extends IntegrationSpecCommonBase with ETMPWiremock with FeatureSwitching {
@@ -110,6 +109,64 @@ class GetFinancialDetailsConnectorISpec extends IntegrationSpecCommonBase with E
       val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails("123456789", LocalDate.now(), LocalDate.now()))
       result.isLeft shouldBe true
       result.left.get.asInstanceOf[GetFinancialDetailsFailureResponse].status shouldBe Status.FORBIDDEN
+    }
+  }
+
+  "getFinancialDetailsForAPI" should {
+    "return a 200 response" in new Setup {
+      enableFeatureSwitch(CallAPI1811ETMP)
+      mockResponseForGetFinancialDetailsv3(Status.OK, s"VRN/123456789/VATC?docNumber=DOC1&dateFrom=2022-01-01&dateTo=2024-01-01&onlyOpenItems=false&includeStatistical=false&includeLocks=false&calculateAccruedInterest=false&removePOA=false&customerPaymentInformation=true")
+      val result: HttpResponse = await(connector.getFinancialDetailsForAPI(
+        vrn = "123456789",
+        docNumber = Some("DOC1"),
+        dateFrom = Some("2022-01-01"),
+        dateTo = Some("2024-01-01"),
+        onlyOpenItems = false,
+        includeStatistical = false,
+        includeLocks = false,
+        calculateAccruedInterest = false,
+        removePOA = false,
+        customerPaymentInformation = true
+      ))
+      result.status shouldBe Status.OK
+    }
+
+    "handle a UpstreamErrorResponse" when {
+      "a 4xx error is returned" in new Setup {
+        enableFeatureSwitch(CallAPI1811ETMP)
+        mockResponseForGetFinancialDetailsv3(Status.FORBIDDEN, s"VRN/123456789/VATC?docNumber=DOC1&dateFrom=2022-01-01&dateTo=2024-01-01&onlyOpenItems=false&includeStatistical=false&includeLocks=false&calculateAccruedInterest=false&removePOA=false&customerPaymentInformation=true")
+        val result: HttpResponse = await(connector.getFinancialDetailsForAPI(
+          vrn = "123456789",
+          docNumber = Some("DOC1"),
+          dateFrom = Some("2022-01-01"),
+          dateTo = Some("2024-01-01"),
+          onlyOpenItems = false,
+          includeStatistical = false,
+          includeLocks = false,
+          calculateAccruedInterest = false,
+          removePOA = false,
+          customerPaymentInformation = true
+        ))
+        result.status shouldBe Status.FORBIDDEN
+      }
+
+      "a 5xx error is returned" in new Setup {
+        enableFeatureSwitch(CallAPI1811ETMP)
+        mockResponseForGetFinancialDetailsv3(Status.BAD_GATEWAY, s"VRN/123456789/VATC?docNumber=DOC1&dateFrom=2022-01-01&dateTo=2024-01-01&onlyOpenItems=false&includeStatistical=false&includeLocks=false&calculateAccruedInterest=false&removePOA=false&customerPaymentInformation=true")
+        val result: HttpResponse = await(connector.getFinancialDetailsForAPI(
+          vrn = "123456789",
+          docNumber = Some("DOC1"),
+          dateFrom = Some("2022-01-01"),
+          dateTo = Some("2024-01-01"),
+          onlyOpenItems = false,
+          includeStatistical = false,
+          includeLocks = false,
+          calculateAccruedInterest = false,
+          removePOA = false,
+          customerPaymentInformation = true
+        ))
+        result.status shouldBe Status.BAD_GATEWAY
+      }
     }
   }
 }
