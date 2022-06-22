@@ -117,6 +117,7 @@ class GetPenaltyDetailsServiceISpec extends IntegrationSpecCommonBase with ETMPW
         )
       ))
     )
+
     s"call the connector and return a successful result" in {
       mockStubResponseForGetPenaltyDetailsv3(Status.OK, "123456789")
       val result = await(service.getDataFromPenaltyServiceForVATCVRN("123456789"))
