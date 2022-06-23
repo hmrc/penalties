@@ -20,10 +20,11 @@ import base.SpecBase
 import config.featureSwitches.{FeatureSwitching, UseAPI1812Model}
 import connectors.parsers.ETMPPayloadParser._
 import connectors.parsers.v3.getPenaltyDetails.GetPenaltyDetailsParser._
+import connectors.v3.getFinancialDetails.GetFinancialDetailsConnector
 import models.v3.getPenaltyDetails.GetPenaltyDetails
 import models.v3.getPenaltyDetails.latePayment._
 import models.v3.getPenaltyDetails.lateSubmission.{LSPSummary, LateSubmissionPenalty}
-import org.mockito.Matchers
+import org.mockito.Matchers._
 import org.mockito.Mockito._
 import play.api.Configuration
 import play.api.http.Status
@@ -32,6 +33,7 @@ import play.api.test.Helpers._
 import services.auditing.AuditService
 import services.v2.APIService
 import services.{ETMPService, GetPenaltyDetailsService}
+import uk.gov.hmrc.http.HttpResponse
 
 import java.time.LocalDate
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -42,33 +44,34 @@ class APIControllerSpec extends SpecBase with FeatureSwitching {
   val mockAuditService: AuditService = mock(classOf[AuditService])
   val mockAPIService: APIService = mock(classOf[APIService])
   val mockGetPenaltyDetailsService: GetPenaltyDetailsService = mock(classOf[GetPenaltyDetailsService])
+  val mockGetFinancialDetailsConnector:GetFinancialDetailsConnector = mock(classOf[GetFinancialDetailsConnector])
   implicit val config: Configuration = appConfig.config
 
   class Setup(isFSEnabled: Boolean = false) {
     reset(mockETMPService, mockAuditService, mockAPIService)
     val controller = new APIController(mockETMPService, mockAuditService, mockAPIService,
-      mockGetPenaltyDetailsService, stubControllerComponents())
+      mockGetPenaltyDetailsService, mockGetFinancialDetailsConnector, stubControllerComponents())
     if(isFSEnabled) enableFeatureSwitch(UseAPI1812Model) else disableFeatureSwitch(UseAPI1812Model)
   }
 
   "getSummaryDataForVRN" should {
     "call stub data when call 1812 feature is disabled" must {
       s"return NOT_FOUND (${Status.NOT_FOUND}) when the call to ETMP fails" in new Setup {
-        when(mockETMPService.getPenaltyDataFromETMPForEnrolment(Matchers.any())(Matchers.any()))
+        when(mockETMPService.getPenaltyDataFromETMPForEnrolment(any())(any()))
           .thenReturn(Future.successful((None, Left(GetETMPPayloadFailureResponse(Status.INTERNAL_SERVER_ERROR)))))
         val result = controller.getSummaryDataForVRN("123456789")(fakeRequest)
         status(result) shouldBe Status.NOT_FOUND
       }
 
       s"return NOT_FOUND (${Status.NOT_FOUND}) when the call returns no data" in new Setup {
-        when(mockETMPService.getPenaltyDataFromETMPForEnrolment(Matchers.any())(Matchers.any()))
+        when(mockETMPService.getPenaltyDataFromETMPForEnrolment(any())(any()))
           .thenReturn(Future.successful((None, Left(GetETMPPayloadNoContent))))
         val result = controller.getSummaryDataForVRN("123456789")(fakeRequest)
         status(result) shouldBe Status.NOT_FOUND
       }
 
       s"return BAD_REQUEST (${Status.BAD_REQUEST}) when the user supplies an invalid VRN" in new Setup {
-        when(mockETMPService.getPenaltyDataFromETMPForEnrolment(Matchers.any())(Matchers.any()))
+        when(mockETMPService.getPenaltyDataFromETMPForEnrolment(any())(any()))
           .thenReturn(Future.successful((Some(mockETMPPayloadResponseAsModel), Right(GetETMPPayloadSuccessResponse(mockETMPPayloadResponseAsModel)))))
         val result = controller.getSummaryDataForVRN("1234567891234567890")(fakeRequest)
         status(result) shouldBe Status.BAD_REQUEST
@@ -77,14 +80,14 @@ class APIControllerSpec extends SpecBase with FeatureSwitching {
       }
 
       s"return OK (${Status.OK}) when the call returns some data and can be parsed to the correct response" in new Setup {
-        when(mockETMPService.checkIfHasAnyPenaltyData(Matchers.any())).thenReturn(true)
-        when(mockETMPService.getNumberOfEstimatedPenalties(Matchers.any())).thenReturn(2)
-        when(mockETMPService.getPenaltyDataFromETMPForEnrolment(Matchers.any())(Matchers.any()))
+        when(mockETMPService.checkIfHasAnyPenaltyData(any())).thenReturn(true)
+        when(mockETMPService.getNumberOfEstimatedPenalties(any())).thenReturn(2)
+        when(mockETMPService.getPenaltyDataFromETMPForEnrolment(any())(any()))
           .thenReturn(Future.successful((Some(mockETMPPayloadForAPIResponseData), Right(GetETMPPayloadSuccessResponse(mockETMPPayloadForAPIResponseData)))))
-        when(mockETMPService.findEstimatedPenaltiesAmount(Matchers.any()))
+        when(mockETMPService.findEstimatedPenaltiesAmount(any()))
           .thenReturn(BigDecimal(123.45))
-        when(mockETMPService.getNumberOfCrystalizedPenalties(Matchers.any())).thenReturn(2)
-        when(mockETMPService.getCrystalisedPenaltyTotal(Matchers.any())).thenReturn(BigDecimal(288))
+        when(mockETMPService.getNumberOfCrystalizedPenalties(any())).thenReturn(2)
+        when(mockETMPService.getCrystalisedPenaltyTotal(any())).thenReturn(BigDecimal(288))
         val result = controller.getSummaryDataForVRN("123456789")(fakeRequest)
         status(result) shouldBe Status.OK
         contentAsJson(result) shouldBe Json.parse(
@@ -99,18 +102,18 @@ class APIControllerSpec extends SpecBase with FeatureSwitching {
             |}
             |""".stripMargin
         )
-        verify(mockAuditService, times(1)).audit(Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any())
+        verify(mockAuditService, times(1)).audit(any())(any(), any(), any())
       }
 
       s"return OK (${Status.OK}) when there are no LSP or LPP estimated penalties in etmpPayload" in new Setup {
-        when(mockETMPService.checkIfHasAnyPenaltyData(Matchers.any())).thenReturn(false)
-        when(mockETMPService.getNumberOfEstimatedPenalties(Matchers.any())).thenReturn(0)
-        when(mockETMPService.getPenaltyDataFromETMPForEnrolment(Matchers.any())(Matchers.any()))
+        when(mockETMPService.checkIfHasAnyPenaltyData(any())).thenReturn(false)
+        when(mockETMPService.getNumberOfEstimatedPenalties(any())).thenReturn(0)
+        when(mockETMPService.getPenaltyDataFromETMPForEnrolment(any())(any()))
           .thenReturn(Future.successful((Some(mockETMPPayloadWithNoEstimatedPenaltiesForAPIResponseData), Right(GetETMPPayloadSuccessResponse(mockETMPPayloadWithNoEstimatedPenaltiesForAPIResponseData)))))
-        when(mockETMPService.findEstimatedPenaltiesAmount(Matchers.any()))
+        when(mockETMPService.findEstimatedPenaltiesAmount(any()))
           .thenReturn(BigDecimal(0))
-        when(mockETMPService.getNumberOfCrystalizedPenalties(Matchers.any())).thenReturn(0)
-        when(mockETMPService.getCrystalisedPenaltyTotal(Matchers.any())).thenReturn(BigDecimal(0))
+        when(mockETMPService.getNumberOfCrystalizedPenalties(any())).thenReturn(0)
+        when(mockETMPService.getCrystalisedPenaltyTotal(any())).thenReturn(BigDecimal(0))
         val result = controller.getSummaryDataForVRN("123456789")(fakeRequest)
         status(result) shouldBe Status.OK
         contentAsJson(result) shouldBe Json.parse(
@@ -265,21 +268,21 @@ class APIControllerSpec extends SpecBase with FeatureSwitching {
       )
 
       s"return ISE (${Status.INTERNAL_SERVER_ERROR}) when the call fails" in new Setup(isFSEnabled = true) {
-        when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(Matchers.any())(Matchers.any()))
+        when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(any())(any()))
           .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(Status.INTERNAL_SERVER_ERROR))))
         val result = controller.getSummaryDataForVRN("123456789")(fakeRequest)
         status(result) shouldBe Status.INTERNAL_SERVER_ERROR
       }
 
       s"return NOT_FOUND (${Status.NOT_FOUND}) when the call returns not found" in new Setup(isFSEnabled = true) {
-        when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(Matchers.any())(Matchers.any()))
+        when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(any())(any()))
           .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(Status.NOT_FOUND))))
         val result = controller.getSummaryDataForVRN("123456789")(fakeRequest)
         status(result) shouldBe Status.NOT_FOUND
       }
 
       s"return NOT_FOUND (${Status.NOT_FOUND}) when the call returns no data" in new Setup(isFSEnabled = true) {
-        when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(Matchers.any())(Matchers.any()))
+        when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(any())(any()))
           .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(Status.NO_CONTENT))))
         val result = controller.getSummaryDataForVRN("123456789")(fakeRequest)
         status(result) shouldBe Status.NOT_FOUND
@@ -292,14 +295,14 @@ class APIControllerSpec extends SpecBase with FeatureSwitching {
       }
 
       s"return OK (${Status.OK}) when the call returns some data and can be parsed to the correct response" in new Setup(isFSEnabled = true) {
-        when(mockAPIService.checkIfHasAnyPenaltyData(Matchers.any())).thenReturn(true)
-        when(mockAPIService.getNumberOfEstimatedPenalties(Matchers.any())).thenReturn(2)
-        when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(Matchers.any())(Matchers.any()))
+        when(mockAPIService.checkIfHasAnyPenaltyData(any())).thenReturn(true)
+        when(mockAPIService.getNumberOfEstimatedPenalties(any())).thenReturn(2)
+        when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(any())(any()))
           .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetailsFullAPIResponse))))
-        when(mockAPIService.findEstimatedPenaltiesAmount(Matchers.any()))
+        when(mockAPIService.findEstimatedPenaltiesAmount(any()))
           .thenReturn(BigDecimal(123.45))
-        when(mockAPIService.getNumberOfCrystallisedPenalties(Matchers.any())).thenReturn(2)
-        when(mockAPIService.getCrystallisedPenaltyTotal(Matchers.any())).thenReturn(BigDecimal(288))
+        when(mockAPIService.getNumberOfCrystallisedPenalties(any())).thenReturn(2)
+        when(mockAPIService.getCrystallisedPenaltyTotal(any())).thenReturn(BigDecimal(288))
         val result = controller.getSummaryDataForVRN("123456789")(fakeRequest)
         status(result) shouldBe Status.OK
         contentAsJson(result) shouldBe Json.parse(
@@ -314,18 +317,18 @@ class APIControllerSpec extends SpecBase with FeatureSwitching {
             |}
             |""".stripMargin
         )
-        verify(mockAuditService, times(1)).audit(Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any())
+        verify(mockAuditService, times(1)).audit(any())(any(), any(), any())
       }
 
       s"return OK (${Status.OK}) when there are no estimated LPPs in penalty details" in new Setup(isFSEnabled = true) {
-        when(mockAPIService.checkIfHasAnyPenaltyData(Matchers.any())).thenReturn(true)
-        when(mockAPIService.getNumberOfEstimatedPenalties(Matchers.any())).thenReturn(0)
-        when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(Matchers.any())(Matchers.any()))
+        when(mockAPIService.checkIfHasAnyPenaltyData(any())).thenReturn(true)
+        when(mockAPIService.getNumberOfEstimatedPenalties(any())).thenReturn(0)
+        when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(any())(any()))
           .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetailsNoEstimatedLPPs))))
-        when(mockAPIService.findEstimatedPenaltiesAmount(Matchers.any()))
+        when(mockAPIService.findEstimatedPenaltiesAmount(any()))
           .thenReturn(BigDecimal(0))
-        when(mockAPIService.getNumberOfCrystallisedPenalties(Matchers.any())).thenReturn(0)
-        when(mockAPIService.getCrystallisedPenaltyTotal(Matchers.any())).thenReturn(BigDecimal(0))
+        when(mockAPIService.getNumberOfCrystallisedPenalties(any())).thenReturn(0)
+        when(mockAPIService.getCrystallisedPenaltyTotal(any())).thenReturn(BigDecimal(0))
         val result = controller.getSummaryDataForVRN("123456789")(fakeRequest)
         status(result) shouldBe Status.OK
         contentAsJson(result) shouldBe Json.parse(
@@ -341,6 +344,171 @@ class APIControllerSpec extends SpecBase with FeatureSwitching {
             |""".stripMargin
         )
       }
+    }
+  }
+
+  "getFinancialDetails" should {
+    s"return OK (${Status.OK}) when a JSON payload is received from EIS" in new Setup(isFSEnabled = true) {
+      val sampleAPI1911Response = Json.parse(
+        """
+          |{
+          |            "taxPayerDetails": {
+          |              "idType": "VRN",
+          |              "idNumber": 123456789,
+          |              "regimeType": "VATC"
+          |            },
+          |            "balanceDetails": {
+          |              "balanceDueWithin30Days": -99999999999.99,
+          |              "nextPaymentDateForChargesDueIn30Days": "1920-02-29",
+          |              "balanceNotDueIn30Days": -99999999999.99,
+          |              "nextPaymentDateBalanceNotDue": "1920-02-29",
+          |              "overDueAmount": -99999999999.99,
+          |              "earliestPaymentDateOverDue": "1920-02-29",
+          |              "totalBalance": -99999999999.99,
+          |              "amountCodedOut": 3456.67
+          |            },
+          |            "codingDetails": [
+          |              {
+          |                "taxYearReturn": "2017",
+          |                "totalReturnAmount": 2234.56,
+          |                "amountNotCoded": 234.56,
+          |                "amountNotCodedDueDate": "2021-07-29",
+          |                "amountCodedOut": 2634.56,
+          |                "taxYearCoding": "2018",
+          |                "documentText": "document coding details"
+          |              }
+          |            ],
+          |            "documentDetails": [
+          |              {
+          |                "taxYear": "2017",
+          |                "documentId": "1455",
+          |                "documentDate": "2018-03-29",
+          |                "documentText": "ITSA- Bal Charge",
+          |                "documentDueDate": "2020-04-15",
+          |                "documentDescription": "document Description",
+          |                "totalAmount": 45552768.79,
+          |                "documentOutstandingAmount": 297873.46,
+          |                "lastClearingDate": "2018-04-15",
+          |                "lastClearingReason": "last Clearing Reason",
+          |                "lastClearedAmount": 589958.83,
+          |                "statisticalFlag": false,
+          |                "paymentLot": 81203010024,
+          |                "paymentLotItem": "000001",
+          |                "accruingInterestAmount": 1000.9,
+          |                "interestRate": 1000.9,
+          |                "interestFromDate": "2021-01-11",
+          |                "interestEndDate": "2021-04-11",
+          |                "latePaymentInterestID": "1234567890123456",
+          |                "latePaymentInterestAmount": 1000.67,
+          |                "lpiWithDunningBlock": 1000.23,
+          |                "interestOutstandingAmount": 1000.34
+          |              }
+          |            ],
+          |            "financialDetails": [
+          |              {
+          |                "taxYear": "2017",
+          |                "documentId": 1.2345678901234568e+28,
+          |                "chargeType": "PAYE",
+          |                "mainType": "2100",
+          |                "periodKey": "13RL",
+          |                "periodKeyDescription": "abcde",
+          |                "taxPeriodFrom": "2018-08-13",
+          |                "taxPeriodTo": "2018-08-14",
+          |                "businessPartner": "6622334455",
+          |                "contractAccountCategory": "02",
+          |                "contractAccount": "X",
+          |                "contractObjectType": "ABCD",
+          |                "contractObject": "00000003000000002757",
+          |                "sapDocumentNumber": "1040000872",
+          |                "sapDocumentNumberItem": "XM00",
+          |                "chargeReference": "XM002610011594",
+          |                "mainTransaction": "1234",
+          |                "subTransaction": "5678",
+          |                "originalAmount": 10000,
+          |                "outstandingAmount": 10000,
+          |                "clearedAmount": 10000,
+          |                "accruedInterest": 10000,
+          |                "items": [
+          |                  {
+          |                    "subItem": "001",
+          |                    "dueDate": "2018-08-13",
+          |                    "amount": 10000,
+          |                    "clearingDate": "2018-08-13",
+          |                    "clearingReason": "01",
+          |                    "outgoingPaymentMethod": "outgoing Payment",
+          |                    "paymentLock": "paymentLock",
+          |                    "clearingLock": "clearingLock",
+          |                    "interestLock": "interestLock",
+          |                    "dunningLock": "dunningLock",
+          |                    "returnFlag": true,
+          |                    "paymentReference": "Ab12453535",
+          |                    "paymentAmount": 10000,
+          |                    "paymentMethod": "Payment",
+          |                    "paymentLot": 81203010024,
+          |                    "paymentLotItem": "000001",
+          |                    "clearingSAPDocument": "3350000253",
+          |                    "codingInitiationDate": "2021-01-11",
+          |                    "statisticalDocument": "S",
+          |                    "DDCollectionInProgress": true,
+          |                    "returnReason": "ABCA"
+          |                  }
+          |                ]
+          |              }
+          |            ]
+          |          }""".stripMargin)
+
+
+      when(mockGetFinancialDetailsConnector.getFinancialDetailsForAPI(any(), any(), any(),any(),any(),any(),any(),any(),any(),any())(any()))
+        .thenReturn(Future.successful(HttpResponse.apply(OK, sampleAPI1911Response.toString)))
+      val result = controller.getFinancialDetails(vrn ="123456789",
+        docNumber = None,
+        dateFrom = None,
+        dateTo = None,
+        onlyOpenItems = true,
+        includeStatistical = false,
+        includeLocks = false,
+        calculateAccruedInterest = false,
+        removePOA = false,
+        customerPaymentInformation = false)(fakeRequest)
+
+      status(result) shouldBe Status.OK
+      contentAsJson(result) shouldBe sampleAPI1911Response
+    }
+
+    s"return NOT_FOUND (${Status.NOT_FOUND}) when the call returns no data" in new Setup(true) {
+      when(mockGetFinancialDetailsConnector.getFinancialDetailsForAPI(any(), any(), any(),any(),any(),any(),any(),any(),any(),any())(any()))
+        .thenReturn(Future.successful(HttpResponse.apply(NOT_FOUND, "NOT_FOUND")))
+
+      val result = controller.getFinancialDetails(vrn ="123456789",
+        docNumber = None,
+        dateFrom = None,
+        dateTo = None,
+        onlyOpenItems = true,
+        includeStatistical = false,
+        includeLocks = false,
+        calculateAccruedInterest = false,
+        removePOA = false,
+        customerPaymentInformation = false)(fakeRequest)
+
+      status(result) shouldBe Status.NOT_FOUND
+    }
+
+    s"return the status from EIS when the call returns a non 200 or 404 status" in new Setup(true) {
+      when(mockGetFinancialDetailsConnector.getFinancialDetailsForAPI(any(), any(), any(),any(),any(),any(),any(),any(),any(),any())(any()))
+        .thenReturn(Future.successful(HttpResponse.apply(INTERNAL_SERVER_ERROR, "INTERNAL_SERVER_ERROR")))
+
+      val result = controller.getFinancialDetails(vrn ="123456789",
+        docNumber = None,
+        dateFrom = None,
+        dateTo = None,
+        onlyOpenItems = true,
+        includeStatistical = false,
+        includeLocks = false,
+        calculateAccruedInterest = false,
+        removePOA = false,
+        customerPaymentInformation = false)(fakeRequest)
+
+      status(result) shouldBe Status.INTERNAL_SERVER_ERROR
     }
   }
 }

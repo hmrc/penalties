@@ -19,6 +19,7 @@ package controllers
 import config.featureSwitches.{FeatureSwitching, UseAPI1812Model}
 import connectors.parsers.v3.getPenaltyDetails.GetPenaltyDetailsParser
 import connectors.parsers.v3.getPenaltyDetails.GetPenaltyDetailsParser.GetPenaltyDetailsSuccessResponse
+import connectors.v3.getFinancialDetails.GetFinancialDetailsConnector
 import models.ETMPPayload
 import models.api.APIModel
 import models.auditing.UserHasPenaltyAuditModel
@@ -42,6 +43,7 @@ class APIController @Inject()(etmpService: ETMPService,
                               auditService: AuditService,
                               apiService: APIService,
                               getPenaltyDetailsService: GetPenaltyDetailsService,
+                              getFinancialDetailsConnector: GetFinancialDetailsConnector,
                               cc: ControllerComponents)(implicit ec: ExecutionContext, val config: Configuration) extends BackendController(cc) with FeatureSwitching {
 
   private val vrnRegex: Regex = "^[0-9]{1,9}$".r
@@ -52,7 +54,7 @@ class APIController @Inject()(etmpService: ETMPService,
         Future(BadRequest(s"VRN: $vrn was not in a valid format."))
       } else {
         val enrolmentKey = RegimeHelper.constructMTDVATEnrolmentKey(vrn)
-        if(!isEnabled(UseAPI1812Model)) {
+        if (!isEnabled(UseAPI1812Model)) {
           etmpService.getPenaltyDataFromETMPForEnrolment(enrolmentKey).map {
             _._1.fold(
               NotFound(s"Unable to find data for VRN: $vrn")
@@ -102,7 +104,7 @@ class APIController @Inject()(etmpService: ETMPService,
       estimatedPenaltyAmount = penaltyAmountWithEstimateStatus,
       crystalisedPenaltyAmountDue = crystalizedPenaltyTotal,
       hasAnyPenaltyData = hasAnyPenaltyData)
-    if(pointsTotal > 0) {
+    if (pointsTotal > 0) {
       val auditModel = UserHasPenaltyAuditModel(
         etmpPayload = etmpPayload,
         identifier = RegimeHelper.getIdentifierFromEnrolmentKey(enrolmentKey),
@@ -127,7 +129,7 @@ class APIController @Inject()(etmpService: ETMPService,
       estimatedPenaltyAmount = penaltyAmountWithEstimateStatus,
       crystalisedPenaltyAmountDue = crystallisedPenaltyTotal,
       hasAnyPenaltyData = hasAnyPenaltyData)
-    if(hasAnyPenaltyData) {
+    if (hasAnyPenaltyData) {
       val auditModel = AuditModelV2(
         penaltyDetails = penaltyDetails,
         identifier = RegimeHelper.getIdentifierFromEnrolmentKey(enrolmentKey),
@@ -136,5 +138,44 @@ class APIController @Inject()(etmpService: ETMPService,
       auditService.audit(auditModel)
     }
     Ok(Json.toJson(responseData))
+  }
+
+  def getFinancialDetails(vrn: String,
+                          docNumber: Option[String],
+                          dateFrom: Option[String],
+                          dateTo: Option[String],
+                          onlyOpenItems: Boolean,
+                          includeStatistical: Boolean,
+                          includeLocks: Boolean,
+                          calculateAccruedInterest: Boolean,
+                          removePOA: Boolean,
+                          customerPaymentInformation: Boolean): Action[AnyContent] = Action.async {
+    implicit request => {
+      val response = getFinancialDetailsConnector.getFinancialDetailsForAPI(vrn,
+        docNumber,
+        dateFrom,
+        dateTo,
+        onlyOpenItems,
+        includeStatistical,
+        includeLocks,
+        calculateAccruedInterest,
+        removePOA,
+        customerPaymentInformation)
+
+      response.map(
+        res => res.status match {
+          case OK =>
+            logger.debug("[APIController][getFinancialDetails] Ok response received: " + res)
+            Ok(res.json)
+          case NOT_FOUND =>
+            logger.debug("[APIController][getFinancialDetails] Error received: " + res)
+            Status(res.status)(Json.toJson(res.body))
+          case _ =>
+            logger.warn(s"[APIController][getFinancialDetails] status ${res.status} returned from EIS " +
+              s"Status code:'${res.status}', Body: '${res.body}")
+            Status(res.status)(Json.toJson(res.body))
+        }
+      )
+    }
   }
 }
