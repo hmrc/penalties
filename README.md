@@ -215,6 +215,29 @@ Example URL - `/penalties/penalty/financial-data/VRN/:VRN/VATC?dateFrom=2022-01-
 
 The data returned is outlined in v0.4.0 of the GetFinancialDetails API specification.
 
+## Get Penalty Details (API 1812)
+### `GET        /penalties/penalty-details/VAT/VRN/:VRN`
+
+Gets the penalty details for specified VRN.
+
+The following query parameter can be specified
+
+| Parameter                    | Type              | Mandatory | Comments                                                                                      |
+|------------------------------|-------------------|-----------|-----------------------------------------------------------------------------------------------|
+| `dateLimit`                  | String            | No*       | This will expected to be 24 months unless specified
+
+Example URL - `/penalties/penalty-details/VAT/VRN/:VRN?dateLimit=09`
+
+| Scenario                                          | Status |
+|---------------------------------------------------|--------|
+| Successful retrieval                              | 200    |
+| Bad request due to one or more invalid parameters | 400    |
+| No data found for VRN                             | 404    |
+| Internal server error                             | 500    |
+| Dependent systems are not available               | 503    |
+
+The data returned is outlined in v1.1.0 of the GetPenaltyDetails API specification.
+
 ## Testing
 
 This service can be tested with SBT via `sbt test it:test`
