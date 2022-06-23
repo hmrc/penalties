@@ -40,9 +40,9 @@ class GetPenaltyDetailsConnector @Inject()(httpClient: HttpClient,
     httpClient.GET[GetPenaltyDetailsResponse](url, Seq.empty[(String, String)], headers)
   }
 
-  def getPenaltyDetailsForAPI(vrn: String, dateLimitParam: Option[String])(implicit hc: HeaderCarrier): Future[HttpResponse] = {
-    val queryParams: String = s"${dateLimitParam.fold("")(dateLimitParam => s"?dateLimitParam=$dateLimitParam")}"
-    val url = appConfig.getPenaltyDetailsUrl + vrn + queryParams
+  def getPenaltyDetailsForAPI(vrn: String, dateLimit: Option[String])(implicit hc: HeaderCarrier): Future[HttpResponse] = {
+    val queryParam: String = s"${dateLimit.fold("")(dateLimit => s"?dateLimit=$dateLimit")}"
+    val url = appConfig.getPenaltyDetailsUrl + vrn + queryParam
     httpClient.GET[HttpResponse](url, headers = headers).recover {
       case e: UpstreamErrorResponse => {
         logger.error(s"[GetPenaltyDetailsConnector][getPenaltyDetailsForAPI] -" +
