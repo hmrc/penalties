@@ -23,8 +23,9 @@ import models.v3.getPenaltyDetails.GetPenaltyDetails
 import org.mockito.Matchers
 import org.mockito.Mockito.{mock, reset, when}
 import play.api.http.Status
+import play.api.libs.json.Json
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient}
+import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse, UpstreamErrorResponse}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -140,6 +141,77 @@ class GetPenaltyDetailsConnectorSpec extends SpecBase {
 
       val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails("123456789"))
       result.isLeft shouldBe true
+    }
+  }
+
+  "getPenaltyDetailsForAPI" should {
+    val queryParam = "?dateLimit=09"
+
+    "return a 200 when the call succeeds" in new Setup {
+      when(mockHttpClient.GET[HttpResponse](Matchers.eq(s"/penalty/details/VATC/VRN/123456789$queryParam"),
+        Matchers.any(),
+        Matchers.any())
+        (Matchers.any(),
+          Matchers.any(),
+          Matchers.any()))
+        .thenReturn(Future.successful(HttpResponse.apply(status = Status.OK, json = Json.toJson(mockGetPenaltyDetailsModelAPI1812), headers = Map.empty)))
+
+      val result: HttpResponse = await(connector.getPenaltyDetailsForAPI(vrn = "123456789", dateLimit = Some("09"))(HeaderCarrier()))
+      result.status shouldBe Status.OK
+      Json.parse(result.body) shouldBe Json.toJson(mockGetPenaltyDetailsModelAPI1812)
+    }
+
+    "return a 200 when the call succeeds - with only vrn" in new Setup {
+      when(mockHttpClient.GET[HttpResponse](Matchers.eq(s"/penalty/details/VATC/VRN/123456789"),
+        Matchers.any(),
+        Matchers.any())
+        (Matchers.any(),
+          Matchers.any(),
+          Matchers.any()))
+        .thenReturn(Future.successful(HttpResponse.apply(status = Status.OK, json = Json.toJson(mockGetPenaltyDetailsModelAPI1812), headers = Map.empty)))
+
+      val result: HttpResponse = await(connector.getPenaltyDetailsForAPI(vrn = "123456789", dateLimit = None)(HeaderCarrier()))
+      result.status shouldBe Status.OK
+      Json.parse(result.body) shouldBe Json.toJson(mockGetPenaltyDetailsModelAPI1812)
+    }
+
+    s"return a 403 when the call fails for Not Found (for 4xx errors)" in new Setup {
+      when(mockHttpClient.GET[HttpResponse](Matchers.eq(s"/penalty/details/VATC/VRN/123456789$queryParam"),
+        Matchers.any(),
+        Matchers.any())
+        (Matchers.any(),
+          Matchers.any(),
+          Matchers.any()))
+        .thenReturn(Future.failed(UpstreamErrorResponse.apply("You shall not pass", Status.FORBIDDEN)))
+
+      val result: HttpResponse = await(connector.getPenaltyDetailsForAPI(vrn = "123456789", dateLimit = Some("09"))(HeaderCarrier()))
+      result.status shouldBe Status.FORBIDDEN
+    }
+
+    s"return a 500 when the call fails for Internal Server Error (for 5xx errors)" in new Setup {
+      when(mockHttpClient.GET[HttpResponse](Matchers.eq(s"/penalty/details/VATC/VRN/123456789$queryParam"),
+        Matchers.any(),
+        Matchers.any())
+        (Matchers.any(),
+          Matchers.any(),
+          Matchers.any()))
+        .thenReturn(Future.failed(UpstreamErrorResponse.apply("Oops :(", Status.INTERNAL_SERVER_ERROR)))
+
+      val result: HttpResponse = await(connector.getPenaltyDetailsForAPI(vrn = "123456789", dateLimit = Some("09"))(HeaderCarrier()))
+      result.status shouldBe Status.INTERNAL_SERVER_ERROR
+    }
+
+    "return a 500 when the call fails due to an unexpected exception" in new Setup {
+      when(mockHttpClient.GET[HttpResponse](Matchers.eq(s"/penalty/details/VATC/VRN/123456789$queryParam"),
+        Matchers.any(),
+        Matchers.any())
+        (Matchers.any(),
+          Matchers.any(),
+          Matchers.any()))
+        .thenReturn(Future.failed(new Exception("Something weird happened")))
+
+      val result: HttpResponse = await(connector.getPenaltyDetailsForAPI(vrn = "123456789", dateLimit = Some("09"))(HeaderCarrier()))
+      result.status shouldBe Status.INTERNAL_SERVER_ERROR
     }
   }
 }
