@@ -16,7 +16,7 @@
 
 package controllers
 
-import config.featureSwitches.{FeatureSwitching, UseAPI1812Model}
+import config.featureSwitches.{CallAPI1811ETMP, FeatureSwitching, UseAPI1812Model}
 import play.api.http.Status
 import play.api.libs.json.{JsValue, Json}
 import play.api.test.Helpers._
@@ -409,6 +409,145 @@ class APIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock wit
           val result = await(buildClientForRequestToApp(uri = "/vat/penalties/summary/123456789").get)
           result.status shouldBe NOT_FOUND
         }
+      }
+    }
+  }
+
+  "getFinancialDetails" should {
+    s"return OK (${Status.OK})" when {
+      "the get Financial Details call succeeds" in {
+        val sampleAPI1911Response = Json.parse(
+          """
+            |{
+            |            "taxPayerDetails": {
+            |              "idType": "VRN",
+            |              "idNumber": 123456789,
+            |              "regimeType": "VATC"
+            |            },
+            |            "balanceDetails": {
+            |              "balanceDueWithin30Days": -99999999999.99,
+            |              "nextPaymentDateForChargesDueIn30Days": "1920-02-29",
+            |              "balanceNotDueIn30Days": -99999999999.99,
+            |              "nextPaymentDateBalanceNotDue": "1920-02-29",
+            |              "overDueAmount": -99999999999.99,
+            |              "earliestPaymentDateOverDue": "1920-02-29",
+            |              "totalBalance": -99999999999.99,
+            |              "amountCodedOut": 3456.67
+            |            },
+            |            "codingDetails": [
+            |              {
+            |                "taxYearReturn": "2017",
+            |                "totalReturnAmount": 2234.56,
+            |                "amountNotCoded": 234.56,
+            |                "amountNotCodedDueDate": "2021-07-29",
+            |                "amountCodedOut": 2634.56,
+            |                "taxYearCoding": "2018",
+            |                "documentText": "document coding details"
+            |              }
+            |            ],
+            |            "documentDetails": [
+            |              {
+            |                "taxYear": "2017",
+            |                "documentId": "1455",
+            |                "documentDate": "2018-03-29",
+            |                "documentText": "ITSA- Bal Charge",
+            |                "documentDueDate": "2020-04-15",
+            |                "documentDescription": "document Description",
+            |                "totalAmount": 45552768.79,
+            |                "documentOutstandingAmount": 297873.46,
+            |                "lastClearingDate": "2018-04-15",
+            |                "lastClearingReason": "last Clearing Reason",
+            |                "lastClearedAmount": 589958.83,
+            |                "statisticalFlag": false,
+            |                "paymentLot": 81203010024,
+            |                "paymentLotItem": "000001",
+            |                "accruingInterestAmount": 1000.9,
+            |                "interestRate": 1000.9,
+            |                "interestFromDate": "2021-01-11",
+            |                "interestEndDate": "2021-04-11",
+            |                "latePaymentInterestID": "1234567890123456",
+            |                "latePaymentInterestAmount": 1000.67,
+            |                "lpiWithDunningBlock": 1000.23,
+            |                "interestOutstandingAmount": 1000.34
+            |              }
+            |            ],
+            |            "financialDetails": [
+            |              {
+            |                "taxYear": "2017",
+            |                "documentId": 1.2345678901234568e+28,
+            |                "chargeType": "PAYE",
+            |                "mainType": "2100",
+            |                "periodKey": "13RL",
+            |                "periodKeyDescription": "abcde",
+            |                "taxPeriodFrom": "2018-08-13",
+            |                "taxPeriodTo": "2018-08-14",
+            |                "businessPartner": "6622334455",
+            |                "contractAccountCategory": "02",
+            |                "contractAccount": "X",
+            |                "contractObjectType": "ABCD",
+            |                "contractObject": "00000003000000002757",
+            |                "sapDocumentNumber": "1040000872",
+            |                "sapDocumentNumberItem": "XM00",
+            |                "chargeReference": "XM002610011594",
+            |                "mainTransaction": "1234",
+            |                "subTransaction": "5678",
+            |                "originalAmount": 10000,
+            |                "outstandingAmount": 10000,
+            |                "clearedAmount": 10000,
+            |                "accruedInterest": 10000,
+            |                "items": [
+            |                  {
+            |                    "subItem": "001",
+            |                    "dueDate": "2018-08-13",
+            |                    "amount": 10000,
+            |                    "clearingDate": "2018-08-13",
+            |                    "clearingReason": "01",
+            |                    "outgoingPaymentMethod": "outgoing Payment",
+            |                    "paymentLock": "paymentLock",
+            |                    "clearingLock": "clearingLock",
+            |                    "interestLock": "interestLock",
+            |                    "dunningLock": "dunningLock",
+            |                    "returnFlag": true,
+            |                    "paymentReference": "Ab12453535",
+            |                    "paymentAmount": 10000,
+            |                    "paymentMethod": "Payment",
+            |                    "paymentLot": 81203010024,
+            |                    "paymentLotItem": "000001",
+            |                    "clearingSAPDocument": "3350000253",
+            |                    "codingInitiationDate": "2021-01-11",
+            |                    "statisticalDocument": "S",
+            |                    "DDCollectionInProgress": true,
+            |                    "returnReason": "ABCA"
+            |                  }
+            |                ]
+            |              }
+            |            ]
+            |          }""".stripMargin)
+
+        enableFeatureSwitch(CallAPI1811ETMP)
+        mockResponseForGetFinancialDetailsv3(Status.OK, s"VRN/123456789/VATC?docNumber=DOC1&dateFrom=2022-01-01&dateTo=2024-01-01&onlyOpenItems=false&includeStatistical=false&includeLocks=false&calculateAccruedInterest=false&removePOA=false&customerPaymentInformation=true", Some(sampleAPI1911Response.toString))
+        val result = await(buildClientForRequestToApp(uri = s"/penalty/financial-data/VRN/123456789/VATC?docNumber=DOC1&dateFrom=2022-01-01&dateTo=2024-01-01&onlyOpenItems=false&includeStatistical=false&includeLocks=false&calculateAccruedInterest=false&removePOA=false&customerPaymentInformation=true").get)
+        result.status shouldBe OK
+        result.json shouldBe sampleAPI1911Response
+      }
+    }
+
+    "return the status from EIS" when {
+      "404 response received " in {
+
+        enableFeatureSwitch(CallAPI1811ETMP)
+        mockResponseForGetFinancialDetailsv3(Status.NOT_FOUND, s"VRN/123456789/VATC?docNumber=DOC1&dateFrom=2022-01-01&dateTo=2024-01-01&onlyOpenItems=false&includeStatistical=false&includeLocks=false&calculateAccruedInterest=false&removePOA=false&customerPaymentInformation=true", Some(""))
+
+        val result = await(buildClientForRequestToApp(uri = s"/penalty/financial-data/VRN/123456789/VATC?docNumber=DOC1&dateFrom=2022-01-01&dateTo=2024-01-01&onlyOpenItems=false&includeStatistical=false&includeLocks=false&calculateAccruedInterest=false&removePOA=false&customerPaymentInformation=true").get)
+        result.status shouldBe NOT_FOUND
+      }
+
+      "Non 200 response received " in {
+        enableFeatureSwitch(CallAPI1811ETMP)
+        mockResponseForGetFinancialDetailsv3(Status.BAD_REQUEST, s"VRN/123456789/VATC?docNumber=DOC1&dateFrom=2022-01-01&dateTo=2024-01-01&onlyOpenItems=false&includeStatistical=false&includeLocks=false&calculateAccruedInterest=false&removePOA=false&customerPaymentInformation=true", Some(""))
+
+        val result = await(buildClientForRequestToApp(uri = s"/penalty/financial-data/VRN/123456789/VATC?docNumber=DOC1&dateFrom=2022-01-01&dateTo=2024-01-01&onlyOpenItems=false&includeStatistical=false&includeLocks=false&calculateAccruedInterest=false&removePOA=false&customerPaymentInformation=true").get)
+        result.status shouldBe BAD_REQUEST
       }
     }
   }
