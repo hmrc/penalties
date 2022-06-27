@@ -88,6 +88,8 @@ class GetFinancialDetailsParserSpec extends AnyWordSpec with Matchers {
       )),
       originalAmount = None,
       outstandingAmount = None,
+      chargeReference = None,
+      mainTransaction = None,
       metadata = FinancialDetailsMetadata(
         taxYear = "2022",
         chargeType = None,
@@ -101,8 +103,6 @@ class GetFinancialDetailsParserSpec extends AnyWordSpec with Matchers {
         contractObject = None,
         sapDocumentNumber = None,
         sapDocumentNumberItem = None,
-        chargeReference = None,
-        mainTransaction = None,
         subTransaction = None,
         clearedAmount = None,
         accruedInterest = None

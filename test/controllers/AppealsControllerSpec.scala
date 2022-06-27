@@ -29,7 +29,7 @@ import models.appeals.v2.{AppealData => V2AppealData}
 import models.notification._
 import models.upload.{UploadDetails, UploadJourney, UploadStatusEnum}
 import models.v3.getPenaltyDetails.GetPenaltyDetails
-import models.v3.getPenaltyDetails.latePayment.{LPPDetails, LPPPenaltyCategoryEnum, LPPPenaltyStatusEnum, LatePaymentPenalty}
+import models.v3.getPenaltyDetails.latePayment.{LPPDetails, LPPDetailsMetadata, LPPPenaltyCategoryEnum, LPPPenaltyStatusEnum, LatePaymentPenalty}
 import models.v3.getPenaltyDetails.lateSubmission._
 import org.mockito.Matchers
 import org.mockito.Matchers.any
@@ -377,7 +377,8 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching {
                   LPP1LRPercentage = None,
                   LPP1HRPercentage = None,
                   penaltyChargeDueDate = LocalDate.of(2022, 8, 7),
-                  principalChargeLatestClearing = None
+                  principalChargeLatestClearing = None,
+                  metadata = LPPDetailsMetadata()
                 ),
                 LPPDetails(
                   penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
@@ -401,7 +402,8 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching {
                   LPP1LRPercentage = None,
                   LPP1HRPercentage = None,
                   penaltyChargeDueDate = LocalDate.of(2022, 8, 7),
-                  principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1))
+                  principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
+                  metadata = LPPDetailsMetadata()
                 )
               )
             )

@@ -187,7 +187,8 @@ class APIControllerSpec extends SpecBase with FeatureSwitching {
                   LPP1LRPercentage = None,
                   LPP1HRPercentage = None,
                   penaltyChargeDueDate = LocalDate.of(2022, 1, 1),
-                  principalChargeLatestClearing = None
+                  principalChargeLatestClearing = None,
+                  metadata = LPPDetailsMetadata()
                 ),
                 LPPDetails(
                   penaltyCategory = LPPPenaltyCategoryEnum.SecondPenalty,
@@ -211,7 +212,8 @@ class APIControllerSpec extends SpecBase with FeatureSwitching {
                   LPP1LRPercentage = None,
                   LPP1HRPercentage = None,
                   penaltyChargeDueDate = LocalDate.of(2022, 1, 1),
-                  principalChargeLatestClearing = None
+                  principalChargeLatestClearing = None,
+                  metadata = LPPDetailsMetadata()
                 ),
                 LPPDetails(
                   penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
@@ -235,7 +237,8 @@ class APIControllerSpec extends SpecBase with FeatureSwitching {
                   LPP1LRPercentage = None,
                   LPP1HRPercentage = None,
                   penaltyChargeDueDate = LocalDate.of(2022, 1, 1),
-                  principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1))
+                  principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
+                  metadata = LPPDetailsMetadata()
                 ),
                 LPPDetails(
                   penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
@@ -259,7 +262,8 @@ class APIControllerSpec extends SpecBase with FeatureSwitching {
                   LPP1LRPercentage = None,
                   LPP1HRPercentage = None,
                   penaltyChargeDueDate = LocalDate.of(2022, 1, 1),
-                  principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1))
+                  principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
+                  metadata = LPPDetailsMetadata()
                 )
               )
             )

@@ -18,7 +18,7 @@ package services.v2
 
 import base.SpecBase
 import models.v3.getPenaltyDetails.GetPenaltyDetails
-import models.v3.getPenaltyDetails.latePayment.{LPPDetails, LPPPenaltyCategoryEnum, LPPPenaltyStatusEnum, LatePaymentPenalty}
+import models.v3.getPenaltyDetails.latePayment.{LPPDetails, LPPDetailsMetadata, LPPPenaltyCategoryEnum, LPPPenaltyStatusEnum, LatePaymentPenalty}
 import models.v3.getPenaltyDetails.lateSubmission.{LSPDetails, LSPPenaltyCategoryEnum, LSPPenaltyStatusEnum, LSPSummary, LateSubmissionPenalty}
 
 import java.time.LocalDate
@@ -61,7 +61,8 @@ class APIServiceSpec extends SpecBase {
                     LPP1LRPercentage = None,
                     LPP1HRPercentage = None,
                     penaltyChargeDueDate = LocalDate.of(2022, 1, 1),
-                    principalChargeLatestClearing = None
+                    principalChargeLatestClearing = None,
+                    metadata = LPPDetailsMetadata()
                   ),
                   LPPDetails(
                     penaltyCategory = LPPPenaltyCategoryEnum.SecondPenalty,
@@ -85,7 +86,8 @@ class APIServiceSpec extends SpecBase {
                     LPP1LRPercentage = None,
                     LPP1HRPercentage = None,
                     penaltyChargeDueDate = LocalDate.of(2022, 1, 1),
-                    principalChargeLatestClearing = None
+                    principalChargeLatestClearing = None,
+                    metadata = LPPDetailsMetadata()
                   )
                 )
               )
@@ -127,7 +129,8 @@ class APIServiceSpec extends SpecBase {
                     LPP1LRPercentage = None,
                     LPP1HRPercentage = None,
                     penaltyChargeDueDate = LocalDate.of(2022, 1, 1),
-                    principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1))
+                    principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
+                    metadata = LPPDetailsMetadata()
                   ),
                   LPPDetails(
                     penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
@@ -151,7 +154,8 @@ class APIServiceSpec extends SpecBase {
                     LPP1LRPercentage = None,
                     LPP1HRPercentage = None,
                     penaltyChargeDueDate = LocalDate.of(2022, 1, 1),
-                    principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1))
+                    principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
+                    metadata = LPPDetailsMetadata()
                   )
                 )
               )
@@ -195,7 +199,8 @@ class APIServiceSpec extends SpecBase {
                   LPP1LRPercentage = None,
                   LPP1HRPercentage = None,
                   penaltyChargeDueDate = LocalDate.of(2022, 1, 1),
-                  principalChargeLatestClearing = None
+                  principalChargeLatestClearing = None,
+                  metadata = LPPDetailsMetadata()
                 ),
                 LPPDetails(
                   penaltyCategory = LPPPenaltyCategoryEnum.SecondPenalty,
@@ -219,7 +224,8 @@ class APIServiceSpec extends SpecBase {
                   LPP1LRPercentage = None,
                   LPP1HRPercentage = None,
                   penaltyChargeDueDate = LocalDate.of(2022, 1, 1),
-                  principalChargeLatestClearing = None
+                  principalChargeLatestClearing = None,
+                  metadata = LPPDetailsMetadata()
                 )
               )
             )
@@ -270,7 +276,8 @@ class APIServiceSpec extends SpecBase {
                   LPP1LRPercentage = None,
                   LPP1HRPercentage = None,
                   penaltyChargeDueDate = LocalDate.of(2022, 1, 1),
-                  principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1))
+                  principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
+                  metadata = LPPDetailsMetadata()
                 )
               )
             )
@@ -342,7 +349,8 @@ class APIServiceSpec extends SpecBase {
                     LPP1LRPercentage = None,
                     LPP1HRPercentage = None,
                     penaltyChargeDueDate = LocalDate.of(2022, 1, 1),
-                    principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1))
+                    principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
+                    metadata = LPPDetailsMetadata()
                   )
                 )
               )
@@ -418,7 +426,8 @@ class APIServiceSpec extends SpecBase {
                     LPP1LRPercentage = None,
                     LPP1HRPercentage = None,
                     penaltyChargeDueDate = LocalDate.of(2022, 1, 1),
-                    principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1))
+                    principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
+                    metadata = LPPDetailsMetadata()
                   )
                 )
               )
@@ -471,7 +480,8 @@ class APIServiceSpec extends SpecBase {
                   LPP1LRPercentage = None,
                   LPP1HRPercentage = None,
                   penaltyChargeDueDate = LocalDate.of(2022, 1, 1),
-                  principalChargeLatestClearing = None
+                  principalChargeLatestClearing = None,
+                  metadata = LPPDetailsMetadata()
                 ),
                 LPPDetails(
                   penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
@@ -495,7 +505,8 @@ class APIServiceSpec extends SpecBase {
                   LPP1LRPercentage = None,
                   LPP1HRPercentage = None,
                   penaltyChargeDueDate = LocalDate.of(2022, 1, 1),
-                  principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1))
+                  principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
+                  metadata = LPPDetailsMetadata()
                 )
               )
             )
@@ -536,7 +547,8 @@ class APIServiceSpec extends SpecBase {
                   LPP1LRPercentage = None,
                   LPP1HRPercentage = None,
                   penaltyChargeDueDate = LocalDate.of(2022, 1, 1),
-                  principalChargeLatestClearing = None
+                  principalChargeLatestClearing = None,
+                  metadata = LPPDetailsMetadata()
                 ),
                 LPPDetails(
                   penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
@@ -560,7 +572,8 @@ class APIServiceSpec extends SpecBase {
                   LPP1LRPercentage = None,
                   LPP1HRPercentage = None,
                   penaltyChargeDueDate = LocalDate.of(2022, 1, 1),
-                  principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1))
+                  principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
+                  metadata = LPPDetailsMetadata()
                 )
               )
             )
@@ -648,7 +661,8 @@ class APIServiceSpec extends SpecBase {
                   LPP1LRPercentage = None,
                   LPP1HRPercentage = None,
                   penaltyChargeDueDate = LocalDate.of(2022, 1, 1),
-                  principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1))
+                  principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
+                  metadata = LPPDetailsMetadata()
                 )
               )
             )
@@ -732,7 +746,8 @@ class APIServiceSpec extends SpecBase {
                   LPP1LRPercentage = None,
                   LPP1HRPercentage = None,
                   penaltyChargeDueDate = LocalDate.of(2022, 1, 1),
-                  principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1))
+                  principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
+                  metadata = LPPDetailsMetadata()
                 )
               )
             )

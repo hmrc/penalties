@@ -21,7 +21,7 @@ import connectors.parsers.v3.getPenaltyDetails.GetPenaltyDetailsParser.{GetPenal
 import connectors.v3.getPenaltyDetails.GetPenaltyDetailsConnector
 import models.v3.getPenaltyDetails.appealInfo.{AppealInformationType, AppealLevelEnum, AppealStatusEnum}
 import models.v3.getPenaltyDetails.{GetPenaltyDetails, Totalisations}
-import models.v3.getPenaltyDetails.latePayment.{LPPDetails, LPPPenaltyCategoryEnum, LPPPenaltyStatusEnum, LatePaymentPenalty}
+import models.v3.getPenaltyDetails.latePayment.{LPPDetails, LPPDetailsMetadata, LPPPenaltyCategoryEnum, LPPPenaltyStatusEnum, LatePaymentPenalty}
 import models.v3.getPenaltyDetails.lateSubmission.{LSPDetails, LSPPenaltyCategoryEnum, LSPPenaltyStatusEnum, LSPSummary, LateSubmission, LateSubmissionPenalty, TaxReturnStatusEnum}
 import org.mockito.Matchers
 import org.mockito.Matchers.any
@@ -120,7 +120,8 @@ class GetPenaltyDetailsServiceSpec extends SpecBase {
               LPP1LRPercentage = Some(BigDecimal(2.00).setScale(2)),
               LPP1HRPercentage = Some(BigDecimal(2.00).setScale(2)),
               penaltyChargeDueDate = LocalDate.of(2022, 10, 30),
-              principalChargeLatestClearing = None
+              principalChargeLatestClearing = None,
+              metadata = LPPDetailsMetadata()
             )
           )
         )

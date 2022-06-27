@@ -180,7 +180,8 @@ class LatePaymentPenaltySpec extends SpecBase {
           LPP1LRPercentage = Some(BigDecimal(2.00).setScale(2)),
           LPP1HRPercentage = Some(BigDecimal(2.00).setScale(2)),
           penaltyChargeDueDate = LocalDate.of(2022, 10, 30),
-          principalChargeLatestClearing = None
+          principalChargeLatestClearing = None,
+          metadata = LPPDetailsMetadata()
         ),
         LPPDetails(
           penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
@@ -204,7 +205,8 @@ class LatePaymentPenaltySpec extends SpecBase {
           LPP1LRPercentage = Some(BigDecimal(2.00).setScale(2)),
           LPP1HRPercentage = Some(BigDecimal(2.00).setScale(2)),
           penaltyChargeDueDate = LocalDate.of(2022, 10, 30),
-          principalChargeLatestClearing = None
+          principalChargeLatestClearing = None,
+          metadata = LPPDetailsMetadata()
         )
       )
     )

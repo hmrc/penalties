@@ -16,6 +16,7 @@
 
 package models.v3.getFinancialDetails
 
+import models.v3.ChargeTypeEnum
 import play.api.libs.json.{Format, JsResult, JsValue, Json, OFormat}
 import utils.JsonUtils
 
@@ -28,6 +29,8 @@ case class FinancialDetails(
                            items: Seq[FinancialItem],
                            originalAmount: Option[BigDecimal],
                            outstandingAmount: Option[BigDecimal],
+                           mainTransaction: Option[ChargeTypeEnum.Value],
+                           chargeReference: Option[String],
                            metadata: FinancialDetailsMetadata
                            )
 
@@ -41,9 +44,11 @@ object FinancialDetails extends JsonUtils {
         items <- (json \ "items").validate[Seq[FinancialItem]]
         originalAmount <- (json \ "originalAmount").validateOpt[BigDecimal]
         outstandingAmount <- (json \ "outstandingAmount").validateOpt[BigDecimal]
+        mainTransaction <- (json \ "mainTransaction").validateOpt[ChargeTypeEnum.Value]
+        chargeReference <- (json \ "chargeReference").validateOpt[String]
         metadata <- Json.fromJson(json)(FinancialDetailsMetadata.format)
       } yield {
-        FinancialDetails(documentId, taxPeriodFrom, taxPeriodTo, items, originalAmount, outstandingAmount, metadata)
+        FinancialDetails(documentId, taxPeriodFrom, taxPeriodTo, items, originalAmount, outstandingAmount, mainTransaction, chargeReference, metadata)
       }
     }
 
@@ -54,7 +59,9 @@ object FinancialDetails extends JsonUtils {
         "taxPeriodTo" -> o.taxPeriodTo,
         "items" -> o.items,
         "originalAmount" -> o.originalAmount,
-        "outstandingAmount" -> o.outstandingAmount
+        "outstandingAmount" -> o.outstandingAmount,
+        "mainTransaction" -> o.mainTransaction,
+        "chargeReference" -> o.chargeReference
       ).deepMerge(Json.toJsObject(o.metadata)(FinancialDetailsMetadata.format))
     }
   }
@@ -63,8 +70,8 @@ object FinancialDetails extends JsonUtils {
 case class FinancialDetailsMetadata(
                                      taxYear: String,
                                      chargeType: Option[String],
-                                     mainType: Option[String],
                                      periodKey: Option[String],
+                                     mainType: Option[String],
                                      periodKeyDescription: Option[String],
                                      businessPartner: Option[String],
                                      contractAccountCategory: Option[String],
@@ -73,8 +80,6 @@ case class FinancialDetailsMetadata(
                                      contractObject: Option[String],
                                      sapDocumentNumber: Option[String],
                                      sapDocumentNumberItem: Option[String],
-                                     chargeReference: Option[String],
-                                     mainTransaction: Option[String],
                                      subTransaction: Option[String],
                                      clearedAmount: Option[BigDecimal],
                                      accruedInterest: Option[BigDecimal]

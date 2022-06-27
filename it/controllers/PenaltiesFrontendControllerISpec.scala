@@ -458,7 +458,7 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
       mockStubResponseForGetPenaltyDetailsv3(Status.OK, "123456789")
       val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/HMRC-MTD-VAT~VRN~123456789?newApiModel=true").get())
       result.status shouldBe Status.OK
-      result.body shouldBe getPenaltyDetailsWithLSPandLPPAsJsonv3.toString()
+      Json.parse(result.body) shouldBe getPenaltyDetailsWithLSPandLPPAsJsonv3
       wireMockServer.findAll(postRequestedFor(urlEqualTo("/write/audit"))).asScala.toList.exists(_.getBodyAsString.contains("UserHasPenalty")) shouldBe true
     }
 

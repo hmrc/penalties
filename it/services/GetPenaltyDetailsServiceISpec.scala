@@ -18,7 +18,7 @@ package services
 
 import connectors.parsers.v3.getPenaltyDetails.GetPenaltyDetailsParser._
 import models.v3.getPenaltyDetails.appealInfo.{AppealInformationType, AppealLevelEnum, AppealStatusEnum}
-import models.v3.getPenaltyDetails.latePayment.{LPPDetails, LPPPenaltyCategoryEnum, LPPPenaltyStatusEnum, LatePaymentPenalty}
+import models.v3.getPenaltyDetails.latePayment.{LPPDetails, LPPDetailsMetadata, LPPPenaltyCategoryEnum, LPPPenaltyStatusEnum, LatePaymentPenalty}
 import models.v3.getPenaltyDetails.lateSubmission._
 import models.v3.getPenaltyDetails.{GetPenaltyDetails, Totalisations}
 import play.api.http.Status
@@ -111,7 +111,8 @@ class GetPenaltyDetailsServiceISpec extends IntegrationSpecCommonBase with ETMPW
               LPP1LRPercentage = Some(BigDecimal(2.00).setScale(2)),
               LPP1HRPercentage = Some(BigDecimal(2.00).setScale(2)),
               penaltyChargeDueDate = LocalDate.of(2022, 10, 30),
-              principalChargeLatestClearing = None
+              principalChargeLatestClearing = None,
+              metadata = LPPDetailsMetadata()
             )
           )
         )
