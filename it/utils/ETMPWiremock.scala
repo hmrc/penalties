@@ -501,7 +501,7 @@ trait ETMPWiremock {
     ))
   }
 
-  def mockResponseForGetPenaltyDetailsv3ThirdParty(status: Int, vatcUrl: String, body: Option[String] = None): StubMapping = {
+  def mockResponseForGetPenaltyDetailsForAPIv3(status: Int, vatcUrl: String, body: Option[String] = None): StubMapping = {
     stubFor(get(urlEqualTo(s"/penalty/penalty-data/$vatcUrl"))
       .willReturn(
         aResponse()

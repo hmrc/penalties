@@ -157,7 +157,7 @@ class GetPenaltyDetailsConnectorSpec extends SpecBase {
           Matchers.any()))
         .thenReturn(Future.successful(HttpResponse.apply(status = Status.OK, json = Json.toJson(mockGetPenaltyDetailsModelAPI1812), headers = Map.empty)))
 
-      val result: HttpResponse = await(connector.getPenaltyDetailsForThirdPartyAPI(vrn = "123456789", dateLimit = Some("09"))(HeaderCarrier()))
+      val result: HttpResponse = await(connector.getPenaltyDetailsForAPI(vrn = "123456789", dateLimit = Some("09"))(HeaderCarrier()))
       result.status shouldBe Status.OK
       Json.parse(result.body) shouldBe Json.toJson(mockGetPenaltyDetailsModelAPI1812)
     }
@@ -171,7 +171,7 @@ class GetPenaltyDetailsConnectorSpec extends SpecBase {
           Matchers.any()))
         .thenReturn(Future.successful(HttpResponse.apply(status = Status.OK, json = Json.toJson(mockGetPenaltyDetailsModelAPI1812), headers = Map.empty)))
 
-      val result: HttpResponse = await(connector.getPenaltyDetailsForThirdPartyAPI(vrn = "123456789", dateLimit = None)(HeaderCarrier()))
+      val result: HttpResponse = await(connector.getPenaltyDetailsForAPI(vrn = "123456789", dateLimit = None)(HeaderCarrier()))
       result.status shouldBe Status.OK
       Json.parse(result.body) shouldBe Json.toJson(mockGetPenaltyDetailsModelAPI1812)
     }
@@ -185,7 +185,7 @@ class GetPenaltyDetailsConnectorSpec extends SpecBase {
           Matchers.any()))
         .thenReturn(Future.failed(UpstreamErrorResponse.apply("You shall not pass", Status.FORBIDDEN)))
 
-      val result: HttpResponse = await(connector.getPenaltyDetailsForThirdPartyAPI(vrn = "123456789", dateLimit = Some("09"))(HeaderCarrier()))
+      val result: HttpResponse = await(connector.getPenaltyDetailsForAPI(vrn = "123456789", dateLimit = Some("09"))(HeaderCarrier()))
       result.status shouldBe Status.FORBIDDEN
     }
 
@@ -198,7 +198,7 @@ class GetPenaltyDetailsConnectorSpec extends SpecBase {
           Matchers.any()))
         .thenReturn(Future.failed(UpstreamErrorResponse.apply("Oops :(", Status.INTERNAL_SERVER_ERROR)))
 
-      val result: HttpResponse = await(connector.getPenaltyDetailsForThirdPartyAPI(vrn = "123456789", dateLimit = Some("09"))(HeaderCarrier()))
+      val result: HttpResponse = await(connector.getPenaltyDetailsForAPI(vrn = "123456789", dateLimit = Some("09"))(HeaderCarrier()))
       result.status shouldBe Status.INTERNAL_SERVER_ERROR
     }
 
@@ -211,7 +211,7 @@ class GetPenaltyDetailsConnectorSpec extends SpecBase {
           Matchers.any()))
         .thenReturn(Future.failed(new Exception("Something weird happened")))
 
-      val result: HttpResponse = await(connector.getPenaltyDetailsForThirdPartyAPI(vrn = "123456789", dateLimit = Some("09"))(HeaderCarrier()))
+      val result: HttpResponse = await(connector.getPenaltyDetailsForAPI(vrn = "123456789", dateLimit = Some("09"))(HeaderCarrier()))
       result.status shouldBe Status.INTERNAL_SERVER_ERROR
     }
   }

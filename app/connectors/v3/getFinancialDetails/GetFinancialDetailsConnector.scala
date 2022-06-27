@@ -57,7 +57,6 @@ class GetFinancialDetailsConnector @Inject()(httpClient: HttpClient,
     }
     httpClient.GET[HttpResponse](appConfig.getFinancialDetailsUrlv3(vrn) + queryParams, headers = headers).recover {
       case e: UpstreamErrorResponse => {
-        println("UpstreamErrorResponse---"+e)
         logger.error(s"[GetFinancialDetailsConnector][getFinancialDetailsForAPI] - Received ${e.statusCode} status from API 1811 call - returning status to caller")
         HttpResponse(e.statusCode, e.message)
       }

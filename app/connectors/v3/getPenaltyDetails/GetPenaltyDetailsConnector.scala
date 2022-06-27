@@ -21,8 +21,10 @@ import connectors.parsers.v3.getPenaltyDetails.GetPenaltyDetailsParser.GetPenalt
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse, UpstreamErrorResponse}
 import utils.Logger.logger
 import java.util.UUID.randomUUID
+
 import javax.inject.Inject
 import play.api.http.Status.INTERNAL_SERVER_ERROR
+import uk.gov.hmrc.http.HttpReads.Implicits._
 import scala.concurrent.{ExecutionContext, Future}
 
 class GetPenaltyDetailsConnector @Inject()(httpClient: HttpClient,
@@ -38,18 +40,16 @@ class GetPenaltyDetailsConnector @Inject()(httpClient: HttpClient,
     httpClient.GET[GetPenaltyDetailsResponse](url, Seq.empty[(String, String)], headers)
   }
 
-  def getPenaltyDetailsForThirdPartyAPI(vrn: String, dateLimit: Option[String])(implicit hc: HeaderCarrier): Future[HttpResponse] = {
-    val queryParam: String = {
-      s"${dateLimit.fold("")(dateLimit => s"?dateLimit=$dateLimit")}"
-    }
+  def getPenaltyDetailsForAPI(vrn: String, dateLimit: Option[String])(implicit hc: HeaderCarrier): Future[HttpResponse] = {
+    val queryParam: String = s"${dateLimit.fold("")(dateLimit => s"?dateLimit=$dateLimit")}"
     httpClient.GET[HttpResponse](appConfig.getPenaltyDetailsUrlv3(vrn) + queryParam, headers = headers).recover {
       case e: UpstreamErrorResponse => {
-        logger.error(s"[GetPenaltyDetailsConnector][getPenaltyDetailsForThirdPartyAPI] -" +
+        logger.error(s"[GetPenaltyDetailsConnector][getPenaltyDetailsForAPI] -" +
           s" Received ${e.statusCode} status from API 1812 call - returning status to caller")
         HttpResponse(e.statusCode, e.message)
       }
       case e: Exception => {
-        logger.error(s"[GetPenaltyDetailsConnector][getPenaltyDetailsForThirdPartyAPI] -" +
+        logger.error(s"[GetPenaltyDetailsConnector][getPenaltyDetailsForAPI] -" +
           s" An unknown exception occurred - returning 500 back to caller - message: ${e.getMessage}")
         HttpResponse(INTERNAL_SERVER_ERROR, "An unknown exception occurred. Contact the Penalties team for more information.")
       }

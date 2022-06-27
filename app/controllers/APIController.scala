@@ -164,17 +164,16 @@ class APIController @Inject()(etmpService: ETMPService,
         removePOA,
         customerPaymentInformation)
 
-        response.map(
-          res => res.status match {
-            case OK =>
-              logger.debug("[APIController][getFinancialDetails] Ok response received: " + res)
-              Ok(res.json)
-            case NOT_FOUND =>
-              logger.debug("[APIController][getFinancialDetails] Error received: " + res)
-              Status(res.status)(Json.toJson(res.body))
-            case _ =>
-              println("res.status getFinancialDetails..."+ res.status)
-              logger.warn(s"[APIController][getFinancialDetails] status ${res.status} returned from EIS " +
+      response.map(
+        res => res.status match {
+          case OK =>
+            logger.debug("[APIController][getFinancialDetails] Ok response received: " + res)
+            Ok(res.json)
+          case NOT_FOUND =>
+            logger.debug("[APIController][getFinancialDetails] Error received: " + res)
+            Status(res.status)(Json.toJson(res.body))
+          case _ =>
+            logger.warn(s"[APIController][getFinancialDetails] status ${res.status} returned from EIS " +
                 s"Status code:'${res.status}', Body: '${res.body}")
               Status(res.status)(Json.toJson(res.body))
           }
@@ -182,20 +181,18 @@ class APIController @Inject()(etmpService: ETMPService,
       }
     }
 
-  def getPenaltyDetailsForThirdPartyAPI(vrn: String, dateLimit: Option[String]): Action[AnyContent] = Action.async {
+  def getPenaltyDetails(vrn: String, dateLimit: Option[String]): Action[AnyContent] = Action.async {
     implicit request => {
-      val response = getPenaltyDetailsConnector.getPenaltyDetailsForThirdPartyAPI(vrn, dateLimit)
+      val response = getPenaltyDetailsConnector.getPenaltyDetailsForAPI(vrn, dateLimit)
       response.map(
         res => res.status match {
           case OK =>
             logger.debug("[APIController][getPenaltyDetailsForThirdPartyAPI] Ok response received: " + res)
             Ok(res.json)
           case NOT_FOUND =>
-            println("case NOT_FOUND..."+ res.status)
             logger.debug("[APIController][getPenaltyDetailsForThirdPartyAPI] Error received: " + res)
             Status(res.status)(Json.toJson(res.body))
           case _ =>
-            println("res.status getPenaltyDetailsForThirdPartyAPI..."+ res.status)
             logger.warn(s"[APIController][getPenaltyDetailsForThirdPartyAPI] status ${res.status} returned from EIS " +
               s"Status code:'${res.status}', Body: '${res.body}")
             Status(res.status)(Json.toJson(res.body))

@@ -133,23 +133,23 @@ class GetPenaltyDetailsConnectorISpec extends IntegrationSpecCommonBase with ETM
   "getPenaltyDetailsForAPI" should {
     "return a 200 response" in new Setup {
       enableFeatureSwitch(CallAPI1812ETMP)
-      mockResponseForGetPenaltyDetailsv3ThirdParty(Status.OK, "VRN/123456789/VATC?dateLimit=09")
-      val result: HttpResponse = await(connector.getPenaltyDetailsForThirdPartyAPI("123456789", dateLimit = Some("09")))
+      mockResponseForGetPenaltyDetailsForAPIv3(Status.OK, "VRN/123456789/VATC?dateLimit=09")
+      val result: HttpResponse = await(connector.getPenaltyDetailsForAPI("123456789", dateLimit = Some("09")))
       result.status shouldBe Status.OK
     }
 
     "handle a UpstreamErrorResponse" when {
       "a 4xx error is returned" in new Setup {
         enableFeatureSwitch(CallAPI1812ETMP)
-        mockResponseForGetPenaltyDetailsv3ThirdParty(Status.FORBIDDEN, "VRN/123456789/VATC?dateLimit=09")
-        val result: HttpResponse = await(connector.getPenaltyDetailsForThirdPartyAPI("123456789", dateLimit = Some("09")))
+        mockResponseForGetPenaltyDetailsForAPIv3(Status.FORBIDDEN, "VRN/123456789/VATC?dateLimit=09")
+        val result: HttpResponse = await(connector.getPenaltyDetailsForAPI("123456789", dateLimit = Some("09")))
         result.status shouldBe Status.FORBIDDEN
       }
 
       "a 5xx error is returned" in new Setup {
         enableFeatureSwitch(CallAPI1812ETMP)
-        mockResponseForGetPenaltyDetailsv3ThirdParty(Status.BAD_GATEWAY, "VRN/123456789/VATC?dateLimit=09")
-        val result: HttpResponse = await(connector.getPenaltyDetailsForThirdPartyAPI("123456789", dateLimit = Some("09")))
+        mockResponseForGetPenaltyDetailsForAPIv3(Status.BAD_GATEWAY, "VRN/123456789/VATC?dateLimit=09")
+        val result: HttpResponse = await(connector.getPenaltyDetailsForAPI("123456789", dateLimit = Some("09")))
         result.status shouldBe Status.BAD_GATEWAY
       }
     }

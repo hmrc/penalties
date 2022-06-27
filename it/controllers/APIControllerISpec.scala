@@ -536,18 +536,18 @@ class APIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock wit
       "404 response received " in {
 
         enableFeatureSwitch(CallAPI1811ETMP)
-        mockResponseForGetFinancialDetailsv3(Status.BAD_REQUEST, s"VRN/123456789/VATC?docNumber=DOC1&dateFrom=2022-01-01&dateTo=2024-01-01&onlyOpenItems=false&includeStatistical=false&includeLocks=false&calculateAccruedInterest=false&removePOA=false&customerPaymentInformation=true", Some(""))
-
-        val result = await(buildClientForRequestToApp(uri = s"/penalty/financial-data/VRN/123456789/VATC?docNumber=DOC1&dateFrom=2022-01-01&dateTo=2024-01-01&onlyOpenItems=false&includeStatistical=false&includeLocks=false&calculateAccruedInterest=false&removePOA=false&customerPaymentInformation=true").get)
-        result.status shouldBe BAD_REQUEST
-      }
-
-      "Non 200 response received " in {
-        enableFeatureSwitch(CallAPI1811ETMP)
         mockResponseForGetFinancialDetailsv3(Status.NOT_FOUND, s"VRN/123456789/VATC?docNumber=DOC1&dateFrom=2022-01-01&dateTo=2024-01-01&onlyOpenItems=false&includeStatistical=false&includeLocks=false&calculateAccruedInterest=false&removePOA=false&customerPaymentInformation=true", Some(""))
 
         val result = await(buildClientForRequestToApp(uri = s"/penalty/financial-data/VRN/123456789/VATC?docNumber=DOC1&dateFrom=2022-01-01&dateTo=2024-01-01&onlyOpenItems=false&includeStatistical=false&includeLocks=false&calculateAccruedInterest=false&removePOA=false&customerPaymentInformation=true").get)
         result.status shouldBe NOT_FOUND
+      }
+
+      "Non 200 response received " in {
+        enableFeatureSwitch(CallAPI1811ETMP)
+        mockResponseForGetFinancialDetailsv3(Status.BAD_REQUEST, s"VRN/123456789/VATC?docNumber=DOC1&dateFrom=2022-01-01&dateTo=2024-01-01&onlyOpenItems=false&includeStatistical=false&includeLocks=false&calculateAccruedInterest=false&removePOA=false&customerPaymentInformation=true", Some(""))
+
+        val result = await(buildClientForRequestToApp(uri = s"/penalty/financial-data/VRN/123456789/VATC?docNumber=DOC1&dateFrom=2022-01-01&dateTo=2024-01-01&onlyOpenItems=false&includeStatistical=false&includeLocks=false&calculateAccruedInterest=false&removePOA=false&customerPaymentInformation=true").get)
+        result.status shouldBe BAD_REQUEST
       }
     }
   }
@@ -636,7 +636,7 @@ class APIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock wit
             |}
             |""".stripMargin)
         enableFeatureSwitch(CallAPI1812ETMP)
-        mockResponseForGetPenaltyDetailsv3ThirdParty(Status.OK, s"VRN/123456789/VATC?dateLimit=09", Some(sampleAPI1812Response.toString))
+        mockResponseForGetPenaltyDetailsForAPIv3(Status.OK, s"VRN/123456789/VATC?dateLimit=09", Some(sampleAPI1812Response.toString))
         val result = await(buildClientForRequestToApp(uri = s"/penalty/penalty-data/VRN/123456789/VATC?dateLimit=09").get)
         result.status shouldBe OK
         result.json shouldBe sampleAPI1812Response
@@ -646,14 +646,14 @@ class APIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock wit
     "return the status from EIS" when {
       "404 response received " in {
         enableFeatureSwitch(CallAPI1812ETMP)
-        mockResponseForGetPenaltyDetailsv3ThirdParty(Status.NOT_FOUND, s"VRN/123456789/VATC?dateLimit=09", Some(""))
+        mockResponseForGetPenaltyDetailsForAPIv3(Status.NOT_FOUND, s"VRN/123456789/VATC?dateLimit=09", Some(""))
         val result = await(buildClientForRequestToApp(uri = s"/penalty/penalty-data/VRN/123456789/VATC?dateLimit=09").get)
         result.status shouldBe NOT_FOUND
       }
 
       "Non 200 response received " in {
         enableFeatureSwitch(CallAPI1812ETMP)
-        mockResponseForGetPenaltyDetailsv3ThirdParty(Status.BAD_REQUEST, s"VRN/123456789/VATC?dateLimit=09", Some(""))
+        mockResponseForGetPenaltyDetailsForAPIv3(Status.BAD_REQUEST, s"VRN/123456789/VATC?dateLimit=09", Some(""))
         val result = await(buildClientForRequestToApp(uri = s"/penalty/penalty-data/VRN/123456789/VATC?dateLimit=09").get)
         result.status shouldBe BAD_REQUEST
       }

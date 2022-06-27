@@ -596,26 +596,26 @@ class APIControllerSpec extends SpecBase with FeatureSwitching {
           | }
           |}
           |""".stripMargin)
-      when(mockGetPenaltyDetailsConnector.getPenaltyDetailsForThirdPartyAPI(any(), any())(any()))
+      when(mockGetPenaltyDetailsConnector.getPenaltyDetailsForAPI(any(), any())(any()))
         .thenReturn(Future.successful(HttpResponse.apply(OK, sampleAPI1812Response.toString)))
-      val result = controller.getPenaltyDetailsForThirdPartyAPI(vrn ="123456789", dateLimit = Some("02"))(fakeRequest)
+      val result = controller.getPenaltyDetails(vrn ="123456789", dateLimit = Some("02"))(fakeRequest)
       status(result) shouldBe Status.OK
       contentAsJson(result) shouldBe sampleAPI1812Response
     }
     s"return NOT_FOUND (${Status.NOT_FOUND}) when the call returns no data" in new Setup(true) {
-      when(mockGetPenaltyDetailsConnector.getPenaltyDetailsForThirdPartyAPI(any(), any())(any()))
+      when(mockGetPenaltyDetailsConnector.getPenaltyDetailsForAPI(any(), any())(any()))
         .thenReturn(Future.successful(HttpResponse.apply(NOT_FOUND, "NOT_FOUND")))
 
-      val result = controller.getPenaltyDetailsForThirdPartyAPI(vrn ="123456789", dateLimit = None)(fakeRequest)
+      val result = controller.getPenaltyDetails(vrn ="123456789", dateLimit = None)(fakeRequest)
 
       status(result) shouldBe Status.NOT_FOUND
     }
 
     s"return the status from EIS when the call returns a non 200 or 404 status" in new Setup(true) {
-      when(mockGetPenaltyDetailsConnector.getPenaltyDetailsForThirdPartyAPI(any(), any())(any()))
+      when(mockGetPenaltyDetailsConnector.getPenaltyDetailsForAPI(any(), any())(any()))
         .thenReturn(Future.successful(HttpResponse.apply(INTERNAL_SERVER_ERROR, "INTERNAL_SERVER_ERROR")))
 
-      val result = controller.getPenaltyDetailsForThirdPartyAPI(vrn ="123456789", dateLimit = None)(fakeRequest)
+      val result = controller.getPenaltyDetails(vrn ="123456789", dateLimit = None)(fakeRequest)
 
       status(result) shouldBe Status.INTERNAL_SERVER_ERROR
     }
