@@ -111,6 +111,8 @@ class GetFinancialDetailsConnectorSpec extends SpecBase {
       )),
       originalAmount = None,
       outstandingAmount = None,
+      chargeReference = None,
+      mainTransaction = None,
       metadata = FinancialDetailsMetadata(
         taxYear = "2022",
         chargeType = None,
@@ -124,8 +126,6 @@ class GetFinancialDetailsConnectorSpec extends SpecBase {
         contractObject = None,
         sapDocumentNumber = None,
         sapDocumentNumberItem = None,
-        chargeReference = None,
-        mainTransaction = None,
         subTransaction = None,
         clearedAmount = None,
         accruedInterest = None

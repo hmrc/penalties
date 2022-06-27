@@ -17,8 +17,10 @@
 package services
 
 import config.featureSwitches.FeatureSwitching
+
 import java.time.LocalDate
 import connectors.parsers.v3.getFinancialDetails.GetFinancialDetailsParser._
+import models.v3.ChargeTypeEnum
 import models.v3.getFinancialDetails._
 import play.api.http.Status
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
@@ -90,6 +92,8 @@ class GetFinancialDetailsServiceISpec extends IntegrationSpecCommonBase with ETM
         )),
         originalAmount = Some(123.45),
         outstandingAmount = Some(543.21),
+        mainTransaction = Some(ChargeTypeEnum.VATReturnFirstLPP),
+        chargeReference = Some("XM002610011594"),
         metadata = FinancialDetailsMetadata(
           taxYear = "2022",
           chargeType = Some("PAYE"),
@@ -103,8 +107,6 @@ class GetFinancialDetailsServiceISpec extends IntegrationSpecCommonBase with ETM
           contractObject = Some("00000003000000002757"),
           sapDocumentNumber = Some("1040000872"),
           sapDocumentNumberItem = Some("XM00"),
-          chargeReference = Some("XM002610011594"),
-          mainTransaction = Some("1234"),
           subTransaction = Some("5678"),
           clearedAmount = Some(123.45),
           accruedInterest = Some(543.21)

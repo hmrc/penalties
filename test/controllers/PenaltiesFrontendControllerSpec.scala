@@ -22,7 +22,7 @@ import connectors.parsers.ETMPPayloadParser.{GetETMPPayloadMalformed, GetETMPPay
 import connectors.parsers.v3.getPenaltyDetails.GetPenaltyDetailsParser.{GetPenaltyDetailsFailureResponse, GetPenaltyDetailsNoContent, GetPenaltyDetailsSuccessResponse}
 import models.ETMPPayload
 import models.v3.getPenaltyDetails.GetPenaltyDetails
-import models.v3.getPenaltyDetails.latePayment.{LPPDetails, LPPPenaltyCategoryEnum, LPPPenaltyStatusEnum, LatePaymentPenalty}
+import models.v3.getPenaltyDetails.latePayment.{LPPDetails, LPPDetailsMetadata, LPPPenaltyCategoryEnum, LPPPenaltyStatusEnum, LatePaymentPenalty}
 import models.v3.getPenaltyDetails.lateSubmission.{LSPSummary, LateSubmissionPenalty}
 import org.mockito.Matchers
 import org.mockito.Mockito._
@@ -162,7 +162,8 @@ class PenaltiesFrontendControllerSpec extends SpecBase {
                 LPP1LRPercentage = None,
                 LPP1HRPercentage = None,
                 penaltyChargeDueDate = LocalDate.of(2022, 1, 1),
-                principalChargeLatestClearing = None
+                principalChargeLatestClearing = None,
+                metadata = LPPDetailsMetadata()
               ),
               LPPDetails(
                 penaltyCategory = LPPPenaltyCategoryEnum.SecondPenalty,
@@ -186,7 +187,8 @@ class PenaltiesFrontendControllerSpec extends SpecBase {
                 LPP1LRPercentage = None,
                 LPP1HRPercentage = None,
                 penaltyChargeDueDate = LocalDate.of(2022, 1, 1),
-                principalChargeLatestClearing = None
+                principalChargeLatestClearing = None,
+                metadata = LPPDetailsMetadata()
               ),
               LPPDetails(
                 penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
@@ -210,7 +212,8 @@ class PenaltiesFrontendControllerSpec extends SpecBase {
                 LPP1LRPercentage = None,
                 LPP1HRPercentage = None,
                 penaltyChargeDueDate = LocalDate.of(2022, 1, 1),
-                principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1))
+                principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
+                metadata = LPPDetailsMetadata()
               ),
               LPPDetails(
                 penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
@@ -234,7 +237,8 @@ class PenaltiesFrontendControllerSpec extends SpecBase {
                 LPP1LRPercentage = None,
                 LPP1HRPercentage = None,
                 penaltyChargeDueDate = LocalDate.of(2022, 1, 1),
-                principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1))
+                principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
+                metadata = LPPDetailsMetadata()
               )
             )
           )

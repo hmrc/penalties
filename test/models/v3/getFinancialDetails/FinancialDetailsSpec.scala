@@ -17,6 +17,7 @@
 package models.v3.getFinancialDetails
 
 import base.SpecBase
+import models.v3.ChargeTypeEnum
 import play.api.libs.json.{JsValue, Json}
 
 import java.time.LocalDate
@@ -41,7 +42,7 @@ class FinancialDetailsSpec extends SpecBase {
       | "sapDocumentNumber": "1",
       | "sapDocumentNumberItem": "1",
       | "chargeReference": "1",
-      | "mainTransaction": "1",
+      | "mainTransaction": "4703",
       | "subTransaction": "1",
       | "originalAmount": 123.45,
       | "outstandingAmount": 123.45,
@@ -108,6 +109,8 @@ class FinancialDetailsSpec extends SpecBase {
     ),
     originalAmount = Some(123.45),
     outstandingAmount = Some(123.45),
+    mainTransaction = Some(ChargeTypeEnum.VATReturnFirstLPP),
+    chargeReference = Some("1"),
     metadata = FinancialDetailsMetadata(
       taxYear = "2022",
       chargeType = Some("1234"),
@@ -121,8 +124,6 @@ class FinancialDetailsSpec extends SpecBase {
       contractObject = Some("1"),
       sapDocumentNumber = Some("1"),
       sapDocumentNumberItem = Some("1"),
-      chargeReference = Some("1"),
-      mainTransaction = Some("1"),
       subTransaction = Some("1"),
       clearedAmount = Some(123.45),
       accruedInterest = Some(123.45)

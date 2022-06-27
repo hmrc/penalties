@@ -385,7 +385,7 @@ trait ETMPWiremock {
       |   "sapDocumentNumber": "1040000872",
       |   "sapDocumentNumberItem": "XM00",
       |   "chargeReference": "XM002610011594",
-      |   "mainTransaction": "1234",
+      |   "mainTransaction": "4703",
       |   "subTransaction": "5678",
       |   "originalAmount": 123.45,
       |   "outstandingAmount": 543.21,

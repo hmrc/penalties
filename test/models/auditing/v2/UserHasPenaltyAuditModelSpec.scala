@@ -19,7 +19,7 @@ package models.auditing.v2
 import base.{LogCapturing, SpecBase}
 import models.v3.getPenaltyDetails._
 import models.v3.getPenaltyDetails.appealInfo.{AppealInformationType, AppealLevelEnum, AppealStatusEnum}
-import models.v3.getPenaltyDetails.latePayment.{LPPDetails, LPPPenaltyCategoryEnum, LPPPenaltyStatusEnum, LatePaymentPenalty}
+import models.v3.getPenaltyDetails.latePayment.{LPPDetails, LPPDetailsMetadata, LPPPenaltyCategoryEnum, LPPPenaltyStatusEnum, LatePaymentPenalty}
 import models.v3.getPenaltyDetails.lateSubmission._
 import utils.Logger
 
@@ -353,7 +353,8 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
               LPP1LRPercentage = None,
               LPP1HRPercentage = None,
               penaltyChargeDueDate = LocalDate.of(2022, 1, 1),
-              principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1))
+              principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
+              metadata = LPPDetailsMetadata()
             ),
             LPPDetails(
               penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
@@ -377,7 +378,8 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
               LPP1LRPercentage = None,
               LPP1HRPercentage = None,
               penaltyChargeDueDate = LocalDate.of(2022, 1, 1),
-              principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1))
+              principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
+              metadata = LPPDetailsMetadata()
             )
           )
         )
@@ -421,7 +423,8 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
               LPP1LRPercentage = None,
               LPP1HRPercentage = None,
               penaltyChargeDueDate = LocalDate.of(2022, 1, 1),
-              principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1))
+              principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
+              metadata = LPPDetailsMetadata()
             ),
             LPPDetails(
               penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
@@ -445,7 +448,8 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
               LPP1LRPercentage = None,
               LPP1HRPercentage = None,
               penaltyChargeDueDate = LocalDate.of(2022, 1, 1),
-              principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1))
+              principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
+              metadata = LPPDetailsMetadata()
             )
           )
         )
@@ -489,7 +493,8 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
               LPP1LRPercentage = None,
               LPP1HRPercentage = None,
               penaltyChargeDueDate = LocalDate.of(2022, 1, 1),
-              principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1))
+              principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
+              metadata = LPPDetailsMetadata()
             ),
             LPPDetails(
               penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
@@ -517,7 +522,8 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
               LPP1LRPercentage = None,
               LPP1HRPercentage = None,
               penaltyChargeDueDate = LocalDate.of(2022, 1, 1),
-              principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1))
+              principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
+              metadata = LPPDetailsMetadata()
             )
           )
         )
@@ -561,7 +567,8 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
               LPP1LRPercentage = None,
               LPP1HRPercentage = None,
               penaltyChargeDueDate = LocalDate.of(2022, 1, 1),
-              principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1))
+              principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
+              metadata = LPPDetailsMetadata()
             ),
             LPPDetails(
               penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
@@ -589,7 +596,8 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
               LPP1LRPercentage = None,
               LPP1HRPercentage = None,
               penaltyChargeDueDate = LocalDate.of(2022, 1, 1),
-              principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1))
+              principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
+              metadata = LPPDetailsMetadata()
             )
           )
         )
@@ -633,7 +641,8 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
               LPP1LRPercentage = None,
               LPP1HRPercentage = None,
               penaltyChargeDueDate = LocalDate.of(2022, 1, 1),
-              principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1))
+              principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
+              metadata = LPPDetailsMetadata()
             ),
             LPPDetails(
               penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
@@ -657,7 +666,8 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
               LPP1LRPercentage = None,
               LPP1HRPercentage = None,
               penaltyChargeDueDate = LocalDate.of(2022, 1, 1),
-              principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1))
+              principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
+              metadata = LPPDetailsMetadata()
             )
           )
         )
