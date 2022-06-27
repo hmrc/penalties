@@ -17,14 +17,12 @@
 package connectors.v3.getPenaltyDetails
 
 import config.AppConfig
-import connectors.parsers.v3.getPenaltyDetails.GetPenaltyDetailsParser.{GetPenaltyDetailsReads, GetPenaltyDetailsResponse}
+import connectors.parsers.v3.getPenaltyDetails.GetPenaltyDetailsParser.GetPenaltyDetailsResponse
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse, UpstreamErrorResponse}
 import utils.Logger.logger
 import java.util.UUID.randomUUID
-
 import javax.inject.Inject
 import play.api.http.Status.INTERNAL_SERVER_ERROR
-
 import scala.concurrent.{ExecutionContext, Future}
 
 class GetPenaltyDetailsConnector @Inject()(httpClient: HttpClient,
@@ -40,17 +38,18 @@ class GetPenaltyDetailsConnector @Inject()(httpClient: HttpClient,
     httpClient.GET[GetPenaltyDetailsResponse](url, Seq.empty[(String, String)], headers)
   }
 
-  def getPenaltyDetailsForAPI(vrn: String, dateLimit: Option[String])(implicit hc: HeaderCarrier): Future[HttpResponse] = {
-    val queryParam: String = s"${dateLimit.fold("")(dateLimit => s"?dateLimit=$dateLimit")}"
-    val url = appConfig.getPenaltyDetailsUrl + vrn + queryParam
-    httpClient.GET[HttpResponse](url, headers = headers).recover {
+  def getPenaltyDetailsForThirdPartyAPI(vrn: String, dateLimit: Option[String])(implicit hc: HeaderCarrier): Future[HttpResponse] = {
+    val queryParam: String = {
+      s"${dateLimit.fold("")(dateLimit => s"?dateLimit=$dateLimit")}"
+    }
+    httpClient.GET[HttpResponse](appConfig.getPenaltyDetailsUrlv3(vrn) + queryParam, headers = headers).recover {
       case e: UpstreamErrorResponse => {
-        logger.error(s"[GetPenaltyDetailsConnector][getPenaltyDetailsForAPI] -" +
+        logger.error(s"[GetPenaltyDetailsConnector][getPenaltyDetailsForThirdPartyAPI] -" +
           s" Received ${e.statusCode} status from API 1812 call - returning status to caller")
         HttpResponse(e.statusCode, e.message)
       }
       case e: Exception => {
-        logger.error(s"[GetPenaltyDetailsConnector][getPenaltyDetailsForAPI] -" +
+        logger.error(s"[GetPenaltyDetailsConnector][getPenaltyDetailsForThirdPartyAPI] -" +
           s" An unknown exception occurred - returning 500 back to caller - message: ${e.getMessage}")
         HttpResponse(INTERNAL_SERVER_ERROR, "An unknown exception occurred. Contact the Penalties team for more information.")
       }

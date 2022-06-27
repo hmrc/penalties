@@ -20,6 +20,7 @@ import config.featureSwitches.{FeatureSwitching, UseAPI1812Model}
 import connectors.parsers.v3.getPenaltyDetails.GetPenaltyDetailsParser
 import connectors.parsers.v3.getPenaltyDetails.GetPenaltyDetailsParser.GetPenaltyDetailsSuccessResponse
 import connectors.v3.getFinancialDetails.GetFinancialDetailsConnector
+import connectors.v3.getPenaltyDetails.GetPenaltyDetailsConnector
 import models.ETMPPayload
 import models.api.APIModel
 import models.auditing.UserHasPenaltyAuditModel
@@ -44,6 +45,7 @@ class APIController @Inject()(etmpService: ETMPService,
                               apiService: APIService,
                               getPenaltyDetailsService: GetPenaltyDetailsService,
                               getFinancialDetailsConnector: GetFinancialDetailsConnector,
+                              getPenaltyDetailsConnector: GetPenaltyDetailsConnector,
                               cc: ControllerComponents)(implicit ec: ExecutionContext, val config: Configuration) extends BackendController(cc) with FeatureSwitching {
 
   private val vrnRegex: Regex = "^[0-9]{1,9}$".r
@@ -162,16 +164,39 @@ class APIController @Inject()(etmpService: ETMPService,
         removePOA,
         customerPaymentInformation)
 
+        response.map(
+          res => res.status match {
+            case OK =>
+              logger.debug("[APIController][getFinancialDetails] Ok response received: " + res)
+              Ok(res.json)
+            case NOT_FOUND =>
+              logger.debug("[APIController][getFinancialDetails] Error received: " + res)
+              Status(res.status)(Json.toJson(res.body))
+            case _ =>
+              println("res.status getFinancialDetails..."+ res.status)
+              logger.warn(s"[APIController][getFinancialDetails] status ${res.status} returned from EIS " +
+                s"Status code:'${res.status}', Body: '${res.body}")
+              Status(res.status)(Json.toJson(res.body))
+          }
+        )
+      }
+    }
+
+  def getPenaltyDetailsForThirdPartyAPI(vrn: String, dateLimit: Option[String]): Action[AnyContent] = Action.async {
+    implicit request => {
+      val response = getPenaltyDetailsConnector.getPenaltyDetailsForThirdPartyAPI(vrn, dateLimit)
       response.map(
         res => res.status match {
           case OK =>
-            logger.debug("[APIController][getFinancialDetails] Ok response received: " + res)
+            logger.debug("[APIController][getPenaltyDetailsForThirdPartyAPI] Ok response received: " + res)
             Ok(res.json)
           case NOT_FOUND =>
-            logger.debug("[APIController][getFinancialDetails] Error received: " + res)
+            println("case NOT_FOUND..."+ res.status)
+            logger.debug("[APIController][getPenaltyDetailsForThirdPartyAPI] Error received: " + res)
             Status(res.status)(Json.toJson(res.body))
           case _ =>
-            logger.warn(s"[APIController][getFinancialDetails] status ${res.status} returned from EIS " +
+            println("res.status getPenaltyDetailsForThirdPartyAPI..."+ res.status)
+            logger.warn(s"[APIController][getPenaltyDetailsForThirdPartyAPI] status ${res.status} returned from EIS " +
               s"Status code:'${res.status}', Body: '${res.body}")
             Status(res.status)(Json.toJson(res.body))
         }

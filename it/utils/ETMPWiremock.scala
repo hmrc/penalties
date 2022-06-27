@@ -500,4 +500,13 @@ trait ETMPWiremock {
         .withStatus(status)
     ))
   }
+
+  def mockResponseForGetPenaltyDetailsv3ThirdParty(status: Int, vatcUrl: String, body: Option[String] = None): StubMapping = {
+    stubFor(get(urlEqualTo(s"/penalty/penalty-data/$vatcUrl"))
+      .willReturn(
+        aResponse()
+          .withBody(body.fold(getPenaltyDetailsWithLSPandLPPAsJsonv3.toString())(identity))
+          .withStatus(status)
+      ))
+  }
 }
