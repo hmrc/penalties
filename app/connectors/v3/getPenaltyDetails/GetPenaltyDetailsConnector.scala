@@ -42,7 +42,7 @@ class GetPenaltyDetailsConnector @Inject()(httpClient: HttpClient,
 
   def getPenaltyDetailsForAPI(vrn: String, dateLimit: Option[String])(implicit hc: HeaderCarrier): Future[HttpResponse] = {
     val queryParam: String = s"${dateLimit.fold("")(dateLimit => s"?dateLimit=$dateLimit")}"
-    httpClient.GET[HttpResponse](appConfig.getPenaltyDetailsUrlv3(vrn) + queryParam, headers = headers).recover {
+    httpClient.GET[HttpResponse](appConfig.getPenaltyDetailsUrl + vrn + queryParam, headers = headers).recover {
       case e: UpstreamErrorResponse => {
         logger.error(s"[GetPenaltyDetailsConnector][getPenaltyDetailsForAPI] -" +
           s" Received ${e.statusCode} status from API 1812 call - returning status to caller")

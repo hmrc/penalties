@@ -194,7 +194,7 @@ class APIController @Inject()(etmpService: ETMPService,
             Status(res.status)(Json.toJson(res.body))
           case _ =>
             logger.warn(s"[APIController][getPenaltyDetails] status ${res.status} returned from EIS " +
-              s"Status code:'${res.status}', Body: '${res.body}")
+              s"Status code:'${res.status}'")
             Status(res.status)(Json.toJson(res.body))
         }
       )

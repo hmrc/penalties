@@ -46,7 +46,7 @@ class APIControllerSpec extends SpecBase with FeatureSwitching {
   val mockAPIService: APIService = mock(classOf[APIService])
   val mockGetPenaltyDetailsService: GetPenaltyDetailsService = mock(classOf[GetPenaltyDetailsService])
   val mockGetFinancialDetailsConnector:GetFinancialDetailsConnector = mock(classOf[GetFinancialDetailsConnector])
-  val mockGetPenaltyDetailsConnector:GetPenaltyDetailsConnector = mock(classOf[GetPenaltyDetailsConnector])
+  val mockGetPenaltyDetailsConnector: GetPenaltyDetailsConnector = mock(classOf[GetPenaltyDetailsConnector])
   implicit val config: Configuration = appConfig.config
 
   class Setup(isFSEnabled: Boolean = false) {
@@ -598,7 +598,7 @@ class APIControllerSpec extends SpecBase with FeatureSwitching {
           |""".stripMargin)
       when(mockGetPenaltyDetailsConnector.getPenaltyDetailsForAPI(any(), any())(any()))
         .thenReturn(Future.successful(HttpResponse.apply(OK, sampleAPI1812Response.toString)))
-      val result = controller.getPenaltyDetails(vrn ="123456789", dateLimit = Some("02"))(fakeRequest)
+      val result = controller.getPenaltyDetails(vrn = "123456789", dateLimit = Some("02"))(fakeRequest)
       status(result) shouldBe Status.OK
       contentAsJson(result) shouldBe sampleAPI1812Response
     }
@@ -606,7 +606,7 @@ class APIControllerSpec extends SpecBase with FeatureSwitching {
       when(mockGetPenaltyDetailsConnector.getPenaltyDetailsForAPI(any(), any())(any()))
         .thenReturn(Future.successful(HttpResponse.apply(NOT_FOUND, "NOT_FOUND")))
 
-      val result = controller.getPenaltyDetails(vrn ="123456789", dateLimit = None)(fakeRequest)
+      val result = controller.getPenaltyDetails(vrn = "123456789", dateLimit = None)(fakeRequest)
 
       status(result) shouldBe Status.NOT_FOUND
     }
@@ -615,7 +615,7 @@ class APIControllerSpec extends SpecBase with FeatureSwitching {
       when(mockGetPenaltyDetailsConnector.getPenaltyDetailsForAPI(any(), any())(any()))
         .thenReturn(Future.successful(HttpResponse.apply(INTERNAL_SERVER_ERROR, "INTERNAL_SERVER_ERROR")))
 
-      val result = controller.getPenaltyDetails(vrn ="123456789", dateLimit = None)(fakeRequest)
+      val result = controller.getPenaltyDetails(vrn = "123456789", dateLimit = None)(fakeRequest)
 
       status(result) shouldBe Status.INTERNAL_SERVER_ERROR
     }
