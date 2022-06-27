@@ -187,13 +187,13 @@ class APIController @Inject()(etmpService: ETMPService,
       response.map(
         res => res.status match {
           case OK =>
-            logger.debug("[APIController][getPenaltyDetailsForThirdPartyAPI] Ok response received: " + res)
+            logger.debug("[APIController][getPenaltyDetails] Ok response received: " + res)
             Ok(res.json)
           case NOT_FOUND =>
-            logger.debug("[APIController][getPenaltyDetailsForThirdPartyAPI] Error received: " + res)
+            logger.debug("[APIController][getPenaltyDetails] Error received: " + res)
             Status(res.status)(Json.toJson(res.body))
           case _ =>
-            logger.warn(s"[APIController][getPenaltyDetailsForThirdPartyAPI] status ${res.status} returned from EIS " +
+            logger.warn(s"[APIController][getPenaltyDetails] status ${res.status} returned from EIS " +
               s"Status code:'${res.status}', Body: '${res.body}")
             Status(res.status)(Json.toJson(res.body))
         }

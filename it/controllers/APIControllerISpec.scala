@@ -636,8 +636,8 @@ class APIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock wit
             |}
             |""".stripMargin)
         enableFeatureSwitch(CallAPI1812ETMP)
-        mockResponseForGetPenaltyDetailsForAPIv3(Status.OK, s"VRN/123456789/VATC?dateLimit=09", Some(sampleAPI1812Response.toString))
-        val result = await(buildClientForRequestToApp(uri = s"/penalty/penalty-data/VRN/123456789/VATC?dateLimit=09").get)
+        mockResponseForGetPenaltyDetailsForAPIv3(Status.OK, s"123456789?dateLimit=09", Some(sampleAPI1812Response.toString))
+        val result = await(buildClientForRequestToApp(uri = s"/penalties/penalty-details/VAT/VRN/123456789?dateLimit=09").get)
         result.status shouldBe OK
         result.json shouldBe sampleAPI1812Response
       }
@@ -646,15 +646,15 @@ class APIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock wit
     "return the status from EIS" when {
       "404 response received " in {
         enableFeatureSwitch(CallAPI1812ETMP)
-        mockResponseForGetPenaltyDetailsForAPIv3(Status.NOT_FOUND, s"VRN/123456789/VATC?dateLimit=09", Some(""))
-        val result = await(buildClientForRequestToApp(uri = s"/penalty/penalty-data/VRN/123456789/VATC?dateLimit=09").get)
+        mockResponseForGetPenaltyDetailsForAPIv3(Status.NOT_FOUND, s"123456789?dateLimit=09", Some(""))
+        val result = await(buildClientForRequestToApp(uri = s"/penalties/penalty-details/VAT/VRN/123456789?dateLimit=09").get)
         result.status shouldBe NOT_FOUND
       }
 
       "Non 200 response received " in {
         enableFeatureSwitch(CallAPI1812ETMP)
-        mockResponseForGetPenaltyDetailsForAPIv3(Status.BAD_REQUEST, s"VRN/123456789/VATC?dateLimit=09", Some(""))
-        val result = await(buildClientForRequestToApp(uri = s"/penalty/penalty-data/VRN/123456789/VATC?dateLimit=09").get)
+        mockResponseForGetPenaltyDetailsForAPIv3(Status.BAD_REQUEST, s"123456789?dateLimit=09", Some(""))
+        val result = await(buildClientForRequestToApp(uri = s"/penalties/penalty-details/VAT/VRN/123456789?dateLimit=09").get)
         result.status shouldBe BAD_REQUEST
       }
     }

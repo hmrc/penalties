@@ -79,8 +79,8 @@ class AppConfig @Inject()(val config: Configuration, servicesConfig: ServicesCon
   }
 
   def getPenaltyDetailsUrlv3(vrn: String): String = {
-    if(!isEnabled(CallAPI1812ETMP)) stubBase + s"/penalties-stub/penalty/penalty-data/VRN/$vrn/VATC"
-    else etmpBase + s"/penalty/penalty-data/VRN/$vrn/VATC"
+    if(!isEnabled(CallAPI1812ETMP)) stubBase + s"/penalties-stub/penalties/penalty-details/VAT/VRN/$vrn"
+    else etmpBase + s"/penalties/penalty-details/VAT/VRN/$vrn"
   }
 
   def getAppealSubmissionURL(enrolmentKey: String, isLPP: Boolean, penaltyNumber: String): String = {

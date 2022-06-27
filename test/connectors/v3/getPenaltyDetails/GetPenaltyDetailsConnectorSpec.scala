@@ -41,7 +41,7 @@ class GetPenaltyDetailsConnectorSpec extends SpecBase {
 
     val connector = new GetPenaltyDetailsConnector(mockHttpClient, mockAppConfig)
     when(mockAppConfig.getPenaltyDetailsUrl).thenReturn("/penalty/details/VATC/VRN/")
-    when(mockAppConfig.getPenaltyDetailsUrlv3(Matchers.any())).thenReturn("/penalty/penalty-data/VRN/123456789/VATC")
+    when(mockAppConfig.getPenaltyDetailsUrlv3(Matchers.any())).thenReturn("/penalties/penalty-details/VAT/VRN/123456789")
     when(mockAppConfig.eisEnvironment).thenReturn("env")
     when(mockAppConfig.eiOutboundBearerToken).thenReturn("token")
   }
@@ -149,7 +149,7 @@ class GetPenaltyDetailsConnectorSpec extends SpecBase {
     val queryParam = "?dateLimit=09"
 
     "return a 200 when the call succeeds" in new Setup {
-      when(mockHttpClient.GET[HttpResponse](Matchers.eq(s"/penalty/penalty-data/VRN/123456789/VATC$queryParam"),
+      when(mockHttpClient.GET[HttpResponse](Matchers.eq(s"/penalties/penalty-details/VAT/VRN/123456789$queryParam"),
         Matchers.any(),
         Matchers.any())
         (Matchers.any(),
@@ -163,7 +163,7 @@ class GetPenaltyDetailsConnectorSpec extends SpecBase {
     }
 
     "return a 200 when the call succeeds - with only vrn" in new Setup {
-      when(mockHttpClient.GET[HttpResponse](Matchers.eq(s"/penalty/penalty-data/VRN/123456789/VATC"),
+      when(mockHttpClient.GET[HttpResponse](Matchers.eq(s"/penalties/penalty-details/VAT/VRN/123456789"),
         Matchers.any(),
         Matchers.any())
         (Matchers.any(),
@@ -177,7 +177,7 @@ class GetPenaltyDetailsConnectorSpec extends SpecBase {
     }
 
     s"return a 403 when the call fails for Not Found (for 4xx errors)" in new Setup {
-      when(mockHttpClient.GET[HttpResponse](Matchers.eq(s"/penalty/penalty-data/VRN/123456789/VATC$queryParam"),
+      when(mockHttpClient.GET[HttpResponse](Matchers.eq(s"/penalties/penalty-details/VAT/VRN/123456789$queryParam"),
         Matchers.any(),
         Matchers.any())
         (Matchers.any(),
@@ -190,7 +190,7 @@ class GetPenaltyDetailsConnectorSpec extends SpecBase {
     }
 
     s"return a 500 when the call fails for Internal Server Error (for 5xx errors)" in new Setup {
-      when(mockHttpClient.GET[HttpResponse](Matchers.eq(s"/penalty/penalty-data/VRN/123456789/VATC$queryParam"),
+      when(mockHttpClient.GET[HttpResponse](Matchers.eq(s"/penalties/penalty-details/VAT/VRN/123456789$queryParam"),
         Matchers.any(),
         Matchers.any())
         (Matchers.any(),
@@ -203,7 +203,7 @@ class GetPenaltyDetailsConnectorSpec extends SpecBase {
     }
 
     "return a 500 when the call fails due to an unexpected exception" in new Setup {
-      when(mockHttpClient.GET[HttpResponse](Matchers.eq(s"/penalty/penalty-data/VRN/123456789/VATC$queryParam"),
+      when(mockHttpClient.GET[HttpResponse](Matchers.eq(s"/penalties/penalty-details/VAT/VRN/123456789$queryParam"),
         Matchers.any(),
         Matchers.any())
         (Matchers.any(),
