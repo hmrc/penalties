@@ -21,6 +21,7 @@ import config.featureSwitches.{FeatureSwitching, UseAPI1812Model}
 import connectors.parsers.ETMPPayloadParser._
 import connectors.parsers.v3.getPenaltyDetails.GetPenaltyDetailsParser._
 import connectors.v3.getFinancialDetails.GetFinancialDetailsConnector
+import connectors.v3.getPenaltyDetails.GetPenaltyDetailsConnector
 import models.v3.getPenaltyDetails.GetPenaltyDetails
 import models.v3.getPenaltyDetails.latePayment._
 import models.v3.getPenaltyDetails.lateSubmission.{LSPSummary, LateSubmissionPenalty}
@@ -45,12 +46,13 @@ class APIControllerSpec extends SpecBase with FeatureSwitching {
   val mockAPIService: APIService = mock(classOf[APIService])
   val mockGetPenaltyDetailsService: GetPenaltyDetailsService = mock(classOf[GetPenaltyDetailsService])
   val mockGetFinancialDetailsConnector:GetFinancialDetailsConnector = mock(classOf[GetFinancialDetailsConnector])
+  val mockGetPenaltyDetailsConnector: GetPenaltyDetailsConnector = mock(classOf[GetPenaltyDetailsConnector])
   implicit val config: Configuration = appConfig.config
 
   class Setup(isFSEnabled: Boolean = false) {
     reset(mockETMPService, mockAuditService, mockAPIService)
     val controller = new APIController(mockETMPService, mockAuditService, mockAPIService,
-      mockGetPenaltyDetailsService, mockGetFinancialDetailsConnector, stubControllerComponents())
+      mockGetPenaltyDetailsService, mockGetFinancialDetailsConnector, mockGetPenaltyDetailsConnector, stubControllerComponents())
     if(isFSEnabled) enableFeatureSwitch(UseAPI1812Model) else disableFeatureSwitch(UseAPI1812Model)
   }
 
@@ -514,5 +516,113 @@ class APIControllerSpec extends SpecBase with FeatureSwitching {
 
       status(result) shouldBe Status.INTERNAL_SERVER_ERROR
     }
+  }
+
+  "getPenaltyDetails" should {
+    s"return OK (${Status.OK}) when a JSON payload is received from EIS" in new Setup(isFSEnabled = true) {
+      val sampleAPI1812Response = Json.parse(
+        """
+          |{
+          | "totalisations": {
+          |   "LSPTotalValue": 200,
+          |   "penalisedPrincipalTotal": 2000,
+          |   "LPPPostedTotal": 165.25,
+          |   "LPPEstimatedTotal": 15.26,
+          |   "LPIPostedTotal": 1968.2,
+          |   "LPIEstimatedTotal": 7
+          | },
+          | "lateSubmissionPenalty": {
+          |   "summary": {
+          |     "activePenaltyPoints": 10,
+          |     "inactivePenaltyPoints": 12,
+          |     "regimeThreshold": 10,
+          |     "penaltyChargeAmount": 684.25
+          |   },
+          |   "details": [
+          |     {
+          |       "penaltyNumber": "12345678901234",
+          |       "penaltyOrder": "01",
+          |       "penaltyCategory": "P",
+          |       "penaltyStatus": "ACTIVE",
+          |       "penaltyCreationDate": "2022-10-30",
+          |       "penaltyExpiryDate": "2022-10-30",
+          |       "communicationsDate": "2022-10-30",
+          |       "FAPIndicator": "X",
+          |       "lateSubmissions": [
+          |         {
+          |           "taxPeriodStartDate": "2022-01-01",
+          |           "taxPeriodEndDate": "2022-12-31",
+          |           "taxPeriodDueDate": "2023-02-07",
+          |           "returnReceiptDate": "2023-02-01",
+          |           "taxReturnStatus": "Fulfilled"
+          |         }
+          |       ],
+          |       "expiryReason": "FAP",
+          |       "appealInformation": [
+          |         {
+          |           "appealStatus": "99",
+          |           "appealLevel": "01"
+          |         }
+          |       ],
+          |       "chargeDueDate": "2022-10-30",
+          |       "chargeOutstandingAmount": 200,
+          |       "chargeAmount": 200
+          |   }]
+          | },
+          | "latePaymentPenalty": {
+          |     "details": [{
+          |       "penaltyCategory": "LPP1",
+          |       "penaltyChargeReference": "1234567890",
+          |       "principalChargeReference":"1234567890",
+          |       "penaltyChargeCreationDate":"2022-10-30",
+          |       "penaltyStatus": "A",
+          |       "appealInformation":
+          |       [{
+          |         "appealStatus": "99",
+          |         "appealLevel": "01"
+          |       }],
+          |       "principalChargeBillingFrom": "2022-10-30",
+          |       "principalChargeBillingTo": "2022-10-30",
+          |       "principalChargeDueDate": "2022-10-30",
+          |       "communicationsDate": "2022-10-30",
+          |       "penaltyAmountOutstanding": 99.99,
+          |       "penaltyAmountPaid": 1001.45,
+          |       "LPP1LRDays": "15",
+          |       "LPP1HRDays": "31",
+          |       "LPP2Days": "31",
+          |       "LPP1HRCalculationAmount": 99.99,
+          |       "LPP1LRCalculationAmount": 99.99,
+          |       "LPP2Percentage": 4.00,
+          |       "LPP1LRPercentage": 2.00,
+          |       "LPP1HRPercentage": 2.00,
+          |       "penaltyChargeDueDate": "2022-10-30"
+          |   }]
+          | }
+          |}
+          |""".stripMargin)
+      when(mockGetPenaltyDetailsConnector.getPenaltyDetailsForAPI(any(), any())(any()))
+        .thenReturn(Future.successful(HttpResponse.apply(OK, sampleAPI1812Response.toString)))
+      val result = controller.getPenaltyDetails(vrn = "123456789", dateLimit = Some("02"))(fakeRequest)
+      status(result) shouldBe Status.OK
+      contentAsJson(result) shouldBe sampleAPI1812Response
+    }
+    s"return NOT_FOUND (${Status.NOT_FOUND}) when the call returns no data" in new Setup(true) {
+      when(mockGetPenaltyDetailsConnector.getPenaltyDetailsForAPI(any(), any())(any()))
+        .thenReturn(Future.successful(HttpResponse.apply(NOT_FOUND, "NOT_FOUND")))
+
+      val result = controller.getPenaltyDetails(vrn = "123456789", dateLimit = None)(fakeRequest)
+
+      status(result) shouldBe Status.NOT_FOUND
+    }
+
+    s"return the status from EIS when the call returns a non 200 or 404 status" in new Setup(true) {
+      when(mockGetPenaltyDetailsConnector.getPenaltyDetailsForAPI(any(), any())(any()))
+        .thenReturn(Future.successful(HttpResponse.apply(INTERNAL_SERVER_ERROR, "INTERNAL_SERVER_ERROR")))
+
+      val result = controller.getPenaltyDetails(vrn = "123456789", dateLimit = None)(fakeRequest)
+
+      status(result) shouldBe Status.INTERNAL_SERVER_ERROR
+    }
+
   }
 }

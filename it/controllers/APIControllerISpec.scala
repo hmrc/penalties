@@ -16,7 +16,7 @@
 
 package controllers
 
-import config.featureSwitches.{CallAPI1811ETMP, FeatureSwitching, UseAPI1812Model}
+import config.featureSwitches.{CallAPI1811ETMP, CallAPI1812ETMP, FeatureSwitching, UseAPI1812Model}
 import play.api.http.Status
 import play.api.libs.json.{JsValue, Json}
 import play.api.test.Helpers._
@@ -547,6 +547,114 @@ class APIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock wit
         mockResponseForGetFinancialDetailsv3(Status.BAD_REQUEST, s"VRN/123456789/VATC?docNumber=DOC1&dateFrom=2022-01-01&dateTo=2024-01-01&onlyOpenItems=false&includeStatistical=false&includeLocks=false&calculateAccruedInterest=false&removePOA=false&customerPaymentInformation=true", Some(""))
 
         val result = await(buildClientForRequestToApp(uri = s"/penalty/financial-data/VRN/123456789/VATC?docNumber=DOC1&dateFrom=2022-01-01&dateTo=2024-01-01&onlyOpenItems=false&includeStatistical=false&includeLocks=false&calculateAccruedInterest=false&removePOA=false&customerPaymentInformation=true").get)
+        result.status shouldBe BAD_REQUEST
+      }
+    }
+  }
+
+  "getPenaltyDetails" should {
+    s"return OK (${Status.OK})" when {
+      "the get Penalty Details call succeeds" in {
+        val sampleAPI1812Response = Json.parse(
+          """
+            |{
+            | "totalisations": {
+            |   "LSPTotalValue": 200,
+            |   "penalisedPrincipalTotal": 2000,
+            |   "LPPPostedTotal": 165.25,
+            |   "LPPEstimatedTotal": 15.26,
+            |   "LPIPostedTotal": 1968.2,
+            |   "LPIEstimatedTotal": 7
+            | },
+            | "lateSubmissionPenalty": {
+            |   "summary": {
+            |     "activePenaltyPoints": 10,
+            |     "inactivePenaltyPoints": 12,
+            |     "regimeThreshold": 10,
+            |     "penaltyChargeAmount": 684.25
+            |   },
+            |   "details": [
+            |     {
+            |       "penaltyNumber": "12345678901234",
+            |       "penaltyOrder": "01",
+            |       "penaltyCategory": "P",
+            |       "penaltyStatus": "ACTIVE",
+            |       "penaltyCreationDate": "2022-10-30",
+            |       "penaltyExpiryDate": "2022-10-30",
+            |       "communicationsDate": "2022-10-30",
+            |       "FAPIndicator": "X",
+            |       "lateSubmissions": [
+            |         {
+            |           "taxPeriodStartDate": "2022-01-01",
+            |           "taxPeriodEndDate": "2022-12-31",
+            |           "taxPeriodDueDate": "2023-02-07",
+            |           "returnReceiptDate": "2023-02-01",
+            |           "taxReturnStatus": "Fulfilled"
+            |         }
+            |       ],
+            |       "expiryReason": "FAP",
+            |       "appealInformation": [
+            |         {
+            |           "appealStatus": "99",
+            |           "appealLevel": "01"
+            |         }
+            |       ],
+            |       "chargeDueDate": "2022-10-30",
+            |       "chargeOutstandingAmount": 200,
+            |       "chargeAmount": 200
+            |   }]
+            | },
+            | "latePaymentPenalty": {
+            |     "details": [{
+            |       "penaltyCategory": "LPP1",
+            |       "penaltyChargeReference": "1234567890",
+            |       "principalChargeReference":"1234567890",
+            |       "penaltyChargeCreationDate":"2022-10-30",
+            |       "penaltyStatus": "A",
+            |       "appealInformation":
+            |       [{
+            |         "appealStatus": "99",
+            |         "appealLevel": "01"
+            |       }],
+            |       "principalChargeBillingFrom": "2022-10-30",
+            |       "principalChargeBillingTo": "2022-10-30",
+            |       "principalChargeDueDate": "2022-10-30",
+            |       "communicationsDate": "2022-10-30",
+            |       "penaltyAmountOutstanding": 99.99,
+            |       "penaltyAmountPaid": 1001.45,
+            |       "LPP1LRDays": "15",
+            |       "LPP1HRDays": "31",
+            |       "LPP2Days": "31",
+            |       "LPP1HRCalculationAmount": 99.99,
+            |       "LPP1LRCalculationAmount": 99.99,
+            |       "LPP2Percentage": 4.00,
+            |       "LPP1LRPercentage": 2.00,
+            |       "LPP1HRPercentage": 2.00,
+            |       "penaltyChargeDueDate": "2022-10-30"
+            |   }]
+            | }
+            |}
+            |""".stripMargin)
+        enableFeatureSwitch(CallAPI1812ETMP)
+        mockResponseForGetPenaltyDetailsv3(Status.OK, s"123456789?dateLimit=09", Some(sampleAPI1812Response.toString))
+        val result = await(buildClientForRequestToApp(uri = s"/penalties/penalty-details/VAT/VRN/123456789?dateLimit=09").get)
+        result.status shouldBe OK
+        result.json shouldBe sampleAPI1812Response
+      }
+    }
+
+    "return the status from EIS" when {
+      "404 response received " in {
+        enableFeatureSwitch(CallAPI1812ETMP)
+        mockResponseForGetPenaltyDetailsv3(Status.NOT_FOUND, s"123456789?dateLimit=09", Some(""))
+        val result = await(buildClientForRequestToApp(uri = s"/penalties/penalty-details/VAT/VRN/123456789?dateLimit=09").get)
+        result.status shouldBe NOT_FOUND
+      }
+
+      "Non 200 response received " in {
+        enableFeatureSwitch(CallAPI1812ETMP)
+        mockResponseForGetPenaltyDetailsv3(Status.BAD_REQUEST, s"123456789?dateLimit=09", Some(""))
+        val result = await(buildClientForRequestToApp(uri = s"/penalties/penalty-details/VAT/VRN/123456789?dateLimit=09").get)
         result.status shouldBe BAD_REQUEST
       }
     }

@@ -17,14 +17,14 @@
 package connectors.v3.getPenaltyDetails
 
 import config.AppConfig
-import connectors.parsers.v3.getPenaltyDetails.GetPenaltyDetailsParser.{GetPenaltyDetailsReads, GetPenaltyDetailsResponse}
+import connectors.parsers.v3.getPenaltyDetails.GetPenaltyDetailsParser.GetPenaltyDetailsResponse
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse, UpstreamErrorResponse}
 import utils.Logger.logger
 import java.util.UUID.randomUUID
 
 import javax.inject.Inject
 import play.api.http.Status.INTERNAL_SERVER_ERROR
-
+import uk.gov.hmrc.http.HttpReads.Implicits._
 import scala.concurrent.{ExecutionContext, Future}
 
 class GetPenaltyDetailsConnector @Inject()(httpClient: HttpClient,
@@ -42,8 +42,7 @@ class GetPenaltyDetailsConnector @Inject()(httpClient: HttpClient,
 
   def getPenaltyDetailsForAPI(vrn: String, dateLimit: Option[String])(implicit hc: HeaderCarrier): Future[HttpResponse] = {
     val queryParam: String = s"${dateLimit.fold("")(dateLimit => s"?dateLimit=$dateLimit")}"
-    val url = appConfig.getPenaltyDetailsUrl + vrn + queryParam
-    httpClient.GET[HttpResponse](url, headers = headers).recover {
+    httpClient.GET[HttpResponse](appConfig.getPenaltyDetailsUrl + vrn + queryParam, headers = headers).recover {
       case e: UpstreamErrorResponse => {
         logger.error(s"[GetPenaltyDetailsConnector][getPenaltyDetailsForAPI] -" +
           s" Received ${e.statusCode} status from API 1812 call - returning status to caller")
