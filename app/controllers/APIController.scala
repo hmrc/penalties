@@ -173,8 +173,7 @@ class APIController @Inject()(etmpService: ETMPService,
             logger.debug("[APIController][getFinancialDetails] Error received: " + res)
             Status(res.status)(Json.toJson(res.body))
           case _ =>
-            logger.warn(s"[APIController][getFinancialDetails] status ${res.status} returned from EIS " +
-                s"Status code:'${res.status}', Body: '${res.body}")
+            logger.warn(s"[APIController][getFinancialDetails] status ${res.status} returned from EIS ")
               Status(res.status)(Json.toJson(res.body))
           }
         )
@@ -193,8 +192,7 @@ class APIController @Inject()(etmpService: ETMPService,
             logger.debug("[APIController][getPenaltyDetails] Error received: " + res)
             Status(res.status)(Json.toJson(res.body))
           case _ =>
-            logger.warn(s"[APIController][getPenaltyDetails] status ${res.status} returned from EIS " +
-              s"Status code:'${res.status}'")
+            logger.warn(s"[APIController][getPenaltyDetails] status ${res.status} returned from EIS ")
             Status(res.status)(Json.toJson(res.body))
         }
       )
