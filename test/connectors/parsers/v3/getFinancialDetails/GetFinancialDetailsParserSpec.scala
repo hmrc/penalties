@@ -130,6 +130,7 @@ class GetFinancialDetailsParserSpec extends AnyWordSpec with Matchers {
   val mockForbiddenHttpResponse: HttpResponse = HttpResponse.apply(status = Status.FORBIDDEN, body = "Forbidden.")
   val mockNotFoundHttpResponse: HttpResponse = HttpResponse.apply(status = Status.NOT_FOUND, body = "Not Found.")
   val mockConflictHttpResponse: HttpResponse = HttpResponse.apply(status = Status.CONFLICT, body = "Conflict.")
+  val mockNoContentHttpResponse: HttpResponse = HttpResponse.apply(status = Status.NO_CONTENT, body = "")
   val mockUnprocessableEnityHttpResponse: HttpResponse = HttpResponse.apply(status = Status.UNPROCESSABLE_ENTITY, body = "Unprocessable Entity.")
   val mockServiceUnavailableHttpResponse: HttpResponse = HttpResponse.apply(status = Status.SERVICE_UNAVAILABLE, body = "Service Unavailable.")
 
@@ -168,10 +169,16 @@ class GetFinancialDetailsParserSpec extends AnyWordSpec with Matchers {
       result.left.get.asInstanceOf[GetFinancialDetailsFailureResponse].status shouldBe Status.NOT_FOUND
     }
 
-    s"parse an Conflict (${Status.CONFLICT}) response" in {
+    s"parse an CONFLICT (${Status.CONFLICT}) response" in {
       val result = GetFinancialDetailsParser.GetFinancialDetailsReads.read("GET", "/", mockConflictHttpResponse)
       result.isLeft shouldBe true
       result.left.get.asInstanceOf[GetFinancialDetailsFailureResponse].status shouldBe Status.CONFLICT
+    }
+
+    s"parse a NO_CONTENT (${Status.NO_CONTENT}) response" in {
+      val result = GetFinancialDetailsParser.GetFinancialDetailsReads.read("GET", "/", mockNoContentHttpResponse)
+      result.isLeft shouldBe true
+      result.left.get shouldBe GetFinancialDetailsNoContent
     }
 
     s"parse an UNPROCESSABLE ENTITY (${Status.UNPROCESSABLE_ENTITY}) response" in {
