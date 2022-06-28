@@ -302,6 +302,7 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
   }
 
   "call API 1812 when call 1812 feature is enabled" must {
+
     val getPenaltyDetailsJson: JsValue = Json.parse(
       """
         |{
@@ -474,6 +475,45 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
         val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/HMRC-MTD-VAT~VRN~123456789?newApiModel=true&newFinancialApiModel=true").get)
         result.status shouldBe OK
         Json.parse(result.body) shouldBe combinedPenaltyAndFinancialData
+      }
+
+      s"the get penalty details call succeeds and the get financial details call returns NO_CONTENT (${Status.NO_CONTENT}) (returning penalty details unaltered)" in {
+        val getPenaltyDetailsNoLPPJson: JsValue = Json.parse(
+          """
+            |{
+            | "lateSubmissionPenalty": {
+            |   "summary": {
+            |     "activePenaltyPoints": 0,
+            |     "inactivePenaltyPoints": 0,
+            |     "regimeThreshold": 5,
+            |     "penaltyChargeAmount": 200.00
+            |   },
+            |   "details": []
+            | },
+            | "latePaymentPenalty": {
+            |
+            | }
+            |}
+            |""".stripMargin)
+        val noDataFoundBody =
+          """
+            |{
+            | "failures": [
+            |   {
+            |     "code": "NO_DATA_FOUND",
+            |     "reason": "This is a reason"
+            |   }
+            | ]
+            |}
+            |""".stripMargin
+        mockStubResponseForGetFinancialDetailsv3(Status.NOT_FOUND,
+          s"VRN/123456789/VATC?dateFrom=${LocalDate.now.minusYears(2)}&dateTo=${LocalDate.now}" +
+            s"&onlyOpenItems=false&includeStatistical=true&includeLocks=false" +
+            s"&calculateAccruedInterest=true&removePOA=false&customerPaymentInformation=false", Some(noDataFoundBody))
+        mockStubResponseForGetPenaltyDetailsv3(Status.OK, "123456789", body = Some(getPenaltyDetailsNoLPPJson.toString()))
+        val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/HMRC-MTD-VAT~VRN~123456789?newApiModel=true&newFinancialApiModel=true").get)
+        result.status shouldBe OK
+        Json.parse(result.body) shouldBe getPenaltyDetailsNoLPPJson
       }
     }
 

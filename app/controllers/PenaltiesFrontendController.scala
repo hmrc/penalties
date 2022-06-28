@@ -112,7 +112,13 @@ class PenaltiesFrontendController @Inject()(etmpService: ETMPService,
         {
           case GetFinancialDetailsNoContent => {
             logger.info(s"[PenaltiesFrontendController][handleGetFinancialDetailsCall] - Received 404 for VRN: $vrn with NO_DATA_FOUND in response body")
-            NoContent
+            if(penaltyDetails.latePaymentPenalty.isEmpty ||
+              penaltyDetails.latePaymentPenalty.get.details.isEmpty ||
+              penaltyDetails.latePaymentPenalty.get.details.get.isEmpty) {
+              returnResponse(penaltyDetails, enrolmentKey, arn)
+            } else {
+              NoContent
+            }
           }
           case GetFinancialDetailsFailureResponse(status) if status == NOT_FOUND => {
             logger.info(s"[PenaltiesFrontendController][handleGetFinancialDetailsCall] - 1811 call returned 404 for VRN: $vrn")

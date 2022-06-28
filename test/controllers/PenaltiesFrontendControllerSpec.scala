@@ -446,9 +446,14 @@ class PenaltiesFrontendControllerSpec extends SpecBase {
       status(result) shouldBe Status.INTERNAL_SERVER_ERROR
     }
 
-    s"return NOT_FOUND (${Status.NOT_FOUND}) when the 1811 call returns no data" in new Setup(isFSEnabled = true) {
+    s"return NOT_FOUND (${Status.NOT_FOUND}) when the 1811 call returns no data (if penalty data contains LPPs - edge case)" in new Setup(isFSEnabled = true) {
+      val penaltyDetails: GetPenaltyDetails = GetPenaltyDetails(
+        totalisations = None,
+        lateSubmissionPenalty = None,
+        latePaymentPenalty = None
+      )
       when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(Matchers.any())(Matchers.any()))
-        .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetailsFullAPIResponse))))
+        .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(penaltyDetails))))
       when(mockGetFinancialDetailsService.getDataFromFinancialServiceForVATVCN(Matchers.any())(Matchers.any()))
         .thenReturn(Future.successful(Left(GetFinancialDetailsFailureResponse(Status.NOT_FOUND))))
       val result = controller.getPenaltiesData("123456789", Some(""), newApiModel = true, newFinancialApiModel = true)(fakeRequest)
@@ -462,6 +467,17 @@ class PenaltiesFrontendControllerSpec extends SpecBase {
         .thenReturn(Future.successful(Left(GetFinancialDetailsNoContent)))
       val result = controller.getPenaltiesData("123456789", Some(""), newApiModel = true, newFinancialApiModel = true)(fakeRequest)
       status(result) shouldBe Status.NO_CONTENT
+    }
+
+    s"return OK (${Status.OK}) when the 1811 call returns no data (if penalty data contains no LPPs)" in new Setup(isFSEnabled = true) {
+      val penaltyDetails: GetPenaltyDetails = getPenaltyDetailsFullAPIResponse.copy(latePaymentPenalty = None)
+      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(Matchers.any())(Matchers.any()))
+        .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(penaltyDetails))))
+      when(mockGetFinancialDetailsService.getDataFromFinancialServiceForVATVCN(Matchers.any())(Matchers.any()))
+        .thenReturn(Future.successful(Left(GetFinancialDetailsNoContent)))
+      val result = controller.getPenaltiesData("123456789", Some(""), newApiModel = true, newFinancialApiModel = true)(fakeRequest)
+      status(result) shouldBe Status.OK
+      contentAsJson(result) shouldBe Json.toJson(penaltyDetails)
     }
 
     "combine the 1812 and 1811 data and return a new GetPenaltyDetails model" in new Setup(isFSEnabled = true) {
