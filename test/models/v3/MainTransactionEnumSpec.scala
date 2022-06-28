@@ -264,4 +264,34 @@ class MainTransactionEnumSpec extends SpecBase {
     val result = Json.fromJson(JsString("unknown"))(MainTransactionEnum.format)
     result.isError shouldBe true
   }
+
+  "firstCharges" should {
+    "return all the possible first charges" in {
+      ChargeTypeEnum.firstCharges shouldBe Seq(
+        ChargeTypeEnum.VATReturnFirstLPP,
+        ChargeTypeEnum.AAReturnChargeFirstLPP,
+        ChargeTypeEnum.POAReturnChargeFirstLPP,
+        ChargeTypeEnum.ErrorCorrectionFirstLPP,
+        ChargeTypeEnum.AdditionalAssessmentFirstLPP,
+        ChargeTypeEnum.ProtectiveAssessmentFirstLPP,
+        ChargeTypeEnum.CentralAssessmentFirstLPP,
+        ChargeTypeEnum.OfficersAssessmentFirstLPP
+      )
+    }
+  }
+  
+  "secondCharges" should {
+    "return all the possible second charges" in {
+      ChargeTypeEnum.secondCharges shouldBe Seq(
+        ChargeTypeEnum.VATReturnSecondLPP,
+        ChargeTypeEnum.AAReturnChargeSecondLPP,
+        ChargeTypeEnum.POAReturnChargeSecondLPP,
+        ChargeTypeEnum.ErrorCorrectionSecondLPP,
+        ChargeTypeEnum.AdditionalAssessmentSecondLPP,
+        ChargeTypeEnum.ProtectiveAssessmentSecondLPP,
+        ChargeTypeEnum.CentralAssessmentSecondLPP,
+        ChargeTypeEnum.OfficersAssessmentSecondLPP
+      )
+    }
+  }
 }

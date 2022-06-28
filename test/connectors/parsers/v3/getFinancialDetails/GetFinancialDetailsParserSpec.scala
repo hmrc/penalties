@@ -141,7 +141,7 @@ class GetFinancialDetailsParserSpec extends AnyWordSpec with Matchers {
       s"the body of the response is valid" in {
         val result = GetFinancialDetailsParser.GetFinancialDetailsReads.read("GET", "/", mockOKHttpResponseWithValidBody)
         result.isRight shouldBe true
-        result.right.get.asInstanceOf[GetFinancialDetailsSuccessResponse].FinancialDetails shouldBe mockGetFinancialDetailsModelAPI1811
+        result.right.get.asInstanceOf[GetFinancialDetailsSuccessResponse].financialDetails shouldBe mockGetFinancialDetailsModelAPI1811
       }
 
       s"the body is malformed - returning a $Left $GetFinancialDetailsMalformed" in {

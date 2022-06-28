@@ -17,7 +17,8 @@
 package controllers
 
 import connectors.parsers.ETMPPayloadParser.GetETMPPayloadNoContent
-import connectors.parsers.v3.getPenaltyDetails.GetPenaltyDetailsParser
+import connectors.parsers.v3.getFinancialDetails.GetFinancialDetailsParser._
+import connectors.parsers.v3.getPenaltyDetails.GetPenaltyDetailsParser._
 import connectors.parsers.v3.getPenaltyDetails.GetPenaltyDetailsParser.GetPenaltyDetailsSuccessResponse
 import models.auditing.UserHasPenaltyAuditModel
 import models.auditing.v2.{UserHasPenaltyAuditModel => AuditModelV2}
@@ -25,21 +26,25 @@ import models.v3.getPenaltyDetails.GetPenaltyDetails
 import play.api.libs.json.Json
 import play.api.mvc._
 import services.auditing.AuditService
-import services.{ETMPService, GetPenaltyDetailsService}
+import services.{ETMPService, GetFinancialDetailsService, GetPenaltyDetailsService, PenaltiesFrontendService}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import utils.Logger.logger
 import utils.RegimeHelper
-import javax.inject.Inject
 
+import javax.inject.Inject
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 class PenaltiesFrontendController @Inject()(etmpService: ETMPService,
                                auditService: AuditService,
                                getPenaltyDetailsService: GetPenaltyDetailsService,
+                               getFinancialDetailsService: GetFinancialDetailsService,
+                               penaltiesFrontendService: PenaltiesFrontendService,
                                cc: ControllerComponents)
-  extends BackendController(cc){
+  extends BackendController(cc) {
 
-  def getPenaltiesData(enrolmentKey: String, arn: Option[String] = None, newApiModel: Boolean = false): Action[AnyContent] = Action.async {
+  def getPenaltiesData(enrolmentKey: String, arn: Option[String] = None, newApiModel: Boolean = false,
+                       newFinancialApiModel: Boolean = false): Action[AnyContent] = Action.async {
     implicit request => {
       if(!newApiModel) {
         etmpService.getPenaltyDataFromETMPForEnrolment(enrolmentKey).map {
@@ -63,40 +68,78 @@ class PenaltiesFrontendController @Inject()(etmpService: ETMPService,
           }
         }
       } else {
-        val vrn: String = RegimeHelper.getIdentifierFromEnrolmentKey(enrolmentKey)
-        getPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(vrn).map {
-          _.fold({
-            case GetPenaltyDetailsParser.GetPenaltyDetailsNoContent => {
-              logger.info(s"[PenaltiesFrontendController][getPenaltiesData] - Received 404 for VRN: $vrn with NO_DATA_FOUND in response body")
-              NoContent
-            }
-            case GetPenaltyDetailsParser.GetPenaltyDetailsFailureResponse(status) if status == NOT_FOUND => {
-              logger.info(s"[PenaltiesFrontendController][getPenaltiesData] - 1812 call returned 404 for VRN: $vrn")
-              NotFound(s"A downstream call returned 404 for VRN: $vrn")
-            }
-            case GetPenaltyDetailsParser.GetPenaltyDetailsFailureResponse(status) => {
-              logger.error(s"[PenaltiesFrontendController][getPenaltiesData] - 1812 call returned an unexpected status: $status")
-              InternalServerError(s"A downstream call returned an unexpected status: $status")
-            }
-            case GetPenaltyDetailsParser.GetPenaltyDetailsMalformed => {
-              logger.error(s"[PenaltiesFrontendController][getPenaltiesData] - Failed to parse penalty details response")
-              InternalServerError(s"We were unable to parse penalty data.")
-            }
-          },
-            success => {
-              returnResponse(success.asInstanceOf[GetPenaltyDetailsSuccessResponse].penaltyDetails, enrolmentKey, arn)
-            }
-          )
-        }
+        handleGetPenaltyDetailsCall(enrolmentKey, arn, newFinancialApiModel)
       }
     }
   }
 
-  private def returnResponse(penaltyDetails: GetPenaltyDetails, enrolmentKey: String, arn: Option[String] = None) (implicit request: Request[_]): Result ={
+  private def handleGetPenaltyDetailsCall(enrolmentKey: String, arn: Option[String], useNewFinancialAPIModel: Boolean)
+                                         (implicit request: Request[_]): Future[Result] = {
+    val vrn: String = RegimeHelper.getIdentifierFromEnrolmentKey(enrolmentKey)
+    getPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(vrn).flatMap {
+      _.fold({
+        case GetPenaltyDetailsNoContent => {
+          logger.info(s"[PenaltiesFrontendController][handleGetPenaltyDetailsCall] - Received 404 for VRN: $vrn with NO_DATA_FOUND in response body")
+          Future(NoContent)
+        }
+        case GetPenaltyDetailsFailureResponse(status) if status == NOT_FOUND => {
+          logger.info(s"[PenaltiesFrontendController][handleGetPenaltyDetailsCall] - 1812 call returned 404 for VRN: $vrn")
+          Future(NotFound(s"A downstream call returned 404 for VRN: $vrn"))
+        }
+        case GetPenaltyDetailsFailureResponse(status) => {
+          logger.error(s"[PenaltiesFrontendController][handleGetPenaltyDetailsCall] - 1812 call returned an unexpected status: $status")
+          Future(InternalServerError(s"A downstream call returned an unexpected status: $status"))
+        }
+        case GetPenaltyDetailsMalformed => {
+          logger.error(s"[PenaltiesFrontendController][handleGetPenaltyDetailsCall] - Failed to parse penalty details response")
+          Future(InternalServerError(s"We were unable to parse penalty data."))
+        }
+      },
+        penaltyDetailsSuccess => {
+          if(useNewFinancialAPIModel) {
+            handleGetFinancialDetailsCall(penaltyDetailsSuccess.asInstanceOf[GetPenaltyDetailsSuccessResponse].penaltyDetails, enrolmentKey, arn)
+          } else Future(returnResponse(penaltyDetailsSuccess.asInstanceOf[GetPenaltyDetailsSuccessResponse].penaltyDetails, enrolmentKey, arn))
+        }
+      )
+    }
+  }
+
+  private def handleGetFinancialDetailsCall(penaltyDetails: GetPenaltyDetails, enrolmentKey: String, arn: Option[String])
+                                           (implicit request: Request[_]): Future[Result] = {
+    val vrn: String = RegimeHelper.getIdentifierFromEnrolmentKey(enrolmentKey)
+    getFinancialDetailsService.getDataFromFinancialServiceForVATVCN(vrn).map {
+      _.fold(
+        {
+          case GetFinancialDetailsNoContent => {
+            logger.info(s"[PenaltiesFrontendController][handleGetFinancialDetailsCall] - Received 404 for VRN: $vrn with NO_DATA_FOUND in response body")
+            NoContent
+          }
+          case GetFinancialDetailsFailureResponse(status) if status == NOT_FOUND => {
+            logger.info(s"[PenaltiesFrontendController][handleGetFinancialDetailsCall] - 1811 call returned 404 for VRN: $vrn")
+            NotFound(s"A downstream call returned 404 for VRN: $vrn")
+          }
+          case GetFinancialDetailsFailureResponse(status) => {
+            logger.error(s"[PenaltiesFrontendController][handleGetFinancialDetailsCall] - 1811 call returned an unexpected status: $status")
+            InternalServerError(s"A downstream call returned an unexpected status: $status")
+          }
+          case GetFinancialDetailsMalformed => {
+            logger.error(s"[PenaltiesFrontendController][handleGetFinancialDetailsCall] - Failed to parse financial details response")
+            InternalServerError(s"We were unable to parse penalty data.")
+          }
+        },
+        financialDetailsSuccess => {
+          val newPenaltyDetails = penaltiesFrontendService.combineAPIData(penaltyDetails,
+            financialDetailsSuccess.asInstanceOf[GetFinancialDetailsSuccessResponse].financialDetails)
+          returnResponse(newPenaltyDetails, enrolmentKey, arn)
+        }
+      )
+    }
+  }
+
+  private def returnResponse(penaltyDetails: GetPenaltyDetails, enrolmentKey: String, arn: Option[String] = None)(implicit request: Request[_]): Result = {
     if (penaltyDetails.lateSubmissionPenalty.map(_.summary.activePenaltyPoints).getOrElse(0) > 0) {
       val auditModel = AuditModelV2(penaltyDetails, RegimeHelper.getIdentifierFromEnrolmentKey(enrolmentKey),
-        RegimeHelper.getIdentifierTypeFromEnrolmentKey(enrolmentKey),
-        arn)
+        RegimeHelper.getIdentifierTypeFromEnrolmentKey(enrolmentKey), arn)
       auditService.audit(auditModel)
     }
     Ok(Json.toJson(penaltyDetails))

@@ -29,7 +29,7 @@ object GetFinancialDetailsParser {
   sealed trait GetFinancialDetailsFailure
   sealed trait GetFinancialDetailsSuccess
 
-  case class  GetFinancialDetailsSuccessResponse(FinancialDetails: GetFinancialDetails) extends GetFinancialDetailsSuccess
+  case class  GetFinancialDetailsSuccessResponse(financialDetails: GetFinancialDetails) extends GetFinancialDetailsSuccess
   case class  GetFinancialDetailsFailureResponse(status: Int) extends GetFinancialDetailsFailure
   case object GetFinancialDetailsMalformed extends GetFinancialDetailsFailure
   case object GetFinancialDetailsNoContent extends GetFinancialDetailsFailure
