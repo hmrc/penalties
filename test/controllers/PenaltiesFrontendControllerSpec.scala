@@ -19,8 +19,8 @@ package controllers
 import base.SpecBase
 import config.AppConfig
 import connectors.parsers.ETMPPayloadParser.{GetETMPPayloadMalformed, GetETMPPayloadNoContent, GetETMPPayloadSuccessResponse}
-import connectors.parsers.v3.getFinancialDetails.GetFinancialDetailsParser.{GetFinancialDetailsFailureResponse, GetFinancialDetailsNoContent, GetFinancialDetailsSuccessResponse}
-import connectors.parsers.v3.getPenaltyDetails.GetPenaltyDetailsParser.{GetPenaltyDetailsFailureResponse, GetPenaltyDetailsNoContent, GetPenaltyDetailsSuccessResponse}
+import connectors.parsers.v3.getFinancialDetails.GetFinancialDetailsParser.{GetFinancialDetailsFailureResponse, GetFinancialDetailsMalformed, GetFinancialDetailsNoContent, GetFinancialDetailsSuccessResponse}
+import connectors.parsers.v3.getPenaltyDetails.GetPenaltyDetailsParser.{GetPenaltyDetailsFailureResponse, GetPenaltyDetailsMalformed, GetPenaltyDetailsNoContent, GetPenaltyDetailsSuccessResponse}
 import models.ETMPPayload
 import models.v3.ChargeTypeEnum
 import models.v3.getFinancialDetails.{FinancialDetails, FinancialDetailsMetadata, FinancialItem, FinancialItemMetadata, GetFinancialDetails}
@@ -275,6 +275,13 @@ class PenaltiesFrontendControllerSpec extends SpecBase {
       status(result) shouldBe Status.NO_CONTENT
     }
 
+    s"return ISE (${Status.INTERNAL_SERVER_ERROR}) when the call response body is malformed" in new Setup(isFSEnabled = true) {
+      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(Matchers.any())(Matchers.any()))
+        .thenReturn(Future.successful(Left(GetPenaltyDetailsMalformed)))
+      val result = controller.getPenaltiesData("123456789", Some(""), true)(fakeRequest)
+      status(result) shouldBe Status.INTERNAL_SERVER_ERROR
+    }
+
     s"return OK (${Status.OK}) when the call returns some data and can be parsed to the correct response" in new Setup(isFSEnabled = true) {
 
       when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(Matchers.any())(Matchers.any()))
@@ -400,6 +407,13 @@ class PenaltiesFrontendControllerSpec extends SpecBase {
       status(result) shouldBe Status.INTERNAL_SERVER_ERROR
     }
 
+    s"return ISE (${Status.INTERNAL_SERVER_ERROR}) when the 1812 call response body is malformed" in new Setup(isFSEnabled = true) {
+      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(Matchers.any())(Matchers.any()))
+        .thenReturn(Future.successful(Left(GetPenaltyDetailsMalformed)))
+      val result = controller.getPenaltiesData("123456789", Some(""), true)(fakeRequest)
+      status(result) shouldBe Status.INTERNAL_SERVER_ERROR
+    }
+
     s"return NOT_FOUND (${Status.NOT_FOUND}) when the 1812 call returns no data" in new Setup(isFSEnabled = true) {
       when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(Matchers.any())(Matchers.any()))
         .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(Status.NOT_FOUND))))
@@ -419,6 +433,15 @@ class PenaltiesFrontendControllerSpec extends SpecBase {
         .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetailsFullAPIResponse))))
       when(mockGetFinancialDetailsService.getDataFromFinancialServiceForVATVCN(Matchers.any())(Matchers.any()))
         .thenReturn(Future.successful(Left(GetFinancialDetailsFailureResponse(Status.INTERNAL_SERVER_ERROR))))
+      val result = controller.getPenaltiesData("123456789", Some(""), newApiModel = true, newFinancialApiModel = true)(fakeRequest)
+      status(result) shouldBe Status.INTERNAL_SERVER_ERROR
+    }
+
+    s"return ISE (${Status.INTERNAL_SERVER_ERROR}) when the 1811 call response body is malformed" in new Setup(isFSEnabled = true) {
+      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(Matchers.any())(Matchers.any()))
+        .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetailsFullAPIResponse))))
+      when(mockGetFinancialDetailsService.getDataFromFinancialServiceForVATVCN(Matchers.any())(Matchers.any()))
+        .thenReturn(Future.successful(Left(GetFinancialDetailsMalformed)))
       val result = controller.getPenaltiesData("123456789", Some(""), newApiModel = true, newFinancialApiModel = true)(fakeRequest)
       status(result) shouldBe Status.INTERNAL_SERVER_ERROR
     }

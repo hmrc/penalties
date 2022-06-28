@@ -97,14 +97,14 @@ class PenaltiesFrontendController @Inject()(etmpService: ETMPService,
       },
         penaltyDetailsSuccess => {
           if(useNewFinancialAPIModel) {
-            handleGetFinancialDetailsCall(penaltyDetailsSuccess.asInstanceOf[GetPenaltyDetailsSuccessResponse].penaltyDetails, enrolmentKey, arn)
+            handleAndCombineGetFinancialDetailsData(penaltyDetailsSuccess.asInstanceOf[GetPenaltyDetailsSuccessResponse].penaltyDetails, enrolmentKey, arn)
           } else Future(returnResponse(penaltyDetailsSuccess.asInstanceOf[GetPenaltyDetailsSuccessResponse].penaltyDetails, enrolmentKey, arn))
         }
       )
     }
   }
 
-  private def handleGetFinancialDetailsCall(penaltyDetails: GetPenaltyDetails, enrolmentKey: String, arn: Option[String])
+  private def handleAndCombineGetFinancialDetailsData(penaltyDetails: GetPenaltyDetails, enrolmentKey: String, arn: Option[String])
                                            (implicit request: Request[_]): Future[Result] = {
     val vrn: String = RegimeHelper.getIdentifierFromEnrolmentKey(enrolmentKey)
     getFinancialDetailsService.getDataFromFinancialServiceForVATVCN(vrn).map {
