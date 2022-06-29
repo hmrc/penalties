@@ -16,7 +16,7 @@
 
 package models.v3.getPenaltyDetails.latePayment
 
-import models.v3.ChargeTypeEnum
+import models.v3.MainTransactionEnum
 import models.v3.getPenaltyDetails.appealInfo.AppealInformationType
 import play.api.libs.json._
 import utils.JsonUtils
@@ -135,7 +135,7 @@ object LPPDetails extends JsonUtils {
 }
 
 case class LPPDetailsMetadata(
-                               mainTransaction: Option[ChargeTypeEnum.Value] = None,
+                               mainTransaction: Option[MainTransactionEnum.Value] = None,
                                outstandingAmount: Option[BigDecimal] = None
                              )
 

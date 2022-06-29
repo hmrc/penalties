@@ -18,38 +18,38 @@ package models.v3
 
 import play.api.libs.json._
 
-object ChargeTypeEnum extends Enumeration {
-  val VATReturnCharge: ChargeTypeEnum.Value = Value("4700")
-  val VATReturnFirstLPP: ChargeTypeEnum.Value = Value("4703")
-  val VATReturnSecondLPP: ChargeTypeEnum.Value = Value("4704")
-  val CentralAssessment: ChargeTypeEnum.Value = Value("4720")
-  val CentralAssessmentFirstLPP: ChargeTypeEnum.Value = Value("4723")
-  val CentralAssessmentSecondLPP: ChargeTypeEnum.Value = Value("4724")
-  val OfficersAssessment: ChargeTypeEnum.Value = Value("4730")
-  val OfficersAssessmentFirstLPP: ChargeTypeEnum.Value = Value("4741")
-  val OfficersAssessmentSecondLPP: ChargeTypeEnum.Value = Value("4742")
-  val ErrorCorrection: ChargeTypeEnum.Value = Value("4731")
-  val ErrorCorrectionFirstLPP: ChargeTypeEnum.Value = Value("4743")
-  val ErrorCorrectionSecondLPP: ChargeTypeEnum.Value = Value("4744")
-  val AdditionalAssessment: ChargeTypeEnum.Value = Value("4732")
-  val AdditionalAssessmentFirstLPP: ChargeTypeEnum.Value = Value("4758")
-  val AdditionalAssessmentSecondLPP: ChargeTypeEnum.Value = Value("4759")
-  val ProtectiveAssessment: ChargeTypeEnum.Value = Value("4733")
-  val ProtectiveAssessmentFirstLPP: ChargeTypeEnum.Value = Value("4761")
-  val ProtectiveAssessmentSecondLPP: ChargeTypeEnum.Value = Value("4762")
-  val POAReturnCharge: ChargeTypeEnum.Value = Value("4701")
-  val POAReturnChargeFirstLPP: ChargeTypeEnum.Value = Value("4716")
-  val POAReturnChargeSecondLPP: ChargeTypeEnum.Value = Value("4717")
-  val AAReturnCharge: ChargeTypeEnum.Value = Value("4702")
-  val AAReturnChargeFirstLPP: ChargeTypeEnum.Value = Value("4718")
-  val AAReturnChargeSecondLPP: ChargeTypeEnum.Value = Value("4719")
+object MainTransactionEnum extends Enumeration {
+  val VATReturnCharge: MainTransactionEnum.Value = Value("4700")
+  val VATReturnFirstLPP: MainTransactionEnum.Value = Value("4703")
+  val VATReturnSecondLPP: MainTransactionEnum.Value = Value("4704")
+  val CentralAssessment: MainTransactionEnum.Value = Value("4720")
+  val CentralAssessmentFirstLPP: MainTransactionEnum.Value = Value("4723")
+  val CentralAssessmentSecondLPP: MainTransactionEnum.Value = Value("4724")
+  val OfficersAssessment: MainTransactionEnum.Value = Value("4730")
+  val OfficersAssessmentFirstLPP: MainTransactionEnum.Value = Value("4741")
+  val OfficersAssessmentSecondLPP: MainTransactionEnum.Value = Value("4742")
+  val ErrorCorrection: MainTransactionEnum.Value = Value("4731")
+  val ErrorCorrectionFirstLPP: MainTransactionEnum.Value = Value("4743")
+  val ErrorCorrectionSecondLPP: MainTransactionEnum.Value = Value("4744")
+  val AdditionalAssessment: MainTransactionEnum.Value = Value("4732")
+  val AdditionalAssessmentFirstLPP: MainTransactionEnum.Value = Value("4758")
+  val AdditionalAssessmentSecondLPP: MainTransactionEnum.Value = Value("4759")
+  val ProtectiveAssessment: MainTransactionEnum.Value = Value("4733")
+  val ProtectiveAssessmentFirstLPP: MainTransactionEnum.Value = Value("4761")
+  val ProtectiveAssessmentSecondLPP: MainTransactionEnum.Value = Value("4762")
+  val POAReturnCharge: MainTransactionEnum.Value = Value("4701")
+  val POAReturnChargeFirstLPP: MainTransactionEnum.Value = Value("4716")
+  val POAReturnChargeSecondLPP: MainTransactionEnum.Value = Value("4717")
+  val AAReturnCharge: MainTransactionEnum.Value = Value("4702")
+  val AAReturnChargeFirstLPP: MainTransactionEnum.Value = Value("4718")
+  val AAReturnChargeSecondLPP: MainTransactionEnum.Value = Value("4719")
 
-  implicit val format: Format[ChargeTypeEnum.Value] = new Format[ChargeTypeEnum.Value] {
-    override def writes(o: ChargeTypeEnum.Value): JsValue = {
+  implicit val format: Format[MainTransactionEnum.Value] = new Format[MainTransactionEnum.Value] {
+    override def writes(o: MainTransactionEnum.Value): JsValue = {
       JsString(o.toString.toUpperCase)
     }
 
-    override def reads(json: JsValue): JsResult[ChargeTypeEnum.Value] = {
+    override def reads(json: JsValue): JsResult[MainTransactionEnum.Value] = {
       json.as[String].toUpperCase match {
         case "4700" => JsSuccess(VATReturnCharge)
         case "4703" => JsSuccess(VATReturnFirstLPP)

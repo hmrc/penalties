@@ -20,7 +20,7 @@ import config.featureSwitches.FeatureSwitching
 
 import java.time.LocalDate
 import connectors.parsers.v3.getFinancialDetails.GetFinancialDetailsParser._
-import models.v3.ChargeTypeEnum
+import models.v3.MainTransactionEnum
 import models.v3.getFinancialDetails._
 import play.api.http.Status
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
@@ -92,7 +92,7 @@ class GetFinancialDetailsServiceISpec extends IntegrationSpecCommonBase with ETM
         )),
         originalAmount = Some(123.45),
         outstandingAmount = Some(543.21),
-        mainTransaction = Some(ChargeTypeEnum.VATReturnFirstLPP),
+        mainTransaction = Some(MainTransactionEnum.VATReturnFirstLPP),
         chargeReference = Some("XM002610011594"),
         metadata = FinancialDetailsMetadata(
           taxYear = "2022",

@@ -16,22 +16,22 @@
 
 package models.v3.getFinancialDetails
 
-import models.v3.ChargeTypeEnum
+import models.v3.MainTransactionEnum
 import play.api.libs.json.{Format, JsResult, JsValue, Json, OFormat}
 import utils.JsonUtils
 
 import java.time.LocalDate
 
 case class FinancialDetails(
-                           documentId: String,
-                           taxPeriodFrom: Option[LocalDate],
-                           taxPeriodTo: Option[LocalDate],
-                           items: Seq[FinancialItem],
-                           originalAmount: Option[BigDecimal],
-                           outstandingAmount: Option[BigDecimal],
-                           mainTransaction: Option[ChargeTypeEnum.Value],
-                           chargeReference: Option[String],
-                           metadata: FinancialDetailsMetadata
+                             documentId: String,
+                             taxPeriodFrom: Option[LocalDate],
+                             taxPeriodTo: Option[LocalDate],
+                             items: Seq[FinancialItem],
+                             originalAmount: Option[BigDecimal],
+                             outstandingAmount: Option[BigDecimal],
+                             mainTransaction: Option[MainTransactionEnum.Value],
+                             chargeReference: Option[String],
+                             metadata: FinancialDetailsMetadata
                            )
 
 object FinancialDetails extends JsonUtils {
@@ -44,7 +44,7 @@ object FinancialDetails extends JsonUtils {
         items <- (json \ "items").validate[Seq[FinancialItem]]
         originalAmount <- (json \ "originalAmount").validateOpt[BigDecimal]
         outstandingAmount <- (json \ "outstandingAmount").validateOpt[BigDecimal]
-        mainTransaction <- (json \ "mainTransaction").validateOpt[ChargeTypeEnum.Value]
+        mainTransaction <- (json \ "mainTransaction").validateOpt[MainTransactionEnum.Value]
         chargeReference <- (json \ "chargeReference").validateOpt[String]
         metadata <- Json.fromJson(json)(FinancialDetailsMetadata.format)
       } yield {

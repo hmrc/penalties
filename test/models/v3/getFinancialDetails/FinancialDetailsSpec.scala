@@ -17,7 +17,7 @@
 package models.v3.getFinancialDetails
 
 import base.SpecBase
-import models.v3.ChargeTypeEnum
+import models.v3.MainTransactionEnum
 import play.api.libs.json.{JsValue, Json}
 
 import java.time.LocalDate
@@ -109,7 +109,7 @@ class FinancialDetailsSpec extends SpecBase {
     ),
     originalAmount = Some(123.45),
     outstandingAmount = Some(123.45),
-    mainTransaction = Some(ChargeTypeEnum.VATReturnFirstLPP),
+    mainTransaction = Some(MainTransactionEnum.VATReturnFirstLPP),
     chargeReference = Some("1"),
     metadata = FinancialDetailsMetadata(
       taxYear = "2022",
