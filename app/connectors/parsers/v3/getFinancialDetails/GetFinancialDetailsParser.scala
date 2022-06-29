@@ -29,7 +29,7 @@ object GetFinancialDetailsParser {
   sealed trait GetFinancialDetailsFailure
   sealed trait GetFinancialDetailsSuccess
 
-  case class  GetFinancialDetailsSuccessResponse(FinancialDetails: GetFinancialDetails) extends GetFinancialDetailsSuccess
+  case class  GetFinancialDetailsSuccessResponse(financialDetails: GetFinancialDetails) extends GetFinancialDetailsSuccess
   case class  GetFinancialDetailsFailureResponse(status: Int) extends GetFinancialDetailsFailure
   case object GetFinancialDetailsMalformed extends GetFinancialDetailsFailure
   case object GetFinancialDetailsNoContent extends GetFinancialDetailsFailure
@@ -53,6 +53,10 @@ object GetFinancialDetailsParser {
             logger.error(s"[GetFinancialDetailsReads][read] Could not parse 404 body with error ${parseError.getMessage}")
             Left(GetFinancialDetailsFailureResponse(NOT_FOUND))
           }, identity)
+        }
+        case NO_CONTENT => {
+          logger.info("[GetFinancialDetailsReads][read] Received no content from 1811 call")
+          Left(GetFinancialDetailsNoContent)
         }
         case status@(BAD_REQUEST | FORBIDDEN | NOT_FOUND | CONFLICT | UNPROCESSABLE_ENTITY | INTERNAL_SERVER_ERROR | SERVICE_UNAVAILABLE) => {
           logger.error(s"[GetFinancialDetailsReads][read] Received $status when trying to call GetFinancialDetails - with body: ${response.body}")

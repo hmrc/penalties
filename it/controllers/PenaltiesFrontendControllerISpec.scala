@@ -24,6 +24,8 @@ import play.api.libs.json.{JsValue, Json}
 import play.api.test.Helpers._
 import utils.{ETMPWiremock, IntegrationSpecCommonBase}
 
+import java.time.LocalDate
+
 class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock{
   val controller: PenaltiesFrontendController = injector.instanceOf[PenaltiesFrontendController]
 
@@ -300,6 +302,7 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
   }
 
   "call API 1812 when call 1812 feature is enabled" must {
+
     val getPenaltyDetailsJson: JsValue = Json.parse(
       """
         |{
@@ -313,7 +316,7 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
         | },
         | "lateSubmissionPenalty": {
         |   "summary": {
-        |     "activePenaltyPoints": 2,
+        |     "activePenaltyPoints": 0,
         |     "inactivePenaltyPoints": 0,
         |     "regimeThreshold": 5,
         |     "penaltyChargeAmount": 200.00
@@ -322,69 +325,6 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
         | },
         | "latePaymentPenalty": {
         |     "details": [
-        |       {
-        |          "penaltyCategory": "LPP2",
-        |          "penaltyStatus": "A",
-        |          "penaltyAmountPaid": 44.21,
-        |          "penaltyAmountOutstanding": 100,
-        |          "LPP1LRCalculationAmount": 99.99,
-        |          "LPP1LRDays": "15",
-        |          "LPP1LRPercentage": 2.00,
-        |          "LPP1HRCalculationAmount": 99.99,
-        |          "LPP1HRDays": "31",
-        |          "LPP1HRPercentage": 2.00,
-        |          "LPP2Days": "31",
-        |          "LPP2Percentage": 4.00,
-        |          "penaltyChargeCreationDate": "2022-10-30",
-        |          "communicationsDate": "2022-10-30",
-        |          "penaltyChargeDueDate": "2022-10-30",
-        |          "principalChargeReference": "1234567890",
-        |          "principalChargeBillingFrom": "2022-10-30",
-        |          "principalChargeBillingTo": "2022-10-30",
-        |          "principalChargeDueDate": "2022-10-30"
-        |       },
-        |       {
-        |          "penaltyCategory": "LPP2",
-        |          "penaltyStatus": "A",
-        |          "penaltyAmountPaid": 100.00,
-        |          "penaltyAmountOutstanding": 23.45,
-        |          "LPP1LRCalculationAmount": 99.99,
-        |          "LPP1LRDays": "15",
-        |          "LPP1LRPercentage": 2.00,
-        |          "LPP1HRCalculationAmount": 99.99,
-        |          "LPP1HRDays": "31",
-        |          "LPP1HRPercentage": 2.00,
-        |          "LPP2Days": "31",
-        |          "LPP2Percentage": 4.00,
-        |          "penaltyChargeCreationDate": "2022-10-30",
-        |          "communicationsDate": "2022-10-30",
-        |          "penaltyChargeDueDate": "2022-10-30",
-        |          "principalChargeReference": "1234567890",
-        |          "principalChargeBillingFrom": "2022-10-30",
-        |          "principalChargeBillingTo": "2022-10-30",
-        |          "principalChargeDueDate": "2022-10-30"
-        |       },
-        |       {
-        |          "penaltyCategory": "LPP1",
-        |          "penaltyStatus": "P",
-        |          "penaltyAmountPaid": 0,
-        |          "penaltyAmountOutstanding": 144.00,
-        |          "LPP1LRCalculationAmount": 99.99,
-        |          "LPP1LRDays": "15",
-        |          "LPP1LRPercentage": 2.00,
-        |          "LPP1HRCalculationAmount": 99.99,
-        |          "LPP1HRDays": "31",
-        |          "LPP1HRPercentage": 2.00,
-        |          "LPP2Days": "31",
-        |          "LPP2Percentage": 4.00,
-        |          "penaltyChargeCreationDate": "2022-10-30",
-        |          "communicationsDate": "2022-10-30",
-        |          "penaltyChargeDueDate": "2022-10-30",
-        |          "principalChargeReference": "1234567890",
-        |          "principalChargeBillingFrom": "2022-10-30",
-        |          "principalChargeBillingTo": "2022-10-30",
-        |          "principalChargeDueDate": "2022-10-30"
-        |       },
         |       {
         |          "penaltyCategory": "LPP1",
         |          "penaltyStatus": "P",
@@ -411,11 +351,169 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
         |}
         |""".stripMargin)
 
+    val getFinancialDetailsJson: JsValue = Json.parse(
+      """
+        |{
+        | "documentDetails": [],
+        | "financialDetails": [
+        | {
+        |   "taxYear": "2022",
+        |   "documentId": "DOC1234",
+        |   "chargeType": "1234",
+        |   "mainType": "1234",
+        |   "periodKey": "123",
+        |   "periodKeyDescription": "foobar",
+        |   "taxPeriodFrom": "2022-01-01",
+        |   "taxPeriodTo": "2022-03-31",
+        |   "businessPartner": "123",
+        |   "contractAccountCategory": "1",
+        |   "contractAccount": "1",
+        |   "contractObjectType": "1",
+        |   "contractObject": "1",
+        |   "sapDocumentNumber": "1",
+        |   "sapDocumentNumberItem": "1",
+        |   "chargeReference": "1234567890",
+        |   "mainTransaction": "4703",
+        |   "subTransaction": "1",
+        |   "originalAmount": 123.45,
+        |   "outstandingAmount": 123.45,
+        |   "clearedAmount": 123.45,
+        |   "accruedInterest": 123.45,
+        |   "items": [{
+        |     "subItem": "001",
+        |     "dueDate": "2018-08-13",
+        |     "amount": 10000,
+        |     "clearingDate": "2018-08-13",
+        |     "clearingReason": "01",
+        |     "outgoingPaymentMethod": "outgoing payment",
+        |     "paymentLock": "paymentLock",
+        |     "clearingLock": "clearingLock",
+        |     "interestLock": "interestLock",
+        |     "dunningLock": "dunningLock",
+        |     "returnFlag": true,
+        |     "paymentReference": "Ab12453535",
+        |     "paymentAmount": 10000,
+        |     "paymentMethod": "Payment",
+        |     "paymentLot": "081203010024",
+        |     "paymentLotItem": "000001",
+        |     "clearingSAPDocument": "3350000253",
+        |     "codingInitiationDate": "2021-01-11",
+        |     "statisticalDocument": "S",
+        |     "returnReason": "ABCA",
+        |     "DDCollectionInProgress": true,
+        |     "promisetoPay": "Y"
+        |   }]
+        | }
+        | ]
+        |}
+        |""".stripMargin)
+
+    val combinedPenaltyAndFinancialData: JsValue = Json.parse(
+      """
+        |{
+        | "totalisations": {
+        |   "LSPTotalValue": 200,
+        |   "penalisedPrincipalTotal": 2000,
+        |   "LPPPostedTotal": 165.25,
+        |   "LPPEstimatedTotal": 15.26,
+        |   "LPIPostedTotal": 1968.2,
+        |   "LPIEstimatedTotal": 7
+        | },
+        | "lateSubmissionPenalty": {
+        |   "summary": {
+        |     "activePenaltyPoints": 0,
+        |     "inactivePenaltyPoints": 0,
+        |     "regimeThreshold": 5,
+        |     "penaltyChargeAmount": 200.00
+        |   },
+        |   "details": []
+        | },
+        | "latePaymentPenalty": {
+        |     "details": [
+        |       {
+        |          "penaltyCategory": "LPP1",
+        |          "penaltyStatus": "P",
+        |          "penaltyAmountPaid": 0,
+        |          "penaltyAmountOutstanding": 144.00,
+        |          "LPP1LRCalculationAmount": 99.99,
+        |          "LPP1LRDays": "15",
+        |          "LPP1LRPercentage": 2.00,
+        |          "LPP1HRCalculationAmount": 99.99,
+        |          "LPP1HRDays": "31",
+        |          "LPP1HRPercentage": 2.00,
+        |          "LPP2Days": "31",
+        |          "LPP2Percentage": 4.00,
+        |          "penaltyChargeCreationDate": "2022-10-30",
+        |          "communicationsDate": "2022-10-30",
+        |          "penaltyChargeDueDate": "2022-10-30",
+        |          "principalChargeReference": "1234567890",
+        |          "principalChargeBillingFrom": "2022-10-30",
+        |          "principalChargeBillingTo": "2022-10-30",
+        |          "principalChargeDueDate": "2022-10-30",
+        |          "mainTransaction": "4703",
+        |          "outstandingAmount": 123.45
+        |       }
+        |   ]
+        | }
+        |}
+        |""".stripMargin
+    )
+
     s"return OK (${Status.OK})" when {
       "the get penalty details call succeeds" in {
         mockStubResponseForGetPenaltyDetailsv3(Status.OK, "123456789", body = Some(getPenaltyDetailsJson.toString()))
         val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/HMRC-MTD-VAT~VRN~123456789?newApiModel=true").get)
         result.status shouldBe OK
+      }
+
+      "the get penalty details call succeeds and the get financial details call succeeds (combining the data together)" in {
+        mockStubResponseForGetPenaltyDetailsv3(Status.OK, "123456789", body = Some(getPenaltyDetailsJson.toString()))
+        mockStubResponseForGetFinancialDetailsv3(Status.OK,
+          s"VRN/123456789/VATC?dateFrom=${LocalDate.now.minusYears(2)}&dateTo=${LocalDate.now}" +
+          s"&onlyOpenItems=false&includeStatistical=true&includeLocks=false" +
+          s"&calculateAccruedInterest=true&removePOA=false&customerPaymentInformation=false", Some(getFinancialDetailsJson.toString()))
+        val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/HMRC-MTD-VAT~VRN~123456789?newApiModel=true&newFinancialApiModel=true").get)
+        result.status shouldBe OK
+        Json.parse(result.body) shouldBe combinedPenaltyAndFinancialData
+      }
+
+      s"the get penalty details call succeeds and the get financial details call returns NO_CONTENT (${Status.NO_CONTENT}) (returning penalty details unaltered)" in {
+        val getPenaltyDetailsNoLPPJson: JsValue = Json.parse(
+          """
+            |{
+            | "lateSubmissionPenalty": {
+            |   "summary": {
+            |     "activePenaltyPoints": 0,
+            |     "inactivePenaltyPoints": 0,
+            |     "regimeThreshold": 5,
+            |     "penaltyChargeAmount": 200.00
+            |   },
+            |   "details": []
+            | },
+            | "latePaymentPenalty": {
+            |
+            | }
+            |}
+            |""".stripMargin)
+        val noDataFoundBody =
+          """
+            |{
+            | "failures": [
+            |   {
+            |     "code": "NO_DATA_FOUND",
+            |     "reason": "This is a reason"
+            |   }
+            | ]
+            |}
+            |""".stripMargin
+        mockStubResponseForGetFinancialDetailsv3(Status.NOT_FOUND,
+          s"VRN/123456789/VATC?dateFrom=${LocalDate.now.minusYears(2)}&dateTo=${LocalDate.now}" +
+            s"&onlyOpenItems=false&includeStatistical=true&includeLocks=false" +
+            s"&calculateAccruedInterest=true&removePOA=false&customerPaymentInformation=false", Some(noDataFoundBody))
+        mockStubResponseForGetPenaltyDetailsv3(Status.OK, "123456789", body = Some(getPenaltyDetailsNoLPPJson.toString()))
+        val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/HMRC-MTD-VAT~VRN~123456789?newApiModel=true&newFinancialApiModel=true").get)
+        result.status shouldBe OK
+        Json.parse(result.body) shouldBe getPenaltyDetailsNoLPPJson
       }
     }
 
@@ -428,7 +526,7 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
     }
 
     s"return NO_CONTENT (${Status.NO_CONTENT})" when {
-      "the call returns 404 with NO_DATA_FOUND in body" in {
+      "the get penalty details call returns 404 with NO_DATA_FOUND in body" in {
         val noDataFoundBody =
           """
             |{
@@ -444,12 +542,43 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
         val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/HMRC-MTD-VAT~VRN~123456789?newApiModel=true").get)
         result.status shouldBe NO_CONTENT
       }
+
+      "the get financial details call returns 404 with NO_DATA_FOUND in body" in {
+        val noDataFoundBody =
+          """
+            |{
+            | "failures": [
+            |   {
+            |     "code": "NO_DATA_FOUND",
+            |     "reason": "This is a reason"
+            |   }
+            | ]
+            |}
+            |""".stripMargin
+        mockStubResponseForGetPenaltyDetailsv3(Status.OK, "123456789", body = Some(getPenaltyDetailsJson.toString()))
+        mockStubResponseForGetFinancialDetailsv3(Status.NOT_FOUND,
+          s"VRN/123456789/VATC?dateFrom=${LocalDate.now.minusYears(2)}&dateTo=${LocalDate.now}" +
+            s"&onlyOpenItems=false&includeStatistical=true&includeLocks=false" +
+            s"&calculateAccruedInterest=true&removePOA=false&customerPaymentInformation=false", Some(noDataFoundBody))
+        val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/HMRC-MTD-VAT~VRN~123456789?newApiModel=true&newFinancialApiModel=true").get)
+        result.status shouldBe NO_CONTENT
+      }
     }
 
     s"return ISE (${Status.INTERNAL_SERVER_ERROR})" when {
       "the get penalty details call fails" in {
         mockStubResponseForGetPenaltyDetailsv3(Status.INTERNAL_SERVER_ERROR, "123456789", body = Some(""))
         val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/HMRC-MTD-VAT~VRN~123456789?newApiModel=true").get)
+        result.status shouldBe INTERNAL_SERVER_ERROR
+      }
+
+      "the get financial details call fails" in {
+        mockStubResponseForGetPenaltyDetailsv3(Status.OK, "123456789", body = Some(getPenaltyDetailsJson.toString()))
+        mockStubResponseForGetFinancialDetailsv3(Status.INTERNAL_SERVER_ERROR,
+          s"VRN/123456789/VATC?dateFrom=${LocalDate.now.minusYears(2)}&dateTo=${LocalDate.now}" +
+            s"&onlyOpenItems=false&includeStatistical=true&includeLocks=false" +
+            s"&calculateAccruedInterest=true&removePOA=false&customerPaymentInformation=false", Some(getFinancialDetailsJson.toString()))
+        val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/HMRC-MTD-VAT~VRN~123456789?newApiModel=true&newFinancialApiModel=true").get)
         result.status shouldBe INTERNAL_SERVER_ERROR
       }
     }
