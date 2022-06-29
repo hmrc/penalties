@@ -637,7 +637,7 @@ class APIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock wit
             |""".stripMargin)
         enableFeatureSwitch(CallAPI1812ETMP)
         mockResponseForGetPenaltyDetailsv3(Status.OK, s"123456789?dateLimit=09", Some(sampleAPI1812Response.toString))
-        val result = await(buildClientForRequestToApp(uri = s"/penalties/penalty-details/VAT/VRN/123456789?dateLimit=09").get)
+        val result = await(buildClientForRequestToApp(uri = s"/penalty-details/VAT/VRN/123456789?dateLimit=09").get)
         result.status shouldBe OK
         result.json shouldBe sampleAPI1812Response
       }
@@ -647,14 +647,14 @@ class APIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock wit
       "404 response received " in {
         enableFeatureSwitch(CallAPI1812ETMP)
         mockResponseForGetPenaltyDetailsv3(Status.NOT_FOUND, s"123456789?dateLimit=09", Some(""))
-        val result = await(buildClientForRequestToApp(uri = s"/penalties/penalty-details/VAT/VRN/123456789?dateLimit=09").get)
+        val result = await(buildClientForRequestToApp(uri = s"/penalty-details/VAT/VRN/123456789?dateLimit=09").get)
         result.status shouldBe NOT_FOUND
       }
 
       "Non 200 response received " in {
         enableFeatureSwitch(CallAPI1812ETMP)
         mockResponseForGetPenaltyDetailsv3(Status.BAD_REQUEST, s"123456789?dateLimit=09", Some(""))
-        val result = await(buildClientForRequestToApp(uri = s"/penalties/penalty-details/VAT/VRN/123456789?dateLimit=09").get)
+        val result = await(buildClientForRequestToApp(uri = s"/penalty-details/VAT/VRN/123456789?dateLimit=09").get)
         result.status shouldBe BAD_REQUEST
       }
     }
