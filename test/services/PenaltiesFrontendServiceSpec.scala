@@ -17,7 +17,7 @@
 package services
 
 import base.SpecBase
-import models.v3.ChargeTypeEnum
+import models.v3.MainTransactionEnum
 import models.v3.getFinancialDetails.{FinancialDetails, FinancialDetailsMetadata, FinancialItem, FinancialItemMetadata, GetFinancialDetails}
 import models.v3.getPenaltyDetails.GetPenaltyDetails
 import models.v3.getPenaltyDetails.appealInfo.{AppealInformationType, AppealLevelEnum, AppealStatusEnum}
@@ -127,7 +127,7 @@ class PenaltiesFrontendServiceSpec extends SpecBase {
             ),
             originalAmount = Some(123.45),
             outstandingAmount = Some(123.45),
-            mainTransaction = Some(ChargeTypeEnum.VATReturnSecondLPP),
+            mainTransaction = Some(MainTransactionEnum.VATReturnSecondLPP),
             chargeReference = Some("1234567890"),
             metadata = FinancialDetailsMetadata(
               taxYear = "2022",
@@ -181,7 +181,7 @@ class PenaltiesFrontendServiceSpec extends SpecBase {
             ),
             originalAmount = Some(123.45),
             outstandingAmount = Some(123.45),
-            mainTransaction = Some(ChargeTypeEnum.VATReturnFirstLPP),
+            mainTransaction = Some(MainTransactionEnum.VATReturnFirstLPP),
             chargeReference = Some("1234567890"),
             metadata = FinancialDetailsMetadata(
               taxYear = "2022",
@@ -231,7 +231,7 @@ class PenaltiesFrontendServiceSpec extends SpecBase {
               penaltyChargeDueDate = LocalDate.of(2022, 10, 30),
               principalChargeLatestClearing = None,
               metadata = LPPDetailsMetadata(
-                mainTransaction = Some(ChargeTypeEnum.VATReturnSecondLPP), outstandingAmount = Some(123.45)
+                mainTransaction = Some(MainTransactionEnum.VATReturnSecondLPP), outstandingAmount = Some(123.45)
               )
             ),
             LPPDetails(
@@ -258,7 +258,7 @@ class PenaltiesFrontendServiceSpec extends SpecBase {
               penaltyChargeDueDate = LocalDate.of(2022, 10, 30),
               principalChargeLatestClearing = None,
               metadata = LPPDetailsMetadata(
-                mainTransaction = Some(ChargeTypeEnum.VATReturnFirstLPP), outstandingAmount = Some(123.45)
+                mainTransaction = Some(MainTransactionEnum.VATReturnFirstLPP), outstandingAmount = Some(123.45)
               )
             )
           )
@@ -343,7 +343,7 @@ class PenaltiesFrontendServiceSpec extends SpecBase {
             ),
             originalAmount = Some(123.45),
             outstandingAmount = Some(123.45),
-            mainTransaction = Some(ChargeTypeEnum.VATReturnFirstLPP),
+            mainTransaction = Some(MainTransactionEnum.VATReturnFirstLPP),
             chargeReference = Some("1234567890"),
             metadata = FinancialDetailsMetadata(
               taxYear = "2022",
@@ -393,7 +393,7 @@ class PenaltiesFrontendServiceSpec extends SpecBase {
               penaltyChargeDueDate = LocalDate.of(2022, 10, 30),
               principalChargeLatestClearing = None,
               metadata = LPPDetailsMetadata(
-                mainTransaction = Some(ChargeTypeEnum.VATReturnFirstLPP), outstandingAmount = Some(123.45)
+                mainTransaction = Some(MainTransactionEnum.VATReturnFirstLPP), outstandingAmount = Some(123.45)
               )
             )
           )
@@ -478,7 +478,7 @@ class PenaltiesFrontendServiceSpec extends SpecBase {
             ),
             originalAmount = Some(123.45),
             outstandingAmount = Some(123.45),
-            mainTransaction = Some(ChargeTypeEnum.VATReturnSecondLPP),
+            mainTransaction = Some(MainTransactionEnum.VATReturnSecondLPP),
             chargeReference = Some("1234567890"),
             metadata = FinancialDetailsMetadata(
               taxYear = "2022",
@@ -528,7 +528,7 @@ class PenaltiesFrontendServiceSpec extends SpecBase {
               penaltyChargeDueDate = LocalDate.of(2022, 10, 30),
               principalChargeLatestClearing = None,
               metadata = LPPDetailsMetadata(
-                mainTransaction = Some(ChargeTypeEnum.VATReturnSecondLPP), outstandingAmount = Some(123.45)
+                mainTransaction = Some(MainTransactionEnum.VATReturnSecondLPP), outstandingAmount = Some(123.45)
               )
             )
           )
@@ -638,7 +638,7 @@ class PenaltiesFrontendServiceSpec extends SpecBase {
             ),
             originalAmount = Some(123.45),
             outstandingAmount = Some(123.45),
-            mainTransaction = Some(ChargeTypeEnum.OfficersAssessmentFirstLPP),
+            mainTransaction = Some(MainTransactionEnum.OfficersAssessmentFirstLPP),
             chargeReference = Some("1234567891"),
             metadata = FinancialDetailsMetadata(
               taxYear = "2022",
@@ -692,7 +692,7 @@ class PenaltiesFrontendServiceSpec extends SpecBase {
             ),
             originalAmount = Some(123.45),
             outstandingAmount = Some(123.45),
-            mainTransaction = Some(ChargeTypeEnum.VATReturnFirstLPP),
+            mainTransaction = Some(MainTransactionEnum.VATReturnFirstLPP),
             chargeReference = Some("1234567890"),
             metadata = FinancialDetailsMetadata(
               taxYear = "2022",
@@ -742,7 +742,7 @@ class PenaltiesFrontendServiceSpec extends SpecBase {
               penaltyChargeDueDate = LocalDate.of(2022, 10, 30),
               principalChargeLatestClearing = None,
               metadata = LPPDetailsMetadata(
-                mainTransaction = Some(ChargeTypeEnum.OfficersAssessmentFirstLPP), outstandingAmount = Some(123.45)
+                mainTransaction = Some(MainTransactionEnum.OfficersAssessmentFirstLPP), outstandingAmount = Some(123.45)
               )
             ),
             LPPDetails(
@@ -769,7 +769,7 @@ class PenaltiesFrontendServiceSpec extends SpecBase {
               penaltyChargeDueDate = LocalDate.of(2022, 10, 30),
               principalChargeLatestClearing = None,
               metadata = LPPDetailsMetadata(
-                mainTransaction = Some(ChargeTypeEnum.VATReturnFirstLPP), outstandingAmount = Some(123.45)
+                mainTransaction = Some(MainTransactionEnum.VATReturnFirstLPP), outstandingAmount = Some(123.45)
               )
             )
           )

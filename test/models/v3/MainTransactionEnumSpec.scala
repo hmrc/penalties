@@ -267,30 +267,30 @@ class MainTransactionEnumSpec extends SpecBase {
 
   "firstCharges" should {
     "return all the possible first charges" in {
-      ChargeTypeEnum.firstCharges shouldBe Seq(
-        ChargeTypeEnum.VATReturnFirstLPP,
-        ChargeTypeEnum.AAReturnChargeFirstLPP,
-        ChargeTypeEnum.POAReturnChargeFirstLPP,
-        ChargeTypeEnum.ErrorCorrectionFirstLPP,
-        ChargeTypeEnum.AdditionalAssessmentFirstLPP,
-        ChargeTypeEnum.ProtectiveAssessmentFirstLPP,
-        ChargeTypeEnum.CentralAssessmentFirstLPP,
-        ChargeTypeEnum.OfficersAssessmentFirstLPP
+      MainTransactionEnum.firstCharges shouldBe Seq(
+        MainTransactionEnum.VATReturnFirstLPP,
+        MainTransactionEnum.AAReturnChargeFirstLPP,
+        MainTransactionEnum.POAReturnChargeFirstLPP,
+        MainTransactionEnum.ErrorCorrectionFirstLPP,
+        MainTransactionEnum.AdditionalAssessmentFirstLPP,
+        MainTransactionEnum.ProtectiveAssessmentFirstLPP,
+        MainTransactionEnum.CentralAssessmentFirstLPP,
+        MainTransactionEnum.OfficersAssessmentFirstLPP
       )
     }
   }
   
   "secondCharges" should {
     "return all the possible second charges" in {
-      ChargeTypeEnum.secondCharges shouldBe Seq(
-        ChargeTypeEnum.VATReturnSecondLPP,
-        ChargeTypeEnum.AAReturnChargeSecondLPP,
-        ChargeTypeEnum.POAReturnChargeSecondLPP,
-        ChargeTypeEnum.ErrorCorrectionSecondLPP,
-        ChargeTypeEnum.AdditionalAssessmentSecondLPP,
-        ChargeTypeEnum.ProtectiveAssessmentSecondLPP,
-        ChargeTypeEnum.CentralAssessmentSecondLPP,
-        ChargeTypeEnum.OfficersAssessmentSecondLPP
+      MainTransactionEnum.secondCharges shouldBe Seq(
+        MainTransactionEnum.VATReturnSecondLPP,
+        MainTransactionEnum.AAReturnChargeSecondLPP,
+        MainTransactionEnum.POAReturnChargeSecondLPP,
+        MainTransactionEnum.ErrorCorrectionSecondLPP,
+        MainTransactionEnum.AdditionalAssessmentSecondLPP,
+        MainTransactionEnum.ProtectiveAssessmentSecondLPP,
+        MainTransactionEnum.CentralAssessmentSecondLPP,
+        MainTransactionEnum.OfficersAssessmentSecondLPP
       )
     }
   }

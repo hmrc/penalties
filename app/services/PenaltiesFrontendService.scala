@@ -16,7 +16,7 @@
 
 package services
 
-import models.v3.ChargeTypeEnum
+import models.v3.MainTransactionEnum
 import models.v3.getFinancialDetails.GetFinancialDetails
 import models.v3.getPenaltyDetails.GetPenaltyDetails
 import models.v3.getPenaltyDetails.latePayment.{LPPDetailsMetadata, LPPPenaltyCategoryEnum, LatePaymentPenalty}
@@ -31,8 +31,8 @@ class PenaltiesFrontendService @Inject()() {
           val isAdditional = oldLPPDetails.penaltyCategory.equals(LPPPenaltyCategoryEnum.SecondPenalty)
           val firstAndMaybeSecondPenalty = financialDetails.financialDetails.filter(_.chargeReference.exists(_.equals(oldLPPDetails.principalChargeReference)))
           val penaltyToCopy = firstAndMaybeSecondPenalty.find(lpp => {
-              if(isAdditional) ChargeTypeEnum.secondCharges.contains(lpp.mainTransaction.get)
-              else ChargeTypeEnum.firstCharges.contains(lpp.mainTransaction.get)
+              if(isAdditional) MainTransactionEnum.secondCharges.contains(lpp.mainTransaction.get)
+              else MainTransactionEnum.firstCharges.contains(lpp.mainTransaction.get)
             }
           )
           oldLPPDetails.copy(

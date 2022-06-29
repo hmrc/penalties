@@ -80,7 +80,7 @@ object MainTransactionEnum extends Enumeration {
     }
   }
 
-  val firstCharges: Seq[ChargeTypeEnum.Value] = Seq(
+  val firstCharges: Seq[MainTransactionEnum.Value] = Seq(
     VATReturnFirstLPP,
     AAReturnChargeFirstLPP,
     POAReturnChargeFirstLPP,
@@ -91,7 +91,7 @@ object MainTransactionEnum extends Enumeration {
     OfficersAssessmentFirstLPP
   )
 
-  val secondCharges: Seq[ChargeTypeEnum.Value] = Seq(
+  val secondCharges: Seq[MainTransactionEnum.Value] = Seq(
     VATReturnSecondLPP,
     AAReturnChargeSecondLPP,
     POAReturnChargeSecondLPP,

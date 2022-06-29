@@ -22,7 +22,7 @@ import connectors.parsers.ETMPPayloadParser.{GetETMPPayloadMalformed, GetETMPPay
 import connectors.parsers.v3.getFinancialDetails.GetFinancialDetailsParser.{GetFinancialDetailsFailureResponse, GetFinancialDetailsMalformed, GetFinancialDetailsNoContent, GetFinancialDetailsSuccessResponse}
 import connectors.parsers.v3.getPenaltyDetails.GetPenaltyDetailsParser.{GetPenaltyDetailsFailureResponse, GetPenaltyDetailsMalformed, GetPenaltyDetailsNoContent, GetPenaltyDetailsSuccessResponse}
 import models.ETMPPayload
-import models.v3.ChargeTypeEnum
+import models.v3.MainTransactionEnum
 import models.v3.getFinancialDetails.{FinancialDetails, FinancialDetailsMetadata, FinancialItem, FinancialItemMetadata, GetFinancialDetails}
 import models.v3.getPenaltyDetails.GetPenaltyDetails
 import models.v3.getPenaltyDetails.latePayment.{LPPDetails, LPPDetailsMetadata, LPPPenaltyCategoryEnum, LPPPenaltyStatusEnum, LatePaymentPenalty}
@@ -518,7 +518,7 @@ class PenaltiesFrontendControllerSpec extends SpecBase {
             ),
             originalAmount = Some(123.45),
             outstandingAmount = Some(123.45),
-            mainTransaction = Some(ChargeTypeEnum.VATReturnFirstLPP),
+            mainTransaction = Some(MainTransactionEnum.VATReturnFirstLPP),
             chargeReference = Some("1"),
             metadata = FinancialDetailsMetadata(
               taxYear = "2022",
