@@ -17,7 +17,7 @@
 package services
 
 import connectors.parsers.AppealsParser
-import connectors.parsers.ETMPPayloadParser.{ETMPPayloadResponse, GetETMPPayloadFailureResponse, GetETMPPayloadMalformed, GetETMPPayloadNoContent, GetETMPPayloadSuccessResponse}
+import connectors.parsers.ETMPPayloadParser._
 import connectors.{ETMPConnector, PEGAConnector}
 import models.ETMPPayload
 import models.appeals.{AppealResponseModel, AppealSubmission}
@@ -56,8 +56,8 @@ class ETMPService @Inject()(etmpConnector: ETMPConnector,
     }
   }
 
-  def submitAppeal(appealSubmission: AppealSubmission,
-                   enrolmentKey: String, isLPP: Boolean, penaltyNumber: String, correlationId: String): Future[Either[AppealsParser.ErrorResponse, AppealResponseModel]]= {
+  def submitAppeal(appealSubmission: AppealSubmission, enrolmentKey: String,
+                   isLPP: Boolean, penaltyNumber: String, correlationId: String): Future[Either[AppealsParser.ErrorResponse, AppealResponseModel]]= {
 
     appealsConnector.submitAppeal(appealSubmission, enrolmentKey, isLPP, penaltyNumber, correlationId).flatMap {
       _.fold(

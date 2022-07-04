@@ -30,11 +30,13 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class PEGAConnector @Inject()(httpClient: HttpClient,
                               appConfig: AppConfig)(implicit ec: ExecutionContext) {
-  def submitAppeal(appealSubmission: AppealSubmission, enrolmentKey: String, isLPP: Boolean, penaltyNumber: String, correlationId: String): Future[AppealSubmissionResponse] = {
+  def submitAppeal(appealSubmission: AppealSubmission, enrolmentKey: String,
+                   isLPP: Boolean, penaltyNumber: String, correlationId: String): Future[AppealSubmissionResponse] = {
 
     implicit val hc: HeaderCarrier = headersForEIS(correlationId, appConfig.eiOutboundBearerToken, appConfig.eisEnvironment, penaltyNumber)
 
-    httpClient.POST[AppealSubmission, AppealSubmissionResponse](appConfig.getAppealSubmissionURL(enrolmentKey, isLPP, penaltyNumber), appealSubmission, hc.otherHeaders)
+    httpClient.POST[AppealSubmission, AppealSubmissionResponse](
+      appConfig.getAppealSubmissionURL(enrolmentKey, isLPP, penaltyNumber), appealSubmission, hc.otherHeaders)
   }
 
   def headersForEIS(correlationId: String, bearerToken: String, environment: String, penaltyNumber: String): HeaderCarrier = {

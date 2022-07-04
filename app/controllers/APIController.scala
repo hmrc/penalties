@@ -46,7 +46,8 @@ class APIController @Inject()(etmpService: ETMPService,
                               getPenaltyDetailsService: GetPenaltyDetailsService,
                               getFinancialDetailsConnector: GetFinancialDetailsConnector,
                               getPenaltyDetailsConnector: GetPenaltyDetailsConnector,
-                              cc: ControllerComponents)(implicit ec: ExecutionContext, val config: Configuration) extends BackendController(cc) with FeatureSwitching {
+                              cc: ControllerComponents
+                             )(implicit ec: ExecutionContext, val config: Configuration) extends BackendController(cc) with FeatureSwitching {
 
   private val vrnRegex: Regex = "^[0-9]{1,9}$".r
 
