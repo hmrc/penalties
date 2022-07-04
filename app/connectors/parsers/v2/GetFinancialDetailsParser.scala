@@ -24,10 +24,13 @@ import utils.Logger.logger
 
 object GetFinancialDetailsParser {
   sealed trait GetFinancialDetailsFailure
+
   sealed trait GetFinancialDetailsSuccess
 
-  case class  GetFinancialDetailsSuccessResponse(FinancialDetails: GetFinancialDetails) extends GetFinancialDetailsSuccess
-  case class  GetFinancialDetailsFailureResponse(status: Int) extends GetFinancialDetailsFailure
+  case class GetFinancialDetailsSuccessResponse(FinancialDetails: GetFinancialDetails) extends GetFinancialDetailsSuccess
+
+  case class GetFinancialDetailsFailureResponse(status: Int) extends GetFinancialDetailsFailure
+
   case object GetFinancialDetailsMalformed extends GetFinancialDetailsFailure
 
   type GetFinancialDetailsResponse = Either[GetFinancialDetailsFailure, GetFinancialDetailsSuccess]
@@ -49,7 +52,8 @@ object GetFinancialDetailsParser {
           Left(GetFinancialDetailsFailureResponse(status))
         }
         case _@status =>
-          logger.error(s"[GetFinancialDetailsReads][read] Received unexpected response from GetFinancialDetails, status code: $status and body: ${response.body}")
+          logger.error(s"[GetFinancialDetailsReads][read] Received unexpected response from GetFinancialDetails," +
+            s" status code: $status and body: ${response.body}")
           Left(GetFinancialDetailsFailureResponse(status))
       }
     }

@@ -40,7 +40,8 @@ object GetPenaltyDetails extends JsonUtils {
     override def writes(details: GetPenaltyDetails): JsValue = {
       jsonObjNoNulls(
         "lateSubmissionPenalty" -> details.lateSubmissionPenalty,
-        if(details.latePaymentPenalty.isDefined) "latePaymentPenalty" -> Json.obj("details" -> details.latePaymentPenalty) else "latePaymentPenalty" -> Json.obj()
+        if(details.latePaymentPenalty.isDefined) "latePaymentPenalty" -> Json.obj("details" -> details.latePaymentPenalty)
+        else "latePaymentPenalty" -> Json.obj()
       )
     }
   }

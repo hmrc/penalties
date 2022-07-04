@@ -57,11 +57,13 @@ class GetFinancialDetailsConnector @Inject()(httpClient: HttpClient,
     }
     httpClient.GET[HttpResponse](appConfig.getFinancialDetailsUrlv3(vrn) + queryParams, headers = headers).recover {
       case e: UpstreamErrorResponse => {
-        logger.error(s"[GetFinancialDetailsConnector][getFinancialDetailsForAPI] - Received ${e.statusCode} status from API 1811 call - returning status to caller")
+        logger.error(s"[GetFinancialDetailsConnector][getFinancialDetailsForAPI] - Received ${e.statusCode}" +
+          s" status from API 1811 call - returning status to caller")
         HttpResponse(e.statusCode, e.message)
       }
       case e: Exception => {
-        logger.error(s"[GetFinancialDetailsConnector][getFinancialDetailsForAPI] - An unknown exception occurred - returning 500 back to caller - message: ${e.getMessage}")
+        logger.error(s"[GetFinancialDetailsConnector][getFinancialDetailsForAPI] - An unknown exception occurred -" +
+          s" returning 500 back to caller - message: ${e.getMessage}")
         HttpResponse(INTERNAL_SERVER_ERROR, "An unknown exception occurred. Contact the Penalties team for more information.")
       }
     }

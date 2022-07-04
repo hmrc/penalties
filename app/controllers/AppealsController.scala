@@ -226,7 +226,8 @@ class AppealsController @Inject()(val appConfig: AppConfig,
                             case OK =>
                               logger.debug(s"[AppealsController][submitAppeal] - Received OK from file notification orchestrator")
                             case status =>
-                              logger.error(s"[AppealsController][submitAppeal] - Received unknown response (${status}) from file notification orchestrator. Response body: ${response.body}")
+                              logger.error(s"[AppealsController][submitAppeal] - Received unknown response (${status})" +
+                                s" from file notification orchestrator. Response body: ${response.body}")
                           }
                       }
                     }
