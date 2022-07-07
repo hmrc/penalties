@@ -17,21 +17,20 @@
 package controllers
 
 import config.featureSwitches.{FeatureSwitching, UseAPI1812Model}
-import connectors.parsers.v3.getPenaltyDetails.GetPenaltyDetailsParser
-import connectors.parsers.v3.getPenaltyDetails.GetPenaltyDetailsParser.GetPenaltyDetailsSuccessResponse
-import connectors.v3.getFinancialDetails.GetFinancialDetailsConnector
-import connectors.v3.getPenaltyDetails.GetPenaltyDetailsConnector
+import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser.GetPenaltyDetailsSuccessResponse
+import connectors.getFinancialDetails.GetFinancialDetailsConnector
+import connectors.getPenaltyDetails.GetPenaltyDetailsConnector
+import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser
 import models.ETMPPayload
 import models.api.APIModel
 import models.auditing.UserHasPenaltyAuditModel
 import models.auditing.v2.{UserHasPenaltyAuditModel => AuditModelV2}
-import models.v3.getPenaltyDetails.GetPenaltyDetails
+import models.getPenaltyDetails.GetPenaltyDetails
 import play.api.Configuration
 import play.api.libs.json.Json
 import play.api.mvc._
 import services.auditing.AuditService
-import services.v2.APIService
-import services.{ETMPService, GetPenaltyDetailsService}
+import services.{APIService, ETMPService, GetPenaltyDetailsService}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import utils.Logger.logger
 import utils.RegimeHelper

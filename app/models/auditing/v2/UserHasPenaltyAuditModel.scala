@@ -17,10 +17,10 @@
 package models.auditing.v2
 
 import models.auditing.JsonAuditModel
-import models.v3.getPenaltyDetails.GetPenaltyDetails
-import models.v3.getPenaltyDetails.appealInfo.AppealStatusEnum
-import models.v3.getPenaltyDetails.latePayment.LPPDetails
-import models.v3.getPenaltyDetails.lateSubmission.{LSPDetails, LSPPenaltyCategoryEnum, LSPPenaltyStatusEnum}
+import models.getPenaltyDetails.GetPenaltyDetails
+import models.getPenaltyDetails.appealInfo.AppealStatusEnum
+import models.getPenaltyDetails.latePayment.LPPDetails
+import models.getPenaltyDetails.lateSubmission.{LSPDetails, LSPPenaltyCategoryEnum, LSPPenaltyStatusEnum}
 import play.api.libs.json.JsValue
 import play.api.mvc.Request
 import utils.JsonUtils

@@ -384,100 +384,54 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
 
   "getAppealsDataForLateSubmissionPenalty" should {
 
-    "when the 1812 feature switch is disabled" must {
-      "call ETMP and compare the penalty ID provided and the penalty ID in the payload - return OK if there is a match" in {
-        mockResponseForStubETMPPayload(Status.OK, "123456789")
-        val result = await(buildClientForRequestToApp(uri = "/appeals-data/late-submissions?penaltyId=1234&enrolmentKey=123456789&useNewApiModel=false").get())
-        result.status shouldBe Status.OK
-        result.body shouldBe appealJson.toString()
-      }
-
-      "return NOT_FOUND when the penalty ID given does not match the penalty ID in the payload" in {
-        mockResponseForStubETMPPayload(Status.OK, "123456789")
-        val result = await(buildClientForRequestToApp(uri = "/appeals-data/late-submissions?penaltyId=0001&enrolmentKey=123456789&useNewApiModel=false").get())
-        result.status shouldBe Status.NOT_FOUND
-      }
-
-      "return an ISE when the call to ETMP fails" in {
-        val result = await(buildClientForRequestToApp(uri = "/appeals-data/late-submissions?penaltyId=0001&enrolmentKey=123456789&useNewApiModel=false").get())
-        result.status shouldBe Status.INTERNAL_SERVER_ERROR
-      }
-    }
-
     "when the 1812 feature switch is enabled" must {
       "call ETMP and compare the penalty ID provided and the penalty ID in the payload - return OK if there is a match" in {
-        mockStubResponseForGetPenaltyDetailsv3(Status.OK, "123456789", Some(getPenaltyDetailsJson.toString()))
-        val result = await(buildClientForRequestToApp(uri = "/appeals-data/late-submissions?penaltyId=123456789&enrolmentKey=HMRC-MTD-VAT~VRN~123456789&useNewApiModel=true").get())
+        mockResponseForGetPenaltyDetailsv3(Status.OK, "123456789", Some(getPenaltyDetailsJson.toString()))
+        val result = await(buildClientForRequestToApp(uri = "/appeals-data/late-submissions?penaltyId=123456789&enrolmentKey=HMRC-MTD-VAT~VRN~123456789").get())
         result.status shouldBe Status.OK
         result.body shouldBe appealV2Json.toString()
       }
 
       "return NOT_FOUND when the penalty ID given does not match the penalty ID in the payload" in {
-        mockStubResponseForGetPenaltyDetailsv3(Status.OK, "123456789", Some(getPenaltyDetailsJson.toString()))
-        val result = await(buildClientForRequestToApp(uri = "/appeals-data/late-submissions?penaltyId=0001&enrolmentKey=HMRC-MTD-VAT~VRN~123456789&useNewApiModel=true").get())
+        mockResponseForGetPenaltyDetailsv3(Status.OK, "123456789", Some(getPenaltyDetailsJson.toString()))
+        val result = await(buildClientForRequestToApp(uri = "/appeals-data/late-submissions?penaltyId=0001&enrolmentKey=HMRC-MTD-VAT~VRN~123456789").get())
         result.status shouldBe Status.NOT_FOUND
       }
 
       "return an ISE when the call to ETMP fails" in {
-        mockStubResponseForGetPenaltyDetailsv3(Status.INTERNAL_SERVER_ERROR, "123456789", Some(""))
-        val result = await(buildClientForRequestToApp(uri = "/appeals-data/late-submissions?penaltyId=0001&enrolmentKey=HMRC-MTD-VAT~VRN~123456789&useNewApiModel=true").get())
+        mockResponseForGetPenaltyDetailsv3(Status.INTERNAL_SERVER_ERROR, "123456789", Some(""))
+        val result = await(buildClientForRequestToApp(uri = "/appeals-data/late-submissions?penaltyId=0001&enrolmentKey=HMRC-MTD-VAT~VRN~123456789").get())
         result.status shouldBe Status.INTERNAL_SERVER_ERROR
       }
     }
   }
 
   "getAppealsDataForLatePaymentPenalty" should {
-    "when the 1812 feature switch is disabled" must {
-      "call ETMP and compare the penalty ID provided and the penalty ID in the payload - return OK if there is a match" in {
-        mockResponseForStubETMPPayload(Status.OK, "123456789", Some(lspAndLppBodyToReturnFromETMP.toString()))
-        val result = await(buildClientForRequestToApp(uri = "/appeals-data/late-payments?penaltyId=1234&enrolmentKey=123456789&isAdditional=false&useNewApiModel=false").get())
-        result.status shouldBe Status.OK
-        result.body shouldBe appealJsonLPP.toString()
-      }
-
-      "call ETMP and compare the penalty ID provided and the penalty ID in the payload for Additional- return OK if there is a match" in {
-        mockResponseForStubETMPPayload(Status.OK, "123456789", Some(lspAndLppBodyToReturnFromETMP.toString()))
-        val result = await(buildClientForRequestToApp(uri = "/appeals-data/late-payments?penaltyId=1234&enrolmentKey=123456789&isAdditional=true&useNewApiModel=false").get())
-        result.status shouldBe Status.OK
-        result.body shouldBe appealJsonLPPAdditional.toString()
-      }
-
-      "return NOT_FOUND when the penalty ID given does not match the penalty ID in the payload" in {
-        mockResponseForStubETMPPayload(Status.OK, "123456789", Some(lspAndLppBodyToReturnFromETMP.toString()))
-        val result = await(buildClientForRequestToApp(uri = "/appeals-data/late-payments?penaltyId=0001&enrolmentKey=123456789&isAdditional=false&useNewApiModel=false").get())
-        result.status shouldBe Status.NOT_FOUND
-      }
-
-      "return an ISE when the call to ETMP fails" in {
-        val result = await(buildClientForRequestToApp(uri = "/appeals-data/late-payments?penaltyId=0001&enrolmentKey=123456789&isAdditional=false&useNewApiModel=false").get())
-        result.status shouldBe Status.INTERNAL_SERVER_ERROR
-      }
-    }
 
     "when the 1812 feature switch is enabled" must {
       "call ETMP and compare the penalty ID provided and the penalty ID in the payload - return OK if there is a match" in {
-        mockStubResponseForGetPenaltyDetailsv3(Status.OK, "123456789", Some(getPenaltyDetailsJson.toString()))
-        val result = await(buildClientForRequestToApp(uri = "/appeals-data/late-payments?penaltyId=1234567887&enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isAdditional=false&useNewApiModel=true").get())
+        mockResponseForGetPenaltyDetailsv3(Status.OK, "123456789", Some(getPenaltyDetailsJson.toString()))
+        val result = await(buildClientForRequestToApp(uri = "/appeals-data/late-payments?penaltyId=1234567887&enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isAdditional=false").get())
         result.status shouldBe Status.OK
         result.body shouldBe appealV2JsonLPP.toString()
       }
 
       "call ETMP and compare the penalty ID provided and the penalty ID in the payload for Additional - return OK if there is a match" in {
-        mockStubResponseForGetPenaltyDetailsv3(Status.OK, "123456789", Some(getPenaltyDetailsJson.toString()))
-        val result = await(buildClientForRequestToApp(uri = "/appeals-data/late-payments?penaltyId=1234567889&enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isAdditional=true&useNewApiModel=true").get())
+        mockResponseForGetPenaltyDetailsv3(Status.OK, "123456789", Some(getPenaltyDetailsJson.toString()))
+        val result = await(buildClientForRequestToApp(uri = "/appeals-data/late-payments?penaltyId=1234567889&enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isAdditional=true").get())
         result.status shouldBe Status.OK
         result.body shouldBe appealV2JsonLPPAdditional.toString()
       }
 
       "return NOT_FOUND when the penalty ID given does not match the penalty ID in the payload" in {
-        mockStubResponseForGetPenaltyDetailsv3(Status.OK, "123456789", Some(getPenaltyDetailsJson.toString()))
-        val result = await(buildClientForRequestToApp(uri = "/appeals-data/late-payments?penaltyId=0001&enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isAdditional=false&useNewApiModel=true").get())
+        mockResponseForGetPenaltyDetailsv3(Status.OK, "123456789", Some(getPenaltyDetailsJson.toString()))
+        val result = await(buildClientForRequestToApp(uri = "/appeals-data/late-payments?penaltyId=0001&enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isAdditional=false").get())
         result.status shouldBe Status.NOT_FOUND
       }
 
       "return an ISE when the call to ETMP fails" in {
-        mockStubResponseForGetPenaltyDetailsv3(Status.INTERNAL_SERVER_ERROR, "123456789", Some(""))
-        val result = await(buildClientForRequestToApp(uri = "/appeals-data/late-payments?penaltyId=0001&enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isAdditional=false&useNewApiModel=true").get())
+        mockResponseForGetPenaltyDetailsv3(Status.INTERNAL_SERVER_ERROR, "123456789", Some(""))
+        val result = await(buildClientForRequestToApp(uri = "/appeals-data/late-payments?penaltyId=0001&enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isAdditional=false").get())
         result.status shouldBe Status.INTERNAL_SERVER_ERROR
       }
     }

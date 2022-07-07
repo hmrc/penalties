@@ -17,10 +17,10 @@
 package models.auditing.v2
 
 import base.{LogCapturing, SpecBase}
-import models.v3.getPenaltyDetails._
-import models.v3.getPenaltyDetails.appealInfo.{AppealInformationType, AppealLevelEnum, AppealStatusEnum}
-import models.v3.getPenaltyDetails.latePayment.{LPPDetails, LPPDetailsMetadata, LPPPenaltyCategoryEnum, LPPPenaltyStatusEnum, LatePaymentPenalty}
-import models.v3.getPenaltyDetails.lateSubmission._
+import models.getPenaltyDetails._
+import models.getPenaltyDetails.appealInfo.{AppealInformationType, AppealLevelEnum, AppealStatusEnum}
+import models.getPenaltyDetails.latePayment.{LPPDetails, LPPDetailsMetadata, LPPPenaltyCategoryEnum, LPPPenaltyStatusEnum, LatePaymentPenalty}
+import models.getPenaltyDetails.lateSubmission._
 import utils.Logger
 
 import java.time.LocalDate

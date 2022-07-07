@@ -19,12 +19,12 @@ package controllers
 import base.SpecBase
 import config.featureSwitches.{FeatureSwitching, UseAPI1812Model}
 import connectors.parsers.ETMPPayloadParser._
-import connectors.parsers.v3.getPenaltyDetails.GetPenaltyDetailsParser._
-import connectors.v3.getFinancialDetails.GetFinancialDetailsConnector
-import connectors.v3.getPenaltyDetails.GetPenaltyDetailsConnector
-import models.v3.getPenaltyDetails.GetPenaltyDetails
-import models.v3.getPenaltyDetails.latePayment._
-import models.v3.getPenaltyDetails.lateSubmission.{LSPSummary, LateSubmissionPenalty}
+import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser._
+import connectors.getFinancialDetails.GetFinancialDetailsConnector
+import connectors.getPenaltyDetails.GetPenaltyDetailsConnector
+import models.getPenaltyDetails.GetPenaltyDetails
+import models.getPenaltyDetails.latePayment._
+import models.getPenaltyDetails.lateSubmission.{LSPSummary, LateSubmissionPenalty}
 import org.mockito.Matchers._
 import org.mockito.Mockito._
 import play.api.Configuration
@@ -32,8 +32,7 @@ import play.api.http.Status
 import play.api.libs.json.Json
 import play.api.test.Helpers._
 import services.auditing.AuditService
-import services.v2.APIService
-import services.{ETMPService, GetPenaltyDetailsService}
+import services.{APIService, ETMPService, GetPenaltyDetailsService}
 import uk.gov.hmrc.http.HttpResponse
 
 import java.time.LocalDate

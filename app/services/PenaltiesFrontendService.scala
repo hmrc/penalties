@@ -16,10 +16,10 @@
 
 package services
 
-import models.v3.MainTransactionEnum
-import models.v3.getFinancialDetails.GetFinancialDetails
-import models.v3.getPenaltyDetails.GetPenaltyDetails
-import models.v3.getPenaltyDetails.latePayment.{LPPDetailsMetadata, LPPPenaltyCategoryEnum, LatePaymentPenalty}
+import models.getFinancialDetails.GetFinancialDetails
+import models.getPenaltyDetails.GetPenaltyDetails
+import models.getPenaltyDetails.latePayment.{LPPDetailsMetadata, LPPPenaltyCategoryEnum, LatePaymentPenalty}
+import models.mainTransaction.MainTransactionEnum
 
 import javax.inject.Inject
 

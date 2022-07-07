@@ -17,8 +17,8 @@
 package services
 
 import config.featureSwitches.FeatureSwitching
-import connectors.parsers.v3.getFinancialDetails.GetFinancialDetailsParser._
-import connectors.v3.getFinancialDetails.GetFinancialDetailsConnector
+import connectors.parsers.getFinancialDetails.GetFinancialDetailsParser._
+import connectors.getFinancialDetails.GetFinancialDetailsConnector
 import play.api.Configuration
 import javax.inject.Inject
 import uk.gov.hmrc.http.HeaderCarrier

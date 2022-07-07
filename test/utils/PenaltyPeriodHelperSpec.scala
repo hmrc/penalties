@@ -19,7 +19,7 @@ package utils
 import base.SpecBase
 import models.penalty.PenaltyPeriod
 import models.submission.{Submission, SubmissionStatusEnum}
-import models.v3.getPenaltyDetails.lateSubmission.{LateSubmission, TaxReturnStatusEnum}
+import models.getPenaltyDetails.lateSubmission.{LateSubmission, TaxReturnStatusEnum}
 import java.time.{LocalDate, LocalDateTime}
 
 class PenaltyPeriodHelperSpec extends SpecBase {

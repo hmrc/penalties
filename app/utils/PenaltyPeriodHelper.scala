@@ -17,7 +17,7 @@
 package utils
 
 import models.penalty.PenaltyPeriod
-import models.v3.getPenaltyDetails.lateSubmission.LateSubmission
+import models.getPenaltyDetails.lateSubmission.LateSubmission
 
 object PenaltyPeriodHelper {
 

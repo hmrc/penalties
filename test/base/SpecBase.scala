@@ -16,7 +16,6 @@
 
 package base
 
-import java.time.LocalDateTime
 import config.AppConfig
 import models.ETMPPayload
 import models.appeals.AppealResponseModel
@@ -27,14 +26,14 @@ import models.penalty.PenaltyPeriod
 import models.point.{PenaltyPoint, PenaltyTypeEnum, PointStatusEnum}
 import models.reason.PaymentPenaltyReasonEnum
 import models.submission.{Submission, SubmissionStatusEnum}
-import models.v2.GetPenaltyDetails
-import models.v2.financialDetails.GetFinancialDetails
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.inject.Injector
 import play.api.mvc.AnyContent
 import play.api.test.FakeRequest
+
+import java.time.LocalDateTime
 
 trait SpecBase extends AnyWordSpec with Matchers with GuiceOneAppPerSuite {
 
@@ -507,13 +506,4 @@ trait SpecBase extends AnyWordSpec with Matchers with GuiceOneAppPerSuite {
 
   val appealResponseModel = AppealResponseModel("PR-123456789")
 
-  val mockGetPenaltyDetailsModel: GetPenaltyDetails = GetPenaltyDetails(
-    lateSubmissionPenalty = None,
-    latePaymentPenalty = None
-  )
-
-  val mockGetFinancialDetailsModel: GetFinancialDetails = GetFinancialDetails(
-    documentDetails = Seq(),
-    financialDetails = Seq()
-  )
 }

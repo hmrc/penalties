@@ -447,15 +447,6 @@ trait ETMPWiremock {
     ))
   }
 
-  def mockStubResponseForGetPenaltyDetailsv3(status: Int, vrn: String, body: Option[String] = None): StubMapping = {
-    stubFor(get(urlEqualTo(s"/penalties-stub/penalty/details/VATC/VRN/$vrn"))
-      .willReturn(
-        aResponse()
-          .withBody(body.fold(getPenaltyDetailsWithLSPandLPPAsJsonv3.toString())(identity))
-          .withStatus(status)
-      ))
-  }
-
   def mockResponseForGetPenaltyDetailsv3(status: Int, vatcUrl: String, body: Option[String] = None): StubMapping = {
     stubFor(get(urlEqualTo(s"/penalty/details/VATC/VRN/$vatcUrl"))
       .willReturn(
@@ -465,29 +456,11 @@ trait ETMPWiremock {
       ))
   }
 
-  def mockStubResponseForGetFinancialDetails(status: Int, vatcUrl: String, body: Option[String] = None): StubMapping = {
-    stubFor(get(urlEqualTo(s"/penalties-stub/penalty/financial-data/$vatcUrl"))
-    .willReturn(
-      aResponse()
-        .withBody(body.fold(getFinancialDetailsAsJson.toString())(identity))
-        .withStatus(status)
-    ))
-  }
-
   def mockResponseForGetFinancialDetails(status: Int, vatcUrl: String, body: Option[String] = None): StubMapping = {
     stubFor(get(urlEqualTo(s"/penalty/financial-data/$vatcUrl"))
       .willReturn(
         aResponse()
           .withBody(body.fold(getFinancialDetailsAsJson.toString())(identity))
-          .withStatus(status)
-      ))
-  }
-
-  def mockStubResponseForGetFinancialDetailsv3(status: Int, vatcUrl: String, body: Option[String] = None): StubMapping = {
-    stubFor(get(urlEqualTo(s"/penalties-stub/penalty/financial-data/$vatcUrl"))
-      .willReturn(
-        aResponse()
-          .withBody(body.fold(getFinancialDetailsAsJsonv3.toString())(identity))
           .withStatus(status)
       ))
   }

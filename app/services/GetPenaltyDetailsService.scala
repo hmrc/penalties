@@ -16,8 +16,8 @@
 
 package services
 
-import connectors.parsers.v3.getPenaltyDetails.GetPenaltyDetailsParser._
-import connectors.v3.getPenaltyDetails.GetPenaltyDetailsConnector
+import connectors.getPenaltyDetails.GetPenaltyDetailsConnector
+import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser._
 import uk.gov.hmrc.http.HeaderCarrier
 import utils.Logger.logger
 

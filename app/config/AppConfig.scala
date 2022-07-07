@@ -63,20 +63,9 @@ class AppConfig @Inject()(val config: Configuration, servicesConfig: ServicesCon
     else etmpBase + "/"
   }
 
-  def getPenaltyDetailsUrl: String = {
-    if(!isEnabled(CallAPI1812ETMP)) stubBase + "/penalties-stub/penalty/details/VATC/VRN/"
-    else etmpBase + "/penalty/details/VATC/VRN/"
-  }
+  def getPenaltyDetailsUrl: String = etmpBase + "/penalty/details/VATC/VRN/"
 
-  def getFinancialDetailsUrl: String = {
-    if(!isEnabled(CallAPI1811ETMP)) stubBase + "/penalties-stub/penalty/financial-data/"
-    else etmpBase + "/penalty/financial-data"
-  }
-
-  def getFinancialDetailsUrlv3(vrn: String): String = {
-    if(!isEnabled(CallAPI1811ETMP)) stubBase + s"/penalties-stub/penalty/financial-data/VRN/$vrn/VATC"
-    else etmpBase + s"/penalty/financial-data/VRN/$vrn/VATC"
-  }
+  def getFinancialDetailsUrl(vrn: String): String = etmpBase + s"/penalty/financial-data/VRN/$vrn/VATC"
 
   def getAppealSubmissionURL(enrolmentKey: String, isLPP: Boolean, penaltyNumber: String): String = {
     if(!isEnabled(CallPEGA)) stubBase + s"/penalties-stub/appeals/submit?enrolmentKey=$enrolmentKey&isLPP=$isLPP&penaltyNumber=$penaltyNumber"

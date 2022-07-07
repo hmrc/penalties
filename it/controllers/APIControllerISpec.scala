@@ -16,7 +16,7 @@
 
 package controllers
 
-import config.featureSwitches.{CallAPI1811ETMP, CallAPI1812ETMP, FeatureSwitching, UseAPI1812Model}
+import config.featureSwitches.{FeatureSwitching, UseAPI1812Model}
 import play.api.http.Status
 import play.api.libs.json.{JsValue, Json}
 import play.api.test.Helpers._
@@ -360,7 +360,7 @@ class APIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock wit
       s"return OK (${Status.OK})" when {
         "the get penalty details call succeeds" in {
           enableFeatureSwitch(UseAPI1812Model)
-          mockStubResponseForGetPenaltyDetailsv3(Status.OK, "123456789", body = Some(getPenaltyDetailsJson.toString()))
+          mockResponseForGetPenaltyDetailsv3(Status.OK, "123456789", body = Some(getPenaltyDetailsJson.toString()))
           val result = await(buildClientForRequestToApp(uri = "/vat/penalties/summary/123456789").get)
           result.status shouldBe OK
           Json.parse(result.body) shouldBe Json.parse(
@@ -389,7 +389,7 @@ class APIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock wit
       s"return ISE (${Status.INTERNAL_SERVER_ERROR})" when {
         "the get penalty details call fails" in {
           enableFeatureSwitch(UseAPI1812Model)
-          mockStubResponseForGetPenaltyDetailsv3(Status.INTERNAL_SERVER_ERROR, "123456789", body = Some(""))
+          mockResponseForGetPenaltyDetailsv3(Status.INTERNAL_SERVER_ERROR, "123456789", body = Some(""))
           val result = await(buildClientForRequestToApp(uri = "/vat/penalties/summary/123456789").get)
           result.status shouldBe INTERNAL_SERVER_ERROR
         }
@@ -398,14 +398,14 @@ class APIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock wit
       s"return NOT_FOUND (${Status.NOT_FOUND})" when {
         "the get penalty details call returns 404" in {
           enableFeatureSwitch(UseAPI1812Model)
-          mockStubResponseForGetPenaltyDetailsv3(Status.NOT_FOUND, "123456789", body = Some(""))
+          mockResponseForGetPenaltyDetailsv3(Status.NOT_FOUND, "123456789", body = Some(""))
           val result = await(buildClientForRequestToApp(uri = "/vat/penalties/summary/123456789").get)
           result.status shouldBe NOT_FOUND
         }
 
         "the get penalty details call returns 204" in {
           enableFeatureSwitch(UseAPI1812Model)
-          mockStubResponseForGetPenaltyDetailsv3(Status.NO_CONTENT, "123456789", body = Some(""))
+          mockResponseForGetPenaltyDetailsv3(Status.NO_CONTENT, "123456789", body = Some(""))
           val result = await(buildClientForRequestToApp(uri = "/vat/penalties/summary/123456789").get)
           result.status shouldBe NOT_FOUND
         }
@@ -523,8 +523,6 @@ class APIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock wit
             |              }
             |            ]
             |          }""".stripMargin)
-
-        enableFeatureSwitch(CallAPI1811ETMP)
         mockResponseForGetFinancialDetailsv3(Status.OK, s"VRN/123456789/VATC?docNumber=DOC1&dateFrom=2022-01-01&dateTo=2024-01-01&onlyOpenItems=false&includeStatistical=false&includeLocks=false&calculateAccruedInterest=false&removePOA=false&customerPaymentInformation=true", Some(sampleAPI1911Response.toString))
         val result = await(buildClientForRequestToApp(uri = s"/penalty/financial-data/VRN/123456789/VATC?docNumber=DOC1&dateFrom=2022-01-01&dateTo=2024-01-01&onlyOpenItems=false&includeStatistical=false&includeLocks=false&calculateAccruedInterest=false&removePOA=false&customerPaymentInformation=true").get)
         result.status shouldBe OK
@@ -534,8 +532,6 @@ class APIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock wit
 
     "return the status from EIS" when {
       "404 response received " in {
-
-        enableFeatureSwitch(CallAPI1811ETMP)
         mockResponseForGetFinancialDetailsv3(Status.NOT_FOUND, s"VRN/123456789/VATC?docNumber=DOC1&dateFrom=2022-01-01&dateTo=2024-01-01&onlyOpenItems=false&includeStatistical=false&includeLocks=false&calculateAccruedInterest=false&removePOA=false&customerPaymentInformation=true", Some(""))
 
         val result = await(buildClientForRequestToApp(uri = s"/penalty/financial-data/VRN/123456789/VATC?docNumber=DOC1&dateFrom=2022-01-01&dateTo=2024-01-01&onlyOpenItems=false&includeStatistical=false&includeLocks=false&calculateAccruedInterest=false&removePOA=false&customerPaymentInformation=true").get)
@@ -543,7 +539,6 @@ class APIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock wit
       }
 
       "Non 200 response received " in {
-        enableFeatureSwitch(CallAPI1811ETMP)
         mockResponseForGetFinancialDetailsv3(Status.BAD_REQUEST, s"VRN/123456789/VATC?docNumber=DOC1&dateFrom=2022-01-01&dateTo=2024-01-01&onlyOpenItems=false&includeStatistical=false&includeLocks=false&calculateAccruedInterest=false&removePOA=false&customerPaymentInformation=true", Some(""))
         val result = await(buildClientForRequestToApp(uri = s"/penalty/financial-data/VRN/123456789/VATC?docNumber=DOC1&dateFrom=2022-01-01&dateTo=2024-01-01&onlyOpenItems=false&includeStatistical=false&includeLocks=false&calculateAccruedInterest=false&removePOA=false&customerPaymentInformation=true").get)
         result.status shouldBe BAD_REQUEST
@@ -634,7 +629,6 @@ class APIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock wit
             | }
             |}
             |""".stripMargin)
-        enableFeatureSwitch(CallAPI1812ETMP)
         mockResponseForGetPenaltyDetailsv3(Status.OK, s"123456789?dateLimit=09", Some(sampleAPI1812Response.toString))
         val result = await(buildClientForRequestToApp(uri = s"/penalty-details/VAT/VRN/123456789?dateLimit=09").get)
         result.status shouldBe OK
@@ -644,14 +638,12 @@ class APIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock wit
 
     "return the status from EIS" when {
       "404 response received " in {
-        enableFeatureSwitch(CallAPI1812ETMP)
         mockResponseForGetPenaltyDetailsv3(Status.NOT_FOUND, s"123456789?dateLimit=09", Some(""))
         val result = await(buildClientForRequestToApp(uri = s"/penalty-details/VAT/VRN/123456789?dateLimit=09").get)
         result.status shouldBe NOT_FOUND
       }
 
       "Non 200 response received " in {
-        enableFeatureSwitch(CallAPI1812ETMP)
         mockResponseForGetPenaltyDetailsv3(Status.BAD_REQUEST, s"123456789?dateLimit=09", Some(""))
         val result = await(buildClientForRequestToApp(uri = s"/penalty-details/VAT/VRN/123456789?dateLimit=09").get)
         result.status shouldBe BAD_REQUEST

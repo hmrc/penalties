@@ -16,13 +16,10 @@
 
 package controllers
 
-import connectors.parsers.ETMPPayloadParser.GetETMPPayloadNoContent
-import connectors.parsers.v3.getFinancialDetails.GetFinancialDetailsParser._
-import connectors.parsers.v3.getPenaltyDetails.GetPenaltyDetailsParser._
-import connectors.parsers.v3.getPenaltyDetails.GetPenaltyDetailsParser.GetPenaltyDetailsSuccessResponse
-import models.auditing.UserHasPenaltyAuditModel
+import connectors.parsers.getFinancialDetails.GetFinancialDetailsParser._
+import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser.{GetPenaltyDetailsSuccessResponse, _}
 import models.auditing.v2.{UserHasPenaltyAuditModel => AuditModelV2}
-import models.v3.getPenaltyDetails.GetPenaltyDetails
+import models.getPenaltyDetails.GetPenaltyDetails
 import play.api.libs.json.Json
 import play.api.mvc._
 import services.auditing.AuditService
@@ -43,37 +40,13 @@ class PenaltiesFrontendController @Inject()(etmpService: ETMPService,
                                cc: ControllerComponents)
   extends BackendController(cc) {
 
-  def getPenaltiesData(enrolmentKey: String, arn: Option[String] = None, newApiModel: Boolean = false,
-                       newFinancialApiModel: Boolean = false): Action[AnyContent] = Action.async {
+  def getPenaltiesData(enrolmentKey: String, arn: Option[String] = None): Action[AnyContent] = Action.async {
     implicit request => {
-      if(!newApiModel) {
-        etmpService.getPenaltyDataFromETMPForEnrolment(enrolmentKey).map {
-          result => {
-            result._1.fold {
-              result._2 match {
-                case Left(GetETMPPayloadNoContent) => NotFound(s"Could not retrieve ETMP penalty data for $enrolmentKey")
-                case _ => InternalServerError("Something went wrong.")
-              }
-            }(
-              etmpData => {
-                if (etmpData.pointsTotal > 0) {
-                  val auditModel = UserHasPenaltyAuditModel(etmpData, RegimeHelper.getIdentifierFromEnrolmentKey(enrolmentKey),
-                    RegimeHelper.getIdentifierTypeFromEnrolmentKey(enrolmentKey),
-                    arn)
-                  auditService.audit(auditModel)
-                }
-                Ok(Json.toJson(etmpData))
-              }
-            )
-          }
-        }
-      } else {
-        handleGetPenaltyDetailsCall(enrolmentKey, arn, newFinancialApiModel)
+        handleGetPenaltyDetailsCall(enrolmentKey, arn)
       }
-    }
   }
 
-  private def handleGetPenaltyDetailsCall(enrolmentKey: String, arn: Option[String], useNewFinancialAPIModel: Boolean)
+  private def handleGetPenaltyDetailsCall(enrolmentKey: String, arn: Option[String])
                                          (implicit request: Request[_]): Future[Result] = {
     val vrn: String = RegimeHelper.getIdentifierFromEnrolmentKey(enrolmentKey)
     getPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(vrn).flatMap {
@@ -96,9 +69,7 @@ class PenaltiesFrontendController @Inject()(etmpService: ETMPService,
         }
       },
         penaltyDetailsSuccess => {
-          if(useNewFinancialAPIModel) {
             handleAndCombineGetFinancialDetailsData(penaltyDetailsSuccess.asInstanceOf[GetPenaltyDetailsSuccessResponse].penaltyDetails, enrolmentKey, arn)
-          } else Future(returnResponse(penaltyDetailsSuccess.asInstanceOf[GetPenaltyDetailsSuccessResponse].penaltyDetails, enrolmentKey, arn))
         }
       )
     }

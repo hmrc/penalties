@@ -56,8 +56,7 @@ class AppConfigSpec extends AnyWordSpec with ShouldMatchers with FeatureSwitchin
 
   "getPenaltyDetailsUrl" should {
     "call ETMP when the feature switch is enabled" in new Setup {
-      enableFeatureSwitch(CallAPI1812ETMP)
-      when(mockServicesConfig.baseUrl(Matchers.any()))
+       when(mockServicesConfig.baseUrl(Matchers.any()))
         .thenReturn("localhost:0000")
       val result: String = config.getPenaltyDetailsUrl
       //TODO: change this once we have the correct URL
@@ -65,30 +64,27 @@ class AppConfigSpec extends AnyWordSpec with ShouldMatchers with FeatureSwitchin
     }
 
     "call the stub when the feature switch is disabled" in new Setup {
-      disableFeatureSwitch(CallAPI1812ETMP)
       when(mockServicesConfig.baseUrl(Matchers.any()))
         .thenReturn("localhost:0000")
       val result: String = config.getPenaltyDetailsUrl
-      result shouldBe "localhost:0000/penalties-stub/penalty/details/VATC/VRN/"
+      result shouldBe "localhost:0000/penalty/details/VATC/VRN/"
     }
   }
 
   "getFinancialDetailsUrl" should {
     "call ETMP when the feature switch is enabled" in new Setup {
-      enableFeatureSwitch(CallAPI1811ETMP)
       when(mockServicesConfig.baseUrl(Matchers.any()))
         .thenReturn("localhost:0000")
-      val result: String = config.getFinancialDetailsUrl
+      val result: String = config.getFinancialDetailsUrl("123456789")
       //TODO: change this once we have the correct URL
-      result shouldBe "localhost:0000/penalty/financial-data"
+      result shouldBe "localhost:0000/penalty/financial-data/VRN/123456789/VATC"
     }
 
     "call the stub when the feature switch is disabled" in new Setup {
-      disableFeatureSwitch(CallAPI1811ETMP)
       when(mockServicesConfig.baseUrl(Matchers.any()))
         .thenReturn("localhost:0000")
-      val result: String = config.getFinancialDetailsUrl
-      result shouldBe "localhost:0000/penalties-stub/penalty/financial-data/"
+      val result: String = config.getFinancialDetailsUrl("123456789")
+      result shouldBe "localhost:0000/penalty/financial-data/VRN/123456789/VATC"
     }
   }
 

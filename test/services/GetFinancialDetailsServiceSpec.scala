@@ -18,13 +18,13 @@ package services
 
 import base.SpecBase
 import config.featureSwitches.FeatureSwitching
-import connectors.v3.getFinancialDetails.GetFinancialDetailsConnector
+import connectors.getFinancialDetails.GetFinancialDetailsConnector
 import org.mockito.Mockito.{mock, reset, when}
 
 import java.time.LocalDate
-import connectors.parsers.v3.getFinancialDetails.GetFinancialDetailsParser._
-import models.v3.MainTransactionEnum
-import models.v3.getFinancialDetails._
+import connectors.parsers.getFinancialDetails.GetFinancialDetailsParser._
+import models.getFinancialDetails._
+import models.mainTransaction.MainTransactionEnum
 import org.mockito.Matchers
 import org.mockito.Matchers.any
 import play.api.Configuration
