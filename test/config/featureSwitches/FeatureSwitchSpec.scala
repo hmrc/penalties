@@ -55,9 +55,8 @@ class FeatureSwitchSpec extends SpecBase {
       featureSwitching.isEnabled(CallPEGA) shouldBe true
     }
 
-    s"return.false if PEGA feature switch is disabled" in new Setup {
-      featureSwitching.disableFeatureSwitch(CallAPI1811ETMP)
-      featureSwitching.disableFeatureSwitch(CallAPI1812ETMP)
+    s"return false if PEGA feature switch is disabled" in new Setup {
+      featureSwitching.disableFeatureSwitch(CallPEGA)
       featureSwitching.isEnabled(CallPEGA) shouldBe false
     }
 

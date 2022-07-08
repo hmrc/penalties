@@ -54,8 +54,6 @@ class APIControllerSpec extends SpecBase with FeatureSwitching {
   }
 
   "getSummaryDataForVRN" should {
-
-    "call API 1812 when call 1812 feature is enabled" must {
       val getPenaltyDetailsNoEstimatedLPPs: GetPenaltyDetails = GetPenaltyDetails(
         totalisations = None,
         lateSubmissionPenalty = Some(
@@ -273,7 +271,6 @@ class APIControllerSpec extends SpecBase with FeatureSwitching {
         )
       }
     }
-  }
 
   "getFinancialDetails" should {
     s"return OK (${Status.OK}) when a JSON payload is received from EIS" in new Setup(isFSEnabled = true) {

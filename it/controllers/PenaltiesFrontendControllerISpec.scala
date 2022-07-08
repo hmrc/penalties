@@ -219,8 +219,6 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
       |}
       |""".stripMargin)
 
-  "call API 1812 when call 1812 feature is enabled" must {
-
     val getPenaltyDetailsJson: JsValue = Json.parse(
       """
         |{
@@ -606,4 +604,3 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
       wireMockServer.findAll(postRequestedFor(urlEqualTo("/write/audit"))).asScala.toList.exists(_.getBodyAsString.contains("UserHasPenalty")) shouldBe false
     }
   }
-}
