@@ -595,14 +595,14 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
     }
 
     "NOT audit the response when the user has 0 penalties" in {
-      mockStubResponseForGetPenaltyDetails(Status.OK, "123456789", body = Some(getPenaltyDetailsWithNoPointsAsJsonv3.toString()))
+      mockStubResponseForGetPenaltyDetails(Status.OK, "123456789", body = Some(getPenaltyDetailsWithNoPointsAsJson.toString()))
       mockStubResponseForGetFinancialDetails(Status.OK,
         s"VRN/123456789/VATC?dateFrom=${LocalDate.now.minusYears(2)}&dateTo=${LocalDate.now}" +
           s"&onlyOpenItems=false&includeStatistical=true&includeLocks=false" +
           s"&calculateAccruedInterest=true&removePOA=false&customerPaymentInformation=false", Some(getFinancialDetailsJson.toString()))
       val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/HMRC-MTD-VAT~VRN~123456789").get())
       result.status shouldBe Status.OK
-      result.body shouldBe getPenaltyDetailsWithNoPointsAsJsonv3.toString()
+      result.body shouldBe getPenaltyDetailsWithNoPointsAsJson.toString()
       wireMockServer.findAll(postRequestedFor(urlEqualTo("/write/audit"))).asScala.toList.exists(_.getBodyAsString.contains("UserHasPenalty")) shouldBe false
     }
   }
