@@ -16,21 +16,19 @@
 
 package controllers
 
-import config.featureSwitches.{FeatureSwitching, UseAPI1812Model}
-import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser.GetPenaltyDetailsSuccessResponse
+import config.featureSwitches.FeatureSwitching
 import connectors.getFinancialDetails.GetFinancialDetailsConnector
 import connectors.getPenaltyDetails.GetPenaltyDetailsConnector
 import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser
-import models.ETMPPayload
+import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser.GetPenaltyDetailsSuccessResponse
 import models.api.APIModel
 import models.auditing.UserHasPenaltyAuditModel
-import models.auditing.v2.{UserHasPenaltyAuditModel => AuditModelV2}
 import models.getPenaltyDetails.GetPenaltyDetails
 import play.api.Configuration
 import play.api.libs.json.Json
 import play.api.mvc._
 import services.auditing.AuditService
-import services.{APIService, ETMPService, GetPenaltyDetailsService}
+import services.{APIService, GetPenaltyDetailsService}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import utils.Logger.logger
 import utils.RegimeHelper
@@ -39,8 +37,7 @@ import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.matching.Regex
 
-class APIController @Inject()(etmpService: ETMPService,
-                              auditService: AuditService,
+class APIController @Inject()(auditService: AuditService,
                               apiService: APIService,
                               getPenaltyDetailsService: GetPenaltyDetailsService,
                               getFinancialDetailsConnector: GetFinancialDetailsConnector,
@@ -55,17 +52,6 @@ class APIController @Inject()(etmpService: ETMPService,
         Future(BadRequest(s"VRN: $vrn was not in a valid format."))
       } else {
         val enrolmentKey = RegimeHelper.constructMTDVATEnrolmentKey(vrn)
-        if (!isEnabled(UseAPI1812Model)) {
-          etmpService.getPenaltyDataFromETMPForEnrolment(enrolmentKey).map {
-            _._1.fold(
-              NotFound(s"Unable to find data for VRN: $vrn")
-            )(
-              etmpPayload => {
-                returnResponseForAPI(etmpPayload, enrolmentKey)
-              }
-            )
-          }
-        } else {
           getPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(vrn).map {
             _.fold({
               case GetPenaltyDetailsParser.GetPenaltyDetailsFailureResponse(status) if status == NOT_FOUND || status == NO_CONTENT => {
@@ -89,32 +75,6 @@ class APIController @Inject()(etmpService: ETMPService,
         }
       }
     }
-  }
-
-  private def returnResponseForAPI(etmpPayload: ETMPPayload, enrolmentKey: String)(implicit request: Request[_]): Result = {
-    val pointsTotal = etmpPayload.pointsTotal
-    val penaltyAmountWithEstimateStatus = etmpService.findEstimatedPenaltiesAmount(etmpPayload)
-    val noOfEstimatedPenalties = etmpService.getNumberOfEstimatedPenalties(etmpPayload)
-    val crystalizedPenaltyAmount = etmpService.getNumberOfCrystalizedPenalties(etmpPayload)
-    val crystalizedPenaltyTotal = etmpService.getCrystalisedPenaltyTotal(etmpPayload)
-    val hasAnyPenaltyData = etmpService.checkIfHasAnyPenaltyData(etmpPayload)
-    val responseData: APIModel = APIModel(
-      noOfPoints = pointsTotal,
-      noOfEstimatedPenalties = noOfEstimatedPenalties,
-      noOfCrystalisedPenalties = crystalizedPenaltyAmount,
-      estimatedPenaltyAmount = penaltyAmountWithEstimateStatus,
-      crystalisedPenaltyAmountDue = crystalizedPenaltyTotal,
-      hasAnyPenaltyData = hasAnyPenaltyData)
-    if (pointsTotal > 0) {
-      val auditModel = UserHasPenaltyAuditModel(
-        etmpPayload = etmpPayload,
-        identifier = RegimeHelper.getIdentifierFromEnrolmentKey(enrolmentKey),
-        identifierType = RegimeHelper.getIdentifierTypeFromEnrolmentKey(enrolmentKey),
-        arn = None) //TODO: need to check this
-      auditService.audit(auditModel)
-    }
-    Ok(Json.toJson(responseData))
-  }
 
   private def returnResponseForAPI(penaltyDetails: GetPenaltyDetails, enrolmentKey: String)(implicit request: Request[_]): Result = {
     val pointsTotal = penaltyDetails.lateSubmissionPenalty.map(_.summary.activePenaltyPoints).getOrElse(0)
@@ -131,7 +91,7 @@ class APIController @Inject()(etmpService: ETMPService,
       crystalisedPenaltyAmountDue = crystallisedPenaltyTotal,
       hasAnyPenaltyData = hasAnyPenaltyData)
     if (hasAnyPenaltyData) {
-      val auditModel = AuditModelV2(
+      val auditModel = UserHasPenaltyAuditModel(
         penaltyDetails = penaltyDetails,
         identifier = RegimeHelper.getIdentifierFromEnrolmentKey(enrolmentKey),
         identifierType = RegimeHelper.getIdentifierTypeFromEnrolmentKey(enrolmentKey),

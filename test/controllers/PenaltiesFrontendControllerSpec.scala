@@ -20,7 +20,6 @@ import base.SpecBase
 import config.AppConfig
 import connectors.parsers.getFinancialDetails.GetFinancialDetailsParser.{GetFinancialDetailsFailureResponse, GetFinancialDetailsMalformed, GetFinancialDetailsNoContent, GetFinancialDetailsSuccessResponse}
 import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser.{GetPenaltyDetailsFailureResponse, GetPenaltyDetailsMalformed, GetPenaltyDetailsNoContent, GetPenaltyDetailsSuccessResponse}
-import models.ETMPPayload
 import models.getFinancialDetails._
 import models.getPenaltyDetails.GetPenaltyDetails
 import models.getPenaltyDetails.latePayment._
@@ -44,14 +43,10 @@ class PenaltiesFrontendControllerSpec extends SpecBase {
   val mockGetPenaltyDetailsService: GetPenaltyDetailsService = mock(classOf[GetPenaltyDetailsService])
   val mockPenaltiesFrontendService: PenaltiesFrontendService = mock(classOf[PenaltiesFrontendService])
   val mockGetFinancialDetailsService: GetFinancialDetailsService = mock(classOf[GetFinancialDetailsService])
-  val etmpPayloadWithNoPenalties: ETMPPayload = ETMPPayload(
-    pointsTotal = 0, lateSubmissions = 0, adjustmentPointsTotal = 0, fixedPenaltyAmount = 0, penaltyAmountsTotal = 0, otherPenalties = None, vatOverview = None, penaltyPointsThreshold = 4, penaltyPoints = Seq.empty, latePaymentPenalties = None
-  )
 
   class Setup(isFSEnabled: Boolean = true) {
     reset(mockAppConfig, mockETMPService, mockAuditService, mockGetPenaltyDetailsService, mockGetFinancialDetailsService, mockPenaltiesFrontendService)
     val controller: PenaltiesFrontendController = new PenaltiesFrontendController(
-      mockETMPService,
       mockAuditService,
       mockGetPenaltyDetailsService,
       mockGetFinancialDetailsService,

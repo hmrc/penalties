@@ -17,7 +17,7 @@
 package connectors.getFinancialDetails
 
 import java.time.LocalDate
-import config.featureSwitches.FeatureSwitching
+import config.featureSwitches.{CallAPI1811ETMP, FeatureSwitching}
 import connectors.parsers.getFinancialDetails.GetFinancialDetailsParser._
 import play.api.http.Status
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
@@ -33,13 +33,15 @@ class GetFinancialDetailsConnectorISpec extends IntegrationSpecCommonBase with E
 
   "getFinancialDetails" should {
     "return a successful response when called" in new Setup {
-      mockResponseForGetFinancialDetailsv3(Status.OK,
+      enableFeatureSwitch(CallAPI1811ETMP)
+      mockResponseForGetFinancialDetails(Status.OK,
         s"VRN/123456789/VATC?dateFrom=${LocalDate.now()}&dateTo=${LocalDate.now()}&onlyOpenItems=false&includeStatistical=true&includeLocks=false&calculateAccruedInterest=true&removePOA=false&customerPaymentInformation=false")
       val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails("123456789", LocalDate.now(), LocalDate.now())(hc))
       result.isRight shouldBe true
     }
 
     s"return a $GetFinancialDetailsMalformed response when called" in new Setup {
+      enableFeatureSwitch(CallAPI1811ETMP)
       val malformedBody =  """
           {
            "documentDetails": [{
@@ -54,49 +56,56 @@ class GetFinancialDetailsConnectorISpec extends IntegrationSpecCommonBase with E
     }
 
     s"return a $GetFinancialDetailsFailureResponse when the response status is ISE (${Status.INTERNAL_SERVER_ERROR})" in new Setup {
-      mockResponseForGetFinancialDetailsv3(Status.INTERNAL_SERVER_ERROR, s"VRN/123456789/VATC?dateFrom=${LocalDate.now()}&dateTo=${LocalDate.now()}&onlyOpenItems=false&includeStatistical=true&includeLocks=false&calculateAccruedInterest=true&removePOA=false&customerPaymentInformation=false")
+      enableFeatureSwitch(CallAPI1811ETMP)
+      mockResponseForGetFinancialDetails(Status.INTERNAL_SERVER_ERROR, s"VRN/123456789/VATC?dateFrom=${LocalDate.now()}&dateTo=${LocalDate.now()}&onlyOpenItems=false&includeStatistical=true&includeLocks=false&calculateAccruedInterest=true&removePOA=false&customerPaymentInformation=false")
       val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails("123456789", LocalDate.now(), LocalDate.now()))
       result.isLeft shouldBe true
       result.left.get.asInstanceOf[GetFinancialDetailsFailureResponse].status shouldBe Status.INTERNAL_SERVER_ERROR
     }
 
     s"return a $GetFinancialDetailsFailureResponse when the response status is ISE (${Status.SERVICE_UNAVAILABLE})" in new Setup {
-      mockResponseForGetFinancialDetailsv3(Status.SERVICE_UNAVAILABLE, s"VRN/123456789/VATC?dateFrom=${LocalDate.now()}&dateTo=${LocalDate.now()}&onlyOpenItems=false&includeStatistical=true&includeLocks=false&calculateAccruedInterest=true&removePOA=false&customerPaymentInformation=false")
+      enableFeatureSwitch(CallAPI1811ETMP)
+      mockResponseForGetFinancialDetails(Status.SERVICE_UNAVAILABLE, s"VRN/123456789/VATC?dateFrom=${LocalDate.now()}&dateTo=${LocalDate.now()}&onlyOpenItems=false&includeStatistical=true&includeLocks=false&calculateAccruedInterest=true&removePOA=false&customerPaymentInformation=false")
       val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails("123456789", LocalDate.now(), LocalDate.now()))
       result.isLeft shouldBe true
       result.left.get.asInstanceOf[GetFinancialDetailsFailureResponse].status shouldBe Status.SERVICE_UNAVAILABLE
     }
 
     s"return a $GetFinancialDetailsFailureResponse when the response status is NOT FOUND (${Status.NOT_FOUND})" in new Setup {
-      mockResponseForGetFinancialDetailsv3(Status.NOT_FOUND, s"VRN/123456789/VATC?dateFrom=${LocalDate.now()}&dateTo=${LocalDate.now()}&onlyOpenItems=false&includeStatistical=true&includeLocks=false&calculateAccruedInterest=true&removePOA=false&customerPaymentInformation=false")
+      enableFeatureSwitch(CallAPI1811ETMP)
+      mockResponseForGetFinancialDetails(Status.NOT_FOUND, s"VRN/123456789/VATC?dateFrom=${LocalDate.now()}&dateTo=${LocalDate.now()}&onlyOpenItems=false&includeStatistical=true&includeLocks=false&calculateAccruedInterest=true&removePOA=false&customerPaymentInformation=false")
       val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails("123456789", LocalDate.now(), LocalDate.now()))
       result.isLeft shouldBe true
       result.left.get.asInstanceOf[GetFinancialDetailsFailureResponse].status shouldBe Status.NOT_FOUND
     }
 
     s"return a $GetFinancialDetailsFailureResponse when the response status is CONFLICT (${Status.CONFLICT})" in new Setup {
-      mockResponseForGetFinancialDetailsv3(Status.CONFLICT, s"VRN/123456789/VATC?dateFrom=${LocalDate.now()}&dateTo=${LocalDate.now()}&onlyOpenItems=false&includeStatistical=true&includeLocks=false&calculateAccruedInterest=true&removePOA=false&customerPaymentInformation=false")
+      enableFeatureSwitch(CallAPI1811ETMP)
+      mockResponseForGetFinancialDetails(Status.CONFLICT, s"VRN/123456789/VATC?dateFrom=${LocalDate.now()}&dateTo=${LocalDate.now()}&onlyOpenItems=false&includeStatistical=true&includeLocks=false&calculateAccruedInterest=true&removePOA=false&customerPaymentInformation=false")
       val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails("123456789", LocalDate.now(), LocalDate.now()))
       result.isLeft shouldBe true
       result.left.get.asInstanceOf[GetFinancialDetailsFailureResponse].status shouldBe Status.CONFLICT
     }
 
     s"return a $GetFinancialDetailsFailureResponse when the response status is UNPROCESSABLE ENTITY (${Status.UNPROCESSABLE_ENTITY})" in new Setup {
-      mockResponseForGetFinancialDetailsv3(Status.UNPROCESSABLE_ENTITY, s"VRN/123456789/VATC?dateFrom=${LocalDate.now()}&dateTo=${LocalDate.now()}&onlyOpenItems=false&includeStatistical=true&includeLocks=false&calculateAccruedInterest=true&removePOA=false&customerPaymentInformation=false")
+      enableFeatureSwitch(CallAPI1811ETMP)
+      mockResponseForGetFinancialDetails(Status.UNPROCESSABLE_ENTITY, s"VRN/123456789/VATC?dateFrom=${LocalDate.now()}&dateTo=${LocalDate.now()}&onlyOpenItems=false&includeStatistical=true&includeLocks=false&calculateAccruedInterest=true&removePOA=false&customerPaymentInformation=false")
       val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails("123456789", LocalDate.now(), LocalDate.now()))
       result.isLeft shouldBe true
       result.left.get.asInstanceOf[GetFinancialDetailsFailureResponse].status shouldBe Status.UNPROCESSABLE_ENTITY
     }
 
     s"return a $GetFinancialDetailsFailureResponse when the response status is BAD REQUEST (${Status.BAD_REQUEST})" in new Setup {
-      mockResponseForGetFinancialDetailsv3(Status.BAD_REQUEST, s"VRN/123456789/VATC?dateFrom=${LocalDate.now()}&dateTo=${LocalDate.now()}&onlyOpenItems=false&includeStatistical=true&includeLocks=false&calculateAccruedInterest=true&removePOA=false&customerPaymentInformation=false")
+      enableFeatureSwitch(CallAPI1811ETMP)
+      mockResponseForGetFinancialDetails(Status.BAD_REQUEST, s"VRN/123456789/VATC?dateFrom=${LocalDate.now()}&dateTo=${LocalDate.now()}&onlyOpenItems=false&includeStatistical=true&includeLocks=false&calculateAccruedInterest=true&removePOA=false&customerPaymentInformation=false")
       val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails("123456789", LocalDate.now(), LocalDate.now()))
       result.isLeft shouldBe true
       result.left.get.asInstanceOf[GetFinancialDetailsFailureResponse].status shouldBe Status.BAD_REQUEST
     }
 
     s"return a $GetFinancialDetailsFailureResponse when the response status is FORBIDDEN (${Status.FORBIDDEN})" in new Setup {
-      mockResponseForGetFinancialDetailsv3(Status.FORBIDDEN, s"VRN/123456789/VATC?dateFrom=${LocalDate.now()}&dateTo=${LocalDate.now()}&onlyOpenItems=false&includeStatistical=true&includeLocks=false&calculateAccruedInterest=true&removePOA=false&customerPaymentInformation=false")
+      enableFeatureSwitch(CallAPI1811ETMP)
+      mockResponseForGetFinancialDetails(Status.FORBIDDEN, s"VRN/123456789/VATC?dateFrom=${LocalDate.now()}&dateTo=${LocalDate.now()}&onlyOpenItems=false&includeStatistical=true&includeLocks=false&calculateAccruedInterest=true&removePOA=false&customerPaymentInformation=false")
       val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails("123456789", LocalDate.now(), LocalDate.now()))
       result.isLeft shouldBe true
       result.left.get.asInstanceOf[GetFinancialDetailsFailureResponse].status shouldBe Status.FORBIDDEN
@@ -105,7 +114,8 @@ class GetFinancialDetailsConnectorISpec extends IntegrationSpecCommonBase with E
 
   "getFinancialDetailsForAPI" should {
     "return a 200 response" in new Setup {
-      mockResponseForGetFinancialDetailsv3(Status.OK, s"VRN/123456789/VATC?docNumber=DOC1&dateFrom=2022-01-01&dateTo=2024-01-01&onlyOpenItems=false&includeStatistical=false&includeLocks=false&calculateAccruedInterest=false&removePOA=false&customerPaymentInformation=true")
+      enableFeatureSwitch(CallAPI1811ETMP)
+      mockResponseForGetFinancialDetails(Status.OK, s"VRN/123456789/VATC?docNumber=DOC1&dateFrom=2022-01-01&dateTo=2024-01-01&onlyOpenItems=false&includeStatistical=false&includeLocks=false&calculateAccruedInterest=false&removePOA=false&customerPaymentInformation=true")
       val result: HttpResponse = await(connector.getFinancialDetailsForAPI(
         vrn = "123456789",
         docNumber = Some("DOC1"),
@@ -123,7 +133,8 @@ class GetFinancialDetailsConnectorISpec extends IntegrationSpecCommonBase with E
 
     "handle a UpstreamErrorResponse" when {
       "a 4xx error is returned" in new Setup {
-        mockResponseForGetFinancialDetailsv3(Status.FORBIDDEN, s"VRN/123456789/VATC?docNumber=DOC1&dateFrom=2022-01-01&dateTo=2024-01-01&onlyOpenItems=false&includeStatistical=false&includeLocks=false&calculateAccruedInterest=false&removePOA=false&customerPaymentInformation=true")
+        enableFeatureSwitch(CallAPI1811ETMP)
+        mockResponseForGetFinancialDetails(Status.FORBIDDEN, s"VRN/123456789/VATC?docNumber=DOC1&dateFrom=2022-01-01&dateTo=2024-01-01&onlyOpenItems=false&includeStatistical=false&includeLocks=false&calculateAccruedInterest=false&removePOA=false&customerPaymentInformation=true")
         val result: HttpResponse = await(connector.getFinancialDetailsForAPI(
           vrn = "123456789",
           docNumber = Some("DOC1"),
@@ -140,7 +151,8 @@ class GetFinancialDetailsConnectorISpec extends IntegrationSpecCommonBase with E
       }
 
       "a 5xx error is returned" in new Setup {
-        mockResponseForGetFinancialDetailsv3(Status.BAD_GATEWAY, s"VRN/123456789/VATC?docNumber=DOC1&dateFrom=2022-01-01&dateTo=2024-01-01&onlyOpenItems=false&includeStatistical=false&includeLocks=false&calculateAccruedInterest=false&removePOA=false&customerPaymentInformation=true")
+        enableFeatureSwitch(CallAPI1811ETMP)
+        mockResponseForGetFinancialDetails(Status.BAD_GATEWAY, s"VRN/123456789/VATC?docNumber=DOC1&dateFrom=2022-01-01&dateTo=2024-01-01&onlyOpenItems=false&includeStatistical=false&includeLocks=false&calculateAccruedInterest=false&removePOA=false&customerPaymentInformation=true")
         val result: HttpResponse = await(connector.getFinancialDetailsForAPI(
           vrn = "123456789",
           docNumber = Some("DOC1"),

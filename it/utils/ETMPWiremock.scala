@@ -438,16 +438,16 @@ trait ETMPWiremock {
           .withStatus(status)))
   }
 
-  def mockResponseForGetPenaltyDetails(status: Int, vrn: String, body: Option[String] = None): StubMapping = {
+  def mockStubResponseForGetPenaltyDetails(status: Int, vrn: String, body: Option[String] = None): StubMapping = {
     stubFor(get(urlEqualTo(s"/penalties-stub/penalty/details/VATC/VRN/$vrn"))
     .willReturn(
       aResponse()
-        .withBody(body.fold(getPenaltyDetailsWithLSPandLPPAsJson.toString())(identity))
+        .withBody(body.fold(getPenaltyDetailsWithLSPandLPPAsJsonv3.toString())(identity))
         .withStatus(status)
     ))
   }
 
-  def mockResponseForGetPenaltyDetailsv3(status: Int, vatcUrl: String, body: Option[String] = None): StubMapping = {
+  def mockResponseForGetPenaltyDetails(status: Int, vatcUrl: String, body: Option[String] = None): StubMapping = {
     stubFor(get(urlEqualTo(s"/penalty/details/VATC/VRN/$vatcUrl"))
       .willReturn(
         aResponse()
@@ -456,16 +456,16 @@ trait ETMPWiremock {
       ))
   }
 
-  def mockResponseForGetFinancialDetails(status: Int, vatcUrl: String, body: Option[String] = None): StubMapping = {
-    stubFor(get(urlEqualTo(s"/penalty/financial-data/$vatcUrl"))
+  def mockStubResponseForGetFinancialDetails(status: Int, vatcUrl: String, body: Option[String] = None): StubMapping = {
+    stubFor(get(urlEqualTo(s"/penalties-stub/penalty/financial-data/$vatcUrl"))
       .willReturn(
         aResponse()
-          .withBody(body.fold(getFinancialDetailsAsJson.toString())(identity))
+          .withBody(body.fold(getFinancialDetailsAsJsonv3.toString())(identity))
           .withStatus(status)
       ))
   }
 
-  def mockResponseForGetFinancialDetailsv3(status: Int, vatcUrl: String, body: Option[String] = None): StubMapping = {
+  def mockResponseForGetFinancialDetails(status: Int, vatcUrl: String, body: Option[String] = None): StubMapping = {
     stubFor(get(urlEqualTo(s"/penalty/financial-data/$vatcUrl"))
     .willReturn(
       aResponse()

@@ -378,19 +378,10 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
     )
 
     s"return OK (${Status.OK})" when {
-      "the get penalty details call succeeds" in {
-        mockResponseForGetPenaltyDetailsv3(Status.OK, "123456789", body = Some(getPenaltyDetailsJson.toString()))
-        mockResponseForGetFinancialDetailsv3(Status.OK,
-          s"VRN/123456789/VATC?dateFrom=${LocalDate.now.minusYears(2)}&dateTo=${LocalDate.now}" +
-            s"&onlyOpenItems=false&includeStatistical=true&includeLocks=false" +
-            s"&calculateAccruedInterest=true&removePOA=false&customerPaymentInformation=false", Some(getFinancialDetailsJson.toString()))
-        val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/HMRC-MTD-VAT~VRN~123456789").get)
-        result.status shouldBe OK
-      }
 
       "the get penalty details call succeeds and the get financial details call succeeds (combining the data together)" in {
-        mockResponseForGetPenaltyDetailsv3(Status.OK, "123456789", body = Some(getPenaltyDetailsJson.toString()))
-        mockResponseForGetFinancialDetailsv3(Status.OK,
+        mockStubResponseForGetPenaltyDetails(Status.OK, "123456789", body = Some(getPenaltyDetailsJson.toString()))
+        mockStubResponseForGetFinancialDetails(Status.OK,
           s"VRN/123456789/VATC?dateFrom=${LocalDate.now.minusYears(2)}&dateTo=${LocalDate.now}" +
           s"&onlyOpenItems=false&includeStatistical=true&includeLocks=false" +
           s"&calculateAccruedInterest=true&removePOA=false&customerPaymentInformation=false", Some(getFinancialDetailsJson.toString()))
@@ -428,11 +419,11 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
             | ]
             |}
             |""".stripMargin
-        mockResponseForGetFinancialDetailsv3(Status.NOT_FOUND,
+        mockStubResponseForGetFinancialDetails(Status.NOT_FOUND,
           s"VRN/123456789/VATC?dateFrom=${LocalDate.now.minusYears(2)}&dateTo=${LocalDate.now}" +
             s"&onlyOpenItems=false&includeStatistical=true&includeLocks=false" +
             s"&calculateAccruedInterest=true&removePOA=false&customerPaymentInformation=false", Some(noDataFoundBody))
-        mockResponseForGetPenaltyDetailsv3(Status.OK, "123456789", body = Some(getPenaltyDetailsNoLPPJson.toString()))
+        mockStubResponseForGetPenaltyDetails(Status.OK, "123456789", body = Some(getPenaltyDetailsNoLPPJson.toString()))
         val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/HMRC-MTD-VAT~VRN~123456789").get)
         result.status shouldBe OK
         Json.parse(result.body) shouldBe getPenaltyDetailsNoLPPJson
@@ -441,7 +432,7 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
 
     s"return NOT_FOUND (${Status.NOT_FOUND})" when {
       "the user supplies an invalid VRN" in {
-        mockResponseForGetPenaltyDetailsv3(Status.OK, "123456789", body = Some(getPenaltyDetailsJson.toString()))
+        mockStubResponseForGetPenaltyDetails(Status.OK, "123456789", body = Some(getPenaltyDetailsJson.toString()))
         val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/123456789123456789").get)
         result.status shouldBe NOT_FOUND
       }
@@ -460,7 +451,7 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
             | ]
             |}
             |""".stripMargin
-        mockResponseForGetPenaltyDetailsv3(Status.NOT_FOUND, "123456789", body = Some(noDataFoundBody))
+        mockStubResponseForGetPenaltyDetails(Status.NOT_FOUND, "123456789", body = Some(noDataFoundBody))
         val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/HMRC-MTD-VAT~VRN~123456789").get)
         result.status shouldBe NO_CONTENT
       }
@@ -477,8 +468,8 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
             | ]
             |}
             |""".stripMargin
-        mockResponseForGetPenaltyDetailsv3(Status.OK, "123456789", body = Some(getPenaltyDetailsJson.toString()))
-        mockResponseForGetFinancialDetailsv3(Status.NOT_FOUND,
+        mockStubResponseForGetPenaltyDetails(Status.OK, "123456789", body = Some(getPenaltyDetailsJson.toString()))
+        mockStubResponseForGetFinancialDetails(Status.NOT_FOUND,
           s"VRN/123456789/VATC?dateFrom=${LocalDate.now.minusYears(2)}&dateTo=${LocalDate.now}" +
             s"&onlyOpenItems=false&includeStatistical=true&includeLocks=false" +
             s"&calculateAccruedInterest=true&removePOA=false&customerPaymentInformation=false", Some(noDataFoundBody))
@@ -489,14 +480,14 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
 
     s"return ISE (${Status.INTERNAL_SERVER_ERROR})" when {
       "the get penalty details call fails" in {
-        mockResponseForGetPenaltyDetailsv3(Status.INTERNAL_SERVER_ERROR, "123456789", body = Some(""))
+        mockStubResponseForGetPenaltyDetails(Status.INTERNAL_SERVER_ERROR, "123456789", body = Some(""))
         val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/HMRC-MTD-VAT~VRN~123456789").get)
         result.status shouldBe INTERNAL_SERVER_ERROR
       }
 
       "the get financial details call fails" in {
-        mockResponseForGetPenaltyDetailsv3(Status.OK, "123456789", body = Some(getPenaltyDetailsJson.toString()))
-        mockResponseForGetFinancialDetailsv3(Status.INTERNAL_SERVER_ERROR,
+        mockStubResponseForGetPenaltyDetails(Status.OK, "123456789", body = Some(getPenaltyDetailsJson.toString()))
+        mockStubResponseForGetFinancialDetails(Status.INTERNAL_SERVER_ERROR,
           s"VRN/123456789/VATC?dateFrom=${LocalDate.now.minusYears(2)}&dateTo=${LocalDate.now}" +
             s"&onlyOpenItems=false&includeStatistical=true&includeLocks=false" +
             s"&calculateAccruedInterest=true&removePOA=false&customerPaymentInformation=false", Some(getFinancialDetailsJson.toString()))
@@ -592,8 +583,8 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
           |   }
           |}
           |""".stripMargin)
-      mockResponseForGetPenaltyDetailsv3(Status.OK, "123456789")
-      mockResponseForGetFinancialDetailsv3(Status.OK,
+      mockStubResponseForGetPenaltyDetails(Status.OK, "123456789")
+      mockStubResponseForGetFinancialDetails(Status.OK,
         s"VRN/123456789/VATC?dateFrom=${LocalDate.now.minusYears(2)}&dateTo=${LocalDate.now}" +
           s"&onlyOpenItems=false&includeStatistical=true&includeLocks=false" +
           s"&calculateAccruedInterest=true&removePOA=false&customerPaymentInformation=false", Some(getFinancialDetailsJson.toString()))
@@ -604,8 +595,8 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
     }
 
     "NOT audit the response when the user has 0 penalties" in {
-      mockResponseForGetPenaltyDetailsv3(Status.OK, "123456789", body = Some(getPenaltyDetailsWithNoPointsAsJsonv3.toString()))
-      mockResponseForGetFinancialDetailsv3(Status.OK,
+      mockStubResponseForGetPenaltyDetails(Status.OK, "123456789", body = Some(getPenaltyDetailsWithNoPointsAsJsonv3.toString()))
+      mockStubResponseForGetFinancialDetails(Status.OK,
         s"VRN/123456789/VATC?dateFrom=${LocalDate.now.minusYears(2)}&dateTo=${LocalDate.now}" +
           s"&onlyOpenItems=false&includeStatistical=true&includeLocks=false" +
           s"&calculateAccruedInterest=true&removePOA=false&customerPaymentInformation=false", Some(getFinancialDetailsJson.toString()))

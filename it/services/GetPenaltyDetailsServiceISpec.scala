@@ -120,14 +120,14 @@ class GetPenaltyDetailsServiceISpec extends IntegrationSpecCommonBase with ETMPW
     )
 
     s"call the connector and return a successful result" in {
-      mockResponseForGetPenaltyDetailsv3(Status.OK, "123456789")
+      mockStubResponseForGetPenaltyDetails(Status.OK, "123456789")
       val result = await(service.getDataFromPenaltyServiceForVATCVRN("123456789"))
       result.isRight shouldBe true
       result.right.get shouldBe GetPenaltyDetailsSuccessResponse(getPenaltyDetailsModel)
     }
 
     s"the response body is not well formed: $GetPenaltyDetailsMalformed" in {
-      mockResponseForGetPenaltyDetailsv3(Status.OK, "123456789", body = Some("""
+      mockStubResponseForGetPenaltyDetails(Status.OK, "123456789", body = Some("""
           {
            "lateSubmissionPenalty": {
              "summary": {}
@@ -151,14 +151,14 @@ class GetPenaltyDetailsServiceISpec extends IntegrationSpecCommonBase with ETMPW
           | ]
           |}
           |""".stripMargin
-      mockResponseForGetPenaltyDetailsv3(Status.NOT_FOUND, "123456789", body = Some(noDataFoundBody))
+      mockStubResponseForGetPenaltyDetails(Status.NOT_FOUND, "123456789", body = Some(noDataFoundBody))
       val result = await(service.getDataFromPenaltyServiceForVATCVRN("123456789"))
       result.isLeft shouldBe true
       result.left.get shouldBe GetPenaltyDetailsNoContent
     }
 
     s"an unknown response is returned from the connector - $GetPenaltyDetailsFailureResponse" in {
-      mockResponseForGetPenaltyDetailsv3(Status.IM_A_TEAPOT, "123456789")
+      mockStubResponseForGetPenaltyDetails(Status.IM_A_TEAPOT, "123456789")
       val result = await(service.getDataFromPenaltyServiceForVATCVRN("123456789"))
       result.isLeft shouldBe true
       result.left.get shouldBe GetPenaltyDetailsFailureResponse(Status.IM_A_TEAPOT)

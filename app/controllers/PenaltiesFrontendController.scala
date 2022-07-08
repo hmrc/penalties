@@ -18,12 +18,12 @@ package controllers
 
 import connectors.parsers.getFinancialDetails.GetFinancialDetailsParser._
 import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser.{GetPenaltyDetailsSuccessResponse, _}
-import models.auditing.v2.{UserHasPenaltyAuditModel => AuditModelV2}
+import models.auditing.UserHasPenaltyAuditModel
 import models.getPenaltyDetails.GetPenaltyDetails
 import play.api.libs.json.Json
 import play.api.mvc._
 import services.auditing.AuditService
-import services.{ETMPService, GetFinancialDetailsService, GetPenaltyDetailsService, PenaltiesFrontendService}
+import services.{GetFinancialDetailsService, GetPenaltyDetailsService, PenaltiesFrontendService}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import utils.Logger.logger
 import utils.RegimeHelper
@@ -32,8 +32,7 @@ import javax.inject.Inject
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class PenaltiesFrontendController @Inject()(etmpService: ETMPService,
-                               auditService: AuditService,
+class PenaltiesFrontendController @Inject()(auditService: AuditService,
                                getPenaltyDetailsService: GetPenaltyDetailsService,
                                getFinancialDetailsService: GetFinancialDetailsService,
                                penaltiesFrontendService: PenaltiesFrontendService,
@@ -115,7 +114,7 @@ class PenaltiesFrontendController @Inject()(etmpService: ETMPService,
 
   private def returnResponse(penaltyDetails: GetPenaltyDetails, enrolmentKey: String, arn: Option[String] = None)(implicit request: Request[_]): Result = {
     if (penaltyDetails.lateSubmissionPenalty.map(_.summary.activePenaltyPoints).getOrElse(0) > 0) {
-      val auditModel = AuditModelV2(penaltyDetails, RegimeHelper.getIdentifierFromEnrolmentKey(enrolmentKey),
+      val auditModel = UserHasPenaltyAuditModel(penaltyDetails, RegimeHelper.getIdentifierFromEnrolmentKey(enrolmentKey),
         RegimeHelper.getIdentifierTypeFromEnrolmentKey(enrolmentKey), arn)
       auditService.audit(auditModel)
     }
