@@ -41,36 +41,31 @@ class PenaltiesFrontendController @Inject()(auditService: AuditService,
 
   def getPenaltiesData(enrolmentKey: String, arn: Option[String] = None): Action[AnyContent] = Action.async {
     implicit request => {
-        handleGetPenaltyDetailsCall(enrolmentKey, arn)
-      }
-  }
-
-  private def handleGetPenaltyDetailsCall(enrolmentKey: String, arn: Option[String])
-                                         (implicit request: Request[_]): Future[Result] = {
-    val vrn: String = RegimeHelper.getIdentifierFromEnrolmentKey(enrolmentKey)
-    getPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(vrn).flatMap {
-      _.fold({
-        case GetPenaltyDetailsNoContent => {
-          logger.info(s"[PenaltiesFrontendController][handleGetPenaltyDetailsCall] - Received 404 for VRN: $vrn with NO_DATA_FOUND in response body")
-          Future(NoContent)
-        }
-        case GetPenaltyDetailsFailureResponse(status) if status == NOT_FOUND => {
-          logger.info(s"[PenaltiesFrontendController][handleGetPenaltyDetailsCall] - 1812 call returned 404 for VRN: $vrn")
-          Future(NotFound(s"A downstream call returned 404 for VRN: $vrn"))
-        }
-        case GetPenaltyDetailsFailureResponse(status) => {
-          logger.error(s"[PenaltiesFrontendController][handleGetPenaltyDetailsCall] - 1812 call returned an unexpected status: $status")
-          Future(InternalServerError(s"A downstream call returned an unexpected status: $status"))
-        }
-        case GetPenaltyDetailsMalformed => {
-          logger.error(s"[PenaltiesFrontendController][handleGetPenaltyDetailsCall] - Failed to parse penalty details response")
-          Future(InternalServerError(s"We were unable to parse penalty data."))
-        }
-      },
-        penaltyDetailsSuccess => {
+      val vrn: String = RegimeHelper.getIdentifierFromEnrolmentKey(enrolmentKey)
+      getPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(vrn).flatMap {
+        _.fold({
+          case GetPenaltyDetailsNoContent => {
+            logger.info(s"[PenaltiesFrontendController][handleGetPenaltyDetailsCall] - Received 404 for VRN: $vrn with NO_DATA_FOUND in response body")
+            Future(NoContent)
+          }
+          case GetPenaltyDetailsFailureResponse(status) if status == NOT_FOUND => {
+            logger.info(s"[PenaltiesFrontendController][handleGetPenaltyDetailsCall] - 1812 call returned 404 for VRN: $vrn")
+            Future(NotFound(s"A downstream call returned 404 for VRN: $vrn"))
+          }
+          case GetPenaltyDetailsFailureResponse(status) => {
+            logger.error(s"[PenaltiesFrontendController][handleGetPenaltyDetailsCall] - 1812 call returned an unexpected status: $status")
+            Future(InternalServerError(s"A downstream call returned an unexpected status: $status"))
+          }
+          case GetPenaltyDetailsMalformed => {
+            logger.error(s"[PenaltiesFrontendController][handleGetPenaltyDetailsCall] - Failed to parse penalty details response")
+            Future(InternalServerError(s"We were unable to parse penalty data."))
+          }
+        },
+          penaltyDetailsSuccess => {
             handleAndCombineGetFinancialDetailsData(penaltyDetailsSuccess.asInstanceOf[GetPenaltyDetailsSuccessResponse].penaltyDetails, enrolmentKey, arn)
-        }
-      )
+          }
+        )
+      }
     }
   }
 
