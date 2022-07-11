@@ -219,90 +219,6 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
       |}
       |""".stripMargin)
 
-  "getPenaltiesData" should {
-    "call stub data when 1812 feature is disabled" must {
-      s"call out to ETMP and return OK (${Status.OK}) when successful" in {
-        mockResponseForStubETMPPayload(Status.OK, "123456789")
-        val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/123456789?newApiModel=false").get())
-        result.status shouldBe Status.OK
-        result.body shouldBe etmpPayloadAsJson.toString()
-      }
-
-      s"call out to ETMP and return OK (${Status.OK}) when successful for LPP" in {
-        mockResponseForStubETMPPayload(Status.OK, "123456789", body = Some(Json.toJson(etmpPayloadModelWithLPP).toString))
-        val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/123456789?newApiModel=false").get())
-        result.status shouldBe Status.OK
-        result.body shouldBe Json.toJson(etmpPayloadModelWithLPP).toString
-      }
-
-      s"call out to ETMP and return OK (${Status.OK}) when successful for LPP with additional penalties" in {
-        mockResponseForStubETMPPayload(Status.OK, "123456789", body = Some(Json.toJson(etmpPayloadModelWithLPPAndAdditionalPenalties).toString))
-        val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/123456789?newApiModel=false").get())
-        result.status shouldBe Status.OK
-        result.body shouldBe Json.toJson(etmpPayloadModelWithLPPAndAdditionalPenalties).toString
-      }
-
-      s"call out to ETMP and return OK (${Status.OK}) when successful with VAT overview section present" in {
-        mockResponseForStubETMPPayload(Status.OK, "123456789", body = Some(Json.toJson(etmpPayloadModelWithVATOverview).toString))
-        val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/123456789?newApiModel=false").get())
-        result.status shouldBe Status.OK
-        result.body shouldBe Json.toJson(etmpPayloadModelWithVATOverview).toString
-      }
-
-      s"call out to ETMP and return OK (${Status.OK}) when there is added points i.e. no period" in {
-        mockResponseForStubETMPPayload(Status.OK, "123456789", body = Some(etmpPayloadAsJsonAddedPoint.toString()))
-        val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/123456789?newApiModel=false").get())
-        result.status shouldBe Status.OK
-        result.body shouldBe etmpPayloadAsJsonAddedPoint.toString()
-      }
-
-      s"call out to ETMP and return OK (${Status.OK}) when there are multiple LSP periods in same calendar month" in {
-        mockResponseForStubETMPPayload(Status.OK, "123456789", body = Some(etmpPayloadWithMultipleLSPInSameCalenderMonth.toString()))
-        val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/123456789?newApiModel=false").get())
-        result.status shouldBe Status.OK
-        result.body shouldBe etmpPayloadWithMultipleLSPInSameCalenderMonth.toString()
-      }
-
-      s"call out to ETMP and return OK (${Status.OK}) when there are multiple LSPP periods in same calendar month" in {
-        mockResponseForStubETMPPayload(Status.OK, "123456789", body = Some(etmpPayloadWithMultipleLSPPInSameCalenderMonth.toString()))
-        val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/123456789?newApiModel=false").get())
-        result.status shouldBe Status.OK
-        result.body shouldBe etmpPayloadWithMultipleLSPPInSameCalenderMonth.toString()
-      }
-
-      s"call out to ETMP and return a Not Found (${Status.NOT_FOUND}) when NoContent is returned from the connector" in {
-        mockResponseForStubETMPPayload(Status.NO_CONTENT, "123456789", body = Some(""))
-        val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/123456789?newApiModel=false").get())
-        result.status shouldBe Status.NOT_FOUND
-      }
-
-      s"call out to ETMP and return a ISE (${Status.INTERNAL_SERVER_ERROR}) when an issue has occurred i.e. invalid json response" in {
-        mockResponseForStubETMPPayload(Status.OK, "123456789", body = Some("{}"))
-        val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/123456789?newApiModel=false").get())
-        result.status shouldBe Status.INTERNAL_SERVER_ERROR
-        result.body shouldBe "Something went wrong."
-      }
-
-      "audit the response when the user has > 0 penalties" in {
-        mockResponseForStubETMPPayload(Status.OK, "123456789")
-        val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/123456789?newApiModel=false").get())
-        result.status shouldBe Status.OK
-        result.body shouldBe etmpPayloadAsJson.toString()
-        wireMockServer.findAll(postRequestedFor(urlEqualTo("/write/audit"))).asScala.toList.exists(_.getBodyAsString.contains("UserHasPenalty")) shouldBe true
-      }
-
-      "NOT audit the response when the user has 0 penalties" in {
-        mockResponseForStubETMPPayload(Status.OK, "123456789", body = Some(etmpPayloadAsJsonWithNoPoints.toString()))
-        val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/123456789?newApiModel=false").get())
-        result.status shouldBe Status.OK
-        result.body shouldBe etmpPayloadAsJsonWithNoPoints.toString()
-        wireMockServer.findAll(postRequestedFor(urlEqualTo("/write/audit"))).asScala.toList.exists(_.getBodyAsString.contains("UserHasPenalty")) shouldBe false
-      }
-    }
-  }
-
-  "call API 1812 when call 1812 feature is enabled" must {
-
     val getPenaltyDetailsJson: JsValue = Json.parse(
       """
         |{
@@ -460,19 +376,14 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
     )
 
     s"return OK (${Status.OK})" when {
-      "the get penalty details call succeeds" in {
-        mockStubResponseForGetPenaltyDetailsv3(Status.OK, "123456789", body = Some(getPenaltyDetailsJson.toString()))
-        val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/HMRC-MTD-VAT~VRN~123456789?newApiModel=true").get)
-        result.status shouldBe OK
-      }
 
       "the get penalty details call succeeds and the get financial details call succeeds (combining the data together)" in {
-        mockStubResponseForGetPenaltyDetailsv3(Status.OK, "123456789", body = Some(getPenaltyDetailsJson.toString()))
-        mockStubResponseForGetFinancialDetailsv3(Status.OK,
+        mockStubResponseForGetPenaltyDetails(Status.OK, "123456789", body = Some(getPenaltyDetailsJson.toString()))
+        mockStubResponseForGetFinancialDetails(Status.OK,
           s"VRN/123456789/VATC?dateFrom=${LocalDate.now.minusYears(2)}&dateTo=${LocalDate.now}" +
           s"&onlyOpenItems=false&includeStatistical=true&includeLocks=false" +
           s"&calculateAccruedInterest=true&removePOA=false&customerPaymentInformation=false", Some(getFinancialDetailsJson.toString()))
-        val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/HMRC-MTD-VAT~VRN~123456789?newApiModel=true&newFinancialApiModel=true").get)
+        val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/HMRC-MTD-VAT~VRN~123456789").get)
         result.status shouldBe OK
         Json.parse(result.body) shouldBe combinedPenaltyAndFinancialData
       }
@@ -506,12 +417,12 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
             | ]
             |}
             |""".stripMargin
-        mockStubResponseForGetFinancialDetailsv3(Status.NOT_FOUND,
+        mockStubResponseForGetFinancialDetails(Status.NOT_FOUND,
           s"VRN/123456789/VATC?dateFrom=${LocalDate.now.minusYears(2)}&dateTo=${LocalDate.now}" +
             s"&onlyOpenItems=false&includeStatistical=true&includeLocks=false" +
             s"&calculateAccruedInterest=true&removePOA=false&customerPaymentInformation=false", Some(noDataFoundBody))
-        mockStubResponseForGetPenaltyDetailsv3(Status.OK, "123456789", body = Some(getPenaltyDetailsNoLPPJson.toString()))
-        val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/HMRC-MTD-VAT~VRN~123456789?newApiModel=true&newFinancialApiModel=true").get)
+        mockStubResponseForGetPenaltyDetails(Status.OK, "123456789", body = Some(getPenaltyDetailsNoLPPJson.toString()))
+        val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/HMRC-MTD-VAT~VRN~123456789").get)
         result.status shouldBe OK
         Json.parse(result.body) shouldBe getPenaltyDetailsNoLPPJson
       }
@@ -519,8 +430,8 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
 
     s"return NOT_FOUND (${Status.NOT_FOUND})" when {
       "the user supplies an invalid VRN" in {
-        mockStubResponseForGetPenaltyDetailsv3(Status.OK, "123456789", body = Some(getPenaltyDetailsJson.toString()))
-        val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/123456789123456789?newApiModel=true").get)
+        mockStubResponseForGetPenaltyDetails(Status.OK, "123456789", body = Some(getPenaltyDetailsJson.toString()))
+        val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/123456789123456789").get)
         result.status shouldBe NOT_FOUND
       }
     }
@@ -538,8 +449,8 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
             | ]
             |}
             |""".stripMargin
-        mockStubResponseForGetPenaltyDetailsv3(Status.NOT_FOUND, "123456789", body = Some(noDataFoundBody))
-        val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/HMRC-MTD-VAT~VRN~123456789?newApiModel=true").get)
+        mockStubResponseForGetPenaltyDetails(Status.NOT_FOUND, "123456789", body = Some(noDataFoundBody))
+        val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/HMRC-MTD-VAT~VRN~123456789").get)
         result.status shouldBe NO_CONTENT
       }
 
@@ -555,48 +466,141 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
             | ]
             |}
             |""".stripMargin
-        mockStubResponseForGetPenaltyDetailsv3(Status.OK, "123456789", body = Some(getPenaltyDetailsJson.toString()))
-        mockStubResponseForGetFinancialDetailsv3(Status.NOT_FOUND,
+        mockStubResponseForGetPenaltyDetails(Status.OK, "123456789", body = Some(getPenaltyDetailsJson.toString()))
+        mockStubResponseForGetFinancialDetails(Status.NOT_FOUND,
           s"VRN/123456789/VATC?dateFrom=${LocalDate.now.minusYears(2)}&dateTo=${LocalDate.now}" +
             s"&onlyOpenItems=false&includeStatistical=true&includeLocks=false" +
             s"&calculateAccruedInterest=true&removePOA=false&customerPaymentInformation=false", Some(noDataFoundBody))
-        val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/HMRC-MTD-VAT~VRN~123456789?newApiModel=true&newFinancialApiModel=true").get)
+        val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/HMRC-MTD-VAT~VRN~123456789").get)
         result.status shouldBe NO_CONTENT
       }
     }
 
     s"return ISE (${Status.INTERNAL_SERVER_ERROR})" when {
       "the get penalty details call fails" in {
-        mockStubResponseForGetPenaltyDetailsv3(Status.INTERNAL_SERVER_ERROR, "123456789", body = Some(""))
-        val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/HMRC-MTD-VAT~VRN~123456789?newApiModel=true").get)
+        mockStubResponseForGetPenaltyDetails(Status.INTERNAL_SERVER_ERROR, "123456789", body = Some(""))
+        val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/HMRC-MTD-VAT~VRN~123456789").get)
         result.status shouldBe INTERNAL_SERVER_ERROR
       }
 
       "the get financial details call fails" in {
-        mockStubResponseForGetPenaltyDetailsv3(Status.OK, "123456789", body = Some(getPenaltyDetailsJson.toString()))
-        mockStubResponseForGetFinancialDetailsv3(Status.INTERNAL_SERVER_ERROR,
+        mockStubResponseForGetPenaltyDetails(Status.OK, "123456789", body = Some(getPenaltyDetailsJson.toString()))
+        mockStubResponseForGetFinancialDetails(Status.INTERNAL_SERVER_ERROR,
           s"VRN/123456789/VATC?dateFrom=${LocalDate.now.minusYears(2)}&dateTo=${LocalDate.now}" +
             s"&onlyOpenItems=false&includeStatistical=true&includeLocks=false" +
             s"&calculateAccruedInterest=true&removePOA=false&customerPaymentInformation=false", Some(getFinancialDetailsJson.toString()))
-        val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/HMRC-MTD-VAT~VRN~123456789?newApiModel=true&newFinancialApiModel=true").get)
+        val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/HMRC-MTD-VAT~VRN~123456789").get)
         result.status shouldBe INTERNAL_SERVER_ERROR
       }
     }
 
     "audit the response when the user has > 0 penalties" in {
-      mockStubResponseForGetPenaltyDetailsv3(Status.OK, "123456789")
-      val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/HMRC-MTD-VAT~VRN~123456789?newApiModel=true").get())
+      val penaltyDetailsWithLSPandLPPAndFinancialDetails: JsValue = Json.parse(
+        """
+          |{
+          |   "totalisations":{
+          |      "LSPTotalValue":200,
+          |      "penalisedPrincipalTotal":2000,
+          |      "LPPPostedTotal":165.25,
+          |      "LPPEstimatedTotal":15.26,
+          |      "LPIPostedTotal":1968.2,
+          |      "LPIEstimatedTotal":7
+          |   },
+          |   "lateSubmissionPenalty":{
+          |      "summary":{
+          |         "activePenaltyPoints":10,
+          |         "inactivePenaltyPoints":12,
+          |         "regimeThreshold":10,
+          |         "penaltyChargeAmount":684.25
+          |      },
+          |      "details":[
+          |         {
+          |            "penaltyNumber":"12345678901234",
+          |            "penaltyOrder":"01",
+          |            "penaltyCategory":"P",
+          |            "penaltyStatus":"ACTIVE",
+          |            "penaltyCreationDate":"2022-10-30",
+          |            "penaltyExpiryDate":"2022-10-30",
+          |            "communicationsDate":"2022-10-30",
+          |            "FAPIndicator":"X",
+          |            "lateSubmissions":[
+          |               {
+          |                  "taxPeriodStartDate":"2022-01-01",
+          |                  "taxPeriodEndDate":"2022-12-31",
+          |                  "taxPeriodDueDate":"2023-02-07",
+          |                  "returnReceiptDate":"2023-02-01",
+          |                  "taxReturnStatus":"Fulfilled"
+          |               }
+          |            ],
+          |            "expiryReason":"FAP",
+          |            "appealInformation":[
+          |               {
+          |                  "appealStatus":"99",
+          |                  "appealLevel":"01"
+          |               }
+          |            ],
+          |            "chargeDueDate":"2022-10-30",
+          |            "chargeOutstandingAmount":200,
+          |            "chargeAmount":200
+          |         }
+          |      ]
+          |   },
+          |   "latePaymentPenalty":{
+          |      "details":[
+          |         {
+          |            "principalChargeDueDate":"2022-10-30",
+          |            "principalChargeBillingTo":"2022-10-30",
+          |            "penaltyAmountPaid":1001.45,
+          |            "outstandingAmount":123.45,
+          |            "LPP1LRPercentage":2,
+          |            "LPP1HRDays":"31",
+          |            "penaltyChargeDueDate":"2022-10-30",
+          |            "communicationsDate":"2022-10-30",
+          |            "LPP2Days":"31",
+          |            "penaltyChargeCreationDate":"2022-10-30",
+          |            "LPP1HRPercentage":2,
+          |            "LPP1LRDays":"15",
+          |            "LPP1HRCalculationAmount":99.99,
+          |            "penaltyChargeReference":"1234567890",
+          |            "penaltyCategory":"LPP1",
+          |            "principalChargeReference":"1234567890",
+          |            "penaltyStatus":"A",
+          |            "principalChargeBillingFrom":"2022-10-30",
+          |            "mainTransaction":"4703",
+          |            "LPP2Percentage":4,
+          |            "appealInformation":[
+          |               {
+          |                  "appealStatus":"99",
+          |                  "appealLevel":"01"
+          |               }
+          |            ],
+          |            "LPP1LRCalculationAmount":99.99,
+          |            "penaltyAmountOutstanding":99.99
+          |         }
+          |      ]
+          |   }
+          |}
+          |""".stripMargin)
+      mockStubResponseForGetPenaltyDetails(Status.OK, "123456789")
+      mockStubResponseForGetFinancialDetails(Status.OK,
+        s"VRN/123456789/VATC?dateFrom=${LocalDate.now.minusYears(2)}&dateTo=${LocalDate.now}" +
+          s"&onlyOpenItems=false&includeStatistical=true&includeLocks=false" +
+          s"&calculateAccruedInterest=true&removePOA=false&customerPaymentInformation=false", Some(getFinancialDetailsJson.toString()))
+      val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/HMRC-MTD-VAT~VRN~123456789").get())
       result.status shouldBe Status.OK
-      Json.parse(result.body) shouldBe getPenaltyDetailsWithLSPandLPPAsJsonv3
+      Json.parse(result.body) shouldBe penaltyDetailsWithLSPandLPPAndFinancialDetails
       wireMockServer.findAll(postRequestedFor(urlEqualTo("/write/audit"))).asScala.toList.exists(_.getBodyAsString.contains("UserHasPenalty")) shouldBe true
     }
 
     "NOT audit the response when the user has 0 penalties" in {
-      mockStubResponseForGetPenaltyDetailsv3(Status.OK, "123456789", body = Some(getPenaltyDetailsWithNoPointsAsJsonv3.toString()))
-      val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/HMRC-MTD-VAT~VRN~123456789?newApiModel=true").get())
+      mockStubResponseForGetPenaltyDetails(Status.OK, "123456789", body = Some(getPenaltyDetailsWithNoPointsAsJson.toString()))
+      mockStubResponseForGetFinancialDetails(Status.OK,
+        s"VRN/123456789/VATC?dateFrom=${LocalDate.now.minusYears(2)}&dateTo=${LocalDate.now}" +
+          s"&onlyOpenItems=false&includeStatistical=true&includeLocks=false" +
+          s"&calculateAccruedInterest=true&removePOA=false&customerPaymentInformation=false", Some(getFinancialDetailsJson.toString()))
+      val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/HMRC-MTD-VAT~VRN~123456789").get())
       result.status shouldBe Status.OK
-      result.body shouldBe getPenaltyDetailsWithNoPointsAsJsonv3.toString()
+      result.body shouldBe getPenaltyDetailsWithNoPointsAsJson.toString()
       wireMockServer.findAll(postRequestedFor(urlEqualTo("/write/audit"))).asScala.toList.exists(_.getBodyAsString.contains("UserHasPenalty")) shouldBe false
     }
   }
-}

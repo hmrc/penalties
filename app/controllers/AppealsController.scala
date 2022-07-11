@@ -19,21 +19,16 @@ package controllers
 import config.AppConfig
 import config.featureSwitches.FeatureSwitching
 import connectors.FileNotificationOrchestratorConnector
-import connectors.parsers.ETMPPayloadParser.GetETMPPayloadNoContent
-import connectors.parsers.v3.getPenaltyDetails.GetPenaltyDetailsParser
-import connectors.parsers.v3.getPenaltyDetails.GetPenaltyDetailsParser.GetPenaltyDetailsSuccessResponse
-import models.ETMPPayload
+import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser.GetPenaltyDetailsSuccessResponse
+import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser
 import models.appeals.AppealTypeEnum._
 import models.appeals._
 import models.appeals.reasonableExcuses.ReasonableExcuse
-import models.appeals.v2.{AppealData => V2AppealData}
 import models.notification._
-import models.payment.LatePaymentPenalty
-import models.point.PenaltyPoint
 import models.upload.UploadJourney
-import models.v3.getPenaltyDetails.GetPenaltyDetails
-import models.v3.getPenaltyDetails.latePayment.LPPDetails
-import models.v3.getPenaltyDetails.lateSubmission.LSPDetails
+import models.getPenaltyDetails.GetPenaltyDetails
+import models.getPenaltyDetails.latePayment.LPPDetails
+import models.getPenaltyDetails.lateSubmission.LSPDetails
 import play.api.Configuration
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, ControllerComponents, Result}
@@ -56,23 +51,8 @@ class AppealsController @Inject()(val appConfig: AppConfig,
   extends BackendController(cc) with FeatureSwitching {
 
   private def getAppealDataForPenalty(penaltyId: String, enrolmentKey: String,
-                                      penaltyType: AppealTypeEnum.Value, useNewApiModel: Boolean)(implicit hc: HeaderCarrier): Future[Result] = {
-    if (!useNewApiModel) {
-      etmpService.getPenaltyDataFromETMPForEnrolment(enrolmentKey).map {
-        result => {
-          result._1.fold {
-            result._2 match {
-              case Left(GetETMPPayloadNoContent) => NotFound(s"Could not retrieve ETMP penalty data for $enrolmentKey")
-              case _ => InternalServerError("Something went wrong.")
-            }
-          }(
-            etmpData => {
-              checkAndReturnResponseForPenaltyData(etmpData, penaltyId, enrolmentKey, penaltyType)
-            }
-          )
-        }
-      }
-    } else {
+                                      penaltyType: AppealTypeEnum.Value)(implicit hc: HeaderCarrier): Future[Result] = {
+
       val vrn = RegimeHelper.getIdentifierFromEnrolmentKey(enrolmentKey)
       getPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(vrn).map {
         _.fold({
@@ -95,50 +75,16 @@ class AppealsController @Inject()(val appConfig: AppConfig,
         )
       }
     }
-  }
 
-  def getAppealsDataForLateSubmissionPenalty(penaltyId: String, enrolmentKey: String, useNewApiModel: Boolean): Action[AnyContent] = Action.async {
+  def getAppealsDataForLateSubmissionPenalty(penaltyId: String, enrolmentKey: String): Action[AnyContent] = Action.async {
     implicit request => {
-      getAppealDataForPenalty(penaltyId, enrolmentKey, Late_Submission, useNewApiModel)
+      getAppealDataForPenalty(penaltyId, enrolmentKey, Late_Submission)
     }
   }
 
-  def getAppealsDataForLatePaymentPenalty(penaltyId: String, enrolmentKey: String, isAdditional: Boolean,
-                                          useNewApiModel: Boolean): Action[AnyContent] = Action.async {
+  def getAppealsDataForLatePaymentPenalty(penaltyId: String, enrolmentKey: String, isAdditional: Boolean): Action[AnyContent] = Action.async {
     implicit request => {
-      getAppealDataForPenalty(penaltyId, enrolmentKey, if (isAdditional) Additional else Late_Payment, useNewApiModel)
-    }
-  }
-
-  private def checkAndReturnResponseForPenaltyData(etmpData: ETMPPayload,
-                                                   penaltyIdToCheck: String,
-                                                   enrolmentKey: String,
-                                                   appealType: AppealTypeEnum.Value): Result = {
-    val lspPenaltyIdInETMPPayload: Option[PenaltyPoint] = etmpData.penaltyPoints.find(_.id == penaltyIdToCheck)
-    val lppPenaltyIdInETMPPayload: Option[LatePaymentPenalty] = etmpData.latePaymentPenalties.flatMap(_.find(_.id == penaltyIdToCheck))
-    if (appealType == AppealTypeEnum.Late_Submission && lspPenaltyIdInETMPPayload.isDefined) {
-      logger.debug(s"[AppealsController][getAppealsData] Penalty ID: $penaltyIdToCheck for enrolment key: $enrolmentKey found in ETMP for $appealType.")
-      val penaltyBasedOnId = lspPenaltyIdInETMPPayload.get
-      val dataToReturn: AppealData = AppealData(`type` = appealType,
-        startDate = penaltyBasedOnId.period.get.sortWith(PenaltyPeriodHelper.sortByPenaltyStartDate(_, _) < 0).head.startDate,
-        endDate = penaltyBasedOnId.period.get.sortWith(PenaltyPeriodHelper.sortByPenaltyStartDate(_, _) < 0).head.endDate,
-        dueDate = penaltyBasedOnId.period.get.sortWith(PenaltyPeriodHelper.sortByPenaltyStartDate(_, _) < 0).head.submission.dueDate,
-        dateCommunicationSent = penaltyBasedOnId.communications.head.dateSent
-      )
-      Ok(Json.toJson(dataToReturn))
-    } else if ((appealType == AppealTypeEnum.Late_Payment || appealType == AppealTypeEnum.Additional) && lppPenaltyIdInETMPPayload.isDefined) {
-      logger.debug(s"[AppealsController][getAppealsData] Penalty ID: $penaltyIdToCheck for enrolment key: $enrolmentKey found in ETMP for $appealType.")
-      val penaltyBasedOnId = lppPenaltyIdInETMPPayload.get
-      val dataToReturn: AppealData = AppealData(`type` = appealType,
-        startDate = penaltyBasedOnId.period.startDate,
-        endDate = penaltyBasedOnId.period.endDate,
-        dueDate = penaltyBasedOnId.period.dueDate,
-        dateCommunicationSent = penaltyBasedOnId.communications.head.dateSent
-      )
-      Ok(Json.toJson(dataToReturn))
-    } else {
-      logger.info("[AppealsController][getAppealsData] Data retrieved for enrolment but provided penalty ID was not found. Returning 404.")
-      NotFound("Penalty ID was not found in users penalties.")
+      getAppealDataForPenalty(penaltyId, enrolmentKey, if (isAdditional) Additional else Late_Payment)
     }
   }
 
@@ -157,7 +103,7 @@ class AppealsController @Inject()(val appConfig: AppConfig,
       logger.debug(s"[AppealsController][getAppealsData] Penalty ID: $penaltyIdToCheck for enrolment key: $enrolmentKey found in ETMP for $appealType.")
       val penaltyBasedOnId = lspPenaltyIdInPenaltyDetailsPayload.get
       val sortedDate = penaltyBasedOnId.lateSubmissions.get.sortWith(PenaltyPeriodHelper.sortByPenaltyStartDate(_, _) < 0).head
-      val dataToReturn: V2AppealData = V2AppealData(
+      val dataToReturn: AppealData = AppealData(
         `type` = appealType,
         startDate = sortedDate.taxPeriodStartDate.get,
         endDate = sortedDate.taxPeriodEndDate.get,
@@ -168,7 +114,7 @@ class AppealsController @Inject()(val appConfig: AppConfig,
     } else if ((appealType == AppealTypeEnum.Late_Payment || appealType == AppealTypeEnum.Additional) && lppPenaltyIdInPenaltyDetailsPayload.isDefined) {
       logger.debug(s"[AppealsController][getAppealsData] Penalty ID: $penaltyIdToCheck for enrolment key: $enrolmentKey found in ETMP for $appealType.")
       val penaltyBasedOnId = lppPenaltyIdInPenaltyDetailsPayload.get
-      val dataToReturn: V2AppealData = V2AppealData(
+      val dataToReturn: AppealData = AppealData(
         `type` = appealType,
         startDate = penaltyBasedOnId.principalChargeBillingFrom,
         endDate = penaltyBasedOnId.principalChargeBillingTo,

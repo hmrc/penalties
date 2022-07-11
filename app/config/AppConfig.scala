@@ -57,23 +57,12 @@ class AppConfig @Inject()(val config: Configuration, servicesConfig: ServicesCon
   lazy val SDESNotificationInfoType: String = config.get[String]("SDESNotification.informationType")
   lazy val SDESNotificationFileRecipient: String = config.get[String]("SDESNotification.file.recipient")
 
-  def getVATPenaltiesURL: String = {
-    if(!isEnabled(CallETMP)) stubBase + "/penalties-stub/etmp/mtd-vat/"
-    //TODO: change to relevant URL when implemented
-    else etmpBase + "/"
-  }
-
   def getPenaltyDetailsUrl: String = {
     if(!isEnabled(CallAPI1812ETMP)) stubBase + "/penalties-stub/penalty/details/VATC/VRN/"
     else etmpBase + "/penalty/details/VATC/VRN/"
   }
 
-  def getFinancialDetailsUrl: String = {
-    if(!isEnabled(CallAPI1811ETMP)) stubBase + "/penalties-stub/penalty/financial-data/"
-    else etmpBase + "/penalty/financial-data"
-  }
-
-  def getFinancialDetailsUrlv3(vrn: String): String = {
+  def getFinancialDetailsUrl(vrn: String): String = {
     if(!isEnabled(CallAPI1811ETMP)) stubBase + s"/penalties-stub/penalty/financial-data/VRN/$vrn/VATC"
     else etmpBase + s"/penalty/financial-data/VRN/$vrn/VATC"
   }

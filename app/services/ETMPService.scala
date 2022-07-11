@@ -16,45 +16,16 @@
 
 package services
 
+import connectors.PEGAConnector
 import connectors.parsers.AppealsParser
-import connectors.parsers.ETMPPayloadParser.{ETMPPayloadResponse, GetETMPPayloadFailureResponse, GetETMPPayloadMalformed, GetETMPPayloadNoContent, GetETMPPayloadSuccessResponse}
-import connectors.{ETMPConnector, PEGAConnector}
-import models.ETMPPayload
 import models.appeals.{AppealResponseModel, AppealSubmission}
-import models.point.PointStatusEnum
-import uk.gov.hmrc.http.HeaderCarrier
 import utils.Logger.logger
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class ETMPService @Inject()(etmpConnector: ETMPConnector,
-                            appealsConnector: PEGAConnector)
+class ETMPService @Inject()(appealsConnector: PEGAConnector)
                            (implicit ec: ExecutionContext) {
-
-  def getPenaltyDataFromETMPForEnrolment(enrolmentKey: String)(implicit hc: HeaderCarrier): Future[(Option[ETMPPayload], ETMPPayloadResponse) ] = {
-    implicit val startOfLogMsg: String = "[ETMPService][getPenaltyDataFromETMPForEnrolment]"
-    etmpConnector.getPenaltiesDataForEnrolmentKey(enrolmentKey).map {
-      handleConnectorResponse(_)
-    }
-  }
-
-  private def handleConnectorResponse(connectorResponse: ETMPPayloadResponse)(implicit startOfLogMsg: String): (Option[ETMPPayload], ETMPPayloadResponse) = {
-    connectorResponse match {
-      case res@Right(_@GetETMPPayloadSuccessResponse(payload)) =>
-        logger.debug(s"$startOfLogMsg - Got a success response from the connector. Parsed model: $payload")
-        (Some(payload), res)
-      case res@Left(GetETMPPayloadNoContent) =>
-        logger.info(s"$startOfLogMsg - No content returned from ETMP.")
-        (None, res)
-      case res@Left(GetETMPPayloadMalformed) =>
-        logger.info(s"$startOfLogMsg - Failed to parse HTTP response into model.")
-        (None, res)
-      case res@Left(GetETMPPayloadFailureResponse(_)) =>
-        logger.error(s"$startOfLogMsg - Unknown status returned from connector.")
-        (None, res)
-    }
-  }
 
   def submitAppeal(appealSubmission: AppealSubmission,
                    enrolmentKey: String, isLPP: Boolean, penaltyNumber: String, correlationId: String): Future[Either[AppealsParser.ErrorResponse, AppealResponseModel]]= {
@@ -71,37 +42,5 @@ class ETMPService @Inject()(etmpConnector: ETMPConnector,
         }
       )
     }
-  }
-
-  def getNumberOfEstimatedPenalties(etmpPayload: ETMPPayload): Int = {
-    val lppEstimatedPenalties: Int = etmpPayload.latePaymentPenalties.map(_.count(_.status == PointStatusEnum.Estimated)).getOrElse(0)
-    val lspEstimatedPenalties: Int = etmpPayload.penaltyPoints.count(_.status == PointStatusEnum.Estimated)
-    lppEstimatedPenalties + lspEstimatedPenalties
-  }
-
-  def findEstimatedPenaltiesAmount(etmpPayload: ETMPPayload): BigDecimal = {
-    val lSPAmountsWithEstimatedStatus =
-      etmpPayload.penaltyPoints.filter(_.status == PointStatusEnum.Estimated).map(_.financial.map(_.outstandingAmountDue).getOrElse(BigDecimal(0))).sum
-    val lPPAmountsWithEstimatedStatus =
-      etmpPayload.latePaymentPenalties.map(_.filter(_.status == PointStatusEnum.Estimated).map(_.financial.outstandingAmountDue).sum).getOrElse(BigDecimal(0))
-    lSPAmountsWithEstimatedStatus + lPPAmountsWithEstimatedStatus
-  }
-
-  def checkIfHasAnyPenaltyData(etmpPayload: ETMPPayload): Boolean ={
-    etmpPayload.latePaymentPenalties.exists(_.nonEmpty) || etmpPayload.penaltyPoints.nonEmpty
-  }
-
-  def getNumberOfCrystalizedPenalties(payload: ETMPPayload): Int = {
-    val numOfDueLSPs = payload.penaltyPoints.map(_.status).count(status => status == PointStatusEnum.Due)
-    val numOfDueLPPs = payload.latePaymentPenalties.getOrElse(Seq.empty).map(_.status).count(status => status == PointStatusEnum.Due)
-    numOfDueLSPs + numOfDueLPPs
-  }
-
-  def getCrystalisedPenaltyTotal(payload: ETMPPayload):BigDecimal = {
-    val crystallisedLSPAmountDue =
-      payload.penaltyPoints.filter(_.status == PointStatusEnum.Due).map(_.financial.map(_.outstandingAmountDue).getOrElse(BigDecimal(0))).sum
-    val crystallisedLPPAmountDue =
-      payload.latePaymentPenalties.map(_.filter(_.status == PointStatusEnum.Due).map(_.financial.outstandingAmountDue).sum).getOrElse(BigDecimal(0))
-    crystallisedLSPAmountDue + crystallisedLPPAmountDue
   }
 }

@@ -17,7 +17,7 @@
 package controllers.testOnly
 
 import base.SpecBase
-import config.featureSwitches.{FeatureSwitch, UseAPI1812Model}
+import config.featureSwitches.FeatureSwitch
 import org.mockito.Matchers.any
 import org.mockito.Mockito.{mock, reset, when}
 import play.api.Configuration
@@ -40,18 +40,6 @@ class FeatureSwitchControllerSpec extends SpecBase {
     s"return NOT_FOUND (${Status.NOT_FOUND}) when the specified name does not exist" in new Setup {
       val result = controller.enableOrDisableFeature("invalid", false)(FakeRequest())
       status(result) shouldBe NOT_FOUND
-    }
-
-    s"return OK (${Status.OK}) when the name exists and the feature switch was disabled" in new Setup {
-      val result = controller.enableOrDisableFeature("feature.switch.use-api-1812-model", false)(FakeRequest())
-      status(result) shouldBe OK
-      (sys.props get UseAPI1812Model.name get) shouldBe "false"
-    }
-
-    s"return OK (${Status.OK}) when the name exists and the feature switch was enabled" in new Setup {
-      val result = controller.enableOrDisableFeature("feature.switch.use-api-1812-model", true)(FakeRequest())
-      status(result) shouldBe OK
-      (sys.props get UseAPI1812Model.name get) shouldBe "true"
     }
   }
 

@@ -16,16 +16,16 @@
 
 package models.appeals
 
-import java.time.LocalDateTime
-
 import play.api.libs.json.{Json, OFormat}
+
+import java.time.LocalDate
 
 case class AppealData(
                        `type`: AppealTypeEnum.Value,
-                       startDate: LocalDateTime,
-                       endDate: LocalDateTime,
-                       dueDate: LocalDateTime,
-                       dateCommunicationSent: LocalDateTime
+                       startDate: LocalDate,
+                       endDate: LocalDate,
+                       dueDate: LocalDate,
+                       dateCommunicationSent: LocalDate
                      )
 
 object AppealData {

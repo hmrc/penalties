@@ -16,11 +16,11 @@
 
 package services
 
-import connectors.parsers.v3.getPenaltyDetails.GetPenaltyDetailsParser._
-import models.v3.getPenaltyDetails.appealInfo.{AppealInformationType, AppealLevelEnum, AppealStatusEnum}
-import models.v3.getPenaltyDetails.latePayment.{LPPDetails, LPPDetailsMetadata, LPPPenaltyCategoryEnum, LPPPenaltyStatusEnum, LatePaymentPenalty}
-import models.v3.getPenaltyDetails.lateSubmission._
-import models.v3.getPenaltyDetails.{GetPenaltyDetails, Totalisations}
+import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser._
+import models.getPenaltyDetails.appealInfo.{AppealInformationType, AppealLevelEnum, AppealStatusEnum}
+import models.getPenaltyDetails.latePayment.{LPPDetails, LPPDetailsMetadata, LPPPenaltyCategoryEnum, LPPPenaltyStatusEnum, LatePaymentPenalty}
+import models.getPenaltyDetails.lateSubmission._
+import models.getPenaltyDetails.{GetPenaltyDetails, Totalisations}
 import play.api.http.Status
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import utils.{ETMPWiremock, IntegrationSpecCommonBase}
@@ -120,14 +120,14 @@ class GetPenaltyDetailsServiceISpec extends IntegrationSpecCommonBase with ETMPW
     )
 
     s"call the connector and return a successful result" in {
-      mockStubResponseForGetPenaltyDetailsv3(Status.OK, "123456789")
+      mockStubResponseForGetPenaltyDetails(Status.OK, "123456789")
       val result = await(service.getDataFromPenaltyServiceForVATCVRN("123456789"))
       result.isRight shouldBe true
       result.right.get shouldBe GetPenaltyDetailsSuccessResponse(getPenaltyDetailsModel)
     }
 
     s"the response body is not well formed: $GetPenaltyDetailsMalformed" in {
-      mockStubResponseForGetPenaltyDetailsv3(Status.OK, "123456789", body = Some("""
+      mockStubResponseForGetPenaltyDetails(Status.OK, "123456789", body = Some("""
           {
            "lateSubmissionPenalty": {
              "summary": {}
@@ -151,14 +151,14 @@ class GetPenaltyDetailsServiceISpec extends IntegrationSpecCommonBase with ETMPW
           | ]
           |}
           |""".stripMargin
-      mockStubResponseForGetPenaltyDetailsv3(Status.NOT_FOUND, "123456789", body = Some(noDataFoundBody))
+      mockStubResponseForGetPenaltyDetails(Status.NOT_FOUND, "123456789", body = Some(noDataFoundBody))
       val result = await(service.getDataFromPenaltyServiceForVATCVRN("123456789"))
       result.isLeft shouldBe true
       result.left.get shouldBe GetPenaltyDetailsNoContent
     }
 
     s"an unknown response is returned from the connector - $GetPenaltyDetailsFailureResponse" in {
-      mockStubResponseForGetPenaltyDetailsv3(Status.IM_A_TEAPOT, "123456789")
+      mockStubResponseForGetPenaltyDetails(Status.IM_A_TEAPOT, "123456789")
       val result = await(service.getDataFromPenaltyServiceForVATCVRN("123456789"))
       result.isLeft shouldBe true
       result.left.get shouldBe GetPenaltyDetailsFailureResponse(Status.IM_A_TEAPOT)

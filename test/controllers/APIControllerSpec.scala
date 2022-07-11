@@ -17,14 +17,13 @@
 package controllers
 
 import base.SpecBase
-import config.featureSwitches.{FeatureSwitching, UseAPI1812Model}
-import connectors.parsers.ETMPPayloadParser._
-import connectors.parsers.v3.getPenaltyDetails.GetPenaltyDetailsParser._
-import connectors.v3.getFinancialDetails.GetFinancialDetailsConnector
-import connectors.v3.getPenaltyDetails.GetPenaltyDetailsConnector
-import models.v3.getPenaltyDetails.GetPenaltyDetails
-import models.v3.getPenaltyDetails.latePayment._
-import models.v3.getPenaltyDetails.lateSubmission.{LSPSummary, LateSubmissionPenalty}
+import config.featureSwitches.FeatureSwitching
+import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser._
+import connectors.getFinancialDetails.GetFinancialDetailsConnector
+import connectors.getPenaltyDetails.GetPenaltyDetailsConnector
+import models.getPenaltyDetails.GetPenaltyDetails
+import models.getPenaltyDetails.latePayment._
+import models.getPenaltyDetails.lateSubmission.{LSPSummary, LateSubmissionPenalty}
 import org.mockito.Matchers._
 import org.mockito.Mockito._
 import play.api.Configuration
@@ -32,8 +31,7 @@ import play.api.http.Status
 import play.api.libs.json.Json
 import play.api.test.Helpers._
 import services.auditing.AuditService
-import services.v2.APIService
-import services.{ETMPService, GetPenaltyDetailsService}
+import services.{APIService, ETMPService, GetPenaltyDetailsService}
 import uk.gov.hmrc.http.HttpResponse
 
 import java.time.LocalDate
@@ -51,89 +49,11 @@ class APIControllerSpec extends SpecBase with FeatureSwitching {
 
   class Setup(isFSEnabled: Boolean = false) {
     reset(mockETMPService, mockAuditService, mockAPIService)
-    val controller = new APIController(mockETMPService, mockAuditService, mockAPIService,
+    val controller = new APIController(mockAuditService, mockAPIService,
       mockGetPenaltyDetailsService, mockGetFinancialDetailsConnector, mockGetPenaltyDetailsConnector, stubControllerComponents())
-    if(isFSEnabled) enableFeatureSwitch(UseAPI1812Model) else disableFeatureSwitch(UseAPI1812Model)
   }
 
   "getSummaryDataForVRN" should {
-    "call stub data when call 1812 feature is disabled" must {
-      s"return NOT_FOUND (${Status.NOT_FOUND}) when the call to ETMP fails" in new Setup {
-        when(mockETMPService.getPenaltyDataFromETMPForEnrolment(any())(any()))
-          .thenReturn(Future.successful((None, Left(GetETMPPayloadFailureResponse(Status.INTERNAL_SERVER_ERROR)))))
-        val result = controller.getSummaryDataForVRN("123456789")(fakeRequest)
-        status(result) shouldBe Status.NOT_FOUND
-      }
-
-      s"return NOT_FOUND (${Status.NOT_FOUND}) when the call returns no data" in new Setup {
-        when(mockETMPService.getPenaltyDataFromETMPForEnrolment(any())(any()))
-          .thenReturn(Future.successful((None, Left(GetETMPPayloadNoContent))))
-        val result = controller.getSummaryDataForVRN("123456789")(fakeRequest)
-        status(result) shouldBe Status.NOT_FOUND
-      }
-
-      s"return BAD_REQUEST (${Status.BAD_REQUEST}) when the user supplies an invalid VRN" in new Setup {
-        when(mockETMPService.getPenaltyDataFromETMPForEnrolment(any())(any()))
-          .thenReturn(Future.successful((Some(mockETMPPayloadResponseAsModel), Right(GetETMPPayloadSuccessResponse(mockETMPPayloadResponseAsModel)))))
-        val result = controller.getSummaryDataForVRN("1234567891234567890")(fakeRequest)
-        status(result) shouldBe Status.BAD_REQUEST
-        //TODO: change data based on implementation
-        contentAsString(result) shouldBe "VRN: 1234567891234567890 was not in a valid format."
-      }
-
-      s"return OK (${Status.OK}) when the call returns some data and can be parsed to the correct response" in new Setup {
-        when(mockETMPService.checkIfHasAnyPenaltyData(any())).thenReturn(true)
-        when(mockETMPService.getNumberOfEstimatedPenalties(any())).thenReturn(2)
-        when(mockETMPService.getPenaltyDataFromETMPForEnrolment(any())(any()))
-          .thenReturn(Future.successful((Some(mockETMPPayloadForAPIResponseData), Right(GetETMPPayloadSuccessResponse(mockETMPPayloadForAPIResponseData)))))
-        when(mockETMPService.findEstimatedPenaltiesAmount(any()))
-          .thenReturn(BigDecimal(123.45))
-        when(mockETMPService.getNumberOfCrystalizedPenalties(any())).thenReturn(2)
-        when(mockETMPService.getCrystalisedPenaltyTotal(any())).thenReturn(BigDecimal(288))
-        val result = controller.getSummaryDataForVRN("123456789")(fakeRequest)
-        status(result) shouldBe Status.OK
-        contentAsJson(result) shouldBe Json.parse(
-          """
-            |{
-            |  "noOfPoints": 2,
-            |  "noOfEstimatedPenalties": 2,
-            |  "noOfCrystalisedPenalties": 2,
-            |  "estimatedPenaltyAmount": 123.45,
-            |  "crystalisedPenaltyAmountDue": 288,
-            |  "hasAnyPenaltyData": true
-            |}
-            |""".stripMargin
-        )
-        verify(mockAuditService, times(1)).audit(any())(any(), any(), any())
-      }
-
-      s"return OK (${Status.OK}) when there are no LSP or LPP estimated penalties in etmpPayload" in new Setup {
-        when(mockETMPService.checkIfHasAnyPenaltyData(any())).thenReturn(false)
-        when(mockETMPService.getNumberOfEstimatedPenalties(any())).thenReturn(0)
-        when(mockETMPService.getPenaltyDataFromETMPForEnrolment(any())(any()))
-          .thenReturn(Future.successful((Some(mockETMPPayloadWithNoEstimatedPenaltiesForAPIResponseData), Right(GetETMPPayloadSuccessResponse(mockETMPPayloadWithNoEstimatedPenaltiesForAPIResponseData)))))
-        when(mockETMPService.findEstimatedPenaltiesAmount(any()))
-          .thenReturn(BigDecimal(0))
-        when(mockETMPService.getNumberOfCrystalizedPenalties(any())).thenReturn(0)
-        when(mockETMPService.getCrystalisedPenaltyTotal(any())).thenReturn(BigDecimal(0))
-        val result = controller.getSummaryDataForVRN("123456789")(fakeRequest)
-        status(result) shouldBe Status.OK
-        contentAsJson(result) shouldBe Json.parse(
-          """
-            |{
-            |  "noOfPoints": 4,
-            |  "noOfEstimatedPenalties": 0,
-            |  "noOfCrystalisedPenalties": 0,
-            |  "estimatedPenaltyAmount": 0,
-            |  "crystalisedPenaltyAmountDue": 0,
-            |  "hasAnyPenaltyData": false
-            |}
-            |""".stripMargin
-        )
-      }
-    }
-
-    "call API 1812 when call 1812 feature is enabled" must {
       val getPenaltyDetailsNoEstimatedLPPs: GetPenaltyDetails = GetPenaltyDetails(
         totalisations = None,
         lateSubmissionPenalty = Some(
@@ -351,7 +271,6 @@ class APIControllerSpec extends SpecBase with FeatureSwitching {
         )
       }
     }
-  }
 
   "getFinancialDetails" should {
     s"return OK (${Status.OK}) when a JSON payload is received from EIS" in new Setup(isFSEnabled = true) {
