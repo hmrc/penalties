@@ -45,19 +45,19 @@ class PenaltiesFrontendController @Inject()(auditService: AuditService,
       getPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(vrn).flatMap {
         _.fold({
           case GetPenaltyDetailsNoContent => {
-            logger.info(s"[PenaltiesFrontendController][handleGetPenaltyDetailsCall] - Received 404 for VRN: $vrn with NO_DATA_FOUND in response body")
+            logger.info(s"[PenaltiesFrontendController][getPenaltiesData] - Received 404 for VRN: $vrn with NO_DATA_FOUND in response body")
             Future(NoContent)
           }
           case GetPenaltyDetailsFailureResponse(status) if status == NOT_FOUND => {
-            logger.info(s"[PenaltiesFrontendController][handleGetPenaltyDetailsCall] - 1812 call returned 404 for VRN: $vrn")
+            logger.info(s"[PenaltiesFrontendController][getPenaltiesData] - 1812 call returned 404 for VRN: $vrn")
             Future(NotFound(s"A downstream call returned 404 for VRN: $vrn"))
           }
           case GetPenaltyDetailsFailureResponse(status) => {
-            logger.error(s"[PenaltiesFrontendController][handleGetPenaltyDetailsCall] - 1812 call returned an unexpected status: $status")
+            logger.error(s"[PenaltiesFrontendController][getPenaltiesData] - 1812 call returned an unexpected status: $status")
             Future(InternalServerError(s"A downstream call returned an unexpected status: $status"))
           }
           case GetPenaltyDetailsMalformed => {
-            logger.error(s"[PenaltiesFrontendController][handleGetPenaltyDetailsCall] - Failed to parse penalty details response")
+            logger.error(s"[PenaltiesFrontendController][getPenaltiesData] - Failed to parse penalty details response")
             Future(InternalServerError(s"We were unable to parse penalty data."))
           }
         },
