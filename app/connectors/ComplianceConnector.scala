@@ -18,7 +18,8 @@ package connectors
 
 import config.AppConfig
 import connectors.parsers.ComplianceParser.CompliancePayloadResponse
-import uk.gov.hmrc.http.{Authorization, HeaderCarrier, HttpClient}
+import uk.gov.hmrc.http.{HeaderCarrier, HttpClient}
+import utils.Logger.logger
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
@@ -28,11 +29,12 @@ class ComplianceConnector @Inject()(httpClient: HttpClient,
                                    (implicit ec: ExecutionContext){
   def getComplianceData(identifier: String, fromDate: String, toDate: String)(implicit hc: HeaderCarrier): Future[CompliancePayloadResponse] = {
     val environmentHeader: String = appConfig.eisEnvironment
-    val bearerToken: String = appConfig.eiOutboundBearerToken
-    val headers: Seq[(String, String)] = Seq(
-      "Environment" -> environmentHeader
+    val desHeaders: Seq[(String, String)] = Seq(
+      "Environment" -> environmentHeader,
+      "Authorization" -> s"Bearer ${appConfig.desBearerToken}"
     )
-    val hcForDes: HeaderCarrier = hc.copy(authorization = Some(Authorization(bearerToken))).withExtraHeaders(headers: _*)
-    httpClient.GET[CompliancePayloadResponse](appConfig.getComplianceData(identifier, fromDate, toDate))(implicitly, hcForDes, implicitly)
+    val url: String = appConfig.getComplianceData(identifier, fromDate, toDate)
+    logger.debug(s"[ComplianceConnector][getComplianceData] - Calling GET $url with headers: $desHeaders")
+    httpClient.GET[CompliancePayloadResponse](url, headers = desHeaders)
   }
 }
