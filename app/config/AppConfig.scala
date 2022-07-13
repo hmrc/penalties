@@ -42,6 +42,8 @@ class AppConfig @Inject()(val config: Configuration, servicesConfig: ServicesCon
   lazy val eiOutboundBearerToken: String = config.get[String]("eis.outboundBearerToken")
   lazy val eisEnvironment: String = config.get[String]("eis.environment")
 
+  lazy val desBearerToken: String = config.get[String]("des.outboundBearerToken")
+
   lazy val stubBase: String = servicesConfig.baseUrl("penalties-stub")
 
   lazy val etmpBase: String = servicesConfig.baseUrl("etmp")

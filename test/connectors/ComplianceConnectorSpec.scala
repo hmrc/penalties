@@ -23,7 +23,7 @@ import models.compliance.{CompliancePayload, ComplianceStatusEnum, ObligationDet
 import org.mockito.Mockito._
 import org.mockito.{ArgumentCaptor, Matchers}
 import play.api.test.Helpers._
-import uk.gov.hmrc.http.{Authorization, HeaderCarrier, HttpClient}
+import uk.gov.hmrc.http.{HeaderCarrier, HttpClient}
 
 import java.time.{LocalDate, LocalDateTime}
 import scala.concurrent.{ExecutionContext, Future}
@@ -79,21 +79,21 @@ class ComplianceConnectorSpec extends SpecBase {
       when(mockAppConfig.getComplianceData(Matchers.eq("123456789"), Matchers.any(), Matchers.any()))
         .thenReturn("/123456789")
       when(mockAppConfig.eisEnvironment).thenReturn("env")
-      when(mockAppConfig.eiOutboundBearerToken).thenReturn("Bearer 12345")
-      val hcArgumentCaptor: ArgumentCaptor[HeaderCarrier] = ArgumentCaptor.forClass(classOf[HeaderCarrier])
+      when(mockAppConfig.desBearerToken).thenReturn("12345")
+      val headersArgumentCaptor: ArgumentCaptor[Seq[(String, String)]] = ArgumentCaptor.forClass(classOf[Seq[(String, String)]])
       when(mockHttpClient.GET[CompliancePayloadResponse](Matchers.eq("/123456789"),
         Matchers.any(),
-        Matchers.any())
+        headersArgumentCaptor.capture())
         (Matchers.any(),
-          hcArgumentCaptor.capture(),
+          Matchers.any(),
           Matchers.any()))
         .thenReturn(Future.successful(Right(CompliancePayloadSuccessResponse(compliancePayloadAsModel))))
       val result: CompliancePayloadResponse =
         await(connector.getComplianceData("123456789", "2020-01-01", "2020-12-31")(HeaderCarrier()))
       result.isRight shouldBe true
       result.right.get.asInstanceOf[CompliancePayloadSuccessResponse] shouldBe CompliancePayloadSuccessResponse(compliancePayloadAsModel)
-      hcArgumentCaptor.getValue.authorization shouldBe Some(Authorization("Bearer 12345"))
-      hcArgumentCaptor.getValue.extraHeaders.find(_._1 == "Environment").get shouldBe ("Environment" -> "env")
+      headersArgumentCaptor.getValue.find(_._1 == "Authorization").get._2 shouldBe "Bearer 12345"
+      headersArgumentCaptor.getValue.find(_._1 == "Environment").get._2 shouldBe "env"
     }
 
     "return a Left response" when {
