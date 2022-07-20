@@ -7,6 +7,7 @@ GET        /appeals-data/late-submissions               controllers.AppealsContr
 GET        /appeals-data/late-payments                  controllers.AppealsController.getAppealsDataForLatePaymentPenalty(penaltyId: String, enrolmentKey: String, isAdditional: Boolean)
 GET        /appeals-data/reasonable-excuses             controllers.AppealsController.getReasonableExcuses
 POST       /appeals/submit-appeal                       controllers.AppealsController.submitAppeal(enrolmentKey: String, isLPP: Boolean, penaltyNumber: String, correlationId: String)
+GET        /appeals-data/multiple-penalties             controllers.AppealsController.getMultiplePenaltyData(penaltyId: String, enrolmentKey: String)
 
 # Compliance
 GET        /compliance/des/compliance-data              controllers.ComplianceController.getComplianceData(vrn: String, fromDate: String, toDate: String)
@@ -17,4 +18,3 @@ GET        /vat/penalties/summary/:vrn                  controllers.APIControlle
 # 3rd Party API Endpoints
 GET        /penalty/financial-data/VRN/:vrn/VATC        controllers.APIController.getFinancialDetails(vrn: String, docNumber: Option[String], dateFrom:Option[String], dateTo:Option[String], onlyOpenItems:Boolean, includeStatistical: Boolean, includeLocks:Boolean, calculateAccruedInterest: Boolean, removePOA: Boolean, customerPaymentInformation:Boolean)
 GET        /penalty-details/VAT/VRN/:vrn               controllers.APIController.getPenaltyDetails(vrn: String, dateLimit: Option[String])
-

@@ -19,7 +19,7 @@ package controllers
 import config.AppConfig
 import config.featureSwitches.FeatureSwitching
 import connectors.FileNotificationOrchestratorConnector
-import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser.GetPenaltyDetailsSuccessResponse
+import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser.{GetPenaltyDetailsFailure, GetPenaltyDetailsResponse, GetPenaltyDetailsSuccessResponse}
 import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser
 import models.appeals.AppealTypeEnum._
 import models.appeals._
@@ -27,7 +27,7 @@ import models.appeals.reasonableExcuses.ReasonableExcuse
 import models.notification._
 import models.upload.UploadJourney
 import models.getPenaltyDetails.GetPenaltyDetails
-import models.getPenaltyDetails.latePayment.LPPDetails
+import models.getPenaltyDetails.latePayment.{LPPDetails, LPPPenaltyCategoryEnum}
 import models.getPenaltyDetails.lateSubmission.LSPDetails
 import play.api.Configuration
 import play.api.libs.json.Json
@@ -52,23 +52,10 @@ class AppealsController @Inject()(val appConfig: AppConfig,
 
   private def getAppealDataForPenalty(penaltyId: String, enrolmentKey: String,
                                       penaltyType: AppealTypeEnum.Value)(implicit hc: HeaderCarrier): Future[Result] = {
-
       val vrn = RegimeHelper.getIdentifierFromEnrolmentKey(enrolmentKey)
       getPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(vrn).map {
-        _.fold({
-          case GetPenaltyDetailsParser.GetPenaltyDetailsFailureResponse(status) if status == NOT_FOUND => {
-            logger.info(s"[AppealsController][getAppealDataForPenalty] - 1812 call returned 404 for enrolment key: $enrolmentKey")
-            NotFound(s"A downstream call returned 404 for VRN: $vrn")
-          }
-          case GetPenaltyDetailsParser.GetPenaltyDetailsFailureResponse(status) => {
-            logger.info(s"[AppealsController][getAppealDataForPenalty] - 1812 call returned an unexpected status: $status")
-            InternalServerError(s"A downstream call returned an unexpected status: $status")
-          }
-          case GetPenaltyDetailsParser.GetPenaltyDetailsMalformed => {
-            logger.error(s"[AppealsController][getAppealDataForPenalty] - Failed to parse penalty details response")
-            InternalServerError(s"We were unable to parse penalty data.")
-          }
-        },
+        _.fold(
+          handleFailureResponse(_, vrn, enrolmentKey),
           success => {
             checkAndReturnResponseForPenaltyData(success.asInstanceOf[GetPenaltyDetailsSuccessResponse].penaltyDetails, penaltyId, enrolmentKey, penaltyType)
           }
@@ -214,6 +201,55 @@ class AppealsController @Inject()(val appConfig: AppConfig,
         }
       }
       case None => Seq.empty
+    }
+  }
+
+  def getMultiplePenaltyData(penaltyId: String, enrolmentKey: String): Action[AnyContent] = Action.async {
+    implicit request => {
+      val vrn = RegimeHelper.getIdentifierFromEnrolmentKey(enrolmentKey)
+      getPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(vrn).map {
+        _.fold(
+          handleFailureResponse(_, vrn, enrolmentKey),
+          success => {
+            val penaltyDetails = success.asInstanceOf[GetPenaltyDetailsSuccessResponse].penaltyDetails
+            val lppPenaltyIdInPenaltyDetailsPayload: Option[LPPDetails] = penaltyDetails.latePaymentPenalty.flatMap {
+              _.details.flatMap(_.find(_.penaltyChargeReference.contains(penaltyId)))
+            }
+            val principalChargeReference: String = lppPenaltyIdInPenaltyDetailsPayload.get.principalChargeReference
+            val penaltiesForPrincipalCharge: Seq[LPPDetails] = penaltyDetails.latePaymentPenalty.flatMap(_.details.map(_.filter(_.principalChargeReference.equals(principalChargeReference)))).get
+            if(penaltiesForPrincipalCharge.size == 2) {
+              val secondPenalty = penaltiesForPrincipalCharge.find(_.penaltyCategory.equals(LPPPenaltyCategoryEnum.SecondPenalty)).get
+              val firstPenalty = penaltiesForPrincipalCharge.find(_.penaltyCategory.equals(LPPPenaltyCategoryEnum.FirstPenalty)).get
+              val returnModel = MultiplePenaltiesData(
+                firstPenaltyChargeReference = firstPenalty.penaltyChargeReference.get,
+                firstPenaltyAmount = firstPenalty.penaltyAmountOutstanding.getOrElse(BigDecimal(0)) + firstPenalty.penaltyAmountPaid.getOrElse(BigDecimal(0)),
+                secondPenaltyChargeReference = secondPenalty.penaltyChargeReference.get,
+                secondPenaltyAmount = secondPenalty.penaltyAmountOutstanding.getOrElse(BigDecimal(0)) + secondPenalty.penaltyAmountPaid.getOrElse(BigDecimal(0))
+              )
+              Ok(Json.toJson(returnModel))
+            } else {
+              NoContent
+            }
+          }
+        )
+      }
+    }
+  }
+
+  private def handleFailureResponse(response: GetPenaltyDetailsParser.GetPenaltyDetailsFailure, vrn: String, enrolmentKey: String): Result = {
+    response match {
+      case GetPenaltyDetailsParser.GetPenaltyDetailsFailureResponse(status) if status == NOT_FOUND => {
+        logger.info(s"[AppealsController][getAppealDataForPenalty] - 1812 call returned 404 for enrolment key: $enrolmentKey")
+        NotFound(s"A downstream call returned 404 for VRN: $vrn")
+      }
+      case GetPenaltyDetailsParser.GetPenaltyDetailsFailureResponse(status) => {
+        logger.info(s"[AppealsController][getAppealDataForPenalty] - 1812 call returned an unexpected status: $status")
+        InternalServerError(s"A downstream call returned an unexpected status: $status")
+      }
+      case GetPenaltyDetailsParser.GetPenaltyDetailsMalformed => {
+        logger.error(s"[AppealsController][getAppealDataForPenalty] - Failed to parse penalty details response")
+        InternalServerError(s"We were unable to parse penalty data.")
+      }
     }
   }
 }
