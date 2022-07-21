@@ -22,7 +22,7 @@ import config.featureSwitches.FeatureSwitching
 import connectors.FileNotificationOrchestratorConnector
 import connectors.parsers.AppealsParser.UnexpectedFailure
 import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser.{GetPenaltyDetailsFailureResponse, GetPenaltyDetailsSuccessResponse}
-import models.appeals.AppealData
+import models.appeals.{AppealData, MultiplePenaltiesData}
 import models.appeals.AppealTypeEnum.{Additional, Late_Payment, Late_Submission}
 import models.notification._
 import models.upload.{UploadDetails, UploadJourney, UploadStatusEnum}
@@ -723,6 +723,150 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching {
         val result = controller.createSDESNotifications(Some(uploads), caseID = "PR-1234")
         result shouldBe expectedResult
       }
+    }
+  }
+
+  "getMultiplePenaltyData" should {
+    val getPenaltyDetailsOnePenalty: GetPenaltyDetails = GetPenaltyDetails(
+      totalisations = None,
+      lateSubmissionPenalty = None,
+      latePaymentPenalty = Some(
+        LatePaymentPenalty(
+          Some(
+            Seq(
+              LPPDetails(
+                penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
+                principalChargeReference = "123456801",
+                penaltyChargeReference = Some("1234567891"),
+                penaltyChargeCreationDate = LocalDate.of(2022, 1, 1),
+                penaltyStatus = LPPPenaltyStatusEnum.Accruing,
+                appealInformation = None,
+                principalChargeBillingFrom = LocalDate.of(2022, 4, 1),
+                principalChargeBillingTo = LocalDate.of(2022, 6, 30),
+                principalChargeDueDate = LocalDate.of(2022, 8, 7),
+                communicationsDate = LocalDate.of(2022, 8, 8),
+                penaltyAmountOutstanding = Some(100),
+                penaltyAmountPaid = Some(13.45),
+                LPP1LRDays = None,
+                LPP1HRDays = None,
+                LPP2Days = None,
+                LPP1HRCalculationAmount = None,
+                LPP1LRCalculationAmount = None,
+                LPP2Percentage = None,
+                LPP1LRPercentage = None,
+                LPP1HRPercentage = None,
+                penaltyChargeDueDate = LocalDate.of(2022, 8, 7),
+                principalChargeLatestClearing = None,
+                metadata = LPPDetailsMetadata()
+              )
+            )
+          )
+        )
+      )
+    )
+
+    val getPenaltyDetailsTwoPenalties: GetPenaltyDetails = GetPenaltyDetails(
+      totalisations = None,
+      lateSubmissionPenalty = None,
+      latePaymentPenalty = Some(
+        LatePaymentPenalty(
+          Some(
+            Seq(
+              LPPDetails(
+                penaltyCategory = LPPPenaltyCategoryEnum.SecondPenalty,
+                principalChargeReference = "123456801",
+                penaltyChargeReference = Some("1234567892"),
+                penaltyChargeCreationDate = LocalDate.of(2022, 1, 1),
+                penaltyStatus = LPPPenaltyStatusEnum.Accruing,
+                appealInformation = None,
+                principalChargeBillingFrom = LocalDate.of(2022, 4, 1),
+                principalChargeBillingTo = LocalDate.of(2022, 6, 30),
+                principalChargeDueDate = LocalDate.of(2022, 8, 7),
+                communicationsDate = LocalDate.of(2022, 8, 8),
+                penaltyAmountOutstanding = Some(100),
+                penaltyAmountPaid = Some(13.44),
+                LPP1LRDays = None,
+                LPP1HRDays = None,
+                LPP2Days = None,
+                LPP1HRCalculationAmount = None,
+                LPP1LRCalculationAmount = None,
+                LPP2Percentage = None,
+                LPP1LRPercentage = None,
+                LPP1HRPercentage = None,
+                penaltyChargeDueDate = LocalDate.of(2022, 8, 7),
+                principalChargeLatestClearing = None,
+                metadata = LPPDetailsMetadata()
+              ),
+              LPPDetails(
+                penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
+                principalChargeReference = "123456801",
+                penaltyChargeReference = Some("1234567891"),
+                penaltyChargeCreationDate = LocalDate.of(2022, 1, 1),
+                penaltyStatus = LPPPenaltyStatusEnum.Accruing,
+                appealInformation = None,
+                principalChargeBillingFrom = LocalDate.of(2022, 4, 1),
+                principalChargeBillingTo = LocalDate.of(2022, 6, 30),
+                principalChargeDueDate = LocalDate.of(2022, 8, 7),
+                communicationsDate = LocalDate.of(2022, 8, 8),
+                penaltyAmountOutstanding = Some(100),
+                penaltyAmountPaid = Some(13.45),
+                LPP1LRDays = None,
+                LPP1HRDays = None,
+                LPP2Days = None,
+                LPP1HRCalculationAmount = None,
+                LPP1LRCalculationAmount = None,
+                LPP2Percentage = None,
+                LPP1LRPercentage = None,
+                LPP1HRPercentage = None,
+                penaltyChargeDueDate = LocalDate.of(2022, 8, 7),
+                principalChargeLatestClearing = None,
+                metadata = LPPDetailsMetadata()
+              )
+            )
+          )
+        )
+      )
+    )
+
+    s"return NOT_FOUND (${Status.NOT_FOUND}) when ETMP can not find the data for the given enrolment key" in new Setup {
+      val sampleEnrolmentKey: String = "HMRC-MTD-VAT~VRN~123456789"
+      val vrn: String = "123456789"
+      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(Matchers.eq(vrn))(Matchers.any()))
+        .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(NOT_FOUND))))
+      val result: Future[Result] = controller.getMultiplePenaltyData("1", sampleEnrolmentKey)(fakeRequest)
+      status(result) shouldBe Status.NOT_FOUND
+      contentAsString(result) shouldBe s"A downstream call returned 404 for VRN: $vrn"
+    }
+
+    s"return ISE (${Status.INTERNAL_SERVER_ERROR}) when the call to ETMP fails for some reason" in new Setup {
+      val sampleEnrolmentKey: String = "HMRC-MTD-VAT~VRN~123456789"
+      val vrn: String = "123456789"
+      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(Matchers.eq(vrn))(Matchers.any()))
+        .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(INTERNAL_SERVER_ERROR))))
+      val result: Future[Result] = controller.getMultiplePenaltyData("1", sampleEnrolmentKey)(fakeRequest)
+      status(result) shouldBe Status.INTERNAL_SERVER_ERROR
+    }
+
+    s"return NO_CONTENT (${Status.NO_CONTENT}) when there is only one penalty under this principal charge" in new Setup {
+      val sampleEnrolmentKey: String = "HMRC-MTD-VAT~VRN~123456789"
+      val vrn: String = "123456789"
+      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(Matchers.eq(vrn))(Matchers.any()))
+        .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetailsOnePenalty))))
+      val result: Future[Result] = controller.getMultiplePenaltyData("1234567891", sampleEnrolmentKey)(fakeRequest)
+      status(result) shouldBe Status.NO_CONTENT
+    }
+
+    s"return OK (${Status.OK}) when there is two penalties under this principal charge" in new Setup {
+      val sampleEnrolmentKey: String = "HMRC-MTD-VAT~VRN~123456789"
+      val vrn: String = "123456789"
+      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(Matchers.eq(vrn))(Matchers.any()))
+        .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetailsTwoPenalties))))
+      val result: Future[Result] = controller.getMultiplePenaltyData("1234567892", sampleEnrolmentKey)(fakeRequest)
+      val expectedReturnModel: MultiplePenaltiesData = MultiplePenaltiesData(
+        firstPenaltyChargeReference = "1234567891", firstPenaltyAmount = 113.45, secondPenaltyChargeReference = "1234567892", secondPenaltyAmount = 113.44
+      )
+      status(result) shouldBe Status.OK
+      contentAsJson(result) shouldBe Json.toJson(expectedReturnModel)
     }
   }
 }
