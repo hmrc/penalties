@@ -19,16 +19,16 @@ package controllers
 import config.AppConfig
 import config.featureSwitches.FeatureSwitching
 import connectors.FileNotificationOrchestratorConnector
-import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser.{GetPenaltyDetailsFailure, GetPenaltyDetailsResponse, GetPenaltyDetailsSuccessResponse}
 import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser
+import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser.GetPenaltyDetailsSuccessResponse
 import models.appeals.AppealTypeEnum._
 import models.appeals._
 import models.appeals.reasonableExcuses.ReasonableExcuse
-import models.notification._
-import models.upload.UploadJourney
 import models.getPenaltyDetails.GetPenaltyDetails
 import models.getPenaltyDetails.latePayment.{LPPDetails, LPPPenaltyCategoryEnum}
 import models.getPenaltyDetails.lateSubmission.LSPDetails
+import models.notification._
+import models.upload.UploadJourney
 import play.api.Configuration
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, ControllerComponents, Result}
@@ -217,7 +217,10 @@ class AppealsController @Inject()(val appConfig: AppConfig,
             }
             val principalChargeReference: String = lppPenaltyIdInPenaltyDetailsPayload.get.principalChargeReference
             val penaltiesForPrincipalCharge: Seq[LPPDetails] = penaltyDetails.latePaymentPenalty.flatMap(_.details.map(_.filter(_.principalChargeReference.equals(principalChargeReference)))).get
-            if(penaltiesForPrincipalCharge.size == 2) {
+
+            val underAppeal = penaltiesForPrincipalCharge.exists(_.appealInformation.isDefined)
+
+            if(penaltiesForPrincipalCharge.size == 2 && !underAppeal) {
               val secondPenalty = penaltiesForPrincipalCharge.find(_.penaltyCategory.equals(LPPPenaltyCategoryEnum.SecondPenalty)).get
               val firstPenalty = penaltiesForPrincipalCharge.find(_.penaltyCategory.equals(LPPPenaltyCategoryEnum.FirstPenalty)).get
               val returnModel = MultiplePenaltiesData(
