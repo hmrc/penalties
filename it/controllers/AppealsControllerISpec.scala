@@ -787,10 +787,87 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
         |""".stripMargin
     )
 
-    "call ETMP and return NO_CONTENT when there is only one penalty related to the charge" in {
-      mockStubResponseForGetPenaltyDetails(Status.OK, "123456789", Some(getPenaltyDetailsOneLPPJson.toString()))
-      val result = await(buildClientForRequestToApp(uri = "/appeals-data/multiple-penalties?penaltyId=1234567887&enrolmentKey=HMRC-MTD-VAT~VRN~123456789").get())
-      result.status shouldBe Status.NO_CONTENT
+    val getPenaltyDetailsTwoLPPsWithAppealsJson: JsValue = Json.parse(
+      """
+        |{
+        | "totalisations": {
+        |   "LSPTotalValue": 200,
+        |   "penalisedPrincipalTotal": 2000,
+        |   "LPPPostedTotal": 165.25,
+        |   "LPPEstimatedTotal": 15.26,
+        |   "LPIPostedTotal": 1968.2,
+        |   "LPIEstimatedTotal": 7
+        | },
+        | "latePaymentPenalty": {
+        |     "details": [
+        |       {
+        |          "penaltyChargeReference": "1234567888",
+        |          "penaltyCategory": "LPP2",
+        |          "penaltyStatus": "P",
+        |          "penaltyAmountPaid": 0,
+        |          "penaltyAmountOutstanding": 144.00,
+        |          "LPP1LRCalculationAmount": 99.99,
+        |          "LPP1LRDays": "15",
+        |          "LPP1LRPercentage": 2.00,
+        |          "LPP1HRCalculationAmount": 99.99,
+        |          "LPP1HRDays": "31",
+        |          "LPP1HRPercentage": 2.00,
+        |          "LPP2Days": "31",
+        |          "LPP2Percentage": 4.00,
+        |          "penaltyChargeCreationDate": "2022-10-30",
+        |          "communicationsDate": "2023-02-08",
+        |          "penaltyChargeDueDate": "2022-10-30",
+        |          "principalChargeReference": "1234567890",
+        |          "principalChargeBillingFrom": "2022-01-01",
+        |          "principalChargeBillingTo": "2022-12-31",
+        |          "principalChargeDueDate": "2023-02-07",
+        |          "appealInformation": [
+        |           {
+        |             "appealStatus": "A",
+        |             "appealLevel": "01"
+        |           }
+        |           ]
+        |       },
+        |       {
+        |          "penaltyChargeReference": "1234567887",
+        |          "penaltyCategory": "LPP1",
+        |          "penaltyStatus": "P",
+        |          "penaltyAmountPaid": 0,
+        |          "penaltyAmountOutstanding": 144.01,
+        |          "LPP1LRCalculationAmount": 99.99,
+        |          "LPP1LRDays": "15",
+        |          "LPP1LRPercentage": 2.00,
+        |          "LPP1HRCalculationAmount": 99.99,
+        |          "LPP1HRDays": "31",
+        |          "LPP1HRPercentage": 2.00,
+        |          "LPP2Days": "31",
+        |          "LPP2Percentage": 4.00,
+        |          "penaltyChargeCreationDate": "2022-10-30",
+        |          "communicationsDate": "2023-02-08",
+        |          "penaltyChargeDueDate": "2022-10-30",
+        |          "principalChargeReference": "1234567890",
+        |          "principalChargeBillingFrom": "2022-01-01",
+        |          "principalChargeBillingTo": "2022-12-31",
+        |          "principalChargeDueDate": "2023-02-07"
+        |       }
+        |   ]
+        | }
+        |}
+        |""".stripMargin
+    )
+
+    "call ETMP and return NO_CONTENT" when {
+      "there is only one penalty related to the charge" in {
+        mockStubResponseForGetPenaltyDetails(Status.OK, "123456789", Some(getPenaltyDetailsOneLPPJson.toString()))
+        val result = await(buildClientForRequestToApp(uri = "/appeals-data/multiple-penalties?penaltyId=1234567887&enrolmentKey=HMRC-MTD-VAT~VRN~123456789").get())
+        result.status shouldBe Status.NO_CONTENT
+      }
+
+      "either penalty under the principal charge has appeal in any state" in {
+        mockStubResponseForGetPenaltyDetails(Status.OK, "123456789", Some(getPenaltyDetailsTwoLPPsWithAppealsJson.toString()))
+        val result = await(buildClientForRequestToApp(uri = "/appeals-data/multiple-penalties?penaltyId=1234567887&enrolmentKey=HMRC-MTD-VAT~VRN~123456789").get())
+        result.status shouldBe Status.NO_CONTENT
+      }
     }
 
     "call ETMP and return OK when there is two penalties related to the charge" in {
