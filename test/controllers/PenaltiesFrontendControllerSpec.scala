@@ -63,7 +63,8 @@ class PenaltiesFrontendControllerSpec extends SpecBase {
           activePenaltyPoints = 2,
           inactivePenaltyPoints = 0,
           regimeThreshold = 4,
-          penaltyChargeAmount = 200
+          penaltyChargeAmount = 200,
+          PoCAchievementDate = LocalDate.of(2022, 1, 1)
         ),
         details = Seq()
       )

@@ -37,7 +37,8 @@ trait ETMPWiremock {
       |     "activePenaltyPoints": 10,
       |     "inactivePenaltyPoints": 12,
       |     "regimeThreshold": 10,
-      |     "penaltyChargeAmount": 684.25
+      |     "penaltyChargeAmount": 684.25,
+      |     "PoCAchievementDate": "2022-01-01"
       |   },
       |   "details": [
       |     {
@@ -116,7 +117,8 @@ trait ETMPWiremock {
         |     "activePenaltyPoints": 0,
         |     "inactivePenaltyPoints": 0,
         |     "regimeThreshold": 0,
-        |     "penaltyChargeAmount": 0.00
+        |     "penaltyChargeAmount": 0.00,
+        |     "PoCAchievementDate": "2022-01-01"
         |   },
         |   "details": []
         |   },
