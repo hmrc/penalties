@@ -45,7 +45,8 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
         activePenaltyPoints = 2,
         inactivePenaltyPoints = 0,
         regimeThreshold = 1,
-        penaltyChargeAmount = 200
+        penaltyChargeAmount = 200,
+        PoCAchievementDate = LocalDate.of(2022, 1, 1)
       ),
       details = Seq(
         LSPDetails(
@@ -97,7 +98,8 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
         activePenaltyPoints = 2,
         inactivePenaltyPoints = 0,
         regimeThreshold = 5,
-        penaltyChargeAmount = 200
+        penaltyChargeAmount = 200,
+        PoCAchievementDate = LocalDate.of(2022, 1, 1)
       ),
       details = Seq(
         LSPDetails(
@@ -149,7 +151,8 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
         activePenaltyPoints = 2,
         inactivePenaltyPoints = 0,
         regimeThreshold = 5,
-        penaltyChargeAmount = 200
+        penaltyChargeAmount = 200,
+        PoCAchievementDate = LocalDate.of(2022, 1, 1)
       ),
       details = Seq(
         LSPDetails(
@@ -203,7 +206,8 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
         activePenaltyPoints = 0,
         inactivePenaltyPoints = 2,
         regimeThreshold = 5,
-        penaltyChargeAmount = 200
+        penaltyChargeAmount = 200,
+        PoCAchievementDate = LocalDate.of(2022, 1, 1)
       ),
       details = Seq(
         LSPDetails(
@@ -258,7 +262,8 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
         activePenaltyPoints = 2,
         inactivePenaltyPoints = 0,
         regimeThreshold = 2,
-        penaltyChargeAmount = 200
+        penaltyChargeAmount = 200,
+        PoCAchievementDate = LocalDate.of(2022, 1, 1)
       ),
       details = Seq(
         LSPDetails(

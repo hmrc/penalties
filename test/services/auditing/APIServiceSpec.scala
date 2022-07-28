@@ -301,7 +301,8 @@ class APIServiceSpec extends SpecBase {
                 activePenaltyPoints = 1,
                 inactivePenaltyPoints = 0,
                 regimeThreshold = 2,
-                penaltyChargeAmount = 200
+                penaltyChargeAmount = 200,
+                PoCAchievementDate = LocalDate.of(2022, 1, 1)
               ),
               details = Seq(
                 LSPDetails(
@@ -369,7 +370,8 @@ class APIServiceSpec extends SpecBase {
                 activePenaltyPoints = 1,
                 inactivePenaltyPoints = 0,
                 regimeThreshold = 2,
-                penaltyChargeAmount = 200
+                penaltyChargeAmount = 200,
+                PoCAchievementDate = LocalDate.of(2022, 1, 1)
               ),
               details = Seq(
                 LSPDetails(
@@ -597,7 +599,8 @@ class APIServiceSpec extends SpecBase {
               activePenaltyPoints = 1,
               inactivePenaltyPoints = 0,
               regimeThreshold = 2,
-              penaltyChargeAmount = 200
+              penaltyChargeAmount = 200,
+              PoCAchievementDate = LocalDate.of(2022, 1, 1)
             ),
             details = Seq(
               LSPDetails(
@@ -682,7 +685,8 @@ class APIServiceSpec extends SpecBase {
               activePenaltyPoints = 1,
               inactivePenaltyPoints = 0,
               regimeThreshold = 2,
-              penaltyChargeAmount = 200
+              penaltyChargeAmount = 200,
+              PoCAchievementDate = LocalDate.of(2022, 1, 1)
             ),
             details = Seq(
               LSPDetails(

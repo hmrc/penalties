@@ -17,7 +17,9 @@
 package models.getPenaltyDetails.lateSubmission
 
 import base.SpecBase
-import play.api.libs.json.{JsObject, JsResult, JsValue, Json}
+import play.api.libs.json.{JsResult, JsValue, Json}
+
+import java.time.LocalDate
 
 class LSPSummarySpec extends SpecBase {
 
@@ -26,7 +28,7 @@ class LSPSummarySpec extends SpecBase {
       |{
       |   "activePenaltyPoints": 10,
       |   "inactivePenaltyPoints": 12,
-      |   "PoCAchievementDate": "2069-10-30",
+      |   "PoCAchievementDate": "2022-01-01",
       |   "regimeThreshold": 10,
       |   "penaltyChargeAmount": 684.25
       |}
@@ -36,7 +38,8 @@ class LSPSummarySpec extends SpecBase {
     activePenaltyPoints = 10,
     inactivePenaltyPoints = 12,
     regimeThreshold = 10,
-    penaltyChargeAmount = 684.25
+    penaltyChargeAmount = 684.25,
+    PoCAchievementDate = LocalDate.of(2022, 1, 1)
   )
 
   "be readable from JSON" in {
@@ -47,6 +50,6 @@ class LSPSummarySpec extends SpecBase {
 
   "be writable to JSON" in {
     val result: JsValue = Json.toJson(model)(LSPSummary.format)
-    result shouldBe jsonRepresentingModel.as[JsObject] - "PoCAchievementDate"
+    result shouldBe jsonRepresentingModel
   }
 }

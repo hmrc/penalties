@@ -66,7 +66,11 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching {
       lateSubmissionPenalty = Some(
         LateSubmissionPenalty(
           summary = LSPSummary(
-            activePenaltyPoints = 2, inactivePenaltyPoints = 0, regimeThreshold = 5, penaltyChargeAmount = 200
+            activePenaltyPoints = 2,
+            inactivePenaltyPoints = 0,
+            regimeThreshold = 5,
+            penaltyChargeAmount = 200,
+            PoCAchievementDate = LocalDate.of(2022, 1, 1)
           ),
           details = Seq(
             LSPDetails(

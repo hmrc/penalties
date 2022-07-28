@@ -18,11 +18,14 @@ package models.getPenaltyDetails.lateSubmission
 
 import play.api.libs.json.{Format, Json}
 
+import java.time.LocalDate
+
 case class LSPSummary(
                        activePenaltyPoints: Int,
                        inactivePenaltyPoints: Int,
                        regimeThreshold: Int,
-                       penaltyChargeAmount: BigDecimal
+                       penaltyChargeAmount: BigDecimal,
+                       PoCAchievementDate: LocalDate
                      )
 
 object LSPSummary {

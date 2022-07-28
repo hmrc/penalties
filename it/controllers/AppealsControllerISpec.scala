@@ -110,7 +110,8 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
       |     "activePenaltyPoints": 2,
       |     "inactivePenaltyPoints": 0,
       |     "regimeThreshold": 5,
-      |     "penaltyChargeAmount": 200.00
+      |     "penaltyChargeAmount": 200.00,
+      |     "PoCAchievementDate": "2022-01-01"
       |   },
       |   "details": [
       |     {

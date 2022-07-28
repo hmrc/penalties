@@ -62,7 +62,8 @@ class APIControllerSpec extends SpecBase with FeatureSwitching {
               activePenaltyPoints = 4,
               inactivePenaltyPoints = 0,
               regimeThreshold = 5,
-              penaltyChargeAmount = 200
+              penaltyChargeAmount = 200,
+              PoCAchievementDate = LocalDate.of(2022, 1, 1)
             ),
             details = Seq() //omitted
           )
@@ -78,7 +79,8 @@ class APIControllerSpec extends SpecBase with FeatureSwitching {
               activePenaltyPoints = 2,
               inactivePenaltyPoints = 0,
               regimeThreshold = 4,
-              penaltyChargeAmount = 200
+              penaltyChargeAmount = 200,
+              PoCAchievementDate = LocalDate.of(2022, 1, 1)
             ),
             details = Seq() //omitted
           )
