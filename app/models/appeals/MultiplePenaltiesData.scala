@@ -18,11 +18,15 @@ package models.appeals
 
 import play.api.libs.json.{Json, Writes}
 
+import java.time.LocalDate
+
 case class MultiplePenaltiesData(
                                   firstPenaltyChargeReference: String,
                                   firstPenaltyAmount: BigDecimal,
                                   secondPenaltyChargeReference: String,
-                                  secondPenaltyAmount: BigDecimal
+                                  secondPenaltyAmount: BigDecimal,
+                                  firstPenaltyCommunicationDate: LocalDate,
+                                  secondPenaltyCommunicationDate: LocalDate
                                 )
 
 object MultiplePenaltiesData {

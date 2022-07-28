@@ -23,6 +23,8 @@ import play.api.libs.json.{JsValue, Json}
 import play.api.test.Helpers._
 import utils.{AppealWiremock, ETMPWiremock, IntegrationSpecCommonBase}
 
+import java.time.LocalDate
+
 class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock with AppealWiremock with FeatureSwitching {
   val controller: AppealsController = injector.instanceOf[AppealsController]
 
@@ -774,7 +776,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
         |          "LPP2Days": "31",
         |          "LPP2Percentage": 4.00,
         |          "penaltyChargeCreationDate": "2022-10-30",
-        |          "communicationsDate": "2023-02-08",
+        |          "communicationsDate": "2023-01-08",
         |          "penaltyChargeDueDate": "2022-10-30",
         |          "principalChargeReference": "1234567890",
         |          "principalChargeBillingFrom": "2022-01-01",
@@ -877,7 +879,9 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
         firstPenaltyChargeReference = "1234567887",
         firstPenaltyAmount = 144.01,
         secondPenaltyChargeReference = "1234567888",
-        secondPenaltyAmount = 144.00
+        secondPenaltyAmount = 144.00,
+        firstPenaltyCommunicationDate = LocalDate.of(2023, 1, 8),
+        secondPenaltyCommunicationDate = LocalDate.of(2023, 2, 8)
       )
       result.status shouldBe Status.OK
       Json.parse(result.body) shouldBe Json.toJson(expectedModel)

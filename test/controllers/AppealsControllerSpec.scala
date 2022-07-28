@@ -783,7 +783,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching {
                 principalChargeBillingFrom = LocalDate.of(2022, 4, 1),
                 principalChargeBillingTo = LocalDate.of(2022, 6, 30),
                 principalChargeDueDate = LocalDate.of(2022, 8, 7),
-                communicationsDate = LocalDate.of(2022, 8, 8),
+                communicationsDate = LocalDate.of(2022, 9, 8),
                 penaltyAmountOutstanding = Some(100),
                 penaltyAmountPaid = Some(13.44),
                 LPP1LRDays = None,
@@ -943,7 +943,12 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching {
         .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetailsTwoPenalties))))
       val result: Future[Result] = controller.getMultiplePenaltyData("1234567892", sampleEnrolmentKey)(fakeRequest)
       val expectedReturnModel: MultiplePenaltiesData = MultiplePenaltiesData(
-        firstPenaltyChargeReference = "1234567891", firstPenaltyAmount = 113.45, secondPenaltyChargeReference = "1234567892", secondPenaltyAmount = 113.44
+        firstPenaltyChargeReference = "1234567891",
+        firstPenaltyAmount = 113.45,
+        secondPenaltyChargeReference = "1234567892",
+        secondPenaltyAmount = 113.44,
+        firstPenaltyCommunicationDate = LocalDate.of(2022, 8, 8),
+        secondPenaltyCommunicationDate = LocalDate.of(2022, 9, 8)
       )
       status(result) shouldBe Status.OK
       contentAsJson(result) shouldBe Json.toJson(expectedReturnModel)
