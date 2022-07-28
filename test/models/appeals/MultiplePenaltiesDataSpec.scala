@@ -20,10 +20,17 @@ import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import play.api.libs.json.Json
 
+import java.time.LocalDate
+
 class MultiplePenaltiesDataSpec extends AnyWordSpec with Matchers {
   "be writable to JSON" in {
     val model = MultiplePenaltiesData(
-      firstPenaltyChargeReference = "123456789", firstPenaltyAmount = 101.01, secondPenaltyChargeReference = "123456790", secondPenaltyAmount = 101.02
+      firstPenaltyChargeReference = "123456789",
+      firstPenaltyAmount = 101.01,
+      secondPenaltyChargeReference = "123456790",
+      secondPenaltyAmount = 101.02,
+      firstPenaltyCommunicationDate = LocalDate.of(2022, 8, 8),
+      secondPenaltyCommunicationDate = LocalDate.of(2022, 8, 9),
     )
     val expectedResult = Json.parse(
       """
@@ -31,7 +38,9 @@ class MultiplePenaltiesDataSpec extends AnyWordSpec with Matchers {
         | "firstPenaltyChargeReference": "123456789",
         | "firstPenaltyAmount": 101.01,
         | "secondPenaltyChargeReference": "123456790",
-        | "secondPenaltyAmount": 101.02
+        | "secondPenaltyAmount": 101.02,
+        | "firstPenaltyCommunicationDate": "2022-08-08",
+        | "secondPenaltyCommunicationDate": "2022-08-09"
         |}
         |""".stripMargin)
     val result = Json.toJson(model)
