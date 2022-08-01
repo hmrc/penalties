@@ -40,7 +40,7 @@ class GetPenaltyDetailsSpec extends SpecBase {
       |   "summary": {
       |     "activePenaltyPoints": 10,
       |     "inactivePenaltyPoints": 12,
-      |     "PoCAchievementDate": "2069-10-30",
+      |     "PoCAchievementDate": "2022-01-01",
       |     "regimeThreshold": 10,
       |     "penaltyChargeAmount": 684.25
       |   },
@@ -131,6 +131,7 @@ class GetPenaltyDetailsSpec extends SpecBase {
       |   "summary": {
       |     "activePenaltyPoints": 10,
       |     "inactivePenaltyPoints": 12,
+      |     "PoCAchievementDate": "2022-01-01",
       |     "regimeThreshold": 10,
       |     "penaltyChargeAmount": 684.25
       |   },
@@ -214,7 +215,8 @@ class GetPenaltyDetailsSpec extends SpecBase {
           activePenaltyPoints = 10,
           inactivePenaltyPoints = 12,
           regimeThreshold = 10,
-          penaltyChargeAmount = 684.25
+          penaltyChargeAmount = 684.25,
+          PoCAchievementDate = LocalDate.of(2022, 1, 1)
         ),
         details = Seq(
           LSPDetails(
