@@ -47,7 +47,7 @@ class PEGAConnectorISpec extends IntegrationSpecCommonBase with AppealWiremock w
         appealInformation = CrimeAppealInformation(
           reasonableExcuse = "crime",
           honestyDeclaration = true,
-          startDateOfEvent = "2021-04-23T18:25:43.511Z",
+          startDateOfEvent = "2021-04-23T00:00",
           reportedIssueToPolice = true,
           statement = None,
           lateAppeal = false,
@@ -73,7 +73,7 @@ class PEGAConnectorISpec extends IntegrationSpecCommonBase with AppealWiremock w
         appealInformation = CrimeAppealInformation(
           reasonableExcuse = "crime",
           honestyDeclaration = true,
-          startDateOfEvent = "2021-04-23T18:25:43.511Z",
+          startDateOfEvent = "2021-04-23T00:00",
           reportedIssueToPolice = true,
           statement = None,
           lateAppeal = false,
@@ -99,7 +99,7 @@ class PEGAConnectorISpec extends IntegrationSpecCommonBase with AppealWiremock w
         appealInformation = CrimeAppealInformation(
           reasonableExcuse= "crime",
           honestyDeclaration = true,
-          startDateOfEvent = "2021-04-23T18:25:43.511Z",
+          startDateOfEvent = "2021-04-23T00:00",
           reportedIssueToPolice = true,
           statement = None,
           lateAppeal = false,
