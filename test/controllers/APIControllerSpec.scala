@@ -440,7 +440,7 @@ class APIControllerSpec extends SpecBase with FeatureSwitching {
   }
 
   "getPenaltyDetails" should {
-    s"return OK (${Status.OK}) when a JSON payload is received from EIS" in new Setup(isFSEnabled = true) {
+    s"return OK (${Status.OK}) when a JSON payload is received from EIS (auditing the response)" in new Setup(isFSEnabled = true) {
       val sampleAPI1812Response = Json.parse(
         """
           |{
@@ -526,24 +526,27 @@ class APIControllerSpec extends SpecBase with FeatureSwitching {
       val result = controller.getPenaltyDetails(vrn = "123456789", dateLimit = Some("02"))(fakeRequest)
       status(result) shouldBe Status.OK
       contentAsJson(result) shouldBe sampleAPI1812Response
+      verify(mockAuditService, times(1)).audit(any())(any(), any(), any())
     }
-    s"return NOT_FOUND (${Status.NOT_FOUND}) when the call returns no data" in new Setup(true) {
+
+    s"return NOT_FOUND (${Status.NOT_FOUND}) when the call returns no data (auditing the response)" in new Setup(true) {
       when(mockGetPenaltyDetailsConnector.getPenaltyDetailsForAPI(any(), any())(any()))
         .thenReturn(Future.successful(HttpResponse.apply(NOT_FOUND, "NOT_FOUND")))
 
       val result = controller.getPenaltyDetails(vrn = "123456789", dateLimit = None)(fakeRequest)
 
       status(result) shouldBe Status.NOT_FOUND
+      verify(mockAuditService, times(1)).audit(any())(any(), any(), any())
     }
 
-    s"return the status from EIS when the call returns a non 200 or 404 status" in new Setup(true) {
+    s"return the status from EIS when the call returns a non 200 or 404 status (auditing the response)" in new Setup(true) {
       when(mockGetPenaltyDetailsConnector.getPenaltyDetailsForAPI(any(), any())(any()))
         .thenReturn(Future.successful(HttpResponse.apply(INTERNAL_SERVER_ERROR, "INTERNAL_SERVER_ERROR")))
 
       val result = controller.getPenaltyDetails(vrn = "123456789", dateLimit = None)(fakeRequest)
 
       status(result) shouldBe Status.INTERNAL_SERVER_ERROR
+      verify(mockAuditService, times(1)).audit(any())(any(), any(), any())
     }
-
   }
 }

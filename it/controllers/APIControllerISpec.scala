@@ -16,7 +16,9 @@
 
 package controllers
 
-import config.featureSwitches.{FeatureSwitching, CallAPI1811ETMP, CallAPI1812ETMP}
+import scala.collection.JavaConverters._
+import com.github.tomakehurst.wiremock.client.WireMock.{postRequestedFor, urlEqualTo}
+import config.featureSwitches.{CallAPI1811ETMP, CallAPI1812ETMP, FeatureSwitching}
 import play.api.http.Status
 import play.api.libs.json.{JsValue, Json}
 import play.api.test.Helpers._
@@ -411,6 +413,7 @@ class APIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock wit
         val result = await(buildClientForRequestToApp(uri = s"/penalty-details/VAT/VRN/123456789?dateLimit=09").get)
         result.status shouldBe OK
         result.json shouldBe sampleAPI1812Response
+        wireMockServer.findAll(postRequestedFor(urlEqualTo("/write/audit"))).asScala.toList.exists(_.getBodyAsString.contains("Penalties3rdPartyPenaltyDetailsDataRetrieval")) shouldBe true
       }
     }
 
@@ -420,6 +423,7 @@ class APIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock wit
         mockResponseForGetPenaltyDetails(Status.NOT_FOUND, s"123456789?dateLimit=09", Some(""))
         val result = await(buildClientForRequestToApp(uri = s"/penalty-details/VAT/VRN/123456789?dateLimit=09").get)
         result.status shouldBe NOT_FOUND
+        wireMockServer.findAll(postRequestedFor(urlEqualTo("/write/audit"))).asScala.toList.exists(_.getBodyAsString.contains("Penalties3rdPartyPenaltyDetailsDataRetrieval")) shouldBe true
       }
 
       "Non 200 response received " in {
@@ -427,6 +431,7 @@ class APIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock wit
         mockResponseForGetPenaltyDetails(Status.BAD_REQUEST, s"123456789?dateLimit=09", Some(""))
         val result = await(buildClientForRequestToApp(uri = s"/penalty-details/VAT/VRN/123456789?dateLimit=09").get)
         result.status shouldBe BAD_REQUEST
+        wireMockServer.findAll(postRequestedFor(urlEqualTo("/write/audit"))).asScala.toList.exists(_.getBodyAsString.contains("Penalties3rdPartyPenaltyDetailsDataRetrieval")) shouldBe true
       }
     }
   }

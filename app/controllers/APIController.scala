@@ -22,7 +22,7 @@ import connectors.getPenaltyDetails.GetPenaltyDetailsConnector
 import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser
 import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser.GetPenaltyDetailsSuccessResponse
 import models.api.APIModel
-import models.auditing.UserHasPenaltyAuditModel
+import models.auditing.{ThirdParty1812APIRetrievalAuditModel, UserHasPenaltyAuditModel}
 import models.getPenaltyDetails.GetPenaltyDetails
 import play.api.Configuration
 import play.api.libs.json.Json
@@ -142,17 +142,21 @@ class APIController @Inject()(auditService: AuditService,
   def getPenaltyDetails(vrn: String, dateLimit: Option[String]): Action[AnyContent] = Action.async {
     implicit request => {
       val response = getPenaltyDetailsConnector.getPenaltyDetailsForAPI(vrn, dateLimit)
-      response.map(
-        res => res.status match {
-          case OK =>
-            logger.debug("[APIController][getPenaltyDetails] Ok response received: " + res)
-            Ok(res.json)
-          case NOT_FOUND =>
-            logger.debug("[APIController][getPenaltyDetails] Error received: " + res)
-            Status(res.status)(Json.toJson(res.body))
-          case _ =>
-            logger.warn(s"[APIController][getPenaltyDetails] status ${res.status} returned from EIS ")
-            Status(res.status)(Json.toJson(res.body))
+      response.map (
+        res => {
+          val auditToSend = ThirdParty1812APIRetrievalAuditModel(vrn, res.status, res.body)
+          auditService.audit(auditToSend)
+          res.status match {
+            case OK =>
+              logger.debug("[APIController][getPenaltyDetails] Ok response received: " + res)
+              Ok(res.json)
+            case NOT_FOUND =>
+              logger.debug("[APIController][getPenaltyDetails] Error received: " + res)
+              Status(res.status)(Json.toJson(res.body))
+            case _ =>
+              logger.warn(s"[APIController][getPenaltyDetails] status ${res.status} returned from EIS ")
+              Status(res.status)(Json.toJson(res.body))
+          }
         }
       )
     }
