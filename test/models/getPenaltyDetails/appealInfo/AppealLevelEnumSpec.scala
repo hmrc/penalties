@@ -21,24 +21,24 @@ import play.api.libs.json.{JsString, Json}
 
 class AppealLevelEnumSpec extends SpecBase {
   "AppealLevelEnum" should {
-    "be writable to JSON for appeal level '01'" in {
+    "be writable to JSON for appeal level 'L1'" in {
       val result = Json.toJson(AppealLevelEnum.HMRC)(AppealLevelEnum.format)
-      result shouldBe JsString("01")
+      result shouldBe JsString("L1")
     }
 
-    "be writable to JSON for appeal level '02'" in {
+    "be writable to JSON for appeal level 'L2'" in {
       val result = Json.toJson(AppealLevelEnum.Tribunal)(AppealLevelEnum.format)
-      result shouldBe JsString("02")
+      result shouldBe JsString("L2")
     }
 
-    "be readable from JSON for appeal level '01'" in{
-      val result = Json.fromJson(JsString("01"))(AppealLevelEnum.format)
+    "be readable from JSON for appeal level 'L1'" in{
+      val result = Json.fromJson(JsString("L1"))(AppealLevelEnum.format)
       result.isSuccess shouldBe true
       result.get shouldBe AppealLevelEnum.HMRC
     }
 
-    "be readable from JSON for appeal level '02'" in{
-      val result = Json.fromJson(JsString("02"))(AppealLevelEnum.format)
+    "be readable from JSON for appeal level 'L2'" in{
+      val result = Json.fromJson(JsString("L2"))(AppealLevelEnum.format)
       result.isSuccess shouldBe true
       result.get shouldBe AppealLevelEnum.Tribunal
     }

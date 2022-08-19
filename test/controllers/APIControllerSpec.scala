@@ -485,7 +485,7 @@ class APIControllerSpec extends SpecBase with FeatureSwitching {
           |       "appealInformation": [
           |         {
           |           "appealStatus": "99",
-          |           "appealLevel": "01"
+          |           "appealLevel": "L1"
           |         }
           |       ],
           |       "chargeDueDate": "2022-10-30",
@@ -503,7 +503,7 @@ class APIControllerSpec extends SpecBase with FeatureSwitching {
           |       "appealInformation":
           |       [{
           |         "appealStatus": "99",
-          |         "appealLevel": "01"
+          |         "appealLevel": "L1"
           |       }],
           |       "principalChargeBillingFrom": "2022-10-30",
           |       "principalChargeBillingTo": "2022-10-30",

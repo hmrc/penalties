@@ -138,7 +138,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
       |       "appealInformation": [
       |         {
       |         "appealStatus": "99",
-      |         "appealLevel": "01"
+      |         "appealLevel": "L1"
       |         }
       |       ],
       |       "chargeDueDate": "2022-10-30",
@@ -169,7 +169,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
       |       "appealInformation": [
       |         {
       |         "appealStatus": "99",
-      |         "appealLevel": "01"
+      |         "appealLevel": "L1"
       |         }
       |       ],
       |       "chargeDueDate": "2022-10-30",
@@ -827,7 +827,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
         |          "appealInformation": [
         |           {
         |             "appealStatus": "A",
-        |             "appealLevel": "01"
+        |             "appealLevel": "L1"
         |           }
         |           ]
         |       },
