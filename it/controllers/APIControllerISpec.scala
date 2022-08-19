@@ -193,7 +193,7 @@ class APIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock wit
   "getFinancialDetails" should {
     s"return OK (${Status.OK})" when {
       "the get Financial Details call succeeds" in {
-        val sampleAPI1911Response = Json.parse(
+        val sampleAPI1811Response = Json.parse(
           """
             |{
             |            "taxPayerDetails": {
@@ -301,10 +301,12 @@ class APIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock wit
             |            ]
             |          }""".stripMargin)
         enableFeatureSwitch(CallAPI1811ETMP)
-        mockResponseForGetFinancialDetails(Status.OK, s"VRN/123456789/VATC?docNumber=DOC1&dateFrom=2022-01-01&dateTo=2024-01-01&onlyOpenItems=false&includeStatistical=false&includeLocks=false&calculateAccruedInterest=false&removePOA=false&customerPaymentInformation=true", Some(sampleAPI1911Response.toString))
+        mockResponseForGetFinancialDetails(Status.OK, s"VRN/123456789/VATC?docNumber=DOC1&dateFrom=2022-01-01&dateTo=2024-01-01&onlyOpenItems=false&includeStatistical=false&includeLocks=false&calculateAccruedInterest=false&removePOA=false&customerPaymentInformation=true", Some(sampleAPI1811Response.toString))
         val result = await(buildClientForRequestToApp(uri = s"/penalty/financial-data/VRN/123456789/VATC?docNumber=DOC1&dateFrom=2022-01-01&dateTo=2024-01-01&onlyOpenItems=false&includeStatistical=false&includeLocks=false&calculateAccruedInterest=false&removePOA=false&customerPaymentInformation=true").get)
         result.status shouldBe OK
-        result.json shouldBe sampleAPI1911Response
+        result.json shouldBe sampleAPI1811Response
+        wireMockServer.findAll(postRequestedFor(urlEqualTo("/write/audit"))).asScala.toList
+          .exists(_.getBodyAsString.contains("Penalties3rdPartyFinancialPenaltyDetailsDataRetrieval")) shouldBe true
       }
     }
 
@@ -314,6 +316,8 @@ class APIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock wit
         mockResponseForGetFinancialDetails(Status.NOT_FOUND, s"VRN/123456789/VATC?docNumber=DOC1&dateFrom=2022-01-01&dateTo=2024-01-01&onlyOpenItems=false&includeStatistical=false&includeLocks=false&calculateAccruedInterest=false&removePOA=false&customerPaymentInformation=true", Some(""))
         val result = await(buildClientForRequestToApp(uri = s"/penalty/financial-data/VRN/123456789/VATC?docNumber=DOC1&dateFrom=2022-01-01&dateTo=2024-01-01&onlyOpenItems=false&includeStatistical=false&includeLocks=false&calculateAccruedInterest=false&removePOA=false&customerPaymentInformation=true").get)
         result.status shouldBe NOT_FOUND
+        wireMockServer.findAll(postRequestedFor(urlEqualTo("/write/audit"))).asScala.toList
+          .exists(_.getBodyAsString.contains("Penalties3rdPartyFinancialPenaltyDetailsDataRetrieval")) shouldBe true
       }
 
       "Non 200 response received " in {
@@ -321,6 +325,8 @@ class APIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock wit
         mockResponseForGetFinancialDetails(Status.BAD_REQUEST, s"VRN/123456789/VATC?docNumber=DOC1&dateFrom=2022-01-01&dateTo=2024-01-01&onlyOpenItems=false&includeStatistical=false&includeLocks=false&calculateAccruedInterest=false&removePOA=false&customerPaymentInformation=true", Some(""))
         val result = await(buildClientForRequestToApp(uri = s"/penalty/financial-data/VRN/123456789/VATC?docNumber=DOC1&dateFrom=2022-01-01&dateTo=2024-01-01&onlyOpenItems=false&includeStatistical=false&includeLocks=false&calculateAccruedInterest=false&removePOA=false&customerPaymentInformation=true").get)
         result.status shouldBe BAD_REQUEST
+        wireMockServer.findAll(postRequestedFor(urlEqualTo("/write/audit"))).asScala.toList
+          .exists(_.getBodyAsString.contains("Penalties3rdPartyFinancialPenaltyDetailsDataRetrieval")) shouldBe true
       }
     }
   }
