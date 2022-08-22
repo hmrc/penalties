@@ -275,8 +275,8 @@ class APIControllerSpec extends SpecBase with FeatureSwitching {
     }
 
   "getFinancialDetails" should {
-    s"return OK (${Status.OK}) when a JSON payload is received from EIS" in new Setup(isFSEnabled = true) {
-      val sampleAPI1911Response = Json.parse(
+    s"return OK (${Status.OK}) when a JSON payload is received from EIS (auditing the response)" in new Setup(isFSEnabled = true) {
+      val sampleAPI1811Response = Json.parse(
         """
           |{
           |            "taxPayerDetails": {
@@ -386,7 +386,7 @@ class APIControllerSpec extends SpecBase with FeatureSwitching {
 
 
       when(mockGetFinancialDetailsConnector.getFinancialDetailsForAPI(any(), any(), any(),any(),any(),any(),any(),any(),any(),any())(any()))
-        .thenReturn(Future.successful(HttpResponse.apply(OK, sampleAPI1911Response.toString)))
+        .thenReturn(Future.successful(HttpResponse.apply(OK, sampleAPI1811Response.toString)))
       val result = controller.getFinancialDetails(vrn ="123456789",
         docNumber = None,
         dateFrom = None,
@@ -399,10 +399,11 @@ class APIControllerSpec extends SpecBase with FeatureSwitching {
         customerPaymentInformation = false)(fakeRequest)
 
       status(result) shouldBe Status.OK
-      contentAsJson(result) shouldBe sampleAPI1911Response
+      contentAsJson(result) shouldBe sampleAPI1811Response
+      verify(mockAuditService, times(1)).audit(any())(any(),any(),any())
     }
 
-    s"return NOT_FOUND (${Status.NOT_FOUND}) when the call returns no data" in new Setup(true) {
+    s"return NOT_FOUND (${Status.NOT_FOUND}) when the call returns no data (auditing the response)" in new Setup(true) {
       when(mockGetFinancialDetailsConnector.getFinancialDetailsForAPI(any(), any(), any(),any(),any(),any(),any(),any(),any(),any())(any()))
         .thenReturn(Future.successful(HttpResponse.apply(NOT_FOUND, "NOT_FOUND")))
 
@@ -418,9 +419,10 @@ class APIControllerSpec extends SpecBase with FeatureSwitching {
         customerPaymentInformation = false)(fakeRequest)
 
       status(result) shouldBe Status.NOT_FOUND
+      verify(mockAuditService, times(1)).audit(any())(any(),any(),any())
     }
 
-    s"return the status from EIS when the call returns a non 200 or 404 status" in new Setup(true) {
+    s"return the status from EIS when the call returns a non 200 or 404 status (auditing the response)" in new Setup(true) {
       when(mockGetFinancialDetailsConnector.getFinancialDetailsForAPI(any(), any(), any(),any(),any(),any(),any(),any(),any(),any())(any()))
         .thenReturn(Future.successful(HttpResponse.apply(INTERNAL_SERVER_ERROR, "INTERNAL_SERVER_ERROR")))
 
@@ -436,6 +438,7 @@ class APIControllerSpec extends SpecBase with FeatureSwitching {
         customerPaymentInformation = false)(fakeRequest)
 
       status(result) shouldBe Status.INTERNAL_SERVER_ERROR
+      verify(mockAuditService, times(1)).audit(any())(any(),any(),any())
     }
   }
 
