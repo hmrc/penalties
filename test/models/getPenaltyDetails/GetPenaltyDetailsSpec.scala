@@ -69,7 +69,7 @@ class GetPenaltyDetailsSpec extends SpecBase {
       |       "appealInformation": [
       |         {
       |           "appealStatus": "99",
-      |           "appealLevel": "01"
+      |           "appealLevel": "L1"
       |         }
       |       ],
       |       "chargeDueDate": "2022-10-30",
@@ -103,7 +103,7 @@ class GetPenaltyDetailsSpec extends SpecBase {
       |       "appealInformation":
       |       [{
       |         "appealStatus": "99",
-      |         "appealLevel": "01"
+      |         "appealLevel": "L1"
       |       }],
       |       "principalChargeDocNumber": "123456789012",
       |       "principalChargeMainTransaction": "4700",
@@ -158,7 +158,7 @@ class GetPenaltyDetailsSpec extends SpecBase {
       |       "appealInformation": [
       |         {
       |           "appealStatus": "99",
-      |           "appealLevel": "01"
+      |           "appealLevel": "L1"
       |         }
       |       ],
       |       "chargeDueDate": "2022-10-30",
@@ -188,7 +188,7 @@ class GetPenaltyDetailsSpec extends SpecBase {
       |       "appealInformation":
       |       [{
       |         "appealStatus": "99",
-      |         "appealLevel": "01"
+      |         "appealLevel": "L1"
       |       }],
       |       "principalChargeBillingFrom": "2022-10-30",
       |       "principalChargeBillingTo": "2022-10-30",

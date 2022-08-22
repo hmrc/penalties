@@ -375,7 +375,7 @@ class APIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock wit
             |       "appealInformation": [
             |         {
             |           "appealStatus": "99",
-            |           "appealLevel": "01"
+            |           "appealLevel": "L1"
             |         }
             |       ],
             |       "chargeDueDate": "2022-10-30",
@@ -393,7 +393,7 @@ class APIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock wit
             |       "appealInformation":
             |       [{
             |         "appealStatus": "99",
-            |         "appealLevel": "01"
+            |         "appealLevel": "L1"
             |       }],
             |       "principalChargeBillingFrom": "2022-10-30",
             |       "principalChargeBillingTo": "2022-10-30",
