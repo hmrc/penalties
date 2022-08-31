@@ -21,7 +21,7 @@ import connectors.getPenaltyDetails.GetPenaltyDetailsConnector
 import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser.{GetPenaltyDetailsFailureResponse, GetPenaltyDetailsMalformed, GetPenaltyDetailsNoContent, GetPenaltyDetailsResponse, GetPenaltyDetailsSuccessResponse}
 import models.getPenaltyDetails.appealInfo.{AppealInformationType, AppealLevelEnum, AppealStatusEnum}
 import models.getPenaltyDetails.{GetPenaltyDetails, Totalisations}
-import models.getPenaltyDetails.latePayment.{LPPDetails, LPPDetailsMetadata, LPPPenaltyCategoryEnum, LPPPenaltyStatusEnum, LatePaymentPenalty}
+import models.getPenaltyDetails.latePayment.{LPPDetails, LPPDetailsMetadata, LPPPenaltyCategoryEnum, LPPPenaltyStatusEnum, LatePaymentPenalty, TimeToPay}
 import models.getPenaltyDetails.lateSubmission.{LSPDetails, LSPPenaltyCategoryEnum, LSPPenaltyStatusEnum, LSPSummary, LateSubmission, LateSubmissionPenalty, TaxReturnStatusEnum}
 import org.mockito.Matchers
 import org.mockito.Matchers.any
@@ -122,7 +122,12 @@ class GetPenaltyDetailsServiceSpec extends SpecBase {
               LPP1HRPercentage = Some(BigDecimal(2.00).setScale(2)),
               penaltyChargeDueDate = LocalDate.of(2022, 10, 30),
               principalChargeLatestClearing = None,
-              metadata = LPPDetailsMetadata()
+              metadata = LPPDetailsMetadata(
+                timeToPay = Some(Seq(TimeToPay(
+                  TTPStartDate = Some(LocalDate.of(2022, 1, 1)),
+                  TTPEndDate = Some(LocalDate.of(2022, 12, 31))
+                )))
+              )
             )
           )
         )

@@ -96,7 +96,12 @@ class PenaltiesFrontendControllerSpec extends SpecBase {
               LPP1HRPercentage = None,
               penaltyChargeDueDate = LocalDate.of(2022, 1, 1),
               principalChargeLatestClearing = None,
-              metadata = LPPDetailsMetadata()
+              metadata = LPPDetailsMetadata(
+                timeToPay = Some(Seq(TimeToPay(
+                  TTPStartDate = Some(LocalDate.of(2022, 1, 1)),
+                  TTPEndDate = Some(LocalDate.of(2022, 12, 31))
+                )))
+              )
             ),
             LPPDetails(
               penaltyCategory = LPPPenaltyCategoryEnum.SecondPenalty,
@@ -121,7 +126,12 @@ class PenaltiesFrontendControllerSpec extends SpecBase {
               LPP1HRPercentage = None,
               penaltyChargeDueDate = LocalDate.of(2022, 1, 1),
               principalChargeLatestClearing = None,
-              metadata = LPPDetailsMetadata()
+              metadata = LPPDetailsMetadata(
+                timeToPay = Some(Seq(TimeToPay(
+                  TTPStartDate = Some(LocalDate.of(2022, 1, 1)),
+                  TTPEndDate = Some(LocalDate.of(2022, 12, 31))
+                )))
+              )
             ),
             LPPDetails(
               penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
@@ -146,7 +156,12 @@ class PenaltiesFrontendControllerSpec extends SpecBase {
               LPP1HRPercentage = None,
               penaltyChargeDueDate = LocalDate.of(2022, 1, 1),
               principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
-              metadata = LPPDetailsMetadata()
+              metadata = LPPDetailsMetadata(
+                timeToPay = Some(Seq(TimeToPay(
+                  TTPStartDate = Some(LocalDate.of(2022, 1, 1)),
+                  TTPEndDate = Some(LocalDate.of(2022, 12, 31))
+                )))
+              )
             ),
             LPPDetails(
               penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
@@ -171,7 +186,12 @@ class PenaltiesFrontendControllerSpec extends SpecBase {
               LPP1HRPercentage = None,
               penaltyChargeDueDate = LocalDate.of(2022, 1, 1),
               principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
-              metadata = LPPDetailsMetadata()
+              metadata = LPPDetailsMetadata(
+                timeToPay = Some(Seq(TimeToPay(
+                  TTPStartDate = Some(LocalDate.of(2022, 1, 1)),
+                  TTPEndDate = Some(LocalDate.of(2022, 12, 31))
+                )))
+              )
             )
           )
         )

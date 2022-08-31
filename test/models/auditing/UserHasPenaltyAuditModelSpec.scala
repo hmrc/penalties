@@ -19,7 +19,7 @@ package models.auditing
 import base.{LogCapturing, SpecBase}
 import models.getPenaltyDetails._
 import models.getPenaltyDetails.appealInfo.{AppealInformationType, AppealLevelEnum, AppealStatusEnum}
-import models.getPenaltyDetails.latePayment.{LPPDetails, LPPDetailsMetadata, LPPPenaltyCategoryEnum, LPPPenaltyStatusEnum, LatePaymentPenalty}
+import models.getPenaltyDetails.latePayment.{LPPDetails, LPPDetailsMetadata, LPPPenaltyCategoryEnum, LPPPenaltyStatusEnum, LatePaymentPenalty, TimeToPay}
 import models.getPenaltyDetails.lateSubmission._
 import utils.Logger
 
@@ -429,7 +429,12 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
               LPP1HRPercentage = None,
               penaltyChargeDueDate = LocalDate.of(2022, 1, 1),
               principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
-              metadata = LPPDetailsMetadata()
+              metadata = LPPDetailsMetadata(
+                timeToPay = Some(Seq(TimeToPay(
+                  TTPStartDate = Some(LocalDate.of(2022, 1, 1)),
+                  TTPEndDate = Some(LocalDate.of(2022, 12, 31))
+                )))
+              )
             ),
             LPPDetails(
               penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
@@ -454,7 +459,12 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
               LPP1HRPercentage = None,
               penaltyChargeDueDate = LocalDate.of(2022, 1, 1),
               principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
-              metadata = LPPDetailsMetadata()
+              metadata = LPPDetailsMetadata(
+                timeToPay = Some(Seq(TimeToPay(
+                  TTPStartDate = Some(LocalDate.of(2022, 1, 1)),
+                  TTPEndDate = Some(LocalDate.of(2022, 12, 31))
+                )))
+              )
             )
           )
         )

@@ -38,7 +38,8 @@ class PenaltiesFrontendService @Inject()() {
           oldLPPDetails.copy(
             metadata = LPPDetailsMetadata(
               mainTransaction = Some(penaltyToCopy.get.mainTransaction.get),
-              outstandingAmount = Some(penaltyToCopy.get.outstandingAmount.get)
+              outstandingAmount = Some(penaltyToCopy.get.outstandingAmount.get),
+              timeToPay = oldLPPDetails.metadata.timeToPay
             )
           )
         }
