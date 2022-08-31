@@ -21,7 +21,7 @@ import com.github.tomakehurst.wiremock.stubbing.StubMapping
 import play.api.libs.json.{JsValue, Json}
 
 trait ETMPWiremock {
-  val getPenaltyDetailsWithLSPandLPPAsJson: JsValue = Json.parse(
+  val getPenaltyDetailsWithLSPAndLPPAsJson: JsValue = Json.parse(
     """
       |{
       | "totalisations": {
@@ -97,7 +97,13 @@ trait ETMPWiremock {
       |       "LPP2Percentage": 4.00,
       |       "LPP1LRPercentage": 2.00,
       |       "LPP1HRPercentage": 2.00,
-      |       "penaltyChargeDueDate": "2022-10-30"
+      |       "penaltyChargeDueDate": "2022-10-30",
+      |       "timeToPay": [
+      |             {
+      |               "TTPStartDate": "2022-01-01",
+      |               "TTPEndDate": "2022-12-31"
+      |             }
+      |          ]
       |   }]
       | }
       |}
@@ -218,7 +224,7 @@ trait ETMPWiremock {
     stubFor(get(urlEqualTo(s"/penalties-stub/penalty/details/VATC/VRN/$vrn"))
     .willReturn(
       aResponse()
-        .withBody(body.fold(getPenaltyDetailsWithLSPandLPPAsJson.toString())(identity))
+        .withBody(body.fold(getPenaltyDetailsWithLSPAndLPPAsJson.toString())(identity))
         .withStatus(status)
     ))
   }
@@ -227,7 +233,7 @@ trait ETMPWiremock {
     stubFor(get(urlEqualTo(s"/penalty/details/VATC/VRN/$vatcUrl"))
       .willReturn(
         aResponse()
-          .withBody(body.fold(getPenaltyDetailsWithLSPandLPPAsJson.toString())(identity))
+          .withBody(body.fold(getPenaltyDetailsWithLSPAndLPPAsJson.toString())(identity))
           .withStatus(status)
       ))
   }

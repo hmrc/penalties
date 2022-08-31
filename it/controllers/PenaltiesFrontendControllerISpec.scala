@@ -71,7 +71,13 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
       |          "principalChargeReference": "1234567890",
       |          "principalChargeBillingFrom": "2022-10-30",
       |          "principalChargeBillingTo": "2022-10-30",
-      |          "principalChargeDueDate": "2022-10-30"
+      |          "principalChargeDueDate": "2022-10-30",
+      |          "timeToPay": [
+      |             {
+      |               "TTPStartDate": "2022-01-01",
+      |               "TTPEndDate": "2022-12-31"
+      |             }
+      |          ]
       |       }
       |   ]
       | }
@@ -179,7 +185,13 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
       |          "principalChargeBillingTo": "2022-10-30",
       |          "principalChargeDueDate": "2022-10-30",
       |          "mainTransaction": "4703",
-      |          "outstandingAmount": 123.45
+      |          "outstandingAmount": 123.45,
+      |          "timeToPay": [
+      |             {
+      |               "TTPStartDate": "2022-01-01",
+      |               "TTPEndDate": "2022-12-31"
+      |             }
+      |          ]
       |       }
       |   ]
       | }
@@ -308,7 +320,7 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
   }
 
   "audit the response when the user has > 0 penalties" in {
-    val penaltyDetailsWithLSPandLPPAndFinancialDetails: JsValue = Json.parse(
+    val penaltyDetailsWithLSPAndLPPAndFinancialDetails: JsValue = Json.parse(
       """
         |{
         |   "totalisations":{
@@ -389,7 +401,13 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
         |               }
         |            ],
         |            "LPP1LRCalculationAmount":99.99,
-        |            "penaltyAmountOutstanding":99.99
+        |            "penaltyAmountOutstanding":99.99,
+        |            "timeToPay": [
+        |             {
+        |               "TTPStartDate": "2022-01-01",
+        |               "TTPEndDate": "2022-12-31"
+        |             }
+        |          ]
         |         }
         |      ]
         |   }
@@ -402,7 +420,7 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
         s"&calculateAccruedInterest=true&removePOA=false&customerPaymentInformation=false", Some(getFinancialDetailsJson.toString()))
     val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/HMRC-MTD-VAT~VRN~123456789").get())
     result.status shouldBe Status.OK
-    Json.parse(result.body) shouldBe penaltyDetailsWithLSPandLPPAndFinancialDetails
+    Json.parse(result.body) shouldBe penaltyDetailsWithLSPAndLPPAndFinancialDetails
     wireMockServer.findAll(postRequestedFor(urlEqualTo("/write/audit"))).asScala.toList.exists(_.getBodyAsString.contains("UserHasPenalty")) shouldBe true
   }
 

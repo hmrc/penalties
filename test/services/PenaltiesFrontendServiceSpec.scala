@@ -20,7 +20,7 @@ import base.SpecBase
 import models.getFinancialDetails.{FinancialDetails, FinancialDetailsMetadata, FinancialItem, FinancialItemMetadata, GetFinancialDetails}
 import models.getPenaltyDetails.GetPenaltyDetails
 import models.getPenaltyDetails.appealInfo.{AppealInformationType, AppealLevelEnum, AppealStatusEnum}
-import models.getPenaltyDetails.latePayment.{LPPDetails, LPPDetailsMetadata, LPPPenaltyCategoryEnum, LPPPenaltyStatusEnum, LatePaymentPenalty}
+import models.getPenaltyDetails.latePayment.{LPPDetails, LPPDetailsMetadata, LPPPenaltyCategoryEnum, LPPPenaltyStatusEnum, LatePaymentPenalty, TimeToPay}
 import models.mainTransaction.MainTransactionEnum
 
 import java.time.LocalDate
@@ -29,7 +29,7 @@ class PenaltiesFrontendServiceSpec extends SpecBase {
   val penaltiesFrontendService: PenaltiesFrontendService = new PenaltiesFrontendService()
 
   "combineAPIData" should {
-    "update both first and second penalty separately" in {
+    "update both first and second penalty separately (no TTP)" in {
       val penaltyDetailsWithFirstAndSecondPenalty = GetPenaltyDetails(
         totalisations = None, lateSubmissionPenalty = None,
         latePaymentPenalty = Some(LatePaymentPenalty(
@@ -299,7 +299,12 @@ class PenaltiesFrontendServiceSpec extends SpecBase {
                 LPP1HRPercentage = Some(BigDecimal(2.00).setScale(2)),
                 penaltyChargeDueDate = LocalDate.of(2022, 10, 30),
                 principalChargeLatestClearing = None,
-                metadata = LPPDetailsMetadata()
+                metadata = LPPDetailsMetadata(
+                  timeToPay = Some(Seq(TimeToPay(
+                    TTPStartDate = Some(LocalDate.of(2022, 1, 1)),
+                    TTPEndDate = Some(LocalDate.of(2022, 12, 31))
+                  )))
+                )
               )
             )
           )
@@ -393,7 +398,12 @@ class PenaltiesFrontendServiceSpec extends SpecBase {
               penaltyChargeDueDate = LocalDate.of(2022, 10, 30),
               principalChargeLatestClearing = None,
               metadata = LPPDetailsMetadata(
-                mainTransaction = Some(MainTransactionEnum.VATReturnFirstLPP), outstandingAmount = Some(123.45)
+                mainTransaction = Some(MainTransactionEnum.VATReturnFirstLPP),
+                outstandingAmount = Some(123.45),
+                timeToPay = Some(Seq(TimeToPay(
+                  TTPStartDate = Some(LocalDate.of(2022, 1, 1)),
+                  TTPEndDate = Some(LocalDate.of(2022, 12, 31))
+                )))
               )
             )
           )
@@ -434,7 +444,12 @@ class PenaltiesFrontendServiceSpec extends SpecBase {
                 LPP1HRPercentage = Some(BigDecimal(2.00).setScale(2)),
                 penaltyChargeDueDate = LocalDate.of(2022, 10, 30),
                 principalChargeLatestClearing = None,
-                metadata = LPPDetailsMetadata()
+                metadata = LPPDetailsMetadata(
+                  timeToPay = Some(Seq(TimeToPay(
+                    TTPStartDate = Some(LocalDate.of(2022, 1, 1)),
+                    TTPEndDate = Some(LocalDate.of(2022, 12, 31))
+                  )))
+                )
               )
             )
           )
@@ -528,7 +543,12 @@ class PenaltiesFrontendServiceSpec extends SpecBase {
               penaltyChargeDueDate = LocalDate.of(2022, 10, 30),
               principalChargeLatestClearing = None,
               metadata = LPPDetailsMetadata(
-                mainTransaction = Some(MainTransactionEnum.VATReturnSecondLPP), outstandingAmount = Some(123.45)
+                mainTransaction = Some(MainTransactionEnum.VATReturnSecondLPP),
+                outstandingAmount = Some(123.45),
+                timeToPay = Some(Seq(TimeToPay(
+                  TTPStartDate = Some(LocalDate.of(2022, 1, 1)),
+                  TTPEndDate = Some(LocalDate.of(2022, 12, 31))
+                )))
               )
             )
           )
@@ -569,7 +589,12 @@ class PenaltiesFrontendServiceSpec extends SpecBase {
                 LPP1HRPercentage = Some(BigDecimal(2.00).setScale(2)),
                 penaltyChargeDueDate = LocalDate.of(2022, 10, 30),
                 principalChargeLatestClearing = None,
-                metadata = LPPDetailsMetadata()
+                metadata = LPPDetailsMetadata(
+                  timeToPay = Some(Seq(TimeToPay(
+                    TTPStartDate = Some(LocalDate.of(2022, 1, 1)),
+                    TTPEndDate = Some(LocalDate.of(2022, 12, 31))
+                  )))
+                )
               ),
               LPPDetails(
                 penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
@@ -594,7 +619,12 @@ class PenaltiesFrontendServiceSpec extends SpecBase {
                 LPP1HRPercentage = Some(BigDecimal(2.00).setScale(2)),
                 penaltyChargeDueDate = LocalDate.of(2022, 10, 30),
                 principalChargeLatestClearing = None,
-                metadata = LPPDetailsMetadata()
+                metadata = LPPDetailsMetadata(
+                  timeToPay = Some(Seq(TimeToPay(
+                    TTPStartDate = Some(LocalDate.of(2022, 1, 1)),
+                    TTPEndDate = Some(LocalDate.of(2022, 12, 31))
+                  )))
+                )
               )
             )
           )
@@ -742,7 +772,12 @@ class PenaltiesFrontendServiceSpec extends SpecBase {
               penaltyChargeDueDate = LocalDate.of(2022, 10, 30),
               principalChargeLatestClearing = None,
               metadata = LPPDetailsMetadata(
-                mainTransaction = Some(MainTransactionEnum.OfficersAssessmentFirstLPP), outstandingAmount = Some(123.45)
+                mainTransaction = Some(MainTransactionEnum.OfficersAssessmentFirstLPP),
+                outstandingAmount = Some(123.45),
+                timeToPay = Some(Seq(TimeToPay(
+                  TTPStartDate = Some(LocalDate.of(2022, 1, 1)),
+                  TTPEndDate = Some(LocalDate.of(2022, 12, 31))
+                )))
               )
             ),
             LPPDetails(
@@ -769,7 +804,12 @@ class PenaltiesFrontendServiceSpec extends SpecBase {
               penaltyChargeDueDate = LocalDate.of(2022, 10, 30),
               principalChargeLatestClearing = None,
               metadata = LPPDetailsMetadata(
-                mainTransaction = Some(MainTransactionEnum.VATReturnFirstLPP), outstandingAmount = Some(123.45)
+                mainTransaction = Some(MainTransactionEnum.VATReturnFirstLPP),
+                outstandingAmount = Some(123.45),
+                timeToPay = Some(Seq(TimeToPay(
+                  TTPStartDate = Some(LocalDate.of(2022, 1, 1)),
+                  TTPEndDate = Some(LocalDate.of(2022, 12, 31))
+                )))
               )
             )
           )
