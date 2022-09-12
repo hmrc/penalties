@@ -60,11 +60,11 @@ class ComplianceServiceISpec extends IntegrationSpecCommonBase with ComplianceWi
 
     s"return Right(model) when the connector returns $CompliancePayloadSuccessResponse" in new Setup {
       val compliancePayloadAsModel: CompliancePayload = CompliancePayload(
-        identification = ObligationIdentification(
+        identification = Some(ObligationIdentification(
           incomeSourceType = None,
           referenceNumber = "123456789",
           referenceType = "VRN"
-        ),
+        )),
         obligationDetails = Seq(
           ObligationDetail(
             status = ComplianceStatusEnum.open,

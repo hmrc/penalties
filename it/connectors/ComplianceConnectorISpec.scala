@@ -41,11 +41,11 @@ class ComplianceConnectorISpec extends IntegrationSpecCommonBase with Compliance
     "call DES and handle a successful response" in new Setup {
       enableFeatureSwitch(CallDES)
       val compliancePayloadAsModel: CompliancePayload = CompliancePayload(
-        identification = ObligationIdentification(
+        identification = Some(ObligationIdentification(
           incomeSourceType = None,
           referenceNumber = "123456789",
           referenceType = "VRN"
-        ),
+        )),
         obligationDetails = Seq(
           ObligationDetail(
             status = ComplianceStatusEnum.open,
@@ -74,11 +74,11 @@ class ComplianceConnectorISpec extends IntegrationSpecCommonBase with Compliance
     "call stub and handle a successful response" in new Setup {
       disableFeatureSwitch(CallDES)
       val compliancePayloadAsModel: CompliancePayload = CompliancePayload(
-        identification = ObligationIdentification(
+        identification = Some(ObligationIdentification(
           incomeSourceType = None,
           referenceNumber = "123456789",
           referenceType = "VRN"
-        ),
+        )),
         obligationDetails = Seq(
           ObligationDetail(
             status = ComplianceStatusEnum.open,
