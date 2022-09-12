@@ -83,7 +83,7 @@ class AppConfig @Inject()(val config: Configuration, servicesConfig: ServicesCon
     if(isEnabled(CallDES)) {
       desBase + s"/enterprise/obligation-data/vrn/$vrn/VATC?from=$fromDate&to=$toDate"
     } else {
-      desBase + s"/penalties-stub/enterprise/obligation-data/vrn/$vrn/VATC?from=$fromDate&to=$toDate"
+      stubBase + s"/penalties-stub/enterprise/obligation-data/vrn/$vrn/VATC?from=$fromDate&to=$toDate"
     }
   }
 }
