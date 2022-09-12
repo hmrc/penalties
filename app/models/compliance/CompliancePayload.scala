@@ -16,12 +16,12 @@
 
 package models.compliance
 
-import play.api.libs.json.{JsResult, JsValue, Json, OWrites, Reads}
+import play.api.libs.json._
 
 case class CompliancePayload(
-                                            identification: ObligationIdentification,
-                                            obligationDetails: Seq[ObligationDetail]
-                                         )
+                              identification: Option[ObligationIdentification],
+                              obligationDetails: Seq[ObligationDetail]
+                            )
 
 object CompliancePayload {
   implicit val writes: OWrites[CompliancePayload] = Json.writes[CompliancePayload]

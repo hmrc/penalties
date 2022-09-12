@@ -82,11 +82,11 @@ class CompliancePayloadSpec extends AnyWordSpec with Matchers {
       |""".stripMargin)
   
   val compliancePayloadAsModel: CompliancePayload = CompliancePayload(
-    identification = ObligationIdentification(
+    identification = Some(ObligationIdentification(
       incomeSourceType = None,
       referenceNumber = "123456789",
       referenceType = "VRN"
-    ),
+    )),
     obligationDetails = Seq(
       ObligationDetail(
         status = ComplianceStatusEnum.open,
@@ -108,11 +108,11 @@ class CompliancePayloadSpec extends AnyWordSpec with Matchers {
   )
 
   val seqCompliancePayloadAsModel: Seq[CompliancePayload] = Seq(CompliancePayload(
-    identification = ObligationIdentification(
+    identification = Some(ObligationIdentification(
       incomeSourceType = None,
       referenceNumber = "123456789",
       referenceType = "VRN"
-    ),
+    )),
     obligationDetails = Seq(
       ObligationDetail(
         status = ComplianceStatusEnum.open,

@@ -49,11 +49,11 @@ class ComplianceControllerSpec extends SpecBase {
 
     "return 200 if the service returns a model" in new Setup {
       val compliancePayloadAsModel: CompliancePayload = CompliancePayload(
-        identification = ObligationIdentification(
+        identification = Some(ObligationIdentification(
           incomeSourceType = None,
           referenceNumber = "123456789",
           referenceType = "VRN"
-        ),
+        )),
         obligationDetails = Seq(
           ObligationDetail(
             status = ComplianceStatusEnum.open,
