@@ -85,10 +85,20 @@ case class UserHasPenaltyAuditModel(
   )
 
   private val numberOfPaidLPPs: Int = penaltyDetails.latePaymentPenalty.flatMap(_.details.map(_.count(lpp =>
-    lpp.penaltyAmountOutstanding.contains(0) && !lpp.appealInformation.exists(_.exists(_.appealStatus.contains(AppealStatusEnum.Upheld)))))).getOrElse(0)
+    lpp.penaltyAmountOutstanding.contains(0) &&
+      !lpp.appealInformation.exists(_.exists(_.appealStatus.contains(AppealStatusEnum.Upheld)))
+  ))).getOrElse(0)
 
   private val numberOfUnpaidLPPs: Int = penaltyDetails.latePaymentPenalty.flatMap(_.details.map(_.count(point =>
-    !point.penaltyAmountOutstanding.contains(0) && !point.appealInformation.exists(_.exists(_.appealStatus.contains(AppealStatusEnum.Upheld)))))).getOrElse(0)
+    !point.penaltyAmountOutstanding.contains(0) &&
+      !point.appealInformation.exists(_.exists(_.appealStatus.contains(AppealStatusEnum.Upheld)))
+  ))).getOrElse(0)
+
+  private val numberOfPartiallyPaidLPPs: Int = penaltyDetails.latePaymentPenalty.flatMap(_.details.map(_.count(point =>
+    !point.penaltyAmountOutstanding.contains(0) &&
+      !point.penaltyAmountPaid.contains(0) &&
+      !point.appealInformation.exists(_.exists(_.appealStatus.contains(AppealStatusEnum.Upheld)))
+  ))).getOrElse(0)
 
   private val totalNumberOfLPPs: Int = penaltyDetails.latePaymentPenalty.flatMap(_.details.map(
     _.count(point => !point.appealInformation.exists(_.exists(_.appealStatus.contains(AppealStatusEnum.Upheld)))))).getOrElse(0)
@@ -99,6 +109,7 @@ case class UserHasPenaltyAuditModel(
   private val lppDetail: JsValue = jsonObjNoNulls(
     "numberOfPaidPenalties" -> numberOfPaidLPPs,
     "numberOfUnpaidPenalties" -> numberOfUnpaidLPPs,
+    "numberOfPartiallyPaidPenalties" -> numberOfPartiallyPaidLPPs,
     "totalNumberOfPenalties" -> totalNumberOfLPPs,
     "underAppeal" -> amountOfLPPsUnderAppeal
   )
