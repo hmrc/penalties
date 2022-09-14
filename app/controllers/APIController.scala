@@ -31,7 +31,7 @@ import services.auditing.AuditService
 import services.{APIService, GetPenaltyDetailsService}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import utils.Logger.logger
-import utils.RegimeHelper
+import utils.{DateHelper, RegimeHelper}
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
@@ -42,6 +42,7 @@ class APIController @Inject()(auditService: AuditService,
                               getPenaltyDetailsService: GetPenaltyDetailsService,
                               getFinancialDetailsConnector: GetFinancialDetailsConnector,
                               getPenaltyDetailsConnector: GetPenaltyDetailsConnector,
+                              dateHelper: DateHelper,
                               cc: ControllerComponents)(implicit ec: ExecutionContext, val config: Configuration) extends BackendController(cc) with FeatureSwitching {
 
   private val vrnRegex: Regex = "^[0-9]{1,9}$".r
@@ -95,7 +96,8 @@ class APIController @Inject()(auditService: AuditService,
         penaltyDetails = penaltyDetails,
         identifier = RegimeHelper.getIdentifierFromEnrolmentKey(enrolmentKey),
         identifierType = RegimeHelper.getIdentifierTypeFromEnrolmentKey(enrolmentKey),
-        arn = None) //TODO: need to check this
+        arn = None, //TODO: need to check this
+        dateHelper = dateHelper)
       auditService.audit(auditModel)
     }
     Ok(Json.toJson(responseData))

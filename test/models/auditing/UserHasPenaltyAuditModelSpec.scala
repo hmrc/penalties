@@ -21,11 +21,15 @@ import models.getPenaltyDetails._
 import models.getPenaltyDetails.appealInfo.{AppealInformationType, AppealLevelEnum, AppealStatusEnum}
 import models.getPenaltyDetails.latePayment.{LPPDetails, LPPDetailsMetadata, LPPPenaltyCategoryEnum, LPPPenaltyStatusEnum, LatePaymentPenalty, TimeToPay}
 import models.getPenaltyDetails.lateSubmission._
-import utils.Logger
+import org.mockito.Mockito.{mock, when}
+import utils.{DateHelper, Logger}
 
 import java.time.LocalDate
 
 class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
+  val mockDateHelper: DateHelper = mock(classOf[DateHelper])
+  when(mockDateHelper.dateNow()).thenReturn(LocalDate.of(2022, 1, 1))
+
   val basicGetPenaltyDetailsModel: GetPenaltyDetails = GetPenaltyDetails(
     totalisations = None,
     lateSubmissionPenalty = None,
@@ -608,12 +612,7 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
               LPP1HRPercentage = None,
               penaltyChargeDueDate = LocalDate.of(2022, 1, 1),
               principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
-              metadata = LPPDetailsMetadata(
-                timeToPay = Some(Seq(TimeToPay(
-                  TTPStartDate = Some(LocalDate.of(2022, 1, 1)),
-                  TTPEndDate = Some(LocalDate.of(2022, 12, 31))
-                )))
-              )
+              metadata = LPPDetailsMetadata()
             )
           )
         )
@@ -865,10 +864,10 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
   )
 
   val basicModel: UserHasPenaltyAuditModel =
-    UserHasPenaltyAuditModel(basicGetPenaltyDetailsModel, "1234", "VRN", None)(fakeRequest.withHeaders("User-Agent" -> "penalties-frontend"))
+    UserHasPenaltyAuditModel(basicGetPenaltyDetailsModel, "1234", "VRN", None, mockDateHelper)(fakeRequest.withHeaders("User-Agent" -> "penalties-frontend"))
 
   val basicAgentModel: UserHasPenaltyAuditModel =
-    UserHasPenaltyAuditModel(basicGetPenaltyDetailsModel, "1234", "VRN", Some("ARN123"))(fakeRequest.withHeaders("User-Agent" -> "penalties-frontend"))
+    UserHasPenaltyAuditModel(basicGetPenaltyDetailsModel, "1234", "VRN", Some("ARN123"), mockDateHelper)(fakeRequest.withHeaders("User-Agent" -> "penalties-frontend"))
 
   val auditModelWithInterest: UserHasPenaltyAuditModel = basicModel.copy(getPenaltyDetailsModelWithVATDue, "1234", "VRN", None)(fakeRequest.withHeaders("User-Agent" -> "penalties-frontend"))
 
@@ -895,7 +894,7 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
   val auditModelWithLPPsUnpaidAndPaidAndPartiallyPaid: UserHasPenaltyAuditModel = basicModel.copy(getPenaltyDetailsModelWithLPPsPaidAndUnpaidAndPartiallyPaid, "1234", "VRN", None)(fakeRequest.withHeaders("User-Agent" -> "penalties-frontend"))
 
   val basicModelWithUserAgent: String => UserHasPenaltyAuditModel =
-    (userAgent: String) => UserHasPenaltyAuditModel(basicGetPenaltyDetailsModel, "1234", "VRN", None)(fakeRequest.withHeaders("User-Agent" -> userAgent))
+    (userAgent: String) => UserHasPenaltyAuditModel(basicGetPenaltyDetailsModel, "1234", "VRN", None, mockDateHelper)(fakeRequest.withHeaders("User-Agent" -> userAgent))
 
   "UserHasPenaltyAuditModel" should {
     "have the correct audit type" in {
@@ -997,6 +996,7 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
         (auditModelWithLPPsPaid.detail \ "penaltyInformation" \ "lPPDetail" \ "numberOfUnpaidPenalties").validate[Int].get shouldBe 0
         (auditModelWithLPPsPaid.detail \ "penaltyInformation" \ "lPPDetail" \ "totalNumberOfPenalties").validate[Int].get shouldBe 2
         (auditModelWithLPPsPaid.detail \ "penaltyInformation" \ "lPPDetail" \ "underAppeal").validate[Int].get shouldBe 0
+        (auditModelWithLPPsPaid.detail \ "penaltyInformation" \ "ttpInformation" \ "isTTPActive").validate[Boolean].get shouldBe false
       }
 
       "the user has LPPs (all partially paid)" in {
@@ -1037,6 +1037,14 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
         (auditModelWithLPPsAccepted.detail \ "penaltyInformation" \ "lPPDetail" \ "numberOfUnpaidPenalties").validate[Int].get shouldBe 0
         (auditModelWithLPPsAccepted.detail \ "penaltyInformation" \ "lPPDetail" \ "totalNumberOfPenalties").validate[Int].get shouldBe 1
         (auditModelWithLPPsAccepted.detail \ "penaltyInformation" \ "lPPDetail" \ "underAppeal").validate[Int].get shouldBe 0
+      }
+
+      "the user has an active TTP" in {
+        when(mockDateHelper.dateNow()).thenReturn(LocalDate.of(2022, 2, 1))
+        val auditModelWithLPPsUnpaid: UserHasPenaltyAuditModel = basicModel.copy(getPenaltyDetailsModelWithLPPsUnpaid, "1234", "VRN", None)(fakeRequest.withHeaders("User-Agent" -> "penalties-frontend"))
+        (auditModelWithLPPsUnpaid.detail \ "penaltyInformation" \ "ttpInformation" \ "isTTPActive").validate[Boolean].get shouldBe true
+        (auditModelWithLPPsUnpaid.detail \ "penaltyInformation" \ "ttpInformation" \ "ttpStartDate").validate[LocalDate].get shouldBe LocalDate.of(2022, 1, 1)
+        (auditModelWithLPPsUnpaid.detail \ "penaltyInformation" \ "ttpInformation" \ "ttpEndDate").validate[LocalDate].get shouldBe LocalDate.of(2022, 12, 31)
       }
     }
 

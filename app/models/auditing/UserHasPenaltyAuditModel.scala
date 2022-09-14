@@ -18,18 +18,21 @@ package models.auditing
 
 import models.getPenaltyDetails.GetPenaltyDetails
 import models.getPenaltyDetails.appealInfo.AppealStatusEnum
-import models.getPenaltyDetails.latePayment.LPPDetails
+import models.getPenaltyDetails.latePayment.{LPPDetails, TimeToPay}
 import models.getPenaltyDetails.lateSubmission.{LSPDetails, LSPPenaltyCategoryEnum, LSPPenaltyStatusEnum}
 import play.api.libs.json.JsValue
 import play.api.mvc.Request
-import utils.JsonUtils
+import utils.{DateHelper, JsonUtils}
 import utils.Logger.logger
+
+import java.time.LocalDate
 
 case class UserHasPenaltyAuditModel(
                                      penaltyDetails: GetPenaltyDetails,
                                      identifier: String,
                                      identifierType: String,
-                                     arn: Option[String]
+                                     arn: Option[String],
+                                     dateHelper: DateHelper
                                    )(implicit request: Request[_]) extends JsonAuditModel with JsonUtils {
 
   override val auditType: String = "PenaltyUserHasPenalty"
@@ -114,6 +117,24 @@ case class UserHasPenaltyAuditModel(
   private val amountOfLPPsUnderAppeal: Int = penaltyDetails.latePaymentPenalty.flatMap(_.details.map(_.count(point =>
     point.appealInformation.exists(_.exists(_.appealStatus.contains(AppealStatusEnum.Under_Appeal)))))).getOrElse(0)
 
+  def getOptActiveTimeToPay: Option[TimeToPay] = {
+    val dateNow = dateHelper.dateNow()
+    for {
+      lpp <- penaltyDetails.latePaymentPenalty
+      lppDetails <- lpp.details
+      optSeqTimeToPay <- lppDetails.find(_.metadata.timeToPay.isDefined).map(_.metadata.timeToPay.get)
+      optActiveTimeToPay <- optSeqTimeToPay.find(
+        penalty => penalty.TTPEndDate.exists(DateHelper.isDateAfterOrEqual(_, dateNow)) &&
+          penalty.TTPStartDate.exists(DateHelper.isDateBeforeOrEqual(_, dateNow)))
+    } yield optActiveTimeToPay
+  }
+
+  private val isTTPActive: Boolean = getOptActiveTimeToPay.isDefined
+
+  private val ttpStartDate: Option[LocalDate] = getOptActiveTimeToPay.flatMap(_.TTPStartDate)
+
+  private val ttpEndDate: Option[LocalDate] = getOptActiveTimeToPay.flatMap(_.TTPEndDate)
+
   private val lppDetail: JsValue = jsonObjNoNulls(
     "numberOfPaidPenalties" -> numberOfPaidLPPs,
     "numberOfUnpaidPenalties" -> numberOfUnpaidLPPs,
@@ -122,13 +143,20 @@ case class UserHasPenaltyAuditModel(
     "underAppeal" -> amountOfLPPsUnderAppeal
   )
 
+  private val ttpDetail: JsValue = jsonObjNoNulls(
+    "isTTPActive" -> isTTPActive,
+    "ttpStartDate" -> ttpStartDate,
+    "ttpEndDate" -> ttpEndDate
+  )
+
   private val penaltyInformation: JsValue = jsonObjNoNulls(
     "totalTaxDue" -> totalTaxDue,
     "totalInterestDue" -> totalInterestDue,
     "totalFinancialPenaltyDue" -> totalFinancialPenaltyDue,
     "totalDue" -> totalDue,
     "lSPDetail" -> lspDetail,
-    "lPPDetail" -> lppDetail
+    "lPPDetail" -> lppDetail,
+    "ttpInformation" -> ttpDetail
   )
 
   override val detail: JsValue = jsonObjNoNulls(
