@@ -348,13 +348,13 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
           expiryReason = None,
           appealInformation = None,
           chargeDueDate = Some(LocalDate.of(2022, 1, 1)),
-          chargeOutstandingAmount = Some(200),
+          chargeOutstandingAmount = Some(0),
           chargeAmount = Some(200)
         ),
         LSPDetails(
           penaltyNumber = "12345678",
           penaltyOrder = "2",
-          penaltyCategory = LSPPenaltyCategoryEnum.Charge,
+          penaltyCategory = LSPPenaltyCategoryEnum.Threshold,
           penaltyStatus = LSPPenaltyStatusEnum.Inactive,
           penaltyCreationDate = LocalDate.of(2022, 1, 1),
           penaltyExpiryDate = LocalDate.of(2024, 1, 1),
@@ -948,6 +948,7 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
         (auditModelWithLSPPs.detail \ "penaltyInformation" \ "lSPDetail" \ "penaltyPointsThreshold").validate[Int].get shouldBe 5
         (auditModelWithLSPPs.detail \ "penaltyInformation" \ "lSPDetail" \ "pointsTotal").validate[Int].get shouldBe 2
         (auditModelWithLSPPs.detail \ "penaltyInformation" \ "lSPDetail" \ "financialPenalties").validate[Int].get shouldBe 0
+        (auditModelWithLSPPs.detail \ "penaltyInformation" \ "lSPDetail" \ "numberOfPaidPenalties").validate[Int].get shouldBe 0
         (auditModelWithLSPPs.detail \ "penaltyInformation" \ "lSPDetail" \ "underAppeal").validate[Int].get shouldBe 0
       }
 
@@ -955,6 +956,7 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
         (auditModelWithLSPPsUnderReview.detail \ "penaltyInformation" \ "lSPDetail" \ "penaltyPointsThreshold").validate[Int].get shouldBe 5
         (auditModelWithLSPPsUnderReview.detail \ "penaltyInformation" \ "lSPDetail" \ "pointsTotal").validate[Int].get shouldBe 2
         (auditModelWithLSPPsUnderReview.detail \ "penaltyInformation" \ "lSPDetail" \ "financialPenalties").validate[Int].get shouldBe 0
+        (auditModelWithLPPsUnderReview.detail  \ "penaltyInformation" \ "lSPDetail" \ "numberOfPaidPenalties").validate[Int].get shouldBe 0
         (auditModelWithLSPPsUnderReview.detail \ "penaltyInformation" \ "lSPDetail" \ "underAppeal").validate[Int].get shouldBe 2
       }
 
@@ -962,6 +964,7 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
         (auditModelWithLSPPsAppealed.detail \ "penaltyInformation" \ "lSPDetail" \ "penaltyPointsThreshold").validate[Int].get shouldBe 5
         (auditModelWithLSPPsAppealed.detail \ "penaltyInformation" \ "lSPDetail" \ "pointsTotal").validate[Int].get shouldBe 0
         (auditModelWithLSPPsAppealed.detail \ "penaltyInformation" \ "lSPDetail" \ "financialPenalties").validate[Int].get shouldBe 0
+        (auditModelWithLSPPsAppealed.detail \ "penaltyInformation" \ "lSPDetail" \ "numberOfPaidPenalties").validate[Int].get shouldBe 0
         (auditModelWithLSPPsAppealed.detail \ "penaltyInformation" \ "lSPDetail" \ "underAppeal").validate[Int].get shouldBe 0
       }
 
@@ -969,6 +972,7 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
         (auditModelWithLSPUnpaidAndRemoved.detail \ "penaltyInformation" \ "lSPDetail" \ "penaltyPointsThreshold").validate[Int].get shouldBe 2
         (auditModelWithLSPUnpaidAndRemoved.detail \ "penaltyInformation" \ "lSPDetail" \ "pointsTotal").validate[Int].get shouldBe 2
         (auditModelWithLSPUnpaidAndRemoved.detail \ "penaltyInformation" \ "lSPDetail" \ "financialPenalties").validate[Int].get shouldBe 1
+        (auditModelWithLSPUnpaidAndRemoved.detail \ "penaltyInformation" \ "lSPDetail" \ "numberOfPaidPenalties").validate[Int].get shouldBe 1
         (auditModelWithLSPUnpaidAndRemoved.detail \ "penaltyInformation" \ "lSPDetail" \ "underAppeal").validate[Int].get shouldBe 0
       }
 
@@ -976,6 +980,7 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
         (auditModelWithInterest.detail \ "penaltyInformation" \ "lSPDetail" \ "penaltyPointsThreshold").validate[Int].get shouldBe 1
         (auditModelWithInterest.detail \ "penaltyInformation" \ "lSPDetail" \ "pointsTotal").validate[Int].get shouldBe 2
         (auditModelWithInterest.detail \ "penaltyInformation" \ "lSPDetail" \ "financialPenalties").validate[Int].get shouldBe 2
+        (auditModelWithInterest.detail \ "penaltyInformation" \ "lSPDetail" \ "numberOfPaidPenalties").validate[Int].get shouldBe 0
         (auditModelWithInterest.detail \ "penaltyInformation" \ "lSPDetail" \ "underAppeal").validate[Int].get shouldBe 0
       }
 
