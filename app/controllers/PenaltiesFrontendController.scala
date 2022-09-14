@@ -108,9 +108,14 @@ class PenaltiesFrontendController @Inject()(auditService: AuditService,
   }
 
   private def returnResponse(penaltyDetails: GetPenaltyDetails, enrolmentKey: String, arn: Option[String] = None)(implicit request: Request[_]): Result = {
-    val auditModel = UserHasPenaltyAuditModel(penaltyDetails, RegimeHelper.getIdentifierFromEnrolmentKey(enrolmentKey),
-      RegimeHelper.getIdentifierTypeFromEnrolmentKey(enrolmentKey), arn)
-    auditService.audit(auditModel)
+    val hasLSP = penaltyDetails.lateSubmissionPenalty.map(_.summary.activePenaltyPoints).getOrElse(0) > 0
+    val hasLPP = penaltyDetails.latePaymentPenalty.flatMap(_.details.map(_.length)).getOrElse(0) > 0
+
+    if (hasLSP || hasLPP) {
+      val auditModel = UserHasPenaltyAuditModel(penaltyDetails, RegimeHelper.getIdentifierFromEnrolmentKey(enrolmentKey),
+        RegimeHelper.getIdentifierTypeFromEnrolmentKey(enrolmentKey), arn)
+      auditService.audit(auditModel)
+    }
     Ok(Json.toJson(penaltyDetails))
   }
 }
