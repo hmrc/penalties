@@ -138,6 +138,75 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
     ))
   )
 
+  val getPenaltyDetailsModelWithActiveAndInactiveLSPPs: GetPenaltyDetails = basicGetPenaltyDetailsModel.copy(
+    totalisations = Some(Totalisations(
+      penalisedPrincipalTotal = Some(2000.12),
+      LPPPostedTotal = None,
+      LPPEstimatedTotal = None,
+      LPIPostedTotal = Some(120),
+      LPIEstimatedTotal = Some(130),
+      LSPTotalValue = None)),
+    lateSubmissionPenalty = Some(LateSubmissionPenalty(
+      summary = LSPSummary(
+        activePenaltyPoints = 2,
+        inactivePenaltyPoints = 1,
+        regimeThreshold = 5,
+        penaltyChargeAmount = 200,
+        PoCAchievementDate = LocalDate.of(2022, 1, 1)
+      ),
+      details = Seq(
+        LSPDetails(
+          penaltyNumber = "12345679",
+          penaltyOrder = "3",
+          penaltyCategory = LSPPenaltyCategoryEnum.Point,
+          penaltyStatus = LSPPenaltyStatusEnum.Active,
+          penaltyCreationDate = LocalDate.of(2022, 1, 1),
+          penaltyExpiryDate = LocalDate.of(2024, 1, 1),
+          communicationsDate = LocalDate.of(2022, 1, 1),
+          FAPIndicator = None,
+          lateSubmissions = None,
+          expiryReason = None,
+          appealInformation = None,
+          chargeDueDate = None,
+          chargeOutstandingAmount = None,
+          chargeAmount = None
+        ),
+        LSPDetails(
+          penaltyNumber = "12345678",
+          penaltyOrder = "2",
+          penaltyCategory = LSPPenaltyCategoryEnum.Point,
+          penaltyStatus = LSPPenaltyStatusEnum.Active,
+          penaltyCreationDate = LocalDate.of(2022, 1, 1),
+          penaltyExpiryDate = LocalDate.of(2024, 1, 1),
+          communicationsDate = LocalDate.of(2022, 1, 1),
+          FAPIndicator = None,
+          lateSubmissions = None,
+          expiryReason = None,
+          appealInformation = None,
+          chargeDueDate = None,
+          chargeOutstandingAmount = None,
+          chargeAmount = None
+        ),
+        LSPDetails(
+          penaltyNumber = "12345677",
+          penaltyOrder = "1",
+          penaltyCategory = LSPPenaltyCategoryEnum.Point,
+          penaltyStatus = LSPPenaltyStatusEnum.Inactive,
+          penaltyCreationDate = LocalDate.of(2022, 1, 1),
+          penaltyExpiryDate = LocalDate.of(2024, 1, 1),
+          communicationsDate = LocalDate.of(2022, 1, 1),
+          FAPIndicator = None,
+          lateSubmissions = None,
+          expiryReason = None,
+          appealInformation = None,
+          chargeDueDate = None,
+          chargeOutstandingAmount = None,
+          chargeAmount = None
+        )
+      )
+    ))
+  )
+
   val getPenaltyDetailsModelWithLSPPsUnderAppeal: GetPenaltyDetails = basicGetPenaltyDetailsModel.copy(
     totalisations = Some(Totalisations(
       penalisedPrincipalTotal = Some(2000.12),
@@ -700,6 +769,8 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
 
   val auditModelWithLSPPs: UserHasPenaltyAuditModel = basicModel.copy(getPenaltyDetailsModelWithLSPPs, "1234", "VRN", None)(fakeRequest.withHeaders("User-Agent" -> "penalties-frontend"))
 
+  val auditModelWithActiveAndInactiveLSPPs: UserHasPenaltyAuditModel = basicModel.copy(getPenaltyDetailsModelWithActiveAndInactiveLSPPs, "1234", "VRN", None)(fakeRequest.withHeaders("User-Agent" -> "penalties-frontend"))
+
   val auditModelWithLSPPsUnderReview: UserHasPenaltyAuditModel = basicModel.copy(getPenaltyDetailsModelWithLSPPsUnderAppeal, "1234", "VRN", None)(fakeRequest.withHeaders("User-Agent" -> "penalties-frontend"))
 
   val auditModelWithLSPPsAppealed: UserHasPenaltyAuditModel = basicModel.copy(getPenaltyDetailsModelWithLSPPsAppealed, "1234", "VRN", None)(fakeRequest.withHeaders("User-Agent" -> "penalties-frontend"))
@@ -799,6 +870,14 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
         (auditModelWithInterest.detail \ "penaltyInformation" \ "lSPDetail" \ "pointsTotal").validate[Int].get shouldBe 2
         (auditModelWithInterest.detail \ "penaltyInformation" \ "lSPDetail" \ "financialPenalties").validate[Int].get shouldBe 2
         (auditModelWithInterest.detail \ "penaltyInformation" \ "lSPDetail" \ "underAppeal").validate[Int].get shouldBe 0
+      }
+
+      "the user has inactive LSPs" in {
+        (auditModelWithActiveAndInactiveLSPPs.detail \ "penaltyInformation" \ "lSPDetail" \ "penaltyPointsThreshold").validate[Int].get shouldBe 5
+        (auditModelWithActiveAndInactiveLSPPs.detail \ "penaltyInformation" \ "lSPDetail" \ "pointsTotal").validate[Int].get shouldBe 2
+        (auditModelWithActiveAndInactiveLSPPs.detail \ "penaltyInformation" \ "lSPDetail" \ "inactivePoints").validate[Int].get shouldBe 1
+        (auditModelWithActiveAndInactiveLSPPs.detail \ "penaltyInformation" \ "lSPDetail" \ "financialPenalties").validate[Int].get shouldBe 0
+        (auditModelWithActiveAndInactiveLSPPs.detail \ "penaltyInformation" \ "lSPDetail" \ "underAppeal").validate[Int].get shouldBe 0
       }
 
       "the user has LPPs (all paid)" in {
