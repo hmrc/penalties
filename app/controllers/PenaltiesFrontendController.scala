@@ -26,18 +26,20 @@ import services.auditing.AuditService
 import services.{GetFinancialDetailsService, GetPenaltyDetailsService, PenaltiesFrontendService}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import utils.Logger.logger
-import utils.RegimeHelper
+import utils.{DateHelper, RegimeHelper}
 
 import javax.inject.Inject
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class PenaltiesFrontendController @Inject()(auditService: AuditService,
-                               getPenaltyDetailsService: GetPenaltyDetailsService,
-                               getFinancialDetailsService: GetFinancialDetailsService,
-                               penaltiesFrontendService: PenaltiesFrontendService,
-                               cc: ControllerComponents)
-  extends BackendController(cc) {
+class PenaltiesFrontendController @Inject()(
+                                             auditService: AuditService,
+                                             getPenaltyDetailsService: GetPenaltyDetailsService,
+                                             getFinancialDetailsService: GetFinancialDetailsService,
+                                             penaltiesFrontendService: PenaltiesFrontendService,
+                                             dateHelper: DateHelper,
+                                             cc: ControllerComponents
+                                           ) extends BackendController(cc) {
 
   def getPenaltiesData(enrolmentKey: String, arn: Option[String] = None): Action[AnyContent] = Action.async {
     implicit request => {
@@ -70,14 +72,14 @@ class PenaltiesFrontendController @Inject()(auditService: AuditService,
   }
 
   private def handleAndCombineGetFinancialDetailsData(penaltyDetails: GetPenaltyDetails, enrolmentKey: String, arn: Option[String])
-                                           (implicit request: Request[_]): Future[Result] = {
+                                                     (implicit request: Request[_]): Future[Result] = {
     val vrn: String = RegimeHelper.getIdentifierFromEnrolmentKey(enrolmentKey)
     getFinancialDetailsService.getDataFromFinancialServiceForVATVCN(vrn).map {
       _.fold(
         {
           case GetFinancialDetailsNoContent => {
             logger.info(s"[PenaltiesFrontendController][handleGetFinancialDetailsCall] - Received 404 for VRN: $vrn with NO_DATA_FOUND in response body")
-            if(penaltyDetails.latePaymentPenalty.isEmpty ||
+            if (penaltyDetails.latePaymentPenalty.isEmpty ||
               penaltyDetails.latePaymentPenalty.get.details.isEmpty ||
               penaltyDetails.latePaymentPenalty.get.details.get.isEmpty) {
               returnResponse(penaltyDetails, enrolmentKey, arn)
@@ -112,8 +114,12 @@ class PenaltiesFrontendController @Inject()(auditService: AuditService,
     val hasLPP = penaltyDetails.latePaymentPenalty.flatMap(_.details.map(_.length)).getOrElse(0) > 0
 
     if (hasLSP || hasLPP) {
-      val auditModel = UserHasPenaltyAuditModel(penaltyDetails, RegimeHelper.getIdentifierFromEnrolmentKey(enrolmentKey),
-        RegimeHelper.getIdentifierTypeFromEnrolmentKey(enrolmentKey), arn)
+      val auditModel = UserHasPenaltyAuditModel(
+        penaltyDetails = penaltyDetails,
+        identifier = RegimeHelper.getIdentifierFromEnrolmentKey(enrolmentKey),
+        identifierType = RegimeHelper.getIdentifierTypeFromEnrolmentKey(enrolmentKey),
+        arn = arn,
+        dateHelper = dateHelper)
       auditService.audit(auditModel)
     }
     Ok(Json.toJson(penaltyDetails))

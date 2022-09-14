@@ -16,16 +16,24 @@
 
 package utils
 
-import java.time.{LocalDate, LocalDateTime}
+import config.featureSwitches.FeatureSwitching
+import play.api.Configuration
 
+import java.time.LocalDate
 import javax.inject.Inject
 
-class DateHelper @Inject()() {
-  def dateTimeNow(): LocalDateTime = {
-    LocalDateTime.now()
+class DateHelper @Inject()(val config: Configuration) extends FeatureSwitching {
+  def dateNow(): LocalDate = {
+    getTimeMachineDate
+  }
+}
+
+object DateHelper {
+  def isDateBeforeOrEqual(thisDate: LocalDate, thatDate: LocalDate): Boolean = {
+    thisDate.isBefore(thatDate) || thisDate.isEqual(thatDate)
   }
 
-  def dateNow(): LocalDate = {
-    LocalDate.now()
+  def isDateAfterOrEqual(thisDate: LocalDate, thatDate: LocalDate): Boolean = {
+    thisDate.isAfter(thatDate) || thisDate.isEqual(thatDate)
   }
 }

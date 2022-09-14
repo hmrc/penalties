@@ -17,40 +17,8 @@
 package utils
 
 import base.SpecBase
-import org.mockito.Mockito.{mock, when}
-
-import java.time.LocalDateTime
 
 class RegimeHelperSpec extends SpecBase {
-  val mockDateTimeHelper = mock(classOf[DateHelper])
-
-  "getDateTimeBasedOnRegimeFromEnrolmentKey" should {
-    lazy val localDateTimeNow = LocalDateTime.now()
-    lazy val localDateTimeNowMinus2Years = localDateTimeNow.minusYears(2)
-    "return now - 2 years for MTD-VAT" in {
-      when(mockDateTimeHelper.dateTimeNow()).thenReturn(localDateTimeNow)
-      val result = RegimeHelper.getDateTimeBasedOnRegimeFromEnrolmentKey("HMRC-MTD-VAT~VRN~123456789", mockDateTimeHelper)
-      result shouldBe localDateTimeNowMinus2Years
-    }
-
-    "return now for any other regime" in {
-      when(mockDateTimeHelper.dateTimeNow()).thenReturn(localDateTimeNow)
-      val result = RegimeHelper.getDateTimeBasedOnRegimeFromEnrolmentKey("IR-SA~UTR~123456789", mockDateTimeHelper)
-      result shouldBe localDateTimeNow
-    }
-  }
-
-  "getRegimeFromEnrolmentKey" should {
-    "return MTD-VAT for MTD VAT Regime" in {
-      val result = RegimeHelper.getRegimeFromEnrolmentKey("HMRC-MTD-VAT~VRN~123456789")
-      result shouldBe "mtd-vat"
-    }
-
-    "return empty string for any other regime" in {
-      val result = RegimeHelper.getRegimeFromEnrolmentKey("IR-SA~UTR~123456789")
-      result shouldBe ""
-    }
-  }
 
   "getIdentifierTypeFromEnrolmentKey" should {
     "return VRN for MTD-VAT" in {

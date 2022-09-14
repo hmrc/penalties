@@ -33,6 +33,7 @@ import play.api.test.Helpers._
 import services.auditing.AuditService
 import services.{APIService, ETMPService, GetPenaltyDetailsService}
 import uk.gov.hmrc.http.HttpResponse
+import utils.DateHelper
 
 import java.time.LocalDate
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -41,6 +42,7 @@ import scala.concurrent.Future
 class APIControllerSpec extends SpecBase with FeatureSwitching {
   val mockETMPService: ETMPService = mock(classOf[ETMPService])
   val mockAuditService: AuditService = mock(classOf[AuditService])
+  val dateHelper: DateHelper = injector.instanceOf(classOf[DateHelper])
   val mockAPIService: APIService = mock(classOf[APIService])
   val mockGetPenaltyDetailsService: GetPenaltyDetailsService = mock(classOf[GetPenaltyDetailsService])
   val mockGetFinancialDetailsConnector:GetFinancialDetailsConnector = mock(classOf[GetFinancialDetailsConnector])
@@ -49,8 +51,15 @@ class APIControllerSpec extends SpecBase with FeatureSwitching {
 
   class Setup(isFSEnabled: Boolean = false) {
     reset(mockETMPService, mockAuditService, mockAPIService)
-    val controller = new APIController(mockAuditService, mockAPIService,
-      mockGetPenaltyDetailsService, mockGetFinancialDetailsConnector, mockGetPenaltyDetailsConnector, stubControllerComponents())
+    val controller = new APIController(
+      mockAuditService,
+      mockAPIService,
+      mockGetPenaltyDetailsService,
+      mockGetFinancialDetailsConnector,
+      mockGetPenaltyDetailsConnector,
+      dateHelper,
+      stubControllerComponents()
+    )
   }
 
   "getSummaryDataForVRN" should {

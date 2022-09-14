@@ -32,6 +32,7 @@ import play.api.libs.json.Json
 import play.api.test.Helpers._
 import services.auditing.AuditService
 import services.{ETMPService, GetFinancialDetailsService, GetPenaltyDetailsService, PenaltiesFrontendService}
+import utils.DateHelper
 
 import java.time.LocalDate
 import scala.concurrent.Future
@@ -40,17 +41,27 @@ class PenaltiesFrontendControllerSpec extends SpecBase {
   val mockAppConfig: AppConfig = mock(classOf[AppConfig])
   val mockETMPService: ETMPService = mock(classOf[ETMPService])
   val mockAuditService: AuditService = mock(classOf[AuditService])
+  val dateHelper: DateHelper = injector.instanceOf[DateHelper]
   val mockGetPenaltyDetailsService: GetPenaltyDetailsService = mock(classOf[GetPenaltyDetailsService])
   val mockPenaltiesFrontendService: PenaltiesFrontendService = mock(classOf[PenaltiesFrontendService])
   val mockGetFinancialDetailsService: GetFinancialDetailsService = mock(classOf[GetFinancialDetailsService])
 
   class Setup(isFSEnabled: Boolean = true) {
-    reset(mockAppConfig, mockETMPService, mockAuditService, mockGetPenaltyDetailsService, mockGetFinancialDetailsService, mockPenaltiesFrontendService)
+    reset(
+      mockAppConfig,
+      mockETMPService,
+      mockAuditService,
+      mockGetPenaltyDetailsService,
+      mockGetFinancialDetailsService,
+      mockPenaltiesFrontendService
+    )
+
     val controller: PenaltiesFrontendController = new PenaltiesFrontendController(
       mockAuditService,
       mockGetPenaltyDetailsService,
       mockGetFinancialDetailsService,
       mockPenaltiesFrontendService,
+      dateHelper,
       stubControllerComponents()
     )
   }

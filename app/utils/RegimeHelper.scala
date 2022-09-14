@@ -16,23 +16,7 @@
 
 package utils
 
-import java.time.LocalDateTime
-
 object RegimeHelper {
-  def getDateTimeBasedOnRegimeFromEnrolmentKey(enrolmentKey: String,
-                                               dateHelper: DateHelper): LocalDateTime = {
-    enrolmentKey match {
-      case key if key.contains("MTD-VAT") => dateHelper.dateTimeNow().minusYears(2)
-      case _ => dateHelper.dateTimeNow()
-    }
-  }
-
-  def getRegimeFromEnrolmentKey(enrolmentKey: String): String = {
-    enrolmentKey match {
-      case key if key.contains("MTD-VAT") => "mtd-vat"
-      case _ => ""
-    }
-  }
 
   def getIdentifierTypeFromEnrolmentKey(enrolmentKey: String): String = {
     enrolmentKey match {
@@ -49,9 +33,5 @@ object RegimeHelper {
   }
 
   def constructMTDVATEnrolmentKey(vrn: String): String = s"HMRC-MTD-VAT~VRN~$vrn"
-
-  def constructMTDVATCUrl(vrn: String): String = s"VATC/VRN/$vrn"
-
-  def constructFinancialPenaltyUrl(vrn: String): String = s"VRN/$vrn/VATC"
 
 }
