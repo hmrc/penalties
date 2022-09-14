@@ -90,7 +90,7 @@ case class UserHasPenaltyAuditModel(
   ))).getOrElse(0)
 
   private val numberOfUnpaidLPPs: Int = penaltyDetails.latePaymentPenalty.flatMap(_.details.map(_.count(point =>
-    !point.penaltyAmountOutstanding.contains(0) &&
+    !point.penaltyAmountOutstanding.contains(0) && point.penaltyAmountPaid.contains(0) &&
       !point.appealInformation.exists(_.exists(_.appealStatus.contains(AppealStatusEnum.Upheld)))
   ))).getOrElse(0)
 

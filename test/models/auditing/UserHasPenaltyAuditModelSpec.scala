@@ -417,8 +417,8 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
               principalChargeBillingTo = LocalDate.of(2022, 1, 1),
               principalChargeDueDate = LocalDate.of(2022, 1, 1),
               communicationsDate = LocalDate.of(2022, 1, 1),
-              penaltyAmountOutstanding = Some(10),
-              penaltyAmountPaid = Some(144.21),
+              penaltyAmountOutstanding = Some(144.21),
+              penaltyAmountPaid = Some(0),
               LPP1LRDays = None,
               LPP1HRDays = None,
               LPP2Days = None,
@@ -447,8 +447,8 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
               principalChargeBillingTo = LocalDate.of(2022, 1, 1),
               principalChargeDueDate = LocalDate.of(2022, 1, 1),
               communicationsDate = LocalDate.of(2022, 1, 1),
-              penaltyAmountOutstanding = Some(10),
-              penaltyAmountPaid = Some(144.21),
+              penaltyAmountOutstanding = Some(144.21),
+              penaltyAmountPaid = Some(0),
               LPP1LRDays = None,
               LPP1HRDays = None,
               LPP2Days = None,
@@ -917,14 +917,12 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
 
       "the user has LPPs (all partially paid)" in {
         (auditModelWithLPPsPartiallyPaid.detail \ "penaltyInformation" \ "lPPDetail" \ "numberOfPaidPenalties").validate[Int].get shouldBe 0
-        //TODO: change back to 0 (counts are wrong)
-        (auditModelWithLPPsPartiallyPaid.detail \ "penaltyInformation" \ "lPPDetail" \ "numberOfUnpaidPenalties").validate[Int].get shouldBe 2
+        (auditModelWithLPPsPartiallyPaid.detail \ "penaltyInformation" \ "lPPDetail" \ "numberOfUnpaidPenalties").validate[Int].get shouldBe 0
         (auditModelWithLPPsPartiallyPaid.detail \ "penaltyInformation" \ "lPPDetail" \ "numberOfPartiallyPaidPenalties").validate[Int].get shouldBe 2
         (auditModelWithLPPsPartiallyPaid.detail \ "penaltyInformation" \ "lPPDetail" \ "totalNumberOfPenalties").validate[Int].get shouldBe 2
         (auditModelWithLPPsPartiallyPaid.detail \ "penaltyInformation" \ "lPPDetail" \ "underAppeal").validate[Int].get shouldBe 0
       }
 
-      //TODO: needs to be updated as it counts LPPs that have been partially paid
       "the user has LPPs (all unpaid)" in {
         (auditModelWithLPPsUnpaid.detail \ "penaltyInformation" \ "lPPDetail" \ "numberOfPaidPenalties").validate[Int].get shouldBe 0
         (auditModelWithLPPsUnpaid.detail \ "penaltyInformation" \ "lPPDetail" \ "numberOfUnpaidPenalties").validate[Int].get shouldBe 2
@@ -934,8 +932,7 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
 
       "the user has a combination of unpaid and paid and partially paid LPPs" in {
         (auditModelWithLPPsUnpaidAndPaidAndPartiallyPaid.detail \ "penaltyInformation" \ "lPPDetail" \ "numberOfPaidPenalties").validate[Int].get shouldBe 1
-        //TODO: change back to 1 (counts are wrong)
-        (auditModelWithLPPsUnpaidAndPaidAndPartiallyPaid.detail \ "penaltyInformation" \ "lPPDetail" \ "numberOfUnpaidPenalties").validate[Int].get shouldBe 2
+        (auditModelWithLPPsUnpaidAndPaidAndPartiallyPaid.detail \ "penaltyInformation" \ "lPPDetail" \ "numberOfUnpaidPenalties").validate[Int].get shouldBe 1
         (auditModelWithLPPsUnpaidAndPaidAndPartiallyPaid.detail \ "penaltyInformation" \ "lPPDetail" \ "numberOfPartiallyPaidPenalties").validate[Int].get shouldBe 1
         (auditModelWithLPPsUnpaidAndPaidAndPartiallyPaid.detail \ "penaltyInformation" \ "lPPDetail" \ "totalNumberOfPenalties").validate[Int].get shouldBe 3
         (auditModelWithLPPsUnpaidAndPaidAndPartiallyPaid.detail \ "penaltyInformation" \ "lPPDetail" \ "underAppeal").validate[Int].get shouldBe 0
@@ -946,7 +943,7 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
 
       "the user has LPPs (with appeals)" in {
         (auditModelWithLPPsUnderReview.detail \ "penaltyInformation" \ "lPPDetail" \ "numberOfPaidPenalties").validate[Int].get shouldBe 1
-        (auditModelWithLPPsUnderReview.detail \ "penaltyInformation" \ "lPPDetail" \ "numberOfUnpaidPenalties").validate[Int].get shouldBe 1
+        (auditModelWithLPPsUnderReview.detail \ "penaltyInformation" \ "lPPDetail" \ "numberOfUnpaidPenalties").validate[Int].get shouldBe 0
         (auditModelWithLPPsUnderReview.detail \ "penaltyInformation" \ "lPPDetail" \ "totalNumberOfPenalties").validate[Int].get shouldBe 2
         (auditModelWithLPPsUnderReview.detail \ "penaltyInformation" \ "lPPDetail" \ "underAppeal").validate[Int].get shouldBe 1
       }
