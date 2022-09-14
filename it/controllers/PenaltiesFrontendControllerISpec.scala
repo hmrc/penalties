@@ -424,7 +424,7 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
     wireMockServer.findAll(postRequestedFor(urlEqualTo("/write/audit"))).asScala.toList.exists(_.getBodyAsString.contains("UserHasPenalty")) shouldBe true
   }
 
-  "NOT audit the response when the user has 0 penalties" in {
+  "NOT audit the response when the user has 0 LSPs and 0 LPPs" in {
     mockStubResponseForGetPenaltyDetails(Status.OK, "123456789", body = Some(getPenaltyDetailsWithNoPointsAsJson.toString()))
     mockStubResponseForGetFinancialDetails(Status.OK,
       s"VRN/123456789/VATC?dateFrom=${LocalDate.now.minusYears(2)}&dateTo=${LocalDate.now}" +
