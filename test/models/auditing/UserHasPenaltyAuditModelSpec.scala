@@ -348,13 +348,13 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
           expiryReason = None,
           appealInformation = None,
           chargeDueDate = Some(LocalDate.of(2022, 1, 1)),
-          chargeOutstandingAmount = Some(200),
+          chargeOutstandingAmount = Some(0),
           chargeAmount = Some(200)
         ),
         LSPDetails(
           penaltyNumber = "12345678",
           penaltyOrder = "2",
-          penaltyCategory = LSPPenaltyCategoryEnum.Charge,
+          penaltyCategory = LSPPenaltyCategoryEnum.Threshold,
           penaltyStatus = LSPPenaltyStatusEnum.Inactive,
           penaltyCreationDate = LocalDate.of(2022, 1, 1),
           penaltyExpiryDate = LocalDate.of(2024, 1, 1),
@@ -880,7 +880,7 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
 
   val auditModelWithLSPPsAppealed: UserHasPenaltyAuditModel = basicModel.copy(getPenaltyDetailsModelWithLSPPsAppealed, "1234", "VRN", None)(fakeRequest.withHeaders("User-Agent" -> "penalties-frontend"))
 
-  val auditModelWithLSPUnpaidAndRemoved: UserHasPenaltyAuditModel = basicModel.copy(getPenaltyDetailsModelWithLSPUnpaidAndRemoved, "1234", "VRN", None)(fakeRequest.withHeaders("User-Agent" -> "penalties-frontend"))
+  val auditModelWithLSPUnpaidAndPaid: UserHasPenaltyAuditModel = basicModel.copy(getPenaltyDetailsModelWithLSPUnpaidAndRemoved, "1234", "VRN", None)(fakeRequest.withHeaders("User-Agent" -> "penalties-frontend"))
 
   val auditModelWithLPPsPaid: UserHasPenaltyAuditModel = basicModel.copy(getPenaltyDetailsModelWithLPPsPaid, "1234", "VRN", None)(fakeRequest.withHeaders("User-Agent" -> "penalties-frontend"))
 
@@ -948,6 +948,7 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
         (auditModelWithLSPPs.detail \ "penaltyInformation" \ "lSPDetail" \ "penaltyPointsThreshold").validate[Int].get shouldBe 5
         (auditModelWithLSPPs.detail \ "penaltyInformation" \ "lSPDetail" \ "pointsTotal").validate[Int].get shouldBe 2
         (auditModelWithLSPPs.detail \ "penaltyInformation" \ "lSPDetail" \ "financialPenalties").validate[Int].get shouldBe 0
+        (auditModelWithLSPPs.detail \ "penaltyInformation" \ "lSPDetail" \ "numberOfPaidPenalties").validate[Int].get shouldBe 0
         (auditModelWithLSPPs.detail \ "penaltyInformation" \ "lSPDetail" \ "underAppeal").validate[Int].get shouldBe 0
       }
 
@@ -955,6 +956,7 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
         (auditModelWithLSPPsUnderReview.detail \ "penaltyInformation" \ "lSPDetail" \ "penaltyPointsThreshold").validate[Int].get shouldBe 5
         (auditModelWithLSPPsUnderReview.detail \ "penaltyInformation" \ "lSPDetail" \ "pointsTotal").validate[Int].get shouldBe 2
         (auditModelWithLSPPsUnderReview.detail \ "penaltyInformation" \ "lSPDetail" \ "financialPenalties").validate[Int].get shouldBe 0
+        (auditModelWithLPPsUnderReview.detail  \ "penaltyInformation" \ "lSPDetail" \ "numberOfPaidPenalties").validate[Int].get shouldBe 0
         (auditModelWithLSPPsUnderReview.detail \ "penaltyInformation" \ "lSPDetail" \ "underAppeal").validate[Int].get shouldBe 2
       }
 
@@ -962,20 +964,23 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
         (auditModelWithLSPPsAppealed.detail \ "penaltyInformation" \ "lSPDetail" \ "penaltyPointsThreshold").validate[Int].get shouldBe 5
         (auditModelWithLSPPsAppealed.detail \ "penaltyInformation" \ "lSPDetail" \ "pointsTotal").validate[Int].get shouldBe 0
         (auditModelWithLSPPsAppealed.detail \ "penaltyInformation" \ "lSPDetail" \ "financialPenalties").validate[Int].get shouldBe 0
+        (auditModelWithLSPPsAppealed.detail \ "penaltyInformation" \ "lSPDetail" \ "numberOfPaidPenalties").validate[Int].get shouldBe 0
         (auditModelWithLSPPsAppealed.detail \ "penaltyInformation" \ "lSPDetail" \ "underAppeal").validate[Int].get shouldBe 0
       }
 
       "the user has LSPs that are paid and unpaid" in {
-        (auditModelWithLSPUnpaidAndRemoved.detail \ "penaltyInformation" \ "lSPDetail" \ "penaltyPointsThreshold").validate[Int].get shouldBe 2
-        (auditModelWithLSPUnpaidAndRemoved.detail \ "penaltyInformation" \ "lSPDetail" \ "pointsTotal").validate[Int].get shouldBe 2
-        (auditModelWithLSPUnpaidAndRemoved.detail \ "penaltyInformation" \ "lSPDetail" \ "financialPenalties").validate[Int].get shouldBe 1
-        (auditModelWithLSPUnpaidAndRemoved.detail \ "penaltyInformation" \ "lSPDetail" \ "underAppeal").validate[Int].get shouldBe 0
+        (auditModelWithLSPUnpaidAndPaid.detail \ "penaltyInformation" \ "lSPDetail" \ "penaltyPointsThreshold").validate[Int].get shouldBe 2
+        (auditModelWithLSPUnpaidAndPaid.detail \ "penaltyInformation" \ "lSPDetail" \ "pointsTotal").validate[Int].get shouldBe 2
+        (auditModelWithLSPUnpaidAndPaid.detail \ "penaltyInformation" \ "lSPDetail" \ "financialPenalties").validate[Int].get shouldBe 1
+        (auditModelWithLSPUnpaidAndPaid.detail \ "penaltyInformation" \ "lSPDetail" \ "numberOfPaidPenalties").validate[Int].get shouldBe 1
+        (auditModelWithLSPUnpaidAndPaid.detail \ "penaltyInformation" \ "lSPDetail" \ "underAppeal").validate[Int].get shouldBe 0
       }
 
       "the user has LSPs" in {
         (auditModelWithInterest.detail \ "penaltyInformation" \ "lSPDetail" \ "penaltyPointsThreshold").validate[Int].get shouldBe 1
         (auditModelWithInterest.detail \ "penaltyInformation" \ "lSPDetail" \ "pointsTotal").validate[Int].get shouldBe 2
         (auditModelWithInterest.detail \ "penaltyInformation" \ "lSPDetail" \ "financialPenalties").validate[Int].get shouldBe 2
+        (auditModelWithInterest.detail \ "penaltyInformation" \ "lSPDetail" \ "numberOfPaidPenalties").validate[Int].get shouldBe 0
         (auditModelWithInterest.detail \ "penaltyInformation" \ "lSPDetail" \ "underAppeal").validate[Int].get shouldBe 0
       }
 
