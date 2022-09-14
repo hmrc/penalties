@@ -78,6 +78,11 @@ case class UserHasPenaltyAuditModel(
 
   private val amountOfInactiveLSPs: Int = penaltyDetails.lateSubmissionPenalty.map(_.summary.inactivePenaltyPoints).getOrElse(0)
 
+  private val amountOfLspChargesUnpaid: Int = penaltyDetails.lateSubmissionPenalty.map(_.details.count(point =>
+    (point.chargeOutstandingAmount.isDefined && !point.chargeOutstandingAmount.contains(0)) && (
+      point.penaltyCategory.equals(LSPPenaltyCategoryEnum.Charge) || point.penaltyCategory.equals(LSPPenaltyCategoryEnum.Threshold)))
+  ).getOrElse(0)
+
   private val financialLSPs: Int = penaltyDetails.lateSubmissionPenalty.map(_.details.count(point =>
     (point.penaltyCategory.equals(LSPPenaltyCategoryEnum.Threshold) || point.penaltyCategory.equals(LSPPenaltyCategoryEnum.Charge))
       && !point.penaltyStatus.equals(LSPPenaltyStatusEnum.Inactive)
@@ -99,7 +104,8 @@ case class UserHasPenaltyAuditModel(
     "financialPenalties" -> financialLSPs,
     "numberOfPaidPenalties" -> amountOfLspChargesPaid,
     "underAppeal" -> amountOfLSPsUnderAppeal,
-    "numberOfPartiallyPaidLSPs" -> numberOfPartiallyPaidLSPs
+    "numberOfPartiallyPaidLSPs" -> numberOfPartiallyPaidLSPs,
+    "numberOfUnpaidPenalties" -> amountOfLspChargesUnpaid
   )
 
   private val numberOfPaidLPPs: Int = penaltyDetails.latePaymentPenalty.flatMap(_.details.map(_.count(lpp =>
