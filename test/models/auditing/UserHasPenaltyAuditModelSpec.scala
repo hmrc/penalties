@@ -1005,6 +1005,7 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
         (auditModelWithLSPPs.detail \ "penaltyInformation" \ "lSPDetail" \ "numberOfPaidPenalties").validate[Int].get shouldBe 0
         (auditModelWithLSPPs.detail \ "penaltyInformation" \ "lSPDetail" \ "underAppeal").validate[Int].get shouldBe 0
         (auditModelWithLSPPs.detail \ "penaltyInformation" \ "lSPDetail" \ "numberOfPartiallyPaidLSPs").validate[Int].get shouldBe 0
+        (auditModelWithLSPPs.detail \ "penaltyInformation" \ "lSPDetail" \ "numberOfUnpaidPenalties").validate[Int].get shouldBe 0
       }
 
       "the user has LSPPs (with appeals)" in {
@@ -1014,6 +1015,7 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
         (auditModelWithLPPsUnderReview.detail  \ "penaltyInformation" \ "lSPDetail" \ "numberOfPaidPenalties").validate[Int].get shouldBe 0
         (auditModelWithLSPPsUnderReview.detail \ "penaltyInformation" \ "lSPDetail" \ "underAppeal").validate[Int].get shouldBe 2
         (auditModelWithLSPPsUnderReview.detail \ "penaltyInformation" \ "lSPDetail" \ "numberOfPartiallyPaidLSPs").validate[Int].get shouldBe 0
+        (auditModelWithLSPPsUnderReview.detail \ "penaltyInformation" \ "lSPDetail" \ "numberOfUnpaidPenalties").validate[Int].get shouldBe 0
       }
 
       "the user has LSPPs (with reviewed appeals)" in {
@@ -1023,6 +1025,7 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
         (auditModelWithLSPPsAppealed.detail \ "penaltyInformation" \ "lSPDetail" \ "numberOfPaidPenalties").validate[Int].get shouldBe 0
         (auditModelWithLSPPsAppealed.detail \ "penaltyInformation" \ "lSPDetail" \ "underAppeal").validate[Int].get shouldBe 0
         (auditModelWithLSPPsAppealed.detail \ "penaltyInformation" \ "lSPDetail" \ "numberOfPartiallyPaidLSPs").validate[Int].get shouldBe 0
+        (auditModelWithLSPPsAppealed.detail \ "penaltyInformation" \ "lSPDetail" \ "numberOfUnpaidPenalties").validate[Int].get shouldBe 0
       }
 
       "the user has LSPs that are paid and unpaid" in {
@@ -1032,6 +1035,7 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
         (auditModelWithLSPUnpaidAndPaid.detail \ "penaltyInformation" \ "lSPDetail" \ "numberOfPaidPenalties").validate[Int].get shouldBe 1
         (auditModelWithLSPUnpaidAndPaid.detail \ "penaltyInformation" \ "lSPDetail" \ "underAppeal").validate[Int].get shouldBe 0
         (auditModelWithLSPUnpaidAndPaid.detail \ "penaltyInformation" \ "lSPDetail" \ "numberOfPartiallyPaidLSPs").validate[Int].get shouldBe 0
+        (auditModelWithLSPUnpaidAndPaid.detail \ "penaltyInformation" \ "lSPDetail" \ "numberOfUnpaidPenalties").validate[Int].get shouldBe 1
       }
 
       "the user has LSPs  that are partially paid" in {
@@ -1049,6 +1053,7 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
         (auditModelWithInterest.detail \ "penaltyInformation" \ "lSPDetail" \ "financialPenalties").validate[Int].get shouldBe 2
         (auditModelWithInterest.detail \ "penaltyInformation" \ "lSPDetail" \ "numberOfPaidPenalties").validate[Int].get shouldBe 0
         (auditModelWithInterest.detail \ "penaltyInformation" \ "lSPDetail" \ "underAppeal").validate[Int].get shouldBe 0
+        (auditModelWithInterest.detail \ "penaltyInformation" \ "lSPDetail" \ "numberOfUnpaidPenalties").validate[Int].get shouldBe 2
       }
 
       "the user has inactive LSPs" in {
@@ -1057,6 +1062,7 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
         (auditModelWithActiveAndInactiveLSPPs.detail \ "penaltyInformation" \ "lSPDetail" \ "inactivePoints").validate[Int].get shouldBe 1
         (auditModelWithActiveAndInactiveLSPPs.detail \ "penaltyInformation" \ "lSPDetail" \ "financialPenalties").validate[Int].get shouldBe 0
         (auditModelWithActiveAndInactiveLSPPs.detail \ "penaltyInformation" \ "lSPDetail" \ "underAppeal").validate[Int].get shouldBe 0
+        (auditModelWithActiveAndInactiveLSPPs.detail \ "penaltyInformation" \ "lSPDetail" \ "numberOfUnpaidPenalties").validate[Int].get shouldBe 0
       }
 
       "the user has LPPs (all paid)" in {
