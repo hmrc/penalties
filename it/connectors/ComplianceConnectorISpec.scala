@@ -57,10 +57,10 @@ class ComplianceConnectorISpec extends IntegrationSpecCommonBase with Compliance
           ),
           ObligationDetail(
             status = ComplianceStatusEnum.fulfilled,
-            inboundCorrespondenceFromDate = LocalDate.of(1920, 2, 29),
-            inboundCorrespondenceToDate = LocalDate.of(1920, 2, 29),
-            inboundCorrespondenceDateReceived = Some(LocalDate.of(1920, 2, 29)),
-            inboundCorrespondenceDueDate = LocalDate.of(1920, 2, 29),
+            inboundCorrespondenceFromDate = LocalDate.of(1920, 3, 29),
+            inboundCorrespondenceToDate = LocalDate.of(1920, 3, 29),
+            inboundCorrespondenceDateReceived = Some(LocalDate.of(1920, 3, 29)),
+            inboundCorrespondenceDueDate = LocalDate.of(1920, 3, 29),
             periodKey = "#001"
           )
         )
@@ -90,10 +90,10 @@ class ComplianceConnectorISpec extends IntegrationSpecCommonBase with Compliance
           ),
           ObligationDetail(
             status = ComplianceStatusEnum.fulfilled,
-            inboundCorrespondenceFromDate = LocalDate.of(1920, 2, 29),
-            inboundCorrespondenceToDate = LocalDate.of(1920, 2, 29),
-            inboundCorrespondenceDateReceived = Some(LocalDate.of(1920, 2, 29)),
-            inboundCorrespondenceDueDate = LocalDate.of(1920, 2, 29),
+            inboundCorrespondenceFromDate = LocalDate.of(1920, 3, 29),
+            inboundCorrespondenceToDate = LocalDate.of(1920, 3, 29),
+            inboundCorrespondenceDateReceived = Some(LocalDate.of(1920, 3, 29)),
+            inboundCorrespondenceDueDate = LocalDate.of(1920, 3, 29),
             periodKey = "#001"
           )
         )

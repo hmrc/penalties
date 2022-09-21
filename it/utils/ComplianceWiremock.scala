@@ -40,10 +40,10 @@ trait ComplianceWiremock {
       |				},
       |				{
       |					"status": "F",
-      |					"inboundCorrespondenceFromDate": "1920-02-29",
-      |					"inboundCorrespondenceToDate": "1920-02-29",
-      |					"inboundCorrespondenceDateReceived": "1920-02-29",
-      |					"inboundCorrespondenceDueDate": "1920-02-29",
+      |					"inboundCorrespondenceFromDate": "1920-03-29",
+      |					"inboundCorrespondenceToDate": "1920-03-29",
+      |					"inboundCorrespondenceDateReceived": "1920-03-29",
+      |					"inboundCorrespondenceDueDate": "1920-03-29",
       |					"periodKey": "#001"
       |				}
       |			]
@@ -69,10 +69,10 @@ trait ComplianceWiremock {
       |				},
       |				{
       |					"status": "F",
-      |					"inboundCorrespondenceFromDate": "1920-02-29",
-      |					"inboundCorrespondenceToDate": "1920-02-29",
-      |					"inboundCorrespondenceDateReceived": "1920-02-29",
-      |					"inboundCorrespondenceDueDate": "1920-02-29",
+      |					"inboundCorrespondenceFromDate": "1920-03-29",
+      |					"inboundCorrespondenceToDate": "1920-03-29",
+      |					"inboundCorrespondenceDateReceived": "1920-03-29",
+      |					"inboundCorrespondenceDueDate": "1920-03-29",
       |					"periodKey": "#001"
       |				}
       |			]
@@ -81,12 +81,12 @@ trait ComplianceWiremock {
 
 
   def mockResponseForComplianceDataFromDES(status: Int, vrn: String, fromDate: String, toDate: String,
-                                           hasBody: Boolean = false, invalidBody: Boolean = false): StubMapping = {
+                                           hasBody: Boolean = false, invalidBody: Boolean = false, optBody: Option[String] = None): StubMapping = {
     stubFor(get(urlEqualTo(s"/enterprise/obligation-data/vrn/$vrn/VATC?from=$fromDate&to=$toDate"))
       .willReturn(
         aResponse()
           .withStatus(status)
-          .withBody(if(invalidBody) "{}" else if(hasBody) complianceSeqPayloadAsJson.toString() else "")
+          .withBody(if(invalidBody) "{}" else if(optBody.isDefined) optBody.get else if(hasBody) complianceSeqPayloadAsJson.toString() else "")
       ))
   }
 

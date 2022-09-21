@@ -44,7 +44,12 @@ class ComplianceService @Inject()(complianceConnector: ComplianceConnector)(impl
       },
         complianceData => {
           logger.debug(s"[ComplianceService][getComplianceData] - Received model: ${complianceData.model} from connector for compliance data")
-          Right(complianceData.model)
+          val orderedModel = complianceData.model.copy(
+            obligationDetails = complianceData.model.obligationDetails.sortWith((d1, d2) =>
+              d1.inboundCorrespondenceDueDate.isBefore(d2.inboundCorrespondenceDueDate)
+            )
+          )
+          Right(orderedModel)
         }
       )
     }
