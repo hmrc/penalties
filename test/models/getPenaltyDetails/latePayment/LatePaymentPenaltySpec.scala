@@ -49,7 +49,7 @@ class LatePaymentPenaltySpec extends SpecBase {
       |   "appealInformation":
       |   [{
       |     "appealStatus": "99",
-      |     "appealLevel": "L1"
+      |     "appealLevel": "01"
       |   }],
       |   "principalChargeDocNumber": "123456789012",
       |   "principalChargeMainTransaction": "4700",
@@ -81,7 +81,7 @@ class LatePaymentPenaltySpec extends SpecBase {
       |   "appealInformation":
       |   [{
       |     "appealStatus": "99",
-      |     "appealLevel": "L1"
+      |     "appealLevel": "01"
       |   }],
       |   "principalChargeDocNumber": "123456789012",
       |   "principalChargeMainTransaction": "4700",
@@ -118,7 +118,7 @@ class LatePaymentPenaltySpec extends SpecBase {
       |   "appealInformation":
       |   [{
       |     "appealStatus": "99",
-      |     "appealLevel": "L1"
+      |     "appealLevel": "01"
       |   }],
       |   "principalChargeBillingFrom": "2022-10-30",
       |   "principalChargeBillingTo": "2022-10-30",
@@ -145,7 +145,7 @@ class LatePaymentPenaltySpec extends SpecBase {
       |   "appealInformation":
       |   [{
       |     "appealStatus": "99",
-      |     "appealLevel": "L1"
+      |     "appealLevel": "01"
       |   }],
       |   "principalChargeBillingFrom": "2022-10-30",
       |   "principalChargeBillingTo": "2022-10-30",

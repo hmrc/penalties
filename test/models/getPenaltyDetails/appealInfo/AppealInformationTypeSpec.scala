@@ -25,7 +25,7 @@ class AppealInformationTypeSpec extends SpecBase {
     """
       |{
       |    "appealStatus": "99",
-      |    "appealLevel": "L1"
+      |    "appealLevel": "01"
       |}
       |""".stripMargin)
 

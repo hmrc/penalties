@@ -362,7 +362,7 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
         |            "appealInformation":[
         |               {
         |                  "appealStatus":"99",
-        |                  "appealLevel":"L1"
+        |                  "appealLevel":"01"
         |               }
         |            ],
         |            "chargeDueDate":"2022-10-30",
@@ -397,7 +397,7 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
         |            "appealInformation":[
         |               {
         |                  "appealStatus":"99",
-        |                  "appealLevel":"L1"
+        |                  "appealLevel":"01"
         |               }
         |            ],
         |            "LPP1LRCalculationAmount":99.99,

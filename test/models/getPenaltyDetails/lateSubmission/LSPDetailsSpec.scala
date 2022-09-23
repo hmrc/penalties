@@ -47,7 +47,7 @@ class LSPDetailsSpec extends SpecBase {
       |   "appealInformation": [
       |      {
       |        "appealStatus": "99",
-      |        "appealLevel": "L1"
+      |        "appealLevel": "01"
       |      }
       |   ],
       |   "chargeDueDate": "2022-10-30",
