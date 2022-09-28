@@ -19,7 +19,7 @@ package models.getPenaltyDetails
 import base.SpecBase
 import models.getPenaltyDetails.appealInfo.{AppealInformationType, AppealLevelEnum, AppealStatusEnum}
 import models.getPenaltyDetails.latePayment.{LPPDetails, LPPDetailsMetadata, LPPPenaltyCategoryEnum, LPPPenaltyStatusEnum, LatePaymentPenalty}
-import models.getPenaltyDetails.lateSubmission.{LSPDetails, LSPPenaltyCategoryEnum, LSPPenaltyStatusEnum, LSPSummary, LateSubmission, LateSubmissionPenalty, TaxReturnStatusEnum}
+import models.getPenaltyDetails.lateSubmission.{ExpiryReasonEnum, LSPDetails, LSPPenaltyCategoryEnum, LSPPenaltyStatusEnum, LSPSummary, LateSubmission, LateSubmissionPenalty, TaxReturnStatusEnum}
 import play.api.libs.json.{JsResult, JsValue, Json}
 
 import java.time.LocalDate
@@ -239,7 +239,7 @@ class GetPenaltyDetailsSpec extends SpecBase {
                 )
               )
             ),
-            expiryReason = Some("FAP"),
+            expiryReason = Some(ExpiryReasonEnum.Adjustment),
             appealInformation = Some(
               Seq(
                 AppealInformationType(appealStatus = Some(AppealStatusEnum.Unappealable), appealLevel = Some(AppealLevelEnum.HMRC))

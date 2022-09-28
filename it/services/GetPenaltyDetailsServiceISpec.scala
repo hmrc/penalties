@@ -72,7 +72,7 @@ class GetPenaltyDetailsServiceISpec extends IntegrationSpecCommonBase with ETMPW
                   )
                 )
               ),
-              expiryReason = Some("FAP"),
+              expiryReason = Some(ExpiryReasonEnum.Adjustment),
               appealInformation = Some(
                 Seq(
                   AppealInformationType(

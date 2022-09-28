@@ -22,7 +22,7 @@ import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser.{GetPenaltyD
 import models.getPenaltyDetails.appealInfo.{AppealInformationType, AppealLevelEnum, AppealStatusEnum}
 import models.getPenaltyDetails.{GetPenaltyDetails, Totalisations}
 import models.getPenaltyDetails.latePayment.{LPPDetails, LPPDetailsMetadata, LPPPenaltyCategoryEnum, LPPPenaltyStatusEnum, LatePaymentPenalty, TimeToPay}
-import models.getPenaltyDetails.lateSubmission.{LSPDetails, LSPPenaltyCategoryEnum, LSPPenaltyStatusEnum, LSPSummary, LateSubmission, LateSubmissionPenalty, TaxReturnStatusEnum}
+import models.getPenaltyDetails.lateSubmission.{ExpiryReasonEnum, LSPDetails, LSPPenaltyCategoryEnum, LSPPenaltyStatusEnum, LSPSummary, LateSubmission, LateSubmissionPenalty, TaxReturnStatusEnum}
 import org.mockito.Matchers
 import org.mockito.Matchers.any
 import org.mockito.Mockito.{mock, reset, when}
@@ -83,7 +83,7 @@ class GetPenaltyDetailsServiceSpec extends SpecBase {
                   )
                 )
               ),
-              expiryReason = Some("FAP"),
+              expiryReason = Some(ExpiryReasonEnum.Adjustment),
               appealInformation = Some(
                 Seq(
                     AppealInformationType(appealStatus = Some(AppealStatusEnum.Unappealable), appealLevel = Some(AppealLevelEnum.HMRC))
