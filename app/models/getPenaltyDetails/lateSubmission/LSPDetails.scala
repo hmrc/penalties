@@ -31,7 +31,7 @@ case class LSPDetails(
                        communicationsDate: LocalDate,
                        FAPIndicator: Option[String],
                        lateSubmissions: Option[Seq[LateSubmission]],
-                       expiryReason: Option[String],
+                       expiryReason: Option[ExpiryReasonEnum.Value],
                        appealInformation: Option[Seq[AppealInformationType]],
                        chargeDueDate: Option[LocalDate],
                        chargeOutstandingAmount: Option[BigDecimal],

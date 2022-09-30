@@ -76,7 +76,7 @@ class LSPDetailsSpec extends SpecBase {
         )
       )
     ),
-    expiryReason = Some("FAP"),
+    expiryReason = Some(ExpiryReasonEnum.Adjustment),
     appealInformation = Some(
       Seq(
         AppealInformationType(appealStatus = Some(AppealStatusEnum.Unappealable), appealLevel = Some(AppealLevelEnum.HMRC))
