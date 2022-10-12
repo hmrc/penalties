@@ -135,42 +135,49 @@ class AppealsController @Inject()(val appConfig: AppConfig,
               Future(BadRequest("Failed to parse to model"))
             },
             appealSubmission => {
-              appealService.submitAppeal(appealSubmission, enrolmentKey, isLPP, penaltyNumber, correlationId).map {
-                _.fold(
-                  error => {
-                    logger.error(s"[AppealsController][submitAppeal] Received status ${error.status}, with error message: ${error.body}")
-                    logger.debug(s"[AppealsController][submitAppeal] Returning ${error.status} to calling service.")
-                    Status(error.status)
-                  },
-                  responseModel => {
-                    val appeal = appealSubmission.appealInformation
-                    logger.debug(s"[AppealsController][submitAppeal] Received caseID response: ${responseModel.caseID} from downstream.")
-                    val seqOfNotifications = appeal match {
-                      case otherAppeal: OtherAppealInformation if otherAppeal.uploadedFiles.isDefined =>
-                        createSDESNotifications(otherAppeal.uploadedFiles, responseModel.caseID)
-                      case obligationAppeal: ObligationAppealInformation if obligationAppeal.uploadedFiles.isDefined =>
-                        createSDESNotifications(obligationAppeal.uploadedFiles, responseModel.caseID)
-                      case _ => Seq.empty
-                    }
-                    if (seqOfNotifications.nonEmpty) {
-                      logger.debug(s"[AppealsController][submitAppeal] Posting SDESNotifications: $seqOfNotifications to Orchestrator")
-                      fileNotificationOrchestratorConnector.postFileNotifications(seqOfNotifications).map {
-                        response =>
-                          response.status match {
-                            case OK =>
-                              logger.debug(s"[AppealsController][submitAppeal] - Received OK from file notification orchestrator")
-                            case status =>
-                              PagerDutyHelper.logStatusCode("submitAppeal", status)(RECEIVED_4XX_FROM_FILE_NOTIFICATION_ORCHESTRATOR, RECEIVED_5XX_FROM_FILE_NOTIFICATION_ORCHESTRATOR)
-                              logger.error(s"[AppealsController][submitAppeal] - Received unknown response ($status) from file notification orchestrator. Response body: ${response.body}")
-                          }
-                      }
-                    }
-                    Ok("")
-                  }
-                )
-              }
+              submitAppealToPEGA(appealSubmission, enrolmentKey, isLPP, penaltyNumber, correlationId)
             }
           )
+        }
+      )
+    }
+  }
+
+  private def submitAppealToPEGA(appealSubmission: AppealSubmission, enrolmentKey: String,
+                                 isLPP: Boolean, penaltyNumber: String, correlationId: String)
+                                (implicit hc: HeaderCarrier): Future[Result] = {
+    appealService.submitAppeal(appealSubmission, enrolmentKey, isLPP, penaltyNumber, correlationId).map {
+      _.fold(
+        error => {
+          logger.error(s"[AppealsController][submitAppeal] Received error from PEGA with status ${error.status} and error message: ${error.body}")
+          logger.debug(s"[AppealsController][submitAppeal] Returning ${error.status} to calling service.")
+          Status(error.status)
+        },
+        responseModel => {
+          val appeal = appealSubmission.appealInformation
+          logger.debug(s"[AppealsController][submitAppeal] Received caseID response: ${responseModel.caseID} from downstream.")
+          val seqOfNotifications = appeal match {
+            case otherAppeal: OtherAppealInformation if otherAppeal.uploadedFiles.isDefined =>
+              createSDESNotifications(otherAppeal.uploadedFiles, responseModel.caseID)
+            case obligationAppeal: ObligationAppealInformation if obligationAppeal.uploadedFiles.isDefined =>
+              createSDESNotifications(obligationAppeal.uploadedFiles, responseModel.caseID)
+            case _ => Seq.empty
+          }
+          if (seqOfNotifications.nonEmpty) {
+            logger.debug(s"[AppealsController][submitAppeal] Posting SDESNotifications: $seqOfNotifications to Orchestrator")
+            fileNotificationOrchestratorConnector.postFileNotifications(seqOfNotifications).map {
+              response =>
+                response.status match {
+                  case OK =>
+                    logger.info(s"[AppealsController][submitAppeal] - Received OK from file notification orchestrator")
+                  case status =>
+                    PagerDutyHelper.logStatusCode("submitAppeal", status)(RECEIVED_4XX_FROM_FILE_NOTIFICATION_ORCHESTRATOR, RECEIVED_5XX_FROM_FILE_NOTIFICATION_ORCHESTRATOR)
+                    logger.error(s"[AppealsController][submitAppeal] - Received unknown response (${status}) from file notification orchestrator. Response body: ${response.body}")
+                }
+            }
+          }
+          logger.info(s"[AppealsController][submitAppeal] - Successfully sent appeal submission to PEGA")
+          Ok("")
         }
       )
     }

@@ -57,20 +57,21 @@ class APIController @Inject()(auditService: AuditService,
         getPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(vrn).map {
           _.fold({
             case GetPenaltyDetailsParser.GetPenaltyDetailsFailureResponse(status) if status == NOT_FOUND || status == NO_CONTENT => {
-              logger.info(s"[APIController][getSummaryDataForVRN] - 1812 call returned $status for VRN: $vrn")
+              logger.info(s"[APIController][getSummaryDataForVRN] - 1812 call (VATVC/BTA API) returned $status for VRN: $vrn")
               NotFound(s"A downstream call returned 404 for VRN: $vrn")
             }
             case GetPenaltyDetailsParser.GetPenaltyDetailsFailureResponse(status) => {
-              logger.info(s"[APIController][getSummaryDataForVRN] - 1812 call returned an unexpected status: $status")
+              logger.info(s"[APIController][getSummaryDataForVRN] - 1812 call (VATVC/BTA API) returned an unexpected status: $status")
               InternalServerError(s"A downstream call returned an unexpected status: $status")
             }
             case GetPenaltyDetailsParser.GetPenaltyDetailsMalformed => {
               PagerDutyHelper.log("getSummaryDataForVRN", MALFORMED_RESPONSE_FROM_1812_API)
-              logger.error(s"[APIController][getSummaryDataForVRN] - Failed to parse penalty details response")
+              logger.error(s"[APIController][getSummaryDataForVRN] - 1812 call (VATVC/BTA API) returned invalid body - failed to parse penalty details response")
               InternalServerError(s"We were unable to parse penalty data.")
             }
           },
             success => {
+              logger.info(s"[APIController][getSummaryDataForVRN] - 1812 call (VATVC/BTA API) returned 200 for VRN: $vrn")
               returnResponseForAPI(success.asInstanceOf[GetPenaltyDetailsSuccessResponse].penaltyDetails, enrolmentKey)
             }
           )
@@ -134,14 +135,15 @@ class APIController @Inject()(auditService: AuditService,
 
           res.status match {
             case OK =>
+              logger.info(s"[APIController][getFinancialDetails] - 1811 call (3rd party API) returned 200 for VRN: $vrn")
               logger.debug("[APIController][getFinancialDetails] Ok response received: " + res)
               Ok(res.json)
             case NOT_FOUND =>
-              logger.debug("[APIController][getFinancialDetails] Error received: " + res)
+              logger.error("[APIController][getFinancialDetails] - 1811 call (3rd party API) returned 404 - error received: " + res)
               Status(res.status)(Json.toJson(res.body))
             case status =>
               PagerDutyHelper.logStatusCode("getFinancialDetails", status)(RECEIVED_4XX_FROM_1811_API, RECEIVED_5XX_FROM_1811_API)
-              logger.warn(s"[APIController][getFinancialDetails] status ${res.status} returned from EIS")
+              logger.error(s"[APIController][getFinancialDetails] - 1811 call (3rd party API) returned an unknown error - status ${res.status} returned from EIS")
               Status(res.status)(Json.toJson(res.body))
           }
         })
@@ -157,14 +159,15 @@ class APIController @Inject()(auditService: AuditService,
           auditService.audit(auditToSend)
           res.status match {
             case OK =>
+              logger.info(s"[APIController][getPenaltyDetails] - 1812 call (3rd party API) returned 200 for VRN: $vrn")
               logger.debug("[APIController][getPenaltyDetails] Ok response received: " + res)
               Ok(res.json)
             case NOT_FOUND =>
-              logger.debug("[APIController][getPenaltyDetails] Error received: " + res)
+              logger.error("[APIController][getPenaltyDetails] - 1812 call (3rd party API) returned 404 - error received: " + res)
               Status(res.status)(Json.toJson(res.body))
             case status =>
               PagerDutyHelper.logStatusCode("getPenaltyDetails", status)(RECEIVED_4XX_FROM_1812_API, RECEIVED_5XX_FROM_1812_API)
-              logger.warn(s"[APIController][getPenaltyDetails] status ${res.status} returned from EIS")
+              logger.error(s"[APIController][getPenaltyDetails] - 1812 call (3rd party API) returned an unknown error - status ${res.status} returned from EIS")
               Status(res.status)(Json.toJson(res.body))
           }
         }
