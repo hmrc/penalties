@@ -17,9 +17,8 @@
 package connectors.parsers
 
 import base.LogCapturing
-import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser.{GetPenaltyDetailsFailureResponse, GetPenaltyDetailsMalformed, GetPenaltyDetailsNoContent, GetPenaltyDetailsSuccessResponse}
 import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser
-import models.PagerDutyHelper.PagerDutyKeys
+import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser.{GetPenaltyDetailsFailureResponse, GetPenaltyDetailsMalformed, GetPenaltyDetailsNoContent, GetPenaltyDetailsSuccessResponse}
 import models.getPenaltyDetails.GetPenaltyDetails
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
@@ -27,6 +26,7 @@ import play.api.http.Status
 import play.api.libs.json.Json
 import uk.gov.hmrc.http.HttpResponse
 import utils.Logger.logger
+import utils.PagerDutyHelper.PagerDutyKeys
 
 class GetPenaltyDetailsParserSpec extends AnyWordSpec with Matchers with LogCapturing {
 
@@ -90,16 +90,26 @@ class GetPenaltyDetailsParserSpec extends AnyWordSpec with Matchers with LogCapt
       }
     }
 
-    s"parse a BAD REQUEST (${Status.BAD_REQUEST}) response" in {
-      val result = GetPenaltyDetailsParser.GetPenaltyDetailsReads.read("GET", "/", mockBadRequestHttpResponse)
-      result.isLeft shouldBe true
-      result.left.get.asInstanceOf[GetPenaltyDetailsFailureResponse].status shouldBe Status.BAD_REQUEST
+    s"parse a BAD REQUEST (${Status.BAD_REQUEST}) response - logging a PagerDuty" in {
+      withCaptureOfLoggingFrom(logger) {
+        logs => {
+          val result = GetPenaltyDetailsParser.GetPenaltyDetailsReads.read("GET", "/", mockBadRequestHttpResponse)
+          logs.exists(_.getMessage.contains(PagerDutyKeys.RECEIVED_4XX_FROM_1812_API.toString)) shouldBe true
+          result.isLeft shouldBe true
+          result.left.get.asInstanceOf[GetPenaltyDetailsFailureResponse].status shouldBe Status.BAD_REQUEST
+        }
+      }
     }
 
     s"parse a NOT FOUND (${Status.NOT_FOUND}) response with invalid JSON body" in {
-      val result = GetPenaltyDetailsParser.GetPenaltyDetailsReads.read("GET", "/", mockNotFoundHttpResponse)
-      result.isLeft shouldBe true
-      result.left.get.asInstanceOf[GetPenaltyDetailsFailureResponse].status shouldBe Status.NOT_FOUND
+      withCaptureOfLoggingFrom(logger) {
+        logs => {
+          val result = GetPenaltyDetailsParser.GetPenaltyDetailsReads.read("GET", "/", mockNotFoundHttpResponse)
+          logs.exists(_.getMessage.contains(PagerDutyKeys.INVALID_JSON_RECEIVED_FROM_1812_API.toString)) shouldBe true
+          result.isLeft shouldBe true
+          result.left.get.asInstanceOf[GetPenaltyDetailsFailureResponse].status shouldBe Status.NOT_FOUND
+        }
+      }
     }
 
     s"parse a NOT FOUND (${Status.NOT_FOUND}) response with JSON body returned (return $GetPenaltyDetailsNoContent)" in {
@@ -120,17 +130,22 @@ class GetPenaltyDetailsParserSpec extends AnyWordSpec with Matchers with LogCapt
       result.left.get.asInstanceOf[GetPenaltyDetailsFailureResponse].status shouldBe Status.NO_CONTENT
     }
 
-    s"parse a Conflict (${Status.CONFLICT}) response" in {
-      val result = GetPenaltyDetailsParser.GetPenaltyDetailsReads.read("GET", "/", mockConflictHttpResponse)
-      result.isLeft shouldBe true
-      result.left.get.asInstanceOf[GetPenaltyDetailsFailureResponse].status shouldBe Status.CONFLICT
+    s"parse a Conflict (${Status.CONFLICT}) response - logging PagerDuty" in {
+      withCaptureOfLoggingFrom(logger) {
+        logs => {
+          val result = GetPenaltyDetailsParser.GetPenaltyDetailsReads.read("GET", "/", mockConflictHttpResponse)
+          logs.exists(_.getMessage.contains(PagerDutyKeys.RECEIVED_4XX_FROM_1812_API.toString)) shouldBe true
+          result.isLeft shouldBe true
+          result.left.get.asInstanceOf[GetPenaltyDetailsFailureResponse].status shouldBe Status.CONFLICT
+        }
+      }
     }
 
     s"parse an UNPROCESSABLE ENTITY (${Status.UNPROCESSABLE_ENTITY}) response - and log a PagerDuty" in {
       withCaptureOfLoggingFrom(logger) {
         logs => {
           val result = GetPenaltyDetailsParser.GetPenaltyDetailsReads.read("GET", "/", mockUnprocessableEnityHttpResponse)
-          logs.exists(_.getMessage.contains(PagerDutyKeys.RECEIVED_422_FROM_ETMP.toString)) shouldBe true
+          logs.exists(_.getMessage.contains(PagerDutyKeys.RECEIVED_4XX_FROM_1812_API.toString)) shouldBe true
           result.isLeft shouldBe true
           result.left.get.asInstanceOf[GetPenaltyDetailsFailureResponse].status shouldBe Status.UNPROCESSABLE_ENTITY
         }
@@ -138,22 +153,37 @@ class GetPenaltyDetailsParserSpec extends AnyWordSpec with Matchers with LogCapt
 
     }
 
-    s"parse an INTERNAL SERVER ERROR (${Status.INTERNAL_SERVER_ERROR}) response" in {
-      val result = GetPenaltyDetailsParser.GetPenaltyDetailsReads.read("GET", "/", mockISEHttpResponse)
-      result.isLeft shouldBe true
-      result.left.get.asInstanceOf[GetPenaltyDetailsFailureResponse].status shouldBe Status.INTERNAL_SERVER_ERROR
+    s"parse an INTERNAL SERVER ERROR (${Status.INTERNAL_SERVER_ERROR}) response - and log a PagerDuty" in {
+      withCaptureOfLoggingFrom(logger) {
+        logs => {
+          val result = GetPenaltyDetailsParser.GetPenaltyDetailsReads.read("GET", "/", mockISEHttpResponse)
+          logs.exists(_.getMessage.contains(PagerDutyKeys.RECEIVED_5XX_FROM_1812_API.toString)) shouldBe true
+          result.isLeft shouldBe true
+          result.left.get.asInstanceOf[GetPenaltyDetailsFailureResponse].status shouldBe Status.INTERNAL_SERVER_ERROR
+        }
+      }
     }
 
-    s"parse a SERVICE UNAVAILABLE (${Status.SERVICE_UNAVAILABLE}) response" in {
-      val result = GetPenaltyDetailsParser.GetPenaltyDetailsReads.read("GET", "/", mockServiceUnavailableHttpResponse)
-      result.isLeft shouldBe true
-      result.left.get.asInstanceOf[GetPenaltyDetailsFailureResponse].status shouldBe Status.SERVICE_UNAVAILABLE
+    s"parse a SERVICE UNAVAILABLE (${Status.SERVICE_UNAVAILABLE}) response - and log a PagerDuty" in {
+      withCaptureOfLoggingFrom(logger) {
+        logs => {
+          val result = GetPenaltyDetailsParser.GetPenaltyDetailsReads.read("GET", "/", mockServiceUnavailableHttpResponse)
+          logs.exists(_.getMessage.contains(PagerDutyKeys.RECEIVED_5XX_FROM_1812_API.toString)) shouldBe true
+          result.isLeft shouldBe true
+          result.left.get.asInstanceOf[GetPenaltyDetailsFailureResponse].status shouldBe Status.SERVICE_UNAVAILABLE
+        }
+      }
     }
 
-    s"parse an unknown error (e.g. IM A TEAPOT - ${Status.IM_A_TEAPOT})" in {
-      val result = GetPenaltyDetailsParser.GetPenaltyDetailsReads.read("GET", "/", mockImATeapotHttpResponse)
-      result.isLeft shouldBe true
-      result.left.get.asInstanceOf[GetPenaltyDetailsFailureResponse].status shouldBe Status.IM_A_TEAPOT
+    s"parse an unknown error (e.g. IM A TEAPOT - ${Status.IM_A_TEAPOT}) - and log a PagerDuty" in {
+      withCaptureOfLoggingFrom(logger) {
+        logs => {
+          val result = GetPenaltyDetailsParser.GetPenaltyDetailsReads.read("GET", "/", mockImATeapotHttpResponse)
+          logs.exists(_.getMessage.contains(PagerDutyKeys.RECEIVED_4XX_FROM_1812_API.toString)) shouldBe true
+          result.isLeft shouldBe true
+          result.left.get.asInstanceOf[GetPenaltyDetailsFailureResponse].status shouldBe Status.IM_A_TEAPOT
+        }
+      }
     }
   }
 }

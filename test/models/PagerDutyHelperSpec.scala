@@ -17,18 +17,19 @@
 package models
 
 import base.LogCapturing
-import models.PagerDutyHelper.PagerDutyKeys
+import utils.PagerDutyHelper.PagerDutyKeys
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import utils.Logger.logger
+import utils.PagerDutyHelper
 
 class PagerDutyHelperSpec extends AnyWordSpec with Matchers with LogCapturing {
   "log" should {
-    s"log a $PagerDutyKeys Value at level WARN with the jobName also included" in {
+    s"log a $PagerDutyKeys Value at level WARN with the method name also included" in {
       withCaptureOfLoggingFrom(logger) { capturedEvents =>
-        PagerDutyHelper.log("foo", PagerDutyHelper.PagerDutyKeys.RECEIVED_422_FROM_ETMP)
+        PagerDutyHelper.log("foo", PagerDutyHelper.PagerDutyKeys.RECEIVED_4XX_FROM_1812_API)
         capturedEvents.head.getLevel.levelStr shouldBe "WARN"
-        capturedEvents.head.getMessage shouldBe s"foo - ${PagerDutyHelper.PagerDutyKeys.RECEIVED_422_FROM_ETMP}"
+        capturedEvents.head.getMessage shouldBe s"${PagerDutyHelper.PagerDutyKeys.RECEIVED_4XX_FROM_1812_API} - foo"
       }
     }
   }

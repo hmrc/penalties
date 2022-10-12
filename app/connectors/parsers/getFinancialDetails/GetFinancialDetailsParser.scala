@@ -22,6 +22,8 @@ import play.api.http.Status._
 import play.api.libs.json.{JsError, JsSuccess, JsValue}
 import uk.gov.hmrc.http.{HttpReads, HttpResponse}
 import utils.Logger.logger
+import utils.PagerDutyHelper
+import utils.PagerDutyHelper.PagerDutyKeys._
 
 import scala.util.Try
 
@@ -55,6 +57,7 @@ object GetFinancialDetailsParser {
         case NOT_FOUND if response.body.nonEmpty => {
           Try(handleNotFoundStatusBody(response.json)).fold(parseError => {
             logger.error(s"[GetFinancialDetailsReads][read] Could not parse 404 body with error ${parseError.getMessage}")
+            PagerDutyHelper.log("GetPenaltyDetailsReads", INVALID_JSON_RECEIVED_FROM_1811_API)
             Left(GetFinancialDetailsFailureResponse(NOT_FOUND))
           }, identity)
         }
@@ -63,17 +66,19 @@ object GetFinancialDetailsParser {
           Left(GetFinancialDetailsNoContent)
         }
         case status@(BAD_REQUEST | FORBIDDEN | NOT_FOUND | CONFLICT | UNPROCESSABLE_ENTITY | INTERNAL_SERVER_ERROR | SERVICE_UNAVAILABLE) => {
+          PagerDutyHelper.logStatusCode("GetFinancialDetailsReads", status)(RECEIVED_4XX_FROM_1811_API, RECEIVED_5XX_FROM_1811_API)
           logger.error(s"[GetFinancialDetailsReads][read] Received $status when trying to call GetFinancialDetails - with body: ${response.body}")
           Left(GetFinancialDetailsFailureResponse(status))
         }
         case _@status =>
+          PagerDutyHelper.logStatusCode("GetFinancialDetailsReads", status)(RECEIVED_4XX_FROM_1811_API, RECEIVED_5XX_FROM_1811_API)
           logger.error(s"[GetFinancialDetailsReads][read] Received unexpected response from GetFinancialDetails, status code: $status and body: ${response.body}")
           Left(GetFinancialDetailsFailureResponse(status))
       }
     }
   }
 
-  private def handleNotFoundStatusBody(responseBody: JsValue) = {
+  private def handleNotFoundStatusBody(responseBody: JsValue): Left[GetFinancialDetailsFailure, Nothing] = {
     (responseBody \ "failures").validate[Seq[FailureResponse]].fold(
       errors => {
         logger.debug(s"[GetFinancialDetailsReads][read] - Parsing errors: $errors")

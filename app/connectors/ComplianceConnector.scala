@@ -17,9 +17,12 @@
 package connectors
 
 import config.AppConfig
-import connectors.parsers.ComplianceParser.CompliancePayloadResponse
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient}
+import connectors.parsers.ComplianceParser.{CompliancePayloadFailureResponse, CompliancePayloadResponse}
+import play.api.http.Status.INTERNAL_SERVER_ERROR
+import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, UpstreamErrorResponse}
 import utils.Logger.logger
+import utils.PagerDutyHelper
+import utils.PagerDutyHelper.PagerDutyKeys._
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
@@ -35,6 +38,19 @@ class ComplianceConnector @Inject()(httpClient: HttpClient,
     )
     val url: String = appConfig.getComplianceData(identifier, fromDate, toDate)
     logger.debug(s"[ComplianceConnector][getComplianceData] - Calling GET $url with headers: $desHeaders")
-    httpClient.GET[CompliancePayloadResponse](url, headers = desHeaders)
+    httpClient.GET[CompliancePayloadResponse](url, headers = desHeaders).recover {
+      case e: UpstreamErrorResponse => {
+        PagerDutyHelper.logStatusCode("getComplianceData", e.statusCode)(RECEIVED_4XX_FROM_1330_API, RECEIVED_5XX_FROM_1330_API)
+        logger.error(s"[ComplianceConnector][] -" +
+          s" Received ${e.statusCode} status from API 1330 call - returning status to caller")
+        Left(CompliancePayloadFailureResponse(e.statusCode))
+      }
+      case e: Exception => {
+        PagerDutyHelper.log("getComplianceData", UNKNOWN_EXCEPTION_CALLING_1330_API)
+        logger.error(s"[ComplianceConnector][getComplianceData] -" +
+          s" An unknown exception occurred - returning 500 back to caller - message: ${e.getMessage}")
+        Left(CompliancePayloadFailureResponse(INTERNAL_SERVER_ERROR))
+      }
+    }
   }
 }

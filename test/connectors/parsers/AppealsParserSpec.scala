@@ -16,14 +16,16 @@
 
 package connectors.parsers
 
-import base.SpecBase
+import base.{LogCapturing, SpecBase}
 import connectors.parsers.AppealsParser.{BadRequest, InvalidJson, UnexpectedFailure}
 import models.appeals.AppealResponseModel
 import play.api.http.Status
 import play.api.libs.json.{JsString, JsValue, Json}
 import uk.gov.hmrc.http.HttpResponse
+import utils.Logger.logger
+import utils.PagerDutyHelper.PagerDutyKeys
 
-class AppealsParserSpec extends SpecBase {
+class AppealsParserSpec extends SpecBase with LogCapturing {
 
   class Setup(status: Int, optJson: Option[JsValue] = None, responseHeaders: Map[String, Seq[String]] = Map.empty) {
 
@@ -51,15 +53,30 @@ class AppealsParserSpec extends SpecBase {
     }
 
     s"return invalid Json if ${Status.OK} and json is invalid" in new Setup(Status.OK, optJson = Some(Json.obj())){
-      readResponse shouldBe Left(InvalidJson)
+      withCaptureOfLoggingFrom(logger) {
+        logs => {
+          readResponse shouldBe Left(InvalidJson)
+          logs.exists(_.getMessage.contains(PagerDutyKeys.INVALID_JSON_RECEIVED_FROM_1808_API.toString)) shouldBe true
+        }
+      }
     }
 
     s"return $BadRequest if ${Status.BAD_REQUEST} returned" in new Setup(Status.BAD_REQUEST) {
-      readResponse shouldBe Left(BadRequest)
+      withCaptureOfLoggingFrom(logger) {
+        logs => {
+          readResponse shouldBe Left(BadRequest)
+          logs.exists(_.getMessage.contains(PagerDutyKeys.RECEIVED_4XX_FROM_1808_API.toString)) shouldBe true
+        }
+      }
     }
 
     s"return $UnexpectedFailure if random non Success status code returned" in new Setup(Status.INTERNAL_SERVER_ERROR) {
-      readResponse shouldBe Left(UnexpectedFailure(500, "Unexpected response, status 500 returned"))
+      withCaptureOfLoggingFrom(logger) {
+        logs => {
+          readResponse shouldBe Left(UnexpectedFailure(500, "Unexpected response, status 500 returned"))
+          logs.exists(_.getMessage.contains(PagerDutyKeys.RECEIVED_5XX_FROM_1808_API.toString)) shouldBe true
+        }
+      }
     }
   }
 }

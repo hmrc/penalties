@@ -16,6 +16,7 @@
 
 package connectors.parsers
 
+import base.LogCapturing
 import connectors.parsers.ComplianceParser._
 import models.compliance.{CompliancePayload, ComplianceStatusEnum, ObligationDetail, ObligationIdentification}
 import org.scalatest.matchers.should.Matchers
@@ -23,10 +24,12 @@ import org.scalatest.wordspec.AnyWordSpec
 import play.api.http.Status._
 import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.http.HttpResponse
+import utils.Logger.logger
+import utils.PagerDutyHelper.PagerDutyKeys
 
 import java.time.LocalDate
 
-class ComplianceParserSpec extends AnyWordSpec with Matchers {
+class ComplianceParserSpec extends AnyWordSpec with Matchers with LogCapturing {
   val compliancePayloadAsJson: JsValue = Json.parse(
     """
       |{
@@ -93,21 +96,36 @@ class ComplianceParserSpec extends AnyWordSpec with Matchers {
 
     s"return a $CompliancePayloadFailureResponse" when {
       s"the status is $BAD_REQUEST" in {
-        val result = ComplianceCompliancePayloadReads.read("GET", "/", HttpResponse(400, ""))
-        result.isLeft shouldBe true
-        result.left.get shouldBe CompliancePayloadFailureResponse(BAD_REQUEST)
+        withCaptureOfLoggingFrom(logger) {
+          logs => {
+            val result = ComplianceCompliancePayloadReads.read("GET", "/", HttpResponse(400, ""))
+            logs.exists(_.getMessage.contains(PagerDutyKeys.RECEIVED_4XX_FROM_1330_API.toString)) shouldBe true
+            result.isLeft shouldBe true
+            result.left.get shouldBe CompliancePayloadFailureResponse(BAD_REQUEST)
+          }
+        }
       }
 
       s"the status is $INTERNAL_SERVER_ERROR" in {
-        val result = ComplianceCompliancePayloadReads.read("GET", "/", HttpResponse(500, ""))
-        result.isLeft shouldBe true
-        result.left.get shouldBe CompliancePayloadFailureResponse(INTERNAL_SERVER_ERROR)
+        withCaptureOfLoggingFrom(logger) {
+          logs => {
+            val result = ComplianceCompliancePayloadReads.read("GET", "/", HttpResponse(500, ""))
+            logs.exists(_.getMessage.contains(PagerDutyKeys.RECEIVED_5XX_FROM_1330_API.toString)) shouldBe true
+            result.isLeft shouldBe true
+            result.left.get shouldBe CompliancePayloadFailureResponse(INTERNAL_SERVER_ERROR)
+          }
+        }
       }
 
-      s"the status is any other non-200 status" in {
-        val result = ComplianceCompliancePayloadReads.read("GET", "/", HttpResponse(503, ""))
-        result.isLeft shouldBe true
-        result.left.get shouldBe CompliancePayloadFailureResponse(SERVICE_UNAVAILABLE)
+      s"the status is any other non-200 status - and log a PagerDuty" in {
+        withCaptureOfLoggingFrom(logger) {
+          logs => {
+            val result = ComplianceCompliancePayloadReads.read("GET", "/", HttpResponse(503, ""))
+            logs.exists(_.getMessage.contains(PagerDutyKeys.RECEIVED_5XX_FROM_1330_API.toString)) shouldBe true
+            result.isLeft shouldBe true
+            result.left.get shouldBe CompliancePayloadFailureResponse(SERVICE_UNAVAILABLE)
+          }
+        }
       }
     }
 
@@ -118,9 +136,14 @@ class ComplianceParserSpec extends AnyWordSpec with Matchers {
     }
 
     s"return a $CompliancePayloadNoData when the body is malformed" in {
-      val result = ComplianceCompliancePayloadReads.read("GET", "/", HttpResponse(200, "{}"))
-      result.isLeft shouldBe true
-      result.left.get shouldBe CompliancePayloadMalformed
+      withCaptureOfLoggingFrom(logger) {
+        logs => {
+          val result = ComplianceCompliancePayloadReads.read("GET", "/", HttpResponse(200, "{}"))
+          logs.exists(_.getMessage.contains(PagerDutyKeys.INVALID_JSON_RECEIVED_FROM_1330_API.toString)) shouldBe true
+          result.isLeft shouldBe true
+          result.left.get shouldBe CompliancePayloadMalformed
+        }
+      }
     }
   }
 }

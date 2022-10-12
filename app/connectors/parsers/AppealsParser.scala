@@ -21,6 +21,8 @@ import uk.gov.hmrc.http.{HttpReads, HttpResponse}
 import play.api.http.Status.{BAD_REQUEST, OK}
 import play.api.libs.json.JsSuccess
 import utils.Logger.logger
+import utils.PagerDutyHelper
+import utils.PagerDutyHelper.PagerDutyKeys._
 
 object AppealsParser {
   type AppealSubmissionResponse = Either[ErrorResponse, AppealResponseModel]
@@ -34,13 +36,16 @@ object AppealsParser {
             case JsSuccess(model, _) =>
               Right(model)
             case _ =>
+              PagerDutyHelper.log("AppealSubmissionResponseReads", INVALID_JSON_RECEIVED_FROM_1808_API)
               Left(InvalidJson)
           }
         case BAD_REQUEST =>
-          logger.debug(s"[UpScanInitiateResponseReads][read]: Bad request returned with reason: ${response.body}")
+          PagerDutyHelper.log("AppealSubmissionResponseReads", RECEIVED_4XX_FROM_1808_API)
+          logger.debug(s"[AppealSubmissionResponseReads][read]: Bad request returned with reason: ${response.body}")
           Left(BadRequest)
         case status =>
-          logger.warn(s"[UpScanInitiateResponseReads][read]: Unexpected response, status $status returned")
+          PagerDutyHelper.logStatusCode("AppealSubmissionResponseReads", status)(RECEIVED_4XX_FROM_1808_API, RECEIVED_5XX_FROM_1808_API)
+          logger.warn(s"[AppealSubmissionResponseReads][read]: Unexpected response, status $status returned")
           Left(UnexpectedFailure(status, s"Unexpected response, status $status returned"))
       }
     }

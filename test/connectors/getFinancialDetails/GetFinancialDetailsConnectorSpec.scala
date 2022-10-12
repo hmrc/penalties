@@ -17,7 +17,7 @@
 package connectors.getFinancialDetails
 
 import java.time.LocalDate
-import base.SpecBase
+import base.{LogCapturing, SpecBase}
 import config.AppConfig
 import connectors.parsers.getFinancialDetails.GetFinancialDetailsParser._
 import models.getFinancialDetails._
@@ -29,10 +29,12 @@ import play.api.test.Helpers._
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse}
 import utils.DateHelper
 import uk.gov.hmrc.http._
+import utils.Logger.logger
+import utils.PagerDutyHelper.PagerDutyKeys
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class GetFinancialDetailsConnectorSpec extends SpecBase {
+class GetFinancialDetailsConnectorSpec extends SpecBase with LogCapturing {
   implicit val ec: ExecutionContext = ExecutionContext.Implicits.global
   val mockHttpClient: HttpClient = mock(classOf[HttpClient])
   val mockAppConfig: AppConfig = mock(classOf[AppConfig])
@@ -237,6 +239,42 @@ class GetFinancialDetailsConnectorSpec extends SpecBase {
       val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails("123456789", LocalDate.of(2022, 1, 1), LocalDate.of(2022, 1, 1))(HeaderCarrier()))
       result.isLeft shouldBe true
     }
+
+    "return a 500 when the call fails due to an UpstreamErrorResponse(5xx) exception" in new Setup {
+      when(mockHttpClient.GET[HttpResponse](Matchers.eq(s"/VRN/123456789/VATC?foo=bar"),
+        Matchers.any(),
+        Matchers.any())
+        (Matchers.any(),
+          Matchers.any(),
+          Matchers.any()))
+        .thenReturn(Future.failed(UpstreamErrorResponse.apply("Something weird happened", INTERNAL_SERVER_ERROR)))
+
+      withCaptureOfLoggingFrom(logger) {
+        logs => {
+          val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails("123456789", LocalDate.of(2022, 1, 1), LocalDate.of(2022, 1, 1))(HeaderCarrier()))
+          logs.exists(_.getMessage.contains(PagerDutyKeys.RECEIVED_5XX_FROM_1811_API.toString)) shouldBe true
+          result.isLeft shouldBe true
+        }
+      }
+    }
+
+    "return a 400 when the call fails due to an UpstreamErrorResponse(4xx) exception" in new Setup {
+      when(mockHttpClient.GET[HttpResponse](Matchers.eq(s"/VRN/123456789/VATC?foo=bar"),
+        Matchers.any(),
+        Matchers.any())
+        (Matchers.any(),
+          Matchers.any(),
+          Matchers.any()))
+        .thenReturn(Future.failed(UpstreamErrorResponse.apply("Something weird happened", BAD_REQUEST)))
+
+      withCaptureOfLoggingFrom(logger) {
+        logs => {
+          val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails("123456789", LocalDate.of(2022, 1, 1), LocalDate.of(2022, 1, 1))(HeaderCarrier()))
+          logs.exists(_.getMessage.contains(PagerDutyKeys.RECEIVED_4XX_FROM_1811_API.toString)) shouldBe true
+          result.isLeft shouldBe true
+        }
+      }
+    }
   }
 
   "getFinancialDetailsForAPI" should {
@@ -351,19 +389,24 @@ class GetFinancialDetailsConnectorSpec extends SpecBase {
           Matchers.any()))
         .thenReturn(Future.failed(new Exception("Something weird happened")))
 
-      val result: HttpResponse = await(connector.getFinancialDetailsForAPI(
-        vrn = "123456789",
-        docNumber = Some("DOC1"),
-        dateFrom = Some("2022-01-01"),
-        dateTo = Some("2024-01-01"),
-        onlyOpenItems = false,
-        includeStatistical = false,
-        includeLocks = false,
-        calculateAccruedInterest = false,
-        removePOA = false,
-        customerPaymentInformation = true
-      )(HeaderCarrier()))
-      result.status shouldBe Status.INTERNAL_SERVER_ERROR
+      withCaptureOfLoggingFrom(logger) {
+        logs => {
+          val result: HttpResponse = await(connector.getFinancialDetailsForAPI(
+            vrn = "123456789",
+            docNumber = Some("DOC1"),
+            dateFrom = Some("2022-01-01"),
+            dateTo = Some("2024-01-01"),
+            onlyOpenItems = false,
+            includeStatistical = false,
+            includeLocks = false,
+            calculateAccruedInterest = false,
+            removePOA = false,
+            customerPaymentInformation = true
+          )(HeaderCarrier()))
+          logs.exists(_.getMessage.contains(PagerDutyKeys.UNKNOWN_EXCEPTION_CALLING_1811_API.toString)) shouldBe true
+          result.status shouldBe Status.INTERNAL_SERVER_ERROR
+        }
+      }
     }
   }
 }
