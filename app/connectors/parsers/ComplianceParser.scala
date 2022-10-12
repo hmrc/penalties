@@ -21,6 +21,8 @@ import play.api.http.Status._
 import play.api.libs.json.{JsError, JsSuccess}
 import uk.gov.hmrc.http.{HttpReads, HttpResponse}
 import utils.Logger.logger
+import utils.PagerDutyHelper
+import utils.PagerDutyHelper.PagerDutyKeys._
 
 object ComplianceParser {
   sealed trait GetCompliancePayloadFailure {
@@ -30,8 +32,8 @@ object ComplianceParser {
     val model: CompliancePayload
   }
 
-  case class  CompliancePayloadSuccessResponse(model: CompliancePayload) extends GetCompliancePayloadSuccess
-  case class  CompliancePayloadFailureResponse(status: Int) extends GetCompliancePayloadFailure {
+  case class CompliancePayloadSuccessResponse(model: CompliancePayload) extends GetCompliancePayloadSuccess
+  case class CompliancePayloadFailureResponse(status: Int) extends GetCompliancePayloadFailure {
     override val message: String = s"Received status code: $status"
   }
   case object CompliancePayloadNoData extends GetCompliancePayloadFailure {
@@ -52,6 +54,7 @@ object ComplianceParser {
               logger.debug(s"[ComplianceCompliancePayloadReads][read] Json response: ${response.json}")
               Right(CompliancePayloadSuccessResponse(compliancePayload.head))
             case JsError(errors) =>
+              PagerDutyHelper.log("ComplianceCompliancePayloadReads", INVALID_JSON_RECEIVED_FROM_1330_API)
               logger.debug(s"[ComplianceCompliancePayloadReads][read] Json validation errors: $errors")
               Left(CompliancePayloadMalformed)
           }
@@ -60,14 +63,17 @@ object ComplianceParser {
           Left(CompliancePayloadNoData)
         }
         case BAD_REQUEST => {
+          PagerDutyHelper.log("ComplianceCompliancePayloadReads", RECEIVED_4XX_FROM_1330_API)
           logger.error(s"[ComplianceParser][read] - Failed to parse to model with response body: ${response.body} (Status: $BAD_REQUEST)")
           Left(CompliancePayloadFailureResponse(BAD_REQUEST))
         }
         case INTERNAL_SERVER_ERROR =>
-          logger.error(s"[ComplianceCompliancePayloadReads][read] Received ISE when trying to call ETMP - with body: ${response.body}")
+          PagerDutyHelper.log("ComplianceCompliancePayloadReads", RECEIVED_5XX_FROM_1330_API)
+          logger.error(s"[ComplianceCompliancePayloadReads][read] Received ISE when trying to call 1330 API - with body: ${response.body}")
           Left(CompliancePayloadFailureResponse(INTERNAL_SERVER_ERROR))
         case _@status =>
-          logger.error(s"[ComplianceCompliancePayloadReads][read] Received unexpected response from ETMP, status code: $status and body: ${response.body}")
+          PagerDutyHelper.logStatusCode("ComplianceCompliancePayloadReads", status)(RECEIVED_4XX_FROM_1330_API, RECEIVED_5XX_FROM_1330_API)
+          logger.error(s"[ComplianceCompliancePayloadReads][read] Received unexpected response from 1330 API, status code: $status and body: ${response.body}")
           Left(CompliancePayloadFailureResponse(status))
       }
     }

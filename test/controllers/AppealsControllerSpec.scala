@@ -16,7 +16,7 @@
 
 package controllers
 
-import base.SpecBase
+import base.{LogCapturing, SpecBase}
 import config.AppConfig
 import config.featureSwitches.FeatureSwitching
 import connectors.FileNotificationOrchestratorConnector
@@ -33,31 +33,35 @@ import models.getPenaltyDetails.lateSubmission._
 import org.mockito.Matchers
 import org.mockito.Matchers.any
 import org.mockito.Mockito._
+import org.scalatest.concurrent.Eventually.eventually
 import play.api.Configuration
 import play.api.http.Status
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.Result
 import play.api.test.Helpers._
-import services.{ETMPService, GetPenaltyDetailsService}
+import services.{AppealService, GetPenaltyDetailsService}
+import uk.gov.hmrc.http.HttpResponse
+import utils.Logger.logger
+import utils.PagerDutyHelper.PagerDutyKeys
 import utils.UUIDGenerator
 
 import java.time.{LocalDate, LocalDateTime}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class AppealsControllerSpec extends SpecBase with FeatureSwitching {
-  val mockETMPService: ETMPService = mock(classOf[ETMPService])
+class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCapturing {
+  val mockAppealsService: AppealService = mock(classOf[AppealService])
   val mockAppConfig: AppConfig = mock(classOf[AppConfig])
   val mockUUIDGenerator: UUIDGenerator = mock(classOf[UUIDGenerator])
   val mockGetPenaltyDetailsService: GetPenaltyDetailsService = mock(classOf[GetPenaltyDetailsService])
   val correlationId = "id-1234567890"
-  val connector: FileNotificationOrchestratorConnector = injector.instanceOf[FileNotificationOrchestratorConnector]
+  val mockFileNotificationConnector: FileNotificationOrchestratorConnector = mock(classOf[FileNotificationOrchestratorConnector])
   implicit val config: Configuration = mockAppConfig.config
 
   class Setup(withRealAppConfig: Boolean = true) {
-    reset(mockAppConfig, mockETMPService, mockGetPenaltyDetailsService)
+    reset(mockAppConfig, mockAppealsService, mockGetPenaltyDetailsService, mockFileNotificationConnector)
     val controller = new AppealsController(if (withRealAppConfig) appConfig
-    else mockAppConfig, mockETMPService, mockGetPenaltyDetailsService, mockUUIDGenerator, connector, stubControllerComponents())
+    else mockAppConfig, mockAppealsService, mockGetPenaltyDetailsService, mockUUIDGenerator, mockFileNotificationConnector, stubControllerComponents())
   }
 
   "getAppealsDataForLateSubmissionPenalty" should {
@@ -440,7 +444,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching {
     "return the error status code" when {
       "the connector calls fails" in new Setup {
 
-        when(mockETMPService.submitAppeal(any(), any(), any(), any(), any()))
+        when(mockAppealsService.submitAppeal(any(), any(), any(), any(), any()))
           .thenReturn(Future.successful(Left(UnexpectedFailure(GATEWAY_TIMEOUT, s"Unexpected response, status $GATEWAY_TIMEOUT returned"))))
         val appealsJson: JsValue = Json.parse(
           """
@@ -468,7 +472,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching {
 
     "return OK (200)" when {
       "the JSON request body can be parsed and the connector returns a successful response for crime" in new Setup {
-        when(mockETMPService.submitAppeal(any(), any(), any(), any(), any()))
+        when(mockAppealsService.submitAppeal(any(), any(), any(), any(), any()))
           .thenReturn(Future.successful(Right(appealResponseModel)))
         val appealsJson: JsValue = Json.parse(
           """
@@ -493,7 +497,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching {
       }
 
       "the JSON request body can be parsed and the connector returns a successful response for loss of staff" in new Setup {
-        when(mockETMPService.submitAppeal(any(), any(), any(), any(), any()))
+        when(mockAppealsService.submitAppeal(any(), any(), any(), any(), any()))
           .thenReturn(Future.successful(Right(appealResponseModel)))
         val appealsJson: JsValue = Json.parse(
           """
@@ -517,7 +521,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching {
       }
 
       "the Json request body can be parsed and the connector returns a successful response for fire or flood" in new Setup {
-        when(mockETMPService.submitAppeal(any(), any(), any(), any(), any()))
+        when(mockAppealsService.submitAppeal(any(), any(), any(), any(), any()))
           .thenReturn(Future.successful(Right(appealResponseModel)))
         val appealsJson: JsValue = Json.parse(
           """
@@ -541,7 +545,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching {
       }
 
       "the Json request body can be parsed and the connector returns a successful response for technical issues" in new Setup {
-        when(mockETMPService.submitAppeal(any(), any(), any(), any(), any()))
+        when(mockAppealsService.submitAppeal(any(), any(), any(), any(), any()))
           .thenReturn(Future.successful(Right(appealResponseModel)))
         val appealsJson: JsValue = Json.parse(
           """
@@ -567,7 +571,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching {
 
       "the Json request body can be parsed and the connector returns a successful response for health" when {
         "there was no hospital stay" in new Setup {
-          when(mockETMPService.submitAppeal(any(), any(), any(), any(), any()))
+          when(mockAppealsService.submitAppeal(any(), any(), any(), any(), any()))
             .thenReturn(Future.successful(Right(appealResponseModel)))
           val appealsJson: JsValue = Json.parse(
             """
@@ -593,7 +597,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching {
         }
 
         "there is an ongoing hospital stay" in new Setup {
-          when(mockETMPService.submitAppeal(any(), any(), any(), any(), any()))
+          when(mockAppealsService.submitAppeal(any(), any(), any(), any(), any()))
             .thenReturn(Future.successful(Right(appealResponseModel)))
           val appealsJson: JsValue = Json.parse(
             """
@@ -619,7 +623,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching {
         }
 
         "there was a hospital stay that has ended" in new Setup {
-          when(mockETMPService.submitAppeal(any(), any(), any(), any(), any()))
+          when(mockAppealsService.submitAppeal(any(), any(), any(), any(), any()))
             .thenReturn(Future.successful(Right(appealResponseModel)))
           val appealsJson: JsValue = Json.parse(
             """
@@ -646,7 +650,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching {
         }
 
         "the JSON request body can be parsed and the appeal is a LPP" in new Setup {
-          when(mockETMPService.submitAppeal(any(), any(), any(), any(), any()))
+          when(mockAppealsService.submitAppeal(any(), any(), any(), any(), any()))
             .thenReturn(Future.successful(Right(appealResponseModel)))
           val appealsJson: JsValue = Json.parse(
             """
@@ -670,7 +674,114 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching {
           status(result) shouldBe OK
         }
       }
+    }
 
+    "return 200 (OK) even if the file notification call fails (5xx response)" in new Setup {
+      when(mockAppealsService.submitAppeal(any(), any(), any(), any(), any()))
+        .thenReturn(Future.successful(Right(appealResponseModel)))
+      when(mockFileNotificationConnector.postFileNotifications(any())(any()))
+        .thenReturn(Future.successful(HttpResponse.apply(INTERNAL_SERVER_ERROR, "")))
+
+      val appealsJson: JsValue = Json.parse(
+        """
+          |{
+          |    "sourceSystem": "MDTP",
+          |    "taxRegime": "VAT",
+          |    "customerReferenceNo": "123456789",
+          |    "dateOfAppeal": "2020-01-01T00:00:00",
+          |    "isLPP": true,
+          |    "appealSubmittedBy": "client",
+          |    "appealInformation": {
+          |						 "reasonableExcuse": "other",
+          |            "honestyDeclaration": true,
+          |            "startDateOfEvent": "2021-04-23T00:00",
+          |						 "statement": "This is a statement",
+          |            "lateAppeal": false,
+          |            "uploadedFiles": [
+          |               {
+          |                 "reference":"reference-3000",
+          |                 "fileStatus":"READY",
+          |                 "downloadUrl":"download.file",
+          |                 "uploadDetails": {
+          |                     "fileName":"file1.txt",
+          |                     "fileMimeType":"text/plain",
+          |                     "uploadTimestamp":"2018-04-24T09:30:00",
+          |                     "checksum":"check12345678",
+          |                     "size":987
+          |                 },
+          |                 "uploadFields": {
+          |                     "key": "abcxyz",
+          |                     "x-amz-algorithm": "md5"
+          |                 },
+          |                 "lastUpdated":"2018-04-24T09:30:00"
+          |               }
+          |            ]
+          |		}
+          |}
+          |""".stripMargin)
+      withCaptureOfLoggingFrom(logger) {
+        logs => {
+          val result: Result = await(controller.submitAppeal("HMRC-MTD-VAT~VRN~123456789", isLPP = false, penaltyNumber = "123456789", correlationId = correlationId)(fakeRequest.withJsonBody(appealsJson)))
+          result.header.status shouldBe OK
+          eventually {
+            logs.exists(_.getMessage.contains(PagerDutyKeys.RECEIVED_5XX_FROM_FILE_NOTIFICATION_ORCHESTRATOR.toString)) shouldBe true
+          }
+        }
+      }
+    }
+
+    "return 200 (OK) even if the file notification call fails (4xx response)" in new Setup {
+      when(mockAppealsService.submitAppeal(any(), any(), any(), any(), any()))
+        .thenReturn(Future.successful(Right(appealResponseModel)))
+      when(mockFileNotificationConnector.postFileNotifications(any())(any()))
+        .thenReturn(Future.successful(HttpResponse.apply(BAD_REQUEST, "")))
+
+      val appealsJson: JsValue = Json.parse(
+        """
+          |{
+          |    "sourceSystem": "MDTP",
+          |    "taxRegime": "VAT",
+          |    "customerReferenceNo": "123456789",
+          |    "dateOfAppeal": "2020-01-01T00:00:00",
+          |    "isLPP": true,
+          |    "appealSubmittedBy": "client",
+          |    "appealInformation": {
+          |						 "reasonableExcuse": "other",
+          |            "honestyDeclaration": true,
+          |            "startDateOfEvent": "2021-04-23T00:00",
+          |						 "statement": "This is a statement",
+          |            "lateAppeal": false,
+          |            "uploadedFiles": [
+          |               {
+          |                 "reference":"reference-3000",
+          |                 "fileStatus":"READY",
+          |                 "downloadUrl":"download.file",
+          |                 "uploadDetails": {
+          |                     "fileName":"file1.txt",
+          |                     "fileMimeType":"text/plain",
+          |                     "uploadTimestamp":"2018-04-24T09:30:00",
+          |                     "checksum":"check12345678",
+          |                     "size":987
+          |                 },
+          |                 "uploadFields": {
+          |                     "key": "abcxyz",
+          |                     "x-amz-algorithm": "md5"
+          |                 },
+          |                 "lastUpdated":"2018-04-24T09:30:00"
+          |               }
+          |            ]
+          |		}
+          |}
+          |""".stripMargin)
+      withCaptureOfLoggingFrom(logger) {
+        logs => {
+          val result: Result = await(controller.submitAppeal("HMRC-MTD-VAT~VRN~123456789", isLPP = false, penaltyNumber = "123456789", correlationId = correlationId)(fakeRequest.withJsonBody(appealsJson)))
+          result.header.status shouldBe OK
+          eventually {
+            logs.exists(_.getMessage.contains(PagerDutyKeys.RECEIVED_4XX_FROM_FILE_NOTIFICATION_ORCHESTRATOR.toString)) shouldBe true
+          }
+        }
+      }
     }
   }
 

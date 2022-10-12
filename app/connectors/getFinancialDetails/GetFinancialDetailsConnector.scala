@@ -19,12 +19,16 @@ package connectors.getFinancialDetails
 import java.time.LocalDate
 import java.util.UUID.randomUUID
 import config.AppConfig
-import connectors.parsers.getFinancialDetails.GetFinancialDetailsParser.GetFinancialDetailsResponse
+import connectors.parsers.getFinancialDetails.GetFinancialDetailsParser.{GetFinancialDetailsFailureResponse, GetFinancialDetailsResponse}
 import play.api.http.Status.INTERNAL_SERVER_ERROR
+
 import javax.inject.Inject
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse, UpstreamErrorResponse}
 import utils.Logger.logger
 import uk.gov.hmrc.http.HttpReads.Implicits._
+import utils.PagerDutyHelper
+import utils.PagerDutyHelper.PagerDutyKeys._
+
 import scala.concurrent.{ExecutionContext, Future}
 
 class GetFinancialDetailsConnector @Inject()(httpClient: HttpClient,
@@ -36,7 +40,18 @@ class GetFinancialDetailsConnector @Inject()(httpClient: HttpClient,
 
   def getFinancialDetails(vrn: String, dateFrom: LocalDate, dateTo: LocalDate)(implicit hc: HeaderCarrier): Future[GetFinancialDetailsResponse] = {
     httpClient.GET[GetFinancialDetailsResponse](url =
-      appConfig.getFinancialDetailsUrl(vrn) + appConfig.queryParametersForGetFinancialDetail(dateFrom, dateTo), headers = headers)
+      appConfig.getFinancialDetailsUrl(vrn) + appConfig.queryParametersForGetFinancialDetail(dateFrom, dateTo), headers = headers).recover {
+      case e: UpstreamErrorResponse => {
+        PagerDutyHelper.logStatusCode("getFinancialDetails", e.statusCode)(RECEIVED_4XX_FROM_1811_API, RECEIVED_5XX_FROM_1811_API)
+        logger.error(s"[GetFinancialDetailsConnector][getFinancialDetails] - Received ${e.statusCode} status from API 1811 call - returning status to caller")
+        Left(GetFinancialDetailsFailureResponse(e.statusCode))
+      }
+      case e: Exception => {
+        PagerDutyHelper.log("getFinancialDetails", UNKNOWN_EXCEPTION_CALLING_1811_API)
+        logger.error(s"[GetFinancialDetailsConnector][getFinancialDetails] - An unknown exception occurred - returning 500 back to caller - message: ${e.getMessage}")
+        Left(GetFinancialDetailsFailureResponse(INTERNAL_SERVER_ERROR))
+      }
+    }
   }
 
   def getFinancialDetailsForAPI(vrn: String,
@@ -61,6 +76,7 @@ class GetFinancialDetailsConnector @Inject()(httpClient: HttpClient,
         HttpResponse(e.statusCode, e.message)
       }
       case e: Exception => {
+        PagerDutyHelper.log("getFinancialDetailsForAPI", UNKNOWN_EXCEPTION_CALLING_1811_API)
         logger.error(s"[GetFinancialDetailsConnector][getFinancialDetailsForAPI] - An unknown exception occurred - returning 500 back to caller - message: ${e.getMessage}")
         HttpResponse(INTERNAL_SERVER_ERROR, "An unknown exception occurred. Contact the Penalties team for more information.")
       }

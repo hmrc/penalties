@@ -16,7 +16,7 @@
 
 package connectors.getPenaltyDetails
 
-import base.SpecBase
+import base.{LogCapturing, SpecBase}
 import config.AppConfig
 import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser.{GetPenaltyDetailsFailureResponse, GetPenaltyDetailsResponse, GetPenaltyDetailsSuccessResponse}
 import models.getPenaltyDetails.GetPenaltyDetails
@@ -26,10 +26,12 @@ import play.api.http.Status
 import play.api.libs.json.Json
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse, UpstreamErrorResponse}
+import utils.Logger.logger
+import utils.PagerDutyHelper.PagerDutyKeys
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class GetPenaltyDetailsConnectorSpec extends SpecBase {
+class GetPenaltyDetailsConnectorSpec extends SpecBase with LogCapturing {
   implicit val ec: ExecutionContext = ExecutionContext.Implicits.global
   implicit val hc: HeaderCarrier = HeaderCarrier()
   val mockHttpClient: HttpClient = mock(classOf[HttpClient])
@@ -142,6 +144,40 @@ class GetPenaltyDetailsConnectorSpec extends SpecBase {
       val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails("123456789"))
       result.isLeft shouldBe true
     }
+
+    "return a 500 when the call fails due to an UpstreamErrorResponse(5xx) exception" in new Setup {
+      when(mockHttpClient.GET[HttpResponse](Matchers.eq(s"/penalty/details/VATC/VRN/123456789"),
+        Matchers.any(),
+        Matchers.any())
+        (Matchers.any(),
+          Matchers.any(),
+          Matchers.any()))
+        .thenReturn(Future.failed(UpstreamErrorResponse.apply("", Status.INTERNAL_SERVER_ERROR)))
+      withCaptureOfLoggingFrom(logger) {
+        logs => {
+          val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails(vrn = "123456789"))
+          logs.exists(_.getMessage.contains(PagerDutyKeys.RECEIVED_5XX_FROM_1812_API.toString)) shouldBe true
+          result.isLeft shouldBe true
+        }
+      }
+    }
+
+    "return a 400 when the call fails due to an UpstreamErrorResponse(4xx) exception" in new Setup {
+      when(mockHttpClient.GET[HttpResponse](Matchers.eq(s"/penalty/details/VATC/VRN/123456789"),
+        Matchers.any(),
+        Matchers.any())
+        (Matchers.any(),
+          Matchers.any(),
+          Matchers.any()))
+        .thenReturn(Future.failed(UpstreamErrorResponse.apply("", Status.BAD_REQUEST)))
+      withCaptureOfLoggingFrom(logger) {
+        logs => {
+          val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails(vrn = "123456789"))
+          logs.exists(_.getMessage.contains(PagerDutyKeys.RECEIVED_4XX_FROM_1812_API.toString)) shouldBe true
+          result.isLeft shouldBe true
+        }
+      }
+    }
   }
 
   "getPenaltyDetailsForAPI" should {
@@ -209,9 +245,13 @@ class GetPenaltyDetailsConnectorSpec extends SpecBase {
           Matchers.any(),
           Matchers.any()))
         .thenReturn(Future.failed(new Exception("Something weird happened")))
-
-      val result: HttpResponse = await(connector.getPenaltyDetailsForAPI(vrn = "123456789", dateLimit = Some("09"))(HeaderCarrier()))
-      result.status shouldBe Status.INTERNAL_SERVER_ERROR
+      withCaptureOfLoggingFrom(logger) {
+        logs => {
+          val result: HttpResponse = await(connector.getPenaltyDetailsForAPI(vrn = "123456789", dateLimit = Some("09"))(HeaderCarrier()))
+          logs.exists(_.getMessage.contains(PagerDutyKeys.UNKNOWN_EXCEPTION_CALLING_1812_API.toString)) shouldBe true
+          result.status shouldBe Status.INTERNAL_SERVER_ERROR
+        }
+      }
     }
   }
 }

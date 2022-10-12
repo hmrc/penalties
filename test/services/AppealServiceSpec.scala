@@ -29,14 +29,14 @@ import uk.gov.hmrc.http.HeaderCarrier
 import java.time.LocalDateTime
 import scala.concurrent.{ExecutionContext, Future}
 
-class ETMPServiceSpec extends SpecBase {
+class AppealServiceSpec extends SpecBase {
   implicit val ec: ExecutionContext = ExecutionContext.Implicits.global
   implicit val hc: HeaderCarrier = HeaderCarrier(otherHeaders = Seq("CorrelationId" -> "id"))
   val mockAppealsConnector: PEGAConnector = mock(classOf[PEGAConnector])
   val correlationId: String = "correlationId"
 
   class Setup {
-    val service = new ETMPService(
+    val service = new AppealService(
       mockAppealsConnector
     )
     reset(mockAppealsConnector)

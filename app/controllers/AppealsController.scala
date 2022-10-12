@@ -32,18 +32,19 @@ import models.upload.UploadJourney
 import play.api.Configuration
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, ControllerComponents, Result}
-import services.{ETMPService, GetPenaltyDetailsService}
+import services.{AppealService, GetPenaltyDetailsService}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import utils.Logger.logger
-import utils.{PenaltyPeriodHelper, RegimeHelper, UUIDGenerator}
+import utils.PagerDutyHelper.PagerDutyKeys._
+import utils.{PagerDutyHelper, PenaltyPeriodHelper, RegimeHelper, UUIDGenerator}
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class AppealsController @Inject()(val appConfig: AppConfig,
-                                  etmpService: ETMPService,
+                                  appealService: AppealService,
                                   getPenaltyDetailsService: GetPenaltyDetailsService,
                                   idGenerator: UUIDGenerator,
                                   fileNotificationOrchestratorConnector: FileNotificationOrchestratorConnector,
@@ -55,7 +56,7 @@ class AppealsController @Inject()(val appConfig: AppConfig,
       val vrn = RegimeHelper.getIdentifierFromEnrolmentKey(enrolmentKey)
       getPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(vrn).map {
         _.fold(
-          handleFailureResponse(_, vrn, enrolmentKey),
+          handleFailureResponse(_, vrn, enrolmentKey)("getAppealDataForPenalty"),
           success => {
             checkAndReturnResponseForPenaltyData(success.asInstanceOf[GetPenaltyDetailsSuccessResponse].penaltyDetails, penaltyId, enrolmentKey, penaltyType)
           }
@@ -134,7 +135,7 @@ class AppealsController @Inject()(val appConfig: AppConfig,
               Future(BadRequest("Failed to parse to model"))
             },
             appealSubmission => {
-              etmpService.submitAppeal(appealSubmission, enrolmentKey, isLPP, penaltyNumber, correlationId).map {
+              appealService.submitAppeal(appealSubmission, enrolmentKey, isLPP, penaltyNumber, correlationId).map {
                 _.fold(
                   error => {
                     logger.error(s"[AppealsController][submitAppeal] Received status ${error.status}, with error message: ${error.body}")
@@ -159,7 +160,8 @@ class AppealsController @Inject()(val appConfig: AppConfig,
                             case OK =>
                               logger.debug(s"[AppealsController][submitAppeal] - Received OK from file notification orchestrator")
                             case status =>
-                              logger.error(s"[AppealsController][submitAppeal] - Received unknown response (${status}) from file notification orchestrator. Response body: ${response.body}")
+                              PagerDutyHelper.logStatusCode("submitAppeal", status)(RECEIVED_4XX_FROM_FILE_NOTIFICATION_ORCHESTRATOR, RECEIVED_5XX_FROM_FILE_NOTIFICATION_ORCHESTRATOR)
+                              logger.error(s"[AppealsController][submitAppeal] - Received unknown response ($status) from file notification orchestrator. Response body: ${response.body}")
                           }
                       }
                     }
@@ -209,7 +211,7 @@ class AppealsController @Inject()(val appConfig: AppConfig,
       val vrn = RegimeHelper.getIdentifierFromEnrolmentKey(enrolmentKey)
       getPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(vrn).map {
         _.fold(
-          handleFailureResponse(_, vrn, enrolmentKey),
+          handleFailureResponse(_, vrn, enrolmentKey)("getMultiplePenaltyData"),
           success => {
             val penaltyDetails = success.asInstanceOf[GetPenaltyDetailsSuccessResponse].penaltyDetails
             val lppPenaltyIdInPenaltyDetailsPayload: Option[LPPDetails] = penaltyDetails.latePaymentPenalty.flatMap {
@@ -240,19 +242,21 @@ class AppealsController @Inject()(val appConfig: AppConfig,
     }
   }
 
-  private def handleFailureResponse(response: GetPenaltyDetailsParser.GetPenaltyDetailsFailure, vrn: String, enrolmentKey: String): Result = {
+  private def handleFailureResponse(response: GetPenaltyDetailsParser.GetPenaltyDetailsFailure,
+                                    vrn: String, enrolmentKey: String)(callingMethod: String): Result = {
     response match {
       case GetPenaltyDetailsParser.GetPenaltyDetailsFailureResponse(status) if status == NOT_FOUND => {
-        logger.info(s"[AppealsController][getAppealDataForPenalty] - 1812 call returned 404 for enrolment key: $enrolmentKey")
+        logger.info(s"[AppealsController][$callingMethod] - 1812 call returned 404 for enrolment key: $enrolmentKey")
         NotFound(s"A downstream call returned 404 for VRN: $vrn")
       }
       case GetPenaltyDetailsParser.GetPenaltyDetailsFailureResponse(status) => {
-        logger.info(s"[AppealsController][getAppealDataForPenalty] - 1812 call returned an unexpected status: $status")
+        logger.error(s"[AppealsController][$callingMethod] - 1812 call returned an unexpected status: $status")
         InternalServerError(s"A downstream call returned an unexpected status: $status")
       }
       case GetPenaltyDetailsParser.GetPenaltyDetailsMalformed => {
-        logger.error(s"[AppealsController][getAppealDataForPenalty] - Failed to parse penalty details response")
-        InternalServerError(s"We were unable to parse penalty data.")
+        PagerDutyHelper.log(callingMethod, MALFORMED_RESPONSE_FROM_1812_API)
+        logger.error(s"[AppealsController][$callingMethod] - Failed to parse penalty details response")
+        InternalServerError("We were unable to parse penalty data.")
       }
     }
   }

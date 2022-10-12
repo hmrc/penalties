@@ -31,7 +31,8 @@ import services.auditing.AuditService
 import services.{APIService, GetPenaltyDetailsService}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import utils.Logger.logger
-import utils.{DateHelper, RegimeHelper}
+import utils.PagerDutyHelper.PagerDutyKeys._
+import utils.{DateHelper, PagerDutyHelper, RegimeHelper}
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
@@ -64,6 +65,7 @@ class APIController @Inject()(auditService: AuditService,
               InternalServerError(s"A downstream call returned an unexpected status: $status")
             }
             case GetPenaltyDetailsParser.GetPenaltyDetailsMalformed => {
+              PagerDutyHelper.log("getSummaryDataForVRN", MALFORMED_RESPONSE_FROM_1812_API)
               logger.error(s"[APIController][getSummaryDataForVRN] - Failed to parse penalty details response")
               InternalServerError(s"We were unable to parse penalty data.")
             }
@@ -137,8 +139,9 @@ class APIController @Inject()(auditService: AuditService,
             case NOT_FOUND =>
               logger.debug("[APIController][getFinancialDetails] Error received: " + res)
               Status(res.status)(Json.toJson(res.body))
-            case _ =>
-              logger.warn(s"[APIController][getFinancialDetails] status ${res.status} returned from EIS ")
+            case status =>
+              PagerDutyHelper.logStatusCode("getFinancialDetails", status)(RECEIVED_4XX_FROM_1811_API, RECEIVED_5XX_FROM_1811_API)
+              logger.warn(s"[APIController][getFinancialDetails] status ${res.status} returned from EIS")
               Status(res.status)(Json.toJson(res.body))
           }
         })
@@ -159,8 +162,9 @@ class APIController @Inject()(auditService: AuditService,
             case NOT_FOUND =>
               logger.debug("[APIController][getPenaltyDetails] Error received: " + res)
               Status(res.status)(Json.toJson(res.body))
-            case _ =>
-              logger.warn(s"[APIController][getPenaltyDetails] status ${res.status} returned from EIS ")
+            case status =>
+              PagerDutyHelper.logStatusCode("getPenaltyDetails", status)(RECEIVED_4XX_FROM_1812_API, RECEIVED_5XX_FROM_1812_API)
+              logger.warn(s"[APIController][getPenaltyDetails] status ${res.status} returned from EIS")
               Status(res.status)(Json.toJson(res.body))
           }
         }

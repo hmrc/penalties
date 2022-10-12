@@ -26,7 +26,8 @@ import services.auditing.AuditService
 import services.{GetFinancialDetailsService, GetPenaltyDetailsService, PenaltiesFrontendService}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import utils.Logger.logger
-import utils.{DateHelper, RegimeHelper}
+import utils.PagerDutyHelper.PagerDutyKeys._
+import utils.{DateHelper, PagerDutyHelper, RegimeHelper}
 
 import javax.inject.Inject
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -59,6 +60,7 @@ class PenaltiesFrontendController @Inject()(
             Future(InternalServerError(s"A downstream call returned an unexpected status: $status"))
           }
           case GetPenaltyDetailsMalformed => {
+            PagerDutyHelper.log("getPenaltiesData", MALFORMED_RESPONSE_FROM_1812_API)
             logger.error(s"[PenaltiesFrontendController][getPenaltiesData] - Failed to parse penalty details response")
             Future(InternalServerError(s"We were unable to parse penalty data."))
           }
@@ -96,6 +98,7 @@ class PenaltiesFrontendController @Inject()(
             InternalServerError(s"A downstream call returned an unexpected status: $status")
           }
           case GetFinancialDetailsMalformed => {
+            PagerDutyHelper.log("getPenaltiesData", MALFORMED_RESPONSE_FROM_1811_API)
             logger.error(s"[PenaltiesFrontendController][handleGetFinancialDetailsCall] - Failed to parse financial details response")
             InternalServerError(s"We were unable to parse penalty data.")
           }

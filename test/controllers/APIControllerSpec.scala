@@ -31,7 +31,7 @@ import play.api.http.Status
 import play.api.libs.json.Json
 import play.api.test.Helpers._
 import services.auditing.AuditService
-import services.{APIService, ETMPService, GetPenaltyDetailsService}
+import services.{APIService, AppealService, GetPenaltyDetailsService}
 import uk.gov.hmrc.http.HttpResponse
 import utils.DateHelper
 
@@ -40,7 +40,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 class APIControllerSpec extends SpecBase with FeatureSwitching {
-  val mockETMPService: ETMPService = mock(classOf[ETMPService])
+  val mockAppealsService: AppealService = mock(classOf[AppealService])
   val mockAuditService: AuditService = mock(classOf[AuditService])
   val dateHelper: DateHelper = injector.instanceOf(classOf[DateHelper])
   val mockAPIService: APIService = mock(classOf[APIService])
@@ -50,7 +50,7 @@ class APIControllerSpec extends SpecBase with FeatureSwitching {
   implicit val config: Configuration = appConfig.config
 
   class Setup(isFSEnabled: Boolean = false) {
-    reset(mockETMPService, mockAuditService, mockAPIService)
+    reset(mockAppealsService, mockAuditService, mockAPIService)
     val controller = new APIController(
       mockAuditService,
       mockAPIService,

@@ -16,7 +16,7 @@
 
 package controllers
 
-import base.SpecBase
+import base.{LogCapturing, SpecBase}
 import config.AppConfig
 import connectors.parsers.getFinancialDetails.GetFinancialDetailsParser.{GetFinancialDetailsFailureResponse, GetFinancialDetailsMalformed, GetFinancialDetailsNoContent, GetFinancialDetailsSuccessResponse}
 import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser.{GetPenaltyDetailsFailureResponse, GetPenaltyDetailsMalformed, GetPenaltyDetailsNoContent, GetPenaltyDetailsSuccessResponse}
@@ -31,15 +31,17 @@ import play.api.http.Status
 import play.api.libs.json.Json
 import play.api.test.Helpers._
 import services.auditing.AuditService
-import services.{ETMPService, GetFinancialDetailsService, GetPenaltyDetailsService, PenaltiesFrontendService}
+import services.{AppealService, GetFinancialDetailsService, GetPenaltyDetailsService, PenaltiesFrontendService}
 import utils.DateHelper
+import utils.Logger.logger
+import utils.PagerDutyHelper.PagerDutyKeys
 
 import java.time.LocalDate
 import scala.concurrent.Future
 
-class PenaltiesFrontendControllerSpec extends SpecBase {
+class PenaltiesFrontendControllerSpec extends SpecBase with LogCapturing {
   val mockAppConfig: AppConfig = mock(classOf[AppConfig])
-  val mockETMPService: ETMPService = mock(classOf[ETMPService])
+  val mockAppealService: AppealService = mock(classOf[AppealService])
   val mockAuditService: AuditService = mock(classOf[AuditService])
   val dateHelper: DateHelper = injector.instanceOf[DateHelper]
   val mockGetPenaltyDetailsService: GetPenaltyDetailsService = mock(classOf[GetPenaltyDetailsService])
@@ -49,7 +51,7 @@ class PenaltiesFrontendControllerSpec extends SpecBase {
   class Setup(isFSEnabled: Boolean = true) {
     reset(
       mockAppConfig,
-      mockETMPService,
+      mockAppealService,
       mockAuditService,
       mockGetPenaltyDetailsService,
       mockGetFinancialDetailsService,
@@ -221,8 +223,13 @@ class PenaltiesFrontendControllerSpec extends SpecBase {
     s"return ISE (${Status.INTERNAL_SERVER_ERROR}) when the 1812 call response body is malformed" in new Setup(isFSEnabled = true) {
       when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(Matchers.any())(Matchers.any()))
         .thenReturn(Future.successful(Left(GetPenaltyDetailsMalformed)))
-      val result = controller.getPenaltiesData("123456789", Some(""))(fakeRequest)
-      status(result) shouldBe Status.INTERNAL_SERVER_ERROR
+      withCaptureOfLoggingFrom(logger) {
+        logs => {
+          val result = await(controller.getPenaltiesData("123456789", Some(""))(fakeRequest))
+          result.header.status shouldBe Status.INTERNAL_SERVER_ERROR
+          logs.exists(_.getMessage.contains(PagerDutyKeys.MALFORMED_RESPONSE_FROM_1812_API.toString)) shouldBe true
+        }
+      }
     }
 
     s"return NOT_FOUND (${Status.NOT_FOUND}) when the 1812 call returns no data" in new Setup(isFSEnabled = true) {
@@ -253,8 +260,13 @@ class PenaltiesFrontendControllerSpec extends SpecBase {
         .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetailsFullAPIResponse))))
       when(mockGetFinancialDetailsService.getDataFromFinancialServiceForVATVCN(Matchers.any())(Matchers.any()))
         .thenReturn(Future.successful(Left(GetFinancialDetailsMalformed)))
-      val result = controller.getPenaltiesData("123456789", Some(""))(fakeRequest)
-      status(result) shouldBe Status.INTERNAL_SERVER_ERROR
+      withCaptureOfLoggingFrom(logger) {
+        logs => {
+          val result = await(controller.getPenaltiesData("123456789", Some(""))(fakeRequest))
+          result.header.status shouldBe Status.INTERNAL_SERVER_ERROR
+          logs.exists(_.getMessage.contains(PagerDutyKeys.MALFORMED_RESPONSE_FROM_1811_API.toString)) shouldBe true
+        }
+      }
     }
 
     s"return NOT_FOUND (${Status.NOT_FOUND}) when the 1811 call returns no data (if penalty data contains LPPs - edge case)" in new Setup(isFSEnabled = true) {

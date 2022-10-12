@@ -16,19 +16,21 @@
 
 package connectors
 
-import base.SpecBase
+import base.{LogCapturing, SpecBase}
 import config.AppConfig
 import connectors.parsers.ComplianceParser._
 import models.compliance.{CompliancePayload, ComplianceStatusEnum, ObligationDetail, ObligationIdentification}
 import org.mockito.Mockito._
 import org.mockito.{ArgumentCaptor, Matchers}
 import play.api.test.Helpers._
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient}
+import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, UpstreamErrorResponse}
+import utils.Logger.logger
+import utils.PagerDutyHelper.PagerDutyKeys
 
 import java.time.{LocalDate, LocalDateTime}
 import scala.concurrent.{ExecutionContext, Future}
 
-class ComplianceConnectorSpec extends SpecBase {
+class ComplianceConnectorSpec extends SpecBase with LogCapturing {
   implicit val ec: ExecutionContext = ExecutionContext.Implicits.global
   val mockHttpClient: HttpClient = mock(classOf[HttpClient])
   val mockAppConfig: AppConfig = mock(classOf[AppConfig])
@@ -163,6 +165,72 @@ class ComplianceConnectorSpec extends SpecBase {
         val result: CompliancePayloadResponse =
           await(connector.getComplianceData("123456789", "2020-01-01", "2020-12-31")(HeaderCarrier()))
         result.isLeft shouldBe true
+      }
+
+      "the call returns a UpstreamErrorResponse(4xx) exception" in new Setup {
+        when(mockAppConfig.getComplianceData(Matchers.eq("123456789"), Matchers.any(), Matchers.any()))
+          .thenReturn("/123456789")
+        when(mockAppConfig.eisEnvironment).thenReturn("env")
+        when(mockAppConfig.eiOutboundBearerToken).thenReturn("Bearer 12345")
+        when(mockHttpClient.GET[CompliancePayloadResponse](Matchers.eq("/123456789"),
+          Matchers.any(),
+          Matchers.any())
+          (Matchers.any(),
+            Matchers.any(),
+            Matchers.any()))
+          .thenReturn(Future.failed(UpstreamErrorResponse.apply("", BAD_REQUEST)))
+        withCaptureOfLoggingFrom(logger) {
+          logs => {
+            val result: CompliancePayloadResponse =
+              await(connector.getComplianceData("123456789", "2020-01-01", "2020-12-31")(HeaderCarrier()))
+            logs.exists(_.getMessage.contains(PagerDutyKeys.RECEIVED_4XX_FROM_1330_API.toString)) shouldBe true
+            result.isLeft shouldBe true
+          }
+        }
+      }
+
+      "the call returns a UpstreamErrorResponse(5xx) exception" in new Setup {
+        when(mockAppConfig.getComplianceData(Matchers.eq("123456789"), Matchers.any(), Matchers.any()))
+          .thenReturn("/123456789")
+        when(mockAppConfig.eisEnvironment).thenReturn("env")
+        when(mockAppConfig.eiOutboundBearerToken).thenReturn("Bearer 12345")
+        when(mockHttpClient.GET[CompliancePayloadResponse](Matchers.eq("/123456789"),
+          Matchers.any(),
+          Matchers.any())
+          (Matchers.any(),
+            Matchers.any(),
+            Matchers.any()))
+          .thenReturn(Future.failed(UpstreamErrorResponse.apply("", INTERNAL_SERVER_ERROR)))
+        withCaptureOfLoggingFrom(logger) {
+          logs => {
+            val result: CompliancePayloadResponse =
+              await(connector.getComplianceData("123456789", "2020-01-01", "2020-12-31")(HeaderCarrier()))
+            logs.exists(_.getMessage.contains(PagerDutyKeys.RECEIVED_5XX_FROM_1330_API.toString)) shouldBe true
+            result.isLeft shouldBe true
+          }
+        }
+      }
+
+      "the call returns an exception" in new Setup {
+        when(mockAppConfig.getComplianceData(Matchers.eq("123456789"), Matchers.any(), Matchers.any()))
+          .thenReturn("/123456789")
+        when(mockAppConfig.eisEnvironment).thenReturn("env")
+        when(mockAppConfig.eiOutboundBearerToken).thenReturn("Bearer 12345")
+        when(mockHttpClient.GET[CompliancePayloadResponse](Matchers.eq("/123456789"),
+          Matchers.any(),
+          Matchers.any())
+          (Matchers.any(),
+            Matchers.any(),
+            Matchers.any()))
+          .thenReturn(Future.failed(new Exception("failed")))
+        withCaptureOfLoggingFrom(logger) {
+          logs => {
+            val result: CompliancePayloadResponse =
+              await(connector.getComplianceData("123456789", "2020-01-01", "2020-12-31")(HeaderCarrier()))
+            logs.exists(_.getMessage.contains(PagerDutyKeys.UNKNOWN_EXCEPTION_CALLING_1330_API.toString)) shouldBe true
+            result.isLeft shouldBe true
+          }
+        }
       }
     }
   }

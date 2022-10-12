@@ -24,8 +24,8 @@ import utils.Logger.logger
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class ETMPService @Inject()(appealsConnector: PEGAConnector)
-                           (implicit ec: ExecutionContext) {
+class AppealService @Inject()(appealsConnector: PEGAConnector)
+                             (implicit ec: ExecutionContext) {
 
   def submitAppeal(appealSubmission: AppealSubmission,
                    enrolmentKey: String, isLPP: Boolean, penaltyNumber: String, correlationId: String): Future[Either[AppealsParser.ErrorResponse, AppealResponseModel]]= {
@@ -33,11 +33,11 @@ class ETMPService @Inject()(appealsConnector: PEGAConnector)
     appealsConnector.submitAppeal(appealSubmission, enrolmentKey, isLPP, penaltyNumber, correlationId).flatMap {
       _.fold(
         error => {
-          logger.error(s"[ETMPService][submitAppeal] - Submit appeal call failed with error: ${error.body} and status: ${error.status}")
+          logger.error(s"[AppealService][submitAppeal] - Submit appeal call failed with error: ${error.body} and status: ${error.status}")
           Future(Left(error))
         },
         responseModel => {
-          logger.debug(s"[ETMPService][submitAppeal] - Retrieving response model for penalty: $penaltyNumber")
+          logger.debug(s"[AppealService][submitAppeal] - Retrieving response model for penalty: $penaltyNumber")
           Future(Right(responseModel))
         }
       )

@@ -17,11 +17,13 @@
 package connectors.getPenaltyDetails
 
 import config.AppConfig
-import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser.GetPenaltyDetailsResponse
+import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser.{GetPenaltyDetailsFailureResponse, GetPenaltyDetailsResponse}
 import play.api.http.Status.INTERNAL_SERVER_ERROR
 import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse, UpstreamErrorResponse}
 import utils.Logger.logger
+import utils.PagerDutyHelper
+import utils.PagerDutyHelper.PagerDutyKeys._
 
 import java.util.UUID.randomUUID
 import javax.inject.Inject
@@ -37,7 +39,20 @@ class GetPenaltyDetailsConnector @Inject()(httpClient: HttpClient,
   def getPenaltyDetails(vrn: String)(implicit hc: HeaderCarrier): Future[GetPenaltyDetailsResponse] = {
     val url = appConfig.getPenaltyDetailsUrl + vrn
     logger.debug(s"[GetPenaltyDetailsConnector][getPenaltyDetails] - Calling GET $url \nHeaders: $headers")
-    httpClient.GET[GetPenaltyDetailsResponse](url, Seq.empty[(String, String)], headers)
+    httpClient.GET[GetPenaltyDetailsResponse](url, Seq.empty[(String, String)], headers).recover {
+      case e: UpstreamErrorResponse => {
+        PagerDutyHelper.logStatusCode("getPenaltyDetails", e.statusCode)(RECEIVED_4XX_FROM_1812_API, RECEIVED_5XX_FROM_1812_API)
+        logger.error(s"[GetPenaltyDetailsConnector][getPenaltyDetails] -" +
+          s" Received ${e.statusCode} status from API 1812 call - returning status to caller")
+        Left(GetPenaltyDetailsFailureResponse(e.statusCode))
+      }
+      case e: Exception => {
+        PagerDutyHelper.log("getPenaltyDetails", UNKNOWN_EXCEPTION_CALLING_1812_API)
+        logger.error(s"[GetPenaltyDetailsConnector][getPenaltyDetails] -" +
+          s" An unknown exception occurred - returning 500 back to caller - message: ${e.getMessage}")
+        Left(GetPenaltyDetailsFailureResponse(INTERNAL_SERVER_ERROR))
+      }
+    }
   }
 
   def getPenaltyDetailsForAPI(vrn: String, dateLimit: Option[String])(implicit hc: HeaderCarrier): Future[HttpResponse] = {
@@ -49,6 +64,7 @@ class GetPenaltyDetailsConnector @Inject()(httpClient: HttpClient,
         HttpResponse(e.statusCode, e.message)
       }
       case e: Exception => {
+        PagerDutyHelper.log("getPenaltyDetailsForAPI", UNKNOWN_EXCEPTION_CALLING_1812_API)
         logger.error(s"[GetPenaltyDetailsConnector][getPenaltyDetailsForAPI] -" +
           s" An unknown exception occurred - returning 500 back to caller - message: ${e.getMessage}")
         HttpResponse(INTERNAL_SERVER_ERROR, "An unknown exception occurred. Contact the Penalties team for more information.")
