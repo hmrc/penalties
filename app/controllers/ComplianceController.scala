@@ -20,6 +20,7 @@ import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import services.ComplianceService
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
+import utils.Logger.logger
 
 import javax.inject.Inject
 import scala.concurrent.ExecutionContext
@@ -32,7 +33,10 @@ class ComplianceController @Inject()(complianceService: ComplianceService,
       complianceService.getComplianceData(vrn, fromDate, toDate).map {
         _.fold(
           error => Status(error),
-          model => Ok(Json.toJson(model))
+          model => {
+            logger.info(s"[ComplianceController][getComplianceData] - 1330 call returned 200 for VRN: $vrn")
+            Ok(Json.toJson(model))
+          }
         )
       }
     }

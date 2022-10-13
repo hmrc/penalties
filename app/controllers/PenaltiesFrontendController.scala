@@ -48,7 +48,7 @@ class PenaltiesFrontendController @Inject()(
       getPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(vrn).flatMap {
         _.fold({
           case GetPenaltyDetailsNoContent => {
-            logger.info(s"[PenaltiesFrontendController][getPenaltiesData] - Received 404 for VRN: $vrn with NO_DATA_FOUND in response body")
+            logger.info(s"[PenaltiesFrontendController][getPenaltiesData] - 1812 call returned 404 for VRN: $vrn with NO_DATA_FOUND in response body")
             Future(NoContent)
           }
           case GetPenaltyDetailsFailureResponse(status) if status == NOT_FOUND => {
@@ -61,11 +61,12 @@ class PenaltiesFrontendController @Inject()(
           }
           case GetPenaltyDetailsMalformed => {
             PagerDutyHelper.log("getPenaltiesData", MALFORMED_RESPONSE_FROM_1812_API)
-            logger.error(s"[PenaltiesFrontendController][getPenaltiesData] - Failed to parse penalty details response")
+            logger.error(s"[PenaltiesFrontendController][getPenaltiesData] - 1812 call returned invalid body - failed to parse penalty details response")
             Future(InternalServerError(s"We were unable to parse penalty data."))
           }
         },
           penaltyDetailsSuccess => {
+            logger.info(s"[PenaltiesFrontendController][getPenaltiesData] - 1812 call returned 200 for VRN: $vrn")
             handleAndCombineGetFinancialDetailsData(penaltyDetailsSuccess.asInstanceOf[GetPenaltyDetailsSuccessResponse].penaltyDetails, enrolmentKey, arn)
           }
         )
@@ -80,7 +81,7 @@ class PenaltiesFrontendController @Inject()(
       _.fold(
         {
           case GetFinancialDetailsNoContent => {
-            logger.info(s"[PenaltiesFrontendController][handleGetFinancialDetailsCall] - Received 404 for VRN: $vrn with NO_DATA_FOUND in response body")
+            logger.info(s"[PenaltiesFrontendController][handleGetFinancialDetailsCall] - 1811 call returned 404 for VRN: $vrn with NO_DATA_FOUND in response body")
             if (penaltyDetails.latePaymentPenalty.isEmpty ||
               penaltyDetails.latePaymentPenalty.get.details.isEmpty ||
               penaltyDetails.latePaymentPenalty.get.details.get.isEmpty) {
@@ -99,13 +100,14 @@ class PenaltiesFrontendController @Inject()(
           }
           case GetFinancialDetailsMalformed => {
             PagerDutyHelper.log("getPenaltiesData", MALFORMED_RESPONSE_FROM_1811_API)
-            logger.error(s"[PenaltiesFrontendController][handleGetFinancialDetailsCall] - Failed to parse financial details response")
+            logger.error(s"[PenaltiesFrontendController][handleGetFinancialDetailsCall] - 1811 call returned invalid body - failed to parse financial details response")
             InternalServerError(s"We were unable to parse penalty data.")
           }
         },
         financialDetailsSuccess => {
           val newPenaltyDetails = penaltiesFrontendService.combineAPIData(penaltyDetails,
             financialDetailsSuccess.asInstanceOf[GetFinancialDetailsSuccessResponse].financialDetails)
+          logger.info(s"[PenaltiesFrontendController][handleGetFinancialDetailsCall] - 1811 call returned 200 for VRN: $vrn")
           returnResponse(newPenaltyDetails, enrolmentKey, arn)
         }
       )
