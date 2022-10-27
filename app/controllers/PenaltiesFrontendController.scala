@@ -30,8 +30,7 @@ import utils.PagerDutyHelper.PagerDutyKeys._
 import utils.{DateHelper, PagerDutyHelper, RegimeHelper}
 
 import javax.inject.Inject
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 class PenaltiesFrontendController @Inject()(
                                              auditService: AuditService,
@@ -40,7 +39,7 @@ class PenaltiesFrontendController @Inject()(
                                              penaltiesFrontendService: PenaltiesFrontendService,
                                              dateHelper: DateHelper,
                                              cc: ControllerComponents
-                                           ) extends BackendController(cc) {
+                                           )(implicit ec: ExecutionContext) extends BackendController(cc) {
 
   def getPenaltiesData(enrolmentKey: String, arn: Option[String] = None): Action[AnyContent] = Action.async {
     implicit request => {

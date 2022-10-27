@@ -37,6 +37,7 @@ import utils.Logger.logger
 import utils.PagerDutyHelper.PagerDutyKeys
 
 import java.time.LocalDate
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 class PenaltiesFrontendControllerSpec extends SpecBase with LogCapturing {
