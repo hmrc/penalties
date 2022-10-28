@@ -26,6 +26,7 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers._
 
 import java.time.LocalDate
+import scala.language.postfixOps
 
 class FeatureSwitchControllerSpec extends SpecBase {
   val mockConfig: Configuration = mock(classOf[Configuration])

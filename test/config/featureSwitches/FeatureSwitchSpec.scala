@@ -22,6 +22,7 @@ import org.mockito.Mockito.{mock, reset, when}
 import play.api.Configuration
 
 import java.time.LocalDate
+import scala.language.postfixOps
 
 class FeatureSwitchSpec extends SpecBase {
 
