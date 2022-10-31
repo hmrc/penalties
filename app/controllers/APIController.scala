@@ -107,26 +107,35 @@ class APIController @Inject()(auditService: AuditService,
   }
 
   def getFinancialDetails(vrn: String,
-                          docNumber: Option[String],
+                          searchType: Option[String],
+                          searchItem: Option[String],
+                          dateType: Option[String],
                           dateFrom: Option[String],
                           dateTo: Option[String],
-                          onlyOpenItems: Boolean,
-                          includeStatistical: Boolean,
-                          includeLocks: Boolean,
-                          calculateAccruedInterest: Boolean,
-                          removePOA: Boolean,
-                          customerPaymentInformation: Boolean): Action[AnyContent] = Action.async {
+                          includeClearedItems: Option[Boolean],
+                          includeStatisticalItems: Option[Boolean],
+                          includePaymentOnAccount: Option[Boolean],
+                          addRegimeTotalisation: Option[Boolean],
+                          addLockInformation: Option[Boolean],
+                          addPenaltyDetails: Option[Boolean],
+                          addPostedInterestDetails: Option[Boolean],
+                          addAccruingInterestDetails: Option[Boolean]): Action[AnyContent] = Action.async {
     implicit request => {
       val response = getFinancialDetailsConnector.getFinancialDetailsForAPI(vrn,
-        docNumber,
+        searchType,
+        searchItem,
+        dateType,
         dateFrom,
         dateTo,
-        onlyOpenItems,
-        includeStatistical,
-        includeLocks,
-        calculateAccruedInterest,
-        removePOA,
-        customerPaymentInformation)
+        includeClearedItems,
+        includeStatisticalItems,
+        includePaymentOnAccount,
+        addRegimeTotalisation,
+        addLockInformation,
+        addPenaltyDetails,
+        addPostedInterestDetails,
+        addAccruingInterestDetails
+      )
 
       response.map(
         res => {
