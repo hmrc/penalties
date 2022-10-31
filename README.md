@@ -184,47 +184,51 @@ Example URL - `/penalties/compliance/des/compliance-data?VRN=1234567890&fromDate
 | No data found for VRN    | 404    |
 | Internal server error    | 500    |
 
-## Get Financial Details (API 1811)
+### Get Financial Details (API 1811)
 #### `GET        /penalties/penalty/financial-data/VRN/:VRN/VATC`
 
 Gets the financial details for the specified VRN.
 
 The following query parameters can be specified:
 
-| Parameter                    | Type              | Mandatory | Comments                                                                                      |
-|------------------------------|-------------------|-----------|-----------------------------------------------------------------------------------------------|
-| `docNumber`                  | String            | No*       | Mandatory when `onlyOpenItems = false` and date range (`dateFrom` and `dateTo`) not specified |
-| `dateFrom`                   | Date (YYYY-MM-DD) | No*       | Mandatory when `onlyOpenItems = false` and `docNumber` not supplied                           |
-| `dateTo`                     | Date (YYYY-MM-DD) | No*       | Mandatory when `onlyOpenItems = false` and `docNumber` not supplied                           |
-| `onlyOpenItems`              | Boolean           | Yes       |                                                                                               |
-| `includeStatistical`         | Boolean           | Yes       |                                                                                               | 
-| `includeLocks`               | Boolean           | Yes       |                                                                                               |
-| `calculateAccruedInterest`   | Boolean           | Yes       |                                                                                               |
-| `removePOA`                  | Boolean           | Yes       |                                                                                               |
-| `customerPaymentInformation` | Boolean           | Yes       |                                                                                               |
+| Parameter                    | Type              | Mandatory |
+|------------------------------|-------------------|-----------|
+| `searchType`                 | String            | No        |
+| `searchItem`                 | String            | No        |
+| `dateType`                   | String            | No        |
+| `dateFrom`                   | Date (YYYY-MM-DD) | No        |
+| `dateTo`                     | Date (YYYY-MM-DD) | No        |
+| `includeClearedItems`        | Boolean           | No        |
+| `includeStatisticalItems`    | Boolean           | No        |
+| `includePaymentOnAccount`    | Boolean           | No        |
+| `addRegimeTotalisation`      | Boolean           | No        |
+| `addLockInformation`         | Boolean           | No        |
+| `addPenaltyDetails`          | Boolean           | No        |
+| `addPostedInterestDetails`   | Boolean           | No        |
+| `addAccruingInterestDetails` | Boolean           | No        |
 
-Example URL - `/penalties/penalty/financial-data/VRN/:VRN/VATC?dateFrom=2022-01-01&dateTo=2024-01-01&onlyOpenItems=false&includeStatistical=false&includeLocks=false&calculateAccruedInterest=false&removePOA=false&customerPaymentInformation=true`
+Example URL - `/penalties/penalty/financial-data/VRN/:VRN/VATC?searchType=CHGREF&searchItem=XC00178236592&dateType=BILLING&dateFrom=2020-10-03&dateTo=2021-07-12&includeClearedItems=false&includeStatistical=true&includePaymentOnAccount=true&addRegimeTotalisation=false&addLockInformation=true&addPenaltyDetails=true&addPostedInterestDetails=true&addAccruingInterestDetails=true`
 
-| Scenario                                                                                         | Status |
-|--------------------------------------------------------------------------------------------------|--------|
-| Successful retrieval                                                                             | 200    |
+| Scenario                                                                                                                                        | Status |
+|-------------------------------------------------------------------------------------------------------------------------------------------------|--------|
+| Successful retrieval                                                                                                                            | 200    |
 | Bad request due to one or more invalid parameters, see EIS spec for details of different errors (error message body is passed through from EIS) | 400    |
-| No data found for VRN                                                                            | 404    |
-| Internal server error                                                                            | 500    |
-| Dependent systems are not available                                                              | 503    |
+| No data found for VRN                                                                                                                           | 404    |
+| Internal server error                                                                                                                           | 500    |
+| Dependent systems are not available                                                                                                             | 503    |
 
-The data returned is outlined in v0.4.0 of the GetFinancialDetails API specification.
+The data returned is outlined in v2.3.0 of the GetFinancialDetails API specification.
 
-## Get Penalty Details (API 1812)
+### Get Penalty Details (API 1812)
 ### `GET        /penalties/penalty-details/VAT/VRN/:VRN`
 
 Gets the penalty details for specified VRN.
 
 The following query parameter can be specified
 
-| Parameter                    | Type              | Mandatory | Comments                                                                                      |
-|------------------------------|-------------------|-----------|-----------------------------------------------------------------------------------------------|
-| `dateLimit`                  | String            | No*       | This will expected to be 24 months unless specified
+| Parameter   | Type   | Mandatory | Comments                                            |
+|-------------|--------|-----------|-----------------------------------------------------|
+| `dateLimit` | String | No*       | This will expected to be 24 months unless specified |
 
 Example URL - `/penalties/penalty-details/VAT/VRN/:VRN?dateLimit=09`
 
@@ -244,6 +248,6 @@ This service can be tested with SBT via `sbt test it:test`
 
 To run coverage and scalastyle, please run: `sbt clean scalastyle coverage test it:test coverageReport`
 
-### License
+## License
 
 This code is open source software licensed under the [Apache 2.0 License]("http://www.apache.org/licenses/LICENSE-2.0.html").
