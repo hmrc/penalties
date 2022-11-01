@@ -278,10 +278,12 @@ class GetFinancialDetailsConnectorSpec extends SpecBase with LogCapturing {
   }
 
   "getFinancialDetailsForAPI" should {
-    val queryParams = s"?docNumber=DOC1&dateFrom=2022-01-01&dateTo=2024-01-01&onlyOpenItems=false&includeStatistical=false" +
-      s"&includeLocks=false&calculateAccruedInterest=false&removePOA=false&customerPaymentInformation=true"
-    val queryParamsNoOptionals = s"?onlyOpenItems=false&includeStatistical=false" +
-      s"&includeLocks=false&calculateAccruedInterest=false&removePOA=false&customerPaymentInformation=true"
+    val queryParams = s"?searchType=CHGREF&searchItem=XC00178236592&dateType=BILLING&dateFrom=2020-10-03&dateTo=2021-07-12&includeClearedItems=false" +
+      s"&includeStatisticalItems=true&includePaymentOnAccount=true&addRegimeTotalisation=false&addLockInformation=true&addPenaltyDetails=true" +
+      s"&addPostedInterestDetails=true&addAccruingInterestDetails=true"
+    val queryParamsSomeMissingFields = s"?searchType=CHGREF&searchItem=XC00178236592&dateType=BILLING&dateFrom=2020-10-03&dateTo=2021-07-12" +
+      s"&includeStatisticalItems=true&includePaymentOnAccount=true&addLockInformation=true&addPenaltyDetails=true" +
+      s"&addPostedInterestDetails=true"
     "return a 200 when the call succeeds" in new Setup {
       when(mockHttpClient.GET[HttpResponse](Matchers.eq(s"/VRN/123456789/VATC$queryParams"),
         Matchers.any(),
@@ -290,43 +292,49 @@ class GetFinancialDetailsConnectorSpec extends SpecBase with LogCapturing {
           Matchers.any(),
           Matchers.any()))
         .thenReturn(Future.successful(HttpResponse.apply(status = Status.OK, json = Json.toJson(mockGetFinancialDetailsModelAPI1811), headers =  Map.empty)))
-
       val result: HttpResponse = await(connector.getFinancialDetailsForAPI(
         vrn = "123456789",
-        docNumber = Some("DOC1"),
-        dateFrom = Some("2022-01-01"),
-        dateTo = Some("2024-01-01"),
-        onlyOpenItems = false,
-        includeStatistical = false,
-        includeLocks = false,
-        calculateAccruedInterest = false,
-        removePOA = false,
-        customerPaymentInformation = true
+        searchType = Some("CHGREF"),
+        searchItem = Some("XC00178236592"),
+        dateType = Some("BILLING"),
+        dateFrom = Some("2020-10-03"),
+        dateTo = Some("2021-07-12"),
+        includeClearedItems = Some(false),
+        includeStatisticalItems = Some(true),
+        includePaymentOnAccount = Some(true),
+        addRegimeTotalisation = Some(false),
+        addLockInformation = Some(true),
+        addPenaltyDetails = Some(true),
+        addPostedInterestDetails = Some(true),
+        addAccruingInterestDetails = Some(true)
       )(HeaderCarrier()))
       result.status shouldBe Status.OK
       Json.parse(result.body) shouldBe Json.toJson(mockGetFinancialDetailsModelAPI1811)
     }
 
-    "return a 200 when the call succeeds - with only mandatory fields" in new Setup {
-      when(mockHttpClient.GET[HttpResponse](Matchers.eq(s"/VRN/123456789/VATC$queryParamsNoOptionals"),
+    "return a 200 when the call succeeds - with some missing fields" in new Setup {
+      when(mockHttpClient.GET[HttpResponse](Matchers.eq(s"/VRN/123456789/VATC$queryParamsSomeMissingFields"),
         Matchers.any(),
         Matchers.any())
         (Matchers.any(),
           Matchers.any(),
           Matchers.any()))
         .thenReturn(Future.successful(HttpResponse.apply(status = Status.OK, json = Json.toJson(mockGetFinancialDetailsModelAPI1811), headers =  Map.empty)))
-
       val result: HttpResponse = await(connector.getFinancialDetailsForAPI(
         vrn = "123456789",
-        docNumber = None,
-        dateFrom = None,
-        dateTo = None,
-        onlyOpenItems = false,
-        includeStatistical = false,
-        includeLocks = false,
-        calculateAccruedInterest = false,
-        removePOA = false,
-        customerPaymentInformation = true
+        searchType = Some("CHGREF"),
+        searchItem = Some("XC00178236592"),
+        dateType = Some("BILLING"),
+        dateFrom = Some("2020-10-03"),
+        dateTo = Some("2021-07-12"),
+        includeClearedItems = None,
+        includeStatisticalItems = Some(true),
+        includePaymentOnAccount = Some(true),
+        addRegimeTotalisation = None,
+        addLockInformation = Some(true),
+        addPenaltyDetails = Some(true),
+        addPostedInterestDetails = Some(true),
+        addAccruingInterestDetails = None
       )(HeaderCarrier()))
       result.status shouldBe Status.OK
       Json.parse(result.body) shouldBe Json.toJson(mockGetFinancialDetailsModelAPI1811)
@@ -343,15 +351,19 @@ class GetFinancialDetailsConnectorSpec extends SpecBase with LogCapturing {
 
       val result: HttpResponse = await(connector.getFinancialDetailsForAPI(
         vrn = "123456789",
-        docNumber = Some("DOC1"),
-        dateFrom = Some("2022-01-01"),
-        dateTo = Some("2024-01-01"),
-        onlyOpenItems = false,
-        includeStatistical = false,
-        includeLocks = false,
-        calculateAccruedInterest = false,
-        removePOA = false,
-        customerPaymentInformation = true
+        searchType = Some("CHGREF"),
+        searchItem = Some("XC00178236592"),
+        dateType = Some("BILLING"),
+        dateFrom = Some("2020-10-03"),
+        dateTo = Some("2021-07-12"),
+        includeClearedItems = Some(false),
+        includeStatisticalItems = Some(true),
+        includePaymentOnAccount = Some(true),
+        addRegimeTotalisation = Some(false),
+        addLockInformation = Some(true),
+        addPenaltyDetails = Some(true),
+        addPostedInterestDetails = Some(true),
+        addAccruingInterestDetails = Some(true)
       )(HeaderCarrier()))
       result.status shouldBe Status.FORBIDDEN
     }
@@ -367,15 +379,19 @@ class GetFinancialDetailsConnectorSpec extends SpecBase with LogCapturing {
 
       val result: HttpResponse = await(connector.getFinancialDetailsForAPI(
         vrn = "123456789",
-        docNumber = Some("DOC1"),
-        dateFrom = Some("2022-01-01"),
-        dateTo = Some("2024-01-01"),
-        onlyOpenItems = false,
-        includeStatistical = false,
-        includeLocks = false,
-        calculateAccruedInterest = false,
-        removePOA = false,
-        customerPaymentInformation = true
+        searchType = Some("CHGREF"),
+        searchItem = Some("XC00178236592"),
+        dateType = Some("BILLING"),
+        dateFrom = Some("2020-10-03"),
+        dateTo = Some("2021-07-12"),
+        includeClearedItems = Some(false),
+        includeStatisticalItems = Some(true),
+        includePaymentOnAccount = Some(true),
+        addRegimeTotalisation = Some(false),
+        addLockInformation = Some(true),
+        addPenaltyDetails = Some(true),
+        addPostedInterestDetails = Some(true),
+        addAccruingInterestDetails = Some(true)
       )(HeaderCarrier()))
       result.status shouldBe Status.INTERNAL_SERVER_ERROR
     }
@@ -393,15 +409,19 @@ class GetFinancialDetailsConnectorSpec extends SpecBase with LogCapturing {
         logs => {
           val result: HttpResponse = await(connector.getFinancialDetailsForAPI(
             vrn = "123456789",
-            docNumber = Some("DOC1"),
-            dateFrom = Some("2022-01-01"),
-            dateTo = Some("2024-01-01"),
-            onlyOpenItems = false,
-            includeStatistical = false,
-            includeLocks = false,
-            calculateAccruedInterest = false,
-            removePOA = false,
-            customerPaymentInformation = true
+            searchType = Some("CHGREF"),
+            searchItem = Some("XC00178236592"),
+            dateType = Some("BILLING"),
+            dateFrom = Some("2020-10-03"),
+            dateTo = Some("2021-07-12"),
+            includeClearedItems = Some(false),
+            includeStatisticalItems = Some(true),
+            includePaymentOnAccount = Some(true),
+            addRegimeTotalisation = Some(false),
+            addLockInformation = Some(true),
+            addPenaltyDetails = Some(true),
+            addPostedInterestDetails = Some(true),
+            addAccruingInterestDetails = Some(true)
           )(HeaderCarrier()))
           logs.exists(_.getMessage.contains(PagerDutyKeys.UNKNOWN_EXCEPTION_CALLING_1811_API.toString)) shouldBe true
           result.status shouldBe Status.INTERNAL_SERVER_ERROR

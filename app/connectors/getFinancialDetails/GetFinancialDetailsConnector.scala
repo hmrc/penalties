@@ -55,21 +55,22 @@ class GetFinancialDetailsConnector @Inject()(httpClient: HttpClient,
   }
 
   def getFinancialDetailsForAPI(vrn: String,
-                                docNumber: Option[String],
+                                searchType: Option[String],
+                                searchItem: Option[String],
+                                dateType: Option[String],
                                 dateFrom: Option[String],
                                 dateTo: Option[String],
-                                onlyOpenItems: Boolean,
-                                includeStatistical: Boolean,
-                                includeLocks: Boolean,
-                                calculateAccruedInterest: Boolean,
-                                removePOA: Boolean,
-                                customerPaymentInformation: Boolean)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
-    val queryParams: String = {
-      s"?${docNumber.fold("")(docNumber => s"docNumber=$docNumber&")}${dateFrom.fold("")(dateFrom => s"dateFrom=$dateFrom&")}" +
-        s"${dateTo.fold("")(dateTo => s"dateTo=$dateTo&")}onlyOpenItems=$onlyOpenItems&includeStatistical=$includeStatistical" +
-        s"&includeLocks=$includeLocks&calculateAccruedInterest=$calculateAccruedInterest&removePOA=$removePOA" +
-        s"&customerPaymentInformation=$customerPaymentInformation"
-    }
+                                includeClearedItems: Option[Boolean],
+                                includeStatisticalItems: Option[Boolean],
+                                includePaymentOnAccount: Option[Boolean],
+                                addRegimeTotalisation: Option[Boolean],
+                                addLockInformation: Option[Boolean],
+                                addPenaltyDetails: Option[Boolean],
+                                addPostedInterestDetails: Option[Boolean],
+                                addAccruingInterestDetails: Option[Boolean])(implicit hc: HeaderCarrier): Future[HttpResponse] = {
+    val params = Seq("searchType" -> searchType, "searchItem" -> searchItem, "dateType" -> dateType, "dateFrom" -> dateFrom, "dateTo" -> dateTo, "includeClearedItems" -> includeClearedItems, "includeStatisticalItems" -> includeStatisticalItems, "includePaymentOnAccount" -> includePaymentOnAccount, "addRegimeTotalisation" -> addRegimeTotalisation,
+      "addLockInformation" -> addLockInformation, "addPenaltyDetails" -> addPenaltyDetails, "addPostedInterestDetails" -> addPostedInterestDetails, "addAccruingInterestDetails" -> addAccruingInterestDetails)
+    val queryParams: String = params.foldLeft("?")((prevString, paramToValue) => prevString + paramToValue._2.fold("")(param => s"${paramToValue._1}=$param&")).dropRight(1)
     httpClient.GET[HttpResponse](appConfig.getFinancialDetailsUrl(vrn) + queryParams, headers = headers).recover {
       case e: UpstreamErrorResponse => {
         logger.error(s"[GetFinancialDetailsConnector][getFinancialDetailsForAPI] - Received ${e.statusCode} status from API 1811 call - returning status to caller")

@@ -45,7 +45,7 @@ class APIControllerSpec extends SpecBase with FeatureSwitching {
   val dateHelper: DateHelper = injector.instanceOf(classOf[DateHelper])
   val mockAPIService: APIService = mock(classOf[APIService])
   val mockGetPenaltyDetailsService: GetPenaltyDetailsService = mock(classOf[GetPenaltyDetailsService])
-  val mockGetFinancialDetailsConnector:GetFinancialDetailsConnector = mock(classOf[GetFinancialDetailsConnector])
+  val mockGetFinancialDetailsConnector: GetFinancialDetailsConnector = mock(classOf[GetFinancialDetailsConnector])
   val mockGetPenaltyDetailsConnector: GetPenaltyDetailsConnector = mock(classOf[GetPenaltyDetailsConnector])
   implicit val config: Configuration = appConfig.config
 
@@ -63,391 +63,389 @@ class APIControllerSpec extends SpecBase with FeatureSwitching {
   }
 
   "getSummaryDataForVRN" should {
-      val getPenaltyDetailsNoEstimatedLPPs: GetPenaltyDetails = GetPenaltyDetails(
-        totalisations = None,
-        lateSubmissionPenalty = Some(
-          LateSubmissionPenalty(
-            summary = LSPSummary(
-              activePenaltyPoints = 4,
-              inactivePenaltyPoints = 0,
-              regimeThreshold = 5,
-              penaltyChargeAmount = 200,
-              PoCAchievementDate = LocalDate.of(2022, 1, 1)
-            ),
-            details = Seq() //omitted
-          )
-        ),
-        latePaymentPenalty = None
-      )
+    val getPenaltyDetailsNoEstimatedLPPs: GetPenaltyDetails = GetPenaltyDetails(
+      totalisations = None,
+      lateSubmissionPenalty = Some(
+        LateSubmissionPenalty(
+          summary = LSPSummary(
+            activePenaltyPoints = 4,
+            inactivePenaltyPoints = 0,
+            regimeThreshold = 5,
+            penaltyChargeAmount = 200,
+            PoCAchievementDate = LocalDate.of(2022, 1, 1)
+          ),
+          details = Seq() //omitted
+        )
+      ),
+      latePaymentPenalty = None
+    )
 
-      val getPenaltyDetailsFullAPIResponse: GetPenaltyDetails = GetPenaltyDetails(
-        totalisations = None,
-        lateSubmissionPenalty = Some(
-          LateSubmissionPenalty(
-            summary = LSPSummary(
-              activePenaltyPoints = 2,
-              inactivePenaltyPoints = 0,
-              regimeThreshold = 4,
-              penaltyChargeAmount = 200,
-              PoCAchievementDate = LocalDate.of(2022, 1, 1)
-            ),
-            details = Seq() //omitted
-          )
-        ),
-        latePaymentPenalty = Some(
-          LatePaymentPenalty(
-            Some(
-              Seq(
-                LPPDetails(
-                  penaltyCategory = LPPPenaltyCategoryEnum.SecondPenalty,
-                  principalChargeReference = "12345678",
-                  penaltyChargeReference = Some("1234567893"),
-                  penaltyChargeCreationDate = LocalDate.of(2022, 1, 1),
-                  penaltyStatus = LPPPenaltyStatusEnum.Accruing,
-                  appealInformation = None,
-                  principalChargeBillingFrom = LocalDate.of(2022, 1, 1),
-                  principalChargeBillingTo = LocalDate.of(2022, 1, 1),
-                  principalChargeDueDate = LocalDate.of(2022, 1, 1),
-                  communicationsDate = LocalDate.of(2022, 1, 1),
-                  penaltyAmountOutstanding = Some(100),
-                  penaltyAmountPaid = Some(44.21),
-                  LPP1LRDays = None,
-                  LPP1HRDays = None,
-                  LPP2Days = None,
-                  LPP1HRCalculationAmount = None,
-                  LPP1LRCalculationAmount = None,
-                  LPP2Percentage = None,
-                  LPP1LRPercentage = None,
-                  LPP1HRPercentage = None,
-                  penaltyChargeDueDate = LocalDate.of(2022, 1, 1),
-                  principalChargeLatestClearing = None,
-                  metadata = LPPDetailsMetadata()
-                ),
-                LPPDetails(
-                  penaltyCategory = LPPPenaltyCategoryEnum.SecondPenalty,
-                  principalChargeReference = "12345677",
-                  penaltyChargeReference = Some("1234567892"),
-                  penaltyChargeCreationDate = LocalDate.of(2022, 1, 1),
-                  penaltyStatus = LPPPenaltyStatusEnum.Accruing,
-                  appealInformation = None,
-                  principalChargeBillingFrom = LocalDate.of(2022, 1, 1),
-                  principalChargeBillingTo = LocalDate.of(2022, 1, 1),
-                  principalChargeDueDate = LocalDate.of(2022, 1, 1),
-                  communicationsDate = LocalDate.of(2022, 1, 1),
-                  penaltyAmountOutstanding = Some(23.45),
-                  penaltyAmountPaid = Some(100),
-                  LPP1LRDays = None,
-                  LPP1HRDays = None,
-                  LPP2Days = None,
-                  LPP1HRCalculationAmount = None,
-                  LPP1LRCalculationAmount = None,
-                  LPP2Percentage = None,
-                  LPP1LRPercentage = None,
-                  LPP1HRPercentage = None,
-                  penaltyChargeDueDate = LocalDate.of(2022, 1, 1),
-                  principalChargeLatestClearing = None,
-                  metadata = LPPDetailsMetadata()
-                ),
-                LPPDetails(
-                  penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
-                  principalChargeReference = "12345676",
-                  penaltyChargeReference = Some("1234567891"),
-                  penaltyChargeCreationDate = LocalDate.of(2022, 1, 1),
-                  penaltyStatus = LPPPenaltyStatusEnum.Posted,
-                  appealInformation = None,
-                  principalChargeBillingFrom = LocalDate.of(2022, 1, 1),
-                  principalChargeBillingTo = LocalDate.of(2022, 1, 1),
-                  principalChargeDueDate = LocalDate.of(2022, 1, 1),
-                  communicationsDate = LocalDate.of(2022, 1, 1),
-                  penaltyAmountOutstanding = Some(144),
-                  penaltyAmountPaid = Some(0.21),
-                  LPP1LRDays = None,
-                  LPP1HRDays = None,
-                  LPP2Days = None,
-                  LPP1HRCalculationAmount = None,
-                  LPP1LRCalculationAmount = None,
-                  LPP2Percentage = None,
-                  LPP1LRPercentage = None,
-                  LPP1HRPercentage = None,
-                  penaltyChargeDueDate = LocalDate.of(2022, 1, 1),
-                  principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
-                  metadata = LPPDetailsMetadata()
-                ),
-                LPPDetails(
-                  penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
-                  principalChargeReference = "12345675",
-                  penaltyChargeReference = Some("1234567890"),
-                  penaltyChargeCreationDate = LocalDate.of(2022, 1, 1),
-                  penaltyStatus = LPPPenaltyStatusEnum.Posted,
-                  appealInformation = None,
-                  principalChargeBillingFrom = LocalDate.of(2022, 1, 1),
-                  principalChargeBillingTo = LocalDate.of(2022, 1, 1),
-                  principalChargeDueDate = LocalDate.of(2022, 1, 1),
-                  communicationsDate = LocalDate.of(2022, 1, 1),
-                  penaltyAmountOutstanding = Some(144),
-                  penaltyAmountPaid = Some(0.21),
-                  LPP1LRDays = None,
-                  LPP1HRDays = None,
-                  LPP2Days = None,
-                  LPP1HRCalculationAmount = None,
-                  LPP1LRCalculationAmount = None,
-                  LPP2Percentage = None,
-                  LPP1LRPercentage = None,
-                  LPP1HRPercentage = None,
-                  penaltyChargeDueDate = LocalDate.of(2022, 1, 1),
-                  principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
-                  metadata = LPPDetailsMetadata()
-                )
+    val getPenaltyDetailsFullAPIResponse: GetPenaltyDetails = GetPenaltyDetails(
+      totalisations = None,
+      lateSubmissionPenalty = Some(
+        LateSubmissionPenalty(
+          summary = LSPSummary(
+            activePenaltyPoints = 2,
+            inactivePenaltyPoints = 0,
+            regimeThreshold = 4,
+            penaltyChargeAmount = 200,
+            PoCAchievementDate = LocalDate.of(2022, 1, 1)
+          ),
+          details = Seq() //omitted
+        )
+      ),
+      latePaymentPenalty = Some(
+        LatePaymentPenalty(
+          Some(
+            Seq(
+              LPPDetails(
+                penaltyCategory = LPPPenaltyCategoryEnum.SecondPenalty,
+                principalChargeReference = "12345678",
+                penaltyChargeReference = Some("1234567893"),
+                penaltyChargeCreationDate = LocalDate.of(2022, 1, 1),
+                penaltyStatus = LPPPenaltyStatusEnum.Accruing,
+                appealInformation = None,
+                principalChargeBillingFrom = LocalDate.of(2022, 1, 1),
+                principalChargeBillingTo = LocalDate.of(2022, 1, 1),
+                principalChargeDueDate = LocalDate.of(2022, 1, 1),
+                communicationsDate = LocalDate.of(2022, 1, 1),
+                penaltyAmountOutstanding = Some(100),
+                penaltyAmountPaid = Some(44.21),
+                LPP1LRDays = None,
+                LPP1HRDays = None,
+                LPP2Days = None,
+                LPP1HRCalculationAmount = None,
+                LPP1LRCalculationAmount = None,
+                LPP2Percentage = None,
+                LPP1LRPercentage = None,
+                LPP1HRPercentage = None,
+                penaltyChargeDueDate = LocalDate.of(2022, 1, 1),
+                principalChargeLatestClearing = None,
+                metadata = LPPDetailsMetadata()
+              ),
+              LPPDetails(
+                penaltyCategory = LPPPenaltyCategoryEnum.SecondPenalty,
+                principalChargeReference = "12345677",
+                penaltyChargeReference = Some("1234567892"),
+                penaltyChargeCreationDate = LocalDate.of(2022, 1, 1),
+                penaltyStatus = LPPPenaltyStatusEnum.Accruing,
+                appealInformation = None,
+                principalChargeBillingFrom = LocalDate.of(2022, 1, 1),
+                principalChargeBillingTo = LocalDate.of(2022, 1, 1),
+                principalChargeDueDate = LocalDate.of(2022, 1, 1),
+                communicationsDate = LocalDate.of(2022, 1, 1),
+                penaltyAmountOutstanding = Some(23.45),
+                penaltyAmountPaid = Some(100),
+                LPP1LRDays = None,
+                LPP1HRDays = None,
+                LPP2Days = None,
+                LPP1HRCalculationAmount = None,
+                LPP1LRCalculationAmount = None,
+                LPP2Percentage = None,
+                LPP1LRPercentage = None,
+                LPP1HRPercentage = None,
+                penaltyChargeDueDate = LocalDate.of(2022, 1, 1),
+                principalChargeLatestClearing = None,
+                metadata = LPPDetailsMetadata()
+              ),
+              LPPDetails(
+                penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
+                principalChargeReference = "12345676",
+                penaltyChargeReference = Some("1234567891"),
+                penaltyChargeCreationDate = LocalDate.of(2022, 1, 1),
+                penaltyStatus = LPPPenaltyStatusEnum.Posted,
+                appealInformation = None,
+                principalChargeBillingFrom = LocalDate.of(2022, 1, 1),
+                principalChargeBillingTo = LocalDate.of(2022, 1, 1),
+                principalChargeDueDate = LocalDate.of(2022, 1, 1),
+                communicationsDate = LocalDate.of(2022, 1, 1),
+                penaltyAmountOutstanding = Some(144),
+                penaltyAmountPaid = Some(0.21),
+                LPP1LRDays = None,
+                LPP1HRDays = None,
+                LPP2Days = None,
+                LPP1HRCalculationAmount = None,
+                LPP1LRCalculationAmount = None,
+                LPP2Percentage = None,
+                LPP1LRPercentage = None,
+                LPP1HRPercentage = None,
+                penaltyChargeDueDate = LocalDate.of(2022, 1, 1),
+                principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
+                metadata = LPPDetailsMetadata()
+              ),
+              LPPDetails(
+                penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
+                principalChargeReference = "12345675",
+                penaltyChargeReference = Some("1234567890"),
+                penaltyChargeCreationDate = LocalDate.of(2022, 1, 1),
+                penaltyStatus = LPPPenaltyStatusEnum.Posted,
+                appealInformation = None,
+                principalChargeBillingFrom = LocalDate.of(2022, 1, 1),
+                principalChargeBillingTo = LocalDate.of(2022, 1, 1),
+                principalChargeDueDate = LocalDate.of(2022, 1, 1),
+                communicationsDate = LocalDate.of(2022, 1, 1),
+                penaltyAmountOutstanding = Some(144),
+                penaltyAmountPaid = Some(0.21),
+                LPP1LRDays = None,
+                LPP1HRDays = None,
+                LPP2Days = None,
+                LPP1HRCalculationAmount = None,
+                LPP1LRCalculationAmount = None,
+                LPP2Percentage = None,
+                LPP1LRPercentage = None,
+                LPP1HRPercentage = None,
+                penaltyChargeDueDate = LocalDate.of(2022, 1, 1),
+                principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
+                metadata = LPPDetailsMetadata()
               )
             )
           )
         )
       )
+    )
 
-      s"return ISE (${Status.INTERNAL_SERVER_ERROR}) when the call fails" in new Setup(isFSEnabled = true) {
-        when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(any())(any()))
-          .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(Status.INTERNAL_SERVER_ERROR))))
-        val result = controller.getSummaryDataForVRN("123456789")(fakeRequest)
-        status(result) shouldBe Status.INTERNAL_SERVER_ERROR
-      }
-
-      s"return NOT_FOUND (${Status.NOT_FOUND}) when the call returns not found" in new Setup(isFSEnabled = true) {
-        when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(any())(any()))
-          .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(Status.NOT_FOUND))))
-        val result = controller.getSummaryDataForVRN("123456789")(fakeRequest)
-        status(result) shouldBe Status.NOT_FOUND
-      }
-
-      s"return NOT_FOUND (${Status.NOT_FOUND}) when the call returns no data" in new Setup(isFSEnabled = true) {
-        when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(any())(any()))
-          .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(Status.NO_CONTENT))))
-        val result = controller.getSummaryDataForVRN("123456789")(fakeRequest)
-        status(result) shouldBe Status.NOT_FOUND
-      }
-
-      s"return BAD_REQUEST (${Status.BAD_REQUEST}) when the user supplies an invalid VRN" in new Setup(isFSEnabled = true) {
-        val result = controller.getSummaryDataForVRN("1234567891234567890")(fakeRequest)
-        status(result) shouldBe Status.BAD_REQUEST
-        contentAsString(result) shouldBe "VRN: 1234567891234567890 was not in a valid format."
-      }
-
-      s"return OK (${Status.OK}) when the call returns some data and can be parsed to the correct response" in new Setup(isFSEnabled = true) {
-        when(mockAPIService.checkIfHasAnyPenaltyData(any())).thenReturn(true)
-        when(mockAPIService.getNumberOfEstimatedPenalties(any())).thenReturn(2)
-        when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(any())(any()))
-          .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetailsFullAPIResponse))))
-        when(mockAPIService.findEstimatedPenaltiesAmount(any()))
-          .thenReturn(BigDecimal(123.45))
-        when(mockAPIService.getNumberOfCrystallisedPenalties(any())).thenReturn(2)
-        when(mockAPIService.getCrystallisedPenaltyTotal(any())).thenReturn(BigDecimal(288))
-        val result = controller.getSummaryDataForVRN("123456789")(fakeRequest)
-        status(result) shouldBe Status.OK
-        contentAsJson(result) shouldBe Json.parse(
-          """
-            |{
-            |  "noOfPoints": 2,
-            |  "noOfEstimatedPenalties": 2,
-            |  "noOfCrystalisedPenalties": 2,
-            |  "estimatedPenaltyAmount": 123.45,
-            |  "crystalisedPenaltyAmountDue": 288,
-            |  "hasAnyPenaltyData": true
-            |}
-            |""".stripMargin
-        )
-        verify(mockAuditService, times(1)).audit(any())(any(), any(), any())
-      }
-
-      s"return OK (${Status.OK}) when there are no estimated LPPs in penalty details" in new Setup(isFSEnabled = true) {
-        when(mockAPIService.checkIfHasAnyPenaltyData(any())).thenReturn(true)
-        when(mockAPIService.getNumberOfEstimatedPenalties(any())).thenReturn(0)
-        when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(any())(any()))
-          .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetailsNoEstimatedLPPs))))
-        when(mockAPIService.findEstimatedPenaltiesAmount(any()))
-          .thenReturn(BigDecimal(0))
-        when(mockAPIService.getNumberOfCrystallisedPenalties(any())).thenReturn(0)
-        when(mockAPIService.getCrystallisedPenaltyTotal(any())).thenReturn(BigDecimal(0))
-        val result = controller.getSummaryDataForVRN("123456789")(fakeRequest)
-        status(result) shouldBe Status.OK
-        contentAsJson(result) shouldBe Json.parse(
-          """
-            |{
-            |  "noOfPoints": 4,
-            |  "noOfEstimatedPenalties": 0,
-            |  "noOfCrystalisedPenalties": 0,
-            |  "estimatedPenaltyAmount": 0,
-            |  "crystalisedPenaltyAmountDue": 0,
-            |  "hasAnyPenaltyData": true
-            |}
-            |""".stripMargin
-        )
-      }
+    s"return ISE (${Status.INTERNAL_SERVER_ERROR}) when the call fails" in new Setup(isFSEnabled = true) {
+      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(any())(any()))
+        .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(Status.INTERNAL_SERVER_ERROR))))
+      val result = controller.getSummaryDataForVRN("123456789")(fakeRequest)
+      status(result) shouldBe Status.INTERNAL_SERVER_ERROR
     }
+
+    s"return NOT_FOUND (${Status.NOT_FOUND}) when the call returns not found" in new Setup(isFSEnabled = true) {
+      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(any())(any()))
+        .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(Status.NOT_FOUND))))
+      val result = controller.getSummaryDataForVRN("123456789")(fakeRequest)
+      status(result) shouldBe Status.NOT_FOUND
+    }
+
+    s"return NOT_FOUND (${Status.NOT_FOUND}) when the call returns no data" in new Setup(isFSEnabled = true) {
+      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(any())(any()))
+        .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(Status.NO_CONTENT))))
+      val result = controller.getSummaryDataForVRN("123456789")(fakeRequest)
+      status(result) shouldBe Status.NOT_FOUND
+    }
+
+    s"return BAD_REQUEST (${Status.BAD_REQUEST}) when the user supplies an invalid VRN" in new Setup(isFSEnabled = true) {
+      val result = controller.getSummaryDataForVRN("1234567891234567890")(fakeRequest)
+      status(result) shouldBe Status.BAD_REQUEST
+      contentAsString(result) shouldBe "VRN: 1234567891234567890 was not in a valid format."
+    }
+
+    s"return OK (${Status.OK}) when the call returns some data and can be parsed to the correct response" in new Setup(isFSEnabled = true) {
+      when(mockAPIService.checkIfHasAnyPenaltyData(any())).thenReturn(true)
+      when(mockAPIService.getNumberOfEstimatedPenalties(any())).thenReturn(2)
+      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(any())(any()))
+        .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetailsFullAPIResponse))))
+      when(mockAPIService.findEstimatedPenaltiesAmount(any()))
+        .thenReturn(BigDecimal(123.45))
+      when(mockAPIService.getNumberOfCrystallisedPenalties(any())).thenReturn(2)
+      when(mockAPIService.getCrystallisedPenaltyTotal(any())).thenReturn(BigDecimal(288))
+      val result = controller.getSummaryDataForVRN("123456789")(fakeRequest)
+      status(result) shouldBe Status.OK
+      contentAsJson(result) shouldBe Json.parse(
+        """
+          |{
+          |  "noOfPoints": 2,
+          |  "noOfEstimatedPenalties": 2,
+          |  "noOfCrystalisedPenalties": 2,
+          |  "estimatedPenaltyAmount": 123.45,
+          |  "crystalisedPenaltyAmountDue": 288,
+          |  "hasAnyPenaltyData": true
+          |}
+          |""".stripMargin
+      )
+      verify(mockAuditService, times(1)).audit(any())(any(), any(), any())
+    }
+
+    s"return OK (${Status.OK}) when there are no estimated LPPs in penalty details" in new Setup(isFSEnabled = true) {
+      when(mockAPIService.checkIfHasAnyPenaltyData(any())).thenReturn(true)
+      when(mockAPIService.getNumberOfEstimatedPenalties(any())).thenReturn(0)
+      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(any())(any()))
+        .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetailsNoEstimatedLPPs))))
+      when(mockAPIService.findEstimatedPenaltiesAmount(any()))
+        .thenReturn(BigDecimal(0))
+      when(mockAPIService.getNumberOfCrystallisedPenalties(any())).thenReturn(0)
+      when(mockAPIService.getCrystallisedPenaltyTotal(any())).thenReturn(BigDecimal(0))
+      val result = controller.getSummaryDataForVRN("123456789")(fakeRequest)
+      status(result) shouldBe Status.OK
+      contentAsJson(result) shouldBe Json.parse(
+        """
+          |{
+          |  "noOfPoints": 4,
+          |  "noOfEstimatedPenalties": 0,
+          |  "noOfCrystalisedPenalties": 0,
+          |  "estimatedPenaltyAmount": 0,
+          |  "crystalisedPenaltyAmountDue": 0,
+          |  "hasAnyPenaltyData": true
+          |}
+          |""".stripMargin
+      )
+    }
+  }
 
   "getFinancialDetails" should {
     s"return OK (${Status.OK}) when a JSON payload is received from EIS (auditing the response)" in new Setup(isFSEnabled = true) {
       val sampleAPI1811Response = Json.parse(
         """
-          |{
-          |            "taxPayerDetails": {
-          |              "idType": "VRN",
-          |              "idNumber": 123456789,
-          |              "regimeType": "VATC"
-          |            },
-          |            "balanceDetails": {
-          |              "balanceDueWithin30Days": -99999999999.99,
-          |              "nextPaymentDateForChargesDueIn30Days": "1920-02-29",
-          |              "balanceNotDueIn30Days": -99999999999.99,
-          |              "nextPaymentDateBalanceNotDue": "1920-02-29",
-          |              "overDueAmount": -99999999999.99,
-          |              "earliestPaymentDateOverDue": "1920-02-29",
-          |              "totalBalance": -99999999999.99,
-          |              "amountCodedOut": 3456.67
-          |            },
-          |            "codingDetails": [
-          |              {
-          |                "taxYearReturn": "2017",
-          |                "totalReturnAmount": 2234.56,
-          |                "amountNotCoded": 234.56,
-          |                "amountNotCodedDueDate": "2021-07-29",
-          |                "amountCodedOut": 2634.56,
-          |                "taxYearCoding": "2018",
-          |                "documentText": "document coding details"
-          |              }
-          |            ],
-          |            "documentDetails": [
-          |              {
-          |                "taxYear": "2017",
-          |                "documentId": "1455",
-          |                "documentDate": "2018-03-29",
-          |                "documentText": "ITSA- Bal Charge",
-          |                "documentDueDate": "2020-04-15",
-          |                "documentDescription": "document Description",
-          |                "totalAmount": 45552768.79,
-          |                "documentOutstandingAmount": 297873.46,
-          |                "lastClearingDate": "2018-04-15",
-          |                "lastClearingReason": "last Clearing Reason",
-          |                "lastClearedAmount": 589958.83,
-          |                "statisticalFlag": false,
-          |                "paymentLot": 81203010024,
-          |                "paymentLotItem": "000001",
-          |                "accruingInterestAmount": 1000.9,
-          |                "interestRate": 1000.9,
-          |                "interestFromDate": "2021-01-11",
-          |                "interestEndDate": "2021-04-11",
-          |                "latePaymentInterestID": "1234567890123456",
-          |                "latePaymentInterestAmount": 1000.67,
-          |                "lpiWithDunningBlock": 1000.23,
-          |                "interestOutstandingAmount": 1000.34
-          |              }
-          |            ],
-          |            "financialDetails": [
-          |              {
-          |                "taxYear": "2017",
-          |                "documentId": 1.2345678901234568e+28,
-          |                "chargeType": "PAYE",
-          |                "mainType": "2100",
-          |                "periodKey": "13RL",
-          |                "periodKeyDescription": "abcde",
-          |                "taxPeriodFrom": "2018-08-13",
-          |                "taxPeriodTo": "2018-08-14",
-          |                "businessPartner": "6622334455",
-          |                "contractAccountCategory": "02",
-          |                "contractAccount": "X",
-          |                "contractObjectType": "ABCD",
-          |                "contractObject": "00000003000000002757",
-          |                "sapDocumentNumber": "1040000872",
-          |                "sapDocumentNumberItem": "XM00",
-          |                "chargeReference": "XM002610011594",
-          |                "mainTransaction": "1234",
-          |                "subTransaction": "5678",
-          |                "originalAmount": 10000,
-          |                "outstandingAmount": 10000,
-          |                "clearedAmount": 10000,
-          |                "accruedInterest": 10000,
-          |                "items": [
-          |                  {
-          |                    "subItem": "001",
-          |                    "dueDate": "2018-08-13",
-          |                    "amount": 10000,
-          |                    "clearingDate": "2018-08-13",
-          |                    "clearingReason": "01",
-          |                    "outgoingPaymentMethod": "outgoing Payment",
-          |                    "paymentLock": "paymentLock",
-          |                    "clearingLock": "clearingLock",
-          |                    "interestLock": "interestLock",
-          |                    "dunningLock": "dunningLock",
-          |                    "returnFlag": true,
-          |                    "paymentReference": "Ab12453535",
-          |                    "paymentAmount": 10000,
-          |                    "paymentMethod": "Payment",
-          |                    "paymentLot": 81203010024,
-          |                    "paymentLotItem": "000001",
-          |                    "clearingSAPDocument": "3350000253",
-          |                    "codingInitiationDate": "2021-01-11",
-          |                    "statisticalDocument": "S",
-          |                    "DDCollectionInProgress": true,
-          |                    "returnReason": "ABCA"
-          |                  }
-          |                ]
-          |              }
-          |            ]
-          |          }""".stripMargin)
+          {
+          |  "totalisation": {
+          |    "regimeTotalisation": {
+          |      "totalAccountOverdue": "1000.0,",
+          |      "totalAccountNotYetDue": "250.0,",
+          |      "totalAccountCredit": "40.0,",
+          |      "totalAccountBalance": 1210
+          |    },
+          |    "targetedSearch_SelectionCriteriaTotalisation": {
+          |      "totalOverdue": "100.0,",
+          |      "totalNotYetDue": "0.0,",
+          |      "totalBalance": "100.0,",
+          |      "totalCredit": "10.0,",
+          |      "totalCleared": 50
+          |    },
+          |    "additionalReceivableTotalisations": {
+          |      "totalAccountPostedInterest": "-99999999999.99,",
+          |      "totalAccountAccruingInterest": -99999999999.99
+          |    }
+          |  },
+          |  "documentDetails": [
+          |    {
+          |      "documentNumber": "187346702498,",
+          |      "documentType": "TRM New Charge,",
+          |      "chargeReferenceNumber": "XP001286394838,",
+          |      "businessPartnerNumber": "100893731,",
+          |      "contractAccountNumber": "900726630,",
+          |      "contractAccountCategory": "VAT,",
+          |      "contractObjectNumber": "104920928302302,",
+          |      "contractObjectType": "ZVAT,",
+          |      "postingDate": "2022-01-01,",
+          |      "issueDate": "2022-01-01,",
+          |      "documentTotalAmount": "100.0,",
+          |      "documentClearedAmount": "100.0,",
+          |      "documentOutstandingAmount": "0.0,",
+          |      "documentLockDetails": {
+          |        "lockType": "Payment,",
+          |        "lockStartDate": "2022-01-01,",
+          |        "lockEndDate": "2022-01-01"
+          |      },
+          |      "documentInterestTotals": {
+          |        "interestPostedAmount": "13.12,",
+          |        "interestPostedChargeRef": "XB001286323438,",
+          |        "interestAccruingAmount": 12.1
+          |      },
+          |      "documentPenaltyTotals": [
+          |        {
+          |          "penaltyType": "LPP1,",
+          |          "penaltyStatus": "POSTED,",
+          |          "penaltyAmount": "10.01,",
+          |          "postedChargeReference": "XR00123933492"
+          |        }
+          |      ],
+          |      "lineItemDetails": [
+          |        {
+          |          "itemNumber": "0001,",
+          |          "subItemNumber": "003,",
+          |          "mainTransaction": "4576,",
+          |          "subTransaction": "1000,",
+          |          "chargeDescription": "VAT Return,",
+          |          "periodFromDate": "2022-01-01,",
+          |          "periodToDate": "2022-01-31,",
+          |          "periodKey": "22A1,",
+          |          "netDueDate": "2022-02-08,",
+          |          "formBundleNumber": "125435934761,",
+          |          "statisticalKey": "1,",
+          |          "amount": "3420.0,",
+          |          "clearingDate": "2022-02-09,",
+          |          "clearingReason": "Payment at External Payment Collector Reported,",
+          |          "clearingDocument": "719283701921,",
+          |          "outgoingPaymentMethod": "B,",
+          |          "ddCollectionInProgress": "true,",
+          |          "lineItemLockDetails": [
+          |            {
+          |              "lockType": "Payment,",
+          |              "lockStartDate": "2022-01-01,",
+          |              "lockEndDate": "2022-01-01"
+          |            }
+          |          ],
+          |          "lineItemInterestDetails": {
+          |            "interestKey": "String,",
+          |            "currentInterestRate": "-999.999999,",
+          |            "interestStartDate": "1920-02-29,",
+          |            "interestPostedAmount": "-99999999999.99,",
+          |            "interestAccruingAmount": -99999999999.99
+          |          }
+          |        }
+          |      ]
+          |    }
+          |  ]
+          |}""".stripMargin)
 
 
-      when(mockGetFinancialDetailsConnector.getFinancialDetailsForAPI(any(), any(), any(),any(),any(),any(),any(),any(),any(),any())(any()))
+      when(mockGetFinancialDetailsConnector.getFinancialDetailsForAPI(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any())(any()))
         .thenReturn(Future.successful(HttpResponse.apply(OK, sampleAPI1811Response.toString)))
-      val result = controller.getFinancialDetails(vrn ="123456789",
-        docNumber = None,
-        dateFrom = None,
-        dateTo = None,
-        onlyOpenItems = true,
-        includeStatistical = false,
-        includeLocks = false,
-        calculateAccruedInterest = false,
-        removePOA = false,
-        customerPaymentInformation = false)(fakeRequest)
+      val result = controller.getFinancialDetails(vrn = "123456789",
+        searchType = Some("CHGREF"),
+        searchItem = Some("XC00178236592"),
+        dateType = Some("BILLING"),
+        dateFrom = Some("2020-10-03"),
+        dateTo = Some("2021-07-12"),
+        includeClearedItems = Some(false),
+        includeStatisticalItems = Some(true),
+        includePaymentOnAccount = Some(true),
+        addRegimeTotalisation = Some(false),
+        addLockInformation = Some(true),
+        addPenaltyDetails = Some(true),
+        addPostedInterestDetails = Some(true),
+        addAccruingInterestDetails = Some(true))(fakeRequest)
 
       status(result) shouldBe Status.OK
       contentAsJson(result) shouldBe sampleAPI1811Response
-      verify(mockAuditService, times(1)).audit(any())(any(),any(),any())
+      verify(mockAuditService, times(1)).audit(any())(any(), any(), any())
     }
 
     s"return NOT_FOUND (${Status.NOT_FOUND}) when the call returns no data (auditing the response)" in new Setup(true) {
-      when(mockGetFinancialDetailsConnector.getFinancialDetailsForAPI(any(), any(), any(),any(),any(),any(),any(),any(),any(),any())(any()))
+      when(mockGetFinancialDetailsConnector.getFinancialDetailsForAPI(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any())(any()))
         .thenReturn(Future.successful(HttpResponse.apply(NOT_FOUND, "NOT_FOUND")))
 
-      val result = controller.getFinancialDetails(vrn ="123456789",
-        docNumber = None,
-        dateFrom = None,
-        dateTo = None,
-        onlyOpenItems = true,
-        includeStatistical = false,
-        includeLocks = false,
-        calculateAccruedInterest = false,
-        removePOA = false,
-        customerPaymentInformation = false)(fakeRequest)
+      val result = controller.getFinancialDetails(vrn = "123456789",
+        searchType = Some("CHGREF"),
+        searchItem = Some("XC00178236592"),
+        dateType = Some("BILLING"),
+        dateFrom = Some("2020-10-03"),
+        dateTo = Some("2021-07-12"),
+        includeClearedItems = Some(false),
+        includeStatisticalItems = Some(true),
+        includePaymentOnAccount = Some(true),
+        addRegimeTotalisation = Some(false),
+        addLockInformation = Some(true),
+        addPenaltyDetails = Some(true),
+        addPostedInterestDetails = Some(true),
+        addAccruingInterestDetails = Some(true))(fakeRequest)
 
       status(result) shouldBe Status.NOT_FOUND
-      verify(mockAuditService, times(1)).audit(any())(any(),any(),any())
+      verify(mockAuditService, times(1)).audit(any())(any(), any(), any())
     }
 
     s"return the status from EIS when the call returns a non 200 or 404 status (auditing the response)" in new Setup(true) {
-      when(mockGetFinancialDetailsConnector.getFinancialDetailsForAPI(any(), any(), any(),any(),any(),any(),any(),any(),any(),any())(any()))
+      when(mockGetFinancialDetailsConnector.getFinancialDetailsForAPI(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any())(any()))
         .thenReturn(Future.successful(HttpResponse.apply(INTERNAL_SERVER_ERROR, "INTERNAL_SERVER_ERROR")))
 
-      val result = controller.getFinancialDetails(vrn ="123456789",
-        docNumber = None,
-        dateFrom = None,
-        dateTo = None,
-        onlyOpenItems = true,
-        includeStatistical = false,
-        includeLocks = false,
-        calculateAccruedInterest = false,
-        removePOA = false,
-        customerPaymentInformation = false)(fakeRequest)
+      val result = controller.getFinancialDetails(vrn = "123456789",
+        searchType = Some("CHGREF"),
+        searchItem = Some("XC00178236592"),
+        dateType = Some("BILLING"),
+        dateFrom = Some("2020-10-03"),
+        dateTo = Some("2021-07-12"),
+        includeClearedItems = Some(false),
+        includeStatisticalItems = Some(true),
+        includePaymentOnAccount = Some(true),
+        addRegimeTotalisation = Some(false),
+        addLockInformation = Some(true),
+        addPenaltyDetails = Some(true),
+        addPostedInterestDetails = Some(true),
+        addAccruingInterestDetails = Some(true))(fakeRequest)
 
       status(result) shouldBe Status.INTERNAL_SERVER_ERROR
-      verify(mockAuditService, times(1)).audit(any())(any(),any(),any())
+      verify(mockAuditService, times(1)).audit(any())(any(), any(), any())
     }
   }
 
