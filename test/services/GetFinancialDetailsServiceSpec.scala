@@ -23,8 +23,8 @@ import org.mockito.Mockito.{mock, reset, when}
 
 import java.time.LocalDate
 import connectors.parsers.getFinancialDetails.GetFinancialDetailsParser._
-import models.getFinancialDetails._
-import models.mainTransaction.MainTransactionEnum
+import models.getFinancialDetails
+import models.getFinancialDetails.FinancialDetails
 import org.mockito.Matchers
 import org.mockito.Matchers.any
 import play.api.Configuration
@@ -46,87 +46,11 @@ class GetFinancialDetailsServiceSpec extends SpecBase with FeatureSwitching {
   }
 
   "getDataFromFinancialServiceForVATVCN" should {
-    val mockGetFinancialDetailsResponseAsModel: GetFinancialDetails = GetFinancialDetails(
-      documentDetails = Seq(DocumentDetails(
-        documentId = "0001",
-        accruingInterestAmount = Some(123.45),
-        interestOutstandingAmount = Some(543.21),
-        metadata = DocumentDetailsMetadata(
-          taxYear = "2022",
-          documentDate = LocalDate.of(2022, 10, 30),
-          documentText = "Document Text",
-          documentDueDate = LocalDate.of(2022, 10, 30),
-          documentDescription = Some("Document Description"),
-          formBundleNumber = Some("1234"),
-          totalAmount = 123.45,
-          documentOutstandingAmount = 543.21,
-          lastClearingDate = Some(LocalDate.of(2022, 10, 30)),
-          lastClearingReason = Some("last Clearing Reason"),
-          lastClearedAmount = Some(123.45),
-          statisticalFlag = true,
-          informationCode = Some("A"),
-          paymentLot = Some("81203010024"),
-          paymentLotItem = Some("000001"),
-          interestRate = Some(543.21),
-          interestFromDate = Some(LocalDate.of(2022, 10, 30)),
-          interestEndDate = Some(LocalDate.of(2022, 10, 30)),
-          latePaymentInterestID = Some("1234567890123456"),
-          latePaymentInterestAmount = Some(123.45),
-          lpiWithDunningBlock = Some(543.21),
-          accruingPenaltyLPP1 = Some("Interest Rate")
-        ))
-      ),
-      financialDetails = Seq(FinancialDetails(
-        documentId = "0001",
-        taxPeriodFrom = Some(LocalDate.of(2022, 10 ,30)),
-        taxPeriodTo = Some(LocalDate.of(2022,10,30)),
-        items = Seq(FinancialItem(
-          dueDate = Some(LocalDate.of(2022, 10 ,30)),
-          clearingDate = Some(LocalDate.of(2022, 10 ,30)),
-          metadata = FinancialItemMetadata(
-            subItem = Some("001"),
-            amount = Some(123.45),
-            clearingReason = Some("01"),
-            outgoingPaymentMethod = Some("outgoing Payment"),
-            paymentLock = Some("paymentLock"),
-            clearingLock = Some("clearingLock"),
-            interestLock = Some("interestLock"),
-            dunningLock = Some("dunningLock"),
-            returnFlag = Some(true),
-            paymentReference = Some("Ab12453535"),
-            paymentAmount = Some(543.21),
-            paymentMethod = Some("Payment"),
-            paymentLot = Some("81203010024"),
-            paymentLotItem = Some("000001"),
-            clearingSAPDocument = Some("3350000253"),
-            codingInitiationDate = Some(LocalDate.of(2022, 10 ,30)),
-            statisticalDocument = Some("S"),
-            DDCollectionInProgress = Some(true),
-            returnReason = Some("ABCA"),
-            promisetoPay = Some("promisetoPay")
-          )
-        )),
-        originalAmount = Some(123.45),
-        outstandingAmount = Some(543.21),
-        mainTransaction = Some(MainTransactionEnum.VATReturnFirstLPP),
-        chargeReference = Some("1"),
-        metadata = FinancialDetailsMetadata(
-          taxYear = "2022",
-          chargeType = Some("PAYE"),
-          mainType = Some("2100"),
-          periodKey = Some("13RL"),
-          periodKeyDescription = Some("abcde"),
-          businessPartner = Some("6622334455"),
-          contractAccountCategory = Some("02"),
-          contractAccount = Some("X"),
-          contractObjectType = Some("ABCD"),
-          contractObject = Some("00000003000000002757"),
-          sapDocumentNumber = Some("1040000872"),
-          sapDocumentNumberItem = Some("XM00"),
-          subTransaction = Some("5678"),
-          clearedAmount = Some(123.45),
-          accruedInterest = Some(543.21)
-        )
+    val mockGetFinancialDetailsResponseAsModel: FinancialDetails = getFinancialDetails.FinancialDetails(
+      documentDetails = Some(Seq(getFinancialDetails.DocumentDetails(
+        chargeReferenceNumber = None,
+        documentOutstandingAmount = Some(0.00),
+        lineItemDetails = Some(Seq(getFinancialDetails.LineItemDetails(None))))
       ))
     )
 

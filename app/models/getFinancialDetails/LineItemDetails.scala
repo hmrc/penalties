@@ -18,12 +18,10 @@ package models.getFinancialDetails
 
 import play.api.libs.json.{Format, Json}
 
-//NOTE: Although taxPayerDetails, balanceDetails and codingDetails are provided we do not use them at this point in time.
-case class GetFinancialDetails(
-                                documentDetails: Seq[DocumentDetails],
-                                financialDetails: Seq[FinancialDetails]
-                              )
+case class LineItemDetails(
+                            mainTransaction: Option[MainTransactionEnum.Value]
+                     )
 
-object GetFinancialDetails {
-  implicit val format: Format[GetFinancialDetails] = Json.format[GetFinancialDetails]
+object LineItemDetails {
+  implicit val format: Format[LineItemDetails] = Json.format[LineItemDetails]
 }

@@ -16,13 +16,29 @@
 
 package models.getFinancialDetails
 
-import play.api.libs.json.{Format, Json}
+import base.SpecBase
+import play.api.libs.json.{JsValue, Json}
 
-//NOTE: Although totalisation are provided we do not use them at this point in time.
-case class FinancialDetails (
-                              documentDetails: Option[Seq[DocumentDetails]]
-                            )
+class LineItemDetailsSpec extends SpecBase {
+  val modelAsJson: JsValue = Json.parse(
+    """
+      |{
+      | "mainTransaction":"4703"
+      |}
+      |""".stripMargin)
 
-object FinancialDetails {
-  implicit val format: Format[FinancialDetails] = Json.format[FinancialDetails]
+  val model: LineItemDetails = LineItemDetails(
+    Some(MainTransactionEnum.VATReturnFirstLPP)
+  )
+
+  "be readable from JSON" in {
+    val result = Json.fromJson(modelAsJson)(LineItemDetails.format)
+    result.isSuccess shouldBe true
+    result.get shouldBe model
+  }
+
+  "be writable to JSON" in {
+    val result = Json.toJson(model)(LineItemDetails.format)
+    result shouldBe modelAsJson
+  }
 }

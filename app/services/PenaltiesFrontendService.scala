@@ -16,29 +16,28 @@
 
 package services
 
-import models.getFinancialDetails.GetFinancialDetails
+import models.getFinancialDetails.{FinancialDetails, MainTransactionEnum}
 import models.getPenaltyDetails.GetPenaltyDetails
 import models.getPenaltyDetails.latePayment.{LPPDetailsMetadata, LPPPenaltyCategoryEnum, LatePaymentPenalty}
-import models.mainTransaction.MainTransactionEnum
 
 import javax.inject.Inject
 
 class PenaltiesFrontendService @Inject()() {
-  def combineAPIData(penaltyDetails: GetPenaltyDetails, financialDetails: GetFinancialDetails): GetPenaltyDetails = {
+  def combineAPIData(penaltyDetails: GetPenaltyDetails, financialDetails: FinancialDetails): GetPenaltyDetails = {
     val newLPPDetails = penaltyDetails.latePaymentPenalty.flatMap(
       _.details.map(_.map(
         oldLPPDetails => {
           val isAdditional = oldLPPDetails.penaltyCategory.equals(LPPPenaltyCategoryEnum.SecondPenalty)
-          val firstAndMaybeSecondPenalty = financialDetails.financialDetails.filter(_.chargeReference.exists(_.equals(oldLPPDetails.principalChargeReference)))
+          val firstAndMaybeSecondPenalty = financialDetails.documentDetails.get.filter(_.chargeReferenceNumber.exists(_.equals(oldLPPDetails.principalChargeReference)))
           val penaltyToCopy = firstAndMaybeSecondPenalty.find(lpp => {
-              if(isAdditional) MainTransactionEnum.secondCharges.contains(lpp.mainTransaction.get)
-              else MainTransactionEnum.firstCharges.contains(lpp.mainTransaction.get)
+              if(isAdditional) MainTransactionEnum.secondCharges.contains(lpp.lineItemDetails.get.head.mainTransaction.get)
+              else MainTransactionEnum.firstCharges.contains(lpp.lineItemDetails.get.head.mainTransaction.get)
             }
           )
           oldLPPDetails.copy(
             metadata = LPPDetailsMetadata(
-              mainTransaction = Some(penaltyToCopy.get.mainTransaction.get),
-              outstandingAmount = Some(penaltyToCopy.get.outstandingAmount.get),
+              mainTransaction = penaltyToCopy.get.lineItemDetails.get.head.mainTransaction,
+              outstandingAmount = penaltyToCopy.get.documentOutstandingAmount,
               timeToPay = oldLPPDetails.metadata.timeToPay
             )
           )

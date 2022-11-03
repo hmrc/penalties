@@ -17,11 +17,10 @@
 package services
 
 import base.SpecBase
-import models.getFinancialDetails.{FinancialDetails, FinancialDetailsMetadata, FinancialItem, FinancialItemMetadata, GetFinancialDetails}
+import models.getFinancialDetails.{DocumentDetails, FinancialDetails, LineItemDetails, MainTransactionEnum}
 import models.getPenaltyDetails.GetPenaltyDetails
 import models.getPenaltyDetails.appealInfo.{AppealInformationType, AppealLevelEnum, AppealStatusEnum}
 import models.getPenaltyDetails.latePayment.{LPPDetails, LPPDetailsMetadata, LPPPenaltyCategoryEnum, LPPPenaltyStatusEnum, LatePaymentPenalty, TimeToPay}
-import models.mainTransaction.MainTransactionEnum
 
 import java.time.LocalDate
 
@@ -90,117 +89,17 @@ class PenaltiesFrontendServiceSpec extends SpecBase {
         ))
       )
 
-      val financialDetails = GetFinancialDetails(
-        documentDetails = Seq.empty,
-        financialDetails = Seq(
-          FinancialDetails(
-            documentId = "DOC1234",
-            taxPeriodFrom = Some(LocalDate.of(2022, 1, 1)),
-            taxPeriodTo = Some(LocalDate.of(2022, 3, 31)),
-            items = Seq(
-              FinancialItem(
-                dueDate = Some(LocalDate.of(2018, 8, 13)),
-                clearingDate = Some(LocalDate.of(2018, 8, 13)),
-                metadata = FinancialItemMetadata(
-                  subItem = Some("001"),
-                  amount = Some(10000),
-                  clearingReason = Some("01"),
-                  outgoingPaymentMethod = Some("outgoing payment"),
-                  paymentLock = Some("paymentLock"),
-                  clearingLock = Some("clearingLock"),
-                  interestLock = Some("interestLock"),
-                  dunningLock = Some("dunningLock"),
-                  returnFlag = Some(true),
-                  paymentReference = Some("Ab12453535"),
-                  paymentAmount = Some(10000),
-                  paymentMethod = Some("Payment"),
-                  paymentLot = Some("081203010024"),
-                  paymentLotItem = Some("000001"),
-                  clearingSAPDocument = Some("3350000253"),
-                  codingInitiationDate = Some(LocalDate.of(2021, 1, 11)),
-                  statisticalDocument = Some("S"),
-                  DDCollectionInProgress = Some(true),
-                  returnReason = Some("ABCA"),
-                  promisetoPay = Some("Y")
-                )
-              )
-            ),
-            originalAmount = Some(123.45),
-            outstandingAmount = Some(123.45),
-            mainTransaction = Some(MainTransactionEnum.VATReturnSecondLPP),
-            chargeReference = Some("1234567890"),
-            metadata = FinancialDetailsMetadata(
-              taxYear = "2022",
-              chargeType = Some("1234"),
-              mainType = Some("1234"),
-              periodKey = Some("123"),
-              periodKeyDescription = Some("foobar"),
-              businessPartner = Some("123"),
-              contractAccountCategory = Some("1"),
-              contractAccount = Some("1"),
-              contractObjectType = Some("1"),
-              contractObject = Some("1"),
-              sapDocumentNumber = Some("1"),
-              sapDocumentNumberItem = Some("1"),
-              subTransaction = Some("1"),
-              clearedAmount = Some(123.45),
-              accruedInterest = Some(123.45)
-            )
-          ),
-          FinancialDetails(
-            documentId = "DOC1234",
-            taxPeriodFrom = Some(LocalDate.of(2022, 1, 1)),
-            taxPeriodTo = Some(LocalDate.of(2022, 3, 31)),
-            items = Seq(
-              FinancialItem(
-                dueDate = Some(LocalDate.of(2018, 8, 13)),
-                clearingDate = Some(LocalDate.of(2018, 8, 13)),
-                metadata = FinancialItemMetadata(
-                  subItem = Some("001"),
-                  amount = Some(10000),
-                  clearingReason = Some("01"),
-                  outgoingPaymentMethod = Some("outgoing payment"),
-                  paymentLock = Some("paymentLock"),
-                  clearingLock = Some("clearingLock"),
-                  interestLock = Some("interestLock"),
-                  dunningLock = Some("dunningLock"),
-                  returnFlag = Some(true),
-                  paymentReference = Some("Ab12453535"),
-                  paymentAmount = Some(10000),
-                  paymentMethod = Some("Payment"),
-                  paymentLot = Some("081203010024"),
-                  paymentLotItem = Some("000001"),
-                  clearingSAPDocument = Some("3350000253"),
-                  codingInitiationDate = Some(LocalDate.of(2021, 1, 11)),
-                  statisticalDocument = Some("S"),
-                  DDCollectionInProgress = Some(true),
-                  returnReason = Some("ABCA"),
-                  promisetoPay = Some("Y")
-                )
-              )
-            ),
-            originalAmount = Some(123.45),
-            outstandingAmount = Some(123.45),
-            mainTransaction = Some(MainTransactionEnum.VATReturnFirstLPP),
-            chargeReference = Some("1234567890"),
-            metadata = FinancialDetailsMetadata(
-              taxYear = "2022",
-              chargeType = Some("1234"),
-              mainType = Some("1234"),
-              periodKey = Some("123"),
-              periodKeyDescription = Some("foobar"),
-              businessPartner = Some("123"),
-              contractAccountCategory = Some("1"),
-              contractAccount = Some("1"),
-              contractObjectType = Some("1"),
-              contractObject = Some("1"),
-              sapDocumentNumber = Some("1"),
-              sapDocumentNumberItem = Some("1"),
-              subTransaction = Some("1"),
-              clearedAmount = Some(123.45),
-              accruedInterest = Some(123.45)
-            )
-          )
+      val financialDetails: FinancialDetails = FinancialDetails(
+        documentDetails = Some(Seq(
+          DocumentDetails(
+            chargeReferenceNumber = Some("1234567890"),
+            documentOutstandingAmount = Some(123.45),
+            lineItemDetails = Some(Seq(LineItemDetails(Some(MainTransactionEnum.VATReturnSecondLPP))))),
+          DocumentDetails(
+            chargeReferenceNumber = Some("1234567890"),
+            documentOutstandingAmount = Some(123.45),
+            lineItemDetails = Some(Seq(LineItemDetails(Some(MainTransactionEnum.VATReturnFirstLPP)))))
+        )
         )
       )
 
@@ -311,64 +210,12 @@ class PenaltiesFrontendServiceSpec extends SpecBase {
         ))
       )
 
-      val financialDetails = GetFinancialDetails(
-        documentDetails = Seq.empty,
-        financialDetails = Seq(
-          FinancialDetails(
-            documentId = "DOC1234",
-            taxPeriodFrom = Some(LocalDate.of(2022, 1, 1)),
-            taxPeriodTo = Some(LocalDate.of(2022, 3, 31)),
-            items = Seq(
-              FinancialItem(
-                dueDate = Some(LocalDate.of(2018, 8, 13)),
-                clearingDate = Some(LocalDate.of(2018, 8, 13)),
-                metadata = FinancialItemMetadata(
-                  subItem = Some("001"),
-                  amount = Some(10000),
-                  clearingReason = Some("01"),
-                  outgoingPaymentMethod = Some("outgoing payment"),
-                  paymentLock = Some("paymentLock"),
-                  clearingLock = Some("clearingLock"),
-                  interestLock = Some("interestLock"),
-                  dunningLock = Some("dunningLock"),
-                  returnFlag = Some(true),
-                  paymentReference = Some("Ab12453535"),
-                  paymentAmount = Some(10000),
-                  paymentMethod = Some("Payment"),
-                  paymentLot = Some("081203010024"),
-                  paymentLotItem = Some("000001"),
-                  clearingSAPDocument = Some("3350000253"),
-                  codingInitiationDate = Some(LocalDate.of(2021, 1, 11)),
-                  statisticalDocument = Some("S"),
-                  DDCollectionInProgress = Some(true),
-                  returnReason = Some("ABCA"),
-                  promisetoPay = Some("Y")
-                )
-              )
-            ),
-            originalAmount = Some(123.45),
-            outstandingAmount = Some(123.45),
-            mainTransaction = Some(MainTransactionEnum.VATReturnFirstLPP),
-            chargeReference = Some("1234567890"),
-            metadata = FinancialDetailsMetadata(
-              taxYear = "2022",
-              chargeType = Some("1234"),
-              mainType = Some("1234"),
-              periodKey = Some("123"),
-              periodKeyDescription = Some("foobar"),
-              businessPartner = Some("123"),
-              contractAccountCategory = Some("1"),
-              contractAccount = Some("1"),
-              contractObjectType = Some("1"),
-              contractObject = Some("1"),
-              sapDocumentNumber = Some("1"),
-              sapDocumentNumberItem = Some("1"),
-              subTransaction = Some("1"),
-              clearedAmount = Some(123.45),
-              accruedInterest = Some(123.45)
-            )
-          )
-        )
+      val financialDetails: FinancialDetails = FinancialDetails(
+        documentDetails = Some(Seq(DocumentDetails(
+          chargeReferenceNumber = Some("1234567890"),
+          documentOutstandingAmount = Some(123.45),
+          lineItemDetails = Some(Seq(LineItemDetails(Some(MainTransactionEnum.VATReturnFirstLPP)))))
+        ))
       )
 
       val expectedResult = LatePaymentPenalty(
@@ -456,64 +303,12 @@ class PenaltiesFrontendServiceSpec extends SpecBase {
         ))
       )
 
-      val financialDetails = GetFinancialDetails(
-        documentDetails = Seq.empty,
-        financialDetails = Seq(
-          FinancialDetails(
-            documentId = "DOC1234",
-            taxPeriodFrom = Some(LocalDate.of(2022, 1, 1)),
-            taxPeriodTo = Some(LocalDate.of(2022, 3, 31)),
-            items = Seq(
-              FinancialItem(
-                dueDate = Some(LocalDate.of(2018, 8, 13)),
-                clearingDate = Some(LocalDate.of(2018, 8, 13)),
-                metadata = FinancialItemMetadata(
-                  subItem = Some("001"),
-                  amount = Some(10000),
-                  clearingReason = Some("01"),
-                  outgoingPaymentMethod = Some("outgoing payment"),
-                  paymentLock = Some("paymentLock"),
-                  clearingLock = Some("clearingLock"),
-                  interestLock = Some("interestLock"),
-                  dunningLock = Some("dunningLock"),
-                  returnFlag = Some(true),
-                  paymentReference = Some("Ab12453535"),
-                  paymentAmount = Some(10000),
-                  paymentMethod = Some("Payment"),
-                  paymentLot = Some("081203010024"),
-                  paymentLotItem = Some("000001"),
-                  clearingSAPDocument = Some("3350000253"),
-                  codingInitiationDate = Some(LocalDate.of(2021, 1, 11)),
-                  statisticalDocument = Some("S"),
-                  DDCollectionInProgress = Some(true),
-                  returnReason = Some("ABCA"),
-                  promisetoPay = Some("Y")
-                )
-              )
-            ),
-            originalAmount = Some(123.45),
-            outstandingAmount = Some(123.45),
-            mainTransaction = Some(MainTransactionEnum.VATReturnSecondLPP),
-            chargeReference = Some("1234567890"),
-            metadata = FinancialDetailsMetadata(
-              taxYear = "2022",
-              chargeType = Some("1234"),
-              mainType = Some("1234"),
-              periodKey = Some("123"),
-              periodKeyDescription = Some("foobar"),
-              businessPartner = Some("123"),
-              contractAccountCategory = Some("1"),
-              contractAccount = Some("1"),
-              contractObjectType = Some("1"),
-              contractObject = Some("1"),
-              sapDocumentNumber = Some("1"),
-              sapDocumentNumberItem = Some("1"),
-              subTransaction = Some("1"),
-              clearedAmount = Some(123.45),
-              accruedInterest = Some(123.45)
-            )
-          )
-        )
+      val financialDetails: FinancialDetails = FinancialDetails(
+        documentDetails = Some(Seq(DocumentDetails(
+          chargeReferenceNumber = Some("1234567890"),
+          documentOutstandingAmount = Some(123.45),
+          lineItemDetails = Some(Seq(LineItemDetails(Some(MainTransactionEnum.VATReturnSecondLPP)))))
+        ))
       )
 
       val expectedResult = LatePaymentPenalty(
@@ -631,118 +426,17 @@ class PenaltiesFrontendServiceSpec extends SpecBase {
         ))
       )
 
-      val financialDetails = GetFinancialDetails(
-        documentDetails = Seq.empty,
-        financialDetails = Seq(
-          FinancialDetails(
-            documentId = "DOC1234",
-            taxPeriodFrom = Some(LocalDate.of(2022, 1, 1)),
-            taxPeriodTo = Some(LocalDate.of(2022, 3, 31)),
-            items = Seq(
-              FinancialItem(
-                dueDate = Some(LocalDate.of(2018, 8, 13)),
-                clearingDate = Some(LocalDate.of(2018, 8, 13)),
-                metadata = FinancialItemMetadata(
-                  subItem = Some("001"),
-                  amount = Some(10000),
-                  clearingReason = Some("01"),
-                  outgoingPaymentMethod = Some("outgoing payment"),
-                  paymentLock = Some("paymentLock"),
-                  clearingLock = Some("clearingLock"),
-                  interestLock = Some("interestLock"),
-                  dunningLock = Some("dunningLock"),
-                  returnFlag = Some(true),
-                  paymentReference = Some("Ab12453535"),
-                  paymentAmount = Some(10000),
-                  paymentMethod = Some("Payment"),
-                  paymentLot = Some("081203010024"),
-                  paymentLotItem = Some("000001"),
-                  clearingSAPDocument = Some("3350000253"),
-                  codingInitiationDate = Some(LocalDate.of(2021, 1, 11)),
-                  statisticalDocument = Some("S"),
-                  DDCollectionInProgress = Some(true),
-                  returnReason = Some("ABCA"),
-                  promisetoPay = Some("Y")
-                )
-              )
-            ),
-            originalAmount = Some(123.45),
-            outstandingAmount = Some(123.45),
-            mainTransaction = Some(MainTransactionEnum.OfficersAssessmentFirstLPP),
-            chargeReference = Some("1234567891"),
-            metadata = FinancialDetailsMetadata(
-              taxYear = "2022",
-              chargeType = Some("1234"),
-              mainType = Some("1234"),
-              periodKey = Some("123"),
-              periodKeyDescription = Some("foobar"),
-              businessPartner = Some("123"),
-              contractAccountCategory = Some("1"),
-              contractAccount = Some("1"),
-              contractObjectType = Some("1"),
-              contractObject = Some("1"),
-              sapDocumentNumber = Some("1"),
-              sapDocumentNumberItem = Some("1"),
-              subTransaction = Some("1"),
-              clearedAmount = Some(123.45),
-              accruedInterest = Some(123.45)
-            )
-          ),
-          FinancialDetails(
-            documentId = "DOC1234",
-            taxPeriodFrom = Some(LocalDate.of(2022, 1, 1)),
-            taxPeriodTo = Some(LocalDate.of(2022, 3, 31)),
-            items = Seq(
-              FinancialItem(
-                dueDate = Some(LocalDate.of(2018, 8, 13)),
-                clearingDate = Some(LocalDate.of(2018, 8, 13)),
-                metadata = FinancialItemMetadata(
-                  subItem = Some("001"),
-                  amount = Some(10000),
-                  clearingReason = Some("01"),
-                  outgoingPaymentMethod = Some("outgoing payment"),
-                  paymentLock = Some("paymentLock"),
-                  clearingLock = Some("clearingLock"),
-                  interestLock = Some("interestLock"),
-                  dunningLock = Some("dunningLock"),
-                  returnFlag = Some(true),
-                  paymentReference = Some("Ab12453535"),
-                  paymentAmount = Some(10000),
-                  paymentMethod = Some("Payment"),
-                  paymentLot = Some("081203010024"),
-                  paymentLotItem = Some("000001"),
-                  clearingSAPDocument = Some("3350000253"),
-                  codingInitiationDate = Some(LocalDate.of(2021, 1, 11)),
-                  statisticalDocument = Some("S"),
-                  DDCollectionInProgress = Some(true),
-                  returnReason = Some("ABCA"),
-                  promisetoPay = Some("Y")
-                )
-              )
-            ),
-            originalAmount = Some(123.45),
-            outstandingAmount = Some(123.45),
-            mainTransaction = Some(MainTransactionEnum.VATReturnFirstLPP),
-            chargeReference = Some("1234567890"),
-            metadata = FinancialDetailsMetadata(
-              taxYear = "2022",
-              chargeType = Some("1234"),
-              mainType = Some("1234"),
-              periodKey = Some("123"),
-              periodKeyDescription = Some("foobar"),
-              businessPartner = Some("123"),
-              contractAccountCategory = Some("1"),
-              contractAccount = Some("1"),
-              contractObjectType = Some("1"),
-              contractObject = Some("1"),
-              sapDocumentNumber = Some("1"),
-              sapDocumentNumberItem = Some("1"),
-              subTransaction = Some("1"),
-              clearedAmount = Some(123.45),
-              accruedInterest = Some(123.45)
-            )
-          )
-        )
+      val financialDetails: FinancialDetails = FinancialDetails(
+        documentDetails = Some(Seq(
+          DocumentDetails(
+            chargeReferenceNumber = Some("1234567891"),
+            documentOutstandingAmount = Some(123.45),
+            lineItemDetails = Some(Seq(LineItemDetails(Some(MainTransactionEnum.OfficersAssessmentFirstLPP))))),
+          DocumentDetails(
+            chargeReferenceNumber = Some("1234567890"),
+            documentOutstandingAmount = Some(123.45),
+            lineItemDetails = Some(Seq(LineItemDetails(Some(MainTransactionEnum.VATReturnFirstLPP)))))
+        ))
       )
 
       val expectedResult = LatePaymentPenalty(

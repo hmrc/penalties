@@ -26,15 +26,19 @@ import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 @Singleton
 class AppConfig @Inject()(val config: Configuration, servicesConfig: ServicesConfig) extends FeatureSwitching {
   val auditingEnabled: Boolean = config.get[Boolean]("auditing.enabled")
-  val graphiteHost: String     = config.get[String]("microservice.metrics.graphite.host")
+  val graphiteHost: String = config.get[String]("microservice.metrics.graphite.host")
 
   def queryParametersForGetFinancialDetail(dateFrom: LocalDate, dateTo: LocalDate): String = {
-    s"?dateFrom=$dateFrom&dateTo=$dateTo&onlyOpenItems=${config.get[Boolean]("eis.onlyOpenItems")}" +
-      s"&includeStatistical=${config.get[Boolean]("eis.includeStatistical")}" +
-      s"&includeLocks=${config.get[Boolean]("eis.includeLocks")}" +
-      s"&calculateAccruedInterest=${config.get[Boolean]("eis.calculateAccruedInterest")}" +
-      s"&removePOA=${config.get[Boolean]("eis.removePOA")}" +
-      s"&customerPaymentInformation=${config.get[Boolean]("eis.customerPaymentInformation")}"
+    s"?dateFrom=$dateFrom&dateTo=$dateTo" +
+      s"&includeClearedItems=${!config.get[Boolean](" eis.includeCleared")}" +
+      s"&includeStatisticalItems=${config.get[Boolean]("eis.includeStatistical")}" +
+      s"&includePaymentOnAccount=${config.get[Boolean]("eis.includePOA")}" +
+      s"&addRegimeTotalisation=${config.get[Boolean]("eis.addRegimeTotalisation")}" +
+      s"&addLockInformation=${config.get[Boolean]("eis.includeLocks")}" +
+      s"&addPenaltyDetails=${config.get[Boolean]("eis.includePenaltyDetails")}" +
+      s"&addPostedInterestDetails=${config.get[Boolean]("eis.calculateAccruedInterest")}" +
+      s"&addAccruingInterestDetails=${config.get[Boolean]("eis.calculateAccruedInterest")}"
+
   }
 
   lazy val appName: String = config.get[String]("appName")
@@ -60,17 +64,17 @@ class AppConfig @Inject()(val config: Configuration, servicesConfig: ServicesCon
   lazy val SDESNotificationFileRecipient: String = config.get[String]("SDESNotification.file.recipient")
 
   def getPenaltyDetailsUrl: String = {
-    if(!isEnabled(CallAPI1812ETMP)) stubBase + "/penalties-stub/penalty/details/VATC/VRN/"
+    if (!isEnabled(CallAPI1812ETMP)) stubBase + "/penalties-stub/penalty/details/VATC/VRN/"
     else etmpBase + "/penalty/details/VATC/VRN/"
   }
 
   def getFinancialDetailsUrl(vrn: String): String = {
-    if(!isEnabled(CallAPI1811ETMP)) stubBase + s"/penalties-stub/penalty/financial-data/VRN/$vrn/VATC"
+    if (!isEnabled(CallAPI1811ETMP)) stubBase + s"/penalties-stub/penalty/financial-data/VRN/$vrn/VATC"
     else etmpBase + s"/penalty/financial-data/VRN/$vrn/VATC"
   }
 
   def getAppealSubmissionURL(enrolmentKey: String, isLPP: Boolean, penaltyNumber: String): String = {
-    if(!isEnabled(CallPEGA)) stubBase + s"/penalties-stub/appeals/submit?enrolmentKey=$enrolmentKey&isLPP=$isLPP&penaltyNumber=$penaltyNumber"
+    if (!isEnabled(CallPEGA)) stubBase + s"/penalties-stub/appeals/submit?enrolmentKey=$enrolmentKey&isLPP=$isLPP&penaltyNumber=$penaltyNumber"
     //TODO: change to relevant URL when implemented
     else pegaBase + s"/penalty/first-stage-appeal/$penaltyNumber"
   }
@@ -80,7 +84,7 @@ class AppConfig @Inject()(val config: Configuration, servicesConfig: ServicesCon
   }
 
   def getComplianceData(vrn: String, fromDate: String, toDate: String): String = {
-    if(isEnabled(CallDES)) {
+    if (isEnabled(CallDES)) {
       desBase + s"/enterprise/obligation-data/vrn/$vrn/VATC?from=$fromDate&to=$toDate"
     } else {
       stubBase + s"/penalties-stub/enterprise/obligation-data/vrn/$vrn/VATC?from=$fromDate&to=$toDate"

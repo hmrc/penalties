@@ -54,7 +54,7 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
       |     "details": [
       |       {
       |          "penaltyCategory": "LPP1",
-      |          "penaltyStatus": "P",
+      |          "penaltyStatus": "A",
       |          "penaltyAmountPaid": 0,
       |          "penaltyAmountOutstanding": 144.00,
       |          "LPP1LRCalculationAmount": 99.99,
@@ -68,7 +68,7 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
       |          "penaltyChargeCreationDate": "2022-10-30",
       |          "communicationsDate": "2022-10-30",
       |          "penaltyChargeDueDate": "2022-10-30",
-      |          "principalChargeReference": "1234567890",
+      |          "principalChargeReference": "XM002610011594",
       |          "principalChargeBillingFrom": "2022-10-30",
       |          "principalChargeBillingTo": "2022-10-30",
       |          "principalChargeDueDate": "2022-10-30",
@@ -81,120 +81,63 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
       |       }
       |   ]
       | }
-      |}
-      |""".stripMargin)
-
-  val getFinancialDetailsJson: JsValue = Json.parse(
-    """
-      |{
-      | "documentDetails": [],
-      | "financialDetails": [
-      | {
-      |   "taxYear": "2022",
-      |   "documentId": "DOC1234",
-      |   "chargeType": "1234",
-      |   "mainType": "1234",
-      |   "periodKey": "123",
-      |   "periodKeyDescription": "foobar",
-      |   "taxPeriodFrom": "2022-01-01",
-      |   "taxPeriodTo": "2022-03-31",
-      |   "businessPartner": "123",
-      |   "contractAccountCategory": "1",
-      |   "contractAccount": "1",
-      |   "contractObjectType": "1",
-      |   "contractObject": "1",
-      |   "sapDocumentNumber": "1",
-      |   "sapDocumentNumberItem": "1",
-      |   "chargeReference": "1234567890",
-      |   "mainTransaction": "4703",
-      |   "subTransaction": "1",
-      |   "originalAmount": 123.45,
-      |   "outstandingAmount": 123.45,
-      |   "clearedAmount": 123.45,
-      |   "accruedInterest": 123.45,
-      |   "items": [{
-      |     "subItem": "001",
-      |     "dueDate": "2018-08-13",
-      |     "amount": 10000,
-      |     "clearingDate": "2018-08-13",
-      |     "clearingReason": "01",
-      |     "outgoingPaymentMethod": "outgoing payment",
-      |     "paymentLock": "paymentLock",
-      |     "clearingLock": "clearingLock",
-      |     "interestLock": "interestLock",
-      |     "dunningLock": "dunningLock",
-      |     "returnFlag": true,
-      |     "paymentReference": "Ab12453535",
-      |     "paymentAmount": 10000,
-      |     "paymentMethod": "Payment",
-      |     "paymentLot": "081203010024",
-      |     "paymentLotItem": "000001",
-      |     "clearingSAPDocument": "3350000253",
-      |     "codingInitiationDate": "2021-01-11",
-      |     "statisticalDocument": "S",
-      |     "returnReason": "ABCA",
-      |     "DDCollectionInProgress": true,
-      |     "promisetoPay": "Y"
-      |   }]
-      | }
-      | ]
       |}
       |""".stripMargin)
 
   val combinedPenaltyAndFinancialData: JsValue = Json.parse(
     """
       |{
-      | "totalisations": {
-      |   "LSPTotalValue": 200,
-      |   "penalisedPrincipalTotal": 2000,
-      |   "LPPPostedTotal": 165.25,
-      |   "LPPEstimatedTotal": 15.26,
-      |   "LPIPostedTotal": 1968.2,
-      |   "LPIEstimatedTotal": 7
-      | },
-      | "lateSubmissionPenalty": {
-      |   "summary": {
-      |     "activePenaltyPoints": 0,
-      |     "inactivePenaltyPoints": 0,
-      |     "regimeThreshold": 5,
-      |     "penaltyChargeAmount": 200.00,
-      |     "PoCAchievementDate": "2022-01-01"
-      |   },
-      |   "details": []
-      | },
-      | "latePaymentPenalty": {
-      |     "details": [
-      |       {
-      |          "penaltyCategory": "LPP1",
-      |          "penaltyStatus": "P",
-      |          "penaltyAmountPaid": 0,
-      |          "penaltyAmountOutstanding": 144.00,
-      |          "LPP1LRCalculationAmount": 99.99,
-      |          "LPP1LRDays": "15",
-      |          "LPP1LRPercentage": 2.00,
-      |          "LPP1HRCalculationAmount": 99.99,
-      |          "LPP1HRDays": "31",
-      |          "LPP1HRPercentage": 2.00,
-      |          "LPP2Days": "31",
-      |          "LPP2Percentage": 4.00,
-      |          "penaltyChargeCreationDate": "2022-10-30",
-      |          "communicationsDate": "2022-10-30",
-      |          "penaltyChargeDueDate": "2022-10-30",
-      |          "principalChargeReference": "1234567890",
-      |          "principalChargeBillingFrom": "2022-10-30",
-      |          "principalChargeBillingTo": "2022-10-30",
-      |          "principalChargeDueDate": "2022-10-30",
-      |          "mainTransaction": "4703",
-      |          "outstandingAmount": 123.45,
-      |          "timeToPay": [
-      |             {
-      |               "TTPStartDate": "2022-01-01",
-      |               "TTPEndDate": "2022-12-31"
-      |             }
-      |          ]
-      |       }
-      |   ]
-      | }
+      |    "totalisations": {
+      |        "LSPTotalValue": 200,
+      |        "penalisedPrincipalTotal": 2000,
+      |        "LPPPostedTotal": 165.25,
+      |        "LPPEstimatedTotal": 15.26,
+      |        "LPIPostedTotal": 1968.2,
+      |        "LPIEstimatedTotal": 7
+      |    },
+      |    "lateSubmissionPenalty": {
+      |        "summary": {
+      |            "activePenaltyPoints": 0,
+      |            "inactivePenaltyPoints": 0,
+      |            "regimeThreshold": 5,
+      |            "penaltyChargeAmount": 200,
+      |            "PoCAchievementDate": "2022-01-01"
+      |        },
+      |        "details": []
+      |    },
+      |    "latePaymentPenalty": {
+      |        "details": [
+      |            {
+      |                "principalChargeDueDate": "2022-10-30",
+      |                "principalChargeBillingTo": "2022-10-30",
+      |                "penaltyAmountPaid": 0,
+      |                "outstandingAmount": 543.21,
+      |                "LPP1LRPercentage": 2,
+      |                "LPP1HRDays": "31",
+      |                "penaltyChargeDueDate": "2022-10-30",
+      |                "communicationsDate": "2022-10-30",
+      |                "LPP2Days": "31",
+      |                "penaltyChargeCreationDate": "2022-10-30",
+      |                "LPP1HRPercentage": 2,
+      |                "LPP1LRDays": "15",
+      |                "timeToPay": [
+      |                    {
+      |                        "TTPStartDate": "2022-01-01",
+      |                        "TTPEndDate": "2022-12-31"
+      |                    }
+      |                ],
+      |                "LPP1HRCalculationAmount": 99.99,
+      |                "penaltyCategory": "LPP1",
+      |                "principalChargeReference": "XM002610011594",
+      |                "principalChargeBillingFrom": "2022-10-30",
+      |                "penaltyStatus": "A",
+      |                "mainTransaction": "4703",
+      |                "LPP2Percentage": 4,
+      |                "LPP1LRCalculationAmount": 99.99,
+      |                "penaltyAmountOutstanding": 144
+      |            }
+      |        ]
+      |    }
       |}
       |""".stripMargin
   )
@@ -202,11 +145,12 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
   s"return OK (${Status.OK})" when {
 
     "the get penalty details call succeeds and the get financial details call succeeds (combining the data together)" in {
+
       mockStubResponseForGetPenaltyDetails(Status.OK, "123456789", body = Some(getPenaltyDetailsJson.toString()))
       mockStubResponseForGetFinancialDetails(Status.OK,
         s"VRN/123456789/VATC?dateFrom=${LocalDate.now.minusYears(2)}&dateTo=${LocalDate.now}" +
-          s"&onlyOpenItems=false&includeStatistical=true&includeLocks=false" +
-          s"&calculateAccruedInterest=true&removePOA=false&customerPaymentInformation=false", Some(getFinancialDetailsJson.toString()))
+          s"&includeClearedItems=false&includeStatisticalItems=true&includePaymentOnAccount=true&addRegimeTotalisation=false&addLockInformation=false&addPenaltyDetails=true&addPostedInterestDetails=true&addAccruingInterestDetails=true")
+
       val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/HMRC-MTD-VAT~VRN~123456789").get)
       result.status shouldBe OK
       Json.parse(result.body) shouldBe combinedPenaltyAndFinancialData
@@ -244,8 +188,7 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
           |""".stripMargin
       mockStubResponseForGetFinancialDetails(Status.NOT_FOUND,
         s"VRN/123456789/VATC?dateFrom=${LocalDate.now.minusYears(2)}&dateTo=${LocalDate.now}" +
-          s"&onlyOpenItems=false&includeStatistical=true&includeLocks=false" +
-          s"&calculateAccruedInterest=true&removePOA=false&customerPaymentInformation=false", Some(noDataFoundBody))
+          s"&includeClearedItems=false&includeStatisticalItems=true&includePaymentOnAccount=true&addRegimeTotalisation=false&addLockInformation=false&addPenaltyDetails=true&addPostedInterestDetails=true&addAccruingInterestDetails=true", Some(noDataFoundBody))
       mockStubResponseForGetPenaltyDetails(Status.OK, "123456789", body = Some(getPenaltyDetailsNoLPPJson.toString()))
       val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/HMRC-MTD-VAT~VRN~123456789").get)
       result.status shouldBe OK
@@ -294,8 +237,8 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
       mockStubResponseForGetPenaltyDetails(Status.OK, "123456789", body = Some(getPenaltyDetailsJson.toString()))
       mockStubResponseForGetFinancialDetails(Status.NOT_FOUND,
         s"VRN/123456789/VATC?dateFrom=${LocalDate.now.minusYears(2)}&dateTo=${LocalDate.now}" +
-          s"&onlyOpenItems=false&includeStatistical=true&includeLocks=false" +
-          s"&calculateAccruedInterest=true&removePOA=false&customerPaymentInformation=false", Some(noDataFoundBody))
+          s"&includeClearedItems=false&includeStatisticalItems=true&includePaymentOnAccount=true&addRegimeTotalisation=false&addLockInformation=false&addPenaltyDetails=true&addPostedInterestDetails=true&addAccruingInterestDetails=true", Some(noDataFoundBody))
+
       val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/HMRC-MTD-VAT~VRN~123456789").get)
       result.status shouldBe NO_CONTENT
     }
@@ -312,15 +255,15 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
       mockStubResponseForGetPenaltyDetails(Status.OK, "123456789", body = Some(getPenaltyDetailsJson.toString()))
       mockStubResponseForGetFinancialDetails(Status.INTERNAL_SERVER_ERROR,
         s"VRN/123456789/VATC?dateFrom=${LocalDate.now.minusYears(2)}&dateTo=${LocalDate.now}" +
-          s"&onlyOpenItems=false&includeStatistical=true&includeLocks=false" +
-          s"&calculateAccruedInterest=true&removePOA=false&customerPaymentInformation=false", Some(getFinancialDetailsJson.toString()))
+          s"&includeClearedItems=false&includeStatisticalItems=true&includePaymentOnAccount=true&addRegimeTotalisation=false&addLockInformation=false&addPenaltyDetails=true&addPostedInterestDetails=true&addAccruingInterestDetails=true")
+
       val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/HMRC-MTD-VAT~VRN~123456789").get)
       result.status shouldBe INTERNAL_SERVER_ERROR
     }
   }
 
   "audit the response when the user has > 0 penalties" in {
-    val penaltyDetailsWithLSPAndLPPAndFinancialDetails: JsValue = Json.parse(
+    val penaltyDetailsWithLSPAndLPPs: JsValue = Json.parse(
       """
         |{
         |   "totalisations":{
@@ -333,10 +276,10 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
         |   },
         |   "lateSubmissionPenalty":{
         |      "summary":{
-        |         "activePenaltyPoints": 10,
-        |         "inactivePenaltyPoints": 12,
-        |         "regimeThreshold": 10,
-        |         "penaltyChargeAmount": 684.25,
+        |         "activePenaltyPoints": 1,
+        |         "inactivePenaltyPoints": 0,
+        |         "regimeThreshold": 5,
+        |         "penaltyChargeAmount": 200,
         |         "PoCAchievementDate": "2022-01-01"
         |      },
         |      "details":[
@@ -348,7 +291,6 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
         |            "penaltyCreationDate":"2022-10-30",
         |            "penaltyExpiryDate":"2022-10-30",
         |            "communicationsDate":"2022-10-30",
-        |            "FAPIndicator":"X",
         |            "lateSubmissions":[
         |               {
         |                  "taxPeriodStartDate":"2022-01-01",
@@ -358,7 +300,6 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
         |                  "taxReturnStatus":"Fulfilled"
         |               }
         |            ],
-        |            "expiryReason":"FAP",
         |            "appealInformation":[
         |               {
         |                  "appealStatus":"99",
@@ -376,8 +317,7 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
         |         {
         |            "principalChargeDueDate":"2022-10-30",
         |            "principalChargeBillingTo":"2022-10-30",
-        |            "penaltyAmountPaid":1001.45,
-        |            "outstandingAmount":123.45,
+        |            "penaltyAmountPaid":0,
         |            "LPP1LRPercentage":2,
         |            "LPP1HRDays":"31",
         |            "penaltyChargeDueDate":"2022-10-30",
@@ -389,7 +329,98 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
         |            "LPP1HRCalculationAmount":99.99,
         |            "penaltyChargeReference":"1234567890",
         |            "penaltyCategory":"LPP1",
-        |            "principalChargeReference":"1234567890",
+        |            "principalChargeReference":"XM002610011594",
+        |            "penaltyStatus":"A",
+        |            "principalChargeBillingFrom":"2022-10-30",
+        |            "LPP2Percentage":4,
+        |            "appealInformation":[
+        |               {
+        |                  "appealStatus":"99",
+        |                  "appealLevel":"01"
+        |               }
+        |            ],
+        |            "LPP1LRCalculationAmount":99.99,
+        |            "penaltyAmountOutstanding":99.99,
+        |            "timeToPay": [
+        |             {
+        |               "TTPStartDate": "2022-01-01",
+        |               "TTPEndDate": "2022-12-31"
+        |             }
+        |          ]
+        |         }
+        |      ]
+        |   }
+        |}
+        |""".stripMargin)
+
+    val penaltyDetailsWithLSPAndLPPAndFinancialDetails: JsValue = Json.parse(
+      """
+        |{
+        |   "totalisations":{
+        |      "LSPTotalValue":200,
+        |      "penalisedPrincipalTotal":2000,
+        |      "LPPPostedTotal":165.25,
+        |      "LPPEstimatedTotal":15.26,
+        |      "LPIPostedTotal":1968.2,
+        |      "LPIEstimatedTotal":7
+        |   },
+        |   "lateSubmissionPenalty":{
+        |      "summary":{
+        |         "activePenaltyPoints": 1,
+        |         "inactivePenaltyPoints": 0,
+        |         "regimeThreshold": 5,
+        |         "penaltyChargeAmount": 200,
+        |         "PoCAchievementDate": "2022-01-01"
+        |      },
+        |      "details":[
+        |         {
+        |            "penaltyNumber":"12345678901234",
+        |            "penaltyOrder":"01",
+        |            "penaltyCategory":"P",
+        |            "penaltyStatus":"ACTIVE",
+        |            "penaltyCreationDate":"2022-10-30",
+        |            "penaltyExpiryDate":"2022-10-30",
+        |            "communicationsDate":"2022-10-30",
+        |            "lateSubmissions":[
+        |               {
+        |                  "taxPeriodStartDate":"2022-01-01",
+        |                  "taxPeriodEndDate":"2022-12-31",
+        |                  "taxPeriodDueDate":"2023-02-07",
+        |                  "returnReceiptDate":"2023-02-01",
+        |                  "taxReturnStatus":"Fulfilled"
+        |               }
+        |            ],
+        |            "appealInformation":[
+        |               {
+        |                  "appealStatus":"99",
+        |                  "appealLevel":"01"
+        |               }
+        |            ],
+        |            "chargeDueDate":"2022-10-30",
+        |            "chargeOutstandingAmount":200,
+        |            "chargeAmount":200
+        |         }
+        |      ]
+        |   },
+        |   "latePaymentPenalty":{
+        |      "details":[
+        |         {
+        |            "principalChargeDueDate":"2022-10-30",
+        |            "principalChargeBillingTo":"2022-10-30",
+        |            "penaltyAmountPaid":0,
+        |            "outstandingAmount":543.21,
+        |            "LPP1LRPercentage":2,
+        |            "LPP1HRDays":"31",
+        |            "penaltyChargeDueDate":"2022-10-30",
+        |            "communicationsDate":"2022-10-30",
+        |            "LPP2Days":"31",
+        |            "penaltyChargeCreationDate":"2022-10-30",
+        |            "LPP1HRPercentage":2,
+        |            "LPP1LRDays":"15",
+        |            "LPP1HRCalculationAmount":99.99,
+        |            "penaltyChargeReference":"1234567890",
+        |            "penaltyCategory":"LPP1",
+        |            "principalChargeReference":"XM002610011594",
         |            "penaltyStatus":"A",
         |            "principalChargeBillingFrom":"2022-10-30",
         |            "mainTransaction":"4703",
@@ -413,11 +444,10 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
         |   }
         |}
         |""".stripMargin)
-    mockStubResponseForGetPenaltyDetails(Status.OK, "123456789")
+    mockStubResponseForGetPenaltyDetails(Status.OK, "123456789", body = Some(penaltyDetailsWithLSPAndLPPs.toString()))
     mockStubResponseForGetFinancialDetails(Status.OK,
       s"VRN/123456789/VATC?dateFrom=${LocalDate.now.minusYears(2)}&dateTo=${LocalDate.now}" +
-        s"&onlyOpenItems=false&includeStatistical=true&includeLocks=false" +
-        s"&calculateAccruedInterest=true&removePOA=false&customerPaymentInformation=false", Some(getFinancialDetailsJson.toString()))
+        s"&includeClearedItems=false&includeStatisticalItems=true&includePaymentOnAccount=true&addRegimeTotalisation=false&addLockInformation=false&addPenaltyDetails=true&addPostedInterestDetails=true&addAccruingInterestDetails=true")
     val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/HMRC-MTD-VAT~VRN~123456789").get())
     result.status shouldBe Status.OK
     Json.parse(result.body) shouldBe penaltyDetailsWithLSPAndLPPAndFinancialDetails
@@ -428,8 +458,7 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
     mockStubResponseForGetPenaltyDetails(Status.OK, "123456789", body = Some(getPenaltyDetailsWithNoPointsAsJson.toString()))
     mockStubResponseForGetFinancialDetails(Status.OK,
       s"VRN/123456789/VATC?dateFrom=${LocalDate.now.minusYears(2)}&dateTo=${LocalDate.now}" +
-        s"&onlyOpenItems=false&includeStatistical=true&includeLocks=false" +
-        s"&calculateAccruedInterest=true&removePOA=false&customerPaymentInformation=false", Some(getFinancialDetailsJson.toString()))
+        s"&includeClearedItems=false&includeStatisticalItems=true&includePaymentOnAccount=true&addRegimeTotalisation=false&addLockInformation=false&addPenaltyDetails=true&addPostedInterestDetails=true&addAccruingInterestDetails=true")
     val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/HMRC-MTD-VAT~VRN~123456789").get())
     result.status shouldBe Status.OK
     result.body shouldBe getPenaltyDetailsWithNoPointsAsJson.toString()
