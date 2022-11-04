@@ -54,7 +54,7 @@ class GetFinancialDetailsConnectorSpec extends SpecBase with LogCapturing {
     when(mockAppConfig.queryParametersForGetFinancialDetail(Matchers.any(), Matchers.any())).thenReturn("?foo=bar")
   }
 
-  val mockGetFinancialDetailsModelAPI1811: FinancialDetails = getFinancialDetails.FinancialDetails(
+  val mockGetFinancialDetailsModelAPI1811: FinancialDetails = FinancialDetails(
     documentDetails = Some(Seq(getFinancialDetails.DocumentDetails(
       chargeReferenceNumber = None,
       documentOutstandingAmount = Some(0.00),

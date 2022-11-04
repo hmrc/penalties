@@ -31,7 +31,7 @@ class GetFinancialDetailsServiceISpec extends IntegrationSpecCommonBase with ETM
 
   "getDataFromFinancialServiceForVATVCN" when {
 
-    val getFinancialDetailsModel: FinancialDetails = getFinancialDetails.FinancialDetails(
+    val getFinancialDetailsModel: FinancialDetails = FinancialDetails(
       documentDetails = Some(Seq(getFinancialDetails.DocumentDetails(
         chargeReferenceNumber = Some("XM002610011594"),
         documentOutstandingAmount = Some(543.21),
@@ -40,7 +40,7 @@ class GetFinancialDetailsServiceISpec extends IntegrationSpecCommonBase with ETM
     )
 
     "call the connector and return a successful result" in {
-      mockStubResponseForGetFinancialDetails(Status.OK, s"VRN/123456789/VATC?dateFrom=${LocalDate.now().minusYears(2)}&dateTo=${LocalDate.now()}&includeClearedItems=false&includeStatisticalItems=true&includePaymentOnAccount=true&addRegimeTotalisation=false&addLockInformation=false&addPenaltyDetails=true&addPostedInterestDetails=true&addAccruingInterestDetails=true")
+      mockStubResponseForGetFinancialDetails(Status.OK, s"VRN/123456789/VATC?dateFrom=${LocalDate.now().minusYears(2)}&dateTo=${LocalDate.now()}&includeClearedItems=true&includeStatisticalItems=true&includePaymentOnAccount=true&addRegimeTotalisation=false&addLockInformation=false&addPenaltyDetails=true&addPostedInterestDetails=true&addAccruingInterestDetails=true")
       val result = await(service.getDataFromFinancialServiceForVATVCN("123456789"))
       result.isRight shouldBe true
       result.right.get shouldBe GetFinancialDetailsSuccessResponse(getFinancialDetailsModel)
@@ -48,7 +48,7 @@ class GetFinancialDetailsServiceISpec extends IntegrationSpecCommonBase with ETM
 
     "call the connector and return a successful result (using time machine date)" in {
       setTimeMachineDate(Some(LocalDate.of(2024, 1, 1)))
-      mockStubResponseForGetFinancialDetails(Status.OK, s"VRN/123456789/VATC?dateFrom=${LocalDate.of(2022, 1, 1)}&dateTo=${LocalDate.of(2024, 1, 1)}&includeClearedItems=false&includeStatisticalItems=true&includePaymentOnAccount=true&addRegimeTotalisation=false&addLockInformation=false&addPenaltyDetails=true&addPostedInterestDetails=true&addAccruingInterestDetails=true")
+      mockStubResponseForGetFinancialDetails(Status.OK, s"VRN/123456789/VATC?dateFrom=${LocalDate.of(2022, 1, 1)}&dateTo=${LocalDate.of(2024, 1, 1)}&includeClearedItems=true&includeStatisticalItems=true&includePaymentOnAccount=true&addRegimeTotalisation=false&addLockInformation=false&addPenaltyDetails=true&addPostedInterestDetails=true&addAccruingInterestDetails=true")
       val result = await(service.getDataFromFinancialServiceForVATVCN("123456789"))
       result.isRight shouldBe true
       result.right.get shouldBe GetFinancialDetailsSuccessResponse(getFinancialDetailsModel)
@@ -56,7 +56,7 @@ class GetFinancialDetailsServiceISpec extends IntegrationSpecCommonBase with ETM
     }
 
     s"the response body is not well formed: $GetFinancialDetailsMalformed" in {
-      mockStubResponseForGetFinancialDetails(Status.OK, s"VRN/123456789/VATC?dateFrom=${LocalDate.now().minusYears(2)}&dateTo=${LocalDate.now()}&includeClearedItems=false&includeStatisticalItems=true&includePaymentOnAccount=true&addRegimeTotalisation=false&addLockInformation=false&addPenaltyDetails=true&addPostedInterestDetails=true&addAccruingInterestDetails=true", body = Some(
+      mockStubResponseForGetFinancialDetails(Status.OK, s"VRN/123456789/VATC?dateFrom=${LocalDate.now().minusYears(2)}&dateTo=${LocalDate.now()}&includeClearedItems=true&includeStatisticalItems=true&includePaymentOnAccount=true&addRegimeTotalisation=false&addLockInformation=false&addPenaltyDetails=true&addPostedInterestDetails=true&addAccruingInterestDetails=true", body = Some(
         """
           {
            "documentDetails": [
@@ -83,14 +83,14 @@ class GetFinancialDetailsServiceISpec extends IntegrationSpecCommonBase with ETM
           | ]
           |}
           |""".stripMargin
-      mockStubResponseForGetFinancialDetails(Status.NOT_FOUND, s"VRN/123456789/VATC?dateFrom=${LocalDate.now().minusYears(2)}&dateTo=${LocalDate.now()}&includeClearedItems=false&includeStatisticalItems=true&includePaymentOnAccount=true&addRegimeTotalisation=false&addLockInformation=false&addPenaltyDetails=true&addPostedInterestDetails=true&addAccruingInterestDetails=true", body = Some(noDataFoundBody))
+      mockStubResponseForGetFinancialDetails(Status.NOT_FOUND, s"VRN/123456789/VATC?dateFrom=${LocalDate.now().minusYears(2)}&dateTo=${LocalDate.now()}&includeClearedItems=true&includeStatisticalItems=true&includePaymentOnAccount=true&addRegimeTotalisation=false&addLockInformation=false&addPenaltyDetails=true&addPostedInterestDetails=true&addAccruingInterestDetails=true", body = Some(noDataFoundBody))
       val result = await(service.getDataFromFinancialServiceForVATVCN("123456789"))
       result.isLeft shouldBe true
       result.left.get shouldBe GetFinancialDetailsNoContent
     }
 
     s"an unknown response is returned from the connector - $GetFinancialDetailsFailureResponse" in {
-      mockStubResponseForGetFinancialDetails(Status.IM_A_TEAPOT, s"VRN/123456789/VATC?dateFrom=${LocalDate.now().minusYears(2)}&dateTo=${LocalDate.now()}&includeClearedItems=false&includeStatisticalItems=true&includePaymentOnAccount=true&addRegimeTotalisation=false&addLockInformation=false&addPenaltyDetails=true&addPostedInterestDetails=true&addAccruingInterestDetails=true")
+      mockStubResponseForGetFinancialDetails(Status.IM_A_TEAPOT, s"VRN/123456789/VATC?dateFrom=${LocalDate.now().minusYears(2)}&dateTo=${LocalDate.now()}&includeClearedItems=true&includeStatisticalItems=true&includePaymentOnAccount=true&addRegimeTotalisation=false&addLockInformation=false&addPenaltyDetails=true&addPostedInterestDetails=true&addAccruingInterestDetails=true")
       val result = await(service.getDataFromFinancialServiceForVATVCN("123456789"))
       result.isLeft shouldBe true
       result.left.get shouldBe GetFinancialDetailsFailureResponse(Status.IM_A_TEAPOT)

@@ -304,7 +304,7 @@ class PenaltiesFrontendControllerSpec extends SpecBase with LogCapturing {
     }
 
     "combine the 1812 and 1811 data and return a new GetPenaltyDetails model" in new Setup(isFSEnabled = true) {
-      val financialDetails: FinancialDetails = getFinancialDetails.FinancialDetails(
+      val financialDetails: FinancialDetails = FinancialDetails(
         documentDetails = Some(Seq(getFinancialDetails.DocumentDetails(
           chargeReferenceNumber = None,
           documentOutstandingAmount = Some(0.00),

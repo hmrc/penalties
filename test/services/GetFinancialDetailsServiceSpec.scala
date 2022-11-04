@@ -46,7 +46,7 @@ class GetFinancialDetailsServiceSpec extends SpecBase with FeatureSwitching {
   }
 
   "getDataFromFinancialServiceForVATVCN" should {
-    val mockGetFinancialDetailsResponseAsModel: FinancialDetails = getFinancialDetails.FinancialDetails(
+    val mockGetFinancialDetailsResponseAsModel: FinancialDetails = FinancialDetails(
       documentDetails = Some(Seq(getFinancialDetails.DocumentDetails(
         chargeReferenceNumber = None,
         documentOutstandingAmount = Some(0.00),

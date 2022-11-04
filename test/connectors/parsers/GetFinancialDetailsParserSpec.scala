@@ -31,7 +31,7 @@ import utils.PagerDutyHelper.PagerDutyKeys
 
 class GetFinancialDetailsParserSpec extends AnyWordSpec with Matchers with LogCapturing {
 
-  val mockGetFinancialDetailsModelAPI1811: FinancialDetails = getFinancialDetails.FinancialDetails(
+  val mockGetFinancialDetailsModelAPI1811: FinancialDetails = FinancialDetails(
     documentDetails = Some(Seq(getFinancialDetails.DocumentDetails(
       chargeReferenceNumber = None,
       documentOutstandingAmount = Some(0.00),
@@ -45,13 +45,12 @@ class GetFinancialDetailsParserSpec extends AnyWordSpec with Matchers with LogCa
   val mockOKHttpResponseWithInvalidBody: HttpResponse =
     HttpResponse.apply(status = Status.OK, json = Json.parse(
       """
-        |{
-        | "documentDetails": [{
-        |   "summary": {
-        |     }
-        |   }]
-        | }
-        |""".stripMargin
+           {
+            "documentDetails": [{
+               "documentOutstandingAmount": "xyz"
+              }]
+            }
+           """.stripMargin
     ), headers = Map.empty)
 
   val mockISEHttpResponse: HttpResponse = HttpResponse.apply(status = Status.INTERNAL_SERVER_ERROR, body = "Something went wrong.")
@@ -73,6 +72,11 @@ class GetFinancialDetailsParserSpec extends AnyWordSpec with Matchers with LogCa
         result.isRight shouldBe true
         result.right.get.asInstanceOf[GetFinancialDetailsSuccessResponse].financialDetails shouldBe mockGetFinancialDetailsModelAPI1811
       }
+    }
+
+    s"the body is malformed - returning a $Left $GetFinancialDetailsMalformed" in {
+      val result = GetFinancialDetailsParser.GetFinancialDetailsReads.read("GET", "/", mockOKHttpResponseWithInvalidBody)
+      result.isLeft shouldBe true
     }
 
     s"parse an BAD REQUEST (${Status.BAD_REQUEST}) response - and log a PagerDuty" in {

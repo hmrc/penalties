@@ -30,7 +30,7 @@ class AppConfig @Inject()(val config: Configuration, servicesConfig: ServicesCon
 
   def queryParametersForGetFinancialDetail(dateFrom: LocalDate, dateTo: LocalDate): String = {
     s"?dateFrom=$dateFrom&dateTo=$dateTo" +
-      s"&includeClearedItems=${!config.get[Boolean](" eis.includeCleared")}" +
+      s"&includeClearedItems=${config.get[Boolean]("eis.includeCleared")}" +
       s"&includeStatisticalItems=${config.get[Boolean]("eis.includeStatistical")}" +
       s"&includePaymentOnAccount=${config.get[Boolean]("eis.includePOA")}" +
       s"&addRegimeTotalisation=${config.get[Boolean]("eis.addRegimeTotalisation")}" +
@@ -38,7 +38,6 @@ class AppConfig @Inject()(val config: Configuration, servicesConfig: ServicesCon
       s"&addPenaltyDetails=${config.get[Boolean]("eis.includePenaltyDetails")}" +
       s"&addPostedInterestDetails=${config.get[Boolean]("eis.calculateAccruedInterest")}" +
       s"&addAccruingInterestDetails=${config.get[Boolean]("eis.calculateAccruedInterest")}"
-
   }
 
   lazy val appName: String = config.get[String]("appName")
