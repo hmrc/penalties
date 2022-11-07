@@ -20,11 +20,11 @@ import base.{LogCapturing, SpecBase}
 import config.AppConfig
 import connectors.parsers.getFinancialDetails.GetFinancialDetailsParser.{GetFinancialDetailsFailureResponse, GetFinancialDetailsMalformed, GetFinancialDetailsNoContent, GetFinancialDetailsSuccessResponse}
 import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser.{GetPenaltyDetailsFailureResponse, GetPenaltyDetailsMalformed, GetPenaltyDetailsNoContent, GetPenaltyDetailsSuccessResponse}
+import models.getFinancialDetails
 import models.getFinancialDetails._
 import models.getPenaltyDetails.GetPenaltyDetails
 import models.getPenaltyDetails.latePayment._
 import models.getPenaltyDetails.lateSubmission.{LSPSummary, LateSubmissionPenalty}
-import models.mainTransaction.MainTransactionEnum
 import org.mockito.Matchers
 import org.mockito.Mockito._
 import play.api.http.Status
@@ -304,65 +304,14 @@ class PenaltiesFrontendControllerSpec extends SpecBase with LogCapturing {
     }
 
     "combine the 1812 and 1811 data and return a new GetPenaltyDetails model" in new Setup(isFSEnabled = true) {
-      val financialDetails = GetFinancialDetails(
-        documentDetails = Seq.empty,
-        financialDetails = Seq(
-          FinancialDetails(
-            documentId = "DOC1234",
-            taxPeriodFrom = Some(LocalDate.of(2022, 1, 1)),
-            taxPeriodTo = Some(LocalDate.of(2022, 3, 31)),
-            items = Seq(
-              FinancialItem(
-                dueDate = Some(LocalDate.of(2018, 8, 13)),
-                clearingDate = Some(LocalDate.of(2018, 8, 13)),
-                metadata = FinancialItemMetadata(
-                  subItem = Some("001"),
-                  amount = Some(10000),
-                  clearingReason = Some("01"),
-                  outgoingPaymentMethod = Some("outgoing payment"),
-                  paymentLock = Some("paymentLock"),
-                  clearingLock = Some("clearingLock"),
-                  interestLock = Some("interestLock"),
-                  dunningLock = Some("dunningLock"),
-                  returnFlag = Some(true),
-                  paymentReference = Some("Ab12453535"),
-                  paymentAmount = Some(10000),
-                  paymentMethod = Some("Payment"),
-                  paymentLot = Some("081203010024"),
-                  paymentLotItem = Some("000001"),
-                  clearingSAPDocument = Some("3350000253"),
-                  codingInitiationDate = Some(LocalDate.of(2021, 1, 11)),
-                  statisticalDocument = Some("S"),
-                  DDCollectionInProgress = Some(true),
-                  returnReason = Some("ABCA"),
-                  promisetoPay = Some("Y")
-                )
-              )
-            ),
-            originalAmount = Some(123.45),
-            outstandingAmount = Some(123.45),
-            mainTransaction = Some(MainTransactionEnum.VATReturnFirstLPP),
-            chargeReference = Some("1"),
-            metadata = FinancialDetailsMetadata(
-              taxYear = "2022",
-              chargeType = Some("1234"),
-              mainType = Some("1234"),
-              periodKey = Some("123"),
-              periodKeyDescription = Some("foobar"),
-              businessPartner = Some("123"),
-              contractAccountCategory = Some("1"),
-              contractAccount = Some("1"),
-              contractObjectType = Some("1"),
-              contractObject = Some("1"),
-              sapDocumentNumber = Some("1"),
-              sapDocumentNumberItem = Some("1"),
-              subTransaction = Some("1"),
-              clearedAmount = Some(123.45),
-              accruedInterest = Some(123.45)
-            )
-          )
-        )
+      val financialDetails: FinancialDetails = FinancialDetails(
+        documentDetails = Some(Seq(getFinancialDetails.DocumentDetails(
+          chargeReferenceNumber = None,
+          documentOutstandingAmount = Some(0.00),
+          lineItemDetails = Some(Seq(getFinancialDetails.LineItemDetails(None))))
+        ))
       )
+
       when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(Matchers.any())(Matchers.any()))
         .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetailsFullAPIResponse))))
       when(mockGetFinancialDetailsService.getDataFromFinancialServiceForVATVCN(Matchers.any())(Matchers.any()))

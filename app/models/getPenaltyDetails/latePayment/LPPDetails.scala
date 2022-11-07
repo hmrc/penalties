@@ -16,8 +16,8 @@
 
 package models.getPenaltyDetails.latePayment
 
+import models.getFinancialDetails.MainTransactionEnum
 import models.getPenaltyDetails.appealInfo.AppealInformationType
-import models.mainTransaction.MainTransactionEnum
 import play.api.libs.json._
 import utils.JsonUtils
 

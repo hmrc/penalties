@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package models.mainTransaction
+package models.getFinancialDetails
 
 import play.api.libs.json._
 

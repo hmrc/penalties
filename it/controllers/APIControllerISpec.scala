@@ -24,6 +24,8 @@ import play.api.libs.json.{JsValue, Json}
 import play.api.test.Helpers._
 import utils.{ETMPWiremock, IntegrationSpecCommonBase}
 
+import java.time.LocalDate
+
 class APIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock with FeatureSwitching {
   val controller: APIController = injector.instanceOf[APIController]
 
@@ -198,87 +200,87 @@ class APIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock wit
             {
             |  "totalisation": {
             |    "regimeTotalisation": {
-            |      "totalAccountOverdue": "1000.0,",
-            |      "totalAccountNotYetDue": "250.0,",
-            |      "totalAccountCredit": "40.0,",
+            |      "totalAccountOverdue": "1000.0",
+            |      "totalAccountNotYetDue": "250.0",
+            |      "totalAccountCredit": "40.0",
             |      "totalAccountBalance": 1210
             |    },
             |    "targetedSearch_SelectionCriteriaTotalisation": {
-            |      "totalOverdue": "100.0,",
-            |      "totalNotYetDue": "0.0,",
-            |      "totalBalance": "100.0,",
-            |      "totalCredit": "10.0,",
+            |      "totalOverdue": "100.0",
+            |      "totalNotYetDue": "0.0",
+            |      "totalBalance": "100.0",
+            |      "totalCredit": "10.0",
             |      "totalCleared": 50
             |    },
             |    "additionalReceivableTotalisations": {
-            |      "totalAccountPostedInterest": "-99999999999.99,",
+            |      "totalAccountPostedInterest": "-99999999999.99",
             |      "totalAccountAccruingInterest": -99999999999.99
             |    }
             |  },
             |  "documentDetails": [
             |    {
-            |      "documentNumber": "187346702498,",
-            |      "documentType": "TRM New Charge,",
-            |      "chargeReferenceNumber": "XP001286394838,",
-            |      "businessPartnerNumber": "100893731,",
-            |      "contractAccountNumber": "900726630,",
-            |      "contractAccountCategory": "VAT,",
-            |      "contractObjectNumber": "104920928302302,",
-            |      "contractObjectType": "ZVAT,",
-            |      "postingDate": "2022-01-01,",
-            |      "issueDate": "2022-01-01,",
-            |      "documentTotalAmount": "100.0,",
-            |      "documentClearedAmount": "100.0,",
-            |      "documentOutstandingAmount": "0.0,",
+            |      "documentNumber": "187346702498",
+            |      "documentType": "TRM New Charge",
+            |      "chargeReferenceNumber": "XM002610011594",
+            |      "businessPartnerNumber": "100893731",
+            |      "contractAccountNumber": "900726630",
+            |      "contractAccountCategory": "VAT",
+            |      "contractObjectNumber": "104920928302302",
+            |      "contractObjectType": "ZVAT",
+            |      "postingDate": "2022-01-01",
+            |      "issueDate": "2022-01-01",
+            |      "documentTotalAmount": "100.0",
+            |      "documentClearedAmount": "100.0",
+            |      "documentOutstandingAmount": "543.21",
             |      "documentLockDetails": {
-            |        "lockType": "Payment,",
-            |        "lockStartDate": "2022-01-01,",
+            |        "lockType": "Payment",
+            |        "lockStartDate": "2022-01-01",
             |        "lockEndDate": "2022-01-01"
             |      },
             |      "documentInterestTotals": {
-            |        "interestPostedAmount": "13.12,",
-            |        "interestPostedChargeRef": "XB001286323438,",
+            |        "interestPostedAmount": "13.12",
+            |        "interestPostedChargeRef": "XB001286323438",
             |        "interestAccruingAmount": 12.1
             |      },
             |      "documentPenaltyTotals": [
             |        {
-            |          "penaltyType": "LPP1,",
-            |          "penaltyStatus": "POSTED,",
-            |          "penaltyAmount": "10.01,",
+            |          "penaltyType": "LPP1",
+            |          "penaltyStatus": "POSTED",
+            |          "penaltyAmount": "10.01",
             |          "postedChargeReference": "XR00123933492"
             |        }
             |      ],
             |      "lineItemDetails": [
             |        {
-            |          "itemNumber": "0001,",
-            |          "subItemNumber": "003,",
-            |          "mainTransaction": "4576,",
-            |          "subTransaction": "1000,",
-            |          "chargeDescription": "VAT Return,",
-            |          "periodFromDate": "2022-01-01,",
-            |          "periodToDate": "2022-01-31,",
-            |          "periodKey": "22A1,",
-            |          "netDueDate": "2022-02-08,",
-            |          "formBundleNumber": "125435934761,",
-            |          "statisticalKey": "1,",
-            |          "amount": "3420.0,",
-            |          "clearingDate": "2022-02-09,",
-            |          "clearingReason": "Payment at External Payment Collector Reported,",
-            |          "clearingDocument": "719283701921,",
-            |          "outgoingPaymentMethod": "B,",
-            |          "ddCollectionInProgress": "true,",
+            |          "itemNumber": "0001",
+            |          "subItemNumber": "003",
+            |          "mainTransaction": "4703",
+            |          "subTransaction": "1000",
+            |          "chargeDescription": "VAT Return",
+            |          "periodFromDate": "2022-01-01",
+            |          "periodToDate": "2022-01-31",
+            |          "periodKey": "22A1",
+            |          "netDueDate": "2022-02-08",
+            |          "formBundleNumber": "125435934761",
+            |          "statisticalKey": "1",
+            |          "amount": "3420.0",
+            |          "clearingDate": "2022-02-09",
+            |          "clearingReason": "Payment at External Payment Collector Reported",
+            |          "clearingDocument": "719283701921",
+            |          "outgoingPaymentMethod": "B",
+            |          "ddCollectionInProgress": "true",
             |          "lineItemLockDetails": [
             |            {
-            |              "lockType": "Payment,",
-            |              "lockStartDate": "2022-01-01,",
+            |              "lockType": "Payment",
+            |              "lockStartDate": "2022-01-01",
             |              "lockEndDate": "2022-01-01"
             |            }
             |          ],
             |          "lineItemInterestDetails": {
-            |            "interestKey": "String,",
-            |            "currentInterestRate": "-999.999999,",
-            |            "interestStartDate": "1920-02-29,",
-            |            "interestPostedAmount": "-99999999999.99,",
+            |            "interestKey": "String",
+            |            "currentInterestRate": "-999.999999",
+            |            "interestStartDate": "1920-02-29",
+            |            "interestPostedAmount": "-99999999999.99",
             |            "interestAccruingAmount": -99999999999.99
             |          }
             |        }

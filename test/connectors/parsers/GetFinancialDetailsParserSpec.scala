@@ -19,7 +19,8 @@ package connectors.parsers
 import base.LogCapturing
 import connectors.parsers.getFinancialDetails.GetFinancialDetailsParser._
 import connectors.parsers.getFinancialDetails.GetFinancialDetailsParser
-import models.getFinancialDetails._
+import models.getFinancialDetails
+import models.getFinancialDetails.FinancialDetails
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import play.api.http.Status
@@ -28,89 +29,13 @@ import uk.gov.hmrc.http.HttpResponse
 import utils.Logger.logger
 import utils.PagerDutyHelper.PagerDutyKeys
 
-import java.time.LocalDate
-
 class GetFinancialDetailsParserSpec extends AnyWordSpec with Matchers with LogCapturing {
 
-  val mockGetFinancialDetailsModelAPI1811: GetFinancialDetails = GetFinancialDetails(
-    documentDetails = Seq(DocumentDetails(
-      documentId = "1234",
-      accruingInterestAmount = None,
-      interestOutstandingAmount = None,
-      metadata = DocumentDetailsMetadata(
-        taxYear = "2022",
-        documentDate = LocalDate.now,
-        documentText = "asdf",
-        documentDueDate = LocalDate.now,
-        documentDescription = None,
-        formBundleNumber = None,
-        totalAmount = 0.00,
-        documentOutstandingAmount = 0.00,
-        lastClearingDate = None,
-        lastClearingReason = None,
-        lastClearedAmount = None,
-        statisticalFlag = true,
-        informationCode = None,
-        paymentLot = None,
-        paymentLotItem = None,
-        interestRate = None,
-        interestFromDate = None,
-        interestEndDate = None,
-        latePaymentInterestID = None,
-        latePaymentInterestAmount = None,
-        lpiWithDunningBlock = None,
-        accruingPenaltyLPP1 = None
-      ))
-    ),
-    financialDetails = Seq(FinancialDetails(
-      documentId = "asdf",
-      taxPeriodFrom = None,
-      taxPeriodTo = None,
-      items = Seq(FinancialItem(
-        dueDate = None, clearingDate = None, metadata = FinancialItemMetadata(
-          subItem = None,
-          amount = None,
-          clearingReason = None,
-          outgoingPaymentMethod = None,
-          paymentLock = None,
-          clearingLock = None,
-          interestLock = None,
-          dunningLock = None,
-          returnFlag = None,
-          paymentReference = None,
-          paymentAmount = None,
-          paymentMethod = None,
-          paymentLot = None,
-          paymentLotItem = None,
-          clearingSAPDocument = None,
-          codingInitiationDate = None,
-          statisticalDocument = None,
-          DDCollectionInProgress = None,
-          returnReason = None,
-          promisetoPay = None
-        )
-      )),
-      originalAmount = None,
-      outstandingAmount = None,
-      chargeReference = None,
-      mainTransaction = None,
-      metadata = FinancialDetailsMetadata(
-        taxYear = "2022",
-        chargeType = None,
-        mainType = None,
-        periodKey = None,
-        periodKeyDescription = None,
-        businessPartner = None,
-        contractAccountCategory = None,
-        contractAccount = None,
-        contractObjectType = None,
-        contractObject = None,
-        sapDocumentNumber = None,
-        sapDocumentNumberItem = None,
-        subTransaction = None,
-        clearedAmount = None,
-        accruedInterest = None
-      )
+  val mockGetFinancialDetailsModelAPI1811: FinancialDetails = FinancialDetails(
+    documentDetails = Some(Seq(getFinancialDetails.DocumentDetails(
+      chargeReferenceNumber = None,
+      documentOutstandingAmount = Some(0.00),
+      lineItemDetails = Some(Seq(getFinancialDetails.LineItemDetails(None))))
     ))
   )
 
@@ -120,13 +45,12 @@ class GetFinancialDetailsParserSpec extends AnyWordSpec with Matchers with LogCa
   val mockOKHttpResponseWithInvalidBody: HttpResponse =
     HttpResponse.apply(status = Status.OK, json = Json.parse(
       """
-        |{
-        | "documentDetails": [{
-        |   "summary": {
-        |     }
-        |   }]
-        | }
-        |""".stripMargin
+           {
+            "documentDetails": [{
+               "documentOutstandingAmount": "xyz"
+              }]
+            }
+           """.stripMargin
     ), headers = Map.empty)
 
   val mockISEHttpResponse: HttpResponse = HttpResponse.apply(status = Status.INTERNAL_SERVER_ERROR, body = "Something went wrong.")
@@ -148,11 +72,11 @@ class GetFinancialDetailsParserSpec extends AnyWordSpec with Matchers with LogCa
         result.isRight shouldBe true
         result.right.get.asInstanceOf[GetFinancialDetailsSuccessResponse].financialDetails shouldBe mockGetFinancialDetailsModelAPI1811
       }
+    }
 
-      s"the body is malformed - returning a $Left $GetFinancialDetailsMalformed" in {
-        val result = GetFinancialDetailsParser.GetFinancialDetailsReads.read("GET", "/", mockOKHttpResponseWithInvalidBody)
-        result.isLeft shouldBe true
-      }
+    s"the body is malformed - returning a $Left $GetFinancialDetailsMalformed" in {
+      val result = GetFinancialDetailsParser.GetFinancialDetailsReads.read("GET", "/", mockOKHttpResponseWithInvalidBody)
+      result.isLeft shouldBe true
     }
 
     s"parse an BAD REQUEST (${Status.BAD_REQUEST}) response - and log a PagerDuty" in {

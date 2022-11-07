@@ -17,7 +17,7 @@
 package connectors.parsers.getFinancialDetails
 
 import models.failure.{FailureCodeEnum, FailureResponse}
-import models.getFinancialDetails.GetFinancialDetails
+import models.getFinancialDetails.FinancialDetails
 import play.api.http.Status._
 import play.api.libs.json.{JsError, JsSuccess, JsValue}
 import uk.gov.hmrc.http.{HttpReads, HttpResponse}
@@ -32,7 +32,7 @@ object GetFinancialDetailsParser {
 
   sealed trait GetFinancialDetailsSuccess
 
-  case class GetFinancialDetailsSuccessResponse(financialDetails: GetFinancialDetails) extends GetFinancialDetailsSuccess
+  case class GetFinancialDetailsSuccessResponse(financialDetails: FinancialDetails) extends GetFinancialDetailsSuccess
 
   case class GetFinancialDetailsFailureResponse(status: Int) extends GetFinancialDetailsFailure
 
@@ -47,7 +47,7 @@ object GetFinancialDetailsParser {
       response.status match {
         case OK =>
           logger.debug(s"[GetFinancialDetailsReads][read] Json response: ${response.json}")
-          response.json.validate[GetFinancialDetails] match {
+          response.json.validate[FinancialDetails] match {
             case JsSuccess(getFinancialDetails, _) =>
               Right(GetFinancialDetailsSuccessResponse(getFinancialDetails))
             case JsError(errors) =>

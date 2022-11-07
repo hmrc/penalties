@@ -19,67 +19,27 @@ package models.getFinancialDetails
 import base.SpecBase
 import play.api.libs.json.{JsValue, Json}
 
-import java.time.LocalDate
-
 class DocumentDetailsSpec extends SpecBase {
   val modelAsJson: JsValue = Json.parse(
     """
       |{
-      | "taxYear": "2022",
-      | "documentId": "DOC1234",
-      | "documentDate": "2022-01-01",
-      | "documentText": "1234",
-      | "documentDueDate": "2022-01-01",
-      | "documentDescription": "1234",
-      | "formBundleNumber": "1234",
-      | "totalAmount": 123.45,
-      | "documentOutstandingAmount": 123.45,
-      | "lastClearingDate": "2022-01-01",
-      | "lastClearingReason": "1234",
-      | "lastClearedAmount": 123.45,
-      | "statisticalFlag": true,
-      | "informationCode": "1",
-      | "paymentLot": "1",
-      | "paymentLotItem": "1",
-      | "accruingInterestAmount": 123.45,
-      | "interestRate": 123.45,
-      | "interestFromDate": "2022-01-01",
-      | "interestEndDate": "2022-01-01",
-      | "latePaymentInterestID": "1234",
-      | "latePaymentInterestAmount": 123.45,
-      | "lpiWithDunningBlock": 123.45,
-      | "interestOutstandingAmount": 123.45,
-      | "accruingPenaltyLPP1": "1234"
+      |   "chargeReferenceNumber":"1234567890",
+      |   "documentOutstandingAmount":123.45,
+      |   "lineItemDetails":[
+      |      {
+      |         "mainTransaction":"4703"
+      |      }
+      |   ]
       |}
       |""".stripMargin)
 
   val model: DocumentDetails = DocumentDetails(
-    documentId = "DOC1234",
-    accruingInterestAmount = Some(123.45),
-    interestOutstandingAmount = Some(123.45),
-    metadata = DocumentDetailsMetadata(
-      taxYear = "2022",
-      documentDate = LocalDate.of(2022, 1, 1),
-      documentText = "1234",
-      documentDueDate = LocalDate.of(2022, 1, 1),
-      documentDescription = Some("1234"),
-      formBundleNumber = Some("1234"),
-      totalAmount = 123.45,
-      documentOutstandingAmount = 123.45,
-      lastClearingDate = Some(LocalDate.of(2022, 1, 1)),
-      lastClearingReason = Some("1234"),
-      lastClearedAmount = Some(123.45),
-      statisticalFlag = true,
-      informationCode = Some("1"),
-      paymentLot = Some("1"),
-      paymentLotItem = Some("1"),
-      interestRate = Some(123.45),
-      interestFromDate = Some(LocalDate.of(2022, 1, 1)),
-      interestEndDate = Some(LocalDate.of(2022, 1, 1)),
-      latePaymentInterestID = Some("1234"),
-      latePaymentInterestAmount = Some(123.45),
-      lpiWithDunningBlock = Some(123.45),
-      accruingPenaltyLPP1 = Some("1234")
+    chargeReferenceNumber = Some("1234567890"),
+    documentOutstandingAmount = Some(123.45),
+    lineItemDetails = Some(
+      Seq(
+        LineItemDetails(Some(MainTransactionEnum.VATReturnFirstLPP))
+      )
     )
   )
 

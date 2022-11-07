@@ -20,8 +20,8 @@ import config.featureSwitches.FeatureSwitching
 
 import java.time.LocalDate
 import connectors.parsers.getFinancialDetails.GetFinancialDetailsParser._
-import models.getFinancialDetails._
-import models.mainTransaction.MainTransactionEnum
+import models.getFinancialDetails
+import models.getFinancialDetails.{FinancialDetails, MainTransactionEnum}
 import play.api.http.Status
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import utils.{ETMPWiremock, IntegrationSpecCommonBase}
@@ -30,92 +30,17 @@ class GetFinancialDetailsServiceISpec extends IntegrationSpecCommonBase with ETM
   val service: GetFinancialDetailsService = injector.instanceOf[GetFinancialDetailsService]
 
   "getDataFromFinancialServiceForVATVCN" when {
-    val getFinancialDetailsModel: GetFinancialDetails = GetFinancialDetails(
-      documentDetails = Seq(DocumentDetails(
-        documentId = "0002",
-        accruingInterestAmount = Some(123.45),
-        interestOutstandingAmount = Some(543.21),
-        metadata = DocumentDetailsMetadata(
-          taxYear = "2022",
-          documentDate = LocalDate.of(2022, 10, 30),
-          documentText = "Document Text",
-          documentDueDate = LocalDate.of(2022, 10, 30),
-          documentDescription = Some("Document Description"),
-          formBundleNumber = Some("1234"),
-          totalAmount = 123.45,
-          documentOutstandingAmount = 543.21,
-          lastClearingDate = Some(LocalDate.of(2022, 10, 30)),
-          lastClearingReason = Some("last Clearing Reason"),
-          lastClearedAmount = Some(123.45),
-          statisticalFlag = true,
-          informationCode = Some("A"),
-          paymentLot = Some("81203010024"),
-          paymentLotItem = Some("000001"),
-          interestRate = Some(543.21),
-          interestFromDate = Some(LocalDate.of(2022, 10, 30)),
-          interestEndDate = Some(LocalDate.of(2022, 10, 30)),
-          latePaymentInterestID = Some("1234567890123456"),
-          latePaymentInterestAmount = Some(123.45),
-          lpiWithDunningBlock = Some(543.21),
-          accruingPenaltyLPP1 = Some("Interest Rate")
-        ))
-      ),
-      financialDetails = Seq(FinancialDetails(
-        documentId = "0001",
-        taxPeriodFrom = Some(LocalDate.of(2022, 10 ,30)),
-        taxPeriodTo = Some(LocalDate.of(2022,10,30)),
-        items = Seq(FinancialItem(
-          dueDate = Some(LocalDate.of(2022, 10 ,30)),
-          clearingDate = Some(LocalDate.of(2022, 10 ,30)),
-          metadata = FinancialItemMetadata(
-            subItem = Some("001"),
-            amount = Some(123.45),
-            clearingReason = Some("01"),
-            outgoingPaymentMethod = Some("outgoing Payment"),
-            paymentLock = Some("paymentLock"),
-            clearingLock = Some("clearingLock"),
-            interestLock = Some("interestLock"),
-            dunningLock = Some("dunningLock"),
-            returnFlag = Some(true),
-            paymentReference = Some("Ab12453535"),
-            paymentAmount = Some(543.21),
-            paymentMethod = Some("Payment"),
-            paymentLot = Some("81203010024"),
-            paymentLotItem = Some("000001"),
-            clearingSAPDocument = Some("3350000253"),
-            codingInitiationDate = Some(LocalDate.of(2022, 10 ,30)),
-            statisticalDocument = Some("S"),
-            DDCollectionInProgress = Some(true),
-            returnReason = Some("ABCA"),
-            promisetoPay = Some("promisetoPay")
-          )
-        )),
-        originalAmount = Some(123.45),
-        outstandingAmount = Some(543.21),
-        mainTransaction = Some(MainTransactionEnum.VATReturnFirstLPP),
-        chargeReference = Some("XM002610011594"),
-        metadata = FinancialDetailsMetadata(
-          taxYear = "2022",
-          chargeType = Some("PAYE"),
-          mainType = Some("2100"),
-          periodKey = Some("13RL"),
-          periodKeyDescription = Some("abcde"),
-          businessPartner = Some("6622334455"),
-          contractAccountCategory = Some("02"),
-          contractAccount = Some("X"),
-          contractObjectType = Some("ABCD"),
-          contractObject = Some("00000003000000002757"),
-          sapDocumentNumber = Some("1040000872"),
-          sapDocumentNumberItem = Some("XM00"),
-          subTransaction = Some("5678"),
-          clearedAmount = Some(123.45),
-          accruedInterest = Some(543.21)
-        )
+
+    val getFinancialDetailsModel: FinancialDetails = FinancialDetails(
+      documentDetails = Some(Seq(getFinancialDetails.DocumentDetails(
+        chargeReferenceNumber = Some("XM002610011594"),
+        documentOutstandingAmount = Some(543.21),
+        lineItemDetails = Some(Seq(getFinancialDetails.LineItemDetails(Some(MainTransactionEnum.VATReturnFirstLPP)))))
       ))
     )
 
     "call the connector and return a successful result" in {
-      mockStubResponseForGetFinancialDetailsOld(Status.OK, s"VRN/123456789/VATC?dateFrom=${LocalDate.now().minusYears(2)}&dateTo=${LocalDate.now()}&onlyOpenItems=false&includeStatistical=true&includeLocks=false&calculateAccruedInterest=true&removePOA=false&customerPaymentInformation=false")
+      mockStubResponseForGetFinancialDetails(Status.OK, s"VRN/123456789/VATC?dateFrom=${LocalDate.now().minusYears(2)}&dateTo=${LocalDate.now()}&includeClearedItems=true&includeStatisticalItems=true&includePaymentOnAccount=true&addRegimeTotalisation=false&addLockInformation=false&addPenaltyDetails=true&addPostedInterestDetails=true&addAccruingInterestDetails=true")
       val result = await(service.getDataFromFinancialServiceForVATVCN("123456789"))
       result.isRight shouldBe true
       result.right.get shouldBe GetFinancialDetailsSuccessResponse(getFinancialDetailsModel)
@@ -123,7 +48,7 @@ class GetFinancialDetailsServiceISpec extends IntegrationSpecCommonBase with ETM
 
     "call the connector and return a successful result (using time machine date)" in {
       setTimeMachineDate(Some(LocalDate.of(2024, 1, 1)))
-      mockStubResponseForGetFinancialDetailsOld(Status.OK, s"VRN/123456789/VATC?dateFrom=${LocalDate.of(2022, 1, 1)}&dateTo=${LocalDate.of(2024, 1, 1)}&onlyOpenItems=false&includeStatistical=true&includeLocks=false&calculateAccruedInterest=true&removePOA=false&customerPaymentInformation=false")
+      mockStubResponseForGetFinancialDetails(Status.OK, s"VRN/123456789/VATC?dateFrom=${LocalDate.of(2022, 1, 1)}&dateTo=${LocalDate.of(2024, 1, 1)}&includeClearedItems=true&includeStatisticalItems=true&includePaymentOnAccount=true&addRegimeTotalisation=false&addLockInformation=false&addPenaltyDetails=true&addPostedInterestDetails=true&addAccruingInterestDetails=true")
       val result = await(service.getDataFromFinancialServiceForVATVCN("123456789"))
       result.isRight shouldBe true
       result.right.get shouldBe GetFinancialDetailsSuccessResponse(getFinancialDetailsModel)
@@ -131,12 +56,12 @@ class GetFinancialDetailsServiceISpec extends IntegrationSpecCommonBase with ETM
     }
 
     s"the response body is not well formed: $GetFinancialDetailsMalformed" in {
-      mockStubResponseForGetFinancialDetailsOld(Status.OK, s"VRN/123456789/VATC?dateFrom=${LocalDate.now().minusYears(2)}&dateTo=${LocalDate.now()}&onlyOpenItems=false&includeStatistical=true&includeLocks=false&calculateAccruedInterest=true&removePOA=false&customerPaymentInformation=false", body = Some(
+      mockStubResponseForGetFinancialDetails(Status.OK, s"VRN/123456789/VATC?dateFrom=${LocalDate.now().minusYears(2)}&dateTo=${LocalDate.now()}&includeClearedItems=true&includeStatisticalItems=true&includePaymentOnAccount=true&addRegimeTotalisation=false&addLockInformation=false&addPenaltyDetails=true&addPostedInterestDetails=true&addAccruingInterestDetails=true", body = Some(
         """
           {
            "documentDetails": [
             {
-              "taxyear": "2022"
+              "documentOutstandingAmount": "xyz"
             }
            ]
           }
@@ -158,14 +83,14 @@ class GetFinancialDetailsServiceISpec extends IntegrationSpecCommonBase with ETM
           | ]
           |}
           |""".stripMargin
-      mockStubResponseForGetFinancialDetailsOld(Status.NOT_FOUND, s"VRN/123456789/VATC?dateFrom=${LocalDate.now().minusYears(2)}&dateTo=${LocalDate.now()}&onlyOpenItems=false&includeStatistical=true&includeLocks=false&calculateAccruedInterest=true&removePOA=false&customerPaymentInformation=false", body = Some(noDataFoundBody))
+      mockStubResponseForGetFinancialDetails(Status.NOT_FOUND, s"VRN/123456789/VATC?dateFrom=${LocalDate.now().minusYears(2)}&dateTo=${LocalDate.now()}&includeClearedItems=true&includeStatisticalItems=true&includePaymentOnAccount=true&addRegimeTotalisation=false&addLockInformation=false&addPenaltyDetails=true&addPostedInterestDetails=true&addAccruingInterestDetails=true", body = Some(noDataFoundBody))
       val result = await(service.getDataFromFinancialServiceForVATVCN("123456789"))
       result.isLeft shouldBe true
       result.left.get shouldBe GetFinancialDetailsNoContent
     }
 
     s"an unknown response is returned from the connector - $GetFinancialDetailsFailureResponse" in {
-      mockStubResponseForGetFinancialDetailsOld(Status.IM_A_TEAPOT, s"VRN/123456789/VATC?dateFrom=${LocalDate.now().minusYears(2)}&dateTo=${LocalDate.now()}&onlyOpenItems=false&includeStatistical=true&includeLocks=false&calculateAccruedInterest=true&removePOA=false&customerPaymentInformation=false")
+      mockStubResponseForGetFinancialDetails(Status.IM_A_TEAPOT, s"VRN/123456789/VATC?dateFrom=${LocalDate.now().minusYears(2)}&dateTo=${LocalDate.now()}&includeClearedItems=true&includeStatisticalItems=true&includePaymentOnAccount=true&addRegimeTotalisation=false&addLockInformation=false&addPenaltyDetails=true&addPostedInterestDetails=true&addAccruingInterestDetails=true")
       val result = await(service.getDataFromFinancialServiceForVATVCN("123456789"))
       result.isLeft shouldBe true
       result.left.get shouldBe GetFinancialDetailsFailureResponse(Status.IM_A_TEAPOT)
