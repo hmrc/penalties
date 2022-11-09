@@ -22,23 +22,25 @@ import config.featureSwitches.FeatureSwitching
 import connectors.FileNotificationOrchestratorConnector
 import connectors.parsers.AppealsParser.UnexpectedFailure
 import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser.{GetPenaltyDetailsFailureResponse, GetPenaltyDetailsSuccessResponse}
-import models.appeals.{AppealData, MultiplePenaltiesData}
 import models.appeals.AppealTypeEnum.{Additional, Late_Payment, Late_Submission}
-import models.notification._
-import models.upload.{UploadDetails, UploadJourney, UploadStatusEnum}
+import models.appeals.{AppealData, MultiplePenaltiesData}
+import models.auditing.PenaltyAppealFileNotificationStorageFailureModel
 import models.getPenaltyDetails.GetPenaltyDetails
 import models.getPenaltyDetails.appealInfo.{AppealInformationType, AppealLevelEnum, AppealStatusEnum}
 import models.getPenaltyDetails.latePayment._
 import models.getPenaltyDetails.lateSubmission._
-import org.mockito.Matchers
+import models.notification._
+import models.upload.{UploadDetails, UploadJourney, UploadStatusEnum}
 import org.mockito.Matchers.any
 import org.mockito.Mockito._
+import org.mockito.{ArgumentCaptor, Matchers}
 import org.scalatest.concurrent.Eventually.eventually
 import play.api.Configuration
 import play.api.http.Status
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.Result
 import play.api.test.Helpers._
+import services.auditing.AuditService
 import services.{AppealService, GetPenaltyDetailsService}
 import uk.gov.hmrc.http.HttpResponse
 import utils.Logger.logger
@@ -53,15 +55,16 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
   val mockAppealsService: AppealService = mock(classOf[AppealService])
   val mockAppConfig: AppConfig = mock(classOf[AppConfig])
   val mockUUIDGenerator: UUIDGenerator = mock(classOf[UUIDGenerator])
+  val mockAuditService: AuditService = mock(classOf[AuditService])
   val mockGetPenaltyDetailsService: GetPenaltyDetailsService = mock(classOf[GetPenaltyDetailsService])
   val correlationId = "id-1234567890"
   val mockFileNotificationConnector: FileNotificationOrchestratorConnector = mock(classOf[FileNotificationOrchestratorConnector])
   implicit val config: Configuration = mockAppConfig.config
 
   class Setup(withRealAppConfig: Boolean = true) {
-    reset(mockAppConfig, mockAppealsService, mockGetPenaltyDetailsService, mockFileNotificationConnector)
+    reset(mockAppConfig, mockAppealsService, mockGetPenaltyDetailsService, mockFileNotificationConnector, mockAuditService)
     val controller = new AppealsController(if (withRealAppConfig) appConfig
-    else mockAppConfig, mockAppealsService, mockGetPenaltyDetailsService, mockUUIDGenerator, mockFileNotificationConnector, stubControllerComponents())
+    else mockAppConfig, mockAppealsService, mockGetPenaltyDetailsService, mockUUIDGenerator, mockFileNotificationConnector, mockAuditService, stubControllerComponents())
   }
 
   "getAppealsDataForLateSubmissionPenalty" should {
@@ -681,6 +684,8 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
         .thenReturn(Future.successful(Right(appealResponseModel)))
       when(mockFileNotificationConnector.postFileNotifications(any())(any()))
         .thenReturn(Future.successful(HttpResponse.apply(INTERNAL_SERVER_ERROR, "")))
+      val argumentCaptorForAuditModel = ArgumentCaptor.forClass(classOf[PenaltyAppealFileNotificationStorageFailureModel])
+      when(mockUUIDGenerator.generateUUID).thenReturn(correlationId)
 
       val appealsJson: JsValue = Json.parse(
         """
@@ -724,17 +729,20 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
           val result: Result = await(controller.submitAppeal("HMRC-MTD-VAT~VRN~123456789", isLPP = false, penaltyNumber = "123456789", correlationId = correlationId)(fakeRequest.withJsonBody(appealsJson)))
           result.header.status shouldBe OK
           eventually {
+            verify(mockAuditService, times(1)).audit(argumentCaptorForAuditModel.capture())(any(), any(), any())
             logs.exists(_.getMessage.contains(PagerDutyKeys.RECEIVED_5XX_FROM_FILE_NOTIFICATION_ORCHESTRATOR.toString)) shouldBe true
           }
         }
       }
     }
 
-    "return 200 (OK) even if the file notification call fails (4xx response)" in new Setup {
+    "return 200 (OK) even if the file notification call fails (4xx response) and audit the storage failure" in new Setup {
       when(mockAppealsService.submitAppeal(any(), any(), any(), any(), any()))
         .thenReturn(Future.successful(Right(appealResponseModel)))
       when(mockFileNotificationConnector.postFileNotifications(any())(any()))
         .thenReturn(Future.successful(HttpResponse.apply(BAD_REQUEST, "")))
+      val argumentCaptorForAuditModel = ArgumentCaptor.forClass(classOf[PenaltyAppealFileNotificationStorageFailureModel])
+      when(mockUUIDGenerator.generateUUID).thenReturn(correlationId)
 
       val appealsJson: JsValue = Json.parse(
         """
@@ -778,10 +786,99 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
           val result: Result = await(controller.submitAppeal("HMRC-MTD-VAT~VRN~123456789", isLPP = false, penaltyNumber = "123456789", correlationId = correlationId)(fakeRequest.withJsonBody(appealsJson)))
           result.header.status shouldBe OK
           eventually {
+            verify(mockAuditService, times(1)).audit(argumentCaptorForAuditModel.capture())(any(), any(), any())
             logs.exists(_.getMessage.contains(PagerDutyKeys.RECEIVED_4XX_FROM_FILE_NOTIFICATION_ORCHESTRATOR.toString)) shouldBe true
           }
         }
       }
+
+      argumentCaptorForAuditModel.getValue shouldBe PenaltyAppealFileNotificationStorageFailureModel(Seq(
+        SDESNotification(
+          informationType = "S18",
+          file = SDESNotificationFile(
+            recipientOrSender = "123456789012", name = "file1.txt", location = "download.file", checksum = SDESChecksum("md5", "check12345678"), size = 987, properties = Seq(
+              SDESProperties(
+                "CaseId", "PR-123456789"
+              ),
+              SDESProperties(
+                "SourceFileUploadDate", "2018-04-24T09:30"
+              )
+            )
+          ), audit = SDESAudit(correlationId)
+        )
+      ))
+    }
+
+    "return 200 (OK) even if the file notification call fails (with exception) and audit the storage failure" in new Setup {
+      when(mockAppealsService.submitAppeal(any(), any(), any(), any(), any()))
+        .thenReturn(Future.successful(Right(appealResponseModel)))
+      when(mockFileNotificationConnector.postFileNotifications(any())(any()))
+        .thenReturn(Future.failed(new Exception("failed")))
+      val argumentCaptorForAuditModel = ArgumentCaptor.forClass(classOf[PenaltyAppealFileNotificationStorageFailureModel])
+      when(mockUUIDGenerator.generateUUID).thenReturn(correlationId)
+
+      val appealsJson: JsValue = Json.parse(
+        """
+          |{
+          |    "sourceSystem": "MDTP",
+          |    "taxRegime": "VAT",
+          |    "customerReferenceNo": "123456789",
+          |    "dateOfAppeal": "2020-01-01T00:00:00",
+          |    "isLPP": true,
+          |    "appealSubmittedBy": "client",
+          |    "appealInformation": {
+          |						 "reasonableExcuse": "other",
+          |            "honestyDeclaration": true,
+          |            "startDateOfEvent": "2021-04-23T00:00",
+          |						 "statement": "This is a statement",
+          |            "lateAppeal": false,
+          |            "uploadedFiles": [
+          |               {
+          |                 "reference":"reference-3000",
+          |                 "fileStatus":"READY",
+          |                 "downloadUrl":"download.file",
+          |                 "uploadDetails": {
+          |                     "fileName":"file1.txt",
+          |                     "fileMimeType":"text/plain",
+          |                     "uploadTimestamp":"2018-04-24T09:30:00",
+          |                     "checksum":"check12345678",
+          |                     "size":987
+          |                 },
+          |                 "uploadFields": {
+          |                     "key": "abcxyz",
+          |                     "x-amz-algorithm": "md5"
+          |                 },
+          |                 "lastUpdated":"2018-04-24T09:30:00"
+          |               }
+          |            ]
+          |		}
+          |}
+          |""".stripMargin)
+      withCaptureOfLoggingFrom(logger) {
+        logs => {
+          val result: Result = await(controller.submitAppeal("HMRC-MTD-VAT~VRN~123456789", isLPP = false, penaltyNumber = "123456789", correlationId = correlationId)(fakeRequest.withJsonBody(appealsJson)))
+          result.header.status shouldBe OK
+          eventually {
+            verify(mockAuditService, times(1)).audit(argumentCaptorForAuditModel.capture())(any(), any(), any())
+          }
+        }
+      }
+
+      argumentCaptorForAuditModel.getValue shouldBe PenaltyAppealFileNotificationStorageFailureModel(Seq(
+        SDESNotification(
+          informationType = "S18",
+          file = SDESNotificationFile(
+            recipientOrSender = "123456789012", name = "file1.txt", location = "download.file", checksum = SDESChecksum("md5", "check12345678"), size = 987, properties = Seq(
+              SDESProperties(
+                "CaseId", "PR-123456789"
+              ),
+              SDESProperties(
+                "SourceFileUploadDate", "2018-04-24T09:30"
+              )
+            )
+          ), audit = SDESAudit(correlationId)
+        )
+      ))
     }
   }
 

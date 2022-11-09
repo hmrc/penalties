@@ -24,6 +24,7 @@ import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser.GetPenaltyDe
 import models.appeals.AppealTypeEnum._
 import models.appeals._
 import models.appeals.reasonableExcuses.ReasonableExcuse
+import models.auditing.PenaltyAppealFileNotificationStorageFailureModel
 import models.getPenaltyDetails.GetPenaltyDetails
 import models.getPenaltyDetails.latePayment.{LPPDetails, LPPPenaltyCategoryEnum}
 import models.getPenaltyDetails.lateSubmission.LSPDetails
@@ -31,7 +32,8 @@ import models.notification._
 import models.upload.UploadJourney
 import play.api.Configuration
 import play.api.libs.json.Json
-import play.api.mvc.{Action, AnyContent, ControllerComponents, Result}
+import play.api.mvc.{Action, AnyContent, ControllerComponents, Request, Result}
+import services.auditing.AuditService
 import services.{AppealService, GetPenaltyDetailsService}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
@@ -48,6 +50,7 @@ class AppealsController @Inject()(val appConfig: AppConfig,
                                   getPenaltyDetailsService: GetPenaltyDetailsService,
                                   idGenerator: UUIDGenerator,
                                   fileNotificationOrchestratorConnector: FileNotificationOrchestratorConnector,
+                                  auditService: AuditService,
                                   cc: ControllerComponents)(implicit ec: ExecutionContext, val config: Configuration)
   extends BackendController(cc) with FeatureSwitching {
 
@@ -145,7 +148,7 @@ class AppealsController @Inject()(val appConfig: AppConfig,
 
   private def submitAppealToPEGA(appealSubmission: AppealSubmission, enrolmentKey: String,
                                  isLPP: Boolean, penaltyNumber: String, correlationId: String)
-                                (implicit hc: HeaderCarrier): Future[Result] = {
+                                (implicit hc: HeaderCarrier, request: Request[_]): Future[Result] = {
     appealService.submitAppeal(appealSubmission, enrolmentKey, isLPP, penaltyNumber, correlationId).map {
       _.fold(
         error => {
@@ -172,8 +175,14 @@ class AppealsController @Inject()(val appConfig: AppConfig,
                     logger.info(s"[AppealsController][submitAppeal] - Received OK from file notification orchestrator")
                   case status =>
                     PagerDutyHelper.logStatusCode("submitAppeal", status)(RECEIVED_4XX_FROM_FILE_NOTIFICATION_ORCHESTRATOR, RECEIVED_5XX_FROM_FILE_NOTIFICATION_ORCHESTRATOR)
-                    logger.error(s"[AppealsController][submitAppeal] - Received unknown response (${status}) from file notification orchestrator. Response body: ${response.body}")
+                    logger.error(s"[AppealsController][submitAppeal] - Received unknown response ($status) from file notification orchestrator. Response body: ${response.body}")
+                    auditStorageFailureOfFileNotifications(seqOfNotifications)
                 }
+            }.recover {
+              case e => {
+                logger.error(s"[AppealsController][submitAppeal] - An unknown exception occurred when attempting to store file notifications, with error: ${e.getMessage}")
+                auditStorageFailureOfFileNotifications(seqOfNotifications)
+              }
             }
           }
           logger.info(s"[AppealsController][submitAppeal] - Successfully sent appeal submission to PEGA")
@@ -266,5 +275,12 @@ class AppealsController @Inject()(val appConfig: AppConfig,
         InternalServerError("We were unable to parse penalty data.")
       }
     }
+  }
+
+  private def auditStorageFailureOfFileNotifications(notifications: Seq[SDESNotification])
+                                                    (implicit hc: HeaderCarrier, ec: ExecutionContext, request: Request[_]): Unit = {
+    val auditModel = PenaltyAppealFileNotificationStorageFailureModel(notifications)
+    logger.info(s"[AppealsController][auditStorageFailureOfFileNotifications] - Auditing ${notifications.size} notifications that were not stored successfully")
+    auditService.audit(auditModel)
   }
 }

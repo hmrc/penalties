@@ -16,16 +16,19 @@
 
 package controllers
 
+import scala.jdk.CollectionConverters._
+import com.github.tomakehurst.wiremock.client.WireMock.{postRequestedFor, urlEqualTo}
 import config.featureSwitches.FeatureSwitching
 import models.appeals.MultiplePenaltiesData
+import org.scalatest.concurrent.Eventually.eventually
 import play.api.http.Status
 import play.api.libs.json.{JsValue, Json}
 import play.api.test.Helpers._
-import utils.{AppealWiremock, ETMPWiremock, IntegrationSpecCommonBase}
+import utils.{AppealWiremock, ETMPWiremock, FileNotificationOrchestratorWiremock, IntegrationSpecCommonBase}
 
 import java.time.LocalDate
 
-class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock with AppealWiremock with FeatureSwitching {
+class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock with AppealWiremock with FileNotificationOrchestratorWiremock with FeatureSwitching {
   val controller: AppealsController = injector.instanceOf[AppealsController]
 
   val appealJson: JsValue = Json.parse(
@@ -582,6 +585,103 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
           jsonToSubmit
         ))
         result.status shouldBe OK
+      }
+
+      "call the connector and send the appeal data received in the request body - returns OK when successful for other with file upload" in {
+        mockResponseForAppealSubmissionStub(OK, "HMRC-MTD-VAT~VRN~123456789", penaltyNumber = "123456789")
+        mockResponseForFileNotificationOrchestrator(OK)
+        val jsonToSubmit: JsValue = Json.parse(
+          """
+            |{
+            |    "sourceSystem": "MDTP",
+            |    "taxRegime": "VAT",
+            |    "customerReferenceNo": "123456789",
+            |    "dateOfAppeal": "2020-01-01T00:00:00",
+            |    "isLPP": false,
+            |    "appealSubmittedBy": "client",
+            |    "appealInformation": {
+            |						 "reasonableExcuse": "other",
+            |            "honestyDeclaration": true,
+            |            "startDateOfEvent": "2021-04-23T00:00",
+            |						 "statement": "This is a statement",
+            |            "lateAppeal": false,
+            |            "uploadedFiles": [
+            |               {
+            |                 "reference":"reference-3000",
+            |                 "fileStatus":"READY",
+            |                 "downloadUrl":"download.file",
+            |                 "uploadDetails": {
+            |                     "fileName":"file1.txt",
+            |                     "fileMimeType":"text/plain",
+            |                     "uploadTimestamp":"2018-04-24T09:30:00",
+            |                     "checksum":"check12345678",
+            |                     "size":987
+            |                 },
+            |                 "uploadFields": {
+            |                     "key": "abcxyz",
+            |                     "x-amz-algorithm": "md5"
+            |                 },
+            |                 "lastUpdated":"2018-04-24T09:30:00"
+            |               }
+            |            ]
+            |		}
+            |}
+            |""".stripMargin
+        )
+        val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=false&penaltyNumber=123456789&correlationId=correlationId").post(
+          jsonToSubmit
+        ))
+        result.status shouldBe OK
+      }
+
+      "call the connector and send the appeal data received in the request body - returns OK when successful for other with file upload (audit storage failure)" in {
+        mockResponseForAppealSubmissionStub(OK, "HMRC-MTD-VAT~VRN~123456789", penaltyNumber = "123456789")
+        mockResponseForFileNotificationOrchestrator(INTERNAL_SERVER_ERROR)
+        val jsonToSubmit: JsValue = Json.parse(
+          """
+            |{
+            |    "sourceSystem": "MDTP",
+            |    "taxRegime": "VAT",
+            |    "customerReferenceNo": "123456789",
+            |    "dateOfAppeal": "2020-01-01T00:00:00",
+            |    "isLPP": false,
+            |    "appealSubmittedBy": "client",
+            |    "appealInformation": {
+            |						 "reasonableExcuse": "other",
+            |            "honestyDeclaration": true,
+            |            "startDateOfEvent": "2021-04-23T00:00",
+            |						 "statement": "This is a statement",
+            |            "lateAppeal": false,
+            |            "uploadedFiles": [
+            |               {
+            |                 "reference":"reference-3000",
+            |                 "fileStatus":"READY",
+            |                 "downloadUrl":"download.file",
+            |                 "uploadDetails": {
+            |                     "fileName":"file1.txt",
+            |                     "fileMimeType":"text/plain",
+            |                     "uploadTimestamp":"2018-04-24T09:30:00",
+            |                     "checksum":"check12345678",
+            |                     "size":987
+            |                 },
+            |                 "uploadFields": {
+            |                     "key": "abcxyz",
+            |                     "x-amz-algorithm": "md5"
+            |                 },
+            |                 "lastUpdated":"2018-04-24T09:30:00"
+            |               }
+            |            ]
+            |		}
+            |}
+            |""".stripMargin
+        )
+        val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=false&penaltyNumber=123456789&correlationId=correlationId").post(
+          jsonToSubmit
+        ))
+        result.status shouldBe OK
+        eventually {
+          wireMockServer.findAll(postRequestedFor(urlEqualTo("/write/audit"))).asScala.toList.exists(_.getBodyAsString.contains("PenaltyAppealFileNotificationStorageFailure")) shouldBe true
+        }
       }
 
       "call the connector and send the appeal data received in the request body - returns OK when successful for LPP" in {
