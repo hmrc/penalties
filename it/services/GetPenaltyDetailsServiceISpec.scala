@@ -94,7 +94,7 @@ class GetPenaltyDetailsServiceISpec extends IntegrationSpecCommonBase with ETMPW
               penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
               principalChargeReference = "1234567890",
               penaltyChargeReference = Some("1234567890"),
-              penaltyChargeCreationDate = LocalDate.of(2022, 10, 30),
+              penaltyChargeCreationDate = Some(LocalDate.of(2022, 10, 30)),
               penaltyStatus = LPPPenaltyStatusEnum.Accruing,
               appealInformation = Some(Seq(AppealInformationType(appealStatus = Some(AppealStatusEnum.Unappealable), appealLevel = Some(AppealLevelEnum.HMRC)))),
               principalChargeBillingFrom = LocalDate.of(2022, 10, 30),
@@ -111,7 +111,7 @@ class GetPenaltyDetailsServiceISpec extends IntegrationSpecCommonBase with ETMPW
               LPP2Percentage = Some(BigDecimal(4.00).setScale(2)),
               LPP1LRPercentage = Some(BigDecimal(2.00).setScale(2)),
               LPP1HRPercentage = Some(BigDecimal(2.00).setScale(2)),
-              penaltyChargeDueDate = LocalDate.of(2022, 10, 30),
+              penaltyChargeDueDate = Some(LocalDate.of(2022, 10, 30)),
               principalChargeLatestClearing = None,
               metadata = LPPDetailsMetadata(
                 timeToPay = Some(Seq(TimeToPay(

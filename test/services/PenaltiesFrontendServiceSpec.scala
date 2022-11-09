@@ -38,7 +38,7 @@ class PenaltiesFrontendServiceSpec extends SpecBase {
                 penaltyCategory = LPPPenaltyCategoryEnum.SecondPenalty,
                 principalChargeReference = "1234567890",
                 penaltyChargeReference = Some("1234567890"),
-                penaltyChargeCreationDate = LocalDate.of(2022, 10, 30),
+                penaltyChargeCreationDate = Some(LocalDate.of(2022, 10, 30)),
                 penaltyStatus = LPPPenaltyStatusEnum.Accruing,
                 appealInformation = Some(Seq(AppealInformationType(appealStatus = Some(AppealStatusEnum.Unappealable), appealLevel = Some(AppealLevelEnum.HMRC)))),
                 principalChargeBillingFrom = LocalDate.of(2022, 10, 30),
@@ -55,7 +55,7 @@ class PenaltiesFrontendServiceSpec extends SpecBase {
                 LPP2Percentage = Some(BigDecimal(4.00).setScale(2)),
                 LPP1LRPercentage = Some(BigDecimal(2.00).setScale(2)),
                 LPP1HRPercentage = Some(BigDecimal(2.00).setScale(2)),
-                penaltyChargeDueDate = LocalDate.of(2022, 10, 30),
+                penaltyChargeDueDate = Some(LocalDate.of(2022, 10, 30)),
                 principalChargeLatestClearing = None,
                 metadata = LPPDetailsMetadata()
               ),
@@ -63,7 +63,7 @@ class PenaltiesFrontendServiceSpec extends SpecBase {
                 penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
                 principalChargeReference = "1234567890",
                 penaltyChargeReference = Some("1234567890"),
-                penaltyChargeCreationDate = LocalDate.of(2022, 10, 30),
+                penaltyChargeCreationDate = Some(LocalDate.of(2022, 10, 30)),
                 penaltyStatus = LPPPenaltyStatusEnum.Accruing,
                 appealInformation = Some(Seq(AppealInformationType(appealStatus = Some(AppealStatusEnum.Unappealable), appealLevel = Some(AppealLevelEnum.HMRC)))),
                 principalChargeBillingFrom = LocalDate.of(2022, 10, 30),
@@ -80,7 +80,7 @@ class PenaltiesFrontendServiceSpec extends SpecBase {
                 LPP2Percentage = Some(BigDecimal(4.00).setScale(2)),
                 LPP1LRPercentage = Some(BigDecimal(2.00).setScale(2)),
                 LPP1HRPercentage = Some(BigDecimal(2.00).setScale(2)),
-                penaltyChargeDueDate = LocalDate.of(2022, 10, 30),
+                penaltyChargeDueDate = Some(LocalDate.of(2022, 10, 30)),
                 principalChargeLatestClearing = None,
                 metadata = LPPDetailsMetadata()
               )
@@ -110,7 +110,7 @@ class PenaltiesFrontendServiceSpec extends SpecBase {
               penaltyCategory = LPPPenaltyCategoryEnum.SecondPenalty,
               principalChargeReference = "1234567890",
               penaltyChargeReference = Some("1234567890"),
-              penaltyChargeCreationDate = LocalDate.of(2022, 10, 30),
+              penaltyChargeCreationDate = Some(LocalDate.of(2022, 10, 30)),
               penaltyStatus = LPPPenaltyStatusEnum.Accruing,
               appealInformation = Some(Seq(AppealInformationType(appealStatus = Some(AppealStatusEnum.Unappealable), appealLevel = Some(AppealLevelEnum.HMRC)))),
               principalChargeBillingFrom = LocalDate.of(2022, 10, 30),
@@ -127,7 +127,7 @@ class PenaltiesFrontendServiceSpec extends SpecBase {
               LPP2Percentage = Some(BigDecimal(4.00).setScale(2)),
               LPP1LRPercentage = Some(BigDecimal(2.00).setScale(2)),
               LPP1HRPercentage = Some(BigDecimal(2.00).setScale(2)),
-              penaltyChargeDueDate = LocalDate.of(2022, 10, 30),
+              penaltyChargeDueDate = Some(LocalDate.of(2022, 10, 30)),
               principalChargeLatestClearing = None,
               metadata = LPPDetailsMetadata(
                 mainTransaction = Some(MainTransactionEnum.VATReturnSecondLPP), outstandingAmount = Some(123.45)
@@ -137,7 +137,7 @@ class PenaltiesFrontendServiceSpec extends SpecBase {
               penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
               principalChargeReference = "1234567890",
               penaltyChargeReference = Some("1234567890"),
-              penaltyChargeCreationDate = LocalDate.of(2022, 10, 30),
+              penaltyChargeCreationDate = Some(LocalDate.of(2022, 10, 30)),
               penaltyStatus = LPPPenaltyStatusEnum.Accruing,
               appealInformation = Some(Seq(AppealInformationType(appealStatus = Some(AppealStatusEnum.Unappealable), appealLevel = Some(AppealLevelEnum.HMRC)))),
               principalChargeBillingFrom = LocalDate.of(2022, 10, 30),
@@ -154,7 +154,7 @@ class PenaltiesFrontendServiceSpec extends SpecBase {
               LPP2Percentage = Some(BigDecimal(4.00).setScale(2)),
               LPP1LRPercentage = Some(BigDecimal(2.00).setScale(2)),
               LPP1HRPercentage = Some(BigDecimal(2.00).setScale(2)),
-              penaltyChargeDueDate = LocalDate.of(2022, 10, 30),
+              penaltyChargeDueDate = Some(LocalDate.of(2022, 10, 30)),
               principalChargeLatestClearing = None,
               metadata = LPPDetailsMetadata(
                 mainTransaction = Some(MainTransactionEnum.VATReturnFirstLPP), outstandingAmount = Some(123.45)
@@ -179,7 +179,7 @@ class PenaltiesFrontendServiceSpec extends SpecBase {
                 penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
                 principalChargeReference = "1234567890",
                 penaltyChargeReference = Some("1234567890"),
-                penaltyChargeCreationDate = LocalDate.of(2022, 10, 30),
+                penaltyChargeCreationDate = Some(LocalDate.of(2022, 10, 30)),
                 penaltyStatus = LPPPenaltyStatusEnum.Accruing,
                 appealInformation = Some(Seq(AppealInformationType(appealStatus = Some(AppealStatusEnum.Unappealable), appealLevel = Some(AppealLevelEnum.HMRC)))),
                 principalChargeBillingFrom = LocalDate.of(2022, 10, 30),
@@ -196,7 +196,7 @@ class PenaltiesFrontendServiceSpec extends SpecBase {
                 LPP2Percentage = Some(BigDecimal(4.00).setScale(2)),
                 LPP1LRPercentage = Some(BigDecimal(2.00).setScale(2)),
                 LPP1HRPercentage = Some(BigDecimal(2.00).setScale(2)),
-                penaltyChargeDueDate = LocalDate.of(2022, 10, 30),
+                penaltyChargeDueDate = Some(LocalDate.of(2022, 10, 30)),
                 principalChargeLatestClearing = None,
                 metadata = LPPDetailsMetadata(
                   timeToPay = Some(Seq(TimeToPay(
@@ -225,7 +225,7 @@ class PenaltiesFrontendServiceSpec extends SpecBase {
               penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
               principalChargeReference = "1234567890",
               penaltyChargeReference = Some("1234567890"),
-              penaltyChargeCreationDate = LocalDate.of(2022, 10, 30),
+              penaltyChargeCreationDate = Some(LocalDate.of(2022, 10, 30)),
               penaltyStatus = LPPPenaltyStatusEnum.Accruing,
               appealInformation = Some(Seq(AppealInformationType(appealStatus = Some(AppealStatusEnum.Unappealable), appealLevel = Some(AppealLevelEnum.HMRC)))),
               principalChargeBillingFrom = LocalDate.of(2022, 10, 30),
@@ -242,7 +242,7 @@ class PenaltiesFrontendServiceSpec extends SpecBase {
               LPP2Percentage = Some(BigDecimal(4.00).setScale(2)),
               LPP1LRPercentage = Some(BigDecimal(2.00).setScale(2)),
               LPP1HRPercentage = Some(BigDecimal(2.00).setScale(2)),
-              penaltyChargeDueDate = LocalDate.of(2022, 10, 30),
+              penaltyChargeDueDate = Some(LocalDate.of(2022, 10, 30)),
               principalChargeLatestClearing = None,
               metadata = LPPDetailsMetadata(
                 mainTransaction = Some(MainTransactionEnum.VATReturnFirstLPP),
@@ -272,7 +272,7 @@ class PenaltiesFrontendServiceSpec extends SpecBase {
                 penaltyCategory = LPPPenaltyCategoryEnum.SecondPenalty,
                 principalChargeReference = "1234567890",
                 penaltyChargeReference = Some("1234567890"),
-                penaltyChargeCreationDate = LocalDate.of(2022, 10, 30),
+                penaltyChargeCreationDate = Some(LocalDate.of(2022, 10, 30)),
                 penaltyStatus = LPPPenaltyStatusEnum.Accruing,
                 appealInformation = Some(Seq(AppealInformationType(appealStatus = Some(AppealStatusEnum.Unappealable), appealLevel = Some(AppealLevelEnum.HMRC)))),
                 principalChargeBillingFrom = LocalDate.of(2022, 10, 30),
@@ -289,7 +289,7 @@ class PenaltiesFrontendServiceSpec extends SpecBase {
                 LPP2Percentage = Some(BigDecimal(4.00).setScale(2)),
                 LPP1LRPercentage = Some(BigDecimal(2.00).setScale(2)),
                 LPP1HRPercentage = Some(BigDecimal(2.00).setScale(2)),
-                penaltyChargeDueDate = LocalDate.of(2022, 10, 30),
+                penaltyChargeDueDate = Some(LocalDate.of(2022, 10, 30)),
                 principalChargeLatestClearing = None,
                 metadata = LPPDetailsMetadata(
                   timeToPay = Some(Seq(TimeToPay(
@@ -318,7 +318,7 @@ class PenaltiesFrontendServiceSpec extends SpecBase {
               penaltyCategory = LPPPenaltyCategoryEnum.SecondPenalty,
               principalChargeReference = "1234567890",
               penaltyChargeReference = Some("1234567890"),
-              penaltyChargeCreationDate = LocalDate.of(2022, 10, 30),
+              penaltyChargeCreationDate = Some(LocalDate.of(2022, 10, 30)),
               penaltyStatus = LPPPenaltyStatusEnum.Accruing,
               appealInformation = Some(Seq(AppealInformationType(appealStatus = Some(AppealStatusEnum.Unappealable), appealLevel = Some(AppealLevelEnum.HMRC)))),
               principalChargeBillingFrom = LocalDate.of(2022, 10, 30),
@@ -335,7 +335,7 @@ class PenaltiesFrontendServiceSpec extends SpecBase {
               LPP2Percentage = Some(BigDecimal(4.00).setScale(2)),
               LPP1LRPercentage = Some(BigDecimal(2.00).setScale(2)),
               LPP1HRPercentage = Some(BigDecimal(2.00).setScale(2)),
-              penaltyChargeDueDate = LocalDate.of(2022, 10, 30),
+              penaltyChargeDueDate = Some(LocalDate.of(2022, 10, 30)),
               principalChargeLatestClearing = None,
               metadata = LPPDetailsMetadata(
                 mainTransaction = Some(MainTransactionEnum.VATReturnSecondLPP),
@@ -365,7 +365,7 @@ class PenaltiesFrontendServiceSpec extends SpecBase {
                 penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
                 principalChargeReference = "1234567891",
                 penaltyChargeReference = Some("1234567891"),
-                penaltyChargeCreationDate = LocalDate.of(2022, 10, 30),
+                penaltyChargeCreationDate = Some(LocalDate.of(2022, 10, 30)),
                 penaltyStatus = LPPPenaltyStatusEnum.Accruing,
                 appealInformation = Some(Seq(AppealInformationType(appealStatus = Some(AppealStatusEnum.Unappealable), appealLevel = Some(AppealLevelEnum.HMRC)))),
                 principalChargeBillingFrom = LocalDate.of(2022, 10, 30),
@@ -382,7 +382,7 @@ class PenaltiesFrontendServiceSpec extends SpecBase {
                 LPP2Percentage = Some(BigDecimal(4.00).setScale(2)),
                 LPP1LRPercentage = Some(BigDecimal(2.00).setScale(2)),
                 LPP1HRPercentage = Some(BigDecimal(2.00).setScale(2)),
-                penaltyChargeDueDate = LocalDate.of(2022, 10, 30),
+                penaltyChargeDueDate = Some(LocalDate.of(2022, 10, 30)),
                 principalChargeLatestClearing = None,
                 metadata = LPPDetailsMetadata(
                   timeToPay = Some(Seq(TimeToPay(
@@ -395,7 +395,7 @@ class PenaltiesFrontendServiceSpec extends SpecBase {
                 penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
                 principalChargeReference = "1234567890",
                 penaltyChargeReference = Some("1234567890"),
-                penaltyChargeCreationDate = LocalDate.of(2022, 10, 30),
+                penaltyChargeCreationDate = Some(LocalDate.of(2022, 10, 30)),
                 penaltyStatus = LPPPenaltyStatusEnum.Accruing,
                 appealInformation = Some(Seq(AppealInformationType(appealStatus = Some(AppealStatusEnum.Unappealable), appealLevel = Some(AppealLevelEnum.HMRC)))),
                 principalChargeBillingFrom = LocalDate.of(2022, 10, 30),
@@ -412,7 +412,7 @@ class PenaltiesFrontendServiceSpec extends SpecBase {
                 LPP2Percentage = Some(BigDecimal(4.00).setScale(2)),
                 LPP1LRPercentage = Some(BigDecimal(2.00).setScale(2)),
                 LPP1HRPercentage = Some(BigDecimal(2.00).setScale(2)),
-                penaltyChargeDueDate = LocalDate.of(2022, 10, 30),
+                penaltyChargeDueDate = Some(LocalDate.of(2022, 10, 30)),
                 principalChargeLatestClearing = None,
                 metadata = LPPDetailsMetadata(
                   timeToPay = Some(Seq(TimeToPay(
@@ -446,7 +446,7 @@ class PenaltiesFrontendServiceSpec extends SpecBase {
               penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
               principalChargeReference = "1234567891",
               penaltyChargeReference = Some("1234567891"),
-              penaltyChargeCreationDate = LocalDate.of(2022, 10, 30),
+              penaltyChargeCreationDate = Some(LocalDate.of(2022, 10, 30)),
               penaltyStatus = LPPPenaltyStatusEnum.Accruing,
               appealInformation = Some(Seq(AppealInformationType(appealStatus = Some(AppealStatusEnum.Unappealable), appealLevel = Some(AppealLevelEnum.HMRC)))),
               principalChargeBillingFrom = LocalDate.of(2022, 10, 30),
@@ -463,7 +463,7 @@ class PenaltiesFrontendServiceSpec extends SpecBase {
               LPP2Percentage = Some(BigDecimal(4.00).setScale(2)),
               LPP1LRPercentage = Some(BigDecimal(2.00).setScale(2)),
               LPP1HRPercentage = Some(BigDecimal(2.00).setScale(2)),
-              penaltyChargeDueDate = LocalDate.of(2022, 10, 30),
+              penaltyChargeDueDate = Some(LocalDate.of(2022, 10, 30)),
               principalChargeLatestClearing = None,
               metadata = LPPDetailsMetadata(
                 mainTransaction = Some(MainTransactionEnum.OfficersAssessmentFirstLPP),
@@ -478,7 +478,7 @@ class PenaltiesFrontendServiceSpec extends SpecBase {
               penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
               principalChargeReference = "1234567890",
               penaltyChargeReference = Some("1234567890"),
-              penaltyChargeCreationDate = LocalDate.of(2022, 10, 30),
+              penaltyChargeCreationDate = Some(LocalDate.of(2022, 10, 30)),
               penaltyStatus = LPPPenaltyStatusEnum.Accruing,
               appealInformation = Some(Seq(AppealInformationType(appealStatus = Some(AppealStatusEnum.Unappealable), appealLevel = Some(AppealLevelEnum.HMRC)))),
               principalChargeBillingFrom = LocalDate.of(2022, 10, 30),
@@ -495,7 +495,7 @@ class PenaltiesFrontendServiceSpec extends SpecBase {
               LPP2Percentage = Some(BigDecimal(4.00).setScale(2)),
               LPP1LRPercentage = Some(BigDecimal(2.00).setScale(2)),
               LPP1HRPercentage = Some(BigDecimal(2.00).setScale(2)),
-              penaltyChargeDueDate = LocalDate.of(2022, 10, 30),
+              penaltyChargeDueDate = Some(LocalDate.of(2022, 10, 30)),
               principalChargeLatestClearing = None,
               metadata = LPPDetailsMetadata(
                 mainTransaction = Some(MainTransactionEnum.VATReturnFirstLPP),
