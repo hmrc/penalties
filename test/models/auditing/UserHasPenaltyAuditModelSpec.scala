@@ -41,8 +41,6 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
       penalisedPrincipalTotal = Some(2000.12),
       LPPPostedTotal = None,
       LPPEstimatedTotal = None,
-      LPIPostedTotal = Some(120),
-      LPIEstimatedTotal = Some(130),
       LSPTotalValue = None)),
     lateSubmissionPenalty = Some(LateSubmissionPenalty(
       summary = LSPSummary(
@@ -94,8 +92,6 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
       penalisedPrincipalTotal = Some(2000.12),
       LPPPostedTotal = None,
       LPPEstimatedTotal = None,
-      LPIPostedTotal = Some(120),
-      LPIEstimatedTotal = Some(130),
       LSPTotalValue = None)),
     lateSubmissionPenalty = Some(LateSubmissionPenalty(
       summary = LSPSummary(
@@ -147,8 +143,6 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
       penalisedPrincipalTotal = Some(2000.12),
       LPPPostedTotal = None,
       LPPEstimatedTotal = None,
-      LPIPostedTotal = Some(120),
-      LPIEstimatedTotal = Some(130),
       LSPTotalValue = None)),
     lateSubmissionPenalty = Some(LateSubmissionPenalty(
       summary = LSPSummary(
@@ -200,8 +194,6 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
       penalisedPrincipalTotal = Some(2000.12),
       LPPPostedTotal = None,
       LPPEstimatedTotal = None,
-      LPIPostedTotal = Some(120),
-      LPIEstimatedTotal = Some(130),
       LSPTotalValue = None)),
     lateSubmissionPenalty = Some(LateSubmissionPenalty(
       summary = LSPSummary(
@@ -269,8 +261,6 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
       penalisedPrincipalTotal = Some(2000.12),
       LPPPostedTotal = None,
       LPPEstimatedTotal = None,
-      LPIPostedTotal = Some(120),
-      LPIEstimatedTotal = Some(130),
       LSPTotalValue = None)),
     lateSubmissionPenalty = Some(LateSubmissionPenalty(
       summary = LSPSummary(
@@ -324,8 +314,6 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
       penalisedPrincipalTotal = Some(2000.12),
       LPPPostedTotal = None,
       LPPEstimatedTotal = None,
-      LPIPostedTotal = Some(120),
-      LPIEstimatedTotal = Some(130),
       LSPTotalValue = None)),
     lateSubmissionPenalty = Some(LateSubmissionPenalty(
       summary = LSPSummary(
@@ -380,8 +368,6 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
       penalisedPrincipalTotal = Some(2000.12),
       LPPPostedTotal = None,
       LPPEstimatedTotal = None,
-      LPIPostedTotal = Some(120),
-      LPIEstimatedTotal = Some(130),
       LSPTotalValue = None)),
     lateSubmissionPenalty = Some(LateSubmissionPenalty(
       summary = LSPSummary(
@@ -453,8 +439,6 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
       penalisedPrincipalTotal = Some(2000.12),
       LPPPostedTotal = None,
       LPPEstimatedTotal = None,
-      LPIPostedTotal = Some(120),
-      LPIEstimatedTotal = Some(130),
       LSPTotalValue = None
     )),
     lateSubmissionPenalty = None,
@@ -523,8 +507,6 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
       penalisedPrincipalTotal = Some(2000.12),
       LPPPostedTotal = None,
       LPPEstimatedTotal = None,
-      LPIPostedTotal = Some(120),
-      LPIEstimatedTotal = Some(130),
       LSPTotalValue = None
     )),
     lateSubmissionPenalty = None,
@@ -603,8 +585,6 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
       penalisedPrincipalTotal = Some(2000.12),
       LPPPostedTotal = None,
       LPPEstimatedTotal = None,
-      LPIPostedTotal = Some(120),
-      LPIEstimatedTotal = Some(130),
       LSPTotalValue = None
     )),
     lateSubmissionPenalty = None,
@@ -678,8 +658,6 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
       penalisedPrincipalTotal = Some(2000.12),
       LPPPostedTotal = None,
       LPPEstimatedTotal = None,
-      LPIPostedTotal = Some(120),
-      LPIEstimatedTotal = Some(130),
       LSPTotalValue = None
     )),
     lateSubmissionPenalty = None,
@@ -752,8 +730,6 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
       penalisedPrincipalTotal = Some(2000.12),
       LPPPostedTotal = None,
       LPPEstimatedTotal = None,
-      LPIPostedTotal = Some(120),
-      LPIEstimatedTotal = Some(130),
       LSPTotalValue = None
     )),
     lateSubmissionPenalty = None,
@@ -826,8 +802,6 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
       penalisedPrincipalTotal = None,
       LPPPostedTotal = Some(150),
       LPPEstimatedTotal = Some(50),
-      LPIPostedTotal = Some(10),
-      LPIEstimatedTotal = Some(10),
       LSPTotalValue = None
     )),
     lateSubmissionPenalty = None,
@@ -991,11 +965,10 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
         (basicModel.detail \ "userType").validate[String].get shouldBe "Trader"
       }
 
-      "the user has parent charges, interest due and financial penalties" in {
+      "the user has parent charges and financial penalties" in {
         (auditModelWithInterest.detail \ "penaltyInformation" \ "totalTaxDue").validate[BigDecimal].get shouldBe 2000.12
-        (auditModelWithInterest.detail \ "penaltyInformation" \ "totalInterestDue").validate[Int].get shouldBe 250
         (auditModelWithInterest.detail \ "penaltyInformation" \ "totalFinancialPenaltyDue").validate[Int].get shouldBe 400
-        (auditModelWithInterest.detail \ "penaltyInformation" \ "totalDue").validate[BigDecimal].get shouldBe 2650.12
+        (auditModelWithInterest.detail \ "penaltyInformation" \ "totalDue").validate[BigDecimal].get shouldBe 2400.12
       }
 
       "the user has LSPPs (no appeals)" in {
@@ -1095,8 +1068,7 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
         (auditModelWithLPPsUnpaidAndPaidAndPartiallyPaid.detail \ "penaltyInformation" \ "lPPDetail" \ "totalNumberOfPenalties").validate[Int].get shouldBe 3
         (auditModelWithLPPsUnpaidAndPaidAndPartiallyPaid.detail \ "penaltyInformation" \ "lPPDetail" \ "underAppeal").validate[Int].get shouldBe 0
         (auditModelWithLPPsUnpaidAndPaidAndPartiallyPaid.detail \ "penaltyInformation" \ "totalFinancialPenaltyDue").validate[Int].get shouldBe 400
-        (auditModelWithLPPsUnpaidAndPaidAndPartiallyPaid.detail \ "penaltyInformation" \ "totalInterestDue").validate[Int].get shouldBe 20
-        (auditModelWithLPPsUnpaidAndPaidAndPartiallyPaid.detail \ "penaltyInformation" \ "totalDue").validate[Int].get shouldBe 420
+        (auditModelWithLPPsUnpaidAndPaidAndPartiallyPaid.detail \ "penaltyInformation" \ "totalDue").validate[Int].get shouldBe 400
       }
 
       "the user has LPPs (with appeals)" in {

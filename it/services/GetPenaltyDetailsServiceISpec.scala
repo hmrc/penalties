@@ -37,9 +37,7 @@ class GetPenaltyDetailsServiceISpec extends IntegrationSpecCommonBase with ETMPW
           LSPTotalValue = Some(200),
           penalisedPrincipalTotal = Some(2000),
           LPPPostedTotal = Some(165.25),
-          LPPEstimatedTotal = Some(15.26),
-          LPIPostedTotal = Some(1968.2),
-          LPIEstimatedTotal = Some(7)
+          LPPEstimatedTotal = Some(15.26)
         )
       ),
       lateSubmissionPenalty = Some(

@@ -32,9 +32,7 @@ class GetPenaltyDetailsSpec extends SpecBase {
       |   "LSPTotalValue": 200,
       |   "penalisedPrincipalTotal": 2000,
       |   "LPPPostedTotal": 165.25,
-      |   "LPPEstimatedTotal": 15.26,
-      |   "LPIPostedTotal": 1968.2,
-      |   "LPIEstimatedTotal": 7
+      |   "LPPEstimatedTotal": 15.26
       | },
       | "lateSubmissionPenalty": {
       |   "summary": {
@@ -123,9 +121,7 @@ class GetPenaltyDetailsSpec extends SpecBase {
       |   "LSPTotalValue": 200,
       |   "penalisedPrincipalTotal": 2000,
       |   "LPPPostedTotal": 165.25,
-      |   "LPPEstimatedTotal": 15.26,
-      |   "LPIPostedTotal": 1968.2,
-      |   "LPIEstimatedTotal": 7
+      |   "LPPEstimatedTotal": 15.26
       | },
       | "lateSubmissionPenalty": {
       |   "summary": {
@@ -204,9 +200,7 @@ class GetPenaltyDetailsSpec extends SpecBase {
         LSPTotalValue = Some(200),
         penalisedPrincipalTotal = Some(2000),
         LPPPostedTotal = Some(165.25),
-        LPPEstimatedTotal = Some(15.26),
-        LPIPostedTotal = Some(1968.2),
-        LPIEstimatedTotal = Some(7)
+        LPPEstimatedTotal = Some(15.26)
       )
     ),
     lateSubmissionPenalty = Some(
