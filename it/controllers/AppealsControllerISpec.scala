@@ -104,9 +104,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
       |   "LSPTotalValue": 200,
       |   "penalisedPrincipalTotal": 2000,
       |   "LPPPostedTotal": 165.25,
-      |   "LPPEstimatedTotal": 15.26,
-      |   "LPIPostedTotal": 1968.2,
-      |   "LPIEstimatedTotal": 7
+      |   "LPPEstimatedTotal": 15.26
       | },
       | "lateSubmissionPenalty": {
       |   "summary": {
@@ -793,9 +791,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
         |   "LSPTotalValue": 200,
         |   "penalisedPrincipalTotal": 2000,
         |   "LPPPostedTotal": 165.25,
-        |   "LPPEstimatedTotal": 15.26,
-        |   "LPIPostedTotal": 1968.2,
-        |   "LPIEstimatedTotal": 7
+        |   "LPPEstimatedTotal": 15.26
         | },
         | "latePaymentPenalty": {
         |     "details": [
@@ -834,9 +830,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
         |   "LSPTotalValue": 200,
         |   "penalisedPrincipalTotal": 2000,
         |   "LPPPostedTotal": 165.25,
-        |   "LPPEstimatedTotal": 15.26,
-        |   "LPIPostedTotal": 1968.2,
-        |   "LPIEstimatedTotal": 7
+        |   "LPPEstimatedTotal": 15.26
         | },
         | "latePaymentPenalty": {
         |     "details": [
@@ -897,9 +891,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
         |   "LSPTotalValue": 200,
         |   "penalisedPrincipalTotal": 2000,
         |   "LPPPostedTotal": 165.25,
-        |   "LPPEstimatedTotal": 15.26,
-        |   "LPIPostedTotal": 1968.2,
-        |   "LPIEstimatedTotal": 7
+        |   "LPPEstimatedTotal": 15.26
         | },
         | "latePaymentPenalty": {
         |     "details": [

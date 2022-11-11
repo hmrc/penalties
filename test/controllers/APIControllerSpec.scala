@@ -102,7 +102,7 @@ class APIControllerSpec extends SpecBase with FeatureSwitching {
                 penaltyCategory = LPPPenaltyCategoryEnum.SecondPenalty,
                 principalChargeReference = "12345678",
                 penaltyChargeReference = Some("1234567893"),
-                penaltyChargeCreationDate = LocalDate.of(2022, 1, 1),
+                penaltyChargeCreationDate = Some(LocalDate.of(2022, 1, 1)),
                 penaltyStatus = LPPPenaltyStatusEnum.Accruing,
                 appealInformation = None,
                 principalChargeBillingFrom = LocalDate.of(2022, 1, 1),
@@ -119,7 +119,7 @@ class APIControllerSpec extends SpecBase with FeatureSwitching {
                 LPP2Percentage = None,
                 LPP1LRPercentage = None,
                 LPP1HRPercentage = None,
-                penaltyChargeDueDate = LocalDate.of(2022, 1, 1),
+                penaltyChargeDueDate = Some(LocalDate.of(2022, 1, 1)),
                 principalChargeLatestClearing = None,
                 metadata = LPPDetailsMetadata()
               ),
@@ -127,7 +127,7 @@ class APIControllerSpec extends SpecBase with FeatureSwitching {
                 penaltyCategory = LPPPenaltyCategoryEnum.SecondPenalty,
                 principalChargeReference = "12345677",
                 penaltyChargeReference = Some("1234567892"),
-                penaltyChargeCreationDate = LocalDate.of(2022, 1, 1),
+                penaltyChargeCreationDate = Some(LocalDate.of(2022, 1, 1)),
                 penaltyStatus = LPPPenaltyStatusEnum.Accruing,
                 appealInformation = None,
                 principalChargeBillingFrom = LocalDate.of(2022, 1, 1),
@@ -144,7 +144,7 @@ class APIControllerSpec extends SpecBase with FeatureSwitching {
                 LPP2Percentage = None,
                 LPP1LRPercentage = None,
                 LPP1HRPercentage = None,
-                penaltyChargeDueDate = LocalDate.of(2022, 1, 1),
+                penaltyChargeDueDate = Some(LocalDate.of(2022, 1, 1)),
                 principalChargeLatestClearing = None,
                 metadata = LPPDetailsMetadata()
               ),
@@ -152,7 +152,7 @@ class APIControllerSpec extends SpecBase with FeatureSwitching {
                 penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
                 principalChargeReference = "12345676",
                 penaltyChargeReference = Some("1234567891"),
-                penaltyChargeCreationDate = LocalDate.of(2022, 1, 1),
+                penaltyChargeCreationDate = Some(LocalDate.of(2022, 1, 1)),
                 penaltyStatus = LPPPenaltyStatusEnum.Posted,
                 appealInformation = None,
                 principalChargeBillingFrom = LocalDate.of(2022, 1, 1),
@@ -169,7 +169,7 @@ class APIControllerSpec extends SpecBase with FeatureSwitching {
                 LPP2Percentage = None,
                 LPP1LRPercentage = None,
                 LPP1HRPercentage = None,
-                penaltyChargeDueDate = LocalDate.of(2022, 1, 1),
+                penaltyChargeDueDate = Some(LocalDate.of(2022, 1, 1)),
                 principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
                 metadata = LPPDetailsMetadata()
               ),
@@ -177,7 +177,7 @@ class APIControllerSpec extends SpecBase with FeatureSwitching {
                 penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
                 principalChargeReference = "12345675",
                 penaltyChargeReference = Some("1234567890"),
-                penaltyChargeCreationDate = LocalDate.of(2022, 1, 1),
+                penaltyChargeCreationDate = Some(LocalDate.of(2022, 1, 1)),
                 penaltyStatus = LPPPenaltyStatusEnum.Posted,
                 appealInformation = None,
                 principalChargeBillingFrom = LocalDate.of(2022, 1, 1),
@@ -194,7 +194,7 @@ class APIControllerSpec extends SpecBase with FeatureSwitching {
                 LPP2Percentage = None,
                 LPP1LRPercentage = None,
                 LPP1HRPercentage = None,
-                penaltyChargeDueDate = LocalDate.of(2022, 1, 1),
+                penaltyChargeDueDate = Some(LocalDate.of(2022, 1, 1)),
                 principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
                 metadata = LPPDetailsMetadata()
               )
@@ -458,9 +458,7 @@ class APIControllerSpec extends SpecBase with FeatureSwitching {
           |   "LSPTotalValue": 200,
           |   "penalisedPrincipalTotal": 2000,
           |   "LPPPostedTotal": 165.25,
-          |   "LPPEstimatedTotal": 15.26,
-          |   "LPIPostedTotal": 1968.2,
-          |   "LPIEstimatedTotal": 7
+          |   "LPPEstimatedTotal": 15.26
           | },
           | "lateSubmissionPenalty": {
           |   "summary": {

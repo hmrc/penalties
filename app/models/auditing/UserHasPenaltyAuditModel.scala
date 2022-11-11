@@ -63,16 +63,12 @@ case class UserHasPenaltyAuditModel(
 
   private val totalTaxDue: BigDecimal = penaltyDetails.totalisations.flatMap(_.penalisedPrincipalTotal).getOrElse(0)
 
-  //TODO: add LSP/VAT interest
-  private val totalInterestDue: BigDecimal = penaltyDetails.totalisations.flatMap(_.LPIPostedTotal).getOrElse(BigDecimal(0)) +
-    penaltyDetails.totalisations.flatMap(_.LPIEstimatedTotal).getOrElse(BigDecimal(0))
-
   private val totalFinancialPenaltyDue: BigDecimal = {
     lspsUnpaidAndUnappealed.map(_.chargeOutstandingAmount.getOrElse(BigDecimal(0))).sum +
       lppsUnpaidAndUnappealed.map(_.map(_.penaltyAmountOutstanding.getOrElse(BigDecimal(0))).sum).getOrElse(BigDecimal(0))
   }
 
-  private val totalDue: BigDecimal = totalTaxDue + totalInterestDue + totalFinancialPenaltyDue
+  private val totalDue: BigDecimal = totalTaxDue + totalFinancialPenaltyDue
 
   private val amountOfLSPs: Int = penaltyDetails.lateSubmissionPenalty.map(_.summary.activePenaltyPoints).getOrElse(0)
 
@@ -164,7 +160,6 @@ case class UserHasPenaltyAuditModel(
 
   private val penaltyInformation: JsValue = jsonObjNoNulls(
     "totalTaxDue" -> totalTaxDue,
-    "totalInterestDue" -> totalInterestDue,
     "totalFinancialPenaltyDue" -> totalFinancialPenaltyDue,
     "totalDue" -> totalDue,
     "lSPDetail" -> lspDetail,

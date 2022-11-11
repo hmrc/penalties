@@ -28,9 +28,7 @@ trait ETMPWiremock {
       |   "LSPTotalValue": 200,
       |   "penalisedPrincipalTotal": 2000,
       |   "LPPPostedTotal": 165.25,
-      |   "LPPEstimatedTotal": 15.26,
-      |   "LPIPostedTotal": 1968.2,
-      |   "LPIEstimatedTotal": 7
+      |   "LPPEstimatedTotal": 15.26
       | },
       | "lateSubmissionPenalty": {
       |   "summary": {
@@ -115,8 +113,7 @@ trait ETMPWiremock {
         | "totalisations": {
         |   "LSPTotalValue": 0,
         |   "penalisedPrincipalTotal": 0,
-        |   "LPPPostedTotal": 0.00,
-        |   "LPIPostedTotal": 0.00
+        |   "LPPPostedTotal": 0.00
         | },
         | "lateSubmissionPenalty": {
         |   "summary": {

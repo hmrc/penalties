@@ -27,7 +27,7 @@ case class LPPDetails(
                        penaltyCategory: LPPPenaltyCategoryEnum.Value,
                        penaltyChargeReference: Option[String],
                        principalChargeReference: String,
-                       penaltyChargeCreationDate: LocalDate,
+                       penaltyChargeCreationDate: Option[LocalDate],
                        penaltyStatus: LPPPenaltyStatusEnum.Value,
                        appealInformation: Option[Seq[AppealInformationType]],
                        principalChargeBillingFrom: LocalDate,
@@ -44,7 +44,7 @@ case class LPPDetails(
                        LPP2Percentage: Option[BigDecimal],
                        LPP1LRPercentage: Option[BigDecimal],
                        LPP1HRPercentage: Option[BigDecimal],
-                       penaltyChargeDueDate: LocalDate,
+                       penaltyChargeDueDate: Option[LocalDate],
                        principalChargeLatestClearing: Option[LocalDate],
                        metadata: LPPDetailsMetadata
                      )
@@ -56,7 +56,7 @@ object LPPDetails extends JsonUtils {
         penaltyCategory <- (json \ "penaltyCategory").validate[LPPPenaltyCategoryEnum.Value]
         penaltyChargeReference <- (json \ "penaltyChargeReference").validateOpt[String]
         principalChargeReference <- (json \ "principalChargeReference").validate[String]
-        penaltyChargeCreationDate <- (json \ "penaltyChargeCreationDate").validate[LocalDate]
+        penaltyChargeCreationDate <- (json \ "penaltyChargeCreationDate").validateOpt[LocalDate]
         penaltyStatus <- (json \ "penaltyStatus").validate[LPPPenaltyStatusEnum.Value]
         appealInformation <- (json \ "appealInformation").validateOpt[Seq[AppealInformationType]]
         principalChargeBillingFrom <- (json \ "principalChargeBillingFrom").validate[LocalDate]
@@ -73,7 +73,7 @@ object LPPDetails extends JsonUtils {
         lpp2Percentage <- (json \ "LPP2Percentage").validateOpt[BigDecimal]
         lpp1LRPercentage <- (json \ "LPP1LRPercentage").validateOpt[BigDecimal]
         lpp1HRPercentage <- (json \ "LPP1HRPercentage").validateOpt[BigDecimal]
-        penaltyChargeDueDate <- (json \ "penaltyChargeDueDate").validate[LocalDate]
+        penaltyChargeDueDate <- (json \ "penaltyChargeDueDate").validateOpt[LocalDate]
         principalChargeLatestClearing <- (json \ "principalChargeLatestClearing").validateOpt[LocalDate]
         metadata <- Json.fromJson(json)(LPPDetailsMetadata.format)
       } yield {

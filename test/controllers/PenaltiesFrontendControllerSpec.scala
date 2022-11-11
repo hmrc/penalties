@@ -91,7 +91,7 @@ class PenaltiesFrontendControllerSpec extends SpecBase with LogCapturing {
               penaltyCategory = LPPPenaltyCategoryEnum.SecondPenalty,
               principalChargeReference = "12345678",
               penaltyChargeReference = Some("1234567892"),
-              penaltyChargeCreationDate = LocalDate.of(2022, 1, 1),
+              penaltyChargeCreationDate = Some(LocalDate.of(2022, 1, 1)),
               penaltyStatus = LPPPenaltyStatusEnum.Accruing,
               appealInformation = None,
               principalChargeBillingFrom = LocalDate.of(2022, 1, 1),
@@ -108,7 +108,7 @@ class PenaltiesFrontendControllerSpec extends SpecBase with LogCapturing {
               LPP2Percentage = None,
               LPP1LRPercentage = None,
               LPP1HRPercentage = None,
-              penaltyChargeDueDate = LocalDate.of(2022, 1, 1),
+              penaltyChargeDueDate = Some(LocalDate.of(2022, 1, 1)),
               principalChargeLatestClearing = None,
               metadata = LPPDetailsMetadata(
                 timeToPay = Some(Seq(TimeToPay(
@@ -121,7 +121,7 @@ class PenaltiesFrontendControllerSpec extends SpecBase with LogCapturing {
               penaltyCategory = LPPPenaltyCategoryEnum.SecondPenalty,
               principalChargeReference = "12345677",
               penaltyChargeReference = Some("1234567891"),
-              penaltyChargeCreationDate = LocalDate.of(2022, 1, 1),
+              penaltyChargeCreationDate = Some(LocalDate.of(2022, 1, 1)),
               penaltyStatus = LPPPenaltyStatusEnum.Accruing,
               appealInformation = None,
               principalChargeBillingFrom = LocalDate.of(2022, 1, 1),
@@ -138,7 +138,7 @@ class PenaltiesFrontendControllerSpec extends SpecBase with LogCapturing {
               LPP2Percentage = None,
               LPP1LRPercentage = None,
               LPP1HRPercentage = None,
-              penaltyChargeDueDate = LocalDate.of(2022, 1, 1),
+              penaltyChargeDueDate = Some(LocalDate.of(2022, 1, 1)),
               principalChargeLatestClearing = None,
               metadata = LPPDetailsMetadata(
                 timeToPay = Some(Seq(TimeToPay(
@@ -151,7 +151,7 @@ class PenaltiesFrontendControllerSpec extends SpecBase with LogCapturing {
               penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
               principalChargeReference = "12345676",
               penaltyChargeReference = Some("1234567890"),
-              penaltyChargeCreationDate = LocalDate.of(2022, 1, 1),
+              penaltyChargeCreationDate = Some(LocalDate.of(2022, 1, 1)),
               penaltyStatus = LPPPenaltyStatusEnum.Posted,
               appealInformation = None,
               principalChargeBillingFrom = LocalDate.of(2022, 1, 1),
@@ -168,7 +168,7 @@ class PenaltiesFrontendControllerSpec extends SpecBase with LogCapturing {
               LPP2Percentage = None,
               LPP1LRPercentage = None,
               LPP1HRPercentage = None,
-              penaltyChargeDueDate = LocalDate.of(2022, 1, 1),
+              penaltyChargeDueDate = Some(LocalDate.of(2022, 1, 1)),
               principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
               metadata = LPPDetailsMetadata(
                 timeToPay = Some(Seq(TimeToPay(
@@ -181,7 +181,7 @@ class PenaltiesFrontendControllerSpec extends SpecBase with LogCapturing {
               penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
               principalChargeReference = "12345675",
               penaltyChargeReference = Some("1234567889"),
-              penaltyChargeCreationDate = LocalDate.of(2022, 1, 1),
+              penaltyChargeCreationDate = Some(LocalDate.of(2022, 1, 1)),
               penaltyStatus = LPPPenaltyStatusEnum.Posted,
               appealInformation = None,
               principalChargeBillingFrom = LocalDate.of(2022, 1, 1),
@@ -198,7 +198,7 @@ class PenaltiesFrontendControllerSpec extends SpecBase with LogCapturing {
               LPP2Percentage = None,
               LPP1LRPercentage = None,
               LPP1HRPercentage = None,
-              penaltyChargeDueDate = LocalDate.of(2022, 1, 1),
+              penaltyChargeDueDate = Some(LocalDate.of(2022, 1, 1)),
               principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
               metadata = LPPDetailsMetadata(
                 timeToPay = Some(Seq(TimeToPay(

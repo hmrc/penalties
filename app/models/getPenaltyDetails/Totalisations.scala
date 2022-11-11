@@ -22,9 +22,7 @@ case class Totalisations(
                           LSPTotalValue: Option[BigDecimal],
                           penalisedPrincipalTotal: Option[BigDecimal],
                           LPPPostedTotal: Option[BigDecimal],
-                          LPPEstimatedTotal: Option[BigDecimal],
-                          LPIPostedTotal: Option[BigDecimal],
-                          LPIEstimatedTotal: Option[BigDecimal]
+                          LPPEstimatedTotal: Option[BigDecimal]
                         )
 
 object Totalisations {
