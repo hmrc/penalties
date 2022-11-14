@@ -266,9 +266,7 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
         |      "LSPTotalValue":200,
         |      "penalisedPrincipalTotal":2000,
         |      "LPPPostedTotal":165.25,
-        |      "LPPEstimatedTotal":15.26,
-        |      "LPIPostedTotal":1968.2,
-        |      "LPIEstimatedTotal":7
+        |      "LPPEstimatedTotal":15.26
         |   },
         |   "lateSubmissionPenalty":{
         |      "summary":{
