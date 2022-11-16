@@ -44,7 +44,7 @@ class AppealLevelEnumSpec extends SpecBase {
     }
 
     "return JsError when the enum is not recognised" in {
-      val result = Json.fromJson(JsString("error"))(AppealStatusEnum.format)
+      val result = Json.fromJson(JsString("error"))(AppealLevelEnum.format)
       result.isError shouldBe true
     }
   }

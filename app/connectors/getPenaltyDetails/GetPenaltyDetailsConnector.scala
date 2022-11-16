@@ -17,6 +17,7 @@
 package connectors.getPenaltyDetails
 
 import config.AppConfig
+import config.featureSwitches.{AddReceiptDateHeaderToAPI1812, FeatureSwitch}
 import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser.{GetPenaltyDetailsFailureResponse, GetPenaltyDetailsResponse}
 import play.api.http.Status.INTERNAL_SERVER_ERROR
 import uk.gov.hmrc.http.HttpReads.Implicits._
@@ -33,8 +34,12 @@ class GetPenaltyDetailsConnector @Inject()(httpClient: HttpClient,
                                            appConfig: AppConfig)
                                           (implicit ec: ExecutionContext) {
 
-  private val headers = Seq("Authorization" -> s"Bearer ${appConfig.eiOutboundBearerToken}",
-    "CorrelationId" -> randomUUID().toString, "Environment" -> appConfig.eisEnvironment)
+  private val headers = Seq(
+    "Authorization" -> s"Bearer ${appConfig.eiOutboundBearerToken}",
+    "CorrelationId" -> randomUUID().toString,
+    "Environment" -> appConfig.eisEnvironment,
+    if(appConfig.isEnabled(AddReceiptDateHeaderToAPI1812)) "ReceiptDate" -> "2023-05-23T17:32:28Z" else "" -> ""
+  ).filter(_._1.nonEmpty)
 
   def getPenaltyDetails(vrn: String)(implicit hc: HeaderCarrier): Future[GetPenaltyDetailsResponse] = {
     val url = appConfig.getPenaltyDetailsUrl + vrn

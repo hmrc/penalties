@@ -29,4 +29,9 @@ class FailureCodeEnumSpec extends SpecBase {
     val result = Json.fromJson(JsString("NO_DATA_FOUND"))(FailureCodeEnum.format)
     result.get shouldBe FailureCodeEnum.NoDataFound
   }
+
+  "return a JSError for an unrecognised value" in {
+    val result = Json.fromJson(JsString("INVALID"))(FailureCodeEnum.format)
+    result.isError shouldBe true
+  }
 }

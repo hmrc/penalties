@@ -21,7 +21,7 @@ import config.AppConfig
 import config.featureSwitches.FeatureSwitching
 import connectors.FileNotificationOrchestratorConnector
 import connectors.parsers.AppealsParser.UnexpectedFailure
-import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser.{GetPenaltyDetailsFailureResponse, GetPenaltyDetailsSuccessResponse}
+import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser.{GetPenaltyDetailsFailureResponse, GetPenaltyDetailsMalformed, GetPenaltyDetailsSuccessResponse}
 import models.appeals.AppealTypeEnum.{Additional, Late_Payment, Late_Submission}
 import models.appeals.{AppealData, MultiplePenaltiesData}
 import models.auditing.PenaltyAppealFileNotificationStorageFailureModel
@@ -170,6 +170,20 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
       status(result) shouldBe Status.INTERNAL_SERVER_ERROR
     }
 
+    s"return ISE (${Status.INTERNAL_SERVER_ERROR}) when API 1812 call returns malformed data" in new Setup {
+      val sampleEnrolmentKey: String = "HMRC-MTD-VAT~VRN~123456789"
+      val vrn: String = "123456789"
+      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(Matchers.eq(vrn))(Matchers.any()))
+        .thenReturn(Future.successful(Left(GetPenaltyDetailsMalformed)))
+      withCaptureOfLoggingFrom(logger) {
+        logs => {
+          val result: Future[Result] = controller.getAppealsDataForLateSubmissionPenalty("1234567891", sampleEnrolmentKey)(fakeRequest)
+          status(result) shouldBe Status.INTERNAL_SERVER_ERROR
+          logs.exists(_.getMessage.contains(PagerDutyKeys.MALFORMED_RESPONSE_FROM_1812_API.toString)) shouldBe true
+        }
+      }
+    }
+
     s"return OK (${Status.OK}) when the call to ETMP succeeds and the penalty ID matches" in new Setup {
       val samplePenaltyId: String = "123456789"
       val sampleEnrolmentKey: String = "HMRC-MTD-VAT~VRN~123456789"
@@ -287,6 +301,20 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
       val result: Future[Result] = controller.getAppealsDataForLatePaymentPenalty("1", sampleEnrolmentKey,
         isAdditional = false)(fakeRequest)
       status(result) shouldBe Status.INTERNAL_SERVER_ERROR
+    }
+
+    s"return ISE (${Status.INTERNAL_SERVER_ERROR}) when API 1812 call returns malformed data" in new Setup {
+      val sampleEnrolmentKey: String = "HMRC-MTD-VAT~VRN~123456789"
+      val vrn: String = "123456789"
+      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(Matchers.eq(vrn))(Matchers.any()))
+        .thenReturn(Future.successful(Left(GetPenaltyDetailsMalformed)))
+      withCaptureOfLoggingFrom(logger) {
+        logs => {
+          val result: Future[Result] = controller.getAppealsDataForLatePaymentPenalty("1234567891", sampleEnrolmentKey, isAdditional = false)(fakeRequest)
+          status(result) shouldBe Status.INTERNAL_SERVER_ERROR
+          logs.exists(_.getMessage.contains(PagerDutyKeys.MALFORMED_RESPONSE_FROM_1812_API.toString)) shouldBe true
+        }
+      }
     }
 
     s"return OK (${Status.OK}) when the call to ETMP succeeds and the penalty ID matches" in new Setup {
@@ -1164,6 +1192,20 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
       )
       status(result) shouldBe Status.OK
       contentAsJson(result) shouldBe Json.toJson(expectedReturnModel)
+    }
+
+    s"return ISE (${Status.INTERNAL_SERVER_ERROR}) when API 1812 call returns malformed data" in new Setup {
+      val sampleEnrolmentKey: String = "HMRC-MTD-VAT~VRN~123456789"
+      val vrn: String = "123456789"
+      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(Matchers.eq(vrn))(Matchers.any()))
+        .thenReturn(Future.successful(Left(GetPenaltyDetailsMalformed)))
+      withCaptureOfLoggingFrom(logger) {
+        logs => {
+          val result: Future[Result] = controller.getMultiplePenaltyData("1234567891", sampleEnrolmentKey)(fakeRequest)
+          status(result) shouldBe Status.INTERNAL_SERVER_ERROR
+          logs.exists(_.getMessage.contains(PagerDutyKeys.MALFORMED_RESPONSE_FROM_1812_API.toString)) shouldBe true
+        }
+      }
     }
   }
 }

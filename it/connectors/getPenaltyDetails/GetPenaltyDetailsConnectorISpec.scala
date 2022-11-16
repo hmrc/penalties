@@ -16,7 +16,7 @@
 
 package connectors.getPenaltyDetails
 
-import config.featureSwitches.{CallAPI1812ETMP, FeatureSwitching}
+import config.featureSwitches.{AddReceiptDateHeaderToAPI1812, CallAPI1812ETMP, FeatureSwitching}
 import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser.{GetPenaltyDetailsFailureResponse, GetPenaltyDetailsMalformed, GetPenaltyDetailsNoContent, GetPenaltyDetailsResponse}
 import play.api.http.Status
 import play.api.test.Helpers.{await, defaultAwaitTimeout}

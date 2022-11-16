@@ -18,9 +18,10 @@ package connectors.getPenaltyDetails
 
 import base.{LogCapturing, SpecBase}
 import config.AppConfig
+import config.featureSwitches.AddReceiptDateHeaderToAPI1812
 import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser.{GetPenaltyDetailsFailureResponse, GetPenaltyDetailsResponse, GetPenaltyDetailsSuccessResponse}
 import models.getPenaltyDetails.GetPenaltyDetails
-import org.mockito.Matchers
+import org.mockito.{ArgumentCaptor, Matchers}
 import org.mockito.Mockito.{mock, reset, when}
 import play.api.http.Status
 import play.api.libs.json.Json
@@ -65,6 +66,40 @@ class GetPenaltyDetailsConnectorSpec extends SpecBase with LogCapturing {
 
       val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails("123456789"))
       result.isRight shouldBe true
+    }
+
+    "send the 'ReceiptDate' header when the feature switch is enabled" in new Setup {
+      val argumentCaptorForHeaders = ArgumentCaptor.forClass(classOf[Seq[(String, String)]])
+      when(mockHttpClient.GET[GetPenaltyDetailsResponse](Matchers.eq("/penalty/details/VATC/VRN/123456789"),
+        Matchers.any(),
+        argumentCaptorForHeaders.capture())
+        (Matchers.any(),
+          Matchers.any(),
+          Matchers.any()))
+        .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(mockGetPenaltyDetailsModelAPI1812))))
+      when(mockAppConfig.isEnabled(Matchers.eq(AddReceiptDateHeaderToAPI1812)))
+        .thenReturn(true)
+      val connectorForTest = new GetPenaltyDetailsConnector(mockHttpClient, mockAppConfig)
+      val result: GetPenaltyDetailsResponse = await(connectorForTest.getPenaltyDetails("123456789"))
+      result.isRight shouldBe true
+      argumentCaptorForHeaders.getValue.exists(_._1 == "ReceiptDate") shouldBe true
+    }
+
+    "don't send the 'ReceiptDate' header when the feature switch is disabled" in new Setup {
+      val argumentCaptorForHeaders = ArgumentCaptor.forClass(classOf[Seq[(String, String)]])
+      when(mockHttpClient.GET[GetPenaltyDetailsResponse](Matchers.eq("/penalty/details/VATC/VRN/123456789"),
+        Matchers.any(),
+        argumentCaptorForHeaders.capture())
+        (Matchers.any(),
+          Matchers.any(),
+          Matchers.any()))
+        .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(mockGetPenaltyDetailsModelAPI1812))))
+      when(mockAppConfig.isEnabled(Matchers.eq(AddReceiptDateHeaderToAPI1812)))
+        .thenReturn(false)
+      val connectorForTest = new GetPenaltyDetailsConnector(mockHttpClient, mockAppConfig)
+      val result: GetPenaltyDetailsResponse = await(connectorForTest.getPenaltyDetails("123456789"))
+      result.isRight shouldBe true
+      argumentCaptorForHeaders.getValue.exists(_._1 == "ReceiptDate") shouldBe false
     }
 
     s"return a 404 when the call fails for Not Found" in new Setup {
@@ -174,6 +209,23 @@ class GetPenaltyDetailsConnectorSpec extends SpecBase with LogCapturing {
         logs => {
           val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails(vrn = "123456789"))
           logs.exists(_.getMessage.contains(PagerDutyKeys.RECEIVED_4XX_FROM_1812_API.toString)) shouldBe true
+          result.isLeft shouldBe true
+        }
+      }
+    }
+
+    "return a 500 when the call fails due to an unexpected exception" in new Setup {
+      when(mockHttpClient.GET[HttpResponse](Matchers.eq(s"/penalty/details/VATC/VRN/123456789"),
+        Matchers.any(),
+        Matchers.any())
+        (Matchers.any(),
+          Matchers.any(),
+          Matchers.any()))
+        .thenReturn(Future.failed(new Exception("Something weird happened")))
+      withCaptureOfLoggingFrom(logger) {
+        logs => {
+          val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails(vrn = "123456789")(HeaderCarrier()))
+          logs.exists(_.getMessage.contains(PagerDutyKeys.UNKNOWN_EXCEPTION_CALLING_1812_API.toString)) shouldBe true
           result.isLeft shouldBe true
         }
       }
