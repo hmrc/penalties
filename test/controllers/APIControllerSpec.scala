@@ -16,7 +16,7 @@
 
 package controllers
 
-import base.SpecBase
+import base.{LogCapturing, SpecBase}
 import config.featureSwitches.FeatureSwitching
 import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser._
 import connectors.getFinancialDetails.GetFinancialDetailsConnector
@@ -34,12 +34,14 @@ import services.auditing.AuditService
 import services.{APIService, AppealService, GetPenaltyDetailsService}
 import uk.gov.hmrc.http.HttpResponse
 import utils.DateHelper
+import utils.Logger.logger
+import utils.PagerDutyHelper.PagerDutyKeys
 
 import java.time.LocalDate
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class APIControllerSpec extends SpecBase with FeatureSwitching {
+class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing {
   val mockAppealsService: AppealService = mock(classOf[AppealService])
   val mockAuditService: AuditService = mock(classOf[AuditService])
   val dateHelper: DateHelper = injector.instanceOf(classOf[DateHelper])
@@ -229,6 +231,18 @@ class APIControllerSpec extends SpecBase with FeatureSwitching {
       val result = controller.getSummaryDataForVRN("1234567891234567890")(fakeRequest)
       status(result) shouldBe Status.BAD_REQUEST
       contentAsString(result) shouldBe "VRN: 1234567891234567890 was not in a valid format."
+    }
+
+    s"return ISE (${Status.INTERNAL_SERVER_ERROR}) when the call returns malformed data" in new Setup(isFSEnabled = true) {
+      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(any())(any()))
+        .thenReturn(Future.successful(Left(GetPenaltyDetailsMalformed)))
+      withCaptureOfLoggingFrom(logger) {
+        logs => {
+          val result = controller.getSummaryDataForVRN("123456789")(fakeRequest)
+          status(result) shouldBe Status.INTERNAL_SERVER_ERROR
+          logs.exists(_.getMessage.contains(PagerDutyKeys.MALFORMED_RESPONSE_FROM_1812_API.toString)) shouldBe true
+        }
+      }
     }
 
     s"return OK (${Status.OK}) when the call returns some data and can be parsed to the correct response" in new Setup(isFSEnabled = true) {

@@ -202,6 +202,24 @@ class GetFinancialDetailsConnectorSpec extends SpecBase with LogCapturing {
         }
       }
     }
+
+    "return a 500 when the call fails due to an unexpected exception" in new Setup {
+      when(mockHttpClient.GET[GetFinancialDetailsResponse](Matchers.eq("/VRN/123456789/VATC?foo=bar"),
+        Matchers.any(),
+        Matchers.any())
+        (Matchers.any(),
+          Matchers.any(),
+          Matchers.any()))
+        .thenReturn(Future.failed(new Exception("Something weird happened")))
+
+      withCaptureOfLoggingFrom(logger) {
+        logs => {
+          val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails("123456789", LocalDate.of(2022, 1, 1), LocalDate.of(2022, 1, 1))(HeaderCarrier()))
+          logs.exists(_.getMessage.contains(PagerDutyKeys.UNKNOWN_EXCEPTION_CALLING_1811_API.toString)) shouldBe true
+          result.isLeft shouldBe true
+        }
+      }
+    }
   }
 
   "getFinancialDetailsForAPI" should {

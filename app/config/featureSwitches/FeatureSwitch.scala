@@ -40,3 +40,7 @@ case object CallAPI1812ETMP extends FeatureSwitch {
 case object CallAPI1811ETMP extends FeatureSwitch {
   override val name: String = s"${FeatureSwitch.prefix}.call-api-1811-etmp"
 }
+
+case object AddReceiptDateHeaderToAPI1812 extends FeatureSwitch {
+  override val name: String = s"${FeatureSwitch.prefix}.add-receipt-date-header-to-api-1812"
+}
