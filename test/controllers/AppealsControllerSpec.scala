@@ -87,7 +87,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
               penaltyStatus = LSPPenaltyStatusEnum.Active,
               penaltyCreationDate = LocalDate.of(2022, 4, 1),
               penaltyExpiryDate = LocalDate.of(2022, 4, 1),
-              communicationsDate = LocalDate.of(2022, 5, 8),
+              communicationsDate = Some(LocalDate.of(2022, 5, 8)),
               FAPIndicator = None,
               lateSubmissions = Some(
                 Seq(
@@ -113,7 +113,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
               penaltyStatus = LSPPenaltyStatusEnum.Active,
               penaltyCreationDate = LocalDate.of(2022, 4, 1),
               penaltyExpiryDate = LocalDate.of(2022, 4, 1),
-              communicationsDate = LocalDate.of(2022, 4, 1),
+              communicationsDate = Some(LocalDate.of(2022, 4, 1)),
               FAPIndicator = None,
               lateSubmissions = Some(
                 Seq(
