@@ -99,7 +99,7 @@ class AppealsController @Inject()(val appConfig: AppConfig,
         startDate = sortedDate.taxPeriodStartDate.get,
         endDate = sortedDate.taxPeriodEndDate.get,
         dueDate = sortedDate.taxPeriodDueDate.get,
-        dateCommunicationSent = penaltyBasedOnId.communicationsDate
+        dateCommunicationSent = penaltyBasedOnId.communicationsDate.get
       )
       Ok(Json.toJson(dataToReturn))
     } else if ((appealType == AppealTypeEnum.Late_Payment || appealType == AppealTypeEnum.Additional) && lppPenaltyIdInPenaltyDetailsPayload.isDefined) {

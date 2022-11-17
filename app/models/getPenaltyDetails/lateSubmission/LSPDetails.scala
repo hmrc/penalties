@@ -28,7 +28,7 @@ case class LSPDetails(
                        penaltyStatus: LSPPenaltyStatusEnum.Value,
                        penaltyCreationDate: LocalDate,
                        penaltyExpiryDate: LocalDate,
-                       communicationsDate: LocalDate,
+                       communicationsDate: Option[LocalDate],
                        FAPIndicator: Option[String],
                        lateSubmissions: Option[Seq[LateSubmission]],
                        expiryReason: Option[ExpiryReasonEnum.Value],
