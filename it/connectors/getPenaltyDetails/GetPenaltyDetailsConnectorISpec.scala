@@ -16,7 +16,7 @@
 
 package connectors.getPenaltyDetails
 
-import config.featureSwitches.{AddReceiptDateHeaderToAPI1812, CallAPI1812ETMP, FeatureSwitching}
+import config.featureSwitches.{CallAPI1812ETMP, FeatureSwitching}
 import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser.{GetPenaltyDetailsFailureResponse, GetPenaltyDetailsMalformed, GetPenaltyDetailsNoContent, GetPenaltyDetailsResponse}
 import play.api.http.Status
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
@@ -51,7 +51,7 @@ class GetPenaltyDetailsConnectorISpec extends IntegrationSpecCommonBase with ETM
       mockResponseForGetPenaltyDetails(Status.OK, "123456789", body = Some(malformedBody))
       val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails("123456789"))
       result.isLeft shouldBe true
-      result.left.get shouldBe GetPenaltyDetailsMalformed
+      result.left.getOrElse(false) shouldBe GetPenaltyDetailsMalformed
     }
 
     s"return a $GetPenaltyDetailsFailureResponse when the response status is ISE (${Status.INTERNAL_SERVER_ERROR})" in new Setup {
@@ -59,7 +59,7 @@ class GetPenaltyDetailsConnectorISpec extends IntegrationSpecCommonBase with ETM
       mockResponseForGetPenaltyDetails(Status.INTERNAL_SERVER_ERROR, "123456789")
       val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails("123456789"))
       result.isLeft shouldBe true
-      result.left.get.asInstanceOf[GetPenaltyDetailsFailureResponse].status shouldBe Status.INTERNAL_SERVER_ERROR
+      result.left.getOrElse(false).asInstanceOf[GetPenaltyDetailsFailureResponse].status shouldBe Status.INTERNAL_SERVER_ERROR
     }
 
     s"return a $GetPenaltyDetailsFailureResponse when the response status is ISE (${Status.SERVICE_UNAVAILABLE})" in new Setup {
@@ -67,7 +67,7 @@ class GetPenaltyDetailsConnectorISpec extends IntegrationSpecCommonBase with ETM
       mockResponseForGetPenaltyDetails(Status.SERVICE_UNAVAILABLE, "123456789")
       val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails("123456789"))
       result.isLeft shouldBe true
-      result.left.get.asInstanceOf[GetPenaltyDetailsFailureResponse].status shouldBe Status.SERVICE_UNAVAILABLE
+      result.left.getOrElse(false).asInstanceOf[GetPenaltyDetailsFailureResponse].status shouldBe Status.SERVICE_UNAVAILABLE
     }
 
     s"return a $GetPenaltyDetailsFailureResponse when the response status is NOT FOUND (${Status.NOT_FOUND})" in new Setup {
@@ -75,12 +75,12 @@ class GetPenaltyDetailsConnectorISpec extends IntegrationSpecCommonBase with ETM
       mockResponseForGetPenaltyDetails(Status.NOT_FOUND, "123456789")
       val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails("123456789"))
       result.isLeft shouldBe true
-      result.left.get.asInstanceOf[GetPenaltyDetailsFailureResponse].status shouldBe Status.NOT_FOUND
+      result.left.getOrElse(false).asInstanceOf[GetPenaltyDetailsFailureResponse].status shouldBe Status.NOT_FOUND
     }
 
     s"return a $GetPenaltyDetailsNoContent when the response status is NOT FOUND (${Status.NOT_FOUND}) but with NO_DATA_FOUND in JSON body" in new Setup {
       enableFeatureSwitch(CallAPI1812ETMP)
-      val noDataFoundBody =
+      val noDataFoundBody: String =
         """
           |{
           | "failures": [
@@ -94,7 +94,7 @@ class GetPenaltyDetailsConnectorISpec extends IntegrationSpecCommonBase with ETM
       mockResponseForGetPenaltyDetails(Status.NOT_FOUND, "123456789", body = Some(noDataFoundBody))
       val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails("123456789"))
       result.isLeft shouldBe true
-      result.left.get shouldBe GetPenaltyDetailsNoContent
+      result.left.getOrElse(false) shouldBe GetPenaltyDetailsNoContent
     }
 
     s"return a $GetPenaltyDetailsFailureResponse when the response status is NO CONTENT (${Status.NO_CONTENT})" in new Setup {
@@ -102,7 +102,7 @@ class GetPenaltyDetailsConnectorISpec extends IntegrationSpecCommonBase with ETM
       mockResponseForGetPenaltyDetails(Status.NO_CONTENT, "123456789")
       val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails("123456789"))
       result.isLeft shouldBe true
-      result.left.get.asInstanceOf[GetPenaltyDetailsFailureResponse].status shouldBe Status.NO_CONTENT
+      result.left.getOrElse(false).asInstanceOf[GetPenaltyDetailsFailureResponse].status shouldBe Status.NO_CONTENT
     }
 
     s"return a $GetPenaltyDetailsFailureResponse when the response status is CONFLICT (${Status.CONFLICT})" in new Setup {
@@ -110,7 +110,7 @@ class GetPenaltyDetailsConnectorISpec extends IntegrationSpecCommonBase with ETM
       mockResponseForGetPenaltyDetails(Status.CONFLICT, "123456789")
       val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails("123456789"))
       result.isLeft shouldBe true
-      result.left.get.asInstanceOf[GetPenaltyDetailsFailureResponse].status shouldBe Status.CONFLICT
+      result.left.getOrElse(false).asInstanceOf[GetPenaltyDetailsFailureResponse].status shouldBe Status.CONFLICT
     }
 
     s"return a $GetPenaltyDetailsFailureResponse when the response status is UNPROCESSABLE ENTITY (${Status.UNPROCESSABLE_ENTITY})" in new Setup {
@@ -118,7 +118,7 @@ class GetPenaltyDetailsConnectorISpec extends IntegrationSpecCommonBase with ETM
       mockResponseForGetPenaltyDetails(Status.UNPROCESSABLE_ENTITY, "123456789")
       val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails("123456789"))
       result.isLeft shouldBe true
-      result.left.get.asInstanceOf[GetPenaltyDetailsFailureResponse].status shouldBe Status.UNPROCESSABLE_ENTITY
+      result.left.getOrElse(false).asInstanceOf[GetPenaltyDetailsFailureResponse].status shouldBe Status.UNPROCESSABLE_ENTITY
     }
 
     s"return a $GetPenaltyDetailsFailureResponse when the response status is ISE (${Status.BAD_REQUEST})" in new Setup {
@@ -126,7 +126,7 @@ class GetPenaltyDetailsConnectorISpec extends IntegrationSpecCommonBase with ETM
       mockResponseForGetPenaltyDetails(Status.BAD_REQUEST, "123456789")
       val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails("123456789"))
       result.isLeft shouldBe true
-      result.left.get.asInstanceOf[GetPenaltyDetailsFailureResponse].status shouldBe Status.BAD_REQUEST
+      result.left.getOrElse(false).asInstanceOf[GetPenaltyDetailsFailureResponse].status shouldBe Status.BAD_REQUEST
     }
   }
 

@@ -18,7 +18,7 @@ package controllers
 
 import com.github.tomakehurst.wiremock.client.WireMock.{postRequestedFor, urlEqualTo}
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import play.api.http.Status
 import play.api.libs.json.{JsValue, Json}
 import play.api.test.Helpers._
@@ -147,7 +147,7 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
         s"VRN/123456789/VATC?dateFrom=${LocalDate.now.minusYears(2)}&dateTo=${LocalDate.now}" +
           s"&includeClearedItems=true&includeStatisticalItems=true&includePaymentOnAccount=true&addRegimeTotalisation=false&addLockInformation=false&addPenaltyDetails=true&addPostedInterestDetails=true&addAccruingInterestDetails=true")
 
-      val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/HMRC-MTD-VAT~VRN~123456789").get)
+      val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/HMRC-MTD-VAT~VRN~123456789").get())
       result.status shouldBe OK
       Json.parse(result.body) shouldBe combinedPenaltyAndFinancialData
     }
@@ -186,7 +186,7 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
         s"VRN/123456789/VATC?dateFrom=${LocalDate.now.minusYears(2)}&dateTo=${LocalDate.now}" +
           s"&includeClearedItems=true&includeStatisticalItems=true&includePaymentOnAccount=true&addRegimeTotalisation=false&addLockInformation=false&addPenaltyDetails=true&addPostedInterestDetails=true&addAccruingInterestDetails=true", Some(noDataFoundBody))
       mockStubResponseForGetPenaltyDetails(Status.OK, "123456789", body = Some(getPenaltyDetailsNoLPPJson.toString()))
-      val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/HMRC-MTD-VAT~VRN~123456789").get)
+      val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/HMRC-MTD-VAT~VRN~123456789").get())
       result.status shouldBe OK
       Json.parse(result.body) shouldBe getPenaltyDetailsNoLPPJson
     }
@@ -195,7 +195,7 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
   s"return NOT_FOUND (${Status.NOT_FOUND})" when {
     "the user supplies an invalid VRN" in {
       mockStubResponseForGetPenaltyDetails(Status.OK, "123456789", body = Some(getPenaltyDetailsJson.toString()))
-      val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/123456789123456789").get)
+      val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/123456789123456789").get())
       result.status shouldBe NOT_FOUND
     }
   }
@@ -214,7 +214,7 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
           |}
           |""".stripMargin
       mockStubResponseForGetPenaltyDetails(Status.NOT_FOUND, "123456789", body = Some(noDataFoundBody))
-      val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/HMRC-MTD-VAT~VRN~123456789").get)
+      val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/HMRC-MTD-VAT~VRN~123456789").get())
       result.status shouldBe NO_CONTENT
     }
 
@@ -235,7 +235,7 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
         s"VRN/123456789/VATC?dateFrom=${LocalDate.now.minusYears(2)}&dateTo=${LocalDate.now}" +
           s"&includeClearedItems=true&includeStatisticalItems=true&includePaymentOnAccount=true&addRegimeTotalisation=false&addLockInformation=false&addPenaltyDetails=true&addPostedInterestDetails=true&addAccruingInterestDetails=true", Some(noDataFoundBody))
 
-      val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/HMRC-MTD-VAT~VRN~123456789").get)
+      val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/HMRC-MTD-VAT~VRN~123456789").get())
       result.status shouldBe NO_CONTENT
     }
   }
@@ -243,7 +243,7 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
   s"return ISE (${Status.INTERNAL_SERVER_ERROR})" when {
     "the get penalty details call fails" in {
       mockStubResponseForGetPenaltyDetails(Status.INTERNAL_SERVER_ERROR, "123456789", body = Some(""))
-      val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/HMRC-MTD-VAT~VRN~123456789").get)
+      val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/HMRC-MTD-VAT~VRN~123456789").get())
       result.status shouldBe INTERNAL_SERVER_ERROR
     }
 
@@ -253,7 +253,7 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
         s"VRN/123456789/VATC?dateFrom=${LocalDate.now.minusYears(2)}&dateTo=${LocalDate.now}" +
           s"&includeClearedItems=true&includeStatisticalItems=true&includePaymentOnAccount=true&addRegimeTotalisation=false&addLockInformation=false&addPenaltyDetails=true&addPostedInterestDetails=true&addAccruingInterestDetails=true")
 
-      val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/HMRC-MTD-VAT~VRN~123456789").get)
+      val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/HMRC-MTD-VAT~VRN~123456789").get())
       result.status shouldBe INTERNAL_SERVER_ERROR
     }
   }

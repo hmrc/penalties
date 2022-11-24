@@ -17,17 +17,8 @@
 package models.auditing
 
 import base.{LogCapturing, SpecBase}
-import models.getPenaltyDetails._
-import models.getPenaltyDetails.appealInfo.{AppealInformationType, AppealLevelEnum, AppealStatusEnum}
-import models.getPenaltyDetails.latePayment._
-import models.getPenaltyDetails.lateSubmission._
-import models.notification.{SDESAudit, SDESChecksum, SDESNotification, SDESNotificationFile, SDESProperties}
-import org.mockito.Mockito.{mock, when}
-import play.api.http.Status
-import play.api.libs.json.{JsString, JsValue, Json}
-import utils.{DateHelper, Logger}
-
-import java.time.LocalDate
+import models.notification._
+import play.api.libs.json.Json
 
 class PenaltyAppealFileNotificationStorageFailureModelSpec extends SpecBase with LogCapturing {
   val notifications: Seq[SDESNotification] = Seq(

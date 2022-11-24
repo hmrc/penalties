@@ -16,7 +16,6 @@
 
 package controllers
 
-import scala.collection.JavaConverters._
 import com.github.tomakehurst.wiremock.client.WireMock.{postRequestedFor, urlEqualTo}
 import config.featureSwitches.{CallAPI1811ETMP, CallAPI1812ETMP, FeatureSwitching}
 import play.api.http.Status
@@ -24,7 +23,7 @@ import play.api.libs.json.{JsValue, Json}
 import play.api.test.Helpers._
 import utils.{ETMPWiremock, IntegrationSpecCommonBase}
 
-import java.time.LocalDate
+import scala.jdk.CollectionConverters._
 
 class APIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock with FeatureSwitching {
   val controller: APIController = injector.instanceOf[APIController]
@@ -143,7 +142,7 @@ class APIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock wit
     s"return OK (${Status.OK})" when {
       "the get penalty details call succeeds" in {
         mockStubResponseForGetPenaltyDetails(Status.OK, "123456789", body = Some(getPenaltyDetailsJson.toString()))
-        val result = await(buildClientForRequestToApp(uri = "/vat/penalties/summary/123456789").get)
+        val result = await(buildClientForRequestToApp(uri = "/vat/penalties/summary/123456789").get())
         result.status shouldBe OK
         Json.parse(result.body) shouldBe Json.parse(
           """
@@ -162,7 +161,7 @@ class APIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock wit
 
     s"return BAD_REQUEST (${Status.BAD_REQUEST})" when {
       "the user supplies an invalid VRN" in {
-        val result = await(buildClientForRequestToApp(uri = "/vat/penalties/summary/123456789123456789").get)
+        val result = await(buildClientForRequestToApp(uri = "/vat/penalties/summary/123456789123456789").get())
         result.status shouldBe BAD_REQUEST
       }
     }
@@ -170,7 +169,7 @@ class APIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock wit
     s"return ISE (${Status.INTERNAL_SERVER_ERROR})" when {
       "the get penalty details call fails" in {
         mockStubResponseForGetPenaltyDetails(Status.INTERNAL_SERVER_ERROR, "123456789", body = Some(""))
-        val result = await(buildClientForRequestToApp(uri = "/vat/penalties/summary/123456789").get)
+        val result = await(buildClientForRequestToApp(uri = "/vat/penalties/summary/123456789").get())
         result.status shouldBe INTERNAL_SERVER_ERROR
       }
     }
@@ -178,13 +177,13 @@ class APIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock wit
     s"return NOT_FOUND (${Status.NOT_FOUND})" when {
       "the get penalty details call returns 404" in {
         mockStubResponseForGetPenaltyDetails(Status.NOT_FOUND, "123456789", body = Some(""))
-        val result = await(buildClientForRequestToApp(uri = "/vat/penalties/summary/123456789").get)
+        val result = await(buildClientForRequestToApp(uri = "/vat/penalties/summary/123456789").get())
         result.status shouldBe NOT_FOUND
       }
 
       "the get penalty details call returns 204" in {
         mockStubResponseForGetPenaltyDetails(Status.NO_CONTENT, "123456789", body = Some(""))
-        val result = await(buildClientForRequestToApp(uri = "/vat/penalties/summary/123456789").get)
+        val result = await(buildClientForRequestToApp(uri = "/vat/penalties/summary/123456789").get())
         result.status shouldBe NOT_FOUND
       }
     }
@@ -292,7 +291,7 @@ class APIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock wit
           s"&addPostedInterestDetails=true&addAccruingInterestDetails=true")
         val result = await(buildClientForRequestToApp(uri = s"/penalty/financial-data/VRN/123456789/VATC?searchType=CHGREF&searchItem=XC00178236592&dateType=BILLING&dateFrom=2020-10-03&dateTo=2021-07-12&includeClearedItems=false" +
           s"&includeStatisticalItems=true&includePaymentOnAccount=true&addRegimeTotalisation=false&addLockInformation=true&addPenaltyDetails=true" +
-          s"&addPostedInterestDetails=true&addAccruingInterestDetails=true").get)
+          s"&addPostedInterestDetails=true&addAccruingInterestDetails=true").get())
         result.status shouldBe OK
         result.json shouldBe sampleAPI1811Response
         wireMockServer.findAll(postRequestedFor(urlEqualTo("/write/audit"))).asScala.toList
@@ -308,7 +307,7 @@ class APIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock wit
           s"&addPostedInterestDetails=true&addAccruingInterestDetails=true")
         val result = await(buildClientForRequestToApp(uri = s"/penalty/financial-data/VRN/123456789/VATC?searchType=CHGREF&searchItem=XC00178236592&dateType=BILLING&dateFrom=2020-10-03&dateTo=2021-07-12&includeClearedItems=false" +
           s"&includeStatisticalItems=true&includePaymentOnAccount=true&addRegimeTotalisation=false&addLockInformation=true&addPenaltyDetails=true" +
-          s"&addPostedInterestDetails=true&addAccruingInterestDetails=true").get)
+          s"&addPostedInterestDetails=true&addAccruingInterestDetails=true").get())
         result.status shouldBe NOT_FOUND
         wireMockServer.findAll(postRequestedFor(urlEqualTo("/write/audit"))).asScala.toList
           .exists(_.getBodyAsString.contains("Penalties3rdPartyFinancialPenaltyDetailsDataRetrieval")) shouldBe true
@@ -321,7 +320,7 @@ class APIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock wit
           s"&addPostedInterestDetails=true&addAccruingInterestDetails=true", Some(""))
         val result = await(buildClientForRequestToApp(uri = s"/penalty/financial-data/VRN/123456789/VATC?searchType=CHGREF&searchItem=XC00178236592&dateType=BILLING&dateFrom=2020-10-03&dateTo=2021-07-12&includeClearedItems=false" +
           s"&includeStatisticalItems=true&includePaymentOnAccount=true&addRegimeTotalisation=false&addLockInformation=true&addPenaltyDetails=true" +
-          s"&addPostedInterestDetails=true&addAccruingInterestDetails=true").get)
+          s"&addPostedInterestDetails=true&addAccruingInterestDetails=true").get())
         result.status shouldBe BAD_REQUEST
         wireMockServer.findAll(postRequestedFor(urlEqualTo("/write/audit"))).asScala.toList
           .exists(_.getBodyAsString.contains("Penalties3rdPartyFinancialPenaltyDetailsDataRetrieval")) shouldBe true
@@ -412,7 +411,7 @@ class APIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock wit
             |""".stripMargin)
         enableFeatureSwitch(CallAPI1812ETMP)
         mockResponseForGetPenaltyDetails(Status.OK, s"123456789?dateLimit=09", Some(sampleAPI1812Response.toString))
-        val result = await(buildClientForRequestToApp(uri = s"/penalty-details/VAT/VRN/123456789?dateLimit=09").get)
+        val result = await(buildClientForRequestToApp(uri = s"/penalty-details/VAT/VRN/123456789?dateLimit=09").get())
         result.status shouldBe OK
         result.json shouldBe sampleAPI1812Response
         wireMockServer.findAll(postRequestedFor(urlEqualTo("/write/audit"))).asScala.toList.exists(_.getBodyAsString.contains("Penalties3rdPartyPenaltyDetailsDataRetrieval")) shouldBe true
@@ -423,7 +422,7 @@ class APIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock wit
       "404 response received " in {
         enableFeatureSwitch(CallAPI1812ETMP)
         mockResponseForGetPenaltyDetails(Status.NOT_FOUND, s"123456789?dateLimit=09", Some(""))
-        val result = await(buildClientForRequestToApp(uri = s"/penalty-details/VAT/VRN/123456789?dateLimit=09").get)
+        val result = await(buildClientForRequestToApp(uri = s"/penalty-details/VAT/VRN/123456789?dateLimit=09").get())
         result.status shouldBe NOT_FOUND
         wireMockServer.findAll(postRequestedFor(urlEqualTo("/write/audit"))).asScala.toList.exists(_.getBodyAsString.contains("Penalties3rdPartyPenaltyDetailsDataRetrieval")) shouldBe true
       }
@@ -431,7 +430,7 @@ class APIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock wit
       "Non 200 response received " in {
         enableFeatureSwitch(CallAPI1812ETMP)
         mockResponseForGetPenaltyDetails(Status.BAD_REQUEST, s"123456789?dateLimit=09", Some(""))
-        val result = await(buildClientForRequestToApp(uri = s"/penalty-details/VAT/VRN/123456789?dateLimit=09").get)
+        val result = await(buildClientForRequestToApp(uri = s"/penalty-details/VAT/VRN/123456789?dateLimit=09").get())
         result.status shouldBe BAD_REQUEST
         wireMockServer.findAll(postRequestedFor(urlEqualTo("/write/audit"))).asScala.toList.exists(_.getBodyAsString.contains("Penalties3rdPartyPenaltyDetailsDataRetrieval")) shouldBe true
       }

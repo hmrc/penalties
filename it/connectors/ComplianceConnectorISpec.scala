@@ -68,7 +68,7 @@ class ComplianceConnectorISpec extends IntegrationSpecCommonBase with Compliance
       mockResponseForComplianceDataFromDES(Status.OK, "123456789", "2020-01-01", "2020-12-31", hasBody = true)
       val result: CompliancePayloadResponse = await(connector.getComplianceData("123456789", "2020-01-01", "2020-12-31"))
       result.isRight shouldBe true
-      result.right.get.asInstanceOf[CompliancePayloadSuccessResponse].model shouldBe compliancePayloadAsModel
+      result.toOption.get.asInstanceOf[CompliancePayloadSuccessResponse].model shouldBe compliancePayloadAsModel
     }
 
     "call stub and handle a successful response" in new Setup {
@@ -101,28 +101,28 @@ class ComplianceConnectorISpec extends IntegrationSpecCommonBase with Compliance
       mockResponseForComplianceDataFromStub(Status.OK, "123456789", "2020-01-01", "2020-12-31")
       val result: CompliancePayloadResponse = await(connector.getComplianceData("123456789", "2020-01-01", "2020-12-31"))
       result.isRight shouldBe true
-      result.right.get.asInstanceOf[CompliancePayloadSuccessResponse].model shouldBe compliancePayloadAsModel
+      result.toOption.get.asInstanceOf[CompliancePayloadSuccessResponse].model shouldBe compliancePayloadAsModel
     }
 
     s"return a $CompliancePayloadNoData when the response status is Not Found (${Status.NOT_FOUND})" in new Setup {
       mockResponseForComplianceDataFromDES(Status.NOT_FOUND, "123456789", "2020-01-01", "2020-12-31")
       val result: CompliancePayloadResponse = await(connector.getComplianceData("123456789", "2020-01-01", "2020-12-31"))
       result.isLeft shouldBe true
-      result.left.get shouldBe CompliancePayloadNoData
+      result.left.getOrElse(false) shouldBe CompliancePayloadNoData
     }
 
     s"return a $CompliancePayloadFailureResponse when the response status is ISE (${Status.INTERNAL_SERVER_ERROR})" in new Setup {
       mockResponseForComplianceDataFromDES(Status.INTERNAL_SERVER_ERROR, "123456789", "2020-01-01", "2020-12-31")
       val result: CompliancePayloadResponse = await(connector.getComplianceData("123456789", "2020-01-01", "2020-12-31"))
       result.isLeft shouldBe true
-      result.left.get shouldBe CompliancePayloadFailureResponse(Status.INTERNAL_SERVER_ERROR)
+      result.left.getOrElse(false) shouldBe CompliancePayloadFailureResponse(Status.INTERNAL_SERVER_ERROR)
     }
 
     s"return a $CompliancePayloadFailureResponse when the response status is unmatched i.e. Gateway Timeout (${Status.SERVICE_UNAVAILABLE})" in new Setup {
       mockResponseForComplianceDataFromDES(Status.SERVICE_UNAVAILABLE,"123456789", "2020-01-01", "2020-12-31")
       val result: CompliancePayloadResponse = await(connector.getComplianceData("123456789", "2020-01-01","2020-12-31"))
       result.isLeft shouldBe true
-      result.left.get shouldBe CompliancePayloadFailureResponse(Status.SERVICE_UNAVAILABLE)
+      result.left.getOrElse(false) shouldBe CompliancePayloadFailureResponse(Status.SERVICE_UNAVAILABLE)
     }
   }
 }
