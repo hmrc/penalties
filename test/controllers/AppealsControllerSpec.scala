@@ -31,9 +31,8 @@ import models.getPenaltyDetails.latePayment._
 import models.getPenaltyDetails.lateSubmission._
 import models.notification._
 import models.upload.{UploadDetails, UploadJourney, UploadStatusEnum}
-import org.mockito.Matchers.any
 import org.mockito.Mockito._
-import org.mockito.{ArgumentCaptor, Matchers}
+import org.mockito.{ArgumentCaptor, ArgumentMatchers}
 import org.scalatest.concurrent.Eventually.eventually
 import play.api.Configuration
 import play.api.http.Status
@@ -46,8 +45,8 @@ import uk.gov.hmrc.http.HttpResponse
 import utils.Logger.logger
 import utils.PagerDutyHelper.PagerDutyKeys
 import utils.UUIDGenerator
-
 import java.time.{LocalDate, LocalDateTime}
+
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
@@ -140,7 +139,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
     s"return NOT_FOUND (${Status.NOT_FOUND}) when ETMP can not find the data for the given enrolment key" in new Setup {
       val sampleEnrolmentKey: String = "HMRC-MTD-VAT~VRN~123456789"
       val vrn: String = "123456789"
-      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(Matchers.eq(vrn))(Matchers.any()))
+      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(ArgumentMatchers.eq(vrn))(ArgumentMatchers.any()))
         .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(NOT_FOUND))))
 
       val result: Future[Result] = controller.getAppealsDataForLateSubmissionPenalty("1", sampleEnrolmentKey)(fakeRequest)
@@ -152,7 +151,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
       val samplePenaltyId: String = "1234"
       val sampleEnrolmentKey: String = "HMRC-MTD-VAT~VRN~123456789"
       val vrn: String = "123456789"
-      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(Matchers.eq(vrn))(Matchers.any()))
+      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(ArgumentMatchers.eq(vrn))(ArgumentMatchers.any()))
         .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetails))))
 
       val result: Future[Result] = controller.getAppealsDataForLateSubmissionPenalty(samplePenaltyId, sampleEnrolmentKey)(fakeRequest)
@@ -163,7 +162,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
     s"return ISE (${Status.INTERNAL_SERVER_ERROR}) when the call to ETMP fails for some reason" in new Setup {
       val sampleEnrolmentKey: String = "HMRC-MTD-VAT~VRN~123456789"
       val vrn: String = "123456789"
-      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(Matchers.eq(vrn))(Matchers.any()))
+      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(ArgumentMatchers.eq(vrn))(ArgumentMatchers.any()))
         .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(INTERNAL_SERVER_ERROR))))
 
       val result: Future[Result] = controller.getAppealsDataForLateSubmissionPenalty("1", sampleEnrolmentKey)(fakeRequest)
@@ -173,7 +172,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
     s"return ISE (${Status.INTERNAL_SERVER_ERROR}) when API 1812 call returns malformed data" in new Setup {
       val sampleEnrolmentKey: String = "HMRC-MTD-VAT~VRN~123456789"
       val vrn: String = "123456789"
-      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(Matchers.eq(vrn))(Matchers.any()))
+      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(ArgumentMatchers.eq(vrn))(ArgumentMatchers.any()))
         .thenReturn(Future.successful(Left(GetPenaltyDetailsMalformed)))
       withCaptureOfLoggingFrom(logger) {
         logs => {
@@ -188,7 +187,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
       val samplePenaltyId: String = "123456789"
       val sampleEnrolmentKey: String = "HMRC-MTD-VAT~VRN~123456789"
       val vrn: String = "123456789"
-      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(Matchers.eq(vrn))(Matchers.any()))
+      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(ArgumentMatchers.eq(vrn))(ArgumentMatchers.any()))
         .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetails))))
 
       val result: Future[Result] = controller.getAppealsDataForLateSubmissionPenalty(samplePenaltyId, sampleEnrolmentKey)(fakeRequest)
@@ -270,7 +269,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
     s"return NOT_FOUND (${Status.NOT_FOUND}) when ETMP can not find the data for the given enrolment key" in new Setup {
       val sampleEnrolmentKey: String = "HMRC-MTD-VAT~VRN~123456789"
       val vrn: String = "123456789"
-      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(Matchers.eq(vrn))(Matchers.any()))
+      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(ArgumentMatchers.eq(vrn))(ArgumentMatchers.any()))
         .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(NOT_FOUND))))
 
       val result: Future[Result] = controller.getAppealsDataForLatePaymentPenalty("1", sampleEnrolmentKey,
@@ -283,7 +282,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
       val samplePenaltyId: String = "1234"
       val sampleEnrolmentKey: String = "HMRC-MTD-VAT~VRN~123456789"
       val vrn: String = "123456789"
-      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(Matchers.eq(vrn))(Matchers.any()))
+      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(ArgumentMatchers.eq(vrn))(ArgumentMatchers.any()))
         .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetails))))
 
       val result: Future[Result] = controller.getAppealsDataForLatePaymentPenalty(samplePenaltyId, sampleEnrolmentKey,
@@ -295,7 +294,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
     s"return ISE (${Status.INTERNAL_SERVER_ERROR}) when the call to ETMP fails for some reason" in new Setup {
       val sampleEnrolmentKey: String = "HMRC-MTD-VAT~VRN~123456789"
       val vrn: String = "123456789"
-      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(Matchers.eq(vrn))(Matchers.any()))
+      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(ArgumentMatchers.eq(vrn))(ArgumentMatchers.any()))
         .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(INTERNAL_SERVER_ERROR))))
 
       val result: Future[Result] = controller.getAppealsDataForLatePaymentPenalty("1", sampleEnrolmentKey,
@@ -306,7 +305,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
     s"return ISE (${Status.INTERNAL_SERVER_ERROR}) when API 1812 call returns malformed data" in new Setup {
       val sampleEnrolmentKey: String = "HMRC-MTD-VAT~VRN~123456789"
       val vrn: String = "123456789"
-      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(Matchers.eq(vrn))(Matchers.any()))
+      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(ArgumentMatchers.eq(vrn))(ArgumentMatchers.any()))
         .thenReturn(Future.successful(Left(GetPenaltyDetailsMalformed)))
       withCaptureOfLoggingFrom(logger) {
         logs => {
@@ -321,7 +320,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
       val samplePenaltyId: String = "1234567890"
       val sampleEnrolmentKey: String = "HMRC-MTD-VAT~VRN~123456789"
       val vrn: String = "123456789"
-      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(Matchers.eq(vrn))(Matchers.any()))
+      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(ArgumentMatchers.eq(vrn))(ArgumentMatchers.any()))
         .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetails))))
 
       val result: Future[Result] = controller.getAppealsDataForLatePaymentPenalty(samplePenaltyId, sampleEnrolmentKey,
@@ -341,7 +340,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
       val samplePenaltyId: String = "1234567891"
       val sampleEnrolmentKey: String = "HMRC-MTD-VAT~VRN~123456789"
       val vrn: String = "123456789"
-      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(Matchers.eq(vrn))(Matchers.any()))
+      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(ArgumentMatchers.eq(vrn))(ArgumentMatchers.any()))
         .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetails))))
 
       val result: Future[Result] = controller.getAppealsDataForLatePaymentPenalty(samplePenaltyId, sampleEnrolmentKey,
@@ -435,9 +434,9 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
           |}
           |""".stripMargin
       )
-      when(mockAppConfig.isReasonableExcuseEnabled(Matchers.any()))
+      when(mockAppConfig.isReasonableExcuseEnabled(ArgumentMatchers.any()))
         .thenReturn(true)
-      when(mockAppConfig.isReasonableExcuseEnabled(Matchers.eq("other")))
+      when(mockAppConfig.isReasonableExcuseEnabled(ArgumentMatchers.eq("other")))
         .thenReturn(false)
       val result: Future[Result] = controller.getReasonableExcuses()(fakeRequest)
       status(result) shouldBe OK
@@ -475,7 +474,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
     "return the error status code" when {
       "the connector calls fails" in new Setup {
 
-        when(mockAppealsService.submitAppeal(any(), any(), any(), any(), any()))
+        when(mockAppealsService.submitAppeal(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
           .thenReturn(Future.successful(Left(UnexpectedFailure(GATEWAY_TIMEOUT, s"Unexpected response, status $GATEWAY_TIMEOUT returned"))))
         val appealsJson: JsValue = Json.parse(
           """
@@ -503,7 +502,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
 
     "return OK (200)" when {
       "the JSON request body can be parsed and the connector returns a successful response for crime" in new Setup {
-        when(mockAppealsService.submitAppeal(any(), any(), any(), any(), any()))
+        when(mockAppealsService.submitAppeal(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
           .thenReturn(Future.successful(Right(appealResponseModel)))
         val appealsJson: JsValue = Json.parse(
           """
@@ -528,7 +527,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
       }
 
       "the JSON request body can be parsed and the connector returns a successful response for loss of staff" in new Setup {
-        when(mockAppealsService.submitAppeal(any(), any(), any(), any(), any()))
+        when(mockAppealsService.submitAppeal(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
           .thenReturn(Future.successful(Right(appealResponseModel)))
         val appealsJson: JsValue = Json.parse(
           """
@@ -552,7 +551,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
       }
 
       "the Json request body can be parsed and the connector returns a successful response for fire or flood" in new Setup {
-        when(mockAppealsService.submitAppeal(any(), any(), any(), any(), any()))
+        when(mockAppealsService.submitAppeal(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
           .thenReturn(Future.successful(Right(appealResponseModel)))
         val appealsJson: JsValue = Json.parse(
           """
@@ -576,7 +575,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
       }
 
       "the Json request body can be parsed and the connector returns a successful response for technical issues" in new Setup {
-        when(mockAppealsService.submitAppeal(any(), any(), any(), any(), any()))
+        when(mockAppealsService.submitAppeal(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
           .thenReturn(Future.successful(Right(appealResponseModel)))
         val appealsJson: JsValue = Json.parse(
           """
@@ -602,7 +601,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
 
       "the Json request body can be parsed and the connector returns a successful response for health" when {
         "there was no hospital stay" in new Setup {
-          when(mockAppealsService.submitAppeal(any(), any(), any(), any(), any()))
+          when(mockAppealsService.submitAppeal(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
             .thenReturn(Future.successful(Right(appealResponseModel)))
           val appealsJson: JsValue = Json.parse(
             """
@@ -628,7 +627,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
         }
 
         "there is an ongoing hospital stay" in new Setup {
-          when(mockAppealsService.submitAppeal(any(), any(), any(), any(), any()))
+          when(mockAppealsService.submitAppeal(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
             .thenReturn(Future.successful(Right(appealResponseModel)))
           val appealsJson: JsValue = Json.parse(
             """
@@ -654,7 +653,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
         }
 
         "there was a hospital stay that has ended" in new Setup {
-          when(mockAppealsService.submitAppeal(any(), any(), any(), any(), any()))
+          when(mockAppealsService.submitAppeal(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
             .thenReturn(Future.successful(Right(appealResponseModel)))
           val appealsJson: JsValue = Json.parse(
             """
@@ -681,7 +680,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
         }
 
         "the JSON request body can be parsed and the appeal is a LPP" in new Setup {
-          when(mockAppealsService.submitAppeal(any(), any(), any(), any(), any()))
+          when(mockAppealsService.submitAppeal(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
             .thenReturn(Future.successful(Right(appealResponseModel)))
           val appealsJson: JsValue = Json.parse(
             """
@@ -708,9 +707,9 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
     }
 
     "return 200 (OK) even if the file notification call fails (5xx response)" in new Setup {
-      when(mockAppealsService.submitAppeal(any(), any(), any(), any(), any()))
+      when(mockAppealsService.submitAppeal(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
         .thenReturn(Future.successful(Right(appealResponseModel)))
-      when(mockFileNotificationConnector.postFileNotifications(any())(any()))
+      when(mockFileNotificationConnector.postFileNotifications(ArgumentMatchers.any())(ArgumentMatchers.any()))
         .thenReturn(Future.successful(HttpResponse.apply(INTERNAL_SERVER_ERROR, "")))
       val argumentCaptorForAuditModel = ArgumentCaptor.forClass(classOf[PenaltyAppealFileNotificationStorageFailureModel])
       when(mockUUIDGenerator.generateUUID).thenReturn(correlationId)
@@ -757,7 +756,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
           val result: Result = await(controller.submitAppeal("HMRC-MTD-VAT~VRN~123456789", isLPP = false, penaltyNumber = "123456789", correlationId = correlationId)(fakeRequest.withJsonBody(appealsJson)))
           result.header.status shouldBe OK
           eventually {
-            verify(mockAuditService, times(1)).audit(argumentCaptorForAuditModel.capture())(any(), any(), any())
+            verify(mockAuditService, times(1)).audit(argumentCaptorForAuditModel.capture())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
             logs.exists(_.getMessage.contains(PagerDutyKeys.RECEIVED_5XX_FROM_FILE_NOTIFICATION_ORCHESTRATOR.toString)) shouldBe true
           }
         }
@@ -765,9 +764,9 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
     }
 
     "return 200 (OK) even if the file notification call fails (4xx response) and audit the storage failure" in new Setup {
-      when(mockAppealsService.submitAppeal(any(), any(), any(), any(), any()))
+      when(mockAppealsService.submitAppeal(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
         .thenReturn(Future.successful(Right(appealResponseModel)))
-      when(mockFileNotificationConnector.postFileNotifications(any())(any()))
+      when(mockFileNotificationConnector.postFileNotifications(ArgumentMatchers.any())(ArgumentMatchers.any()))
         .thenReturn(Future.successful(HttpResponse.apply(BAD_REQUEST, "")))
       val argumentCaptorForAuditModel = ArgumentCaptor.forClass(classOf[PenaltyAppealFileNotificationStorageFailureModel])
       when(mockUUIDGenerator.generateUUID).thenReturn(correlationId)
@@ -814,7 +813,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
           val result: Result = await(controller.submitAppeal("HMRC-MTD-VAT~VRN~123456789", isLPP = false, penaltyNumber = "123456789", correlationId = correlationId)(fakeRequest.withJsonBody(appealsJson)))
           result.header.status shouldBe OK
           eventually {
-            verify(mockAuditService, times(1)).audit(argumentCaptorForAuditModel.capture())(any(), any(), any())
+            verify(mockAuditService, times(1)).audit(argumentCaptorForAuditModel.capture())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
             logs.exists(_.getMessage.contains(PagerDutyKeys.RECEIVED_4XX_FROM_FILE_NOTIFICATION_ORCHESTRATOR.toString)) shouldBe true
           }
         }
@@ -838,9 +837,9 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
     }
 
     "return 200 (OK) even if the file notification call fails (with exception) and audit the storage failure" in new Setup {
-      when(mockAppealsService.submitAppeal(any(), any(), any(), any(), any()))
+      when(mockAppealsService.submitAppeal(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
         .thenReturn(Future.successful(Right(appealResponseModel)))
-      when(mockFileNotificationConnector.postFileNotifications(any())(any()))
+      when(mockFileNotificationConnector.postFileNotifications(ArgumentMatchers.any())(ArgumentMatchers.any()))
         .thenReturn(Future.failed(new Exception("failed")))
       val argumentCaptorForAuditModel = ArgumentCaptor.forClass(classOf[PenaltyAppealFileNotificationStorageFailureModel])
       when(mockUUIDGenerator.generateUUID).thenReturn(correlationId)
@@ -887,7 +886,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
           val result: Result = await(controller.submitAppeal("HMRC-MTD-VAT~VRN~123456789", isLPP = false, penaltyNumber = "123456789", correlationId = correlationId)(fakeRequest.withJsonBody(appealsJson)))
           result.header.status shouldBe OK
           eventually {
-            verify(mockAuditService, times(1)).audit(argumentCaptorForAuditModel.capture())(any(), any(), any())
+            verify(mockAuditService, times(1)).audit(argumentCaptorForAuditModel.capture())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
           }
         }
       }
@@ -1140,7 +1139,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
     s"return NOT_FOUND (${Status.NOT_FOUND}) when ETMP can not find the data for the given enrolment key" in new Setup {
       val sampleEnrolmentKey: String = "HMRC-MTD-VAT~VRN~123456789"
       val vrn: String = "123456789"
-      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(Matchers.eq(vrn))(Matchers.any()))
+      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(ArgumentMatchers.eq(vrn))(ArgumentMatchers.any()))
         .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(NOT_FOUND))))
       val result: Future[Result] = controller.getMultiplePenaltyData("1", sampleEnrolmentKey)(fakeRequest)
       status(result) shouldBe Status.NOT_FOUND
@@ -1150,7 +1149,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
     s"return ISE (${Status.INTERNAL_SERVER_ERROR}) when the call to ETMP fails for some reason" in new Setup {
       val sampleEnrolmentKey: String = "HMRC-MTD-VAT~VRN~123456789"
       val vrn: String = "123456789"
-      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(Matchers.eq(vrn))(Matchers.any()))
+      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(ArgumentMatchers.eq(vrn))(ArgumentMatchers.any()))
         .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(INTERNAL_SERVER_ERROR))))
       val result: Future[Result] = controller.getMultiplePenaltyData("1", sampleEnrolmentKey)(fakeRequest)
       status(result) shouldBe Status.INTERNAL_SERVER_ERROR
@@ -1160,7 +1159,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
       "there is only one penalty under this principal charge" in new Setup {
         val sampleEnrolmentKey: String = "HMRC-MTD-VAT~VRN~123456789"
         val vrn: String = "123456789"
-        when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(Matchers.eq(vrn))(Matchers.any()))
+        when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(ArgumentMatchers.eq(vrn))(ArgumentMatchers.any()))
           .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetailsOnePenalty))))
         val result: Future[Result] = controller.getMultiplePenaltyData("1234567891", sampleEnrolmentKey)(fakeRequest)
         status(result) shouldBe Status.NO_CONTENT
@@ -1169,7 +1168,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
       "either penalty under the principal charge has appeal in any state" in new Setup {
         val sampleEnrolmentKey: String = "HMRC-MTD-VAT~VRN~123456789"
         val vrn: String = "123456789"
-        when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(Matchers.eq(vrn))(Matchers.any()))
+        when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(ArgumentMatchers.eq(vrn))(ArgumentMatchers.any()))
           .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetailsTwoPenaltiesWithAppeal))))
         val result: Future[Result] = controller.getMultiplePenaltyData("1234567891", sampleEnrolmentKey)(fakeRequest)
         status(result) shouldBe Status.NO_CONTENT
@@ -1179,7 +1178,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
     s"return OK (${Status.OK}) when there is two penalties under this principal charge" in new Setup {
       val sampleEnrolmentKey: String = "HMRC-MTD-VAT~VRN~123456789"
       val vrn: String = "123456789"
-      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(Matchers.eq(vrn))(Matchers.any()))
+      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(ArgumentMatchers.eq(vrn))(ArgumentMatchers.any()))
         .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetailsTwoPenalties))))
       val result: Future[Result] = controller.getMultiplePenaltyData("1234567892", sampleEnrolmentKey)(fakeRequest)
       val expectedReturnModel: MultiplePenaltiesData = MultiplePenaltiesData(
@@ -1197,7 +1196,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
     s"return ISE (${Status.INTERNAL_SERVER_ERROR}) when API 1812 call returns malformed data" in new Setup {
       val sampleEnrolmentKey: String = "HMRC-MTD-VAT~VRN~123456789"
       val vrn: String = "123456789"
-      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(Matchers.eq(vrn))(Matchers.any()))
+      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(ArgumentMatchers.eq(vrn))(ArgumentMatchers.any()))
         .thenReturn(Future.successful(Left(GetPenaltyDetailsMalformed)))
       withCaptureOfLoggingFrom(logger) {
         logs => {

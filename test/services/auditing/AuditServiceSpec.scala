@@ -19,7 +19,7 @@ package services.auditing
 import base.SpecBase
 import config.AppConfig
 import models.auditing.JsonAuditModel
-import org.mockito.Matchers
+import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.{mock, reset, verify, when}
 import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.http.{HeaderCarrier, RequestId, SessionId}
@@ -41,7 +41,7 @@ class AuditServiceSpec extends SpecBase {
   "toExtendedDataEvent" should {
     "turn a JsonAuditModel into a ExtendedDataEvent" in new Setup {
       when(mockConfig.appName).thenReturn("penalties")
-      when(mockAuditConnector.sendExtendedEvent(Matchers.any())(Matchers.any(), Matchers.any()))
+      when(mockAuditConnector.sendExtendedEvent(any())(any(), any()))
         .thenReturn(Future.successful(AuditResult.Success))
       val jsonAuditModel: JsonAuditModel = new JsonAuditModel {
         override val auditType: String = "AuditType"
@@ -59,7 +59,7 @@ class AuditServiceSpec extends SpecBase {
   "audit" should {
     "send the audit event to Datastream" in new Setup {
       when(mockConfig.appName).thenReturn("penalties")
-      when(mockAuditConnector.sendExtendedEvent(Matchers.any())(Matchers.any(), Matchers.any()))
+      when(mockAuditConnector.sendExtendedEvent(any())(any(), any()))
         .thenReturn(Future.successful(AuditResult.Success))
       val jsonAuditModel: JsonAuditModel = new JsonAuditModel {
         override val auditType: String = "AuditType"
@@ -69,7 +69,7 @@ class AuditServiceSpec extends SpecBase {
       implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("session1")), requestId = Some(RequestId("request1")))
       service.audit(jsonAuditModel)(implicitly, implicitly, fakeRequest)
       verify(mockAuditConnector)
-        .sendExtendedEvent(Matchers.any())(Matchers.any(), Matchers.any())
+        .sendExtendedEvent(any())(any(), any())
     }
   }
 }

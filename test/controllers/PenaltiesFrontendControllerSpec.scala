@@ -25,7 +25,7 @@ import models.getFinancialDetails._
 import models.getPenaltyDetails.GetPenaltyDetails
 import models.getPenaltyDetails.latePayment._
 import models.getPenaltyDetails.lateSubmission.{LSPSummary, LateSubmissionPenalty}
-import org.mockito.Matchers
+import org.mockito.ArgumentMatchers._
 import org.mockito.Mockito._
 import play.api.http.Status
 import play.api.libs.json.Json
@@ -215,14 +215,14 @@ class PenaltiesFrontendControllerSpec extends SpecBase with LogCapturing {
 
   "use API 1812 data and combine with API 1811 data" must {
     s"return ISE (${Status.INTERNAL_SERVER_ERROR}) when the 1812 call fails" in new Setup(isFSEnabled = true) {
-      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(Matchers.any())(Matchers.any()))
+      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(any())(any()))
         .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(Status.INTERNAL_SERVER_ERROR))))
       val result = controller.getPenaltiesData("123456789", Some(""))(fakeRequest)
       status(result) shouldBe Status.INTERNAL_SERVER_ERROR
     }
 
     s"return ISE (${Status.INTERNAL_SERVER_ERROR}) when the 1812 call response body is malformed" in new Setup(isFSEnabled = true) {
-      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(Matchers.any())(Matchers.any()))
+      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(any())(any()))
         .thenReturn(Future.successful(Left(GetPenaltyDetailsMalformed)))
       withCaptureOfLoggingFrom(logger) {
         logs => {
@@ -234,32 +234,32 @@ class PenaltiesFrontendControllerSpec extends SpecBase with LogCapturing {
     }
 
     s"return NOT_FOUND (${Status.NOT_FOUND}) when the 1812 call returns no data" in new Setup(isFSEnabled = true) {
-      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(Matchers.any())(Matchers.any()))
+      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(any())(any()))
         .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(Status.NOT_FOUND))))
       val result = controller.getPenaltiesData("123456789", Some(""))(fakeRequest)
       status(result) shouldBe Status.NOT_FOUND
     }
 
     s"return NO_CONTENT (${Status.NO_CONTENT}) when the 1812 call returns no data (DATA_NOT_FOUND response)" in new Setup(isFSEnabled = true) {
-      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(Matchers.any())(Matchers.any()))
+      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(any())(any()))
         .thenReturn(Future.successful(Left(GetPenaltyDetailsNoContent)))
       val result = controller.getPenaltiesData("123456789", Some(""))(fakeRequest)
       status(result) shouldBe Status.NO_CONTENT
     }
 
     s"return ISE (${Status.INTERNAL_SERVER_ERROR}) when the 1811 call fails" in new Setup(isFSEnabled = true) {
-      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(Matchers.any())(Matchers.any()))
+      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(any())(any()))
         .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetailsFullAPIResponse))))
-      when(mockGetFinancialDetailsService.getDataFromFinancialServiceForVATVCN(Matchers.any())(Matchers.any()))
+      when(mockGetFinancialDetailsService.getDataFromFinancialServiceForVATVCN(any())(any()))
         .thenReturn(Future.successful(Left(GetFinancialDetailsFailureResponse(Status.INTERNAL_SERVER_ERROR))))
       val result = controller.getPenaltiesData("123456789", Some("123456789"))(fakeRequest)
       status(result) shouldBe Status.INTERNAL_SERVER_ERROR
     }
 
     s"return ISE (${Status.INTERNAL_SERVER_ERROR}) when the 1811 call response body is malformed" in new Setup(isFSEnabled = true) {
-      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(Matchers.any())(Matchers.any()))
+      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(any())(any()))
         .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetailsFullAPIResponse))))
-      when(mockGetFinancialDetailsService.getDataFromFinancialServiceForVATVCN(Matchers.any())(Matchers.any()))
+      when(mockGetFinancialDetailsService.getDataFromFinancialServiceForVATVCN(any())(any()))
         .thenReturn(Future.successful(Left(GetFinancialDetailsMalformed)))
       withCaptureOfLoggingFrom(logger) {
         logs => {
@@ -276,17 +276,17 @@ class PenaltiesFrontendControllerSpec extends SpecBase with LogCapturing {
         lateSubmissionPenalty = None,
         latePaymentPenalty = None
       )
-      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(Matchers.any())(Matchers.any()))
+      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(any())(any()))
         .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(penaltyDetails))))
-      when(mockGetFinancialDetailsService.getDataFromFinancialServiceForVATVCN(Matchers.any())(Matchers.any()))
+      when(mockGetFinancialDetailsService.getDataFromFinancialServiceForVATVCN(any())(any()))
         .thenReturn(Future.successful(Left(GetFinancialDetailsFailureResponse(Status.NOT_FOUND))))
       val result = controller.getPenaltiesData("123456789", Some(""))(fakeRequest)
       status(result) shouldBe Status.NOT_FOUND
     }
     s"return NO_CONTENT (${Status.NO_CONTENT}) when the 1811 call returns no data (DATA_NOT_FOUND response)" in new Setup(isFSEnabled = true) {
-      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(Matchers.any())(Matchers.any()))
+      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(any())(any()))
         .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetailsFullAPIResponse))))
-      when(mockGetFinancialDetailsService.getDataFromFinancialServiceForVATVCN(Matchers.any())(Matchers.any()))
+      when(mockGetFinancialDetailsService.getDataFromFinancialServiceForVATVCN(any())(any()))
         .thenReturn(Future.successful(Left(GetFinancialDetailsNoContent)))
       val result = controller.getPenaltiesData("123456789", Some(""))(fakeRequest)
       status(result) shouldBe Status.NO_CONTENT
@@ -294,9 +294,9 @@ class PenaltiesFrontendControllerSpec extends SpecBase with LogCapturing {
 
     s"return OK (${Status.OK}) when the 1811 call returns no data (if penalty data contains no LPPs)" in new Setup(isFSEnabled = true) {
       val penaltyDetails: GetPenaltyDetails = getPenaltyDetailsFullAPIResponse.copy(latePaymentPenalty = None)
-      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(Matchers.any())(Matchers.any()))
+      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(any())(any()))
         .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(penaltyDetails))))
-      when(mockGetFinancialDetailsService.getDataFromFinancialServiceForVATVCN(Matchers.any())(Matchers.any()))
+      when(mockGetFinancialDetailsService.getDataFromFinancialServiceForVATVCN(any())(any()))
         .thenReturn(Future.successful(Left(GetFinancialDetailsNoContent)))
       val result = controller.getPenaltiesData("123456789", Some(""))(fakeRequest)
       status(result) shouldBe Status.OK
@@ -312,11 +312,11 @@ class PenaltiesFrontendControllerSpec extends SpecBase with LogCapturing {
         ))
       )
 
-      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(Matchers.any())(Matchers.any()))
+      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(any())(any()))
         .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetailsFullAPIResponse))))
-      when(mockGetFinancialDetailsService.getDataFromFinancialServiceForVATVCN(Matchers.any())(Matchers.any()))
+      when(mockGetFinancialDetailsService.getDataFromFinancialServiceForVATVCN(any())(any()))
         .thenReturn(Future.successful(Right(GetFinancialDetailsSuccessResponse(financialDetails))))
-      when(mockPenaltiesFrontendService.combineAPIData(Matchers.any(), Matchers.any()))
+      when(mockPenaltiesFrontendService.combineAPIData(any(), any()))
         .thenReturn(getPenaltyDetailsFullAPIResponse)
       val result = controller.getPenaltiesData("123456789", Some(""))(fakeRequest)
       status(result) shouldBe Status.OK

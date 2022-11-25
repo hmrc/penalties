@@ -21,7 +21,7 @@ import connectors.PEGAConnector
 import connectors.parsers.AppealsParser
 import connectors.parsers.AppealsParser.UnexpectedFailure
 import models.appeals.{AppealResponseModel, AppealSubmission, CrimeAppealInformation}
-import org.mockito.Matchers
+import org.mockito.ArgumentMatchers._
 import org.mockito.Mockito._
 import play.api.test.Helpers._
 import uk.gov.hmrc.http.HeaderCarrier
@@ -64,8 +64,8 @@ class AppealServiceSpec extends SpecBase {
     )
 
     "return the response from the connector i.e. act as a pass-through function" in new Setup {
-      when(mockAppealsConnector.submitAppeal(Matchers.any(), Matchers.any(), Matchers.any(),
-        Matchers.any(), Matchers.any())).thenReturn(Future.successful(Right(appealResponseModel)))
+      when(mockAppealsConnector.submitAppeal(any(), any(), any(),
+        any(), any())).thenReturn(Future.successful(Right(appealResponseModel)))
 
       val result: Either[AppealsParser.ErrorResponse, AppealResponseModel] = await(
         service.submitAppeal(modelToPassToServer, "HMRC-MTD-VAT~VRN~123456789", isLPP = false, penaltyNumber = "123456789", correlationId = correlationId))
@@ -73,8 +73,8 @@ class AppealServiceSpec extends SpecBase {
     }
 
     "return the response from the connector on error i.e. act as a pass-through function" in new Setup {
-      when(mockAppealsConnector.submitAppeal(Matchers.any(), Matchers.any(), Matchers.any(),
-        Matchers.any(), Matchers.any())).thenReturn(Future.successful(
+      when(mockAppealsConnector.submitAppeal(any(), any(), any(),
+        any(), any())).thenReturn(Future.successful(
         Left(UnexpectedFailure(BAD_GATEWAY, s"Unexpected response, status $BAD_GATEWAY returned"))))
 
       val result: Either[AppealsParser.ErrorResponse, AppealResponseModel] = await(service.submitAppeal(
@@ -83,8 +83,8 @@ class AppealServiceSpec extends SpecBase {
     }
 
     "throw an exception when the connector throws an exception" in new Setup {
-      when(mockAppealsConnector.submitAppeal(Matchers.any(), Matchers.any(), Matchers.any(),
-        Matchers.any(), Matchers.any())).thenReturn(Future.failed(new Exception("Something went wrong")))
+      when(mockAppealsConnector.submitAppeal(any(), any(), any(),
+        any(), any())).thenReturn(Future.failed(new Exception("Something went wrong")))
 
       val result: Exception = intercept[Exception](await(service.submitAppeal(
         modelToPassToServer, "HMRC-MTD-VAT~VRN~123456789", isLPP = false, penaltyNumber = "123456789", correlationId = correlationId)))

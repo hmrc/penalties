@@ -24,7 +24,6 @@ import connectors.getPenaltyDetails.GetPenaltyDetailsConnector
 import models.getPenaltyDetails.GetPenaltyDetails
 import models.getPenaltyDetails.latePayment._
 import models.getPenaltyDetails.lateSubmission.{LSPSummary, LateSubmissionPenalty}
-import org.mockito.Matchers._
 import org.mockito.Mockito._
 import play.api.Configuration
 import play.api.http.Status
@@ -36,8 +35,10 @@ import uk.gov.hmrc.http.HttpResponse
 import utils.DateHelper
 import utils.Logger.logger
 import utils.PagerDutyHelper.PagerDutyKeys
-
 import java.time.LocalDate
+
+import org.mockito.ArgumentMatchers
+
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
@@ -207,21 +208,21 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
     )
 
     s"return ISE (${Status.INTERNAL_SERVER_ERROR}) when the call fails" in new Setup(isFSEnabled = true) {
-      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(any())(any()))
+      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(ArgumentMatchers.any())(ArgumentMatchers.any()))
         .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(Status.INTERNAL_SERVER_ERROR))))
       val result = controller.getSummaryDataForVRN("123456789")(fakeRequest)
       status(result) shouldBe Status.INTERNAL_SERVER_ERROR
     }
 
     s"return NOT_FOUND (${Status.NOT_FOUND}) when the call returns not found" in new Setup(isFSEnabled = true) {
-      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(any())(any()))
+      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(ArgumentMatchers.any())(ArgumentMatchers.any()))
         .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(Status.NOT_FOUND))))
       val result = controller.getSummaryDataForVRN("123456789")(fakeRequest)
       status(result) shouldBe Status.NOT_FOUND
     }
 
     s"return NOT_FOUND (${Status.NOT_FOUND}) when the call returns no data" in new Setup(isFSEnabled = true) {
-      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(any())(any()))
+      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(ArgumentMatchers.any())(ArgumentMatchers.any()))
         .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(Status.NO_CONTENT))))
       val result = controller.getSummaryDataForVRN("123456789")(fakeRequest)
       status(result) shouldBe Status.NOT_FOUND
@@ -234,7 +235,7 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
     }
 
     s"return ISE (${Status.INTERNAL_SERVER_ERROR}) when the call returns malformed data" in new Setup(isFSEnabled = true) {
-      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(any())(any()))
+      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(ArgumentMatchers.any())(ArgumentMatchers.any()))
         .thenReturn(Future.successful(Left(GetPenaltyDetailsMalformed)))
       withCaptureOfLoggingFrom(logger) {
         logs => {
@@ -246,14 +247,14 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
     }
 
     s"return OK (${Status.OK}) when the call returns some data and can be parsed to the correct response" in new Setup(isFSEnabled = true) {
-      when(mockAPIService.checkIfHasAnyPenaltyData(any())).thenReturn(true)
-      when(mockAPIService.getNumberOfEstimatedPenalties(any())).thenReturn(2)
-      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(any())(any()))
+      when(mockAPIService.checkIfHasAnyPenaltyData(ArgumentMatchers.any())).thenReturn(true)
+      when(mockAPIService.getNumberOfEstimatedPenalties(ArgumentMatchers.any())).thenReturn(2)
+      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(ArgumentMatchers.any())(ArgumentMatchers.any()))
         .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetailsFullAPIResponse))))
-      when(mockAPIService.findEstimatedPenaltiesAmount(any()))
+      when(mockAPIService.findEstimatedPenaltiesAmount(ArgumentMatchers.any()))
         .thenReturn(BigDecimal(123.45))
-      when(mockAPIService.getNumberOfCrystallisedPenalties(any())).thenReturn(2)
-      when(mockAPIService.getCrystallisedPenaltyTotal(any())).thenReturn(BigDecimal(288))
+      when(mockAPIService.getNumberOfCrystallisedPenalties(ArgumentMatchers.any())).thenReturn(2)
+      when(mockAPIService.getCrystallisedPenaltyTotal(ArgumentMatchers.any())).thenReturn(BigDecimal(288))
       val result = controller.getSummaryDataForVRN("123456789")(fakeRequest)
       status(result) shouldBe Status.OK
       contentAsJson(result) shouldBe Json.parse(
@@ -268,18 +269,18 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
           |}
           |""".stripMargin
       )
-      verify(mockAuditService, times(1)).audit(any())(any(), any(), any())
+      verify(mockAuditService, times(1)).audit(ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
     }
 
     s"return OK (${Status.OK}) when there are no estimated LPPs in penalty details" in new Setup(isFSEnabled = true) {
-      when(mockAPIService.checkIfHasAnyPenaltyData(any())).thenReturn(true)
-      when(mockAPIService.getNumberOfEstimatedPenalties(any())).thenReturn(0)
-      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(any())(any()))
+      when(mockAPIService.checkIfHasAnyPenaltyData(ArgumentMatchers.any())).thenReturn(true)
+      when(mockAPIService.getNumberOfEstimatedPenalties(ArgumentMatchers.any())).thenReturn(0)
+      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(ArgumentMatchers.any())(ArgumentMatchers.any()))
         .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetailsNoEstimatedLPPs))))
-      when(mockAPIService.findEstimatedPenaltiesAmount(any()))
+      when(mockAPIService.findEstimatedPenaltiesAmount(ArgumentMatchers.any()))
         .thenReturn(BigDecimal(0))
-      when(mockAPIService.getNumberOfCrystallisedPenalties(any())).thenReturn(0)
-      when(mockAPIService.getCrystallisedPenaltyTotal(any())).thenReturn(BigDecimal(0))
+      when(mockAPIService.getNumberOfCrystallisedPenalties(ArgumentMatchers.any())).thenReturn(0)
+      when(mockAPIService.getCrystallisedPenaltyTotal(ArgumentMatchers.any())).thenReturn(BigDecimal(0))
       val result = controller.getSummaryDataForVRN("123456789")(fakeRequest)
       status(result) shouldBe Status.OK
       contentAsJson(result) shouldBe Json.parse(
@@ -394,7 +395,7 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
           |}""".stripMargin)
 
 
-      when(mockGetFinancialDetailsConnector.getFinancialDetailsForAPI(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any())(any()))
+      when(mockGetFinancialDetailsConnector.getFinancialDetailsForAPI(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any()))
         .thenReturn(Future.successful(HttpResponse.apply(OK, sampleAPI1811Response.toString)))
       val result = controller.getFinancialDetails(vrn = "123456789",
         searchType = Some("CHGREF"),
@@ -413,11 +414,11 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
 
       status(result) shouldBe Status.OK
       contentAsJson(result) shouldBe sampleAPI1811Response
-      verify(mockAuditService, times(1)).audit(any())(any(), any(), any())
+      verify(mockAuditService, times(1)).audit(ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
     }
 
     s"return NOT_FOUND (${Status.NOT_FOUND}) when the call returns no data (auditing the response)" in new Setup(true) {
-      when(mockGetFinancialDetailsConnector.getFinancialDetailsForAPI(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any())(any()))
+      when(mockGetFinancialDetailsConnector.getFinancialDetailsForAPI(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any()))
         .thenReturn(Future.successful(HttpResponse.apply(NOT_FOUND, "NOT_FOUND")))
 
       val result = controller.getFinancialDetails(vrn = "123456789",
@@ -436,11 +437,11 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
         addAccruingInterestDetails = Some(true))(fakeRequest)
 
       status(result) shouldBe Status.NOT_FOUND
-      verify(mockAuditService, times(1)).audit(any())(any(), any(), any())
+      verify(mockAuditService, times(1)).audit(ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
     }
 
     s"return the status from EIS when the call returns a non 200 or 404 status (auditing the response)" in new Setup(true) {
-      when(mockGetFinancialDetailsConnector.getFinancialDetailsForAPI(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any())(any()))
+      when(mockGetFinancialDetailsConnector.getFinancialDetailsForAPI(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any()))
         .thenReturn(Future.successful(HttpResponse.apply(INTERNAL_SERVER_ERROR, "INTERNAL_SERVER_ERROR")))
 
       val result = controller.getFinancialDetails(vrn = "123456789",
@@ -459,7 +460,7 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
         addAccruingInterestDetails = Some(true))(fakeRequest)
 
       status(result) shouldBe Status.INTERNAL_SERVER_ERROR
-      verify(mockAuditService, times(1)).audit(any())(any(), any(), any())
+      verify(mockAuditService, times(1)).audit(ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
     }
   }
 
@@ -543,32 +544,32 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
           | }
           |}
           |""".stripMargin)
-      when(mockGetPenaltyDetailsConnector.getPenaltyDetailsForAPI(any(), any())(any()))
+      when(mockGetPenaltyDetailsConnector.getPenaltyDetailsForAPI(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any()))
         .thenReturn(Future.successful(HttpResponse.apply(OK, sampleAPI1812Response.toString)))
       val result = controller.getPenaltyDetails(vrn = "123456789", dateLimit = Some("02"))(fakeRequest)
       status(result) shouldBe Status.OK
       contentAsJson(result) shouldBe sampleAPI1812Response
-      verify(mockAuditService, times(1)).audit(any())(any(), any(), any())
+      verify(mockAuditService, times(1)).audit(ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
     }
 
     s"return NOT_FOUND (${Status.NOT_FOUND}) when the call returns no data (auditing the response)" in new Setup(true) {
-      when(mockGetPenaltyDetailsConnector.getPenaltyDetailsForAPI(any(), any())(any()))
+      when(mockGetPenaltyDetailsConnector.getPenaltyDetailsForAPI(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any()))
         .thenReturn(Future.successful(HttpResponse.apply(NOT_FOUND, "NOT_FOUND")))
 
       val result = controller.getPenaltyDetails(vrn = "123456789", dateLimit = None)(fakeRequest)
 
       status(result) shouldBe Status.NOT_FOUND
-      verify(mockAuditService, times(1)).audit(any())(any(), any(), any())
+      verify(mockAuditService, times(1)).audit(ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
     }
 
     s"return the status from EIS when the call returns a non 200 or 404 status (auditing the response)" in new Setup(true) {
-      when(mockGetPenaltyDetailsConnector.getPenaltyDetailsForAPI(any(), any())(any()))
+      when(mockGetPenaltyDetailsConnector.getPenaltyDetailsForAPI(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any()))
         .thenReturn(Future.successful(HttpResponse.apply(INTERNAL_SERVER_ERROR, "INTERNAL_SERVER_ERROR")))
 
       val result = controller.getPenaltyDetails(vrn = "123456789", dateLimit = None)(fakeRequest)
 
       status(result) shouldBe Status.INTERNAL_SERVER_ERROR
-      verify(mockAuditService, times(1)).audit(any())(any(), any(), any())
+      verify(mockAuditService, times(1)).audit(ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
     }
   }
 }

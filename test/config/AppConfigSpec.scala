@@ -17,7 +17,7 @@
 package config
 
 import config.featureSwitches._
-import org.mockito.Matchers
+import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
 import org.scalatest.matchers.should.{Matchers => ShouldMatchers}
 import org.scalatest.wordspec.AnyWordSpec
@@ -38,7 +38,7 @@ class AppConfigSpec extends AnyWordSpec with ShouldMatchers with FeatureSwitchin
   "getPenaltyDetailsUrl" should {
     "call API1812 when the feature switch is enabled" in new Setup {
       enableFeatureSwitch(CallAPI1812ETMP)
-       when(mockServicesConfig.baseUrl(Matchers.any()))
+       when(mockServicesConfig.baseUrl(ArgumentMatchers.any()))
         .thenReturn("localhost:0000")
       val result: String = config.getPenaltyDetailsUrl
       //TODO: change this once we have the correct URL
@@ -47,7 +47,7 @@ class AppConfigSpec extends AnyWordSpec with ShouldMatchers with FeatureSwitchin
 
     "call API1812 stub when the feature switch is disabled" in new Setup {
       disableFeatureSwitch(CallAPI1812ETMP)
-      when(mockServicesConfig.baseUrl(Matchers.any()))
+      when(mockServicesConfig.baseUrl(ArgumentMatchers.any()))
         .thenReturn("localhost:0000")
       val result: String = config.getPenaltyDetailsUrl
       result shouldBe "localhost:0000/penalties-stub/penalty/details/VATC/VRN/"
@@ -57,7 +57,7 @@ class AppConfigSpec extends AnyWordSpec with ShouldMatchers with FeatureSwitchin
   "getFinancialDetailsUrl" should {
     "call API1811 when the feature switch is enabled" in new Setup {
       enableFeatureSwitch(CallAPI1811ETMP)
-      when(mockServicesConfig.baseUrl(Matchers.any()))
+      when(mockServicesConfig.baseUrl(ArgumentMatchers.any()))
         .thenReturn("localhost:0000")
       val result: String = config.getFinancialDetailsUrl("123456789")
       //TODO: change this once we have the correct URL
@@ -66,7 +66,7 @@ class AppConfigSpec extends AnyWordSpec with ShouldMatchers with FeatureSwitchin
 
     "call API1811 stub when the feature switch is disabled" in new Setup {
       disableFeatureSwitch(CallAPI1811ETMP)
-      when(mockServicesConfig.baseUrl(Matchers.any()))
+      when(mockServicesConfig.baseUrl(ArgumentMatchers.any()))
         .thenReturn("localhost:0000")
       val result: String = config.getFinancialDetailsUrl("123456789")
       result shouldBe "localhost:0000/penalties-stub/penalty/financial-data/VRN/123456789/VATC"
@@ -76,7 +76,7 @@ class AppConfigSpec extends AnyWordSpec with ShouldMatchers with FeatureSwitchin
   "getAppealSubmissionURL" should {
     "call PEGA when the feature switch is enabled" in new Setup {
       enableFeatureSwitch(CallPEGA)
-      when(mockServicesConfig.baseUrl(Matchers.any()))
+      when(mockServicesConfig.baseUrl(ArgumentMatchers.any()))
         .thenReturn("localhost:0000")
       val result: String = config.getAppealSubmissionURL("HMRC-MTD-VAT~VRN~123456789", isLPP = false, penaltyNumber = "0000001")
       result shouldBe "localhost:0000/penalty/first-stage-appeal/0000001"
@@ -84,7 +84,7 @@ class AppConfigSpec extends AnyWordSpec with ShouldMatchers with FeatureSwitchin
 
     "call the stub when the feature switch is disabled" in new Setup {
       disableFeatureSwitch(CallPEGA)
-      when(mockServicesConfig.baseUrl(Matchers.any()))
+      when(mockServicesConfig.baseUrl(ArgumentMatchers.any()))
         .thenReturn("localhost:0000")
       val result: String = config.getAppealSubmissionURL("HMRC-MTD-VAT~VRN~123456789", isLPP = false, penaltyNumber = "0000001")
       result shouldBe "localhost:0000/penalties-stub/appeals/submit?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=false&penaltyNumber=0000001"
@@ -92,7 +92,7 @@ class AppConfigSpec extends AnyWordSpec with ShouldMatchers with FeatureSwitchin
 
     "call the stub when the feature switch is disabled - for LPP" in new Setup {
       disableFeatureSwitch(CallPEGA)
-      when(mockServicesConfig.baseUrl(Matchers.any()))
+      when(mockServicesConfig.baseUrl(ArgumentMatchers.any()))
         .thenReturn("localhost:0000")
       val result: String = config.getAppealSubmissionURL("HMRC-MTD-VAT~VRN~123456789", isLPP = true, penaltyNumber = "0000001")
       result shouldBe "localhost:0000/penalties-stub/appeals/submit?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=true&penaltyNumber=0000001"
@@ -102,7 +102,7 @@ class AppConfigSpec extends AnyWordSpec with ShouldMatchers with FeatureSwitchin
   "getComplianceData" should {
     "call the stub when the feature switch is disabled" in new Setup {
       disableFeatureSwitch(CallDES)
-      when(mockServicesConfig.baseUrl(Matchers.any()))
+      when(mockServicesConfig.baseUrl(ArgumentMatchers.any()))
         .thenReturn("localhost:0000")
       val result: String = config.getComplianceData("123456789", "2020-01-01", "2020-12-31")
       result shouldBe "localhost:0000/penalties-stub/enterprise/obligation-data/vrn/123456789/VATC?from=2020-01-01&to=2020-12-31"
@@ -110,7 +110,7 @@ class AppConfigSpec extends AnyWordSpec with ShouldMatchers with FeatureSwitchin
 
     "call the stub when the feature switch is enabled" in new Setup {
       enableFeatureSwitch(CallDES)
-      when(mockServicesConfig.baseUrl(Matchers.any()))
+      when(mockServicesConfig.baseUrl(ArgumentMatchers.any()))
         .thenReturn("localhost:0000")
       val result: String = config.getComplianceData("123456789", "2020-01-01", "2020-12-31")
       result shouldBe "localhost:0000/enterprise/obligation-data/vrn/123456789/VATC?from=2020-01-01&to=2020-12-31"

@@ -113,7 +113,7 @@ class PenaltiesFrontendController @Inject()(
     }
   }
 
-  private def returnResponse(penaltyDetails: GetPenaltyDetails, enrolmentKey: String, arn: Option[String] = None)(implicit request: Request[_]): Result = {
+  private def returnResponse(penaltyDetails: GetPenaltyDetails, enrolmentKey: String, arn: Option[String])(implicit request: Request[_]): Result = {
     val hasLSP = penaltyDetails.lateSubmissionPenalty.map(_.summary.activePenaltyPoints).getOrElse(0) > 0
     val hasLPP = penaltyDetails.latePaymentPenalty.flatMap(_.details.map(_.length)).getOrElse(0) > 0
 

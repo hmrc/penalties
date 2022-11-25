@@ -18,14 +18,15 @@ package controllers
 
 import base.SpecBase
 import models.compliance._
-import org.mockito.Matchers
 import org.mockito.Mockito._
 import play.api.libs.json.Json
 import play.api.mvc.Result
 import play.api.test.Helpers._
 import services.ComplianceService
-
 import java.time.LocalDate
+
+import org.mockito.ArgumentMatchers._
+
 import scala.concurrent.{ExecutionContext, Future}
 
 class ComplianceControllerSpec extends SpecBase {
@@ -40,8 +41,8 @@ class ComplianceControllerSpec extends SpecBase {
 
   "getComplianceData" should {
     "return the status which was returned by the service" in new Setup {
-      when(mockService.getComplianceData(Matchers.any(), Matchers.any(),
-        Matchers.any())(Matchers.any(), Matchers.any()))
+      when(mockService.getComplianceData(any(), any(),
+        any())(any(), any()))
         .thenReturn(Future.successful(Left(INTERNAL_SERVER_ERROR)))
       val result: Future[Result] = controller.getComplianceData("123456789", "2020-01-01", "2020-12-31")(fakeRequest)
       status(result) shouldBe INTERNAL_SERVER_ERROR
@@ -73,8 +74,8 @@ class ComplianceControllerSpec extends SpecBase {
           )
         )
       )
-      when(mockService.getComplianceData(Matchers.any(), Matchers.any(),
-        Matchers.any())(Matchers.any(), Matchers.any()))
+      when(mockService.getComplianceData(any(), any(),
+        any())(any(), any()))
         .thenReturn(Future.successful(Right(compliancePayloadAsModel)))
       val result: Future[Result] = controller.getComplianceData("123456789", "2020-01-01", "2020-12-31")(fakeRequest)
       status(result) shouldBe OK
