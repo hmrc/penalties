@@ -41,14 +41,14 @@ class ComplianceServiceISpec extends IntegrationSpecCommonBase with ComplianceWi
         mockResponseForComplianceDataFromDES(INTERNAL_SERVER_ERROR, "123456789", "2020-01-01", "2020-12-31")
         val result = await(complianceService.getComplianceData("123456789", "2020-01-01", "2020-12-31"))
         result.isLeft shouldBe true
-        result.left.get shouldBe INTERNAL_SERVER_ERROR
+        result.left.getOrElse(false) shouldBe INTERNAL_SERVER_ERROR
       }
 
       s"the connector returns $CompliancePayloadMalformed" in new Setup {
         mockResponseForComplianceDataFromDES(OK, "123456789", "2020-01-01", "2020-12-31", invalidBody = true)
         val result = await(complianceService.getComplianceData("123456789", "2020-01-01", "2020-12-31"))
         result.isLeft shouldBe true
-        result.left.get shouldBe INTERNAL_SERVER_ERROR
+        result.left.getOrElse(false) shouldBe INTERNAL_SERVER_ERROR
       }
     }
 
@@ -56,7 +56,7 @@ class ComplianceServiceISpec extends IntegrationSpecCommonBase with ComplianceWi
       mockResponseForComplianceDataFromDES(NOT_FOUND, "123456789", "2020-01-01", "2020-12-31")
       val result = await(complianceService.getComplianceData("123456789", "2020-01-01", "2020-12-31"))
       result.isLeft shouldBe true
-      result.left.get shouldBe NOT_FOUND
+      result.left.getOrElse(false) shouldBe NOT_FOUND
     }
 
     s"return Right(model) when the connector returns $CompliancePayloadSuccessResponse" in new Setup {
@@ -88,7 +88,7 @@ class ComplianceServiceISpec extends IntegrationSpecCommonBase with ComplianceWi
       mockResponseForComplianceDataFromDES(OK, "123456789", "2020-01-01", "2020-12-31", hasBody = true)
       val result = await(complianceService.getComplianceData("123456789", "2020-01-01", "2020-12-31"))
       result.isRight shouldBe true
-      result.right.get shouldBe compliancePayloadAsModel
+      result.toOption.get shouldBe compliancePayloadAsModel
     }
 
     s"return Right(model) when the connector returns $CompliancePayloadSuccessResponse (sorting the obligations by due date)" in new Setup {
@@ -198,7 +198,7 @@ class ComplianceServiceISpec extends IntegrationSpecCommonBase with ComplianceWi
       mockResponseForComplianceDataFromDES(OK, "123456789", "2020-01-01", "2020-12-31", hasBody = true, optBody = Some(compliancePayloadAsJson.toString()))
       val result = await(complianceService.getComplianceData("123456789", "2020-01-01", "2020-12-31"))
       result.isRight shouldBe true
-      result.right.get shouldBe expectedOrderedModel
+      result.toOption.get shouldBe expectedOrderedModel
     }
   }
 }

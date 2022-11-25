@@ -62,7 +62,11 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
   implicit val config: Configuration = mockAppConfig.config
 
   class Setup(withRealAppConfig: Boolean = true) {
-    reset(mockAppConfig, mockAppealsService, mockGetPenaltyDetailsService, mockFileNotificationConnector, mockAuditService)
+    reset(mockAppConfig)
+    reset(mockAppealsService)
+    reset(mockGetPenaltyDetailsService)
+    reset(mockFileNotificationConnector)
+    reset(mockAuditService)
     val controller = new AppealsController(if (withRealAppConfig) appConfig
     else mockAppConfig, mockAppealsService, mockGetPenaltyDetailsService, mockUUIDGenerator, mockFileNotificationConnector, mockAuditService, stubControllerComponents())
   }

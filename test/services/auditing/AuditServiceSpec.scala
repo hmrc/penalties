@@ -34,7 +34,8 @@ class AuditServiceSpec extends SpecBase {
   val mockAuditConnector: AuditConnector = mock(classOf[AuditConnector])
 
   class Setup {
-    reset(mockConfig, mockAuditConnector)
+    reset(mockConfig)
+    reset(mockAuditConnector)
     val service = new AuditService(mockAuditConnector, mockConfig)
   }
 

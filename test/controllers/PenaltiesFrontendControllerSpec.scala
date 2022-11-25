@@ -50,15 +50,12 @@ class PenaltiesFrontendControllerSpec extends SpecBase with LogCapturing {
   val mockGetFinancialDetailsService: GetFinancialDetailsService = mock(classOf[GetFinancialDetailsService])
 
   class Setup(isFSEnabled: Boolean = true) {
-    reset(
-      mockAppConfig,
-      mockAppealService,
-      mockAuditService,
-      mockGetPenaltyDetailsService,
-      mockGetFinancialDetailsService,
-      mockPenaltiesFrontendService
-    )
-
+    reset(mockAppConfig)
+    reset(mockAppealService)
+    reset(mockAuditService)
+    reset(mockGetPenaltyDetailsService)
+    reset(mockGetFinancialDetailsService)
+    reset(mockPenaltiesFrontendService)
     val controller: PenaltiesFrontendController = new PenaltiesFrontendController(
       mockAuditService,
       mockGetPenaltyDetailsService,

@@ -274,6 +274,10 @@ class AppealsController @Inject()(val appConfig: AppConfig,
         logger.error(s"[AppealsController][$callingMethod] - Failed to parse penalty details response")
         InternalServerError("We were unable to parse penalty data.")
       }
+      case GetPenaltyDetailsParser.GetPenaltyDetailsNoContent => {
+        logger.info(s"s[AppealsController][$callingMethod] - 1812 call returned no content")
+        InternalServerError(s"Returned no content for VRN: $vrn")
+      }
     }
   }
 

@@ -127,7 +127,7 @@ class GetPenaltyDetailsServiceISpec extends IntegrationSpecCommonBase with ETMPW
       mockStubResponseForGetPenaltyDetails(Status.OK, "123456789")
       val result = await(service.getDataFromPenaltyServiceForVATCVRN("123456789"))
       result.isRight shouldBe true
-      result.right.get shouldBe GetPenaltyDetailsSuccessResponse(getPenaltyDetailsModel)
+      result.toOption.get shouldBe GetPenaltyDetailsSuccessResponse(getPenaltyDetailsModel)
     }
 
     s"the response body is not well formed: $GetPenaltyDetailsMalformed" in {
@@ -140,7 +140,7 @@ class GetPenaltyDetailsServiceISpec extends IntegrationSpecCommonBase with ETMPW
           """))
       val result = await(service.getDataFromPenaltyServiceForVATCVRN("123456789"))
       result.isLeft shouldBe true
-      result.left.get shouldBe GetPenaltyDetailsMalformed
+      result.left.getOrElse(false) shouldBe GetPenaltyDetailsMalformed
     }
 
     s"the response body contains NO_DATA_FOUND for 404 response - returning $GetPenaltyDetailsNoContent" in {
@@ -158,14 +158,14 @@ class GetPenaltyDetailsServiceISpec extends IntegrationSpecCommonBase with ETMPW
       mockStubResponseForGetPenaltyDetails(Status.NOT_FOUND, "123456789", body = Some(noDataFoundBody))
       val result = await(service.getDataFromPenaltyServiceForVATCVRN("123456789"))
       result.isLeft shouldBe true
-      result.left.get shouldBe GetPenaltyDetailsNoContent
+      result.left.getOrElse(false) shouldBe GetPenaltyDetailsNoContent
     }
 
     s"an unknown response is returned from the connector - $GetPenaltyDetailsFailureResponse" in {
       mockStubResponseForGetPenaltyDetails(Status.IM_A_TEAPOT, "123456789")
       val result = await(service.getDataFromPenaltyServiceForVATCVRN("123456789"))
       result.isLeft shouldBe true
-      result.left.get shouldBe GetPenaltyDetailsFailureResponse(Status.IM_A_TEAPOT)
+      result.left.getOrElse(false) shouldBe GetPenaltyDetailsFailureResponse(Status.IM_A_TEAPOT)
     }
   }
 }

@@ -93,7 +93,7 @@ class ComplianceConnectorSpec extends SpecBase with LogCapturing {
       val result: CompliancePayloadResponse =
         await(connector.getComplianceData("123456789", "2020-01-01", "2020-12-31")(HeaderCarrier()))
       result.isRight shouldBe true
-      result.right.get.asInstanceOf[CompliancePayloadSuccessResponse] shouldBe CompliancePayloadSuccessResponse(compliancePayloadAsModel)
+      result.toOption.get.asInstanceOf[CompliancePayloadSuccessResponse] shouldBe CompliancePayloadSuccessResponse(compliancePayloadAsModel)
       headersArgumentCaptor.getValue.find(_._1 == "Authorization").get._2 shouldBe "Bearer 12345"
       headersArgumentCaptor.getValue.find(_._1 == "Environment").get._2 shouldBe "env"
     }

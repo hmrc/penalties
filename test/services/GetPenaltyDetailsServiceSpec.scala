@@ -138,7 +138,7 @@ class GetPenaltyDetailsServiceSpec extends SpecBase {
 
       val result: GetPenaltyDetailsResponse = await(service.getDataFromPenaltyServiceForVATCVRN("123456789"))
       result.isRight shouldBe true
-      result.right.get shouldBe GetPenaltyDetailsSuccessResponse(mockGetPenaltyDetailsResponseAsModel)
+      result.toOption.get shouldBe GetPenaltyDetailsSuccessResponse(mockGetPenaltyDetailsResponseAsModel)
     }
 
     s"return $GetPenaltyDetailsMalformed when the response body is malformed" in new Setup {
@@ -147,7 +147,7 @@ class GetPenaltyDetailsServiceSpec extends SpecBase {
 
       val result: GetPenaltyDetailsResponse = await(service.getDataFromPenaltyServiceForVATCVRN("123456789"))
       result.isLeft shouldBe true
-      result.left.get shouldBe GetPenaltyDetailsMalformed
+      result.left.getOrElse(false) shouldBe GetPenaltyDetailsMalformed
     }
 
     s"return $GetPenaltyDetailsNoContent when the response body contains NO_DATA_FOUND" in new Setup {
@@ -156,7 +156,7 @@ class GetPenaltyDetailsServiceSpec extends SpecBase {
 
       val result: GetPenaltyDetailsResponse = await(service.getDataFromPenaltyServiceForVATCVRN("123456789"))
       result.isLeft shouldBe true
-      result.left.get shouldBe GetPenaltyDetailsNoContent
+      result.left.getOrElse(false) shouldBe GetPenaltyDetailsNoContent
     }
 
     s"return $GetPenaltyDetailsFailureResponse when the connector receives an unmatched status code" in new Setup {
@@ -165,7 +165,7 @@ class GetPenaltyDetailsServiceSpec extends SpecBase {
 
       val result: GetPenaltyDetailsResponse = await(service.getDataFromPenaltyServiceForVATCVRN("123456789"))
       result.isLeft shouldBe true
-      result.left.get shouldBe GetPenaltyDetailsFailureResponse(IM_A_TEAPOT)
+      result.left.getOrElse(false) shouldBe GetPenaltyDetailsFailureResponse(IM_A_TEAPOT)
     }
 
     s"throw an exception when something unknown has happened" in new Setup {

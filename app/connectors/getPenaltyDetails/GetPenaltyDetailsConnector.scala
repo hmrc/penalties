@@ -16,9 +16,12 @@
 
 package connectors.getPenaltyDetails
 
+import java.util.UUID.randomUUID
+
 import config.AppConfig
-import config.featureSwitches.{AddReceiptDateHeaderToAPI1812, FeatureSwitch}
+import config.featureSwitches.AddReceiptDateHeaderToAPI1812
 import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser.{GetPenaltyDetailsFailureResponse, GetPenaltyDetailsResponse}
+import javax.inject.Inject
 import play.api.http.Status.INTERNAL_SERVER_ERROR
 import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse, UpstreamErrorResponse}
@@ -26,8 +29,6 @@ import utils.Logger.logger
 import utils.PagerDutyHelper
 import utils.PagerDutyHelper.PagerDutyKeys._
 
-import java.util.UUID.randomUUID
-import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class GetPenaltyDetailsConnector @Inject()(httpClient: HttpClient,

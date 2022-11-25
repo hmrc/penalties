@@ -52,7 +52,9 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
   implicit val config: Configuration = appConfig.config
 
   class Setup(isFSEnabled: Boolean = false) {
-    reset(mockAppealsService, mockAuditService, mockAPIService)
+    reset(mockAppealsService)
+    reset(mockAuditService)
+    reset(mockAPIService)
     val controller = new APIController(
       mockAuditService,
       mockAPIService,

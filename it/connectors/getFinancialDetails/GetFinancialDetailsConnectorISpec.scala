@@ -52,7 +52,7 @@ class GetFinancialDetailsConnectorISpec extends IntegrationSpecCommonBase with E
       mockResponseForGetFinancialDetails(Status.OK, s"VRN/123456789/VATC?dateFrom=${LocalDate.now()}&dateTo=${LocalDate.now()}&includeClearedItems=true&includeStatisticalItems=true&includePaymentOnAccount=true&addRegimeTotalisation=false&addLockInformation=false&addPenaltyDetails=true&addPostedInterestDetails=true&addAccruingInterestDetails=true", body = Some(malformedBody))
       val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails("123456789", LocalDate.now(), LocalDate.now()))
       result.isLeft shouldBe true
-      result.left.get shouldBe GetFinancialDetailsMalformed
+      result.left.getOrElse(false) shouldBe GetFinancialDetailsMalformed
     }
 
     s"return a $GetFinancialDetailsFailureResponse when the response status is ISE (${Status.INTERNAL_SERVER_ERROR})" in new Setup {
@@ -60,7 +60,7 @@ class GetFinancialDetailsConnectorISpec extends IntegrationSpecCommonBase with E
       mockResponseForGetFinancialDetails(Status.INTERNAL_SERVER_ERROR, s"VRN/123456789/VATC?dateFrom=${LocalDate.now()}&dateTo=${LocalDate.now()}&includeClearedItems=true&includeStatisticalItems=true&includePaymentOnAccount=true&addRegimeTotalisation=false&addLockInformation=false&addPenaltyDetails=true&addPostedInterestDetails=true&addAccruingInterestDetails=true")
       val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails("123456789", LocalDate.now(), LocalDate.now()))
       result.isLeft shouldBe true
-      result.left.get.asInstanceOf[GetFinancialDetailsFailureResponse].status shouldBe Status.INTERNAL_SERVER_ERROR
+      result.left.getOrElse(false).asInstanceOf[GetFinancialDetailsFailureResponse].status shouldBe Status.INTERNAL_SERVER_ERROR
     }
 
     s"return a $GetFinancialDetailsFailureResponse when the response status is ISE (${Status.SERVICE_UNAVAILABLE})" in new Setup {
@@ -68,7 +68,7 @@ class GetFinancialDetailsConnectorISpec extends IntegrationSpecCommonBase with E
       mockResponseForGetFinancialDetails(Status.SERVICE_UNAVAILABLE, s"VRN/123456789/VATC?dateFrom=${LocalDate.now()}&dateTo=${LocalDate.now()}&includeClearedItems=true&includeStatisticalItems=true&includePaymentOnAccount=true&addRegimeTotalisation=false&addLockInformation=false&addPenaltyDetails=true&addPostedInterestDetails=true&addAccruingInterestDetails=true")
       val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails("123456789", LocalDate.now(), LocalDate.now()))
       result.isLeft shouldBe true
-      result.left.get.asInstanceOf[GetFinancialDetailsFailureResponse].status shouldBe Status.SERVICE_UNAVAILABLE
+      result.left.getOrElse(false).asInstanceOf[GetFinancialDetailsFailureResponse].status shouldBe Status.SERVICE_UNAVAILABLE
     }
 
     s"return a $GetFinancialDetailsFailureResponse when the response status is NOT FOUND (${Status.NOT_FOUND})" in new Setup {
@@ -76,7 +76,7 @@ class GetFinancialDetailsConnectorISpec extends IntegrationSpecCommonBase with E
       mockResponseForGetFinancialDetails(Status.NOT_FOUND, s"VRN/123456789/VATC?dateFrom=${LocalDate.now()}&dateTo=${LocalDate.now()}&includeClearedItems=true&includeStatisticalItems=true&includePaymentOnAccount=true&addRegimeTotalisation=false&addLockInformation=false&addPenaltyDetails=true&addPostedInterestDetails=true&addAccruingInterestDetails=true")
       val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails("123456789", LocalDate.now(), LocalDate.now()))
       result.isLeft shouldBe true
-      result.left.get.asInstanceOf[GetFinancialDetailsFailureResponse].status shouldBe Status.NOT_FOUND
+      result.left.getOrElse(false).asInstanceOf[GetFinancialDetailsFailureResponse].status shouldBe Status.NOT_FOUND
     }
 
     s"return a $GetFinancialDetailsFailureResponse when the response status is CONFLICT (${Status.CONFLICT})" in new Setup {
@@ -84,7 +84,7 @@ class GetFinancialDetailsConnectorISpec extends IntegrationSpecCommonBase with E
       mockResponseForGetFinancialDetails(Status.CONFLICT, s"VRN/123456789/VATC?dateFrom=${LocalDate.now()}&dateTo=${LocalDate.now()}&includeClearedItems=true&includeStatisticalItems=true&includePaymentOnAccount=true&addRegimeTotalisation=false&addLockInformation=false&addPenaltyDetails=true&addPostedInterestDetails=true&addAccruingInterestDetails=true")
       val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails("123456789", LocalDate.now(), LocalDate.now()))
       result.isLeft shouldBe true
-      result.left.get.asInstanceOf[GetFinancialDetailsFailureResponse].status shouldBe Status.CONFLICT
+      result.left.getOrElse(false).asInstanceOf[GetFinancialDetailsFailureResponse].status shouldBe Status.CONFLICT
     }
 
     s"return a $GetFinancialDetailsFailureResponse when the response status is UNPROCESSABLE ENTITY (${Status.UNPROCESSABLE_ENTITY})" in new Setup {
@@ -92,7 +92,7 @@ class GetFinancialDetailsConnectorISpec extends IntegrationSpecCommonBase with E
       mockResponseForGetFinancialDetails(Status.UNPROCESSABLE_ENTITY, s"VRN/123456789/VATC?dateFrom=${LocalDate.now()}&dateTo=${LocalDate.now()}&includeClearedItems=true&includeStatisticalItems=true&includePaymentOnAccount=true&addRegimeTotalisation=false&addLockInformation=false&addPenaltyDetails=true&addPostedInterestDetails=true&addAccruingInterestDetails=true")
       val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails("123456789", LocalDate.now(), LocalDate.now()))
       result.isLeft shouldBe true
-      result.left.get.asInstanceOf[GetFinancialDetailsFailureResponse].status shouldBe Status.UNPROCESSABLE_ENTITY
+      result.left.getOrElse(false).asInstanceOf[GetFinancialDetailsFailureResponse].status shouldBe Status.UNPROCESSABLE_ENTITY
     }
 
     s"return a $GetFinancialDetailsFailureResponse when the response status is BAD REQUEST (${Status.BAD_REQUEST})" in new Setup {
@@ -100,7 +100,7 @@ class GetFinancialDetailsConnectorISpec extends IntegrationSpecCommonBase with E
       mockResponseForGetFinancialDetails(Status.BAD_REQUEST, s"VRN/123456789/VATC?dateFrom=${LocalDate.now()}&dateTo=${LocalDate.now()}&includeClearedItems=true&includeStatisticalItems=true&includePaymentOnAccount=true&addRegimeTotalisation=false&addLockInformation=false&addPenaltyDetails=true&addPostedInterestDetails=true&addAccruingInterestDetails=true")
       val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails("123456789", LocalDate.now(), LocalDate.now()))
       result.isLeft shouldBe true
-      result.left.get.asInstanceOf[GetFinancialDetailsFailureResponse].status shouldBe Status.BAD_REQUEST
+      result.left.getOrElse(false).asInstanceOf[GetFinancialDetailsFailureResponse].status shouldBe Status.BAD_REQUEST
     }
 
     s"return a $GetFinancialDetailsFailureResponse when the response status is FORBIDDEN (${Status.FORBIDDEN})" in new Setup {
@@ -108,7 +108,7 @@ class GetFinancialDetailsConnectorISpec extends IntegrationSpecCommonBase with E
       mockResponseForGetFinancialDetails(Status.FORBIDDEN, s"VRN/123456789/VATC?dateFrom=${LocalDate.now()}&dateTo=${LocalDate.now()}&includeClearedItems=true&includeStatisticalItems=true&includePaymentOnAccount=true&addRegimeTotalisation=false&addLockInformation=false&addPenaltyDetails=true&addPostedInterestDetails=true&addAccruingInterestDetails=true")
       val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails("123456789", LocalDate.now(), LocalDate.now()))
       result.isLeft shouldBe true
-      result.left.get.asInstanceOf[GetFinancialDetailsFailureResponse].status shouldBe Status.FORBIDDEN
+      result.left.getOrElse(false).asInstanceOf[GetFinancialDetailsFailureResponse].status shouldBe Status.FORBIDDEN
     }
   }
 

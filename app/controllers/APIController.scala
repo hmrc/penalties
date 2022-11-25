@@ -69,6 +69,10 @@ class APIController @Inject()(auditService: AuditService,
               logger.error(s"[APIController][getSummaryDataForVRN] - 1812 call (VATVC/BTA API) returned invalid body - failed to parse penalty details response")
               InternalServerError(s"We were unable to parse penalty data.")
             }
+            case GetPenaltyDetailsParser.GetPenaltyDetailsNoContent => {
+              logger.error(s"[APIController][getSummaryDataForVRN] - 1812 call (VATVC/BTA API) returned no content")
+              InternalServerError(s"No content was return for VRN: $vrn")
+            }
           },
             success => {
               logger.info(s"[APIController][getSummaryDataForVRN] - 1812 call (VATVC/BTA API) returned 200 for VRN: $vrn")

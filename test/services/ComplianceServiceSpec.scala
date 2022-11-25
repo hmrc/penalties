@@ -44,7 +44,7 @@ class ComplianceServiceSpec extends SpecBase {
           .thenReturn(Future.successful(Left(CompliancePayloadFailureResponse(BAD_REQUEST))))
         val result: Either[Int, CompliancePayload] = await(service.getComplianceData("123456789", "2020-01-31", "2020-12-31"))
         result.isLeft shouldBe true
-        result.left.get shouldBe BAD_REQUEST
+        result.left.getOrElse(false) shouldBe BAD_REQUEST
       }
 
       s"the failure model returned is $CompliancePayloadNoData" in new Setup {
@@ -52,7 +52,7 @@ class ComplianceServiceSpec extends SpecBase {
           .thenReturn(Future.successful(Left(CompliancePayloadNoData)))
         val result: Either[Int, CompliancePayload] = await(service.getComplianceData("123456789", "2020-01-31", "2020-12-31"))
         result.isLeft shouldBe true
-        result.left.get shouldBe NOT_FOUND
+        result.left.getOrElse(false) shouldBe NOT_FOUND
       }
 
       s"the failure model returned is $CompliancePayloadMalformed" in new Setup {
@@ -60,7 +60,7 @@ class ComplianceServiceSpec extends SpecBase {
           .thenReturn(Future.successful(Left(CompliancePayloadMalformed)))
         val result: Either[Int, CompliancePayload] = await(service.getComplianceData("123456789", "2020-01-31", "2020-12-31"))
         result.isLeft shouldBe true
-        result.left.get shouldBe INTERNAL_SERVER_ERROR
+        result.left.getOrElse(false) shouldBe INTERNAL_SERVER_ERROR
       }
     }
   }

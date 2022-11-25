@@ -41,7 +41,8 @@ class GetFinancialDetailsServiceSpec extends SpecBase with FeatureSwitching {
   val mockGetFinancialDetailsConnector: GetFinancialDetailsConnector = mock(classOf[GetFinancialDetailsConnector])
   class Setup {
     val service = new GetFinancialDetailsService(mockGetFinancialDetailsConnector)
-    reset(mockGetFinancialDetailsConnector, config)
+    reset(mockGetFinancialDetailsConnector)
+    reset(config)
     sys.props -= TIME_MACHINE_NOW
   }
 
@@ -63,7 +64,7 @@ class GetFinancialDetailsServiceSpec extends SpecBase with FeatureSwitching {
         .thenReturn(Future.successful(Right(GetFinancialDetailsSuccessResponse(mockGetFinancialDetailsResponseAsModel))))
       val result: GetFinancialDetailsResponse = await(service.getDataFromFinancialServiceForVATVCN("123456789"))
       result.isRight shouldBe true
-      result.right.get shouldBe GetFinancialDetailsSuccessResponse(mockGetFinancialDetailsResponseAsModel)
+      result.toOption.get shouldBe GetFinancialDetailsSuccessResponse(mockGetFinancialDetailsResponseAsModel)
     }
 
     s"call the connector and return a $GetFinancialDetailsSuccessResponse when the request is successful (with the time machine date)" in new Setup {
@@ -74,7 +75,7 @@ class GetFinancialDetailsServiceSpec extends SpecBase with FeatureSwitching {
         .thenReturn(Future.successful(Right(GetFinancialDetailsSuccessResponse(mockGetFinancialDetailsResponseAsModel))))
       val result: GetFinancialDetailsResponse = await(service.getDataFromFinancialServiceForVATVCN("123456789"))
       result.isRight shouldBe true
-      result.right.get shouldBe GetFinancialDetailsSuccessResponse(mockGetFinancialDetailsResponseAsModel)
+      result.toOption.get shouldBe GetFinancialDetailsSuccessResponse(mockGetFinancialDetailsResponseAsModel)
     }
 
     s"call the connector and return $GetFinancialDetailsNoContent when the response body contains NO_DATA_FOUND" in new Setup {
@@ -86,7 +87,7 @@ class GetFinancialDetailsServiceSpec extends SpecBase with FeatureSwitching {
         .thenReturn(Future.successful(Left(GetFinancialDetailsNoContent)))
       val result: GetFinancialDetailsResponse = await(service.getDataFromFinancialServiceForVATVCN("123456789"))
       result.isLeft shouldBe true
-      result.left.get shouldBe GetFinancialDetailsNoContent
+      result.left.getOrElse(false) shouldBe GetFinancialDetailsNoContent
     }
 
     s"call the connector and return $GetFinancialDetailsMalformed when the response body is malformed" in new Setup {
@@ -98,7 +99,7 @@ class GetFinancialDetailsServiceSpec extends SpecBase with FeatureSwitching {
         .thenReturn(Future.successful(Left(GetFinancialDetailsMalformed)))
       val result: GetFinancialDetailsResponse = await(service.getDataFromFinancialServiceForVATVCN("123456789"))
       result.isLeft shouldBe true
-      result.left.get shouldBe GetFinancialDetailsMalformed
+      result.left.getOrElse(false) shouldBe GetFinancialDetailsMalformed
     }
 
     s"call the connector and return $GetFinancialDetailsFailureResponse when an unknown status is returned" in new Setup {
@@ -110,7 +111,7 @@ class GetFinancialDetailsServiceSpec extends SpecBase with FeatureSwitching {
         .thenReturn(Future.successful(Left(GetFinancialDetailsFailureResponse(IM_A_TEAPOT))))
       val result: GetFinancialDetailsResponse = await(service.getDataFromFinancialServiceForVATVCN("123456789"))
       result.isLeft shouldBe true
-      result.left.get shouldBe GetFinancialDetailsFailureResponse(IM_A_TEAPOT)
+      result.left.getOrElse(false) shouldBe GetFinancialDetailsFailureResponse(IM_A_TEAPOT)
     }
 
     s"throw an exception when something unknown has happened" in new Setup {
