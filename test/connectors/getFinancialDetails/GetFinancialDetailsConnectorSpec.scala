@@ -17,13 +17,12 @@
 package connectors.getFinancialDetails
 
 import java.time.LocalDate
-
 import base.{LogCapturing, SpecBase}
 import config.AppConfig
 import connectors.parsers.getFinancialDetails.GetFinancialDetailsParser._
 import models.getFinancialDetails
 import models.getFinancialDetails.FinancialDetails
-import org.mockito.ArgumentMatchers
+import org.mockito.Matchers
 import org.mockito.Mockito._
 import play.api.http.Status
 import play.api.libs.json.Json
@@ -49,10 +48,10 @@ class GetFinancialDetailsConnectorSpec extends SpecBase with LogCapturing {
     reset(mockDateHelper)
 
     val connector = new GetFinancialDetailsConnector(mockHttpClient, mockAppConfig)
-    when(mockAppConfig.getFinancialDetailsUrl(ArgumentMatchers.any())).thenReturn("/VRN/123456789/VATC")
+    when(mockAppConfig.getFinancialDetailsUrl(Matchers.any())).thenReturn("/VRN/123456789/VATC")
     when(mockAppConfig.eiOutboundBearerToken).thenReturn("1234")
     when(mockAppConfig.eisEnvironment).thenReturn("asdf")
-    when(mockAppConfig.queryParametersForGetFinancialDetail(ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn("?foo=bar")
+    when(mockAppConfig.queryParametersForGetFinancialDetail(Matchers.any(), Matchers.any())).thenReturn("?foo=bar")
   }
 
   val mockGetFinancialDetailsModelAPI1811: FinancialDetails = FinancialDetails(
@@ -65,12 +64,12 @@ class GetFinancialDetailsConnectorSpec extends SpecBase with LogCapturing {
 
   "getFinancialDetails" should {
     "return a 200 when the call succeeds" in new Setup {
-      when(mockHttpClient.GET[GetFinancialDetailsResponse](ArgumentMatchers.eq("/VRN/123456789/VATC?foo=bar"),
-        ArgumentMatchers.any(),
-        ArgumentMatchers.any())
-        (ArgumentMatchers.any(),
-          ArgumentMatchers.any(),
-          ArgumentMatchers.any()))
+      when(mockHttpClient.GET[GetFinancialDetailsResponse](Matchers.eq("/VRN/123456789/VATC?foo=bar"),
+        Matchers.any(),
+        Matchers.any())
+        (Matchers.any(),
+          Matchers.any(),
+          Matchers.any()))
         .thenReturn(Future.successful(Right(GetFinancialDetailsSuccessResponse(mockGetFinancialDetailsModelAPI1811))))
 
       val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails("123456789", LocalDate.of(2022, 1, 1), LocalDate.of(2022, 1, 1))(HeaderCarrier()))
@@ -78,12 +77,12 @@ class GetFinancialDetailsConnectorSpec extends SpecBase with LogCapturing {
     }
 
     s"return a 404 when the call fails for Not Found" in new Setup {
-      when(mockHttpClient.GET[GetFinancialDetailsResponse](ArgumentMatchers.eq("/VRN/123456789/VATC?foo=bar"),
-        ArgumentMatchers.any(),
-        ArgumentMatchers.any())
-        (ArgumentMatchers.any(),
-          ArgumentMatchers.any(),
-          ArgumentMatchers.any()))
+      when(mockHttpClient.GET[GetFinancialDetailsResponse](Matchers.eq("/VRN/123456789/VATC?foo=bar"),
+        Matchers.any(),
+        Matchers.any())
+        (Matchers.any(),
+          Matchers.any(),
+          Matchers.any()))
         .thenReturn(Future.successful(Left(GetFinancialDetailsFailureResponse(Status.NOT_FOUND))))
 
       val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails("123456789", LocalDate.of(2022, 1, 1), LocalDate.of(2022, 1, 1))(HeaderCarrier()))
@@ -91,12 +90,12 @@ class GetFinancialDetailsConnectorSpec extends SpecBase with LogCapturing {
     }
 
     s"return a 400 when the call fails for Bad Request" in new Setup {
-      when(mockHttpClient.GET[GetFinancialDetailsResponse](ArgumentMatchers.eq("/VRN/123456789/VATC?foo=bar"),
-        ArgumentMatchers.any(),
-        ArgumentMatchers.any())
-        (ArgumentMatchers.any(),
-          ArgumentMatchers.any(),
-          ArgumentMatchers.any()))
+      when(mockHttpClient.GET[GetFinancialDetailsResponse](Matchers.eq("/VRN/123456789/VATC?foo=bar"),
+        Matchers.any(),
+        Matchers.any())
+        (Matchers.any(),
+          Matchers.any(),
+          Matchers.any()))
         .thenReturn(Future.successful(Left(GetFinancialDetailsFailureResponse(Status.BAD_REQUEST))))
 
       val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails("123456789", LocalDate.of(2022, 1, 1), LocalDate.of(2022, 1, 1))(HeaderCarrier()))
@@ -104,12 +103,12 @@ class GetFinancialDetailsConnectorSpec extends SpecBase with LogCapturing {
     }
 
     s"return a 409 when the call fails for Conflict" in new Setup {
-      when(mockHttpClient.GET[GetFinancialDetailsResponse](ArgumentMatchers.eq("/VRN/123456789/VATC?foo=bar"),
-        ArgumentMatchers.any(),
-        ArgumentMatchers.any())
-        (ArgumentMatchers.any(),
-          ArgumentMatchers.any(),
-          ArgumentMatchers.any()))
+      when(mockHttpClient.GET[GetFinancialDetailsResponse](Matchers.eq("/VRN/123456789/VATC?foo=bar"),
+        Matchers.any(),
+        Matchers.any())
+        (Matchers.any(),
+          Matchers.any(),
+          Matchers.any()))
         .thenReturn(Future.successful(Left(GetFinancialDetailsFailureResponse(Status.CONFLICT))))
 
       val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails("123456789", LocalDate.of(2022, 1, 1), LocalDate.of(2022, 1, 1))(HeaderCarrier()))
@@ -117,12 +116,12 @@ class GetFinancialDetailsConnectorSpec extends SpecBase with LogCapturing {
     }
 
     s"return a 422 when the call fails for Unprocessable Entity" in new Setup {
-      when(mockHttpClient.GET[GetFinancialDetailsResponse](ArgumentMatchers.eq("/VRN/123456789/VATC?foo=bar"),
-        ArgumentMatchers.any(),
-        ArgumentMatchers.any())
-        (ArgumentMatchers.any(),
-          ArgumentMatchers.any(),
-          ArgumentMatchers.any()))
+      when(mockHttpClient.GET[GetFinancialDetailsResponse](Matchers.eq("/VRN/123456789/VATC?foo=bar"),
+        Matchers.any(),
+        Matchers.any())
+        (Matchers.any(),
+          Matchers.any(),
+          Matchers.any()))
         .thenReturn(Future.successful(Left(GetFinancialDetailsFailureResponse(Status.UNPROCESSABLE_ENTITY))))
 
       val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails("123456789", LocalDate.of(2022, 1, 1), LocalDate.of(2022, 1, 1))(HeaderCarrier()))
@@ -130,12 +129,12 @@ class GetFinancialDetailsConnectorSpec extends SpecBase with LogCapturing {
     }
 
     s"return a 500 when the call fails for Internal Server Error" in new Setup {
-      when(mockHttpClient.GET[GetFinancialDetailsResponse](ArgumentMatchers.eq("/VRN/123456789/VATC?foo=bar"),
-        ArgumentMatchers.any(),
-        ArgumentMatchers.any())
-        (ArgumentMatchers.any(),
-          ArgumentMatchers.any(),
-          ArgumentMatchers.any()))
+      when(mockHttpClient.GET[GetFinancialDetailsResponse](Matchers.eq("/VRN/123456789/VATC?foo=bar"),
+        Matchers.any(),
+        Matchers.any())
+        (Matchers.any(),
+          Matchers.any(),
+          Matchers.any()))
         .thenReturn(Future.successful(Left(GetFinancialDetailsFailureResponse(Status.INTERNAL_SERVER_ERROR))))
 
       val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails("123456789", LocalDate.of(2022, 1, 1), LocalDate.of(2022, 1, 1))(HeaderCarrier()))
@@ -143,12 +142,12 @@ class GetFinancialDetailsConnectorSpec extends SpecBase with LogCapturing {
     }
 
     s"return a 403 when the call fails" in new Setup {
-      when(mockHttpClient.GET[GetFinancialDetailsResponse](ArgumentMatchers.eq("/VRN/123456789/VATC?foo=bar"),
-        ArgumentMatchers.any(),
-        ArgumentMatchers.any())
-        (ArgumentMatchers.any(),
-          ArgumentMatchers.any(),
-          ArgumentMatchers.any()))
+      when(mockHttpClient.GET[GetFinancialDetailsResponse](Matchers.eq("/VRN/123456789/VATC?foo=bar"),
+        Matchers.any(),
+        Matchers.any())
+        (Matchers.any(),
+          Matchers.any(),
+          Matchers.any()))
         .thenReturn(Future.successful(Left(GetFinancialDetailsFailureResponse(Status.FORBIDDEN))))
 
       val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails("123456789", LocalDate.of(2022, 1, 1), LocalDate.of(2022, 1, 1))(HeaderCarrier()))
@@ -156,12 +155,12 @@ class GetFinancialDetailsConnectorSpec extends SpecBase with LogCapturing {
     }
 
     s"return a 503 when the call fails" in new Setup {
-      when(mockHttpClient.GET[GetFinancialDetailsResponse](ArgumentMatchers.eq("/VRN/123456789/VATC?foo=bar"),
-        ArgumentMatchers.any(),
-        ArgumentMatchers.any())
-        (ArgumentMatchers.any(),
-          ArgumentMatchers.any(),
-          ArgumentMatchers.any()))
+      when(mockHttpClient.GET[GetFinancialDetailsResponse](Matchers.eq("/VRN/123456789/VATC?foo=bar"),
+        Matchers.any(),
+        Matchers.any())
+        (Matchers.any(),
+          Matchers.any(),
+          Matchers.any()))
         .thenReturn(Future.successful(Left(GetFinancialDetailsFailureResponse(Status.SERVICE_UNAVAILABLE))))
 
       val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails("123456789", LocalDate.of(2022, 1, 1), LocalDate.of(2022, 1, 1))(HeaderCarrier()))
@@ -169,12 +168,12 @@ class GetFinancialDetailsConnectorSpec extends SpecBase with LogCapturing {
     }
 
     "return a 500 when the call fails due to an UpstreamErrorResponse(5xx) exception" in new Setup {
-      when(mockHttpClient.GET[HttpResponse](ArgumentMatchers.eq(s"/VRN/123456789/VATC?foo=bar"),
-        ArgumentMatchers.any(),
-        ArgumentMatchers.any())
-        (ArgumentMatchers.any(),
-          ArgumentMatchers.any(),
-          ArgumentMatchers.any()))
+      when(mockHttpClient.GET[HttpResponse](Matchers.eq(s"/VRN/123456789/VATC?foo=bar"),
+        Matchers.any(),
+        Matchers.any())
+        (Matchers.any(),
+          Matchers.any(),
+          Matchers.any()))
         .thenReturn(Future.failed(UpstreamErrorResponse.apply("Something weird happened", INTERNAL_SERVER_ERROR)))
 
       withCaptureOfLoggingFrom(logger) {
@@ -187,12 +186,12 @@ class GetFinancialDetailsConnectorSpec extends SpecBase with LogCapturing {
     }
 
     "return a 400 when the call fails due to an UpstreamErrorResponse(4xx) exception" in new Setup {
-      when(mockHttpClient.GET[HttpResponse](ArgumentMatchers.eq(s"/VRN/123456789/VATC?foo=bar"),
-        ArgumentMatchers.any(),
-        ArgumentMatchers.any())
-        (ArgumentMatchers.any(),
-          ArgumentMatchers.any(),
-          ArgumentMatchers.any()))
+      when(mockHttpClient.GET[HttpResponse](Matchers.eq(s"/VRN/123456789/VATC?foo=bar"),
+        Matchers.any(),
+        Matchers.any())
+        (Matchers.any(),
+          Matchers.any(),
+          Matchers.any()))
         .thenReturn(Future.failed(UpstreamErrorResponse.apply("Something weird happened", BAD_REQUEST)))
 
       withCaptureOfLoggingFrom(logger) {
@@ -205,12 +204,12 @@ class GetFinancialDetailsConnectorSpec extends SpecBase with LogCapturing {
     }
 
     "return a 500 when the call fails due to an unexpected exception" in new Setup {
-      when(mockHttpClient.GET[GetFinancialDetailsResponse](ArgumentMatchers.eq("/VRN/123456789/VATC?foo=bar"),
-        ArgumentMatchers.any(),
-        ArgumentMatchers.any())
-        (ArgumentMatchers.any(),
-          ArgumentMatchers.any(),
-          ArgumentMatchers.any()))
+      when(mockHttpClient.GET[GetFinancialDetailsResponse](Matchers.eq("/VRN/123456789/VATC?foo=bar"),
+        Matchers.any(),
+        Matchers.any())
+        (Matchers.any(),
+          Matchers.any(),
+          Matchers.any()))
         .thenReturn(Future.failed(new Exception("Something weird happened")))
 
       withCaptureOfLoggingFrom(logger) {
@@ -231,12 +230,12 @@ class GetFinancialDetailsConnectorSpec extends SpecBase with LogCapturing {
       s"&includeStatisticalItems=true&includePaymentOnAccount=true&addLockInformation=true&addPenaltyDetails=true" +
       s"&addPostedInterestDetails=true"
     "return a 200 when the call succeeds" in new Setup {
-      when(mockHttpClient.GET[HttpResponse](ArgumentMatchers.eq(s"/VRN/123456789/VATC$queryParams"),
-        ArgumentMatchers.any(),
-        ArgumentMatchers.any())
-        (ArgumentMatchers.any(),
-          ArgumentMatchers.any(),
-          ArgumentMatchers.any()))
+      when(mockHttpClient.GET[HttpResponse](Matchers.eq(s"/VRN/123456789/VATC$queryParams"),
+        Matchers.any(),
+        Matchers.any())
+        (Matchers.any(),
+          Matchers.any(),
+          Matchers.any()))
         .thenReturn(Future.successful(HttpResponse.apply(status = Status.OK, json = Json.toJson(mockGetFinancialDetailsModelAPI1811), headers = Map.empty)))
 
       val result: HttpResponse = await(connector.getFinancialDetailsForAPI(
@@ -260,12 +259,12 @@ class GetFinancialDetailsConnectorSpec extends SpecBase with LogCapturing {
     }
 
     "return a 200 when the call succeeds - with some missing fields" in new Setup {
-      when(mockHttpClient.GET[HttpResponse](ArgumentMatchers.eq(s"/VRN/123456789/VATC$queryParamsSomeMissingFields"),
-        ArgumentMatchers.any(),
-        ArgumentMatchers.any())
-        (ArgumentMatchers.any(),
-          ArgumentMatchers.any(),
-          ArgumentMatchers.any()))
+      when(mockHttpClient.GET[HttpResponse](Matchers.eq(s"/VRN/123456789/VATC$queryParamsSomeMissingFields"),
+        Matchers.any(),
+        Matchers.any())
+        (Matchers.any(),
+          Matchers.any(),
+          Matchers.any()))
         .thenReturn(Future.successful(HttpResponse.apply(status = Status.OK, json = Json.toJson(mockGetFinancialDetailsModelAPI1811), headers =  Map.empty)))
 
       val result: HttpResponse = await(connector.getFinancialDetailsForAPI(
@@ -289,12 +288,12 @@ class GetFinancialDetailsConnectorSpec extends SpecBase with LogCapturing {
     }
 
     s"return a 403 when the call fails for Not Found (for 4xx errors)" in new Setup {
-      when(mockHttpClient.GET[HttpResponse](ArgumentMatchers.eq(s"/VRN/123456789/VATC$queryParams"),
-        ArgumentMatchers.any(),
-        ArgumentMatchers.any())
-        (ArgumentMatchers.any(),
-          ArgumentMatchers.any(),
-          ArgumentMatchers.any()))
+      when(mockHttpClient.GET[HttpResponse](Matchers.eq(s"/VRN/123456789/VATC$queryParams"),
+        Matchers.any(),
+        Matchers.any())
+        (Matchers.any(),
+          Matchers.any(),
+          Matchers.any()))
         .thenReturn(Future.failed(UpstreamErrorResponse.apply("You shall not pass", Status.FORBIDDEN)))
 
       val result: HttpResponse = await(connector.getFinancialDetailsForAPI(
@@ -317,12 +316,12 @@ class GetFinancialDetailsConnectorSpec extends SpecBase with LogCapturing {
     }
 
     s"return a 500 when the call fails for Internal Server Error (for 5xx errors)" in new Setup {
-      when(mockHttpClient.GET[HttpResponse](ArgumentMatchers.eq(s"/VRN/123456789/VATC$queryParams"),
-        ArgumentMatchers.any(),
-        ArgumentMatchers.any())
-        (ArgumentMatchers.any(),
-          ArgumentMatchers.any(),
-          ArgumentMatchers.any()))
+      when(mockHttpClient.GET[HttpResponse](Matchers.eq(s"/VRN/123456789/VATC$queryParams"),
+        Matchers.any(),
+        Matchers.any())
+        (Matchers.any(),
+          Matchers.any(),
+          Matchers.any()))
         .thenReturn(Future.failed(UpstreamErrorResponse.apply("Oops :(", Status.INTERNAL_SERVER_ERROR)))
 
       val result: HttpResponse = await(connector.getFinancialDetailsForAPI(
@@ -345,12 +344,12 @@ class GetFinancialDetailsConnectorSpec extends SpecBase with LogCapturing {
     }
 
     "return a 500 when the call fails due to an unexpected exception" in new Setup {
-      when(mockHttpClient.GET[HttpResponse](ArgumentMatchers.eq(s"/VRN/123456789/VATC$queryParams"),
-        ArgumentMatchers.any(),
-        ArgumentMatchers.any())
-        (ArgumentMatchers.any(),
-          ArgumentMatchers.any(),
-          ArgumentMatchers.any()))
+      when(mockHttpClient.GET[HttpResponse](Matchers.eq(s"/VRN/123456789/VATC$queryParams"),
+        Matchers.any(),
+        Matchers.any())
+        (Matchers.any(),
+          Matchers.any(),
+          Matchers.any()))
         .thenReturn(Future.failed(new Exception("Something weird happened")))
 
       withCaptureOfLoggingFrom(logger) {

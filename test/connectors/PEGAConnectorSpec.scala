@@ -21,14 +21,14 @@ import config.featureSwitches.{CallPEGA, FeatureSwitching}
 import connectors.parsers.AppealsParser.{AppealSubmissionResponse, UnexpectedFailure}
 import models.appeals.{AgentDetails, AppealSubmission, CrimeAppealInformation}
 import org.mockito.Mockito._
-import org.mockito.{ArgumentCaptor, ArgumentMatchers}
+import org.mockito.{ArgumentCaptor, Matchers}
 import play.api.Configuration
 import play.api.test.Helpers._
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, UpstreamErrorResponse}
 import utils.Logger.logger
 import utils.PagerDutyHelper.PagerDutyKeys
-import java.time.LocalDateTime
 
+import java.time.LocalDateTime
 import scala.concurrent.{ExecutionContext, Future}
 
 class PEGAConnectorSpec extends SpecBase with FeatureSwitching with LogCapturing {
@@ -50,13 +50,13 @@ class PEGAConnectorSpec extends SpecBase with FeatureSwitching with LogCapturing
       enableFeatureSwitch(CallPEGA)
       val argumentCaptorOtherHeaders: ArgumentCaptor[Seq[(String, String)]] = ArgumentCaptor.forClass(classOf[Seq[(String, String)]])
       when(mockHttpClient.POST[AppealSubmission, AppealSubmissionResponse](
-        ArgumentMatchers.any(),
-        ArgumentMatchers.any(),
+        Matchers.any(),
+        Matchers.any(),
         argumentCaptorOtherHeaders.capture()
-      )(ArgumentMatchers.any(),
-        ArgumentMatchers.any(),
-        ArgumentMatchers.any(),
-        ArgumentMatchers.any()))
+      )(Matchers.any(),
+        Matchers.any(),
+        Matchers.any(),
+        Matchers.any()))
         .thenReturn(Future.successful(Right(appealResponseModel)))
       val modelToSend: AppealSubmission = AppealSubmission(
         taxRegime = "VAT",
@@ -88,13 +88,13 @@ class PEGAConnectorSpec extends SpecBase with FeatureSwitching with LogCapturing
 
     "return the response of the call for LPP" in new Setup {
       when(mockHttpClient.POST[AppealSubmission, AppealSubmissionResponse](
-        ArgumentMatchers.any(),
-        ArgumentMatchers.any(),
-        ArgumentMatchers.any()
-      )(ArgumentMatchers.any(),
-        ArgumentMatchers.any(),
-        ArgumentMatchers.any(),
-        ArgumentMatchers.any()))
+        Matchers.any(),
+        Matchers.any(),
+        Matchers.any()
+      )(Matchers.any(),
+        Matchers.any(),
+        Matchers.any(),
+        Matchers.any()))
         .thenReturn(Future.successful(Right(appealResponseModel)))
       val modelToSend: AppealSubmission = AppealSubmission(
         taxRegime = "VAT",
@@ -122,13 +122,13 @@ class PEGAConnectorSpec extends SpecBase with FeatureSwitching with LogCapturing
 
     "returns a 4xx response for a UpstreamErrorResponse(4xx) exception" in new Setup {
       when(mockHttpClient.POST[AppealSubmission, AppealSubmissionResponse](
-        ArgumentMatchers.any(),
-        ArgumentMatchers.any(),
-        ArgumentMatchers.any()
-      )(ArgumentMatchers.any(),
-        ArgumentMatchers.any(),
-        ArgumentMatchers.any(),
-        ArgumentMatchers.any()))
+        Matchers.any(),
+        Matchers.any(),
+        Matchers.any()
+      )(Matchers.any(),
+        Matchers.any(),
+        Matchers.any(),
+        Matchers.any()))
         .thenReturn(Future.failed(UpstreamErrorResponse.apply("", BAD_REQUEST)))
       val modelToSend: AppealSubmission = AppealSubmission(
         taxRegime = "VAT",
@@ -161,13 +161,13 @@ class PEGAConnectorSpec extends SpecBase with FeatureSwitching with LogCapturing
 
     "returns a 5xx response for a UpstreamErrorResponse(5xx) exception" in new Setup {
       when(mockHttpClient.POST[AppealSubmission, AppealSubmissionResponse](
-        ArgumentMatchers.any(),
-        ArgumentMatchers.any(),
-        ArgumentMatchers.any()
-      )(ArgumentMatchers.any(),
-        ArgumentMatchers.any(),
-        ArgumentMatchers.any(),
-        ArgumentMatchers.any()))
+        Matchers.any(),
+        Matchers.any(),
+        Matchers.any()
+      )(Matchers.any(),
+        Matchers.any(),
+        Matchers.any(),
+        Matchers.any()))
         .thenReturn(Future.failed(UpstreamErrorResponse.apply("", INTERNAL_SERVER_ERROR)))
       val modelToSend: AppealSubmission = AppealSubmission(
         taxRegime = "VAT",
@@ -200,13 +200,13 @@ class PEGAConnectorSpec extends SpecBase with FeatureSwitching with LogCapturing
 
     "returns a 500 response for an unknown exception" in new Setup {
       when(mockHttpClient.POST[AppealSubmission, AppealSubmissionResponse](
-        ArgumentMatchers.any(),
-        ArgumentMatchers.any(),
-        ArgumentMatchers.any()
-      )(ArgumentMatchers.any(),
-        ArgumentMatchers.any(),
-        ArgumentMatchers.any(),
-        ArgumentMatchers.any()))
+        Matchers.any(),
+        Matchers.any(),
+        Matchers.any()
+      )(Matchers.any(),
+        Matchers.any(),
+        Matchers.any(),
+        Matchers.any()))
         .thenReturn(Future.failed(new Exception("failed")))
       val modelToSend: AppealSubmission = AppealSubmission(
         taxRegime = "VAT",

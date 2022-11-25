@@ -23,14 +23,13 @@ import models.getPenaltyDetails.appealInfo.{AppealInformationType, AppealLevelEn
 import models.getPenaltyDetails.{GetPenaltyDetails, Totalisations}
 import models.getPenaltyDetails.latePayment.{LPPDetails, LPPDetailsMetadata, LPPPenaltyCategoryEnum, LPPPenaltyStatusEnum, LatePaymentPenalty, TimeToPay}
 import models.getPenaltyDetails.lateSubmission.{ExpiryReasonEnum, LSPDetails, LSPPenaltyCategoryEnum, LSPPenaltyStatusEnum, LSPSummary, LateSubmission, LateSubmissionPenalty, TaxReturnStatusEnum}
-import org.mockito.ArgumentMatchers.any
+import org.mockito.Matchers
+import org.mockito.Matchers.any
 import org.mockito.Mockito.{mock, reset, when}
 import play.api.test.Helpers.{IM_A_TEAPOT, await, defaultAwaitTimeout}
 import uk.gov.hmrc.http.HeaderCarrier
+
 import java.time.LocalDate
-
-import org.mockito.ArgumentMatchers
-
 import scala.concurrent.{ExecutionContext, Future}
 
 class GetPenaltyDetailsServiceSpec extends SpecBase {
@@ -134,7 +133,7 @@ class GetPenaltyDetailsServiceSpec extends SpecBase {
     )
 
     s"call the connector and return a $GetPenaltyDetailsSuccessResponse when the request is successful" in new Setup {
-      when(mockGetPenaltyDetailsConnector.getPenaltyDetails(ArgumentMatchers.eq("123456789"))(any()))
+      when(mockGetPenaltyDetailsConnector.getPenaltyDetails(Matchers.eq("123456789"))(any()))
         .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(mockGetPenaltyDetailsResponseAsModel))))
 
       val result: GetPenaltyDetailsResponse = await(service.getDataFromPenaltyServiceForVATCVRN("123456789"))
@@ -143,7 +142,7 @@ class GetPenaltyDetailsServiceSpec extends SpecBase {
     }
 
     s"return $GetPenaltyDetailsMalformed when the response body is malformed" in new Setup {
-      when(mockGetPenaltyDetailsConnector.getPenaltyDetails(ArgumentMatchers.eq("123456789"))(any()))
+      when(mockGetPenaltyDetailsConnector.getPenaltyDetails(Matchers.eq("123456789"))(any()))
         .thenReturn(Future.successful(Left(GetPenaltyDetailsMalformed)))
 
       val result: GetPenaltyDetailsResponse = await(service.getDataFromPenaltyServiceForVATCVRN("123456789"))
@@ -152,7 +151,7 @@ class GetPenaltyDetailsServiceSpec extends SpecBase {
     }
 
     s"return $GetPenaltyDetailsNoContent when the response body contains NO_DATA_FOUND" in new Setup {
-      when(mockGetPenaltyDetailsConnector.getPenaltyDetails(ArgumentMatchers.eq("123456789"))(any()))
+      when(mockGetPenaltyDetailsConnector.getPenaltyDetails(Matchers.eq("123456789"))(any()))
         .thenReturn(Future.successful(Left(GetPenaltyDetailsNoContent)))
 
       val result: GetPenaltyDetailsResponse = await(service.getDataFromPenaltyServiceForVATCVRN("123456789"))
@@ -161,7 +160,7 @@ class GetPenaltyDetailsServiceSpec extends SpecBase {
     }
 
     s"return $GetPenaltyDetailsFailureResponse when the connector receives an unmatched status code" in new Setup {
-      when(mockGetPenaltyDetailsConnector.getPenaltyDetails(ArgumentMatchers.eq("123456789"))(any()))
+      when(mockGetPenaltyDetailsConnector.getPenaltyDetails(Matchers.eq("123456789"))(any()))
         .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(IM_A_TEAPOT))))
 
       val result: GetPenaltyDetailsResponse = await(service.getDataFromPenaltyServiceForVATCVRN("123456789"))
@@ -170,7 +169,7 @@ class GetPenaltyDetailsServiceSpec extends SpecBase {
     }
 
     s"throw an exception when something unknown has happened" in new Setup {
-      when(mockGetPenaltyDetailsConnector.getPenaltyDetails(ArgumentMatchers.eq("123456789"))(any()))
+      when(mockGetPenaltyDetailsConnector.getPenaltyDetails(Matchers.eq("123456789"))(any()))
         .thenReturn(Future.failed(new Exception("Something has gone wrong.")))
 
       val result: Exception = intercept[Exception](await(service.getDataFromPenaltyServiceForVATCVRN("123456789")))

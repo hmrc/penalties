@@ -16,13 +16,12 @@
 
 package config.featureSwitches
 
-import java.time.LocalDate
-
 import base.SpecBase
-import org.mockito.ArgumentMatchers
+import org.mockito.Matchers.any
 import org.mockito.Mockito.{mock, reset, when}
 import play.api.Configuration
 
+import java.time.LocalDate
 import scala.language.postfixOps
 
 class FeatureSwitchSpec extends SpecBase {
@@ -191,21 +190,21 @@ class FeatureSwitchSpec extends SpecBase {
 
     s"get the date from config when the key value exists and is non-empty" in new Setup {
       (sys.props get featureSwitching.TIME_MACHINE_NOW) shouldBe None
-      when(mockConfig.getOptional[String](ArgumentMatchers.any())(ArgumentMatchers.any()))
+      when(mockConfig.getOptional[String](any())(any()))
         .thenReturn(Some(dateNowMinus1Day.toString))
       featureSwitching.getTimeMachineDate shouldBe dateNowMinus1Day
     }
 
     s"get the date from the system when it does not exist in properties nor in config (value empty)" in new Setup {
       (sys.props get featureSwitching.TIME_MACHINE_NOW) shouldBe None
-      when(mockConfig.getOptional[String](ArgumentMatchers.any())(ArgumentMatchers.any()))
+      when(mockConfig.getOptional[String](any())(any()))
         .thenReturn(Some(""))
       featureSwitching.getTimeMachineDate shouldBe LocalDate.now()
     }
 
     s"get the date from the system when it does not exist in properties nor in config (kv not present)" in new Setup {
       (sys.props get featureSwitching.TIME_MACHINE_NOW) shouldBe None
-      when(mockConfig.getOptional[String](ArgumentMatchers.any())(ArgumentMatchers.any()))
+      when(mockConfig.getOptional[String](any())(any()))
         .thenReturn(None)
       featureSwitching.getTimeMachineDate shouldBe LocalDate.now()
     }
