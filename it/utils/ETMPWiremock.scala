@@ -133,7 +133,8 @@ trait ETMPWiremock {
 
   val getFinancialDetailsAsJson: JsValue = Json.parse(
     """
-      {
+    | {
+    | "financialDetails":{
       |  "totalisation": {
       |    "regimeTotalisation": {
       |      "totalAccountOverdue": "1000.0",
@@ -223,6 +224,7 @@ trait ETMPWiremock {
       |      ]
       |    }
       |  ]
+      |}
       |}
       |""".stripMargin
   )

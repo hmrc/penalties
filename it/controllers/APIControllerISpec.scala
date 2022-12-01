@@ -194,6 +194,7 @@ class APIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock wit
       "the get Financial Details call succeeds" in {
         val sampleAPI1811Response = Json.parse(
           """
+            | { "financialDetails":
             {
             |  "totalisation": {
             |    "regimeTotalisation": {
@@ -284,6 +285,7 @@ class APIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock wit
             |      ]
             |    }
             |  ]
+            |}
             |}""".stripMargin)
         enableFeatureSwitch(CallAPI1811ETMP)
         mockResponseForGetFinancialDetails(Status.OK, s"VRN/123456789/VATC?searchType=CHGREF&searchItem=XC00178236592&dateType=BILLING&dateFrom=2020-10-03&dateTo=2021-07-12&includeClearedItems=false" +
