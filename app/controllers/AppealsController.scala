@@ -198,7 +198,7 @@ class AppealsController @Inject()(val appConfig: AppConfig,
         upload.uploadDetails.flatMap { details =>
           upload.uploadFields.map(
             fields => {
-              val uploadAlgorithm = fields("x-amz-algorithm")
+              val uploadAlgorithm = fields("SHA-256")
               SDESNotification(
                 informationType = appConfig.SDESNotificationInfoType,
                 file = SDESNotificationFile(

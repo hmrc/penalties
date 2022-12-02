@@ -748,7 +748,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
           |                 },
           |                 "uploadFields": {
           |                     "key": "abcxyz",
-          |                     "x-amz-algorithm": "md5"
+          |                     "SHA-256": "md5"
           |                 },
           |                 "lastUpdated":"2018-04-24T09:30:00"
           |               }
@@ -805,7 +805,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
           |                 },
           |                 "uploadFields": {
           |                     "key": "abcxyz",
-          |                     "x-amz-algorithm": "md5"
+          |                     "SHA-256": "md5"
           |                 },
           |                 "lastUpdated":"2018-04-24T09:30:00"
           |               }
@@ -878,7 +878,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
           |                 },
           |                 "uploadFields": {
           |                     "key": "abcxyz",
-          |                     "x-amz-algorithm": "md5"
+          |                     "SHA-256": "md5"
           |                 },
           |                 "lastUpdated":"2018-04-24T09:30:00"
           |               }
@@ -939,7 +939,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
             lastUpdated = mockDateTime,
             uploadFields = Some(Map(
               "key" -> "abcxyz",
-              "x-amz-algorithm" -> "md5"
+              "SHA-256" -> "md5"
             ))
           )
         )
