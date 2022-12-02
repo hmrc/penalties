@@ -20,7 +20,7 @@ import base.LogCapturing
 import connectors.parsers.getFinancialDetails.GetFinancialDetailsParser._
 import connectors.parsers.getFinancialDetails.GetFinancialDetailsParser
 import models.getFinancialDetails
-import models.getFinancialDetails.FinancialDetails
+import models.getFinancialDetails.{FinancialDetails, GetFinancialData}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import play.api.http.Status
@@ -31,12 +31,14 @@ import utils.PagerDutyHelper.PagerDutyKeys
 
 class GetFinancialDetailsParserSpec extends AnyWordSpec with Matchers with LogCapturing {
 
-  val mockGetFinancialDetailsModelAPI1811: FinancialDetails = FinancialDetails(
-    documentDetails = Some(Seq(getFinancialDetails.DocumentDetails(
-      chargeReferenceNumber = None,
-      documentOutstandingAmount = Some(0.00),
-      lineItemDetails = Some(Seq(getFinancialDetails.LineItemDetails(None))))
-    ))
+  val mockGetFinancialDetailsModelAPI1811: GetFinancialData = GetFinancialData(
+    FinancialDetails(
+      documentDetails = Some(Seq(getFinancialDetails.DocumentDetails(
+        chargeReferenceNumber = None,
+        documentOutstandingAmount = Some(0.00),
+        lineItemDetails = Some(Seq(getFinancialDetails.LineItemDetails(None))))
+      ))
+    )
   )
 
   val mockOKHttpResponseWithValidBody: HttpResponse = HttpResponse.apply(
@@ -70,7 +72,7 @@ class GetFinancialDetailsParserSpec extends AnyWordSpec with Matchers with LogCa
       s"the body of the response is valid" in {
         val result = GetFinancialDetailsParser.GetFinancialDetailsReads.read("GET", "/", mockOKHttpResponseWithValidBody)
         result.isRight shouldBe true
-        result.toOption.get.asInstanceOf[GetFinancialDetailsSuccessResponse].financialDetails shouldBe mockGetFinancialDetailsModelAPI1811
+        result.toOption.get.asInstanceOf[GetFinancialDetailsSuccessResponse].financialDetails shouldBe mockGetFinancialDetailsModelAPI1811.financialDetails
       }
     }
 
