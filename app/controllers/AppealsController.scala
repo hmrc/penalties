@@ -56,16 +56,16 @@ class AppealsController @Inject()(val appConfig: AppConfig,
 
   private def getAppealDataForPenalty(penaltyId: String, enrolmentKey: String,
                                       penaltyType: AppealTypeEnum.Value)(implicit hc: HeaderCarrier): Future[Result] = {
-      val vrn = RegimeHelper.getIdentifierFromEnrolmentKey(enrolmentKey)
-      getPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(vrn).map {
-        _.fold(
-          handleFailureResponse(_, vrn, enrolmentKey)("getAppealDataForPenalty"),
-          success => {
-            checkAndReturnResponseForPenaltyData(success.asInstanceOf[GetPenaltyDetailsSuccessResponse].penaltyDetails, penaltyId, enrolmentKey, penaltyType)
-          }
-        )
-      }
+    val vrn = RegimeHelper.getIdentifierFromEnrolmentKey(enrolmentKey)
+    getPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(vrn).map {
+      _.fold(
+        handleFailureResponse(_, vrn, enrolmentKey)("getAppealDataForPenalty"),
+        success => {
+          checkAndReturnResponseForPenaltyData(success.asInstanceOf[GetPenaltyDetailsSuccessResponse].penaltyDetails, penaltyId, enrolmentKey, penaltyType)
+        }
+      )
     }
+  }
 
   def getAppealsDataForLateSubmissionPenalty(penaltyId: String, enrolmentKey: String): Action[AnyContent] = Action.async {
     implicit request => {
@@ -198,7 +198,10 @@ class AppealsController @Inject()(val appConfig: AppConfig,
         upload.uploadDetails.flatMap { details =>
           upload.uploadFields.map(
             fields => {
-              val uploadAlgorithm = fields("SHA-256")
+              val uploadAlgorithm = fields("x-amz-algorithm") match {
+                case "AWS4-HMAC-SHA256" => "SHA-256"
+                case _ => throw new Exception("[AppealsController][createSDESNotifications] failed to recognise Checksum algorithm")
+              }
               SDESNotification(
                 informationType = appConfig.SDESNotificationInfoType,
                 file = SDESNotificationFile(
@@ -237,7 +240,7 @@ class AppealsController @Inject()(val appConfig: AppConfig,
             val penaltiesForPrincipalCharge: Seq[LPPDetails] = penaltyDetails.latePaymentPenalty.flatMap(_.details.map(_.filter(_.principalChargeReference.equals(principalChargeReference)))).get
             val underAppeal = penaltiesForPrincipalCharge.exists(_.appealInformation.isDefined)
 
-            if(penaltiesForPrincipalCharge.size == 2 && !underAppeal) {
+            if (penaltiesForPrincipalCharge.size == 2 && !underAppeal) {
               val secondPenalty = penaltiesForPrincipalCharge.find(_.penaltyCategory.equals(LPPPenaltyCategoryEnum.SecondPenalty)).get
               val firstPenalty = penaltiesForPrincipalCharge.find(_.penaltyCategory.equals(LPPPenaltyCategoryEnum.FirstPenalty)).get
               val returnModel = MultiplePenaltiesData(

@@ -617,7 +617,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
             |                 },
             |                 "uploadFields": {
             |                     "key": "abcxyz",
-            |                     "SHA-256": "md5"
+            |                     "x-amz-algorithm" : "AWS4-HMAC-SHA256"
             |                 },
             |                 "lastUpdated":"2018-04-24T09:30:00"
             |               }
@@ -664,7 +664,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
             |                 },
             |                 "uploadFields": {
             |                     "key": "abcxyz",
-            |                     "SHA-256": "md5"
+            |                     "x-amz-algorithm" : "AWS4-HMAC-SHA256"
             |                 },
             |                 "lastUpdated":"2018-04-24T09:30:00"
             |               }

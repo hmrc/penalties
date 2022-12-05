@@ -748,7 +748,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
           |                 },
           |                 "uploadFields": {
           |                     "key": "abcxyz",
-          |                     "SHA-256": "md5"
+          |                     "x-amz-algorithm": "AWS4-HMAC-SHA256"
           |                 },
           |                 "lastUpdated":"2018-04-24T09:30:00"
           |               }
@@ -805,7 +805,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
           |                 },
           |                 "uploadFields": {
           |                     "key": "abcxyz",
-          |                     "SHA-256": "md5"
+          |                     "x-amz-algorithm": "AWS4-HMAC-SHA256"
           |                 },
           |                 "lastUpdated":"2018-04-24T09:30:00"
           |               }
@@ -828,7 +828,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
         SDESNotification(
           informationType = "S18",
           file = SDESNotificationFile(
-            recipientOrSender = "123456789012", name = "file1.txt", location = "download.file", checksum = SDESChecksum("md5", "check12345678"), size = 987, properties = Seq(
+            recipientOrSender = "123456789012", name = "file1.txt", location = "download.file", checksum = SDESChecksum("SHA-256", "check12345678"), size = 987, properties = Seq(
               SDESProperties(
                 "CaseId", "PR-123456789"
               ),
@@ -878,7 +878,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
           |                 },
           |                 "uploadFields": {
           |                     "key": "abcxyz",
-          |                     "SHA-256": "md5"
+          |                     "x-amz-algorithm" : "AWS4-HMAC-SHA256"
           |                 },
           |                 "lastUpdated":"2018-04-24T09:30:00"
           |               }
@@ -900,7 +900,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
         SDESNotification(
           informationType = "S18",
           file = SDESNotificationFile(
-            recipientOrSender = "123456789012", name = "file1.txt", location = "download.file", checksum = SDESChecksum("md5", "check12345678"), size = 987, properties = Seq(
+            recipientOrSender = "123456789012", name = "file1.txt", location = "download.file", checksum = SDESChecksum("SHA-256", "check12345678"), size = 987, properties = Seq(
               SDESProperties(
                 "CaseId", "PR-123456789"
               ),
@@ -939,7 +939,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
             lastUpdated = mockDateTime,
             uploadFields = Some(Map(
               "key" -> "abcxyz",
-              "SHA-256" -> "md5"
+              "x-amz-algorithm" -> "AWS4-HMAC-SHA256"
             ))
           )
         )
@@ -951,7 +951,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
               recipientOrSender = "123456789012",
               name = "file1",
               location = "/",
-              checksum = SDESChecksum(algorithm = "md5", value = "check123456789"),
+              checksum = SDESChecksum(algorithm = "SHA-256", value = "check123456789"),
               size = 1,
               properties = Seq(
                 SDESProperties(name = "CaseId", value = "PR-1234"),
