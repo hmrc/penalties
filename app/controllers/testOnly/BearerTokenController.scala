@@ -27,11 +27,9 @@ class BearerTokenController @Inject()(cc: ControllerComponents)
 
   //TODO: need some kind of authentication here
   def getBearerToken(service: String): Action[AnyContent] = Action {
-    implicit request => {
-      val optBearerToken = config.getOptional[String](s"$service.outboundBearerToken")
-      optBearerToken.fold(
-        NotFound(s"Bearer token not found for service: $service")
-      )(token => Ok(token))
-    }
+    val optBearerToken = config.getOptional[String](s"$service.outboundBearerToken")
+    optBearerToken.fold(
+      NotFound(s"Bearer token not found for service: $service")
+    )(token => Ok(token))
   }
 }
