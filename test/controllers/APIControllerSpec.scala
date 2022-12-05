@@ -222,11 +222,11 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
       status(result) shouldBe Status.NOT_FOUND
     }
 
-    s"return NOT_FOUND (${Status.NOT_FOUND}) when the call returns no data" in new Setup(isFSEnabled = true) {
+    s"return NO_CONTENT (${Status.NO_CONTENT}) when the VRN is found but has no data" in new Setup(isFSEnabled = true) {
       when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(any())(any()))
-        .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(Status.NO_CONTENT))))
+        .thenReturn(Future.successful(Left(GetPenaltyDetailsNoContent)))
       val result = controller.getSummaryDataForVRN("123456789")(fakeRequest)
-      status(result) shouldBe Status.NOT_FOUND
+      status(result) shouldBe Status.NO_CONTENT
     }
 
     s"return BAD_REQUEST (${Status.BAD_REQUEST}) when the user supplies an invalid VRN" in new Setup(isFSEnabled = true) {

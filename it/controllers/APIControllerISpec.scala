@@ -180,11 +180,24 @@ class APIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock wit
         val result = await(buildClientForRequestToApp(uri = "/vat/penalties/summary/123456789").get())
         result.status shouldBe NOT_FOUND
       }
+    }
 
-      "the get penalty details call returns 204" in {
-        mockStubResponseForGetPenaltyDetails(Status.NO_CONTENT, "123456789", body = Some(""))
+    s"return NO_CONTENT (${Status.NO_CONTENT})" when {
+      "the get penalty detials call returns 404 (with NO_DATA_FOUND in body)" in {
+        val notFoundResponseBody: String =
+          """
+            |{
+            |  "failures": [
+            |    {
+            |      "code": "NO_DATA_FOUND",
+            |      "reason": "The remote endpoint has indicated that no penalty data found for provided ID number."
+            |    }
+            |  ]
+            |}
+            |""".stripMargin
+        mockStubResponseForGetPenaltyDetails(Status.NOT_FOUND, "123456789", body = Some(notFoundResponseBody))
         val result = await(buildClientForRequestToApp(uri = "/vat/penalties/summary/123456789").get())
-        result.status shouldBe NOT_FOUND
+        result.status shouldBe NO_CONTENT
       }
     }
   }
@@ -421,7 +434,7 @@ class APIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock wit
     }
 
     "return the status from EIS" when {
-      "404 response received " in {
+      "404 response received" in {
         enableFeatureSwitch(CallAPI1812ETMP)
         mockResponseForGetPenaltyDetails(Status.NOT_FOUND, s"123456789?dateLimit=09", Some(""))
         val result = await(buildClientForRequestToApp(uri = s"/penalty-details/VAT/VRN/123456789?dateLimit=09").get())
@@ -429,7 +442,7 @@ class APIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock wit
         wireMockServer.findAll(postRequestedFor(urlEqualTo("/write/audit"))).asScala.toList.exists(_.getBodyAsString.contains("Penalties3rdPartyPenaltyDetailsDataRetrieval")) shouldBe true
       }
 
-      "Non 200 response received " in {
+      "Non 200 response received" in {
         enableFeatureSwitch(CallAPI1812ETMP)
         mockResponseForGetPenaltyDetails(Status.BAD_REQUEST, s"123456789?dateLimit=09", Some(""))
         val result = await(buildClientForRequestToApp(uri = s"/penalty-details/VAT/VRN/123456789?dateLimit=09").get())

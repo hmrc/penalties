@@ -56,7 +56,7 @@ class APIController @Inject()(auditService: AuditService,
         val enrolmentKey = RegimeHelper.constructMTDVATEnrolmentKey(vrn)
         getPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(vrn).map {
           _.fold({
-            case GetPenaltyDetailsParser.GetPenaltyDetailsFailureResponse(status) if status == NOT_FOUND || status == NO_CONTENT => {
+            case GetPenaltyDetailsParser.GetPenaltyDetailsFailureResponse(status) if status == NOT_FOUND => {
               logger.info(s"[APIController][getSummaryDataForVRN] - 1812 call (VATVC/BTA API) returned $status for VRN: $vrn")
               NotFound(s"A downstream call returned 404 for VRN: $vrn")
             }
@@ -70,8 +70,8 @@ class APIController @Inject()(auditService: AuditService,
               InternalServerError(s"We were unable to parse penalty data.")
             }
             case GetPenaltyDetailsParser.GetPenaltyDetailsNoContent => {
-              logger.error(s"[APIController][getSummaryDataForVRN] - 1812 call (VATVC/BTA API) returned no content")
-              InternalServerError(s"No content was return for VRN: $vrn")
+              logger.info(s"[APIController][getSummaryDataForVRN] - 1812 call (VATVC/BTA API) returned no content for VRN: $vrn")
+              NoContent
             }
           },
             success => {
