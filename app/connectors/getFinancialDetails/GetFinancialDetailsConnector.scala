@@ -35,8 +35,11 @@ class GetFinancialDetailsConnector @Inject()(httpClient: HttpClient,
                                              appConfig: AppConfig)
                                             (implicit ec: ExecutionContext) {
 
-  private val headers = Seq("Authorization" -> s"Bearer ${appConfig.eiOutboundBearerToken}",
-    "CorrelationId" -> randomUUID().toString, "Environment" -> appConfig.eisEnvironment)
+  private def headers: Seq[(String, String)] = Seq(
+    "Authorization" -> s"Bearer ${appConfig.eiOutboundBearerToken}",
+    "CorrelationId" -> randomUUID().toString,
+    "Environment" -> appConfig.eisEnvironment
+  )
 
   def getFinancialDetails(vrn: String, dateFrom: LocalDate, dateTo: LocalDate)(implicit hc: HeaderCarrier): Future[GetFinancialDetailsResponse] = {
     httpClient.GET[GetFinancialDetailsResponse](url =
