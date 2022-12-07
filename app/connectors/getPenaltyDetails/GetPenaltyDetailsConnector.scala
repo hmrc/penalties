@@ -35,7 +35,7 @@ class GetPenaltyDetailsConnector @Inject()(httpClient: HttpClient,
                                            appConfig: AppConfig)
                                           (implicit ec: ExecutionContext) {
 
-  private val headers = Seq(
+  private def headers: Seq[(String, String)] = Seq(
     "Authorization" -> s"Bearer ${appConfig.eiOutboundBearerToken}",
     "CorrelationId" -> randomUUID().toString,
     "Environment" -> appConfig.eisEnvironment,
