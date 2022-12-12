@@ -14,16 +14,15 @@
  * limitations under the License.
  */
 
-package models.getFinancialDetails
+package models.getFinancialDetails.totalisation
 
-import models.getFinancialDetails.totalisation.FinancialDetailsTotalisation
 import play.api.libs.json.{Format, Json}
 
-case class FinancialDetails (
-                              totalisation: Option[FinancialDetailsTotalisation],
-                              documentDetails: Option[Seq[DocumentDetails]]
-                            )
+case class InterestTotalisation(
+                                 totalAccountPostedInterest: Option[BigDecimal],
+                                 totalAccountAccruingInterest: Option[BigDecimal]
+                               )
 
-object FinancialDetails {
-  implicit val format: Format[FinancialDetails] = Json.format[FinancialDetails]
+object InterestTotalisation {
+  implicit val format: Format[InterestTotalisation] = Json.format[InterestTotalisation]
 }

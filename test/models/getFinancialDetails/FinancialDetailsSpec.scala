@@ -50,7 +50,8 @@ class FinancialDetailsSpec extends SpecBase {
           )
         )
       )
-    )
+    ),
+    totalisation = None
   )
 
   "be readable from JSON" in {

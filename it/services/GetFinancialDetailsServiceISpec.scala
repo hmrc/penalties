@@ -21,6 +21,7 @@ import config.featureSwitches.FeatureSwitching
 import java.time.LocalDate
 import connectors.parsers.getFinancialDetails.GetFinancialDetailsParser._
 import models.getFinancialDetails
+import models.getFinancialDetails.totalisation.{FinancialDetailsTotalisation, InterestTotalisation, RegimeTotalisation}
 import models.getFinancialDetails.{FinancialDetails, MainTransactionEnum}
 import play.api.http.Status
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
@@ -36,6 +37,10 @@ class GetFinancialDetailsServiceISpec extends IntegrationSpecCommonBase with ETM
         chargeReferenceNumber = Some("XM002610011594"),
         documentOutstandingAmount = Some(543.21),
         lineItemDetails = Some(Seq(getFinancialDetails.LineItemDetails(Some(MainTransactionEnum.VATReturnFirstLPP)))))
+      )),
+      totalisation = Some(FinancialDetailsTotalisation(
+        regimeTotalisations = Some(RegimeTotalisation(totalAccountOverdue = Some(1000))),
+        interestTotalisations = Some(InterestTotalisation(totalAccountPostedInterest = Some(12.34), totalAccountAccruingInterest = Some(43.21)))
       ))
     )
 
