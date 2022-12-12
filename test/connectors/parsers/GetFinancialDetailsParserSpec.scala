@@ -19,12 +19,12 @@ package connectors.parsers
 import base.LogCapturing
 import connectors.parsers.getFinancialDetails.GetFinancialDetailsParser._
 import connectors.parsers.getFinancialDetails.GetFinancialDetailsParser
-import models.getFinancialDetails
-import models.getFinancialDetails.{FinancialDetails, GetFinancialData}
+import models.getFinancialDetails.totalisation.{FinancialDetailsTotalisation, InterestTotalisation, RegimeTotalisation}
+import models.getFinancialDetails.{DocumentDetails, FinancialDetails, GetFinancialData, LineItemDetails}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import play.api.http.Status
-import play.api.libs.json.Json
+import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.http.HttpResponse
 import utils.Logger.logger
 import utils.PagerDutyHelper.PagerDutyKeys
@@ -33,16 +33,54 @@ class GetFinancialDetailsParserSpec extends AnyWordSpec with Matchers with LogCa
 
   val mockGetFinancialDetailsModelAPI1811: GetFinancialData = GetFinancialData(
     FinancialDetails(
-      documentDetails = Some(Seq(getFinancialDetails.DocumentDetails(
+      documentDetails = Some(Seq(DocumentDetails(
         chargeReferenceNumber = None,
         documentOutstandingAmount = Some(0.00),
-        lineItemDetails = Some(Seq(getFinancialDetails.LineItemDetails(None))))
+        lineItemDetails = Some(Seq(LineItemDetails(None))))
+      )),
+      totalisation = Some(FinancialDetailsTotalisation(
+        regimeTotalisations = Some(RegimeTotalisation(totalAccountOverdue = Some(1000.0))),
+        interestTotalisations = Some(InterestTotalisation(totalAccountPostedInterest = Some(12.34), totalAccountAccruingInterest = Some(43.21)))
       ))
     )
   )
 
+  val getFinancialDetailsAsJson: JsValue = Json.parse(
+    """
+      | {
+      | "financialDetails":{
+      |   "documentDetails": [
+      |    {
+      |      "documentOutstandingAmount": 0.0,
+      |      "lineItemDetails": [{}]
+      |    }
+      |  ],
+      |  "totalisation": {
+      |    "regimeTotalisation": {
+      |      "totalAccountOverdue": 1000.0,
+      |      "totalAccountNotYetDue": 250.0,
+      |      "totalAccountCredit": 40.0,
+      |      "totalAccountBalance": 1210
+      |    },
+      |    "targetedSearch_SelectionCriteriaTotalisation": {
+      |      "totalOverdue": 100.0,
+      |      "totalNotYetDue": 0.0,
+      |      "totalBalance": 100.0,
+      |      "totalCredit": 10.0,
+      |      "totalCleared": 50
+      |    },
+      |    "additionalReceivableTotalisations": {
+      |      "totalAccountPostedInterest": 12.34,
+      |      "totalAccountAccruingInterest": 43.21
+      |    }
+      | }
+      |}
+      |}
+      |""".stripMargin
+  )
+
   val mockOKHttpResponseWithValidBody: HttpResponse = HttpResponse.apply(
-    status = Status.OK, json = Json.toJson(mockGetFinancialDetailsModelAPI1811), headers = Map.empty)
+    status = Status.OK, json = getFinancialDetailsAsJson, headers = Map.empty)
 
   val mockOKHttpResponseWithInvalidBody: HttpResponse =
     HttpResponse.apply(status = Status.OK, json = Json.parse(

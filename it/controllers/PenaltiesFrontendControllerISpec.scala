@@ -89,7 +89,10 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
       |        "LSPTotalValue": 200,
       |        "penalisedPrincipalTotal": 2000,
       |        "LPPPostedTotal": 165.25,
-      |        "LPPEstimatedTotal": 15.26
+      |        "LPPEstimatedTotal": 15.26,
+      |        "totalAccountOverdue": 1000.0,
+      |        "totalAccountPostedInterest": 12.34,
+      |        "totalAccountAccruingInterest": 43.21
       |    },
       |    "lateSubmissionPenalty": {
       |        "summary": {
@@ -354,7 +357,10 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
         |      "LSPTotalValue":200,
         |      "penalisedPrincipalTotal":2000,
         |      "LPPPostedTotal":165.25,
-        |      "LPPEstimatedTotal":15.26
+        |      "LPPEstimatedTotal":15.26,
+        |      "totalAccountOverdue": 1000.0,
+        |      "totalAccountPostedInterest": 12.34,
+        |      "totalAccountAccruingInterest": 43.21
         |   },
         |   "lateSubmissionPenalty":{
         |      "summary":{
@@ -447,6 +453,32 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
   }
 
   "NOT audit the response when the user has 0 LSPs and 0 LPPs" in {
+    val getPenaltyDetailsWithNoPointsAsJson: JsValue = Json.parse(
+      """
+        |{
+        | "totalisations": {
+        |   "LSPTotalValue": 0,
+        |   "penalisedPrincipalTotal": 0,
+        |   "LPPPostedTotal": 0.00,
+        |   "totalAccountOverdue": 1000,
+        |   "totalAccountPostedInterest": 12.34,
+        |   "totalAccountAccruingInterest": 43.21
+        | },
+        | "lateSubmissionPenalty": {
+        |   "summary": {
+        |     "activePenaltyPoints": 0,
+        |     "inactivePenaltyPoints": 0,
+        |     "regimeThreshold": 0,
+        |     "penaltyChargeAmount": 0.00,
+        |     "PoCAchievementDate": "2022-01-01"
+        |   },
+        |   "details": []
+        |   },
+        |   "latePaymentPenalty":{
+        |      "details":[]
+        | }
+        |}
+        |""".stripMargin)
     mockStubResponseForGetPenaltyDetails(Status.OK, "123456789", body = Some(getPenaltyDetailsWithNoPointsAsJson.toString()))
     mockStubResponseForGetFinancialDetails(Status.OK,
       s"VRN/123456789/VATC?dateFrom=${LocalDate.now.minusYears(2)}&dateTo=${LocalDate.now}" +

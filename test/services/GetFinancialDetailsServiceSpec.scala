@@ -25,6 +25,7 @@ import java.time.LocalDate
 import connectors.parsers.getFinancialDetails.GetFinancialDetailsParser._
 import models.getFinancialDetails
 import models.getFinancialDetails.FinancialDetails
+import models.getFinancialDetails.totalisation.{FinancialDetailsTotalisation, InterestTotalisation, RegimeTotalisation}
 import org.mockito.Matchers
 import org.mockito.Matchers.any
 import play.api.Configuration
@@ -52,6 +53,10 @@ class GetFinancialDetailsServiceSpec extends SpecBase with FeatureSwitching {
         chargeReferenceNumber = None,
         documentOutstandingAmount = Some(0.00),
         lineItemDetails = Some(Seq(getFinancialDetails.LineItemDetails(None))))
+      )),
+      totalisation = Some(FinancialDetailsTotalisation(
+        regimeTotalisations = Some(RegimeTotalisation(totalAccountOverdue = Some(1000))),
+        interestTotalisations = Some(InterestTotalisation(totalAccountPostedInterest = Some(123.45), totalAccountAccruingInterest = Some(23.45)))
       ))
     )
 

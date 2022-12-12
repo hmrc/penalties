@@ -17,14 +17,14 @@
 package services
 
 import models.getFinancialDetails.{FinancialDetails, MainTransactionEnum}
-import models.getPenaltyDetails.GetPenaltyDetails
-import models.getPenaltyDetails.latePayment.{LPPDetailsMetadata, LPPPenaltyCategoryEnum, LatePaymentPenalty}
+import models.getPenaltyDetails.{GetPenaltyDetails, Totalisations}
+import models.getPenaltyDetails.latePayment.{LPPDetails, LPPDetailsMetadata, LPPPenaltyCategoryEnum, LatePaymentPenalty}
 
 import javax.inject.Inject
 
 class PenaltiesFrontendService @Inject()() {
   def combineAPIData(penaltyDetails: GetPenaltyDetails, financialDetails: FinancialDetails): GetPenaltyDetails = {
-    val newLPPDetails = penaltyDetails.latePaymentPenalty.flatMap(
+    val newLPPDetails: Option[Seq[LPPDetails]] = penaltyDetails.latePaymentPenalty.flatMap(
       _.details.map(_.map(
         oldLPPDetails => {
           val isAdditional = oldLPPDetails.penaltyCategory.equals(LPPPenaltyCategoryEnum.SecondPenalty)
@@ -44,6 +44,38 @@ class PenaltiesFrontendService @Inject()() {
         }
       ))
     )
-    penaltyDetails.copy(latePaymentPenalty = Some(LatePaymentPenalty(newLPPDetails)))
+
+    (financialDetails.totalisation.isDefined, penaltyDetails.totalisations.isDefined) match {
+      //If there is totalisations already, add to it
+      case (_, true) => {
+        val newTotalisations: Option[Totalisations] = penaltyDetails.totalisations.map(
+          oldTotalisations => {
+            oldTotalisations.copy(
+              totalAccountOverdue = financialDetails.totalisation.flatMap(_.regimeTotalisations.flatMap(_.totalAccountOverdue)),
+              totalAccountPostedInterest = financialDetails.totalisation.flatMap(_.interestTotalisations.flatMap(_.totalAccountPostedInterest)),
+              totalAccountAccruingInterest = financialDetails.totalisation.flatMap(_.interestTotalisations.flatMap(_.totalAccountAccruingInterest))
+            )
+          }
+        )
+        penaltyDetails.copy(latePaymentPenalty = Some(LatePaymentPenalty(newLPPDetails)), totalisations = newTotalisations)
+      }
+      case (true, false) => {
+        //If there is no totalisations already, create a new object
+        val totalisations: Totalisations = new Totalisations(
+          totalAccountOverdue = financialDetails.totalisation.flatMap(_.regimeTotalisations.flatMap(_.totalAccountOverdue)),
+          totalAccountPostedInterest = financialDetails.totalisation.flatMap(_.interestTotalisations.flatMap(_.totalAccountPostedInterest)),
+          totalAccountAccruingInterest = financialDetails.totalisation.flatMap(_.interestTotalisations.flatMap(_.totalAccountAccruingInterest)),
+          LSPTotalValue = None,
+          penalisedPrincipalTotal = None,
+          LPPPostedTotal = None,
+          LPPEstimatedTotal = None
+        )
+        penaltyDetails.copy(latePaymentPenalty = Some(LatePaymentPenalty(newLPPDetails)), totalisations = Some(totalisations))
+      }
+      case _ => {
+        //No totalisations at all, don't do any processing on totalisation field
+        penaltyDetails.copy(latePaymentPenalty = Some(LatePaymentPenalty(newLPPDetails)))
+      }
+    }
   }
 }

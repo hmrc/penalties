@@ -22,6 +22,7 @@ import connectors.parsers.getFinancialDetails.GetFinancialDetailsParser.{GetFina
 import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser.{GetPenaltyDetailsFailureResponse, GetPenaltyDetailsMalformed, GetPenaltyDetailsNoContent, GetPenaltyDetailsSuccessResponse}
 import models.getFinancialDetails
 import models.getFinancialDetails._
+import models.getFinancialDetails.totalisation.{FinancialDetailsTotalisation, InterestTotalisation, RegimeTotalisation}
 import models.getPenaltyDetails.GetPenaltyDetails
 import models.getPenaltyDetails.latePayment._
 import models.getPenaltyDetails.lateSubmission.{LSPSummary, LateSubmissionPenalty}
@@ -306,6 +307,10 @@ class PenaltiesFrontendControllerSpec extends SpecBase with LogCapturing {
           chargeReferenceNumber = None,
           documentOutstandingAmount = Some(0.00),
           lineItemDetails = Some(Seq(getFinancialDetails.LineItemDetails(None))))
+        )),
+        totalisation = Some(FinancialDetailsTotalisation(
+          regimeTotalisations = Some(RegimeTotalisation(totalAccountOverdue = Some(1000))),
+          interestTotalisations = Some(InterestTotalisation(totalAccountPostedInterest = Some(123.45), totalAccountAccruingInterest = Some(23.45)))
         ))
       )
 

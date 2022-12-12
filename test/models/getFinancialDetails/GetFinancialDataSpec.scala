@@ -17,13 +17,14 @@
 package models.getFinancialDetails
 
 import base.SpecBase
+import models.getFinancialDetails.totalisation.{FinancialDetailsTotalisation, InterestTotalisation, RegimeTotalisation}
 import play.api.libs.json.{JsValue, Json}
 
 class GetFinancialDataSpec extends SpecBase {
   val modelAsJson: JsValue = Json.parse(
     """
       |{
-      |"financialDetails":{
+      | "financialDetails":{
       |   "documentDetails":[
       |      {
       |         "chargeReferenceNumber":"1234567890",
@@ -34,7 +35,54 @@ class GetFinancialDataSpec extends SpecBase {
       |            }
       |         ]
       |      }
-      |   ]
+      |   ],
+      |   "totalisation": {
+      |    "regimeTotalisation": {
+      |      "totalAccountOverdue": 1000.0,
+      |      "totalAccountNotYetDue": 250.0,
+      |      "totalAccountCredit": 40.0,
+      |      "totalAccountBalance": 1210
+      |    },
+      |    "targetedSearch_SelectionCriteriaTotalisation": {
+      |      "totalOverdue": 100.0,
+      |      "totalNotYetDue": 0.0,
+      |      "totalBalance": 100.0,
+      |      "totalCredit": 10.0,
+      |      "totalCleared": 50
+      |    },
+      |    "additionalReceivableTotalisations": {
+      |      "totalAccountPostedInterest": 123.45,
+      |      "totalAccountAccruingInterest": 23.45
+      |    }
+      |  }
+      | }
+      |}
+      |""".stripMargin)
+
+  val parsedModelAsJson: JsValue = Json.parse(
+    """
+      |{
+      | "financialDetails":{
+      |   "documentDetails":[
+      |      {
+      |         "chargeReferenceNumber":"1234567890",
+      |         "documentOutstandingAmount":123.45,
+      |         "lineItemDetails":[
+      |            {
+      |               "mainTransaction":"4703"
+      |            }
+      |         ]
+      |      }
+      |   ],
+      |   "totalisation": {
+      |    "regimeTotalisations": {
+      |      "totalAccountOverdue": 1000.0
+      |    },
+      |    "interestTotalisations": {
+      |      "totalAccountPostedInterest": 123.45,
+      |      "totalAccountAccruingInterest": 23.45
+      |    }
+      |  }
       | }
       |}
       |""".stripMargin)
@@ -53,7 +101,11 @@ class GetFinancialDataSpec extends SpecBase {
             )
           )
         )
-      )
+      ),
+      totalisation = Some(FinancialDetailsTotalisation(
+        regimeTotalisations = Some(RegimeTotalisation(totalAccountOverdue = Some(1000))),
+        interestTotalisations = Some(InterestTotalisation(totalAccountPostedInterest = Some(123.45), totalAccountAccruingInterest = Some(23.45)))
+      ))
     )
   )
 
@@ -65,6 +117,6 @@ class GetFinancialDataSpec extends SpecBase {
 
   "be writable to JSON" in {
     val result = Json.toJson(model)(GetFinancialData.format)
-    result shouldBe modelAsJson
+    result shouldBe parsedModelAsJson
   }
 }

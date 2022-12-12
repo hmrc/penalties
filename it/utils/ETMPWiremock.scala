@@ -107,51 +107,27 @@ trait ETMPWiremock {
       |}
       |""".stripMargin)
 
-  val getPenaltyDetailsWithNoPointsAsJson: JsValue = Json.parse(
-      """
-        |{
-        | "totalisations": {
-        |   "LSPTotalValue": 0,
-        |   "penalisedPrincipalTotal": 0,
-        |   "LPPPostedTotal": 0.00
-        | },
-        | "lateSubmissionPenalty": {
-        |   "summary": {
-        |     "activePenaltyPoints": 0,
-        |     "inactivePenaltyPoints": 0,
-        |     "regimeThreshold": 0,
-        |     "penaltyChargeAmount": 0.00,
-        |     "PoCAchievementDate": "2022-01-01"
-        |   },
-        |   "details": []
-        |   },
-        |   "latePaymentPenalty":{
-        |      "details":[]
-        | }
-        |}
-        |""".stripMargin)
-
   val getFinancialDetailsAsJson: JsValue = Json.parse(
     """
     | {
     | "financialDetails":{
       |  "totalisation": {
       |    "regimeTotalisation": {
-      |      "totalAccountOverdue": "1000.0",
-      |      "totalAccountNotYetDue": "250.0",
-      |      "totalAccountCredit": "40.0",
+      |      "totalAccountOverdue": 1000.0,
+      |      "totalAccountNotYetDue": 250.0,
+      |      "totalAccountCredit": 40.0,
       |      "totalAccountBalance": 1210
       |    },
       |    "targetedSearch_SelectionCriteriaTotalisation": {
-      |      "totalOverdue": "100.0",
-      |      "totalNotYetDue": "0.0",
-      |      "totalBalance": "100.0",
-      |      "totalCredit": "10.0",
+      |      "totalOverdue": 100.0,
+      |      "totalNotYetDue": 0.0,
+      |      "totalBalance": 100.0,
+      |      "totalCredit": 10.0,
       |      "totalCleared": 50
       |    },
       |    "additionalReceivableTotalisations": {
-      |      "totalAccountPostedInterest": "-99999999999.99",
-      |      "totalAccountAccruingInterest": -99999999999.99
+      |      "totalAccountPostedInterest": 12.34,
+      |      "totalAccountAccruingInterest": 43.21
       |    }
       |  },
       |  "documentDetails": [

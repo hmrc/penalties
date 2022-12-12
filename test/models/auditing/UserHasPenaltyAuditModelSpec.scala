@@ -41,7 +41,11 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
       penalisedPrincipalTotal = Some(2000.12),
       LPPPostedTotal = None,
       LPPEstimatedTotal = None,
-      LSPTotalValue = None)),
+      LSPTotalValue = None,
+      totalAccountOverdue = None,
+      totalAccountPostedInterest = None,
+      totalAccountAccruingInterest = None
+    )),
     lateSubmissionPenalty = Some(LateSubmissionPenalty(
       summary = LSPSummary(
         activePenaltyPoints = 2,
@@ -92,7 +96,11 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
       penalisedPrincipalTotal = Some(2000.12),
       LPPPostedTotal = None,
       LPPEstimatedTotal = None,
-      LSPTotalValue = None)),
+      LSPTotalValue = None,
+      totalAccountOverdue = None,
+      totalAccountPostedInterest = None,
+      totalAccountAccruingInterest = None
+    )),
     lateSubmissionPenalty = Some(LateSubmissionPenalty(
       summary = LSPSummary(
         activePenaltyPoints = 2,
@@ -143,7 +151,11 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
       penalisedPrincipalTotal = Some(2000.12),
       LPPPostedTotal = None,
       LPPEstimatedTotal = None,
-      LSPTotalValue = None)),
+      LSPTotalValue = None,
+      totalAccountOverdue = None,
+      totalAccountPostedInterest = None,
+      totalAccountAccruingInterest = None
+    )),
     lateSubmissionPenalty = Some(LateSubmissionPenalty(
       summary = LSPSummary(
         activePenaltyPoints = 2,
@@ -194,7 +206,11 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
       penalisedPrincipalTotal = Some(2000.12),
       LPPPostedTotal = None,
       LPPEstimatedTotal = None,
-      LSPTotalValue = None)),
+      LSPTotalValue = None,
+      totalAccountOverdue = None,
+      totalAccountPostedInterest = None,
+      totalAccountAccruingInterest = None
+    )),
     lateSubmissionPenalty = Some(LateSubmissionPenalty(
       summary = LSPSummary(
         activePenaltyPoints = 2,
@@ -261,7 +277,11 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
       penalisedPrincipalTotal = Some(2000.12),
       LPPPostedTotal = None,
       LPPEstimatedTotal = None,
-      LSPTotalValue = None)),
+      LSPTotalValue = None,
+      totalAccountOverdue = None,
+      totalAccountPostedInterest = None,
+      totalAccountAccruingInterest = None
+    )),
     lateSubmissionPenalty = Some(LateSubmissionPenalty(
       summary = LSPSummary(
         activePenaltyPoints = 2,
@@ -314,7 +334,11 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
       penalisedPrincipalTotal = Some(2000.12),
       LPPPostedTotal = None,
       LPPEstimatedTotal = None,
-      LSPTotalValue = None)),
+      LSPTotalValue = None,
+      totalAccountOverdue = None,
+      totalAccountPostedInterest = None,
+      totalAccountAccruingInterest = None
+    )),
     lateSubmissionPenalty = Some(LateSubmissionPenalty(
       summary = LSPSummary(
         activePenaltyPoints = 0,
@@ -368,7 +392,11 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
       penalisedPrincipalTotal = Some(2000.12),
       LPPPostedTotal = None,
       LPPEstimatedTotal = None,
-      LSPTotalValue = None)),
+      LSPTotalValue = None,
+      totalAccountOverdue = None,
+      totalAccountPostedInterest = None,
+      totalAccountAccruingInterest = None
+    )),
     lateSubmissionPenalty = Some(LateSubmissionPenalty(
       summary = LSPSummary(
         activePenaltyPoints = 2,
@@ -439,7 +467,10 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
       penalisedPrincipalTotal = Some(2000.12),
       LPPPostedTotal = None,
       LPPEstimatedTotal = None,
-      LSPTotalValue = None
+      LSPTotalValue = None,
+      totalAccountOverdue = None,
+      totalAccountPostedInterest = None,
+      totalAccountAccruingInterest = None
     )),
     lateSubmissionPenalty = None,
     latePaymentPenalty = Some(
@@ -507,7 +538,10 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
       penalisedPrincipalTotal = Some(2000.12),
       LPPPostedTotal = None,
       LPPEstimatedTotal = None,
-      LSPTotalValue = None
+      LSPTotalValue = None,
+      totalAccountOverdue = None,
+      totalAccountPostedInterest = None,
+      totalAccountAccruingInterest = None
     )),
     lateSubmissionPenalty = None,
     latePaymentPenalty = Some(
@@ -585,7 +619,10 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
       penalisedPrincipalTotal = Some(2000.12),
       LPPPostedTotal = None,
       LPPEstimatedTotal = None,
-      LSPTotalValue = None
+      LSPTotalValue = None,
+      totalAccountOverdue = None,
+      totalAccountPostedInterest = None,
+      totalAccountAccruingInterest = None
     )),
     lateSubmissionPenalty = None,
     latePaymentPenalty = Some(
@@ -658,7 +695,10 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
       penalisedPrincipalTotal = Some(2000.12),
       LPPPostedTotal = None,
       LPPEstimatedTotal = None,
-      LSPTotalValue = None
+      LSPTotalValue = None,
+      totalAccountOverdue = None,
+      totalAccountPostedInterest = None,
+      totalAccountAccruingInterest = None
     )),
     lateSubmissionPenalty = None,
     latePaymentPenalty = Some(
@@ -730,7 +770,10 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
       penalisedPrincipalTotal = Some(2000.12),
       LPPPostedTotal = None,
       LPPEstimatedTotal = None,
-      LSPTotalValue = None
+      LSPTotalValue = None,
+      totalAccountOverdue = None,
+      totalAccountPostedInterest = None,
+      totalAccountAccruingInterest = None
     )),
     lateSubmissionPenalty = None,
     latePaymentPenalty = Some(
@@ -802,7 +845,10 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
       penalisedPrincipalTotal = None,
       LPPPostedTotal = Some(150),
       LPPEstimatedTotal = Some(50),
-      LSPTotalValue = None
+      LSPTotalValue = None,
+      totalAccountOverdue = None,
+      totalAccountPostedInterest = None,
+      totalAccountAccruingInterest = None
     )),
     lateSubmissionPenalty = None,
     latePaymentPenalty = Some(

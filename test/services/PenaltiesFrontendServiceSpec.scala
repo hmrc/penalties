@@ -17,8 +17,9 @@
 package services
 
 import base.SpecBase
+import models.getFinancialDetails.totalisation.{FinancialDetailsTotalisation, InterestTotalisation, RegimeTotalisation}
 import models.getFinancialDetails.{DocumentDetails, FinancialDetails, LineItemDetails, MainTransactionEnum}
-import models.getPenaltyDetails.GetPenaltyDetails
+import models.getPenaltyDetails.{GetPenaltyDetails, Totalisations}
 import models.getPenaltyDetails.appealInfo.{AppealInformationType, AppealLevelEnum, AppealStatusEnum}
 import models.getPenaltyDetails.latePayment.{LPPDetails, LPPDetailsMetadata, LPPPenaltyCategoryEnum, LPPPenaltyStatusEnum, LatePaymentPenalty, TimeToPay}
 
@@ -99,8 +100,8 @@ class PenaltiesFrontendServiceSpec extends SpecBase {
             chargeReferenceNumber = Some("1234567890"),
             documentOutstandingAmount = Some(123.45),
             lineItemDetails = Some(Seq(LineItemDetails(Some(MainTransactionEnum.VATReturnFirstLPP)))))
-        )
-        )
+        )),
+        totalisation = None
       )
 
       val expectedResult = LatePaymentPenalty(
@@ -215,7 +216,8 @@ class PenaltiesFrontendServiceSpec extends SpecBase {
           chargeReferenceNumber = Some("1234567890"),
           documentOutstandingAmount = Some(123.45),
           lineItemDetails = Some(Seq(LineItemDetails(Some(MainTransactionEnum.VATReturnFirstLPP)))))
-        ))
+        )),
+        totalisation = None
       )
 
       val expectedResult = LatePaymentPenalty(
@@ -308,7 +310,8 @@ class PenaltiesFrontendServiceSpec extends SpecBase {
           chargeReferenceNumber = Some("1234567890"),
           documentOutstandingAmount = Some(123.45),
           lineItemDetails = Some(Seq(LineItemDetails(Some(MainTransactionEnum.VATReturnSecondLPP)))))
-        ))
+        )),
+        totalisation = None
       )
 
       val expectedResult = LatePaymentPenalty(
@@ -436,7 +439,8 @@ class PenaltiesFrontendServiceSpec extends SpecBase {
             chargeReferenceNumber = Some("1234567890"),
             documentOutstandingAmount = Some(123.45),
             lineItemDetails = Some(Seq(LineItemDetails(Some(MainTransactionEnum.VATReturnFirstLPP)))))
-        ))
+        )),
+        totalisation = None
       )
 
       val expectedResult = LatePaymentPenalty(
@@ -513,6 +517,76 @@ class PenaltiesFrontendServiceSpec extends SpecBase {
       val result = penaltiesFrontendService.combineAPIData(penaltyDetailsWithDifferentPrincipals, financialDetails)
       result.latePaymentPenalty.isDefined shouldBe true
       result.latePaymentPenalty.get shouldBe expectedResult
+    }
+
+    "combine the financial details totalisations - if totalisations already present" in {
+      val penaltyDetails = GetPenaltyDetails(
+        totalisations = Some(
+          Totalisations(
+            LSPTotalValue = Some(123.45),
+            penalisedPrincipalTotal = Some(321.45),
+            LPPPostedTotal = None,
+            LPPEstimatedTotal = None,
+            totalAccountOverdue = None,
+            totalAccountPostedInterest = None,
+            totalAccountAccruingInterest = None
+          )
+        ),
+        lateSubmissionPenalty = None,
+        latePaymentPenalty = None
+      )
+
+      val financialDetails: FinancialDetails = FinancialDetails(
+        documentDetails = None,
+        totalisation = Some(FinancialDetailsTotalisation(
+          regimeTotalisations = Some(RegimeTotalisation(totalAccountOverdue = Some(123.45))),
+          interestTotalisations = Some(InterestTotalisation(totalAccountPostedInterest = Some(12.34), totalAccountAccruingInterest = Some(43.21)))
+        ))
+      )
+
+      val expectedResult: Totalisations = Totalisations(
+        LSPTotalValue = Some(123.45),
+        penalisedPrincipalTotal = Some(321.45),
+        LPPPostedTotal = None,
+        LPPEstimatedTotal = None,
+        totalAccountOverdue = Some(123.45),
+        totalAccountPostedInterest = Some(12.34),
+        totalAccountAccruingInterest = Some(43.21)
+      )
+
+      val result = penaltiesFrontendService.combineAPIData(penaltyDetails, financialDetails)
+      result.totalisations.isDefined shouldBe true
+      result.totalisations.get shouldBe expectedResult
+    }
+
+    "combine the financial details totalisations - if totalisations NOT already present" in {
+      val penaltyDetails = GetPenaltyDetails(
+        totalisations = None,
+        lateSubmissionPenalty = None,
+        latePaymentPenalty = None
+      )
+
+      val financialDetails: FinancialDetails = FinancialDetails(
+        documentDetails = None,
+        totalisation = Some(FinancialDetailsTotalisation(
+          regimeTotalisations = Some(RegimeTotalisation(totalAccountOverdue = Some(123.45))),
+          interestTotalisations = Some(InterestTotalisation(totalAccountPostedInterest = Some(12.34), totalAccountAccruingInterest = None))
+        ))
+      )
+
+      val expectedResult: Totalisations = Totalisations(
+        LSPTotalValue = None,
+        penalisedPrincipalTotal = None,
+        LPPPostedTotal = None,
+        LPPEstimatedTotal = None,
+        totalAccountOverdue = Some(123.45),
+        totalAccountPostedInterest = Some(12.34),
+        totalAccountAccruingInterest = None
+      )
+
+      val result = penaltiesFrontendService.combineAPIData(penaltyDetails, financialDetails)
+      result.totalisations.isDefined shouldBe true
+      result.totalisations.get shouldBe expectedResult
     }
   }
 }

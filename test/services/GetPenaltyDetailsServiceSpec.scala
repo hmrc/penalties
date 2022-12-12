@@ -41,14 +41,17 @@ class GetPenaltyDetailsServiceSpec extends SpecBase {
     reset(mockGetPenaltyDetailsConnector)
   }
 
-  "getPenaltyDataFromETMPForEnrolment" should {
+  "getDataFromPenaltyServiceForVATCVRN" should {
     val mockGetPenaltyDetailsResponseAsModel: GetPenaltyDetails = GetPenaltyDetails(
       totalisations = Some(
         Totalisations(
           LSPTotalValue = Some(200),
           penalisedPrincipalTotal = Some(2000),
           LPPPostedTotal = Some(165.25),
-          LPPEstimatedTotal = Some(15.26)
+          LPPEstimatedTotal = Some(15.26),
+          totalAccountOverdue = None,
+          totalAccountPostedInterest = None,
+          totalAccountAccruingInterest = None
         )
       ),
       lateSubmissionPenalty = Some(

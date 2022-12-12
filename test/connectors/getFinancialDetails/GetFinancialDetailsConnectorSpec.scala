@@ -16,23 +16,22 @@
 
 package connectors.getFinancialDetails
 
-import java.time.LocalDate
 import base.{LogCapturing, SpecBase}
 import config.AppConfig
 import connectors.parsers.getFinancialDetails.GetFinancialDetailsParser._
-import models.getFinancialDetails
-import models.getFinancialDetails.FinancialDetails
+import models.getFinancialDetails.totalisation.{FinancialDetailsTotalisation, InterestTotalisation, RegimeTotalisation}
+import models.getFinancialDetails.{DocumentDetails, FinancialDetails, LineItemDetails}
 import org.mockito.Matchers
 import org.mockito.Mockito._
 import play.api.http.Status
 import play.api.libs.json.Json
 import play.api.test.Helpers._
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse}
-import utils.DateHelper
 import uk.gov.hmrc.http._
+import utils.DateHelper
 import utils.Logger.logger
 import utils.PagerDutyHelper.PagerDutyKeys
 
+import java.time.LocalDate
 import scala.concurrent.{ExecutionContext, Future}
 
 class GetFinancialDetailsConnectorSpec extends SpecBase with LogCapturing {
@@ -55,10 +54,14 @@ class GetFinancialDetailsConnectorSpec extends SpecBase with LogCapturing {
   }
 
   val mockGetFinancialDetailsModelAPI1811: FinancialDetails = FinancialDetails(
-    documentDetails = Some(Seq(getFinancialDetails.DocumentDetails(
+    documentDetails = Some(Seq(DocumentDetails(
       chargeReferenceNumber = None,
       documentOutstandingAmount = Some(0.00),
-      lineItemDetails = Some(Seq(getFinancialDetails.LineItemDetails(None))))
+      lineItemDetails = Some(Seq(LineItemDetails(None))))
+    )),
+    totalisation = Some(FinancialDetailsTotalisation(
+      regimeTotalisations = Some(RegimeTotalisation(totalAccountOverdue = Some(1000))),
+      interestTotalisations = Some(InterestTotalisation(totalAccountPostedInterest = Some(123.45), totalAccountAccruingInterest = Some(23.45)))
     ))
   )
 

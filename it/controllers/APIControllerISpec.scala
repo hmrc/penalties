@@ -207,25 +207,25 @@ class APIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock wit
       "the get Financial Details call succeeds" in {
         val sampleAPI1811Response = Json.parse(
           """
-            | { "financialDetails":
-            {
+            | {
+            | "financialDetails": {
             |  "totalisation": {
             |    "regimeTotalisation": {
-            |      "totalAccountOverdue": "1000.0",
-            |      "totalAccountNotYetDue": "250.0",
-            |      "totalAccountCredit": "40.0",
+            |      "totalAccountOverdue": 1000.0,
+            |      "totalAccountNotYetDue": 250.0,
+            |      "totalAccountCredit": 40.0,
             |      "totalAccountBalance": 1210
             |    },
             |    "targetedSearch_SelectionCriteriaTotalisation": {
-            |      "totalOverdue": "100.0",
-            |      "totalNotYetDue": "0.0",
-            |      "totalBalance": "100.0",
-            |      "totalCredit": "10.0",
+            |      "totalOverdue": 100.0,
+            |      "totalNotYetDue": 0.0,
+            |      "totalBalance": 100.0,
+            |      "totalCredit": 10.0,
             |      "totalCleared": 50
             |    },
             |    "additionalReceivableTotalisations": {
-            |      "totalAccountPostedInterest": "-99999999999.99",
-            |      "totalAccountAccruingInterest": -99999999999.99
+            |      "totalAccountPostedInterest": 12.34,
+            |      "totalAccountAccruingInterest": 43.21
             |    }
             |  },
             |  "documentDetails": [
