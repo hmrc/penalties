@@ -22,7 +22,11 @@ case class Totalisations(
                           LSPTotalValue: Option[BigDecimal],
                           penalisedPrincipalTotal: Option[BigDecimal],
                           LPPPostedTotal: Option[BigDecimal],
-                          LPPEstimatedTotal: Option[BigDecimal]
+                          LPPEstimatedTotal: Option[BigDecimal],
+                          //NOTE: Below does not come from 1812, it is added data from 1811
+                          totalAccountOverdue: Option[BigDecimal],
+                          totalAccountPostedInterest: Option[BigDecimal],
+                          totalAccountAccruingInterest: Option[BigDecimal]
                         )
 
 object Totalisations {
