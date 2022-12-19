@@ -24,15 +24,25 @@ import javax.inject.Inject
 
 class PenaltiesFrontendService @Inject()() {
   def combineAPIData(penaltyDetails: GetPenaltyDetails, financialDetails: FinancialDetails): GetPenaltyDetails = {
-    val newLPPDetails: Option[Seq[LPPDetails]] = penaltyDetails.latePaymentPenalty.flatMap(
+    val totalisationsCombined = combineTotalisations(penaltyDetails, financialDetails)
+    val allLPPData = combineLPPData(penaltyDetails, financialDetails)
+    if(allLPPData.isDefined) {
+      totalisationsCombined.copy(latePaymentPenalty = Some(LatePaymentPenalty(allLPPData)))
+    } else {
+      totalisationsCombined
+    }
+  }
+
+  private def combineLPPData(penaltyDetails: GetPenaltyDetails, financialDetails: FinancialDetails): Option[Seq[LPPDetails]] = {
+    penaltyDetails.latePaymentPenalty.flatMap(
       _.details.map(_.map(
         oldLPPDetails => {
           val isAdditional = oldLPPDetails.penaltyCategory.equals(LPPPenaltyCategoryEnum.SecondPenalty)
           val firstAndMaybeSecondPenalty = financialDetails.documentDetails.get.filter(_.chargeReferenceNumber.exists(_.equals(oldLPPDetails.principalChargeReference)))
           val penaltyToCopy = firstAndMaybeSecondPenalty.find(lpp => {
-              if(isAdditional) MainTransactionEnum.secondCharges.contains(lpp.lineItemDetails.get.head.mainTransaction.get)
-              else MainTransactionEnum.firstCharges.contains(lpp.lineItemDetails.get.head.mainTransaction.get)
-            }
+            if (isAdditional) MainTransactionEnum.secondCharges.contains(lpp.lineItemDetails.get.head.mainTransaction.get)
+            else MainTransactionEnum.firstCharges.contains(lpp.lineItemDetails.get.head.mainTransaction.get)
+          }
           )
           oldLPPDetails.copy(
             metadata = LPPDetailsMetadata(
@@ -44,7 +54,9 @@ class PenaltiesFrontendService @Inject()() {
         }
       ))
     )
+  }
 
+  private def combineTotalisations(penaltyDetails: GetPenaltyDetails, financialDetails: FinancialDetails): GetPenaltyDetails = {
     (financialDetails.totalisation.isDefined, penaltyDetails.totalisations.isDefined) match {
       //If there is totalisations already, add to it
       case (_, true) => {
@@ -57,7 +69,7 @@ class PenaltiesFrontendService @Inject()() {
             )
           }
         )
-        penaltyDetails.copy(latePaymentPenalty = Some(LatePaymentPenalty(newLPPDetails)), totalisations = newTotalisations)
+        penaltyDetails.copy(totalisations = newTotalisations)
       }
       case (true, false) => {
         //If there is no totalisations already, create a new object
@@ -70,11 +82,11 @@ class PenaltiesFrontendService @Inject()() {
           LPPPostedTotal = None,
           LPPEstimatedTotal = None
         )
-        penaltyDetails.copy(latePaymentPenalty = Some(LatePaymentPenalty(newLPPDetails)), totalisations = Some(totalisations))
+        penaltyDetails.copy(totalisations = Some(totalisations))
       }
       case _ => {
         //No totalisations at all, don't do any processing on totalisation field
-        penaltyDetails.copy(latePaymentPenalty = Some(LatePaymentPenalty(newLPPDetails)))
+        penaltyDetails
       }
     }
   }
