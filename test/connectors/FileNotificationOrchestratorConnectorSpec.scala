@@ -23,7 +23,7 @@ import org.mockito.{ArgumentCaptor, Matchers}
 import org.mockito.Mockito._
 import play.api.http.Status.OK
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse}
+import uk.gov.hmrc.http.{Authorization, HeaderCarrier, HttpClient, HttpResponse}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -35,6 +35,7 @@ class FileNotificationOrchestratorConnectorSpec extends SpecBase {
 
   class Setup {
     reset(mockHttpClient)
+    when(mockAppConfig.internalAuthBearerToken).thenReturn("test-12345")
     val connector = new FileNotificationOrchestratorConnector(mockHttpClient, mockAppConfig)
   }
 
@@ -54,19 +55,20 @@ class FileNotificationOrchestratorConnectorSpec extends SpecBase {
           correlationID = "corr12345"
         )
       )
-      val argumentCaptorOtherHeaders: ArgumentCaptor[Seq[(String, String)]] = ArgumentCaptor.forClass(classOf[Seq[(String, String)]])
-      when(mockHttpClient.POST[Seq[SDESNotification],HttpResponse](
+      val argumentCaptorForHeaderCarrier: ArgumentCaptor[HeaderCarrier] = ArgumentCaptor.forClass(classOf[HeaderCarrier])
+      when(mockHttpClient.POST[Seq[SDESNotification], HttpResponse](
         Matchers.any(),
         Matchers.any(),
-        argumentCaptorOtherHeaders.capture()
+        Matchers.any()
       )(Matchers.any(),
         Matchers.any(),
-        Matchers.any(),
+        argumentCaptorForHeaderCarrier.capture(),
         Matchers.any()))
         .thenReturn(Future.successful(HttpResponse(OK, "")))
 
       val result: HttpResponse = await(connector.postFileNotifications(Seq(model))(HeaderCarrier()))
-       result.status shouldBe OK
+      result.status shouldBe OK
+      argumentCaptorForHeaderCarrier.getValue.authorization shouldBe Some(Authorization("test-12345"))
      }
   }
 }
