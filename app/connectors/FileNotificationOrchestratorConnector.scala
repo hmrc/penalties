@@ -19,7 +19,7 @@ package connectors
 import config.AppConfig
 import models.notification.SDESNotification
 import uk.gov.hmrc.http.HttpReads.Implicits
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse}
+import uk.gov.hmrc.http.{Authorization, HeaderCarrier, HttpClient, HttpResponse}
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
@@ -29,7 +29,8 @@ class FileNotificationOrchestratorConnector @Inject()(httpClient: HttpClient,
                                                      (implicit ec: ExecutionContext) {
 
   def postFileNotifications(notifications: Seq[SDESNotification])(implicit hc: HeaderCarrier): Future[HttpResponse] = {
+    val headerCarrierWithInternalAuthToken = hc.copy(authorization = Some(Authorization(appConfig.internalAuthBearerToken)))
     httpClient.POST[Seq[SDESNotification], HttpResponse](url = appConfig.postFileNotificationUrl, notifications)(
-      SDESNotification.seqOfWrites, Implicits.readRaw, hc, implicitly)
+      SDESNotification.seqOfWrites, Implicits.readRaw, headerCarrierWithInternalAuthToken, implicitly)
   }
 }
