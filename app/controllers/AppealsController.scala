@@ -21,6 +21,7 @@ import config.featureSwitches.FeatureSwitching
 import connectors.FileNotificationOrchestratorConnector
 import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser
 import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser.GetPenaltyDetailsSuccessResponse
+import controllers.actions.InternalAuthActions
 import models.appeals.AppealTypeEnum._
 import models.appeals._
 import models.appeals.reasonableExcuses.ReasonableExcuse
@@ -36,6 +37,7 @@ import play.api.mvc.{Action, AnyContent, ControllerComponents, Request, Result}
 import services.auditing.AuditService
 import services.{AppealService, GetPenaltyDetailsService}
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.internalauth.client.BackendAuthComponents
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import utils.Logger.logger
 import utils.PagerDutyHelper.PagerDutyKeys._
@@ -51,8 +53,10 @@ class AppealsController @Inject()(val appConfig: AppConfig,
                                   idGenerator: UUIDGenerator,
                                   fileNotificationOrchestratorConnector: FileNotificationOrchestratorConnector,
                                   auditService: AuditService,
-                                  cc: ControllerComponents)(implicit ec: ExecutionContext, val config: Configuration)
-  extends BackendController(cc) with FeatureSwitching {
+                                  cc: ControllerComponents)
+                                 (implicit ec: ExecutionContext,
+                                  val config: Configuration,
+                                  val auth: BackendAuthComponents) extends BackendController(cc) with FeatureSwitching with InternalAuthActions {
 
   private def getAppealDataForPenalty(penaltyId: String, enrolmentKey: String,
                                       penaltyType: AppealTypeEnum.Value)(implicit hc: HeaderCarrier): Future[Result] = {
@@ -67,13 +71,13 @@ class AppealsController @Inject()(val appConfig: AppConfig,
     }
   }
 
-  def getAppealsDataForLateSubmissionPenalty(penaltyId: String, enrolmentKey: String): Action[AnyContent] = Action.async {
+  def getAppealsDataForLateSubmissionPenalty(penaltyId: String, enrolmentKey: String): Action[AnyContent] = authoriseService.async {
     implicit request => {
       getAppealDataForPenalty(penaltyId, enrolmentKey, Late_Submission)
     }
   }
 
-  def getAppealsDataForLatePaymentPenalty(penaltyId: String, enrolmentKey: String, isAdditional: Boolean): Action[AnyContent] = Action.async {
+  def getAppealsDataForLatePaymentPenalty(penaltyId: String, enrolmentKey: String, isAdditional: Boolean): Action[AnyContent] = authoriseService.async {
     implicit request => {
       getAppealDataForPenalty(penaltyId, enrolmentKey, if (isAdditional) Additional else Late_Payment)
     }
@@ -119,11 +123,11 @@ class AppealsController @Inject()(val appConfig: AppConfig,
     }
   }
 
-  def getReasonableExcuses: Action[AnyContent] = Action {
+  def getReasonableExcuses: Action[AnyContent] = authoriseService {
     Ok(ReasonableExcuse.allExcusesToJson(appConfig))
   }
 
-  def submitAppeal(enrolmentKey: String, isLPP: Boolean, penaltyNumber: String, correlationId: String): Action[AnyContent] = Action.async {
+  def submitAppeal(enrolmentKey: String, isLPP: Boolean, penaltyNumber: String, correlationId: String): Action[AnyContent] = authoriseService.async {
     implicit request => {
       request.body.asJson.fold({
         logger.error("[AppealsController][submitAppeal] Failed to validate request body as JSON")
@@ -225,7 +229,7 @@ class AppealsController @Inject()(val appConfig: AppConfig,
     }
   }
 
-  def getMultiplePenaltyData(penaltyId: String, enrolmentKey: String): Action[AnyContent] = Action.async {
+  def getMultiplePenaltyData(penaltyId: String, enrolmentKey: String): Action[AnyContent] = authoriseService.async {
     implicit request => {
       val vrn = RegimeHelper.getIdentifierFromEnrolmentKey(enrolmentKey)
       getPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(vrn).map {

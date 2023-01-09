@@ -18,7 +18,7 @@ package controllers
 
 import base.{LogCapturing, SpecBase}
 import config.AppConfig
-import config.featureSwitches.FeatureSwitching
+import config.featureSwitches.{FeatureSwitching, UseInternalAuth}
 import connectors.FileNotificationOrchestratorConnector
 import connectors.parsers.AppealsParser.UnexpectedFailure
 import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser.{GetPenaltyDetailsFailureResponse, GetPenaltyDetailsMalformed, GetPenaltyDetailsSuccessResponse}
@@ -38,11 +38,14 @@ import org.scalatest.concurrent.Eventually.eventually
 import play.api.Configuration
 import play.api.http.Status
 import play.api.libs.json.{JsValue, Json}
-import play.api.mvc.Result
+import play.api.mvc.{ControllerComponents, Result}
+import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import services.auditing.AuditService
 import services.{AppealService, GetPenaltyDetailsService}
-import uk.gov.hmrc.http.HttpResponse
+import uk.gov.hmrc.http.{HttpResponse, UpstreamErrorResponse}
+import uk.gov.hmrc.internalauth.client.{BackendAuthComponents, Retrieval}
+import uk.gov.hmrc.internalauth.client.test.{BackendAuthComponentsStub, StubBehaviour}
 import utils.Logger.logger
 import utils.PagerDutyHelper.PagerDutyKeys
 import utils.UUIDGenerator
@@ -59,16 +62,27 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
   val mockGetPenaltyDetailsService: GetPenaltyDetailsService = mock(classOf[GetPenaltyDetailsService])
   val correlationId = "id-1234567890"
   val mockFileNotificationConnector: FileNotificationOrchestratorConnector = mock(classOf[FileNotificationOrchestratorConnector])
-  implicit val config: Configuration = mockAppConfig.config
+  implicit val cc: ControllerComponents = stubControllerComponents()
+  implicit val config: Configuration = mock(classOf[Configuration])
+  lazy val mockAuth: StubBehaviour = mock(classOf[StubBehaviour])
+  lazy val authComponent: BackendAuthComponents = BackendAuthComponentsStub(mockAuth)
 
-  class Setup(withRealAppConfig: Boolean = true) {
+  class Setup {
+    sys.props -= UseInternalAuth.name
     reset(mockAppConfig)
     reset(mockAppealsService)
     reset(mockGetPenaltyDetailsService)
     reset(mockFileNotificationConnector)
     reset(mockAuditService)
-    val controller = new AppealsController(if (withRealAppConfig) appConfig
-    else mockAppConfig, mockAppealsService, mockGetPenaltyDetailsService, mockUUIDGenerator, mockFileNotificationConnector, mockAuditService, stubControllerComponents())
+    reset(config)
+    reset(mockAuth)
+    when(mockAppConfig.isReasonableExcuseEnabled(Matchers.any()))
+      .thenReturn(true)
+    when(mockAppConfig.SDESNotificationInfoType).thenReturn("S18")
+    when(mockAppConfig.SDESNotificationFileRecipient).thenReturn("123456789012")
+    when(mockAuth.stubAuth(any(), any[Retrieval[Unit]])).thenReturn(Future.unit)
+    when(config.get[Boolean](Matchers.eq(UseInternalAuth.name))(any())).thenReturn(true)
+    val controller = new AppealsController(mockAppConfig, mockAppealsService, mockGetPenaltyDetailsService, mockUUIDGenerator, mockFileNotificationConnector, mockAuditService, cc)(implicitly, config, authComponent)
   }
 
   "getAppealsDataForLateSubmissionPenalty" should {
@@ -205,6 +219,25 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
         dateCommunicationSent = LocalDate.of(2022, 5, 8)
       )
       contentAsString(result) shouldBe Json.toJson(appealDataToReturn).toString()
+    }
+
+    "return UNAUTHORIZED (401)" when {
+      "the caller does not provide an auth token" in new Setup {
+        val samplePenaltyId: String = "1234567891"
+        val sampleEnrolmentKey: String = "HMRC-MTD-VAT~VRN~123456789"
+        val result: Future[Result] = controller.getAppealsDataForLateSubmissionPenalty(samplePenaltyId, sampleEnrolmentKey)(FakeRequest("GET", "/"))
+        status(result) shouldBe Status.UNAUTHORIZED
+      }
+    }
+
+    "return FORBIDDEN (403)" when {
+      "the caller does not have the sufficient permissions" in new Setup {
+        when(mockAuth.stubAuth(any(), any[Retrieval[Unit]])).thenReturn(Future.failed(UpstreamErrorResponse("FORBIDDEN", Status.FORBIDDEN)))
+        val samplePenaltyId: String = "1234567891"
+        val sampleEnrolmentKey: String = "HMRC-MTD-VAT~VRN~123456789"
+        val result: Future[Result] = controller.getAppealsDataForLateSubmissionPenalty(samplePenaltyId, sampleEnrolmentKey)(fakeRequest)
+        status(result) shouldBe Status.FORBIDDEN
+      }
     }
   }
 
@@ -360,6 +393,27 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
       )
       contentAsString(result) shouldBe Json.toJson(appealDataToReturn).toString()
     }
+
+    "return UNAUTHORIZED (401)" when {
+      "the caller does not provide an auth token" in new Setup {
+        val samplePenaltyId: String = "1234567891"
+        val sampleEnrolmentKey: String = "HMRC-MTD-VAT~VRN~123456789"
+        val result: Future[Result] = controller.getAppealsDataForLatePaymentPenalty(samplePenaltyId, sampleEnrolmentKey,
+          isAdditional = true)(FakeRequest("GET", "/"))
+        status(result) shouldBe Status.UNAUTHORIZED
+      }
+    }
+
+    "return FORBIDDEN (403)" when {
+      "the caller does not have the sufficient permissions" in new Setup {
+        when(mockAuth.stubAuth(any(), any[Retrieval[Unit]])).thenReturn(Future.failed(UpstreamErrorResponse("FORBIDDEN", Status.FORBIDDEN)))
+        val samplePenaltyId: String = "1234567891"
+        val sampleEnrolmentKey: String = "HMRC-MTD-VAT~VRN~123456789"
+        val result: Future[Result] = controller.getAppealsDataForLatePaymentPenalty(samplePenaltyId, sampleEnrolmentKey,
+          isAdditional = true)(fakeRequest)
+        status(result) shouldBe Status.FORBIDDEN
+      }
+    }
   }
 
   "getReasonableExcuses" should {
@@ -406,7 +460,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
       contentAsJson(result) shouldBe jsonExpectedToReturn
     }
 
-    "return only those reasonable excuses that are active based on config" in new Setup(withRealAppConfig = false) {
+    "return only those reasonable excuses that are active based on config" in new Setup {
       val jsonExpectedToReturn: JsValue = Json.parse(
         """
           |{
@@ -446,6 +500,21 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
       val result: Future[Result] = controller.getReasonableExcuses()(fakeRequest)
       status(result) shouldBe OK
       contentAsJson(result) shouldBe jsonExpectedToReturn
+    }
+
+    "return UNAUTHORIZED (401)" when {
+      "the caller does not provide an auth token" in new Setup {
+        val result: Future[Result] = controller.getReasonableExcuses()(FakeRequest("GET", "/"))
+        status(result) shouldBe Status.UNAUTHORIZED
+      }
+    }
+
+    "return FORBIDDEN (403)" when {
+      "the caller does not have the sufficient permissions" in new Setup {
+        when(mockAuth.stubAuth(any(), any[Retrieval[Unit]])).thenReturn(Future.failed(UpstreamErrorResponse("FORBIDDEN", Status.FORBIDDEN)))
+        val result: Future[Result] = controller.getReasonableExcuses()(fakeRequest)
+        status(result) shouldBe Status.FORBIDDEN
+      }
     }
   }
 
@@ -892,6 +961,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
           result.header.status shouldBe OK
           eventually {
             verify(mockAuditService, times(1)).audit(argumentCaptorForAuditModel.capture())(any(), any(), any())
+            logs.count(_.getMessage.contains("An unknown exception occurred when attempting to store file notifications, with error")) shouldBe 1
           }
         }
       }
@@ -911,6 +981,23 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
           ), audit = SDESAudit(correlationId)
         )
       ))
+    }
+
+    "return UNAUTHORIZED (401)" when {
+      "the caller does not provide an auth token" in new Setup {
+        val sampleEnrolmentKey: String = "HMRC-MTD-VAT~VRN~123456789"
+        val result: Future[Result] = controller.submitAppeal(sampleEnrolmentKey, isLPP = false, penaltyNumber = "123456789", correlationId = correlationId)(FakeRequest("GET", "/"))
+        status(result) shouldBe Status.UNAUTHORIZED
+      }
+    }
+
+    "return FORBIDDEN (403)" when {
+      "the caller does not have the sufficient permissions" in new Setup {
+        val sampleEnrolmentKey: String = "HMRC-MTD-VAT~VRN~123456789"
+        when(mockAuth.stubAuth(any(), any[Retrieval[Unit]])).thenReturn(Future.failed(UpstreamErrorResponse("FORBIDDEN", Status.FORBIDDEN)))
+        val result: Future[Result] = controller.submitAppeal(sampleEnrolmentKey, isLPP = false, penaltyNumber = "123456789", correlationId = correlationId)(fakeRequest)
+        status(result) shouldBe Status.FORBIDDEN
+      }
     }
   }
 
@@ -1209,6 +1296,23 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
           status(result) shouldBe Status.INTERNAL_SERVER_ERROR
           logs.exists(_.getMessage.contains(PagerDutyKeys.MALFORMED_RESPONSE_FROM_1812_API.toString)) shouldBe true
         }
+      }
+    }
+
+    "return UNAUTHORIZED (401)" when {
+      "the caller does not provide an auth token" in new Setup {
+        val sampleEnrolmentKey: String = "HMRC-MTD-VAT~VRN~123456789"
+        val result: Future[Result] = controller.getMultiplePenaltyData("1234567891", sampleEnrolmentKey)(FakeRequest("GET", "/"))
+        status(result) shouldBe Status.UNAUTHORIZED
+      }
+    }
+
+    "return FORBIDDEN (403)" when {
+      "the caller does not have the sufficient permissions" in new Setup {
+        val sampleEnrolmentKey: String = "HMRC-MTD-VAT~VRN~123456789"
+        when(mockAuth.stubAuth(any(), any[Retrieval[Unit]])).thenReturn(Future.failed(UpstreamErrorResponse("FORBIDDEN", Status.FORBIDDEN)))
+        val result: Future[Result] = controller.getMultiplePenaltyData("1234567891", sampleEnrolmentKey)(fakeRequest)
+        status(result) shouldBe Status.FORBIDDEN
       }
     }
   }

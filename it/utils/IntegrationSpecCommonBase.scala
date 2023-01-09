@@ -30,7 +30,7 @@ import play.api.{Application, Configuration}
 import uk.gov.hmrc.http.HeaderCarrier
 
 trait IntegrationSpecCommonBase extends AnyWordSpec with Matchers with GuiceOneServerPerSuite with
-  BeforeAndAfterAll with BeforeAndAfterEach with TestSuite with WiremockHelper with DatastreamWiremock {
+  BeforeAndAfterAll with BeforeAndAfterEach with TestSuite with WiremockHelper with DatastreamWiremock with AuthWiremock {
 
   implicit val hc: HeaderCarrier = HeaderCarrier()
 
@@ -46,6 +46,7 @@ trait IntegrationSpecCommonBase extends AnyWordSpec with Matchers with GuiceOneS
     super.beforeEach()
     mockAuditResponse()
     mockMergedAuditResponse()
+    mockAuthorised()
     SharedMetricRegistries.clear()
   }
 
@@ -73,10 +74,12 @@ trait IntegrationSpecCommonBase extends AnyWordSpec with Matchers with GuiceOneS
     "microservice.services.pega.port" -> stubPort,
     "microservice.services.des.host" -> stubHost,
     "microservice.services.des.port" -> stubPort,
+    "microservice.services.internal-auth.port" -> stubPort,
     "auditing.consumer.baseUri.host" -> stubHost,
     "auditing.consumer.baseUri.port" -> stubPort,
     "microservice.services.penalties-file-notification-orchestrator.host" -> stubHost,
-    "microservice.services.penalties-file-notification-orchestrator.port" -> stubPort
+    "microservice.services.penalties-file-notification-orchestrator.port" -> stubPort,
+    "feature.switch.use-internal-auth" -> true
   )
 
   override lazy val app: Application = new GuiceApplicationBuilder()
@@ -90,6 +93,6 @@ trait IntegrationSpecCommonBase extends AnyWordSpec with Matchers with GuiceOneS
   lazy val ws: WSClient = app.injector.instanceOf[WSClient]
 
   def buildClientForRequestToApp(baseUrl: String = "/penalties", uri: String): WSRequest = {
-    ws.url(s"http://localhost:$port$baseUrl$uri").withFollowRedirects(false)
+    ws.url(s"http://localhost:$port$baseUrl$uri").withFollowRedirects(false).addHttpHeaders("Authorization" -> "Token some-token")
   }
 }

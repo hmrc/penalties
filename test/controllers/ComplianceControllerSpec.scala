@@ -17,25 +17,40 @@
 package controllers
 
 import base.SpecBase
+import config.featureSwitches.UseInternalAuth
 import models.compliance._
 import org.mockito.Matchers
 import org.mockito.Mockito._
+import play.api.Configuration
+import play.api.http.Status
 import play.api.libs.json.Json
-import play.api.mvc.Result
+import play.api.mvc.{ControllerComponents, Result}
+import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import services.ComplianceService
+import uk.gov.hmrc.http.UpstreamErrorResponse
+import uk.gov.hmrc.internalauth.client.{BackendAuthComponents, Retrieval}
+import uk.gov.hmrc.internalauth.client.test.{BackendAuthComponentsStub, StubBehaviour}
 
 import java.time.LocalDate
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 class ComplianceControllerSpec extends SpecBase {
+  implicit val cc: ControllerComponents = stubControllerComponents()
+  val mockConfig: Configuration = mock(classOf[Configuration])
+  lazy val mockAuth: StubBehaviour = mock(classOf[StubBehaviour])
+  lazy val authComponent: BackendAuthComponents = BackendAuthComponentsStub(mockAuth)
   val mockService: ComplianceService = mock(classOf[ComplianceService])
-  implicit val ec: ExecutionContext = ExecutionContext.Implicits.global
 
   class Setup {
-    val controller: ComplianceController = new ComplianceController(mockService, stubControllerComponents())
-
+    sys.props -= UseInternalAuth.name
+    val controller: ComplianceController = new ComplianceController(mockService, cc)(implicitly, mockConfig, authComponent)
     reset(mockService)
+    reset(mockConfig)
+    reset(mockAuth)
+    when(mockAuth.stubAuth(Matchers.any(), Matchers.any[Retrieval[Unit]])).thenReturn(Future.unit)
+    when(mockConfig.get[Boolean](Matchers.eq(UseInternalAuth.name))(Matchers.any())).thenReturn(true)
   }
 
   "getComplianceData" should {
@@ -79,6 +94,21 @@ class ComplianceControllerSpec extends SpecBase {
       val result: Future[Result] = controller.getComplianceData("123456789", "2020-01-01", "2020-12-31")(fakeRequest)
       status(result) shouldBe OK
       contentAsJson(result) shouldBe Json.toJson(compliancePayloadAsModel)
+    }
+
+    "return UNAUTHORIZED (401)" when {
+      "the caller does not provide an auth token" in new Setup {
+        val result: Future[Result] = controller.getComplianceData("123456789", "2020-01-01", "2020-12-31")(FakeRequest("GET", "/"))
+        status(result) shouldBe Status.UNAUTHORIZED
+      }
+    }
+
+    "return FORBIDDEN (403)" when {
+      "the caller does not have the sufficient permissions" in new Setup {
+        when(mockAuth.stubAuth(Matchers.any(), Matchers.any[Retrieval[Unit]])).thenReturn(Future.failed(UpstreamErrorResponse("FORBIDDEN", Status.FORBIDDEN)))
+        val result: Future[Result] = controller.getComplianceData("123456789", "2020-01-01", "2020-12-31")(fakeRequest)
+        status(result) shouldBe Status.FORBIDDEN
+      }
     }
   }
 }
