@@ -18,12 +18,15 @@ package controllers
 
 import connectors.parsers.getFinancialDetails.GetFinancialDetailsParser._
 import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser.{GetPenaltyDetailsSuccessResponse, _}
+import controllers.actions.InternalAuthActions
 import models.auditing.UserHasPenaltyAuditModel
 import models.getPenaltyDetails.GetPenaltyDetails
+import play.api.Configuration
 import play.api.libs.json.Json
 import play.api.mvc._
 import services.auditing.AuditService
 import services.{GetFinancialDetailsService, GetPenaltyDetailsService, PenaltiesFrontendService}
+import uk.gov.hmrc.internalauth.client.BackendAuthComponents
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import utils.Logger.logger
 import utils.PagerDutyHelper.PagerDutyKeys._
@@ -39,9 +42,11 @@ class PenaltiesFrontendController @Inject()(
                                              penaltiesFrontendService: PenaltiesFrontendService,
                                              dateHelper: DateHelper,
                                              cc: ControllerComponents
-                                           )(implicit ec: ExecutionContext) extends BackendController(cc) {
+                                           )(implicit ec: ExecutionContext,
+                                             val config: Configuration,
+                                             val auth: BackendAuthComponents) extends BackendController(cc) with InternalAuthActions {
 
-  def getPenaltiesData(enrolmentKey: String, arn: Option[String] = None): Action[AnyContent] = Action.async {
+  def getPenaltiesData(enrolmentKey: String, arn: Option[String] = None): Action[AnyContent] = authoriseService.async {
     implicit request => {
       val vrn: String = RegimeHelper.getIdentifierFromEnrolmentKey(enrolmentKey)
       getPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(vrn).flatMap {

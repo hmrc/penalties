@@ -16,13 +16,14 @@
 
 package connectors.getFinancialDetails
 
-import java.time.LocalDate
 import config.featureSwitches.{CallAPI1811ETMP, FeatureSwitching}
 import connectors.parsers.getFinancialDetails.GetFinancialDetailsParser._
 import play.api.http.Status
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import utils.{ETMPWiremock, IntegrationSpecCommonBase}
+
+import java.time.LocalDate
 
 class GetFinancialDetailsConnectorISpec extends IntegrationSpecCommonBase with ETMPWiremock with FeatureSwitching {
 

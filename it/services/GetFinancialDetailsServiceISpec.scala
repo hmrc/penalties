@@ -17,8 +17,6 @@
 package services
 
 import config.featureSwitches.FeatureSwitching
-
-import java.time.LocalDate
 import connectors.parsers.getFinancialDetails.GetFinancialDetailsParser._
 import models.getFinancialDetails
 import models.getFinancialDetails.totalisation.{FinancialDetailsTotalisation, InterestTotalisation, RegimeTotalisation}
@@ -26,6 +24,8 @@ import models.getFinancialDetails.{FinancialDetails, MainTransactionEnum}
 import play.api.http.Status
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import utils.{ETMPWiremock, IntegrationSpecCommonBase}
+
+import java.time.LocalDate
 
 class GetFinancialDetailsServiceISpec extends IntegrationSpecCommonBase with ETMPWiremock with FeatureSwitching {
   val service: GetFinancialDetailsService = injector.instanceOf[GetFinancialDetailsService]

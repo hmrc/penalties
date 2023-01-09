@@ -31,7 +31,7 @@ trait SpecBase extends AnyWordSpec with Matchers with GuiceOneAppPerSuite {
 
   implicit val appConfig: AppConfig = injector.instanceOf[AppConfig]
 
-  val fakeRequest: FakeRequest[AnyContent] = FakeRequest("GET", "/")
+  val fakeRequest: FakeRequest[AnyContent] = FakeRequest("GET", "/").withHeaders("Authorization" -> "Token some-token")
 
   val appealResponseModel = AppealResponseModel("PR-123456789")
 

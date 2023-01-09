@@ -21,6 +21,7 @@ import connectors.getFinancialDetails.GetFinancialDetailsConnector
 import connectors.getPenaltyDetails.GetPenaltyDetailsConnector
 import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser
 import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser.GetPenaltyDetailsSuccessResponse
+import controllers.actions.InternalAuthActions
 import models.api.APIModel
 import models.auditing.{ThirdParty1812APIRetrievalAuditModel, ThirdPartyAPI1811RetrievalAuditModel, UserHasPenaltyAuditModel}
 import models.getPenaltyDetails.GetPenaltyDetails
@@ -29,6 +30,7 @@ import play.api.libs.json.Json
 import play.api.mvc._
 import services.auditing.AuditService
 import services.{APIService, GetPenaltyDetailsService}
+import uk.gov.hmrc.internalauth.client.BackendAuthComponents
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import utils.Logger.logger
 import utils.PagerDutyHelper.PagerDutyKeys._
@@ -44,11 +46,13 @@ class APIController @Inject()(auditService: AuditService,
                               getFinancialDetailsConnector: GetFinancialDetailsConnector,
                               getPenaltyDetailsConnector: GetPenaltyDetailsConnector,
                               dateHelper: DateHelper,
-                              cc: ControllerComponents)(implicit ec: ExecutionContext, val config: Configuration) extends BackendController(cc) with FeatureSwitching {
+                              cc: ControllerComponents)(implicit ec: ExecutionContext,
+                                                        val config: Configuration,
+                                                        val auth: BackendAuthComponents) extends BackendController(cc) with FeatureSwitching with InternalAuthActions {
 
   private val vrnRegex: Regex = "^[0-9]{1,9}$".r
 
-  def getSummaryDataForVRN(vrn: String): Action[AnyContent] = Action.async {
+  def getSummaryDataForVRN(vrn: String): Action[AnyContent] = authoriseService.async {
     implicit request => {
       if (!vrn.matches(vrnRegex.regex)) {
         Future(BadRequest(s"VRN: $vrn was not in a valid format."))
@@ -123,7 +127,7 @@ class APIController @Inject()(auditService: AuditService,
                           addLockInformation: Option[Boolean],
                           addPenaltyDetails: Option[Boolean],
                           addPostedInterestDetails: Option[Boolean],
-                          addAccruingInterestDetails: Option[Boolean]): Action[AnyContent] = Action.async {
+                          addAccruingInterestDetails: Option[Boolean]): Action[AnyContent] = authoriseService.async {
     implicit request => {
       val response = getFinancialDetailsConnector.getFinancialDetailsForAPI(vrn,
         searchType,
@@ -163,7 +167,7 @@ class APIController @Inject()(auditService: AuditService,
     }
   }
 
-  def getPenaltyDetails(vrn: String, dateLimit: Option[String]): Action[AnyContent] = Action.async {
+  def getPenaltyDetails(vrn: String, dateLimit: Option[String]): Action[AnyContent] = authoriseService.async {
     implicit request => {
       val response = getPenaltyDetailsConnector.getPenaltyDetailsForAPI(vrn, dateLimit)
       response.map(
