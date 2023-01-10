@@ -242,14 +242,6 @@ Example URL - `/penalties/penalty-details/VAT/VRN/:VRN?dateLimit=09`
 
 The data returned is outlined in v1.1.0 of the GetPenaltyDetails API specification.
 
-## Authentication
-
-This service is protected by service-to-service authentication. Currently, only BTA, VATVC and other Penalties services can call this service.
-
-A valid token needs to be created in the internal auth service to be used in calls from the Penalties backend.
-
-See https://github.com/hmrc/internal-auth#endpoints on how to create a valid token to use in calling services.
-
 ## Testing
 
 This service can be tested with SBT via `sbt test it:test`

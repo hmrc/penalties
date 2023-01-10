@@ -16,7 +16,7 @@
 
 package connectors
 
-import models.notification._
+import models.notification.{SDESAudit, SDESChecksum, SDESNotification, SDESNotificationFile, SDESProperties}
 import play.api.http.Status
 import play.api.http.Status.OK
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
