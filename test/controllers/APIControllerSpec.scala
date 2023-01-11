@@ -17,27 +17,22 @@
 package controllers
 
 import base.{LogCapturing, SpecBase}
-import config.featureSwitches.{FeatureSwitching, UseInternalAuth}
+import config.featureSwitches.FeatureSwitching
 import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser._
 import connectors.getFinancialDetails.GetFinancialDetailsConnector
 import connectors.getPenaltyDetails.GetPenaltyDetailsConnector
 import models.getPenaltyDetails.GetPenaltyDetails
 import models.getPenaltyDetails.latePayment._
 import models.getPenaltyDetails.lateSubmission.{LSPSummary, LateSubmissionPenalty}
-import org.mockito.Matchers
 import org.mockito.Matchers._
 import org.mockito.Mockito._
 import play.api.Configuration
 import play.api.http.Status
 import play.api.libs.json.Json
-import play.api.mvc.ControllerComponents
-import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import services.auditing.AuditService
 import services.{APIService, AppealService, GetPenaltyDetailsService}
-import uk.gov.hmrc.http.{HttpResponse, UpstreamErrorResponse}
-import uk.gov.hmrc.internalauth.client.{BackendAuthComponents, Retrieval}
-import uk.gov.hmrc.internalauth.client.test.{BackendAuthComponentsStub, StubBehaviour}
+import uk.gov.hmrc.http.HttpResponse
 import utils.DateHelper
 import utils.Logger.logger
 import utils.PagerDutyHelper.PagerDutyKeys
@@ -54,20 +49,12 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
   val mockGetPenaltyDetailsService: GetPenaltyDetailsService = mock(classOf[GetPenaltyDetailsService])
   val mockGetFinancialDetailsConnector: GetFinancialDetailsConnector = mock(classOf[GetFinancialDetailsConnector])
   val mockGetPenaltyDetailsConnector: GetPenaltyDetailsConnector = mock(classOf[GetPenaltyDetailsConnector])
-  implicit val cc: ControllerComponents = stubControllerComponents()
-  implicit val config: Configuration = mock(classOf[Configuration])
-  lazy val mockAuth: StubBehaviour = mock(classOf[StubBehaviour])
-  lazy val authComponent: BackendAuthComponents = BackendAuthComponentsStub(mockAuth)
+  implicit val config: Configuration = appConfig.config
 
   class Setup(isFSEnabled: Boolean = false) {
-    sys.props -= UseInternalAuth.name
     reset(mockAppealsService)
     reset(mockAuditService)
     reset(mockAPIService)
-    reset(mockAuth)
-    reset(config)
-    when(mockAuth.stubAuth(any(), any[Retrieval[Unit]])).thenReturn(Future.unit)
-    when(config.get[Boolean](Matchers.eq(UseInternalAuth.name))(Matchers.any())).thenReturn(true)
     val controller = new APIController(
       mockAuditService,
       mockAPIService,
@@ -75,8 +62,8 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
       mockGetFinancialDetailsConnector,
       mockGetPenaltyDetailsConnector,
       dateHelper,
-      cc
-    )(implicitly, config, authComponent)
+      stubControllerComponents()
+    )
   }
 
   "getSummaryDataForVRN" should {
@@ -310,21 +297,6 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
           |""".stripMargin
       )
     }
-
-    "return UNAUTHORIZED (401)" when {
-      "the caller does not provide an auth token" in new Setup {
-        val result = controller.getSummaryDataForVRN("123456789")(FakeRequest("GET", "/"))
-        status(result) shouldBe Status.UNAUTHORIZED
-      }
-    }
-
-    "return FORBIDDEN (403)" when {
-      "the caller does not have the sufficient permissions" in new Setup {
-        when(mockAuth.stubAuth(any(), any[Retrieval[Unit]])).thenReturn(Future.failed(UpstreamErrorResponse("FORBIDDEN", Status.FORBIDDEN)))
-        val result = controller.getSummaryDataForVRN("123456789")(fakeRequest)
-        status(result) shouldBe Status.FORBIDDEN
-      }
-    }
   }
 
   "getFinancialDetails" should {
@@ -491,47 +463,6 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
       status(result) shouldBe Status.INTERNAL_SERVER_ERROR
       verify(mockAuditService, times(1)).audit(any())(any(), any(), any())
     }
-
-    "return UNAUTHORIZED (401)" when {
-      "the caller does not provide an auth token" in new Setup {
-        val result = controller.getFinancialDetails(vrn = "123456789",
-          searchType = Some("CHGREF"),
-          searchItem = Some("XC00178236592"),
-          dateType = Some("BILLING"),
-          dateFrom = Some("2020-10-03"),
-          dateTo = Some("2021-07-12"),
-          includeClearedItems = Some(false),
-          includeStatisticalItems = Some(true),
-          includePaymentOnAccount = Some(true),
-          addRegimeTotalisation = Some(false),
-          addLockInformation = Some(true),
-          addPenaltyDetails = Some(true),
-          addPostedInterestDetails = Some(true),
-          addAccruingInterestDetails = Some(true))(FakeRequest("GET", "/"))
-        status(result) shouldBe Status.UNAUTHORIZED
-      }
-    }
-
-    "return FORBIDDEN (403)" when {
-      "the caller does not have the sufficient permissions" in new Setup {
-        when(mockAuth.stubAuth(any(), any[Retrieval[Unit]])).thenReturn(Future.failed(UpstreamErrorResponse("FORBIDDEN", Status.FORBIDDEN)))
-        val result = controller.getFinancialDetails(vrn = "123456789",
-          searchType = Some("CHGREF"),
-          searchItem = Some("XC00178236592"),
-          dateType = Some("BILLING"),
-          dateFrom = Some("2020-10-03"),
-          dateTo = Some("2021-07-12"),
-          includeClearedItems = Some(false),
-          includeStatisticalItems = Some(true),
-          includePaymentOnAccount = Some(true),
-          addRegimeTotalisation = Some(false),
-          addLockInformation = Some(true),
-          addPenaltyDetails = Some(true),
-          addPostedInterestDetails = Some(true),
-          addAccruingInterestDetails = Some(true))(fakeRequest)
-        status(result) shouldBe Status.FORBIDDEN
-      }
-    }
   }
 
   "getPenaltyDetails" should {
@@ -640,21 +571,6 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
 
       status(result) shouldBe Status.INTERNAL_SERVER_ERROR
       verify(mockAuditService, times(1)).audit(any())(any(), any(), any())
-    }
-
-    "return UNAUTHORIZED (401)" when {
-      "the caller does not provide an auth token" in new Setup {
-        val result = controller.getPenaltyDetails(vrn = "123456789", dateLimit = None)(FakeRequest("GET", "/"))
-        status(result) shouldBe Status.UNAUTHORIZED
-      }
-    }
-
-    "return FORBIDDEN (403)" when {
-      "the caller does not have the sufficient permissions" in new Setup {
-        when(mockAuth.stubAuth(any(), any[Retrieval[Unit]])).thenReturn(Future.failed(UpstreamErrorResponse("FORBIDDEN", Status.FORBIDDEN)))
-        val result = controller.getPenaltyDetails(vrn = "123456789", dateLimit = None)(fakeRequest)
-        status(result) shouldBe Status.FORBIDDEN
-      }
     }
   }
 }

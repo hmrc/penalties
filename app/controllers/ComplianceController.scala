@@ -16,12 +16,9 @@
 
 package controllers
 
-import controllers.actions.InternalAuthActions
-import play.api.Configuration
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import services.ComplianceService
-import uk.gov.hmrc.internalauth.client.BackendAuthComponents
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import utils.Logger.logger
 
@@ -29,11 +26,9 @@ import javax.inject.Inject
 import scala.concurrent.ExecutionContext
 
 class ComplianceController @Inject()(complianceService: ComplianceService,
-                                     cc: ControllerComponents)(implicit ec: ExecutionContext,
-                                                               val config: Configuration,
-                                                               val auth: BackendAuthComponents) extends BackendController(cc) with InternalAuthActions {
+                                     cc: ControllerComponents)(implicit ec: ExecutionContext) extends BackendController(cc) {
 
-  def getComplianceData(vrn: String, fromDate: String, toDate: String): Action[AnyContent] = authoriseService.async {
+  def getComplianceData(vrn: String, fromDate: String, toDate: String): Action[AnyContent] = Action.async {
     implicit request => {
       complianceService.getComplianceData(vrn, fromDate, toDate).map {
         _.fold(
