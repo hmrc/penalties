@@ -82,6 +82,182 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
       |}
       |""".stripMargin)
 
+  val getPenaltyDetailsJsonWithBlankExpiryReasonAndAppealLevel: JsValue = Json.parse(
+    """
+      |{
+      | "totalisations": {
+      |   "LSPTotalValue": 200,
+      |   "penalisedPrincipalTotal": 2000,
+      |   "LPPPostedTotal": 165.25,
+      |   "LPPEstimatedTotal": 15.26
+      | },
+      | "lateSubmissionPenalty": {
+      |   "summary": {
+      |     "activePenaltyPoints": 1,
+      |     "inactivePenaltyPoints": 0,
+      |     "regimeThreshold": 5,
+      |     "penaltyChargeAmount": 200.00,
+      |     "PoCAchievementDate": "2022-01-01"
+      |   },
+      |   "details": [
+      |     {
+      |       "penaltyNumber": "12345678901234",
+      |       "penaltyOrder": "01",
+      |       "penaltyCategory": "P",
+      |       "penaltyStatus": "ACTIVE",
+      |       "expiryReason": " ",
+      |       "penaltyCreationDate": "2022-10-30",
+      |       "penaltyExpiryDate": "2022-10-30",
+      |       "communicationsDate": "2022-10-30",
+      |       "lateSubmissions": [
+      |         {
+      |           "taxPeriodStartDate": "2022-01-01",
+      |           "taxPeriodEndDate": "2022-12-31",
+      |           "taxPeriodDueDate": "2023-02-07",
+      |           "returnReceiptDate": "2023-02-01",
+      |           "taxReturnStatus": "Fulfilled"
+      |         }
+      |       ],
+      |       "appealInformation": [
+      |         {
+      |           "appealStatus": "99",
+      |           "appealLevel": " "
+      |         }
+      |       ]
+      |     }
+      |   ]
+      | },
+      | "latePaymentPenalty": {
+      |     "details": [
+      |       {
+      |         "principalChargeDueDate": "2022-10-30",
+      |         "principalChargeBillingTo": "2022-10-30",
+      |         "penaltyAmountPaid": 0,
+      |         "outstandingAmount": 543.21,
+      |         "LPP1LRPercentage": 2,
+      |         "LPP1HRDays": "31",
+      |         "penaltyChargeDueDate": "2022-10-30",
+      |         "communicationsDate": "2022-10-30",
+      |         "LPP2Days": "31",
+      |         "penaltyChargeCreationDate": "2022-10-30",
+      |         "LPP1HRPercentage": 2,
+      |         "LPP1LRDays": "15",
+      |         "timeToPay": [
+      |             {
+      |                 "TTPStartDate": "2022-01-01",
+      |                 "TTPEndDate": "2022-12-31"
+      |             }
+      |         ],
+      |         "LPP1HRCalculationAmount": 99.99,
+      |         "penaltyCategory": "LPP1",
+      |         "principalChargeReference": "XM002610011594",
+      |         "principalChargeBillingFrom": "2022-10-30",
+      |         "penaltyStatus": "A",
+      |         "mainTransaction": "4703",
+      |         "LPP2Percentage": 4,
+      |         "LPP1LRCalculationAmount": 99.99,
+      |         "penaltyAmountOutstanding": 144,
+      |         "appealInformation": [
+      |           {
+      |             "appealStatus": "99",
+      |             "appealLevel": " "
+      |           }
+      |         ]
+      |       }
+      |   ]
+      | }
+      |}
+      |""".stripMargin)
+
+  val getPenaltyDetailsJsonWithRemovedExpiryReasonAndDefaultedAppealLevel: JsValue = Json.parse(
+    """
+      |{
+      | "totalisations": {
+      |   "LSPTotalValue": 200,
+      |   "penalisedPrincipalTotal": 2000,
+      |   "LPPPostedTotal": 165.25,
+      |   "LPPEstimatedTotal": 15.26,
+      |   "totalAccountOverdue": 1000.0,
+      |   "totalAccountPostedInterest": 12.34,
+      |   "totalAccountAccruingInterest": 43.21
+      | },
+      | "lateSubmissionPenalty": {
+      |   "summary": {
+      |     "activePenaltyPoints": 1,
+      |     "inactivePenaltyPoints": 0,
+      |     "regimeThreshold": 5,
+      |     "penaltyChargeAmount": 200.00,
+      |     "PoCAchievementDate": "2022-01-01"
+      |   },
+      |   "details": [
+      |     {
+      |       "penaltyNumber": "12345678901234",
+      |       "penaltyOrder": "01",
+      |       "penaltyCategory": "P",
+      |       "penaltyStatus": "ACTIVE",
+      |       "penaltyCreationDate": "2022-10-30",
+      |       "penaltyExpiryDate": "2022-10-30",
+      |       "communicationsDate": "2022-10-30",
+      |       "lateSubmissions": [
+      |         {
+      |           "taxPeriodStartDate": "2022-01-01",
+      |           "taxPeriodEndDate": "2022-12-31",
+      |           "taxPeriodDueDate": "2023-02-07",
+      |           "returnReceiptDate": "2023-02-01",
+      |           "taxReturnStatus": "Fulfilled"
+      |         }
+      |       ],
+      |       "appealInformation": [
+      |         {
+      |           "appealStatus": "99",
+      |           "appealLevel": "01"
+      |         }
+      |       ]
+      |     }
+      |   ]
+      | },
+      | "latePaymentPenalty": {
+      |     "details": [
+      |       {
+      |         "principalChargeDueDate": "2022-10-30",
+      |         "principalChargeBillingTo": "2022-10-30",
+      |         "penaltyAmountPaid": 0,
+      |         "outstandingAmount": 543.21,
+      |         "LPP1LRPercentage": 2,
+      |         "LPP1HRDays": "31",
+      |         "penaltyChargeDueDate": "2022-10-30",
+      |         "communicationsDate": "2022-10-30",
+      |         "LPP2Days": "31",
+      |         "penaltyChargeCreationDate": "2022-10-30",
+      |         "LPP1HRPercentage": 2,
+      |         "LPP1LRDays": "15",
+      |         "timeToPay": [
+      |             {
+      |                 "TTPStartDate": "2022-01-01",
+      |                 "TTPEndDate": "2022-12-31"
+      |             }
+      |         ],
+      |         "LPP1HRCalculationAmount": 99.99,
+      |         "penaltyCategory": "LPP1",
+      |         "principalChargeReference": "XM002610011594",
+      |         "principalChargeBillingFrom": "2022-10-30",
+      |         "penaltyStatus": "A",
+      |         "mainTransaction": "4703",
+      |         "LPP2Percentage": 4,
+      |         "LPP1LRCalculationAmount": 99.99,
+      |         "penaltyAmountOutstanding": 144,
+      |         "appealInformation": [
+      |           {
+      |             "appealStatus": "99",
+      |             "appealLevel": "01"
+      |           }
+      |         ]
+      |       }
+      |   ]
+      | }
+      |}
+      |""".stripMargin)
+
   val combinedPenaltyAndFinancialData: JsValue = Json.parse(
     """
       |{
@@ -153,6 +329,17 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
       val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/HMRC-MTD-VAT~VRN~123456789").get())
       result.status shouldBe OK
       Json.parse(result.body) shouldBe combinedPenaltyAndFinancialData
+    }
+
+    "the get penalty details call includes blank expiryReason and appealLevel fields" in {
+      mockStubResponseForGetPenaltyDetails(Status.OK, "123456789", body = Some(getPenaltyDetailsJsonWithBlankExpiryReasonAndAppealLevel.toString()))
+      mockStubResponseForGetFinancialDetails(Status.OK,
+        s"VRN/123456789/VATC?dateFrom=${LocalDate.now.minusYears(2)}&dateTo=${LocalDate.now}" +
+          s"&includeClearedItems=true&includeStatisticalItems=true&includePaymentOnAccount=true&addRegimeTotalisation=false&addLockInformation=false&addPenaltyDetails=true&addPostedInterestDetails=true&addAccruingInterestDetails=true")
+
+      val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/HMRC-MTD-VAT~VRN~123456789").get())
+      result.status shouldBe OK
+      Json.parse(result.body) shouldBe getPenaltyDetailsJsonWithRemovedExpiryReasonAndDefaultedAppealLevel
     }
 
     s"the get penalty details call succeeds and the get financial details call returns NO_CONTENT (${Status.NO_CONTENT}) (returning penalty details unaltered)" in {

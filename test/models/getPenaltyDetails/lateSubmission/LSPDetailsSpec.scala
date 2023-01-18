@@ -205,19 +205,19 @@ class LSPDetailsSpec extends SpecBase {
   )
 
   "be readable from JSON" in {
-    val result: JsResult[LSPDetails] = Json.fromJson(jsonRepresentingModel)(LSPDetails.format)
+    val result: JsResult[LSPDetails] = Json.fromJson(jsonRepresentingModel)(LSPDetails.reads)
     result.isSuccess shouldBe true
     result.get shouldBe model
   }
 
   "be readable from JSON when expiryReason is blank" in {
-    val result: JsResult[LSPDetails] = Json.fromJson(jsonRepresentingModelWithBlankExpiryReason)(LSPDetails.format)
+    val result: JsResult[LSPDetails] = Json.fromJson(jsonRepresentingModelWithBlankExpiryReason)(LSPDetails.reads)
     result.isSuccess shouldBe true
     result.get shouldBe modelWithBlankExpiryReason
   }
 
   "be readable from JSON when appealLevel is ' '" in {
-    val result: JsResult[LSPDetails] = Json.fromJson(jsonRepresentingModelWithBlankAppealLevel)(LSPDetails.format)
+    val result: JsResult[LSPDetails] = Json.fromJson(jsonRepresentingModelWithBlankAppealLevel)(LSPDetails.reads)
     result.isSuccess shouldBe true
     result.get shouldBe modelWithBlankAppealLevel
   }

@@ -17,7 +17,7 @@
 package models.getPenaltyDetails.lateSubmission
 
 import models.getPenaltyDetails.appealInfo.AppealInformationType
-import play.api.libs.json.{Format, JsValue, Json, Writes}
+import play.api.libs.json.{Format, JsValue, Json, Reads, Writes}
 
 import java.time.LocalDate
 
@@ -39,7 +39,7 @@ case class LSPDetails(
                      )
 
 object LSPDetails {
-  implicit def format: Format[LSPDetails] = Json.format[LSPDetails]
+  implicit val reads: Reads[LSPDetails] = Json.reads[LSPDetails]
 
   private val writes: Writes[LSPDetails] = Json.writes[LSPDetails]
 
