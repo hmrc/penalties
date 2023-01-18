@@ -17,11 +17,27 @@
 package models.getPenaltyDetails.appealInfo
 
 import base.SpecBase
-import play.api.libs.json.Json
+import play.api.libs.json.{JsValue, Json}
 
 class AppealInformationTypeSpec extends SpecBase {
 
-  val appealInfoAsJson = Json.parse(
+  val appealInfoAsJson: JsValue = Json.parse(
+    """
+      |{
+      |    "appealStatus": "A",
+      |    "appealLevel": "01"
+      |}
+      |""".stripMargin)
+
+  val appealInfoAsJsonEmptyAppealLevel: JsValue = Json.parse(
+    """
+      |{
+      |    "appealStatus": "99",
+      |    "appealLevel": " "
+      |}
+      |""".stripMargin)
+
+  val appealInfoAsJsonDefaultAppealLevel: JsValue = Json.parse(
     """
       |{
       |    "appealStatus": "99",
@@ -29,21 +45,37 @@ class AppealInformationTypeSpec extends SpecBase {
       |}
       |""".stripMargin)
 
-  val appealInfoAsModel = AppealInformationType(
-    appealStatus = Some(AppealStatusEnum.Unappealable),
+  val appealInfoAsModel: AppealInformationType = AppealInformationType(
+    appealStatus = Some(AppealStatusEnum.Under_Appeal),
     appealLevel = Some(AppealLevelEnum.HMRC)
+  )
+
+  val appealInfoAsModelWithDefaultedAppealLevel: AppealInformationType = AppealInformationType(
+    appealStatus = Some(AppealStatusEnum.Unappealable),
+    appealLevel = Some(AppealLevelEnum.Empty)
   )
 
   "AppealInformationType" should {
     "be readable from JSON" in {
-      val result = Json.fromJson(appealInfoAsJson)(AppealInformationType.format)
+      val result = Json.fromJson(appealInfoAsJson)(AppealInformationType.reads)
       result.isSuccess shouldBe true
       result.get shouldBe appealInfoAsModel
     }
 
+    "be readable from JSON when the appealLevel is blank (when appealStatus is UNAPPEALABLE)" in {
+      val result = Json.fromJson(appealInfoAsJsonEmptyAppealLevel)(AppealInformationType.reads)
+      result.isSuccess shouldBe true
+      result.get shouldBe appealInfoAsModelWithDefaultedAppealLevel
+    }
+
     "be writable to JSON" in {
-      val result = Json.toJson(appealInfoAsModel)(AppealInformationType.format)
+      val result = Json.toJson(appealInfoAsModel)(AppealInformationType.writes)
       result shouldBe appealInfoAsJson
+    }
+
+    "be writable to JSON - setting EMPTY appeal level to HMRC for unappealable status" in {
+      val result = Json.toJson(appealInfoAsModelWithDefaultedAppealLevel)(AppealInformationType.writes)
+      result shouldBe appealInfoAsJsonDefaultAppealLevel
     }
   }
 

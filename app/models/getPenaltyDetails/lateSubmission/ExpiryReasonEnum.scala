@@ -27,6 +27,7 @@ object ExpiryReasonEnum extends Enumeration {
   val SubmissionOnTime: ExpiryReasonEnum.Value = Value("NLT")
   val Compliance: ExpiryReasonEnum.Value = Value("POC")
   val Reset: ExpiryReasonEnum.Value = Value("RES")
+  val Empty: ExpiryReasonEnum.Value = Value(" ")
 
   implicit val format: Format[ExpiryReasonEnum.Value] = new Format[ExpiryReasonEnum.Value] {
 
@@ -41,6 +42,7 @@ object ExpiryReasonEnum extends Enumeration {
       case "NLT" => JsSuccess(SubmissionOnTime)
       case "POC" => JsSuccess(Compliance)
       case "RES" => JsSuccess(Reset)
+      case " " => JsSuccess(Empty)
       case e => JsError(s"$e not recognised")
     }
   }

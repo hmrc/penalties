@@ -61,7 +61,7 @@ class GetPenaltyDetailsServiceISpec extends IntegrationSpecCommonBase with ETMPW
               penaltyCreationDate = LocalDate.of(2022, 10, 30),
               penaltyExpiryDate = LocalDate.of(2022, 10, 30),
               communicationsDate = Some(LocalDate.of(2022, 10, 30)),
-              FAPIndicator = Some("X"),
+              FAPIndicator = None,
               lateSubmissions = Some(
                 Seq(
                   LateSubmission(
@@ -73,11 +73,11 @@ class GetPenaltyDetailsServiceISpec extends IntegrationSpecCommonBase with ETMPW
                   )
                 )
               ),
-              expiryReason = Some(ExpiryReasonEnum.Adjustment),
+              expiryReason = Some(ExpiryReasonEnum.Empty),
               appealInformation = Some(
                 Seq(
                   AppealInformationType(
-                    appealStatus = Some(AppealStatusEnum.Unappealable), appealLevel = Some(AppealLevelEnum.HMRC)
+                    appealStatus = Some(AppealStatusEnum.Unappealable), appealLevel = Some(AppealLevelEnum.Empty)
                   )
                 )
               ),

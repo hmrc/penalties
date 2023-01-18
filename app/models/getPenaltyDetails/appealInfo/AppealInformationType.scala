@@ -16,7 +16,7 @@
 
 package models.getPenaltyDetails.appealInfo
 
-import play.api.libs.json.{Json, OFormat}
+import play.api.libs.json.{JsValue, Json, Reads, Writes}
 
 case class AppealInformationType(
                                   appealStatus: Option[AppealStatusEnum.Value],
@@ -24,5 +24,25 @@ case class AppealInformationType(
                                 )
 
 object AppealInformationType {
-  implicit val format: OFormat[AppealInformationType] = Json.format[AppealInformationType]
+  implicit val reads: Reads[AppealInformationType] = Json.reads[AppealInformationType]
+
+  implicit val writes: Writes[AppealInformationType] = new Writes[AppealInformationType] {
+    override def writes(appealInformation: AppealInformationType): JsValue = {
+      val newAppealLevel: Option[AppealLevelEnum.Value] = parseAppealLevel(appealInformation)
+      Json.obj(
+        "appealStatus" -> appealInformation.appealStatus,
+        "appealLevel" -> newAppealLevel
+      )
+    }
+  }
+
+  private def parseAppealLevel(appealInformation: AppealInformationType) = {
+    if (appealInformation.appealLevel.contains(AppealLevelEnum.Empty)
+      && appealInformation.appealStatus.contains(AppealStatusEnum.Unappealable)) {
+      //We should never show this on the frontend if the penalty is unappealable
+      Some(AppealLevelEnum.HMRC)
+    } else {
+      appealInformation.appealLevel
+    }
+  }
 }

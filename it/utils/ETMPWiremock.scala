@@ -47,7 +47,6 @@ trait ETMPWiremock {
       |       "penaltyCreationDate": "2022-10-30",
       |       "penaltyExpiryDate": "2022-10-30",
       |       "communicationsDate": "2022-10-30",
-      |       "FAPIndicator": "X",
       |       "lateSubmissions": [
       |         {
       |           "taxPeriodStartDate": "2022-01-01",
@@ -57,11 +56,11 @@ trait ETMPWiremock {
       |           "taxReturnStatus": "Fulfilled"
       |         }
       |       ],
-      |       "expiryReason": "FAP",
+      |       "expiryReason": " ",
       |       "appealInformation": [
       |         {
       |           "appealStatus": "99",
-      |           "appealLevel": "01"
+      |           "appealLevel": " "
       |         }
       |       ],
       |       "chargeDueDate": "2022-10-30",
