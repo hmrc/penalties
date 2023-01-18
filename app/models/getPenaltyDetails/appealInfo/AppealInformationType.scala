@@ -39,7 +39,6 @@ object AppealInformationType {
   private def parseAppealLevel(appealInformation: AppealInformationType) = {
     if (appealInformation.appealLevel.contains(AppealLevelEnum.Empty)
       && appealInformation.appealStatus.contains(AppealStatusEnum.Unappealable)) {
-      //We should never show this on the frontend if the penalty is unappealable
       Some(AppealLevelEnum.HMRC)
     } else {
       appealInformation.appealLevel
