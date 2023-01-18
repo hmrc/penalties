@@ -35,5 +35,4 @@ object ComplianceStatusEnum extends Enumeration {
       }
     }
   }
-
 }
