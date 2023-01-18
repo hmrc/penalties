@@ -22,6 +22,8 @@ object AppealLevelEnum extends Enumeration {
 
   val HMRC: AppealLevelEnum.Value = Value("01")
   val Tribunal: AppealLevelEnum.Value = Value("02")
+  @deprecated("Not to be used, only for handling unappealable (99) penalties with blank level", "18/01/2023")
+  val Empty: AppealLevelEnum.Value = Value(" ")
 
   implicit val format: Format[AppealLevelEnum.Value] = new Format[AppealLevelEnum.Value] {
 
@@ -30,6 +32,7 @@ object AppealLevelEnum extends Enumeration {
     override def reads(json: JsValue): JsResult[AppealLevelEnum.Value] = json.as[String].toUpperCase match {
       case "01" => JsSuccess(HMRC)
       case "02" => JsSuccess(Tribunal)
+      case " " => JsSuccess(Empty)
       case e => JsError(s"$e not recognised")
     }
   }

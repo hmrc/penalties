@@ -78,6 +78,11 @@ class ExpiryReasonEnumSpec extends SpecBase {
       result shouldBe JsString("RES")
     }
 
+    "be writeable to JSON for empty value - ' '" in {
+      val result = Json.toJson(ExpiryReasonEnum.Empty)
+      result shouldBe JsString(" ")
+    }
+
     "be readable from JSON for appeal - APP" in {
       val result = Json.fromJson(JsString("APP"))(ExpiryReasonEnum.format)
       result.isSuccess shouldBe true
@@ -124,6 +129,12 @@ class ExpiryReasonEnumSpec extends SpecBase {
       val result = Json.fromJson(JsString("RES"))(ExpiryReasonEnum.format)
       result.isSuccess shouldBe true
       result.get shouldBe ExpiryReasonEnum.Reset
+    }
+
+    "be readable from JSON for empty value - ' '" in {
+      val result = Json.fromJson(JsString(" "))(ExpiryReasonEnum.format)
+      result.isSuccess shouldBe true
+      result.get shouldBe ExpiryReasonEnum.Empty
     }
     
     "return JsError when the enum is not readable" in {
