@@ -248,7 +248,7 @@ class PenaltiesFrontendControllerSpec extends SpecBase with LogCapturing {
     s"return ISE (${Status.INTERNAL_SERVER_ERROR}) when the 1811 call fails" in new Setup(isFSEnabled = true) {
       when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(Matchers.any())(Matchers.any()))
         .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetailsFullAPIResponse))))
-      when(mockGetFinancialDetailsService.getDataFromFinancialServiceForVATVCN(Matchers.any())(Matchers.any()))
+      when(mockGetFinancialDetailsService.getFinancialDetails(Matchers.any())(Matchers.any()))
         .thenReturn(Future.successful(Left(GetFinancialDetailsFailureResponse(Status.INTERNAL_SERVER_ERROR))))
       val result = controller.getPenaltiesData("123456789", Some("123456789"))(fakeRequest)
       status(result) shouldBe Status.INTERNAL_SERVER_ERROR
@@ -257,7 +257,7 @@ class PenaltiesFrontendControllerSpec extends SpecBase with LogCapturing {
     s"return ISE (${Status.INTERNAL_SERVER_ERROR}) when the 1811 call response body is malformed" in new Setup(isFSEnabled = true) {
       when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(Matchers.any())(Matchers.any()))
         .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetailsFullAPIResponse))))
-      when(mockGetFinancialDetailsService.getDataFromFinancialServiceForVATVCN(Matchers.any())(Matchers.any()))
+      when(mockGetFinancialDetailsService.getFinancialDetails(Matchers.any())(Matchers.any()))
         .thenReturn(Future.successful(Left(GetFinancialDetailsMalformed)))
       withCaptureOfLoggingFrom(logger) {
         logs => {
@@ -276,7 +276,7 @@ class PenaltiesFrontendControllerSpec extends SpecBase with LogCapturing {
       )
       when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(Matchers.any())(Matchers.any()))
         .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(penaltyDetails))))
-      when(mockGetFinancialDetailsService.getDataFromFinancialServiceForVATVCN(Matchers.any())(Matchers.any()))
+      when(mockGetFinancialDetailsService.getFinancialDetails(Matchers.any())(Matchers.any()))
         .thenReturn(Future.successful(Left(GetFinancialDetailsFailureResponse(Status.NOT_FOUND))))
       val result = controller.getPenaltiesData("123456789", Some(""))(fakeRequest)
       status(result) shouldBe Status.NOT_FOUND
@@ -284,7 +284,7 @@ class PenaltiesFrontendControllerSpec extends SpecBase with LogCapturing {
     s"return NO_CONTENT (${Status.NO_CONTENT}) when the 1811 call returns no data (DATA_NOT_FOUND response)" in new Setup(isFSEnabled = true) {
       when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(Matchers.any())(Matchers.any()))
         .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetailsFullAPIResponse))))
-      when(mockGetFinancialDetailsService.getDataFromFinancialServiceForVATVCN(Matchers.any())(Matchers.any()))
+      when(mockGetFinancialDetailsService.getFinancialDetails(Matchers.any())(Matchers.any()))
         .thenReturn(Future.successful(Left(GetFinancialDetailsNoContent)))
       val result = controller.getPenaltiesData("123456789", Some(""))(fakeRequest)
       status(result) shouldBe Status.NO_CONTENT
@@ -294,7 +294,7 @@ class PenaltiesFrontendControllerSpec extends SpecBase with LogCapturing {
       val penaltyDetails: GetPenaltyDetails = getPenaltyDetailsFullAPIResponse.copy(latePaymentPenalty = None)
       when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(Matchers.any())(Matchers.any()))
         .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(penaltyDetails))))
-      when(mockGetFinancialDetailsService.getDataFromFinancialServiceForVATVCN(Matchers.any())(Matchers.any()))
+      when(mockGetFinancialDetailsService.getFinancialDetails(Matchers.any())(Matchers.any()))
         .thenReturn(Future.successful(Left(GetFinancialDetailsNoContent)))
       val result = controller.getPenaltiesData("123456789", Some(""))(fakeRequest)
       status(result) shouldBe Status.OK
@@ -316,7 +316,7 @@ class PenaltiesFrontendControllerSpec extends SpecBase with LogCapturing {
 
       when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(Matchers.any())(Matchers.any()))
         .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetailsFullAPIResponse))))
-      when(mockGetFinancialDetailsService.getDataFromFinancialServiceForVATVCN(Matchers.any())(Matchers.any()))
+      when(mockGetFinancialDetailsService.getFinancialDetails(Matchers.any())(Matchers.any()))
         .thenReturn(Future.successful(Right(GetFinancialDetailsSuccessResponse(financialDetails))))
       when(mockPenaltiesFrontendService.combineAPIData(Matchers.any(), Matchers.any()))
         .thenReturn(getPenaltyDetailsFullAPIResponse)

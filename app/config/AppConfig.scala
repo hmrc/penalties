@@ -16,8 +16,6 @@
 
 package config
 
-import java.time.LocalDate
-
 import config.featureSwitches._
 import javax.inject.{Inject, Singleton}
 import play.api.Configuration
@@ -28,9 +26,8 @@ class AppConfig @Inject()(val config: Configuration, servicesConfig: ServicesCon
   val auditingEnabled: Boolean = config.get[Boolean]("auditing.enabled")
   val graphiteHost: String = config.get[String]("microservice.metrics.graphite.host")
 
-  def queryParametersForGetFinancialDetail(dateFrom: LocalDate, dateTo: LocalDate): String = {
-    s"?dateFrom=$dateFrom&dateTo=$dateTo" +
-      s"&includeClearedItems=${config.get[Boolean]("eis.includeCleared")}" +
+  lazy val queryParametersForGetFinancialDetails: String = {
+    s"?includeClearedItems=${config.get[Boolean]("eis.includeCleared")}" +
       s"&includeStatisticalItems=${config.get[Boolean]("eis.includeStatistical")}" +
       s"&includePaymentOnAccount=${config.get[Boolean]("eis.includePOA")}" +
       s"&addRegimeTotalisation=${config.get[Boolean]("eis.addRegimeTotalisation")}" +

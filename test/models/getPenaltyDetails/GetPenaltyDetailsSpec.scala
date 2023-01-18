@@ -18,8 +18,8 @@ package models.getPenaltyDetails
 
 import base.SpecBase
 import models.getPenaltyDetails.appealInfo.{AppealInformationType, AppealLevelEnum, AppealStatusEnum}
-import models.getPenaltyDetails.latePayment.{LPPDetails, LPPDetailsMetadata, LPPPenaltyCategoryEnum, LPPPenaltyStatusEnum, LatePaymentPenalty}
-import models.getPenaltyDetails.lateSubmission.{ExpiryReasonEnum, LSPDetails, LSPPenaltyCategoryEnum, LSPPenaltyStatusEnum, LSPSummary, LateSubmission, LateSubmissionPenalty, TaxReturnStatusEnum}
+import models.getPenaltyDetails.latePayment._
+import models.getPenaltyDetails.lateSubmission._
 import play.api.libs.json.{JsResult, JsValue, Json}
 
 import java.time.LocalDate

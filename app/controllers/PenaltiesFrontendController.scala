@@ -76,7 +76,7 @@ class PenaltiesFrontendController @Inject()(
   private def handleAndCombineGetFinancialDetailsData(penaltyDetails: GetPenaltyDetails, enrolmentKey: String, arn: Option[String])
                                                      (implicit request: Request[_]): Future[Result] = {
     val vrn: String = RegimeHelper.getIdentifierFromEnrolmentKey(enrolmentKey)
-    getFinancialDetailsService.getDataFromFinancialServiceForVATVCN(vrn).map {
+    getFinancialDetailsService.getFinancialDetails(vrn).map {
       _.fold(
         {
           case GetFinancialDetailsNoContent => {

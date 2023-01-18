@@ -18,6 +18,7 @@ package utils
 
 import base.SpecBase
 import models.getPenaltyDetails.lateSubmission.{LateSubmission, TaxReturnStatusEnum}
+
 import java.time.LocalDate
 
 class PenaltyPeriodHelperSpec extends SpecBase {

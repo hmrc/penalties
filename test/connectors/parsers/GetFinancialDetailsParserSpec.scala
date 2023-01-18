@@ -17,8 +17,8 @@
 package connectors.parsers
 
 import base.LogCapturing
-import connectors.parsers.getFinancialDetails.GetFinancialDetailsParser._
 import connectors.parsers.getFinancialDetails.GetFinancialDetailsParser
+import connectors.parsers.getFinancialDetails.GetFinancialDetailsParser._
 import models.getFinancialDetails.totalisation.{FinancialDetailsTotalisation, InterestTotalisation, RegimeTotalisation}
 import models.getFinancialDetails.{DocumentDetails, FinancialDetails, GetFinancialData, LineItemDetails}
 import org.scalatest.matchers.should.Matchers

@@ -18,9 +18,9 @@ package controllers
 
 import base.{LogCapturing, SpecBase}
 import config.featureSwitches.FeatureSwitching
-import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser._
 import connectors.getFinancialDetails.GetFinancialDetailsConnector
 import connectors.getPenaltyDetails.GetPenaltyDetailsConnector
+import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser._
 import models.getPenaltyDetails.GetPenaltyDetails
 import models.getPenaltyDetails.latePayment._
 import models.getPenaltyDetails.lateSubmission.{LSPSummary, LateSubmissionPenalty}

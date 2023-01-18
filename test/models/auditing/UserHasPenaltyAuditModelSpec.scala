@@ -19,7 +19,7 @@ package models.auditing
 import base.{LogCapturing, SpecBase}
 import models.getPenaltyDetails._
 import models.getPenaltyDetails.appealInfo.{AppealInformationType, AppealLevelEnum, AppealStatusEnum}
-import models.getPenaltyDetails.latePayment.{LPPDetails, LPPDetailsMetadata, LPPPenaltyCategoryEnum, LPPPenaltyStatusEnum, LatePaymentPenalty, TimeToPay}
+import models.getPenaltyDetails.latePayment._
 import models.getPenaltyDetails.lateSubmission._
 import org.mockito.Mockito.{mock, when}
 import utils.{DateHelper, Logger}
