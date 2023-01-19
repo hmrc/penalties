@@ -16,7 +16,6 @@
 
 package services
 
-import config.featureSwitches.FeatureSwitching
 import connectors.parsers.getFinancialDetails.GetFinancialDetailsParser._
 import connectors.getFinancialDetails.GetFinancialDetailsConnector
 import play.api.Configuration
@@ -27,13 +26,11 @@ import utils.Logger.logger
 import scala.concurrent.{ExecutionContext, Future}
 
 class GetFinancialDetailsService @Inject()(getFinancialDetailsConnector: GetFinancialDetailsConnector)
-                                          (implicit ec: ExecutionContext, val config: Configuration) extends FeatureSwitching {
+                                          (implicit ec: ExecutionContext, val config: Configuration) {
 
-  def getDataFromFinancialServiceForVATVCN(vrn: String)(implicit hc: HeaderCarrier): Future[GetFinancialDetailsResponse] = {
-    val dateFrom = getTimeMachineDate.minusYears(2)
-    val dateTo = getTimeMachineDate
+  def getFinancialDetails(vrn: String)(implicit hc: HeaderCarrier): Future[GetFinancialDetailsResponse] = {
     implicit val startOfLogMsg: String = "[GetFinancialDetailsService][getDataFromFinancialServiceForVATVCN]"
-    getFinancialDetailsConnector.getFinancialDetails(vrn, dateFrom, dateTo).map {
+    getFinancialDetailsConnector.getFinancialDetails(vrn).map {
       handleConnectorResponse(_)
     }
   }

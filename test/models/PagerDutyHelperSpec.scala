@@ -17,11 +17,11 @@
 package models
 
 import base.LogCapturing
-import utils.PagerDutyHelper.PagerDutyKeys
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import utils.Logger.logger
 import utils.PagerDutyHelper
+import utils.PagerDutyHelper.PagerDutyKeys
 
 class PagerDutyHelperSpec extends AnyWordSpec with Matchers with LogCapturing {
   "log" should {

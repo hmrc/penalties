@@ -21,8 +21,8 @@ import config.AppConfig
 import config.featureSwitches.AddReceiptDateHeaderToAPI1812
 import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser.{GetPenaltyDetailsFailureResponse, GetPenaltyDetailsResponse, GetPenaltyDetailsSuccessResponse}
 import models.getPenaltyDetails.GetPenaltyDetails
-import org.mockito.{ArgumentCaptor, Matchers}
 import org.mockito.Mockito.{mock, reset, when}
+import org.mockito.{ArgumentCaptor, Matchers}
 import play.api.http.Status
 import play.api.libs.json.Json
 import play.api.test.Helpers.{await, defaultAwaitTimeout}

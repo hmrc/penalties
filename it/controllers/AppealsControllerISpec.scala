@@ -16,7 +16,6 @@
 
 package controllers
 
-import scala.jdk.CollectionConverters._
 import com.github.tomakehurst.wiremock.client.WireMock.{postRequestedFor, urlEqualTo}
 import config.featureSwitches.FeatureSwitching
 import models.appeals.MultiplePenaltiesData
@@ -27,6 +26,7 @@ import play.api.test.Helpers._
 import utils.{AppealWiremock, ETMPWiremock, FileNotificationOrchestratorWiremock, IntegrationSpecCommonBase}
 
 import java.time.LocalDate
+import scala.jdk.CollectionConverters._
 
 class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock with AppealWiremock with FileNotificationOrchestratorWiremock with FeatureSwitching {
   val controller: AppealsController = injector.instanceOf[AppealsController]

@@ -19,9 +19,9 @@ package services
 import base.SpecBase
 import models.getFinancialDetails.totalisation.{FinancialDetailsTotalisation, InterestTotalisation, RegimeTotalisation}
 import models.getFinancialDetails.{DocumentDetails, FinancialDetails, LineItemDetails, MainTransactionEnum}
-import models.getPenaltyDetails.{GetPenaltyDetails, Totalisations}
 import models.getPenaltyDetails.appealInfo.{AppealInformationType, AppealLevelEnum, AppealStatusEnum}
-import models.getPenaltyDetails.latePayment.{LPPDetails, LPPDetailsMetadata, LPPPenaltyCategoryEnum, LPPPenaltyStatusEnum, LatePaymentPenalty, TimeToPay}
+import models.getPenaltyDetails.latePayment._
+import models.getPenaltyDetails.{GetPenaltyDetails, Totalisations}
 
 import java.time.LocalDate
 

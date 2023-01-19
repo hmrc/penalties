@@ -17,7 +17,7 @@
 package models.getPenaltyDetails.lateSubmission
 
 import models.getPenaltyDetails.appealInfo.AppealInformationType
-import play.api.libs.json.{Format, JsValue, Json, Reads, Writes}
+import play.api.libs.json.{JsValue, Json, Reads, Writes}
 
 import java.time.LocalDate
 

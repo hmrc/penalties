@@ -16,11 +16,11 @@
 
 package models.upload
 
-import java.time.LocalDateTime
-
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import play.api.libs.json.{JsValue, Json}
+
+import java.time.LocalDateTime
 
 class UploadJourneySpec extends AnyWordSpec with Matchers {
   val mockDateTime: LocalDateTime = LocalDateTime.of(2020, 1, 1, 0 , 0, 0)
