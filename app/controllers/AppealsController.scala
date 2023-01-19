@@ -110,7 +110,7 @@ class AppealsController @Inject()(val appConfig: AppConfig,
         startDate = penaltyBasedOnId.principalChargeBillingFrom,
         endDate = penaltyBasedOnId.principalChargeBillingTo,
         dueDate = penaltyBasedOnId.principalChargeDueDate,
-        dateCommunicationSent = penaltyBasedOnId.communicationsDate
+        dateCommunicationSent = penaltyBasedOnId.communicationsDate.get
       )
       Ok(Json.toJson(dataToReturn))
     } else {
@@ -248,8 +248,8 @@ class AppealsController @Inject()(val appConfig: AppConfig,
                 firstPenaltyAmount = firstPenalty.penaltyAmountOutstanding.getOrElse(BigDecimal(0)) + firstPenalty.penaltyAmountPaid.getOrElse(BigDecimal(0)),
                 secondPenaltyChargeReference = secondPenalty.penaltyChargeReference.get,
                 secondPenaltyAmount = secondPenalty.penaltyAmountOutstanding.getOrElse(BigDecimal(0)) + secondPenalty.penaltyAmountPaid.getOrElse(BigDecimal(0)),
-                firstPenaltyCommunicationDate = firstPenalty.communicationsDate,
-                secondPenaltyCommunicationDate = secondPenalty.communicationsDate
+                firstPenaltyCommunicationDate = firstPenalty.communicationsDate.get,
+                secondPenaltyCommunicationDate = secondPenalty.communicationsDate.get
               )
               Ok(Json.toJson(returnModel))
             } else {

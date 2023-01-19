@@ -33,7 +33,9 @@ case class LPPDetails(
                        principalChargeBillingFrom: LocalDate,
                        principalChargeBillingTo: LocalDate,
                        principalChargeDueDate: LocalDate,
-                       communicationsDate: LocalDate,
+                       communicationsDate: Option[LocalDate],
+                       penaltyAmountAccruing: BigDecimal,
+                       principalChargeMainTransaction: MainTransactionEnum.Value,
                        penaltyAmountOutstanding: Option[BigDecimal],
                        penaltyAmountPaid: Option[BigDecimal],
                        LPP1LRDays: Option[String],
@@ -62,7 +64,7 @@ object LPPDetails extends JsonUtils {
         principalChargeBillingFrom <- (json \ "principalChargeBillingFrom").validate[LocalDate]
         principalChargeBillingTo <- (json \ "principalChargeBillingTo").validate[LocalDate]
         principalChargeDueDate <- (json \ "principalChargeDueDate").validate[LocalDate]
-        communicationsDate <- (json \ "communicationsDate").validate[LocalDate]
+        communicationsDate <- (json \ "communicationsDate").validateOpt[LocalDate]
         penaltyAmountOutstanding <- (json \ "penaltyAmountOutstanding").validateOpt[BigDecimal]
         penaltyAmountPaid <- (json \ "penaltyAmountPaid").validateOpt[BigDecimal]
         lpp1LRDays <- (json \ "LPP1LRDays").validateOpt[String]
@@ -75,6 +77,8 @@ object LPPDetails extends JsonUtils {
         lpp1HRPercentage <- (json \ "LPP1HRPercentage").validateOpt[BigDecimal]
         penaltyChargeDueDate <- (json \ "penaltyChargeDueDate").validateOpt[LocalDate]
         principalChargeLatestClearing <- (json \ "principalChargeLatestClearing").validateOpt[LocalDate]
+        penaltyAmountAccruing <- (json \ "penaltyAmountAccruing").validate[BigDecimal]
+        principalChargeMainTransaction <- (json \ "principalChargeMainTransaction").validate[MainTransactionEnum.Value]
         metadata <- Json.fromJson(json)(LPPDetailsMetadata.format)
       } yield {
         LPPDetails(
@@ -88,6 +92,8 @@ object LPPDetails extends JsonUtils {
           principalChargeBillingTo,
           principalChargeDueDate,
           communicationsDate,
+          penaltyAmountAccruing,
+          principalChargeMainTransaction,
           penaltyAmountOutstanding,
           penaltyAmountPaid,
           lpp1LRDays,
@@ -128,7 +134,9 @@ object LPPDetails extends JsonUtils {
         "LPP1LRPercentage" -> o.LPP1LRPercentage,
         "LPP1HRPercentage" -> o.LPP1HRPercentage,
         "penaltyChargeDueDate" -> o.penaltyChargeDueDate,
-        "principalChargeLatestClearing" -> o.principalChargeLatestClearing
+        "principalChargeLatestClearing" -> o.principalChargeLatestClearing,
+        "penaltyAmountAccruing" -> o.penaltyAmountAccruing,
+        "principalChargeMainTransaction" -> o.principalChargeMainTransaction
       ).deepMerge(Json.toJsObject(o.metadata)(LPPDetailsMetadata.format))
     }
   }
