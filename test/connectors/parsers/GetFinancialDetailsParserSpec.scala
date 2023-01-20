@@ -47,34 +47,36 @@ class GetFinancialDetailsParserSpec extends AnyWordSpec with Matchers with LogCa
 
   val getFinancialDetailsAsJson: JsValue = Json.parse(
     """
-      | {
-      | "financialDetails":{
-      |   "documentDetails": [
-      |    {
-      |      "documentOutstandingAmount": 0.0,
-      |      "lineItemDetails": [{}]
-      |    }
-      |  ],
-      |  "totalisation": {
-      |    "regimeTotalisation": {
+      |{
+      | "getFinancialData": {
+      |   "financialDetails":{
+      |     "documentDetails": [
+      |     {
+      |       "documentOutstandingAmount": 0.0,
+      |       "lineItemDetails": [{}]
+      |     }
+      |   ],
+      |   "totalisation": {
+      |     "regimeTotalisation": {
       |      "totalAccountOverdue": 1000.0,
       |      "totalAccountNotYetDue": 250.0,
       |      "totalAccountCredit": 40.0,
       |      "totalAccountBalance": 1210
-      |    },
-      |    "targetedSearch_SelectionCriteriaTotalisation": {
+      |     },
+      |     "targetedSearch_SelectionCriteriaTotalisation": {
       |      "totalOverdue": 100.0,
       |      "totalNotYetDue": 0.0,
       |      "totalBalance": 100.0,
       |      "totalCredit": 10.0,
       |      "totalCleared": 50
-      |    },
-      |    "additionalReceivableTotalisations": {
+      |     },
+      |     "additionalReceivableTotalisations": {
       |      "totalAccountPostedInterest": 12.34,
       |      "totalAccountAccruingInterest": 43.21
-      |    }
+      |     }
+      |   }
+      |  }
       | }
-      |}
       |}
       |""".stripMargin
   )

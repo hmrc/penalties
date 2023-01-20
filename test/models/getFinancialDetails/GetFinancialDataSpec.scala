@@ -24,37 +24,39 @@ class GetFinancialDataSpec extends SpecBase {
   val modelAsJson: JsValue = Json.parse(
     """
       |{
-      | "financialDetails":{
-      |   "documentDetails":[
-      |      {
+      | "getFinancialData": {
+      |   "financialDetails":{
+      |     "documentDetails":[
+      |       {
       |         "chargeReferenceNumber":"1234567890",
       |         "documentOutstandingAmount":123.45,
       |         "lineItemDetails":[
-      |            {
-      |               "mainTransaction":"4703"
-      |            }
-      |         ]
-      |      }
-      |   ],
-      |   "totalisation": {
-      |    "regimeTotalisation": {
-      |      "totalAccountOverdue": 1000.0,
-      |      "totalAccountNotYetDue": 250.0,
-      |      "totalAccountCredit": 40.0,
-      |      "totalAccountBalance": 1210
-      |    },
-      |    "targetedSearch_SelectionCriteriaTotalisation": {
-      |      "totalOverdue": 100.0,
-      |      "totalNotYetDue": 0.0,
-      |      "totalBalance": 100.0,
-      |      "totalCredit": 10.0,
-      |      "totalCleared": 50
-      |    },
-      |    "additionalReceivableTotalisations": {
-      |      "totalAccountPostedInterest": 123.45,
-      |      "totalAccountAccruingInterest": 23.45
-      |    }
-      |  }
+      |           {
+      |             "mainTransaction":"4703"
+      |           }
+      |          ]
+      |       }
+      |     ],
+      |     "totalisation": {
+      |     "regimeTotalisation": {
+      |       "totalAccountOverdue": 1000.0,
+      |       "totalAccountNotYetDue": 250.0,
+      |       "totalAccountCredit": 40.0,
+      |       "totalAccountBalance": 1210
+      |     },
+      |     "targetedSearch_SelectionCriteriaTotalisation": {
+      |       "totalOverdue": 100.0,
+      |       "totalNotYetDue": 0.0,
+      |       "totalBalance": 100.0,
+      |       "totalCredit": 10.0,
+      |       "totalCleared": 50
+      |     },
+      |     "additionalReceivableTotalisations": {
+      |       "totalAccountPostedInterest": 123.45,
+      |       "totalAccountAccruingInterest": 23.45
+      |     }
+      |   }
+      |   }
       | }
       |}
       |""".stripMargin)
@@ -110,13 +112,13 @@ class GetFinancialDataSpec extends SpecBase {
   )
 
   "be readable from JSON" in {
-    val result = Json.fromJson(modelAsJson)(GetFinancialData.format)
+    val result = Json.fromJson(modelAsJson)(GetFinancialData.reads)
     result.isSuccess shouldBe true
     result.get shouldBe model
   }
 
   "be writable to JSON" in {
-    val result = Json.toJson(model)(GetFinancialData.format)
+    val result = Json.toJson(model)(GetFinancialData.writes)
     result shouldBe parsedModelAsJson
   }
 }

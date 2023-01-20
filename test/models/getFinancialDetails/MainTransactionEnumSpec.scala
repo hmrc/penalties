@@ -260,9 +260,9 @@ class MainTransactionEnumSpec extends SpecBase {
     result.get shouldBe MainTransactionEnum.AAReturnChargeSecondLPP
   }
 
-  "return JsError when the enum is not readable" in {
-    val result = Json.fromJson(JsString("unknown"))(MainTransactionEnum.format)
-    result.isError shouldBe true
+  "return Unknown when the enum is not recognised" in {
+    val result = Json.fromJson(JsString("5032"))(MainTransactionEnum.format)
+    result.get shouldBe MainTransactionEnum.Unknown
   }
 
   "firstCharges" should {

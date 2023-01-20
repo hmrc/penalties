@@ -17,6 +17,7 @@
 package services.auditing
 
 import base.SpecBase
+import models.getFinancialDetails.MainTransactionEnum
 import models.getPenaltyDetails.GetPenaltyDetails
 import models.getPenaltyDetails.latePayment._
 import models.getPenaltyDetails.lateSubmission._
@@ -50,9 +51,9 @@ class APIServiceSpec extends SpecBase {
                     principalChargeBillingFrom = LocalDate.of(2022, 1, 1),
                     principalChargeBillingTo = LocalDate.of(2022, 1, 1),
                     principalChargeDueDate = LocalDate.of(2022, 1, 1),
-                    communicationsDate = LocalDate.of(2022, 1, 1),
-                    penaltyAmountOutstanding = Some(10.21),
-                    penaltyAmountPaid = Some(10.21),
+                    communicationsDate = Some(LocalDate.of(2022, 1, 1)),
+                    penaltyAmountOutstanding = None,
+                    penaltyAmountPaid = None,
                     LPP1LRDays = None,
                     LPP1HRDays = None,
                     LPP2Days = None,
@@ -63,7 +64,9 @@ class APIServiceSpec extends SpecBase {
                     LPP1HRPercentage = None,
                     penaltyChargeDueDate = Some(LocalDate.of(2022, 1, 1)),
                     principalChargeLatestClearing = None,
-                    metadata = LPPDetailsMetadata()
+                    metadata = LPPDetailsMetadata(),
+                    penaltyAmountAccruing = BigDecimal(10.21),
+                    principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
                   ),
                   LPPDetails(
                     penaltyCategory = LPPPenaltyCategoryEnum.SecondPenalty,
@@ -75,9 +78,9 @@ class APIServiceSpec extends SpecBase {
                     principalChargeBillingFrom = LocalDate.of(2022, 1, 1),
                     principalChargeBillingTo = LocalDate.of(2022, 1, 1),
                     principalChargeDueDate = LocalDate.of(2022, 1, 1),
-                    communicationsDate = LocalDate.of(2022, 1, 1),
-                    penaltyAmountOutstanding = Some(10.21),
-                    penaltyAmountPaid = Some(10.21),
+                    communicationsDate = Some(LocalDate.of(2022, 1, 1)),
+                    penaltyAmountOutstanding = None,
+                    penaltyAmountPaid = None,
                     LPP1LRDays = None,
                     LPP1HRDays = None,
                     LPP2Days = None,
@@ -88,7 +91,9 @@ class APIServiceSpec extends SpecBase {
                     LPP1HRPercentage = None,
                     penaltyChargeDueDate = Some(LocalDate.of(2022, 1, 1)),
                     principalChargeLatestClearing = None,
-                    metadata = LPPDetailsMetadata()
+                    metadata = LPPDetailsMetadata(),
+                    penaltyAmountAccruing = BigDecimal(10.21),
+                    principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
                   )
                 )
               )
@@ -118,7 +123,7 @@ class APIServiceSpec extends SpecBase {
                     principalChargeBillingFrom = LocalDate.of(2022, 1, 1),
                     principalChargeBillingTo = LocalDate.of(2022, 1, 1),
                     principalChargeDueDate = LocalDate.of(2022, 1, 1),
-                    communicationsDate = LocalDate.of(2022, 1, 1),
+                    communicationsDate = Some(LocalDate.of(2022, 1, 1)),
                     penaltyAmountOutstanding = Some(10.21),
                     penaltyAmountPaid = Some(10.21),
                     LPP1LRDays = None,
@@ -131,7 +136,9 @@ class APIServiceSpec extends SpecBase {
                     LPP1HRPercentage = None,
                     penaltyChargeDueDate = Some(LocalDate.of(2022, 1, 1)),
                     principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
-                    metadata = LPPDetailsMetadata()
+                    metadata = LPPDetailsMetadata(),
+                    penaltyAmountAccruing = BigDecimal(0),
+                    principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
                   ),
                   LPPDetails(
                     penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
@@ -143,7 +150,7 @@ class APIServiceSpec extends SpecBase {
                     principalChargeBillingFrom = LocalDate.of(2022, 1, 1),
                     principalChargeBillingTo = LocalDate.of(2022, 1, 1),
                     principalChargeDueDate = LocalDate.of(2022, 1, 1),
-                    communicationsDate = LocalDate.of(2022, 1, 1),
+                    communicationsDate = Some(LocalDate.of(2022, 1, 1)),
                     penaltyAmountOutstanding = Some(10.21),
                     penaltyAmountPaid = Some(10.21),
                     LPP1LRDays = None,
@@ -156,7 +163,9 @@ class APIServiceSpec extends SpecBase {
                     LPP1HRPercentage = None,
                     penaltyChargeDueDate = Some(LocalDate.of(2022, 1, 1)),
                     principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
-                    metadata = LPPDetailsMetadata()
+                    metadata = LPPDetailsMetadata(),
+                    penaltyAmountAccruing = BigDecimal(0),
+                    principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
                   )
                 )
               )
@@ -188,9 +197,9 @@ class APIServiceSpec extends SpecBase {
                   principalChargeBillingFrom = LocalDate.of(2022, 1, 1),
                   principalChargeBillingTo = LocalDate.of(2022, 1, 1),
                   principalChargeDueDate = LocalDate.of(2022, 1, 1),
-                  communicationsDate = LocalDate.of(2022, 1, 1),
-                  penaltyAmountOutstanding = Some(10.21),
-                  penaltyAmountPaid = Some(10.21),
+                  communicationsDate = Some(LocalDate.of(2022, 1, 1)),
+                  penaltyAmountOutstanding = None,
+                  penaltyAmountPaid = None,
                   LPP1LRDays = None,
                   LPP1HRDays = None,
                   LPP2Days = None,
@@ -201,7 +210,9 @@ class APIServiceSpec extends SpecBase {
                   LPP1HRPercentage = None,
                   penaltyChargeDueDate = Some(LocalDate.of(2022, 1, 1)),
                   principalChargeLatestClearing = None,
-                  metadata = LPPDetailsMetadata()
+                  metadata = LPPDetailsMetadata(),
+                  penaltyAmountAccruing = BigDecimal(10.22),
+                  principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
                 ),
                 LPPDetails(
                   penaltyCategory = LPPPenaltyCategoryEnum.SecondPenalty,
@@ -213,9 +224,9 @@ class APIServiceSpec extends SpecBase {
                   principalChargeBillingFrom = LocalDate.of(2022, 1, 1),
                   principalChargeBillingTo = LocalDate.of(2022, 1, 1),
                   principalChargeDueDate = LocalDate.of(2022, 1, 1),
-                  communicationsDate = LocalDate.of(2022, 1, 1),
-                  penaltyAmountOutstanding = Some(10.21),
-                  penaltyAmountPaid = Some(10.21),
+                  communicationsDate = Some(LocalDate.of(2022, 1, 1)),
+                  penaltyAmountOutstanding = None,
+                  penaltyAmountPaid = None,
                   LPP1LRDays = None,
                   LPP1HRDays = None,
                   LPP2Days = None,
@@ -226,7 +237,9 @@ class APIServiceSpec extends SpecBase {
                   LPP1HRPercentage = None,
                   penaltyChargeDueDate = Some(LocalDate.of(2022, 1, 1)),
                   principalChargeLatestClearing = None,
-                  metadata = LPPDetailsMetadata()
+                  metadata = LPPDetailsMetadata(),
+                  penaltyAmountAccruing = BigDecimal(10.21),
+                  principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
                 )
               )
             )
@@ -234,7 +247,7 @@ class APIServiceSpec extends SpecBase {
         )
       )
       val result: BigDecimal = service.findEstimatedPenaltiesAmount(penaltyDetails)
-      result shouldBe BigDecimal(20.42)
+      result shouldBe BigDecimal(20.43)
     }
 
     "return 0 if no LPPs exist" in new Setup {
@@ -265,7 +278,7 @@ class APIServiceSpec extends SpecBase {
                   principalChargeBillingFrom = LocalDate.of(2022, 1, 1),
                   principalChargeBillingTo = LocalDate.of(2022, 1, 1),
                   principalChargeDueDate = LocalDate.of(2022, 1, 1),
-                  communicationsDate = LocalDate.of(2022, 1, 1),
+                  communicationsDate = Some(LocalDate.of(2022, 1, 1)),
                   penaltyAmountOutstanding = Some(10.21),
                   penaltyAmountPaid = Some(10.21),
                   LPP1LRDays = None,
@@ -278,7 +291,9 @@ class APIServiceSpec extends SpecBase {
                   LPP1HRPercentage = None,
                   penaltyChargeDueDate = Some(LocalDate.of(2022, 1, 1)),
                   principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
-                  metadata = LPPDetailsMetadata()
+                  metadata = LPPDetailsMetadata(),
+                  penaltyAmountAccruing = BigDecimal(0),
+                  principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
                 )
               )
             )
@@ -339,7 +354,7 @@ class APIServiceSpec extends SpecBase {
                     principalChargeBillingFrom = LocalDate.of(2022, 1, 1),
                     principalChargeBillingTo = LocalDate.of(2022, 1, 1),
                     principalChargeDueDate = LocalDate.of(2022, 1, 1),
-                    communicationsDate = LocalDate.of(2022, 1, 1),
+                    communicationsDate = Some(LocalDate.of(2022, 1, 1)),
                     penaltyAmountOutstanding = Some(10.21),
                     penaltyAmountPaid = Some(10.21),
                     LPP1LRDays = None,
@@ -352,7 +367,9 @@ class APIServiceSpec extends SpecBase {
                     LPP1HRPercentage = None,
                     penaltyChargeDueDate = Some(LocalDate.of(2022, 1, 1)),
                     principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
-                    metadata = LPPDetailsMetadata()
+                    metadata = LPPDetailsMetadata(),
+                    penaltyAmountAccruing = BigDecimal(0),
+                    principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
                   )
                 )
               )
@@ -417,9 +434,9 @@ class APIServiceSpec extends SpecBase {
                     principalChargeBillingFrom = LocalDate.of(2022, 1, 1),
                     principalChargeBillingTo = LocalDate.of(2022, 1, 1),
                     principalChargeDueDate = LocalDate.of(2022, 1, 1),
-                    communicationsDate = LocalDate.of(2022, 1, 1),
-                    penaltyAmountOutstanding = Some(10.21),
-                    penaltyAmountPaid = Some(10.21),
+                    communicationsDate = Some(LocalDate.of(2022, 1, 1)),
+                    penaltyAmountOutstanding = None,
+                    penaltyAmountPaid = None,
                     LPP1LRDays = None,
                     LPP1HRDays = None,
                     LPP2Days = None,
@@ -430,7 +447,9 @@ class APIServiceSpec extends SpecBase {
                     LPP1HRPercentage = None,
                     penaltyChargeDueDate = Some(LocalDate.of(2022, 1, 1)),
                     principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
-                    metadata = LPPDetailsMetadata()
+                    metadata = LPPDetailsMetadata(),
+                    penaltyAmountAccruing = BigDecimal(0),
+                    principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
                   )
                 )
               )
@@ -471,9 +490,9 @@ class APIServiceSpec extends SpecBase {
                   principalChargeBillingFrom = LocalDate.of(2022, 1, 1),
                   principalChargeBillingTo = LocalDate.of(2022, 1, 1),
                   principalChargeDueDate = LocalDate.of(2022, 1, 1),
-                  communicationsDate = LocalDate.of(2022, 1, 1),
-                  penaltyAmountOutstanding = Some(10.21),
-                  penaltyAmountPaid = Some(10.21),
+                  communicationsDate = Some(LocalDate.of(2022, 1, 1)),
+                  penaltyAmountOutstanding = None,
+                  penaltyAmountPaid = None,
                   LPP1LRDays = None,
                   LPP1HRDays = None,
                   LPP2Days = None,
@@ -484,7 +503,9 @@ class APIServiceSpec extends SpecBase {
                   LPP1HRPercentage = None,
                   penaltyChargeDueDate = Some(LocalDate.of(2022, 1, 1)),
                   principalChargeLatestClearing = None,
-                  metadata = LPPDetailsMetadata()
+                  metadata = LPPDetailsMetadata(),
+                  penaltyAmountAccruing = BigDecimal(10.21),
+                  principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
                 ),
                 LPPDetails(
                   penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
@@ -496,7 +517,7 @@ class APIServiceSpec extends SpecBase {
                   principalChargeBillingFrom = LocalDate.of(2022, 1, 1),
                   principalChargeBillingTo = LocalDate.of(2022, 1, 1),
                   principalChargeDueDate = LocalDate.of(2022, 1, 1),
-                  communicationsDate = LocalDate.of(2022, 1, 1),
+                  communicationsDate = Some(LocalDate.of(2022, 1, 1)),
                   penaltyAmountOutstanding = Some(10.21),
                   penaltyAmountPaid = Some(10.21),
                   LPP1LRDays = None,
@@ -509,7 +530,9 @@ class APIServiceSpec extends SpecBase {
                   LPP1HRPercentage = None,
                   penaltyChargeDueDate = Some(LocalDate.of(2022, 1, 1)),
                   principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
-                  metadata = LPPDetailsMetadata()
+                  metadata = LPPDetailsMetadata(),
+                  penaltyAmountAccruing = BigDecimal(0),
+                  principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
                 )
               )
             )
@@ -538,9 +561,9 @@ class APIServiceSpec extends SpecBase {
                   principalChargeBillingFrom = LocalDate.of(2022, 1, 1),
                   principalChargeBillingTo = LocalDate.of(2022, 1, 1),
                   principalChargeDueDate = LocalDate.of(2022, 1, 1),
-                  communicationsDate = LocalDate.of(2022, 1, 1),
-                  penaltyAmountOutstanding = Some(10.21),
-                  penaltyAmountPaid = Some(10.21),
+                  communicationsDate = Some(LocalDate.of(2022, 1, 1)),
+                  penaltyAmountOutstanding = None,
+                  penaltyAmountPaid = None,
                   LPP1LRDays = None,
                   LPP1HRDays = None,
                   LPP2Days = None,
@@ -551,7 +574,9 @@ class APIServiceSpec extends SpecBase {
                   LPP1HRPercentage = None,
                   penaltyChargeDueDate = Some(LocalDate.of(2022, 1, 1)),
                   principalChargeLatestClearing = None,
-                  metadata = LPPDetailsMetadata()
+                  metadata = LPPDetailsMetadata(),
+                  penaltyAmountAccruing = BigDecimal(10.21),
+                  principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
                 ),
                 LPPDetails(
                   penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
@@ -563,7 +588,7 @@ class APIServiceSpec extends SpecBase {
                   principalChargeBillingFrom = LocalDate.of(2022, 1, 1),
                   principalChargeBillingTo = LocalDate.of(2022, 1, 1),
                   principalChargeDueDate = LocalDate.of(2022, 1, 1),
-                  communicationsDate = LocalDate.of(2022, 1, 1),
+                  communicationsDate = Some(LocalDate.of(2022, 1, 1)),
                   penaltyAmountOutstanding = Some(0),
                   penaltyAmountPaid = Some(10.21),
                   LPP1LRDays = None,
@@ -576,7 +601,9 @@ class APIServiceSpec extends SpecBase {
                   LPP1HRPercentage = None,
                   penaltyChargeDueDate = Some(LocalDate.of(2022, 1, 1)),
                   principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
-                  metadata = LPPDetailsMetadata()
+                  metadata = LPPDetailsMetadata(),
+                  penaltyAmountAccruing = BigDecimal(10.21),
+                  principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
                 )
               )
             )
@@ -653,7 +680,7 @@ class APIServiceSpec extends SpecBase {
                   principalChargeBillingFrom = LocalDate.of(2022, 1, 1),
                   principalChargeBillingTo = LocalDate.of(2022, 1, 1),
                   principalChargeDueDate = LocalDate.of(2022, 1, 1),
-                  communicationsDate = LocalDate.of(2022, 1, 1),
+                  communicationsDate = Some(LocalDate.of(2022, 1, 1)),
                   penaltyAmountOutstanding = Some(10.21),
                   penaltyAmountPaid = Some(10.21),
                   LPP1LRDays = None,
@@ -666,7 +693,9 @@ class APIServiceSpec extends SpecBase {
                   LPP1HRPercentage = None,
                   penaltyChargeDueDate = Some(LocalDate.of(2022, 1, 1)),
                   principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
-                  metadata = LPPDetailsMetadata()
+                  metadata = LPPDetailsMetadata(),
+                  penaltyAmountAccruing = BigDecimal(0),
+                  principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
                 )
               )
             )
@@ -739,7 +768,7 @@ class APIServiceSpec extends SpecBase {
                   principalChargeBillingFrom = LocalDate.of(2022, 1, 1),
                   principalChargeBillingTo = LocalDate.of(2022, 1, 1),
                   principalChargeDueDate = LocalDate.of(2022, 1, 1),
-                  communicationsDate = LocalDate.of(2022, 1, 1),
+                  communicationsDate = Some(LocalDate.of(2022, 1, 1)),
                   penaltyAmountOutstanding = Some(0),
                   penaltyAmountPaid = Some(10.21),
                   LPP1LRDays = None,
@@ -752,7 +781,9 @@ class APIServiceSpec extends SpecBase {
                   LPP1HRPercentage = None,
                   penaltyChargeDueDate = Some(LocalDate.of(2022, 1, 1)),
                   principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
-                  metadata = LPPDetailsMetadata()
+                  metadata = LPPDetailsMetadata(),
+                  penaltyAmountAccruing = BigDecimal(10.21),
+                  principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
                 )
               )
             )

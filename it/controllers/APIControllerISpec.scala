@@ -53,12 +53,11 @@ class APIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock wit
         |       {
         |          "penaltyCategory": "LPP2",
         |          "penaltyStatus": "A",
-        |          "penaltyAmountPaid": 44.21,
-        |          "penaltyAmountOutstanding": 100,
-        |          "LPP1LRCalculationAmount": 99.99,
+        |          "penaltyAmountAccruing": 123.45,
+        |          "LPP1LRCalculationAmount": 123.45,
         |          "LPP1LRDays": "15",
         |          "LPP1LRPercentage": 2.00,
-        |          "LPP1HRCalculationAmount": 99.99,
+        |          "LPP1HRCalculationAmount": 123.45,
         |          "LPP1HRDays": "31",
         |          "LPP1HRPercentage": 2.00,
         |          "LPP2Days": "31",
@@ -69,17 +68,17 @@ class APIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock wit
         |          "principalChargeReference": "1234567890",
         |          "principalChargeBillingFrom": "2022-10-30",
         |          "principalChargeBillingTo": "2022-10-30",
+        |          "principalChargeMainTransaction": "4700",
         |          "principalChargeDueDate": "2022-10-30"
         |       },
         |       {
         |          "penaltyCategory": "LPP2",
         |          "penaltyStatus": "A",
-        |          "penaltyAmountPaid": 100.00,
-        |          "penaltyAmountOutstanding": 23.45,
-        |          "LPP1LRCalculationAmount": 99.99,
+        |          "penaltyAmountAccruing": 123.45,
+        |          "LPP1LRCalculationAmount": 123.45,
         |          "LPP1LRDays": "15",
         |          "LPP1LRPercentage": 2.00,
-        |          "LPP1HRCalculationAmount": 99.99,
+        |          "LPP1HRCalculationAmount": 123.45,
         |          "LPP1HRDays": "31",
         |          "LPP1HRPercentage": 2.00,
         |          "LPP2Days": "31",
@@ -90,6 +89,7 @@ class APIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock wit
         |          "principalChargeReference": "1234567890",
         |          "principalChargeBillingFrom": "2022-10-30",
         |          "principalChargeBillingTo": "2022-10-30",
+        |          "principalChargeMainTransaction": "4700",
         |          "principalChargeDueDate": "2022-10-30"
         |       },
         |       {
@@ -97,6 +97,7 @@ class APIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock wit
         |          "penaltyStatus": "P",
         |          "penaltyAmountPaid": 0,
         |          "penaltyAmountOutstanding": 144.00,
+        |          "penaltyAmountAccruing": 0,
         |          "LPP1LRCalculationAmount": 99.99,
         |          "LPP1LRDays": "15",
         |          "LPP1LRPercentage": 2.00,
@@ -111,6 +112,7 @@ class APIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock wit
         |          "principalChargeReference": "1234567890",
         |          "principalChargeBillingFrom": "2022-10-30",
         |          "principalChargeBillingTo": "2022-10-30",
+        |          "principalChargeMainTransaction": "4700",
         |          "principalChargeDueDate": "2022-10-30"
         |       },
         |       {
@@ -118,6 +120,7 @@ class APIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock wit
         |          "penaltyStatus": "P",
         |          "penaltyAmountPaid": 0,
         |          "penaltyAmountOutstanding": 144.00,
+        |          "penaltyAmountAccruing": 0,
         |          "LPP1LRCalculationAmount": 99.99,
         |          "LPP1LRDays": "15",
         |          "LPP1LRPercentage": 2.00,
@@ -132,6 +135,7 @@ class APIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock wit
         |          "principalChargeReference": "1234567890",
         |          "principalChargeBillingFrom": "2022-10-30",
         |          "principalChargeBillingTo": "2022-10-30",
+        |          "principalChargeMainTransaction": "4700",
         |          "principalChargeDueDate": "2022-10-30"
         |       }
         |   ]
@@ -150,7 +154,7 @@ class APIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock wit
             |  "noOfPoints": 2,
             |  "noOfEstimatedPenalties": 2,
             |  "noOfCrystalisedPenalties": 2,
-            |  "estimatedPenaltyAmount": 123.45,
+            |  "estimatedPenaltyAmount": 246.9,
             |  "crystalisedPenaltyAmountDue": 288,
             |  "hasAnyPenaltyData": true
             |}
@@ -207,7 +211,8 @@ class APIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock wit
       "the get Financial Details call succeeds" in {
         val sampleAPI1811Response = Json.parse(
           """
-            | {
+            |{
+            | "getFinancialData" : {
             | "financialDetails": {
             |  "totalisation": {
             |    "regimeTotalisation": {
@@ -298,6 +303,7 @@ class APIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock wit
             |      ]
             |    }
             |  ]
+            |}
             |}
             |}""".stripMargin)
         enableFeatureSwitch(CallAPI1811ETMP)

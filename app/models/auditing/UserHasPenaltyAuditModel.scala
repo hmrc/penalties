@@ -18,7 +18,7 @@ package models.auditing
 
 import models.getPenaltyDetails.GetPenaltyDetails
 import models.getPenaltyDetails.appealInfo.AppealStatusEnum
-import models.getPenaltyDetails.latePayment.{LPPDetails, TimeToPay}
+import models.getPenaltyDetails.latePayment.{LPPDetails, LPPPenaltyStatusEnum, TimeToPay}
 import models.getPenaltyDetails.lateSubmission.{LSPDetails, LSPPenaltyCategoryEnum, LSPPenaltyStatusEnum}
 import play.api.libs.json.JsValue
 import play.api.mvc.Request
@@ -109,22 +109,23 @@ case class UserHasPenaltyAuditModel(
       !lpp.appealInformation.exists(_.exists(_.appealStatus.contains(AppealStatusEnum.Upheld)))
   ))).getOrElse(0)
 
-  private val numberOfUnpaidLPPs: Int = penaltyDetails.latePaymentPenalty.flatMap(_.details.map(_.count(point =>
-    !point.penaltyAmountOutstanding.contains(0) && point.penaltyAmountPaid.contains(0) &&
-      !point.appealInformation.exists(_.exists(_.appealStatus.contains(AppealStatusEnum.Upheld)))
+  private val numberOfUnpaidLPPs: Int = penaltyDetails.latePaymentPenalty.flatMap(_.details.map(_.count(penalty =>
+    !penalty.penaltyAmountOutstanding.contains(0) && penalty.penaltyAmountPaid.contains(0) &&
+      !penalty.appealInformation.exists(_.exists(_.appealStatus.contains(AppealStatusEnum.Upheld)))
   ))).getOrElse(0)
 
-  private val numberOfPartiallyPaidLPPs: Int = penaltyDetails.latePaymentPenalty.flatMap(_.details.map(_.count(point =>
-    !point.penaltyAmountOutstanding.contains(0) &&
-      !point.penaltyAmountPaid.contains(0) &&
-      !point.appealInformation.exists(_.exists(_.appealStatus.contains(AppealStatusEnum.Upheld)))
+  private val numberOfPartiallyPaidLPPs: Int = penaltyDetails.latePaymentPenalty.flatMap(_.details.map(_.count(penalty =>
+    !penalty.penaltyAmountOutstanding.contains(0) &&
+      !penalty.penaltyAmountPaid.contains(0) &&
+      !penalty.penaltyStatus.equals(LPPPenaltyStatusEnum.Accruing) &&
+      !penalty.appealInformation.exists(_.exists(_.appealStatus.contains(AppealStatusEnum.Upheld)))
   ))).getOrElse(0)
 
   private val totalNumberOfLPPs: Int = penaltyDetails.latePaymentPenalty.flatMap(_.details.map(
-    _.count(point => !point.appealInformation.exists(_.exists(_.appealStatus.contains(AppealStatusEnum.Upheld)))))).getOrElse(0)
+    _.count(penalty => !penalty.appealInformation.exists(_.exists(_.appealStatus.contains(AppealStatusEnum.Upheld)))))).getOrElse(0)
 
-  private val amountOfLPPsUnderAppeal: Int = penaltyDetails.latePaymentPenalty.flatMap(_.details.map(_.count(point =>
-    point.appealInformation.exists(_.exists(_.appealStatus.contains(AppealStatusEnum.Under_Appeal)))))).getOrElse(0)
+  private val amountOfLPPsUnderAppeal: Int = penaltyDetails.latePaymentPenalty.flatMap(_.details.map(_.count(penalty =>
+    penalty.appealInformation.exists(_.exists(_.appealStatus.contains(AppealStatusEnum.Under_Appeal)))))).getOrElse(0)
 
   def getOptActiveTimeToPay: Option[TimeToPay] = {
     val dateNow = dateHelper.dateNow()

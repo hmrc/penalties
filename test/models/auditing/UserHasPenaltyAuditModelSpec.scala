@@ -17,6 +17,7 @@
 package models.auditing
 
 import base.{LogCapturing, SpecBase}
+import models.getFinancialDetails.MainTransactionEnum
 import models.getPenaltyDetails._
 import models.getPenaltyDetails.appealInfo.{AppealInformationType, AppealLevelEnum, AppealStatusEnum}
 import models.getPenaltyDetails.latePayment._
@@ -487,7 +488,7 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
               principalChargeBillingFrom = LocalDate.of(2022, 1, 1),
               principalChargeBillingTo = LocalDate.of(2022, 1, 1),
               principalChargeDueDate = LocalDate.of(2022, 1, 1),
-              communicationsDate = LocalDate.of(2022, 1, 1),
+              communicationsDate = Some(LocalDate.of(2022, 1, 1)),
               penaltyAmountOutstanding = Some(0),
               penaltyAmountPaid = Some(144.21),
               LPP1LRDays = None,
@@ -500,7 +501,9 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
               LPP1HRPercentage = None,
               penaltyChargeDueDate = Some(LocalDate.of(2022, 1, 1)),
               principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
-              metadata = LPPDetailsMetadata()
+              metadata = LPPDetailsMetadata(),
+              penaltyAmountAccruing = BigDecimal(0),
+              principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
             ),
             LPPDetails(
               penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
@@ -512,7 +515,7 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
               principalChargeBillingFrom = LocalDate.of(2022, 1, 1),
               principalChargeBillingTo = LocalDate.of(2022, 1, 1),
               principalChargeDueDate = LocalDate.of(2022, 1, 1),
-              communicationsDate = LocalDate.of(2022, 1, 1),
+              communicationsDate = Some(LocalDate.of(2022, 1, 1)),
               penaltyAmountOutstanding = Some(0),
               penaltyAmountPaid = Some(144.21),
               LPP1LRDays = None,
@@ -525,7 +528,9 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
               LPP1HRPercentage = None,
               penaltyChargeDueDate = Some(LocalDate.of(2022, 1, 1)),
               principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
-              metadata = LPPDetailsMetadata()
+              metadata = LPPDetailsMetadata(),
+              penaltyAmountAccruing = BigDecimal(0),
+              principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
             )
           )
         )
@@ -558,7 +563,7 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
               principalChargeBillingFrom = LocalDate.of(2022, 1, 1),
               principalChargeBillingTo = LocalDate.of(2022, 1, 1),
               principalChargeDueDate = LocalDate.of(2022, 1, 1),
-              communicationsDate = LocalDate.of(2022, 1, 1),
+              communicationsDate = Some(LocalDate.of(2022, 1, 1)),
               penaltyAmountOutstanding = Some(144.21),
               penaltyAmountPaid = Some(0),
               LPP1LRDays = None,
@@ -576,7 +581,9 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
                   TTPStartDate = Some(LocalDate.of(2022, 1, 1)),
                   TTPEndDate = Some(LocalDate.of(2022, 12, 31))
                 )))
-              )
+              ),
+              penaltyAmountAccruing = BigDecimal(0),
+              principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
             ),
             LPPDetails(
               penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
@@ -588,7 +595,7 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
               principalChargeBillingFrom = LocalDate.of(2022, 1, 1),
               principalChargeBillingTo = LocalDate.of(2022, 1, 1),
               principalChargeDueDate = LocalDate.of(2022, 1, 1),
-              communicationsDate = LocalDate.of(2022, 1, 1),
+              communicationsDate = Some(LocalDate.of(2022, 1, 1)),
               penaltyAmountOutstanding = Some(144.21),
               penaltyAmountPaid = Some(0),
               LPP1LRDays = None,
@@ -606,7 +613,9 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
                   TTPStartDate = Some(LocalDate.of(2022, 1, 1)),
                   TTPEndDate = Some(LocalDate.of(2022, 12, 31))
                 )))
-              )
+              ),
+              penaltyAmountAccruing = BigDecimal(0),
+              principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
             )
           )
         )
@@ -639,7 +648,7 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
               principalChargeBillingFrom = LocalDate.of(2022, 1, 1),
               principalChargeBillingTo = LocalDate.of(2022, 1, 1),
               principalChargeDueDate = LocalDate.of(2022, 1, 1),
-              communicationsDate = LocalDate.of(2022, 1, 1),
+              communicationsDate = Some(LocalDate.of(2022, 1, 1)),
               penaltyAmountOutstanding = Some(10),
               penaltyAmountPaid = Some(144.21),
               LPP1LRDays = None,
@@ -657,7 +666,9 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
                   TTPStartDate = Some(LocalDate.of(2022, 1, 1)),
                   TTPEndDate = Some(LocalDate.of(2022, 12, 31))
                 )))
-              )
+              ),
+              penaltyAmountAccruing = BigDecimal(0),
+              principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
             ),
             LPPDetails(
               penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
@@ -669,7 +680,7 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
               principalChargeBillingFrom = LocalDate.of(2022, 1, 1),
               principalChargeBillingTo = LocalDate.of(2022, 1, 1),
               principalChargeDueDate = LocalDate.of(2022, 1, 1),
-              communicationsDate = LocalDate.of(2022, 1, 1),
+              communicationsDate = Some(LocalDate.of(2022, 1, 1)),
               penaltyAmountOutstanding = Some(10),
               penaltyAmountPaid = Some(144.21),
               LPP1LRDays = None,
@@ -682,7 +693,36 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
               LPP1HRPercentage = None,
               penaltyChargeDueDate = Some(LocalDate.of(2022, 1, 1)),
               principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
-              metadata = LPPDetailsMetadata()
+              metadata = LPPDetailsMetadata(),
+              penaltyAmountAccruing = BigDecimal(0),
+              principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
+            ),
+            LPPDetails(
+              penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
+              principalChargeReference = "123456789",
+              penaltyChargeReference = Some("1234567890"),
+              penaltyChargeCreationDate = Some(LocalDate.of(2022, 1, 1)),
+              penaltyStatus = LPPPenaltyStatusEnum.Accruing,
+              appealInformation = None,
+              principalChargeBillingFrom = LocalDate.of(2022, 1, 1),
+              principalChargeBillingTo = LocalDate.of(2022, 1, 1),
+              principalChargeDueDate = LocalDate.of(2022, 1, 1),
+              communicationsDate = Some(LocalDate.of(2022, 1, 1)),
+              penaltyAmountOutstanding = Some(99.99),
+              penaltyAmountPaid = Some(10.01), //Invalid scenario but proves filters out accuring penalties
+              LPP1LRDays = None,
+              LPP1HRDays = None,
+              LPP2Days = None,
+              LPP1HRCalculationAmount = None,
+              LPP1LRCalculationAmount = None,
+              LPP2Percentage = None,
+              LPP1LRPercentage = None,
+              LPP1HRPercentage = None,
+              penaltyChargeDueDate = Some(LocalDate.of(2022, 1, 1)),
+              principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
+              metadata = LPPDetailsMetadata(),
+              penaltyAmountAccruing = BigDecimal(99.99),
+              principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
             )
           )
         )
@@ -715,7 +755,7 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
               principalChargeBillingFrom = LocalDate.of(2022, 1, 1),
               principalChargeBillingTo = LocalDate.of(2022, 1, 1),
               principalChargeDueDate = LocalDate.of(2022, 1, 1),
-              communicationsDate = LocalDate.of(2022, 1, 1),
+              communicationsDate = Some(LocalDate.of(2022, 1, 1)),
               penaltyAmountOutstanding = Some(0),
               penaltyAmountPaid = Some(144.21),
               LPP1LRDays = None,
@@ -728,7 +768,9 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
               LPP1HRPercentage = None,
               penaltyChargeDueDate = Some(LocalDate.of(2022, 1, 1)),
               principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
-              metadata = LPPDetailsMetadata()
+              metadata = LPPDetailsMetadata(),
+              penaltyAmountAccruing = BigDecimal(0),
+              principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
             ),
             LPPDetails(
               penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
@@ -744,7 +786,7 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
               principalChargeBillingFrom = LocalDate.of(2022, 1, 1),
               principalChargeBillingTo = LocalDate.of(2022, 1, 1),
               principalChargeDueDate = LocalDate.of(2022, 1, 1),
-              communicationsDate = LocalDate.of(2022, 1, 1),
+              communicationsDate = Some(LocalDate.of(2022, 1, 1)),
               penaltyAmountOutstanding = Some(10),
               penaltyAmountPaid = Some(144.21),
               LPP1LRDays = None,
@@ -757,7 +799,9 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
               LPP1HRPercentage = None,
               penaltyChargeDueDate = Some(LocalDate.of(2022, 1, 1)),
               principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
-              metadata = LPPDetailsMetadata()
+              metadata = LPPDetailsMetadata(),
+              penaltyAmountAccruing = BigDecimal(0),
+              principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
             )
           )
         )
@@ -790,7 +834,7 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
               principalChargeBillingFrom = LocalDate.of(2022, 1, 1),
               principalChargeBillingTo = LocalDate.of(2022, 1, 1),
               principalChargeDueDate = LocalDate.of(2022, 1, 1),
-              communicationsDate = LocalDate.of(2022, 1, 1),
+              communicationsDate = Some(LocalDate.of(2022, 1, 1)),
               penaltyAmountOutstanding = Some(0),
               penaltyAmountPaid = Some(144.21),
               LPP1LRDays = None,
@@ -803,7 +847,9 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
               LPP1HRPercentage = None,
               penaltyChargeDueDate = Some(LocalDate.of(2022, 1, 1)),
               principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
-              metadata = LPPDetailsMetadata()
+              metadata = LPPDetailsMetadata(),
+              penaltyAmountAccruing = BigDecimal(0),
+              principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
             ),
             LPPDetails(
               penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
@@ -819,7 +865,7 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
               principalChargeBillingFrom = LocalDate.of(2022, 1, 1),
               principalChargeBillingTo = LocalDate.of(2022, 1, 1),
               principalChargeDueDate = LocalDate.of(2022, 1, 1),
-              communicationsDate = LocalDate.of(2022, 1, 1),
+              communicationsDate = Some(LocalDate.of(2022, 1, 1)),
               penaltyAmountOutstanding = Some(10),
               penaltyAmountPaid = Some(144.21),
               LPP1LRDays = None,
@@ -832,7 +878,9 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
               LPP1HRPercentage = None,
               penaltyChargeDueDate = Some(LocalDate.of(2022, 1, 1)),
               principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
-              metadata = LPPDetailsMetadata()
+              metadata = LPPDetailsMetadata(),
+              penaltyAmountAccruing = BigDecimal(0),
+              principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
             )
           )
         )
@@ -865,7 +913,7 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
               principalChargeBillingFrom = LocalDate.of(2022, 1, 1),
               principalChargeBillingTo = LocalDate.of(2022, 1, 1),
               principalChargeDueDate = LocalDate.of(2022, 1, 1),
-              communicationsDate = LocalDate.of(2022, 1, 1),
+              communicationsDate = Some(LocalDate.of(2022, 1, 1)),
               penaltyAmountOutstanding = Some(0),
               penaltyAmountPaid = Some(144.21),
               LPP1LRDays = None,
@@ -878,7 +926,9 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
               LPP1HRPercentage = None,
               penaltyChargeDueDate = Some(LocalDate.of(2022, 1, 1)),
               principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
-              metadata = LPPDetailsMetadata()
+              metadata = LPPDetailsMetadata(),
+              penaltyAmountAccruing = BigDecimal(0),
+              principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
             ),
             LPPDetails(
               penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
@@ -890,7 +940,7 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
               principalChargeBillingFrom = LocalDate.of(2022, 1, 1),
               principalChargeBillingTo = LocalDate.of(2022, 1, 1),
               principalChargeDueDate = LocalDate.of(2022, 1, 1),
-              communicationsDate = LocalDate.of(2022, 1, 1),
+              communicationsDate = Some(LocalDate.of(2022, 1, 1)),
               penaltyAmountOutstanding = Some(200),
               penaltyAmountPaid = Some(344.21),
               LPP1LRDays = None,
@@ -903,7 +953,9 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
               LPP1HRPercentage = None,
               penaltyChargeDueDate = Some(LocalDate.of(2022, 1, 1)),
               principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
-              metadata = LPPDetailsMetadata()
+              metadata = LPPDetailsMetadata(),
+              penaltyAmountAccruing = BigDecimal(0),
+              principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
             ),
             LPPDetails(
               penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
@@ -915,7 +967,7 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
               principalChargeBillingFrom = LocalDate.of(2022, 1, 1),
               principalChargeBillingTo = LocalDate.of(2022, 1, 1),
               principalChargeDueDate = LocalDate.of(2022, 1, 1),
-              communicationsDate = LocalDate.of(2022, 1, 1),
+              communicationsDate = Some(LocalDate.of(2022, 1, 1)),
               penaltyAmountOutstanding = Some(200),
               penaltyAmountPaid = Some(0),
               LPP1LRDays = None,
@@ -928,7 +980,10 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
               LPP1HRPercentage = None,
               penaltyChargeDueDate = Some(LocalDate.of(2022, 1, 1)),
               principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
-              metadata = LPPDetailsMetadata()
+              metadata = LPPDetailsMetadata(),
+              penaltyAmountAccruing = BigDecimal(0),
+
+              principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
             )
           )
         )
@@ -1096,7 +1151,7 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
         (auditModelWithLPPsPartiallyPaid.detail \ "penaltyInformation" \ "lPPDetail" \ "numberOfPaidPenalties").validate[Int].get shouldBe 0
         (auditModelWithLPPsPartiallyPaid.detail \ "penaltyInformation" \ "lPPDetail" \ "numberOfUnpaidPenalties").validate[Int].get shouldBe 0
         (auditModelWithLPPsPartiallyPaid.detail \ "penaltyInformation" \ "lPPDetail" \ "numberOfPartiallyPaidPenalties").validate[Int].get shouldBe 2
-        (auditModelWithLPPsPartiallyPaid.detail \ "penaltyInformation" \ "lPPDetail" \ "totalNumberOfPenalties").validate[Int].get shouldBe 2
+        (auditModelWithLPPsPartiallyPaid.detail \ "penaltyInformation" \ "lPPDetail" \ "totalNumberOfPenalties").validate[Int].get shouldBe 3
         (auditModelWithLPPsPartiallyPaid.detail \ "penaltyInformation" \ "lPPDetail" \ "underAppeal").validate[Int].get shouldBe 0
       }
 

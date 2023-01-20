@@ -25,6 +25,7 @@ import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser.{GetPenaltyD
 import models.appeals.AppealTypeEnum.{Additional, Late_Payment, Late_Submission}
 import models.appeals.{AppealData, MultiplePenaltiesData}
 import models.auditing.PenaltyAppealFileNotificationStorageFailureModel
+import models.getFinancialDetails.MainTransactionEnum
 import models.getPenaltyDetails.GetPenaltyDetails
 import models.getPenaltyDetails.appealInfo.{AppealInformationType, AppealLevelEnum, AppealStatusEnum}
 import models.getPenaltyDetails.latePayment._
@@ -226,9 +227,9 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
                 principalChargeBillingFrom = LocalDate.of(2022, 4, 1),
                 principalChargeBillingTo = LocalDate.of(2022, 6, 30),
                 principalChargeDueDate = LocalDate.of(2022, 8, 7),
-                communicationsDate = LocalDate.of(2022, 8, 8),
-                penaltyAmountOutstanding = Some(100),
-                penaltyAmountPaid = Some(13.45),
+                communicationsDate = Some(LocalDate.of(2022, 8, 8)),
+                penaltyAmountOutstanding = None,
+                penaltyAmountPaid = None,
                 LPP1LRDays = None,
                 LPP1HRDays = None,
                 LPP2Days = None,
@@ -239,7 +240,9 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
                 LPP1HRPercentage = None,
                 penaltyChargeDueDate = Some(LocalDate.of(2022, 8, 7)),
                 principalChargeLatestClearing = None,
-                metadata = LPPDetailsMetadata()
+                metadata = LPPDetailsMetadata(),
+                penaltyAmountAccruing = BigDecimal(100),
+                principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
               ),
               LPPDetails(
                 penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
@@ -251,7 +254,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
                 principalChargeBillingFrom = LocalDate.of(2022, 1, 1),
                 principalChargeBillingTo = LocalDate.of(2022, 3, 31),
                 principalChargeDueDate = LocalDate.of(2022, 5, 7),
-                communicationsDate = LocalDate.of(2022, 5, 8),
+                communicationsDate = Some(LocalDate.of(2022, 5, 8)),
                 penaltyAmountOutstanding = Some(100),
                 penaltyAmountPaid = Some(13.45),
                 LPP1LRDays = None,
@@ -264,13 +267,16 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
                 LPP1HRPercentage = None,
                 penaltyChargeDueDate = Some(LocalDate.of(2022, 8, 7)),
                 principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
-                metadata = LPPDetailsMetadata()
+                metadata = LPPDetailsMetadata(),
+                penaltyAmountAccruing = BigDecimal(0),
+                principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
               )
             )
           )
         )
       )
     )
+
     s"return NOT_FOUND (${Status.NOT_FOUND}) when ETMP can not find the data for the given enrolment key" in new Setup {
       val sampleEnrolmentKey: String = "HMRC-MTD-VAT~VRN~123456789"
       val vrn: String = "123456789"
@@ -984,12 +990,12 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
                 principalChargeReference = "123456801",
                 penaltyChargeReference = Some("1234567891"),
                 penaltyChargeCreationDate = Some(LocalDate.of(2022, 1, 1)),
-                penaltyStatus = LPPPenaltyStatusEnum.Accruing,
+                penaltyStatus = LPPPenaltyStatusEnum.Posted,
                 appealInformation = None,
                 principalChargeBillingFrom = LocalDate.of(2022, 4, 1),
                 principalChargeBillingTo = LocalDate.of(2022, 6, 30),
                 principalChargeDueDate = LocalDate.of(2022, 8, 7),
-                communicationsDate = LocalDate.of(2022, 8, 8),
+                communicationsDate = Some(LocalDate.of(2022, 8, 8)),
                 penaltyAmountOutstanding = Some(100),
                 penaltyAmountPaid = Some(13.45),
                 LPP1LRDays = None,
@@ -1002,7 +1008,9 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
                 LPP1HRPercentage = None,
                 penaltyChargeDueDate = Some(LocalDate.of(2022, 8, 7)),
                 principalChargeLatestClearing = None,
-                metadata = LPPDetailsMetadata()
+                metadata = LPPDetailsMetadata(),
+                penaltyAmountAccruing = BigDecimal(0),
+                principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
               )
             )
           )
@@ -1022,12 +1030,12 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
                 principalChargeReference = "123456801",
                 penaltyChargeReference = Some("1234567892"),
                 penaltyChargeCreationDate = Some(LocalDate.of(2022, 1, 1)),
-                penaltyStatus = LPPPenaltyStatusEnum.Accruing,
+                penaltyStatus = LPPPenaltyStatusEnum.Posted,
                 appealInformation = None,
                 principalChargeBillingFrom = LocalDate.of(2022, 4, 1),
                 principalChargeBillingTo = LocalDate.of(2022, 6, 30),
                 principalChargeDueDate = LocalDate.of(2022, 8, 7),
-                communicationsDate = LocalDate.of(2022, 9, 8),
+                communicationsDate = Some(LocalDate.of(2022, 9, 8)),
                 penaltyAmountOutstanding = Some(100),
                 penaltyAmountPaid = Some(13.44),
                 LPP1LRDays = None,
@@ -1040,19 +1048,21 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
                 LPP1HRPercentage = None,
                 penaltyChargeDueDate = Some(LocalDate.of(2022, 8, 7)),
                 principalChargeLatestClearing = None,
-                metadata = LPPDetailsMetadata()
+                metadata = LPPDetailsMetadata(),
+                penaltyAmountAccruing = BigDecimal(0),
+                principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
               ),
               LPPDetails(
                 penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
                 principalChargeReference = "123456801",
                 penaltyChargeReference = Some("1234567891"),
                 penaltyChargeCreationDate = Some(LocalDate.of(2022, 1, 1)),
-                penaltyStatus = LPPPenaltyStatusEnum.Accruing,
+                penaltyStatus = LPPPenaltyStatusEnum.Posted,
                 appealInformation = None,
                 principalChargeBillingFrom = LocalDate.of(2022, 4, 1),
                 principalChargeBillingTo = LocalDate.of(2022, 6, 30),
                 principalChargeDueDate = LocalDate.of(2022, 8, 7),
-                communicationsDate = LocalDate.of(2022, 8, 8),
+                communicationsDate = Some(LocalDate.of(2022, 8, 8)),
                 penaltyAmountOutstanding = Some(100),
                 penaltyAmountPaid = Some(13.45),
                 LPP1LRDays = None,
@@ -1065,7 +1075,9 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
                 LPP1HRPercentage = None,
                 penaltyChargeDueDate = Some(LocalDate.of(2022, 8, 7)),
                 principalChargeLatestClearing = None,
-                metadata = LPPDetailsMetadata()
+                metadata = LPPDetailsMetadata(),
+                penaltyAmountAccruing = BigDecimal(0),
+                principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
               )
             )
           )
@@ -1085,12 +1097,12 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
                 principalChargeReference = "123456801",
                 penaltyChargeReference = Some("1234567892"),
                 penaltyChargeCreationDate = Some(LocalDate.of(2022, 1, 1)),
-                penaltyStatus = LPPPenaltyStatusEnum.Accruing,
+                penaltyStatus = LPPPenaltyStatusEnum.Posted,
                 appealInformation = None,
                 principalChargeBillingFrom = LocalDate.of(2022, 4, 1),
                 principalChargeBillingTo = LocalDate.of(2022, 6, 30),
                 principalChargeDueDate = LocalDate.of(2022, 8, 7),
-                communicationsDate = LocalDate.of(2022, 8, 8),
+                communicationsDate = Some(LocalDate.of(2022, 8, 8)),
                 penaltyAmountOutstanding = Some(100),
                 penaltyAmountPaid = Some(13.44),
                 LPP1LRDays = None,
@@ -1103,14 +1115,16 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
                 LPP1HRPercentage = None,
                 penaltyChargeDueDate = Some(LocalDate.of(2022, 8, 7)),
                 principalChargeLatestClearing = None,
-                metadata = LPPDetailsMetadata()
+                metadata = LPPDetailsMetadata(),
+                penaltyAmountAccruing = BigDecimal(0),
+                principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
               ),
               LPPDetails(
                 penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
                 principalChargeReference = "123456801",
                 penaltyChargeReference = Some("1234567891"),
                 penaltyChargeCreationDate = Some(LocalDate.of(2022, 1, 1)),
-                penaltyStatus = LPPPenaltyStatusEnum.Accruing,
+                penaltyStatus = LPPPenaltyStatusEnum.Posted,
                 appealInformation = Some(Seq(
                   AppealInformationType(
                     appealStatus = Some(AppealStatusEnum.Under_Appeal),
@@ -1120,7 +1134,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
                 principalChargeBillingFrom = LocalDate.of(2022, 4, 1),
                 principalChargeBillingTo = LocalDate.of(2022, 6, 30),
                 principalChargeDueDate = LocalDate.of(2022, 8, 7),
-                communicationsDate = LocalDate.of(2022, 8, 8),
+                communicationsDate = Some(LocalDate.of(2022, 8, 8)),
                 penaltyAmountOutstanding = Some(100),
                 penaltyAmountPaid = Some(13.45),
                 LPP1LRDays = None,
@@ -1133,7 +1147,9 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
                 LPP1HRPercentage = None,
                 penaltyChargeDueDate = Some(LocalDate.of(2022, 8, 7)),
                 principalChargeLatestClearing = None,
-                metadata = LPPDetailsMetadata()
+                metadata = LPPDetailsMetadata(),
+                penaltyAmountAccruing = BigDecimal(0),
+                principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
               )
             )
           )
