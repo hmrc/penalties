@@ -17,6 +17,7 @@
 package models.getPenaltyDetails.latePayment
 
 import base.SpecBase
+import models.getFinancialDetails.MainTransactionEnum
 import models.getPenaltyDetails.appealInfo.{AppealInformationType, AppealLevelEnum, AppealStatusEnum}
 import play.api.libs.json.{JsResult, JsValue, Json}
 
@@ -29,14 +30,13 @@ class LPPDetailsSpec extends SpecBase {
       |   "penaltyChargeReference": "12345678901234",
       |   "penaltyCategory": "LPP1",
       |   "penaltyStatus": "A",
-      |   "penaltyAmountAccruing": 99.99,
       |   "penaltyAmountPosted": 1001.45,
       |   "penaltyAmountPaid": 1001.45,
       |   "penaltyAmountOutstanding": 99.99,
-      |   "LPP1LRCalculationAmount": 99.99,
+      |   "LPP1LRCalculationAmount": 144.21,
       |   "LPP1LRDays": "15",
       |   "LPP1LRPercentage": 2.00,
-      |   "LPP1HRCalculationAmount": 99.99,
+      |   "LPP1HRCalculationAmount": 144.21,
       |   "LPP1HRDays": "31",
       |   "LPP1HRPercentage": 2.00,
       |   "LPP2Days": "31",
@@ -55,7 +55,9 @@ class LPPDetailsSpec extends SpecBase {
       |   "principalChargeSubTransaction": "1174",
       |   "principalChargeBillingFrom": "2022-10-30",
       |   "principalChargeBillingTo": "2022-10-30",
-      |   "principalChargeDueDate": "2022-10-30"
+      |   "principalChargeDueDate": "2022-10-30",
+      |   "principalChargeMainTransaction": "4700",
+      |   "penaltyAmountAccruing": 144.21
       |}
       |""".stripMargin
   )
@@ -66,12 +68,12 @@ class LPPDetailsSpec extends SpecBase {
       |   "penaltyChargeReference": "12345678901234",
       |   "penaltyCategory": "LPP1",
       |   "penaltyStatus": "A",
+      |   "LPP1LRCalculationAmount": 144.21,
+      |   "LPP1LRDays": "15",
       |   "penaltyAmountPaid": 1001.45,
       |   "penaltyAmountOutstanding": 99.99,
-      |   "LPP1LRCalculationAmount": 99.99,
-      |   "LPP1LRDays": "15",
       |   "LPP1LRPercentage": 2.00,
-      |   "LPP1HRCalculationAmount": 99.99,
+      |   "LPP1HRCalculationAmount": 144.21,
       |   "LPP1HRDays": "31",
       |   "LPP1HRPercentage": 2.00,
       |   "LPP2Days": "31",
@@ -87,7 +89,9 @@ class LPPDetailsSpec extends SpecBase {
       |   }],
       |   "principalChargeBillingFrom": "2022-10-30",
       |   "principalChargeBillingTo": "2022-10-30",
-      |   "principalChargeDueDate": "2022-10-30"
+      |   "principalChargeDueDate": "2022-10-30",
+      |   "principalChargeMainTransaction": "4700",
+      |   "penaltyAmountAccruing": 144.21
       |}
       |""".stripMargin
   )
@@ -102,20 +106,22 @@ class LPPDetailsSpec extends SpecBase {
     principalChargeBillingFrom = LocalDate.of(2022, 10, 30),
     principalChargeBillingTo = LocalDate.of(2022, 10, 30),
     principalChargeDueDate = LocalDate.of(2022, 10, 30),
-    communicationsDate = LocalDate.of(2022, 10, 30),
+    communicationsDate = Some(LocalDate.of(2022, 10, 30)),
     penaltyAmountOutstanding = Some(99.99),
     penaltyAmountPaid = Some(1001.45),
     LPP1LRDays = Some("15"),
     LPP1HRDays = Some("31"),
     LPP2Days = Some("31"),
-    LPP1HRCalculationAmount = Some(99.99),
-    LPP1LRCalculationAmount = Some(99.99),
+    LPP1HRCalculationAmount = Some(144.21),
+    LPP1LRCalculationAmount = Some(144.21),
     LPP2Percentage = Some(BigDecimal(4.00).setScale(2)),
     LPP1LRPercentage = Some(BigDecimal(2.00).setScale(2)),
     LPP1HRPercentage = Some(BigDecimal(2.00).setScale(2)),
     penaltyChargeDueDate = Some(LocalDate.of(2022, 10, 30)),
     principalChargeLatestClearing = None,
-    metadata = LPPDetailsMetadata()
+    metadata = LPPDetailsMetadata(),
+    penaltyAmountAccruing = BigDecimal(144.21),
+    principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
   )
 
   "be readable from JSON" in {

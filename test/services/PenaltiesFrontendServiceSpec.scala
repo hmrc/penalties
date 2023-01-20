@@ -45,9 +45,9 @@ class PenaltiesFrontendServiceSpec extends SpecBase {
                 principalChargeBillingFrom = LocalDate.of(2022, 10, 30),
                 principalChargeBillingTo = LocalDate.of(2022, 10, 30),
                 principalChargeDueDate = LocalDate.of(2022, 10, 30),
-                communicationsDate = LocalDate.of(2022, 10, 30),
-                penaltyAmountOutstanding = Some(99.99),
-                penaltyAmountPaid = Some(1001.45),
+                communicationsDate = Some(LocalDate.of(2022, 10, 30)),
+                penaltyAmountOutstanding = None,
+                penaltyAmountPaid = None,
                 LPP1LRDays = Some("15"),
                 LPP1HRDays = Some("31"),
                 LPP2Days = Some("31"),
@@ -58,7 +58,9 @@ class PenaltiesFrontendServiceSpec extends SpecBase {
                 LPP1HRPercentage = Some(BigDecimal(2.00).setScale(2)),
                 penaltyChargeDueDate = Some(LocalDate.of(2022, 10, 30)),
                 principalChargeLatestClearing = None,
-                metadata = LPPDetailsMetadata()
+                metadata = LPPDetailsMetadata(),
+                penaltyAmountAccruing = BigDecimal(99.9),
+                principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
               ),
               LPPDetails(
                 penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
@@ -70,9 +72,9 @@ class PenaltiesFrontendServiceSpec extends SpecBase {
                 principalChargeBillingFrom = LocalDate.of(2022, 10, 30),
                 principalChargeBillingTo = LocalDate.of(2022, 10, 30),
                 principalChargeDueDate = LocalDate.of(2022, 10, 30),
-                communicationsDate = LocalDate.of(2022, 10, 30),
-                penaltyAmountOutstanding = Some(99.99),
-                penaltyAmountPaid = Some(1001.45),
+                communicationsDate = Some(LocalDate.of(2022, 10, 30)),
+                penaltyAmountOutstanding = None,
+                penaltyAmountPaid = None,
                 LPP1LRDays = Some("15"),
                 LPP1HRDays = Some("31"),
                 LPP2Days = Some("31"),
@@ -83,7 +85,9 @@ class PenaltiesFrontendServiceSpec extends SpecBase {
                 LPP1HRPercentage = Some(BigDecimal(2.00).setScale(2)),
                 penaltyChargeDueDate = Some(LocalDate.of(2022, 10, 30)),
                 principalChargeLatestClearing = None,
-                metadata = LPPDetailsMetadata()
+                metadata = LPPDetailsMetadata(),
+                penaltyAmountAccruing = BigDecimal(99.9),
+                principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
               )
             )
           )
@@ -117,9 +121,9 @@ class PenaltiesFrontendServiceSpec extends SpecBase {
               principalChargeBillingFrom = LocalDate.of(2022, 10, 30),
               principalChargeBillingTo = LocalDate.of(2022, 10, 30),
               principalChargeDueDate = LocalDate.of(2022, 10, 30),
-              communicationsDate = LocalDate.of(2022, 10, 30),
-              penaltyAmountOutstanding = Some(99.99),
-              penaltyAmountPaid = Some(1001.45),
+              communicationsDate = Some(LocalDate.of(2022, 10, 30)),
+              penaltyAmountOutstanding = Some(BigDecimal(99.9)),
+              penaltyAmountPaid = None,
               LPP1LRDays = Some("15"),
               LPP1HRDays = Some("31"),
               LPP2Days = Some("31"),
@@ -131,8 +135,10 @@ class PenaltiesFrontendServiceSpec extends SpecBase {
               penaltyChargeDueDate = Some(LocalDate.of(2022, 10, 30)),
               principalChargeLatestClearing = None,
               metadata = LPPDetailsMetadata(
-                mainTransaction = Some(MainTransactionEnum.VATReturnSecondLPP), outstandingAmount = Some(123.45)
-              )
+                mainTransaction = Some(MainTransactionEnum.VATReturnCharge), outstandingAmount = None
+              ),
+              penaltyAmountAccruing = BigDecimal(99.9),
+              principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
             ),
             LPPDetails(
               penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
@@ -144,9 +150,9 @@ class PenaltiesFrontendServiceSpec extends SpecBase {
               principalChargeBillingFrom = LocalDate.of(2022, 10, 30),
               principalChargeBillingTo = LocalDate.of(2022, 10, 30),
               principalChargeDueDate = LocalDate.of(2022, 10, 30),
-              communicationsDate = LocalDate.of(2022, 10, 30),
-              penaltyAmountOutstanding = Some(99.99),
-              penaltyAmountPaid = Some(1001.45),
+              communicationsDate = Some(LocalDate.of(2022, 10, 30)),
+              penaltyAmountOutstanding = Some(BigDecimal(99.9)),
+              penaltyAmountPaid = None,
               LPP1LRDays = Some("15"),
               LPP1HRDays = Some("31"),
               LPP2Days = Some("31"),
@@ -158,8 +164,10 @@ class PenaltiesFrontendServiceSpec extends SpecBase {
               penaltyChargeDueDate = Some(LocalDate.of(2022, 10, 30)),
               principalChargeLatestClearing = None,
               metadata = LPPDetailsMetadata(
-                mainTransaction = Some(MainTransactionEnum.VATReturnFirstLPP), outstandingAmount = Some(123.45)
-              )
+                mainTransaction = Some(MainTransactionEnum.VATReturnCharge), outstandingAmount = None
+              ),
+              penaltyAmountAccruing = BigDecimal(99.9),
+              principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
             )
           )
         )
@@ -181,12 +189,12 @@ class PenaltiesFrontendServiceSpec extends SpecBase {
                 principalChargeReference = "1234567890",
                 penaltyChargeReference = Some("1234567890"),
                 penaltyChargeCreationDate = Some(LocalDate.of(2022, 10, 30)),
-                penaltyStatus = LPPPenaltyStatusEnum.Accruing,
+                penaltyStatus = LPPPenaltyStatusEnum.Posted,
                 appealInformation = Some(Seq(AppealInformationType(appealStatus = Some(AppealStatusEnum.Unappealable), appealLevel = Some(AppealLevelEnum.HMRC)))),
                 principalChargeBillingFrom = LocalDate.of(2022, 10, 30),
                 principalChargeBillingTo = LocalDate.of(2022, 10, 30),
                 principalChargeDueDate = LocalDate.of(2022, 10, 30),
-                communicationsDate = LocalDate.of(2022, 10, 30),
+                communicationsDate = Some(LocalDate.of(2022, 10, 30)),
                 penaltyAmountOutstanding = Some(99.99),
                 penaltyAmountPaid = Some(1001.45),
                 LPP1LRDays = Some("15"),
@@ -204,7 +212,9 @@ class PenaltiesFrontendServiceSpec extends SpecBase {
                     TTPStartDate = Some(LocalDate.of(2022, 1, 1)),
                     TTPEndDate = Some(LocalDate.of(2022, 12, 31))
                   )))
-                )
+                ),
+                penaltyAmountAccruing = BigDecimal(0),
+                principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
               )
             )
           )
@@ -228,12 +238,12 @@ class PenaltiesFrontendServiceSpec extends SpecBase {
               principalChargeReference = "1234567890",
               penaltyChargeReference = Some("1234567890"),
               penaltyChargeCreationDate = Some(LocalDate.of(2022, 10, 30)),
-              penaltyStatus = LPPPenaltyStatusEnum.Accruing,
+              penaltyStatus = LPPPenaltyStatusEnum.Posted,
               appealInformation = Some(Seq(AppealInformationType(appealStatus = Some(AppealStatusEnum.Unappealable), appealLevel = Some(AppealLevelEnum.HMRC)))),
               principalChargeBillingFrom = LocalDate.of(2022, 10, 30),
               principalChargeBillingTo = LocalDate.of(2022, 10, 30),
               principalChargeDueDate = LocalDate.of(2022, 10, 30),
-              communicationsDate = LocalDate.of(2022, 10, 30),
+              communicationsDate = Some(LocalDate.of(2022, 10, 30)),
               penaltyAmountOutstanding = Some(99.99),
               penaltyAmountPaid = Some(1001.45),
               LPP1LRDays = Some("15"),
@@ -253,7 +263,9 @@ class PenaltiesFrontendServiceSpec extends SpecBase {
                   TTPStartDate = Some(LocalDate.of(2022, 1, 1)),
                   TTPEndDate = Some(LocalDate.of(2022, 12, 31))
                 )))
-              )
+              ),
+              penaltyAmountAccruing = BigDecimal(0),
+              principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
             )
           )
         )
@@ -275,12 +287,12 @@ class PenaltiesFrontendServiceSpec extends SpecBase {
                 principalChargeReference = "1234567890",
                 penaltyChargeReference = Some("1234567890"),
                 penaltyChargeCreationDate = Some(LocalDate.of(2022, 10, 30)),
-                penaltyStatus = LPPPenaltyStatusEnum.Accruing,
+                penaltyStatus = LPPPenaltyStatusEnum.Posted,
                 appealInformation = Some(Seq(AppealInformationType(appealStatus = Some(AppealStatusEnum.Unappealable), appealLevel = Some(AppealLevelEnum.HMRC)))),
                 principalChargeBillingFrom = LocalDate.of(2022, 10, 30),
                 principalChargeBillingTo = LocalDate.of(2022, 10, 30),
                 principalChargeDueDate = LocalDate.of(2022, 10, 30),
-                communicationsDate = LocalDate.of(2022, 10, 30),
+                communicationsDate = Some(LocalDate.of(2022, 10, 30)),
                 penaltyAmountOutstanding = Some(99.99),
                 penaltyAmountPaid = Some(1001.45),
                 LPP1LRDays = Some("15"),
@@ -298,7 +310,9 @@ class PenaltiesFrontendServiceSpec extends SpecBase {
                     TTPStartDate = Some(LocalDate.of(2022, 1, 1)),
                     TTPEndDate = Some(LocalDate.of(2022, 12, 31))
                   )))
-                )
+                ),
+                penaltyAmountAccruing = BigDecimal(0),
+                principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
               )
             )
           )
@@ -322,12 +336,12 @@ class PenaltiesFrontendServiceSpec extends SpecBase {
               principalChargeReference = "1234567890",
               penaltyChargeReference = Some("1234567890"),
               penaltyChargeCreationDate = Some(LocalDate.of(2022, 10, 30)),
-              penaltyStatus = LPPPenaltyStatusEnum.Accruing,
+              penaltyStatus = LPPPenaltyStatusEnum.Posted,
               appealInformation = Some(Seq(AppealInformationType(appealStatus = Some(AppealStatusEnum.Unappealable), appealLevel = Some(AppealLevelEnum.HMRC)))),
               principalChargeBillingFrom = LocalDate.of(2022, 10, 30),
               principalChargeBillingTo = LocalDate.of(2022, 10, 30),
               principalChargeDueDate = LocalDate.of(2022, 10, 30),
-              communicationsDate = LocalDate.of(2022, 10, 30),
+              communicationsDate = Some(LocalDate.of(2022, 10, 30)),
               penaltyAmountOutstanding = Some(99.99),
               penaltyAmountPaid = Some(1001.45),
               LPP1LRDays = Some("15"),
@@ -347,7 +361,9 @@ class PenaltiesFrontendServiceSpec extends SpecBase {
                   TTPStartDate = Some(LocalDate.of(2022, 1, 1)),
                   TTPEndDate = Some(LocalDate.of(2022, 12, 31))
                 )))
-              )
+              ),
+              penaltyAmountAccruing = BigDecimal(0),
+              principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
             )
           )
         )
@@ -369,12 +385,12 @@ class PenaltiesFrontendServiceSpec extends SpecBase {
                 principalChargeReference = "1234567891",
                 penaltyChargeReference = Some("1234567891"),
                 penaltyChargeCreationDate = Some(LocalDate.of(2022, 10, 30)),
-                penaltyStatus = LPPPenaltyStatusEnum.Accruing,
+                penaltyStatus = LPPPenaltyStatusEnum.Posted,
                 appealInformation = Some(Seq(AppealInformationType(appealStatus = Some(AppealStatusEnum.Unappealable), appealLevel = Some(AppealLevelEnum.HMRC)))),
                 principalChargeBillingFrom = LocalDate.of(2022, 10, 30),
                 principalChargeBillingTo = LocalDate.of(2022, 10, 30),
                 principalChargeDueDate = LocalDate.of(2022, 10, 30),
-                communicationsDate = LocalDate.of(2022, 10, 30),
+                communicationsDate = Some(LocalDate.of(2022, 10, 30)),
                 penaltyAmountOutstanding = Some(99.99),
                 penaltyAmountPaid = Some(1001.45),
                 LPP1LRDays = Some("15"),
@@ -392,19 +408,21 @@ class PenaltiesFrontendServiceSpec extends SpecBase {
                     TTPStartDate = Some(LocalDate.of(2022, 1, 1)),
                     TTPEndDate = Some(LocalDate.of(2022, 12, 31))
                   )))
-                )
+                ),
+                penaltyAmountAccruing = BigDecimal(0),
+                principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
               ),
               LPPDetails(
                 penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
                 principalChargeReference = "1234567890",
                 penaltyChargeReference = Some("1234567890"),
                 penaltyChargeCreationDate = Some(LocalDate.of(2022, 10, 30)),
-                penaltyStatus = LPPPenaltyStatusEnum.Accruing,
+                penaltyStatus = LPPPenaltyStatusEnum.Posted,
                 appealInformation = Some(Seq(AppealInformationType(appealStatus = Some(AppealStatusEnum.Unappealable), appealLevel = Some(AppealLevelEnum.HMRC)))),
                 principalChargeBillingFrom = LocalDate.of(2022, 10, 30),
                 principalChargeBillingTo = LocalDate.of(2022, 10, 30),
                 principalChargeDueDate = LocalDate.of(2022, 10, 30),
-                communicationsDate = LocalDate.of(2022, 10, 30),
+                communicationsDate = Some(LocalDate.of(2022, 10, 30)),
                 penaltyAmountOutstanding = Some(99.99),
                 penaltyAmountPaid = Some(1001.45),
                 LPP1LRDays = Some("15"),
@@ -422,7 +440,9 @@ class PenaltiesFrontendServiceSpec extends SpecBase {
                     TTPStartDate = Some(LocalDate.of(2022, 1, 1)),
                     TTPEndDate = Some(LocalDate.of(2022, 12, 31))
                   )))
-                )
+                ),
+                penaltyAmountAccruing = BigDecimal(0),
+                principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
               )
             )
           )
@@ -451,12 +471,12 @@ class PenaltiesFrontendServiceSpec extends SpecBase {
               principalChargeReference = "1234567891",
               penaltyChargeReference = Some("1234567891"),
               penaltyChargeCreationDate = Some(LocalDate.of(2022, 10, 30)),
-              penaltyStatus = LPPPenaltyStatusEnum.Accruing,
+              penaltyStatus = LPPPenaltyStatusEnum.Posted,
               appealInformation = Some(Seq(AppealInformationType(appealStatus = Some(AppealStatusEnum.Unappealable), appealLevel = Some(AppealLevelEnum.HMRC)))),
               principalChargeBillingFrom = LocalDate.of(2022, 10, 30),
               principalChargeBillingTo = LocalDate.of(2022, 10, 30),
               principalChargeDueDate = LocalDate.of(2022, 10, 30),
-              communicationsDate = LocalDate.of(2022, 10, 30),
+              communicationsDate = Some(LocalDate.of(2022, 10, 30)),
               penaltyAmountOutstanding = Some(99.99),
               penaltyAmountPaid = Some(1001.45),
               LPP1LRDays = Some("15"),
@@ -476,19 +496,21 @@ class PenaltiesFrontendServiceSpec extends SpecBase {
                   TTPStartDate = Some(LocalDate.of(2022, 1, 1)),
                   TTPEndDate = Some(LocalDate.of(2022, 12, 31))
                 )))
-              )
+              ),
+              penaltyAmountAccruing = BigDecimal(0),
+              principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
             ),
             LPPDetails(
               penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
               principalChargeReference = "1234567890",
               penaltyChargeReference = Some("1234567890"),
               penaltyChargeCreationDate = Some(LocalDate.of(2022, 10, 30)),
-              penaltyStatus = LPPPenaltyStatusEnum.Accruing,
+              penaltyStatus = LPPPenaltyStatusEnum.Posted,
               appealInformation = Some(Seq(AppealInformationType(appealStatus = Some(AppealStatusEnum.Unappealable), appealLevel = Some(AppealLevelEnum.HMRC)))),
               principalChargeBillingFrom = LocalDate.of(2022, 10, 30),
               principalChargeBillingTo = LocalDate.of(2022, 10, 30),
               principalChargeDueDate = LocalDate.of(2022, 10, 30),
-              communicationsDate = LocalDate.of(2022, 10, 30),
+              communicationsDate = Some(LocalDate.of(2022, 10, 30)),
               penaltyAmountOutstanding = Some(99.99),
               penaltyAmountPaid = Some(1001.45),
               LPP1LRDays = Some("15"),
@@ -508,7 +530,9 @@ class PenaltiesFrontendServiceSpec extends SpecBase {
                   TTPStartDate = Some(LocalDate.of(2022, 1, 1)),
                   TTPEndDate = Some(LocalDate.of(2022, 12, 31))
                 )))
-              )
+              ),
+              penaltyAmountAccruing = BigDecimal(0),
+              principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
             )
           )
         )

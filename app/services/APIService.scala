@@ -30,10 +30,9 @@ class APIService @Inject()() {
   def findEstimatedPenaltiesAmount(penaltyDetails: GetPenaltyDetails): BigDecimal = {
     penaltyDetails.latePaymentPenalty.flatMap(
       _.details.map(
-        _.filter(
-          _.penaltyStatus.equals(LPPPenaltyStatusEnum.Accruing)).map(
-          _.penaltyAmountOutstanding.getOrElse(BigDecimal(0))).sum
-      )).getOrElse(BigDecimal(0))
+        _.filter(_.penaltyStatus.equals(LPPPenaltyStatusEnum.Accruing)).map(_.penaltyAmountAccruing).sum
+      )
+      ).getOrElse(0)
   }
 
   def checkIfHasAnyPenaltyData(penaltyDetails: GetPenaltyDetails): Boolean ={

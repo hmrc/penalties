@@ -21,6 +21,7 @@ import config.featureSwitches.FeatureSwitching
 import connectors.getFinancialDetails.GetFinancialDetailsConnector
 import connectors.getPenaltyDetails.GetPenaltyDetailsConnector
 import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser._
+import models.getFinancialDetails.MainTransactionEnum
 import models.getPenaltyDetails.GetPenaltyDetails
 import models.getPenaltyDetails.latePayment._
 import models.getPenaltyDetails.lateSubmission.{LSPSummary, LateSubmissionPenalty}
@@ -112,9 +113,9 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
                 principalChargeBillingFrom = LocalDate.of(2022, 1, 1),
                 principalChargeBillingTo = LocalDate.of(2022, 1, 1),
                 principalChargeDueDate = LocalDate.of(2022, 1, 1),
-                communicationsDate = LocalDate.of(2022, 1, 1),
-                penaltyAmountOutstanding = Some(100),
-                penaltyAmountPaid = Some(44.21),
+                communicationsDate = Some(LocalDate.of(2022, 1, 1)),
+                penaltyAmountOutstanding = None,
+                penaltyAmountPaid = None,
                 LPP1LRDays = None,
                 LPP1HRDays = None,
                 LPP2Days = None,
@@ -125,7 +126,9 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
                 LPP1HRPercentage = None,
                 penaltyChargeDueDate = Some(LocalDate.of(2022, 1, 1)),
                 principalChargeLatestClearing = None,
-                metadata = LPPDetailsMetadata()
+                metadata = LPPDetailsMetadata(),
+                penaltyAmountAccruing = BigDecimal(100.00),
+                principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
               ),
               LPPDetails(
                 penaltyCategory = LPPPenaltyCategoryEnum.SecondPenalty,
@@ -137,9 +140,9 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
                 principalChargeBillingFrom = LocalDate.of(2022, 1, 1),
                 principalChargeBillingTo = LocalDate.of(2022, 1, 1),
                 principalChargeDueDate = LocalDate.of(2022, 1, 1),
-                communicationsDate = LocalDate.of(2022, 1, 1),
-                penaltyAmountOutstanding = Some(23.45),
-                penaltyAmountPaid = Some(100),
+                communicationsDate = Some(LocalDate.of(2022, 1, 1)),
+                penaltyAmountOutstanding = None,
+                penaltyAmountPaid = None,
                 LPP1LRDays = None,
                 LPP1HRDays = None,
                 LPP2Days = None,
@@ -150,7 +153,9 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
                 LPP1HRPercentage = None,
                 penaltyChargeDueDate = Some(LocalDate.of(2022, 1, 1)),
                 principalChargeLatestClearing = None,
-                metadata = LPPDetailsMetadata()
+                metadata = LPPDetailsMetadata(),
+                penaltyAmountAccruing = BigDecimal(100.00),
+                principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
               ),
               LPPDetails(
                 penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
@@ -162,7 +167,7 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
                 principalChargeBillingFrom = LocalDate.of(2022, 1, 1),
                 principalChargeBillingTo = LocalDate.of(2022, 1, 1),
                 principalChargeDueDate = LocalDate.of(2022, 1, 1),
-                communicationsDate = LocalDate.of(2022, 1, 1),
+                communicationsDate = Some(LocalDate.of(2022, 1, 1)),
                 penaltyAmountOutstanding = Some(144),
                 penaltyAmountPaid = Some(0.21),
                 LPP1LRDays = None,
@@ -175,7 +180,9 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
                 LPP1HRPercentage = None,
                 penaltyChargeDueDate = Some(LocalDate.of(2022, 1, 1)),
                 principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
-                metadata = LPPDetailsMetadata()
+                metadata = LPPDetailsMetadata(),
+                penaltyAmountAccruing = BigDecimal(0),
+                principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
               ),
               LPPDetails(
                 penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
@@ -187,7 +194,7 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
                 principalChargeBillingFrom = LocalDate.of(2022, 1, 1),
                 principalChargeBillingTo = LocalDate.of(2022, 1, 1),
                 principalChargeDueDate = LocalDate.of(2022, 1, 1),
-                communicationsDate = LocalDate.of(2022, 1, 1),
+                communicationsDate = Some(LocalDate.of(2022, 1, 1)),
                 penaltyAmountOutstanding = Some(144),
                 penaltyAmountPaid = Some(0.21),
                 LPP1LRDays = None,
@@ -200,7 +207,9 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
                 LPP1HRPercentage = None,
                 penaltyChargeDueDate = Some(LocalDate.of(2022, 1, 1)),
                 principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
-                metadata = LPPDetailsMetadata()
+                metadata = LPPDetailsMetadata(),
+                penaltyAmountAccruing = BigDecimal(0),
+                principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
               )
             )
           )

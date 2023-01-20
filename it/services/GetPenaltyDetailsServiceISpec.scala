@@ -17,6 +17,7 @@
 package services
 
 import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser._
+import models.getFinancialDetails.MainTransactionEnum
 import models.getPenaltyDetails.appealInfo.{AppealInformationType, AppealLevelEnum, AppealStatusEnum}
 import models.getPenaltyDetails.latePayment._
 import models.getPenaltyDetails.lateSubmission._
@@ -101,9 +102,9 @@ class GetPenaltyDetailsServiceISpec extends IntegrationSpecCommonBase with ETMPW
               principalChargeBillingFrom = LocalDate.of(2022, 10, 30),
               principalChargeBillingTo = LocalDate.of(2022, 10, 30),
               principalChargeDueDate = LocalDate.of(2022, 10, 30),
-              communicationsDate = LocalDate.of(2022, 10, 30),
-              penaltyAmountOutstanding = Some(99.99),
-              penaltyAmountPaid = Some(1001.45),
+              communicationsDate = Some(LocalDate.of(2022, 10, 30)),
+              penaltyAmountOutstanding = None,
+              penaltyAmountPaid = None,
               LPP1LRDays = Some("15"),
               LPP1HRDays = Some("31"),
               LPP2Days = Some("31"),
@@ -119,7 +120,9 @@ class GetPenaltyDetailsServiceISpec extends IntegrationSpecCommonBase with ETMPW
                   TTPStartDate = Some(LocalDate.of(2022, 1, 1)),
                   TTPEndDate = Some(LocalDate.of(2022, 12, 31))
                 )))
-              )
+              ),
+              penaltyAmountAccruing = BigDecimal(99.99),
+              principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
             )
           )
         )

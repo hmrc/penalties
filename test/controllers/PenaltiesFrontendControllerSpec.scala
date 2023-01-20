@@ -95,9 +95,9 @@ class PenaltiesFrontendControllerSpec extends SpecBase with LogCapturing {
               principalChargeBillingFrom = LocalDate.of(2022, 1, 1),
               principalChargeBillingTo = LocalDate.of(2022, 1, 1),
               principalChargeDueDate = LocalDate.of(2022, 1, 1),
-              communicationsDate = LocalDate.of(2022, 1, 1),
-              penaltyAmountOutstanding = Some(100),
-              penaltyAmountPaid = Some(44.21),
+              communicationsDate = Some(LocalDate.of(2022, 1, 1)),
+              penaltyAmountOutstanding = None,
+              penaltyAmountPaid = None,
               LPP1LRDays = None,
               LPP1HRDays = None,
               LPP2Days = None,
@@ -113,7 +113,9 @@ class PenaltiesFrontendControllerSpec extends SpecBase with LogCapturing {
                   TTPStartDate = Some(LocalDate.of(2022, 1, 1)),
                   TTPEndDate = Some(LocalDate.of(2022, 12, 31))
                 )))
-              )
+              ),
+              penaltyAmountAccruing = BigDecimal(144.21),
+              principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
             ),
             LPPDetails(
               penaltyCategory = LPPPenaltyCategoryEnum.SecondPenalty,
@@ -125,9 +127,9 @@ class PenaltiesFrontendControllerSpec extends SpecBase with LogCapturing {
               principalChargeBillingFrom = LocalDate.of(2022, 1, 1),
               principalChargeBillingTo = LocalDate.of(2022, 1, 1),
               principalChargeDueDate = LocalDate.of(2022, 1, 1),
-              communicationsDate = LocalDate.of(2022, 1, 1),
-              penaltyAmountOutstanding = Some(23.45),
-              penaltyAmountPaid = Some(100),
+              communicationsDate = Some(LocalDate.of(2022, 1, 1)),
+              penaltyAmountOutstanding = None,
+              penaltyAmountPaid = None,
               LPP1LRDays = None,
               LPP1HRDays = None,
               LPP2Days = None,
@@ -143,7 +145,9 @@ class PenaltiesFrontendControllerSpec extends SpecBase with LogCapturing {
                   TTPStartDate = Some(LocalDate.of(2022, 1, 1)),
                   TTPEndDate = Some(LocalDate.of(2022, 12, 31))
                 )))
-              )
+              ),
+              penaltyAmountAccruing = BigDecimal(144.21),
+              principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
             ),
             LPPDetails(
               penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
@@ -155,7 +159,7 @@ class PenaltiesFrontendControllerSpec extends SpecBase with LogCapturing {
               principalChargeBillingFrom = LocalDate.of(2022, 1, 1),
               principalChargeBillingTo = LocalDate.of(2022, 1, 1),
               principalChargeDueDate = LocalDate.of(2022, 1, 1),
-              communicationsDate = LocalDate.of(2022, 1, 1),
+              communicationsDate = Some(LocalDate.of(2022, 1, 1)),
               penaltyAmountOutstanding = Some(144),
               penaltyAmountPaid = Some(0.21),
               LPP1LRDays = None,
@@ -173,7 +177,9 @@ class PenaltiesFrontendControllerSpec extends SpecBase with LogCapturing {
                   TTPStartDate = Some(LocalDate.of(2022, 1, 1)),
                   TTPEndDate = Some(LocalDate.of(2022, 12, 31))
                 )))
-              )
+              ),
+              penaltyAmountAccruing = BigDecimal(0),
+              principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
             ),
             LPPDetails(
               penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
@@ -185,7 +191,7 @@ class PenaltiesFrontendControllerSpec extends SpecBase with LogCapturing {
               principalChargeBillingFrom = LocalDate.of(2022, 1, 1),
               principalChargeBillingTo = LocalDate.of(2022, 1, 1),
               principalChargeDueDate = LocalDate.of(2022, 1, 1),
-              communicationsDate = LocalDate.of(2022, 1, 1),
+              communicationsDate = Some(LocalDate.of(2022, 1, 1)),
               penaltyAmountOutstanding = Some(144),
               penaltyAmountPaid = Some(0.21),
               LPP1LRDays = None,
@@ -203,7 +209,9 @@ class PenaltiesFrontendControllerSpec extends SpecBase with LogCapturing {
                   TTPStartDate = Some(LocalDate.of(2022, 1, 1)),
                   TTPEndDate = Some(LocalDate.of(2022, 12, 31))
                 )))
-              )
+              ),
+              penaltyAmountAccruing = BigDecimal(0),
+              principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
             )
           )
         )

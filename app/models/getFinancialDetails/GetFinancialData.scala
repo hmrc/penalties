@@ -16,10 +16,20 @@
 
 package models.getFinancialDetails
 
-import play.api.libs.json.{Format, Json}
+import play.api.libs.json.{JsResult, JsValue, Json, Reads, Writes}
 
 case class GetFinancialData(financialDetails: FinancialDetails)
 
 object GetFinancialData {
-  implicit val format: Format[GetFinancialData] = Json.format[GetFinancialData]
+  implicit val reads: Reads[GetFinancialData] = new Reads[GetFinancialData] {
+    override def reads(json: JsValue): JsResult[GetFinancialData] = {
+      for {
+        financialDetails <- (json \ "getFinancialData" \ "financialDetails").validate[FinancialDetails]
+      } yield {
+        GetFinancialData(financialDetails)
+      }
+    }
+  }
+
+  implicit val writes: Writes[GetFinancialData] = Json.writes[GetFinancialData]
 }

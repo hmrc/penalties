@@ -51,8 +51,6 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
       |       {
       |          "penaltyCategory": "LPP1",
       |          "penaltyStatus": "A",
-      |          "penaltyAmountPaid": 0,
-      |          "penaltyAmountOutstanding": 144.00,
       |          "LPP1LRCalculationAmount": 99.99,
       |          "LPP1LRDays": "15",
       |          "LPP1LRPercentage": 2.00,
@@ -62,7 +60,6 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
       |          "LPP2Days": "31",
       |          "LPP2Percentage": 4.00,
       |          "penaltyChargeCreationDate": "2022-10-30",
-      |          "communicationsDate": "2022-10-30",
       |          "penaltyChargeDueDate": "2022-10-30",
       |          "principalChargeReference": "XM002610011594",
       |          "principalChargeBillingFrom": "2022-10-30",
@@ -73,7 +70,9 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
       |               "TTPStartDate": "2022-01-01",
       |               "TTPEndDate": "2022-12-31"
       |             }
-      |          ]
+      |          ],
+      |          "principalChargeMainTransaction": "4700",
+      |          "penaltyAmountAccruing": 99.99
       |       }
       |   ]
       | }
@@ -130,12 +129,9 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
       |       {
       |         "principalChargeDueDate": "2022-10-30",
       |         "principalChargeBillingTo": "2022-10-30",
-      |         "penaltyAmountPaid": 0,
-      |         "outstandingAmount": 543.21,
       |         "LPP1LRPercentage": 2,
       |         "LPP1HRDays": "31",
       |         "penaltyChargeDueDate": "2022-10-30",
-      |         "communicationsDate": "2022-10-30",
       |         "LPP2Days": "31",
       |         "penaltyChargeCreationDate": "2022-10-30",
       |         "LPP1HRPercentage": 2,
@@ -154,13 +150,14 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
       |         "mainTransaction": "4703",
       |         "LPP2Percentage": 4,
       |         "LPP1LRCalculationAmount": 99.99,
-      |         "penaltyAmountOutstanding": 144,
       |         "appealInformation": [
       |           {
       |             "appealStatus": "99",
       |             "appealLevel": " "
       |           }
-      |         ]
+      |         ],
+      |         "principalChargeMainTransaction": "4700",
+      |         "penaltyAmountAccruing": 99.99
       |       }
       |   ]
       | }
@@ -219,37 +216,30 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
       |       {
       |         "principalChargeDueDate": "2022-10-30",
       |         "principalChargeBillingTo": "2022-10-30",
-      |         "penaltyAmountPaid": 0,
-      |         "outstandingAmount": 543.21,
+      |         "penaltyAmountOutstanding": 99.99,
       |         "LPP1LRPercentage": 2,
       |         "LPP1HRDays": "31",
       |         "penaltyChargeDueDate": "2022-10-30",
-      |         "communicationsDate": "2022-10-30",
       |         "LPP2Days": "31",
       |         "penaltyChargeCreationDate": "2022-10-30",
       |         "LPP1HRPercentage": 2,
       |         "LPP1LRDays": "15",
-      |         "timeToPay": [
-      |             {
-      |                 "TTPStartDate": "2022-01-01",
-      |                 "TTPEndDate": "2022-12-31"
-      |             }
-      |         ],
       |         "LPP1HRCalculationAmount": 99.99,
       |         "penaltyCategory": "LPP1",
       |         "principalChargeReference": "XM002610011594",
       |         "principalChargeBillingFrom": "2022-10-30",
       |         "penaltyStatus": "A",
-      |         "mainTransaction": "4703",
+      |         "mainTransaction": "4700",
       |         "LPP2Percentage": 4,
       |         "LPP1LRCalculationAmount": 99.99,
-      |         "penaltyAmountOutstanding": 144,
       |         "appealInformation": [
       |           {
       |             "appealStatus": "99",
       |             "appealLevel": "01"
       |           }
-      |         ]
+      |         ],
+      |         "principalChargeMainTransaction": "4700",
+      |         "penaltyAmountAccruing": 99.99
       |       }
       |   ]
       | }
@@ -283,31 +273,24 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
       |            {
       |                "principalChargeDueDate": "2022-10-30",
       |                "principalChargeBillingTo": "2022-10-30",
-      |                "penaltyAmountPaid": 0,
-      |                "outstandingAmount": 543.21,
+      |                "penaltyAmountOutstanding": 99.99,
       |                "LPP1LRPercentage": 2,
       |                "LPP1HRDays": "31",
       |                "penaltyChargeDueDate": "2022-10-30",
-      |                "communicationsDate": "2022-10-30",
       |                "LPP2Days": "31",
       |                "penaltyChargeCreationDate": "2022-10-30",
       |                "LPP1HRPercentage": 2,
       |                "LPP1LRDays": "15",
-      |                "timeToPay": [
-      |                    {
-      |                        "TTPStartDate": "2022-01-01",
-      |                        "TTPEndDate": "2022-12-31"
-      |                    }
-      |                ],
       |                "LPP1HRCalculationAmount": 99.99,
       |                "penaltyCategory": "LPP1",
       |                "principalChargeReference": "XM002610011594",
       |                "principalChargeBillingFrom": "2022-10-30",
       |                "penaltyStatus": "A",
-      |                "mainTransaction": "4703",
+      |                "mainTransaction": "4700",
       |                "LPP2Percentage": 4,
       |                "LPP1LRCalculationAmount": 99.99,
-      |                "penaltyAmountOutstanding": 144
+      |                "principalChargeMainTransaction": "4700",
+      |                "penaltyAmountAccruing": 99.99
       |            }
       |        ]
       |    }
@@ -513,6 +496,7 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
         |            "penaltyCategory":"LPP1",
         |            "principalChargeReference":"XM002610011594",
         |            "penaltyStatus":"A",
+        |            "penaltyAmountAccruing": 99.99,
         |            "principalChargeBillingFrom":"2022-10-30",
         |            "LPP2Percentage":4,
         |            "appealInformation":[
@@ -522,13 +506,8 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
         |               }
         |            ],
         |            "LPP1LRCalculationAmount":99.99,
-        |            "penaltyAmountOutstanding":99.99,
-        |            "timeToPay": [
-        |             {
-        |               "TTPStartDate": "2022-01-01",
-        |               "TTPEndDate": "2022-12-31"
-        |             }
-        |          ]
+        |            "principalChargeMainTransaction": "4700",
+        |            "penaltyAmountOutstanding":99.99
         |         }
         |      ]
         |   }
@@ -591,7 +570,6 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
         |            "principalChargeDueDate":"2022-10-30",
         |            "principalChargeBillingTo":"2022-10-30",
         |            "penaltyAmountPaid":0,
-        |            "outstandingAmount":543.21,
         |            "LPP1LRPercentage":2,
         |            "LPP1HRDays":"31",
         |            "penaltyChargeDueDate":"2022-10-30",
@@ -605,8 +583,10 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
         |            "penaltyCategory":"LPP1",
         |            "principalChargeReference":"XM002610011594",
         |            "penaltyStatus":"A",
+        |            "penaltyAmountAccruing": 99.99,
+        |            "principalChargeMainTransaction": "4700",
         |            "principalChargeBillingFrom":"2022-10-30",
-        |            "mainTransaction":"4703",
+        |            "mainTransaction":"4700",
         |            "LPP2Percentage":4,
         |            "appealInformation":[
         |               {
@@ -615,13 +595,7 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
         |               }
         |            ],
         |            "LPP1LRCalculationAmount":99.99,
-        |            "penaltyAmountOutstanding":99.99,
-        |            "timeToPay": [
-        |             {
-        |               "TTPStartDate": "2022-01-01",
-        |               "TTPEndDate": "2022-12-31"
-        |             }
-        |          ]
+        |            "penaltyAmountOutstanding":99.99
         |         }
         |      ]
         |   }

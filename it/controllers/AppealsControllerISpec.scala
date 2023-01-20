@@ -185,8 +185,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
       |          "penaltyChargeReference": "1234567890",
       |          "penaltyCategory": "LPP2",
       |          "penaltyStatus": "A",
-      |          "penaltyAmountPaid": 44.21,
-      |          "penaltyAmountOutstanding": 100,
+      |          "penaltyAmountAccruing": 99.99,
       |          "LPP1LRCalculationAmount": 99.99,
       |          "LPP1LRDays": "15",
       |          "LPP1LRPercentage": 2.00,
@@ -201,14 +200,14 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
       |          "principalChargeReference": "1234567893",
       |          "principalChargeBillingFrom": "2025-01-01",
       |          "principalChargeBillingTo": "2025-12-31",
-      |          "principalChargeDueDate": "2026-02-07"
+      |          "principalChargeDueDate": "2026-02-07",
+      |          "principalChargeMainTransaction": "4700"
       |       },
       |       {
       |          "penaltyChargeReference": "1234567889",
       |          "penaltyCategory": "LPP2",
       |          "penaltyStatus": "A",
-      |          "penaltyAmountPaid": 100.00,
-      |          "penaltyAmountOutstanding": 23.45,
+      |          "penaltyAmountAccruing": 99.99,
       |          "LPP1LRCalculationAmount": 99.99,
       |          "LPP1LRDays": "15",
       |          "LPP1LRPercentage": 2.00,
@@ -223,13 +222,15 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
       |          "principalChargeReference": "1234567892",
       |          "principalChargeBillingFrom": "2024-01-01",
       |          "principalChargeBillingTo": "2024-12-31",
-      |          "principalChargeDueDate": "2025-02-07"
+      |          "principalChargeDueDate": "2025-02-07",
+      |          "principalChargeMainTransaction": "4700"
       |       },
       |       {
       |          "penaltyChargeReference": "1234567888",
       |          "penaltyCategory": "LPP1",
       |          "penaltyStatus": "P",
       |          "penaltyAmountPaid": 0,
+      |          "penaltyAmountAccruing": 0,
       |          "penaltyAmountOutstanding": 144.00,
       |          "LPP1LRCalculationAmount": 99.99,
       |          "LPP1LRDays": "15",
@@ -245,6 +246,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
       |          "principalChargeReference": "1234567891",
       |          "principalChargeBillingFrom": "2023-01-01",
       |          "principalChargeBillingTo": "2023-12-31",
+      |          "principalChargeMainTransaction": "4700",
       |          "principalChargeDueDate": "2024-02-07"
       |       },
       |       {
@@ -253,6 +255,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
       |          "penaltyStatus": "P",
       |          "penaltyAmountPaid": 0,
       |          "penaltyAmountOutstanding": 144.00,
+      |          "penaltyAmountAccruing": 0,
       |          "LPP1LRCalculationAmount": 99.99,
       |          "LPP1LRDays": "15",
       |          "LPP1LRPercentage": 2.00,
@@ -267,6 +270,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
       |          "principalChargeReference": "1234567890",
       |          "principalChargeBillingFrom": "2022-01-01",
       |          "principalChargeBillingTo": "2022-12-31",
+      |          "principalChargeMainTransaction": "4700",
       |          "principalChargeDueDate": "2023-02-07"
       |       }
       |   ]
@@ -801,6 +805,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
         |          "penaltyStatus": "P",
         |          "penaltyAmountPaid": 0,
         |          "penaltyAmountOutstanding": 144.00,
+        |          "penaltyAmountAccruing": 0,
         |          "LPP1LRCalculationAmount": 99.99,
         |          "LPP1LRDays": "15",
         |          "LPP1LRPercentage": 2.00,
@@ -815,7 +820,8 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
         |          "principalChargeReference": "1234567890",
         |          "principalChargeBillingFrom": "2022-01-01",
         |          "principalChargeBillingTo": "2022-12-31",
-        |          "principalChargeDueDate": "2023-02-07"
+        |          "principalChargeDueDate": "2023-02-07",
+        |          "principalChargeMainTransaction": "4700"
         |       }
         |   ]
         | }
@@ -840,6 +846,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
         |          "penaltyStatus": "P",
         |          "penaltyAmountPaid": 0,
         |          "penaltyAmountOutstanding": 144.00,
+        |          "penaltyAmountAccruing": 0,
         |          "LPP1LRCalculationAmount": 99.99,
         |          "LPP1LRDays": "15",
         |          "LPP1LRPercentage": 2.00,
@@ -852,6 +859,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
         |          "communicationsDate": "2023-02-08",
         |          "penaltyChargeDueDate": "2022-10-30",
         |          "principalChargeReference": "1234567890",
+        |          "principalChargeMainTransaction": "4700",
         |          "principalChargeBillingFrom": "2022-01-01",
         |          "principalChargeBillingTo": "2022-12-31",
         |          "principalChargeDueDate": "2023-02-07"
@@ -862,6 +870,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
         |          "penaltyStatus": "P",
         |          "penaltyAmountPaid": 0,
         |          "penaltyAmountOutstanding": 144.01,
+        |          "penaltyAmountAccruing": 0,
         |          "LPP1LRCalculationAmount": 99.99,
         |          "LPP1LRDays": "15",
         |          "LPP1LRPercentage": 2.00,
@@ -874,6 +883,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
         |          "communicationsDate": "2023-01-08",
         |          "penaltyChargeDueDate": "2022-10-30",
         |          "principalChargeReference": "1234567890",
+        |          "principalChargeMainTransaction": "4700",
         |          "principalChargeBillingFrom": "2022-01-01",
         |          "principalChargeBillingTo": "2022-12-31",
         |          "principalChargeDueDate": "2023-02-07"
@@ -900,6 +910,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
         |          "penaltyCategory": "LPP2",
         |          "penaltyStatus": "P",
         |          "penaltyAmountPaid": 0,
+        |          "penaltyAmountAccruing": 0,
         |          "penaltyAmountOutstanding": 144.00,
         |          "LPP1LRCalculationAmount": 99.99,
         |          "LPP1LRDays": "15",
@@ -915,6 +926,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
         |          "principalChargeReference": "1234567890",
         |          "principalChargeBillingFrom": "2022-01-01",
         |          "principalChargeBillingTo": "2022-12-31",
+        |          "principalChargeMainTransaction": "4700",
         |          "principalChargeDueDate": "2023-02-07",
         |          "appealInformation": [
         |           {
@@ -929,6 +941,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
         |          "penaltyStatus": "P",
         |          "penaltyAmountPaid": 0,
         |          "penaltyAmountOutstanding": 144.01,
+        |          "penaltyAmountAccruing": 0,
         |          "LPP1LRCalculationAmount": 99.99,
         |          "LPP1LRDays": "15",
         |          "LPP1LRPercentage": 2.00,
@@ -943,6 +956,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
         |          "principalChargeReference": "1234567890",
         |          "principalChargeBillingFrom": "2022-01-01",
         |          "principalChargeBillingTo": "2022-12-31",
+        |          "principalChargeMainTransaction": "4700",
         |          "principalChargeDueDate": "2023-02-07"
         |       }
         |   ]

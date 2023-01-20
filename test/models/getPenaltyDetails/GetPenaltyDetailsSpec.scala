@@ -17,6 +17,7 @@
 package models.getPenaltyDetails
 
 import base.SpecBase
+import models.getFinancialDetails.MainTransactionEnum
 import models.getPenaltyDetails.appealInfo.{AppealInformationType, AppealLevelEnum, AppealStatusEnum}
 import models.getPenaltyDetails.latePayment._
 import models.getPenaltyDetails.lateSubmission._
@@ -83,9 +84,6 @@ class GetPenaltyDetailsSpec extends SpecBase {
       |       "penaltyCategory": "LPP1",
       |       "penaltyStatus": "A",
       |       "penaltyAmountAccruing": 99.99,
-      |       "penaltyAmountPosted": 1001.45,
-      |       "penaltyAmountPaid": 1001.45,
-      |       "penaltyAmountOutstanding": 99.99,
       |       "LPP1LRCalculationAmount": 99.99,
       |       "LPP1LRDays": "15",
       |       "LPP1LRPercentage": 2.00,
@@ -108,7 +106,8 @@ class GetPenaltyDetailsSpec extends SpecBase {
       |       "principalChargeSubTransaction": "1174",
       |       "principalChargeBillingFrom": "2022-10-30",
       |       "principalChargeBillingTo": "2022-10-30",
-      |       "principalChargeDueDate": "2022-10-30"
+      |       "principalChargeDueDate": "2022-10-30",
+      |       "principalChargeMainTransaction": "4700"
       |   }]
       | }
       |}
@@ -167,8 +166,7 @@ class GetPenaltyDetailsSpec extends SpecBase {
       |       "penaltyChargeReference": "1234567890",
       |       "penaltyCategory": "LPP1",
       |       "penaltyStatus": "A",
-      |       "penaltyAmountPaid": 1001.45,
-      |       "penaltyAmountOutstanding": 99.99,
+      |       "penaltyAmountAccruing": 99.99,
       |       "LPP1LRCalculationAmount": 99.99,
       |       "LPP1LRDays": "15",
       |       "LPP1LRPercentage": 2.00,
@@ -188,7 +186,8 @@ class GetPenaltyDetailsSpec extends SpecBase {
       |       }],
       |       "principalChargeBillingFrom": "2022-10-30",
       |       "principalChargeBillingTo": "2022-10-30",
-      |       "principalChargeDueDate": "2022-10-30"
+      |       "principalChargeDueDate": "2022-10-30",
+      |       "principalChargeMainTransaction": "4700"
       |   }]
       | }
       |}
@@ -262,9 +261,9 @@ class GetPenaltyDetailsSpec extends SpecBase {
             principalChargeBillingFrom = LocalDate.of(2022, 10, 30),
             principalChargeBillingTo = LocalDate.of(2022, 10, 30),
             principalChargeDueDate = LocalDate.of(2022, 10, 30),
-            communicationsDate = LocalDate.of(2022, 10, 30),
-            penaltyAmountOutstanding = Some(99.99),
-            penaltyAmountPaid = Some(1001.45),
+            communicationsDate = Some(LocalDate.of(2022, 10, 30)),
+            penaltyAmountOutstanding = None,
+            penaltyAmountPaid = None,
             LPP1LRDays = Some("15"),
             LPP1HRDays = Some("31"),
             LPP2Days = Some("31"),
@@ -275,7 +274,9 @@ class GetPenaltyDetailsSpec extends SpecBase {
             LPP1HRPercentage = Some(BigDecimal(2.00).setScale(2)),
             penaltyChargeDueDate = Some(LocalDate.of(2022, 10, 30)),
             principalChargeLatestClearing = None,
-            metadata = LPPDetailsMetadata()
+            metadata = LPPDetailsMetadata(),
+            penaltyAmountAccruing = BigDecimal(99.99),
+            principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
           )
         )
       )

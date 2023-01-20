@@ -82,10 +82,10 @@ trait ETMPWiremock {
       |       }],
       |       "principalChargeBillingFrom": "2022-10-30",
       |       "principalChargeBillingTo": "2022-10-30",
+      |       "principalChargeMainTransaction": "4700",
       |       "principalChargeDueDate": "2022-10-30",
       |       "communicationsDate": "2022-10-30",
-      |       "penaltyAmountOutstanding": 99.99,
-      |       "penaltyAmountPaid": 1001.45,
+      |       "penaltyAmountAccruing": 99.99,
       |       "LPP1LRDays": "15",
       |       "LPP1HRDays": "31",
       |       "LPP2Days": "31",
@@ -108,29 +108,30 @@ trait ETMPWiremock {
 
   val getFinancialDetailsAsJson: JsValue = Json.parse(
     """
-    | {
-    | "financialDetails":{
-      |  "totalisation": {
-      |    "regimeTotalisation": {
-      |      "totalAccountOverdue": 1000.0,
-      |      "totalAccountNotYetDue": 250.0,
-      |      "totalAccountCredit": 40.0,
-      |      "totalAccountBalance": 1210
-      |    },
-      |    "targetedSearch_SelectionCriteriaTotalisation": {
-      |      "totalOverdue": 100.0,
-      |      "totalNotYetDue": 0.0,
-      |      "totalBalance": 100.0,
-      |      "totalCredit": 10.0,
-      |      "totalCleared": 50
-      |    },
-      |    "additionalReceivableTotalisations": {
-      |      "totalAccountPostedInterest": 12.34,
-      |      "totalAccountAccruingInterest": 43.21
-      |    }
-      |  },
-      |  "documentDetails": [
-      |    {
+      |{
+      | "getFinancialData": {
+      |   "financialDetails":{
+      |     "totalisation": {
+      |       "regimeTotalisation": {
+      |         "totalAccountOverdue": 1000.0,
+      |         "totalAccountNotYetDue": 250.0,
+      |         "totalAccountCredit": 40.0,
+      |         "totalAccountBalance": 1210
+      |       },
+      |       "targetedSearch_SelectionCriteriaTotalisation": {
+      |         "totalOverdue": 100.0,
+      |         "totalNotYetDue": 0.0,
+      |         "totalBalance": 100.0,
+      |         "totalCredit": 10.0,
+      |         "totalCleared": 50
+      |       },
+      |       "additionalReceivableTotalisations": {
+      |         "totalAccountPostedInterest": 12.34,
+      |         "totalAccountAccruingInterest": 43.21
+      |       }
+      |     },
+      |     "documentDetails": [
+      |     {
       |      "documentNumber": "187346702498",
       |      "documentType": "TRM New Charge",
       |      "chargeReferenceNumber": "XM002610011594",
@@ -195,10 +196,10 @@ trait ETMPWiremock {
       |            "interestPostedAmount": "-99999999999.99",
       |            "interestAccruingAmount": -99999999999.99
       |          }
-      |        }
-      |      ]
+      |      }]
       |    }
       |  ]
+      |}
       |}
       |}
       |""".stripMargin

@@ -18,7 +18,7 @@ package services
 
 import models.getFinancialDetails.{FinancialDetails, MainTransactionEnum}
 import models.getPenaltyDetails.{GetPenaltyDetails, Totalisations}
-import models.getPenaltyDetails.latePayment.{LPPDetails, LPPDetailsMetadata, LPPPenaltyCategoryEnum, LatePaymentPenalty}
+import models.getPenaltyDetails.latePayment.{LPPDetails, LPPDetailsMetadata, LPPPenaltyCategoryEnum, LPPPenaltyStatusEnum, LatePaymentPenalty}
 
 import javax.inject.Inject
 
@@ -37,20 +37,30 @@ class PenaltiesFrontendService @Inject()() {
     penaltyDetails.latePaymentPenalty.flatMap(
       _.details.map(_.map(
         oldLPPDetails => {
-          val isAdditional = oldLPPDetails.penaltyCategory.equals(LPPPenaltyCategoryEnum.SecondPenalty)
-          val firstAndMaybeSecondPenalty = financialDetails.documentDetails.get.filter(_.chargeReferenceNumber.exists(_.equals(oldLPPDetails.principalChargeReference)))
-          val penaltyToCopy = firstAndMaybeSecondPenalty.find(lpp => {
-            if (isAdditional) MainTransactionEnum.secondCharges.contains(lpp.lineItemDetails.get.head.mainTransaction.get)
-            else MainTransactionEnum.firstCharges.contains(lpp.lineItemDetails.get.head.mainTransaction.get)
-          }
-          )
-          oldLPPDetails.copy(
-            metadata = LPPDetailsMetadata(
-              mainTransaction = penaltyToCopy.get.lineItemDetails.get.head.mainTransaction,
-              outstandingAmount = penaltyToCopy.get.documentOutstandingAmount,
-              timeToPay = oldLPPDetails.metadata.timeToPay
+          if(oldLPPDetails.penaltyStatus.equals(LPPPenaltyStatusEnum.Accruing)) {
+            oldLPPDetails.copy(
+              penaltyAmountOutstanding = Some(oldLPPDetails.penaltyAmountAccruing),
+              metadata = LPPDetailsMetadata(
+                mainTransaction = Some(oldLPPDetails.principalChargeMainTransaction),
+                timeToPay = None
+              )
             )
-          )
+          } else {
+            val isAdditional = oldLPPDetails.penaltyCategory.equals(LPPPenaltyCategoryEnum.SecondPenalty)
+            val firstAndMaybeSecondPenalty = financialDetails.documentDetails.get.filter(_.chargeReferenceNumber.exists(_.equals(oldLPPDetails.penaltyChargeReference.get)))
+            val penaltyToCopy = firstAndMaybeSecondPenalty.find(lpp => {
+              if (isAdditional) MainTransactionEnum.secondCharges.contains(lpp.lineItemDetails.get.head.mainTransaction.get)
+              else MainTransactionEnum.firstCharges.contains(lpp.lineItemDetails.get.head.mainTransaction.get)
+            }
+            )
+            oldLPPDetails.copy(
+              metadata = LPPDetailsMetadata(
+                mainTransaction = penaltyToCopy.get.lineItemDetails.get.head.mainTransaction,
+                outstandingAmount = penaltyToCopy.get.documentOutstandingAmount,
+                timeToPay = oldLPPDetails.metadata.timeToPay
+              )
+            )
+          }
         }
       ))
     )
