@@ -32,7 +32,7 @@ import models.notification._
 import models.upload.UploadJourney
 import play.api.Configuration
 import play.api.libs.json.Json
-import play.api.mvc.{Action, AnyContent, ControllerComponents, Request, Result}
+import play.api.mvc.{Action, AnyContent, ControllerComponents, Request, ResponseHeader, Result}
 import services.auditing.AuditService
 import services.{AppealService, GetPenaltyDetailsService}
 import uk.gov.hmrc.http.HeaderCarrier
@@ -123,7 +123,7 @@ class AppealsController @Inject()(val appConfig: AppConfig,
     Ok(ReasonableExcuse.allExcusesToJson(appConfig))
   }
 
-  def submitAppeal(enrolmentKey: String, isLPP: Boolean, penaltyNumber: String, correlationId: String): Action[AnyContent] = Action.async {
+  def submitAppeal(enrolmentKey: String, isLPP: Boolean, penaltyNumber: String, correlationId: String, isMultiAppeal: Boolean): Action[AnyContent] = Action.async {
     implicit request => {
       request.body.asJson.fold({
         logger.error("[AppealsController][submitAppeal] Failed to validate request body as JSON")
@@ -138,7 +138,7 @@ class AppealsController @Inject()(val appConfig: AppConfig,
               Future(BadRequest("Failed to parse to model"))
             },
             appealSubmission => {
-              submitAppealToPEGA(appealSubmission, enrolmentKey, isLPP, penaltyNumber, correlationId)
+              submitAppealToPEGA(appealSubmission, enrolmentKey, isLPP, penaltyNumber, correlationId, isMultiAppeal)
             }
           )
         }
@@ -147,16 +147,17 @@ class AppealsController @Inject()(val appConfig: AppConfig,
   }
 
   private def submitAppealToPEGA(appealSubmission: AppealSubmission, enrolmentKey: String,
-                                 isLPP: Boolean, penaltyNumber: String, correlationId: String)
+                                 isLPP: Boolean, penaltyNumber: String, correlationId: String, isMultiAppeal: Boolean)
                                 (implicit hc: HeaderCarrier, request: Request[_]): Future[Result] = {
-    appealService.submitAppeal(appealSubmission, enrolmentKey, isLPP, penaltyNumber, correlationId).map {
+    appealService.submitAppeal(appealSubmission, enrolmentKey, isLPP, penaltyNumber, correlationId).flatMap {
       _.fold(
         error => {
           logger.error(s"[AppealsController][submitAppeal] Received error from PEGA with status ${error.status} and error message: ${error.body}")
           logger.debug(s"[AppealsController][submitAppeal] Returning ${error.status} to calling service.")
-          Status(error.status)
+          Future(Status(error.status)(error.body))
         },
         responseModel => {
+          logger.info(s"[AppealsController][submitAppeal] - Successfully sent appeal submission to PEGA")
           val appeal = appealSubmission.appealInformation
           logger.debug(s"[AppealsController][submitAppeal] Received caseID response: ${responseModel.caseID} from downstream.")
           val seqOfNotifications = appeal match {
@@ -173,22 +174,33 @@ class AppealsController @Inject()(val appConfig: AppConfig,
                 response.status match {
                   case OK =>
                     logger.info(s"[AppealsController][submitAppeal] - Received OK from file notification orchestrator")
+                    Ok("")
                   case status =>
                     PagerDutyHelper.logStatusCode("submitAppeal", status)(RECEIVED_4XX_FROM_FILE_NOTIFICATION_ORCHESTRATOR, RECEIVED_5XX_FROM_FILE_NOTIFICATION_ORCHESTRATOR)
                     logger.error(s"[AppealsController][submitAppeal] - Received unknown response ($status) from file notification orchestrator. Response body: ${response.body}")
                     auditStorageFailureOfFileNotifications(seqOfNotifications)
+                    returnErrorResponseIfMultiAppeal(isMultiAppeal)(Some(s"Received $status response from file notification orchestrator"))
                 }
             }.recover {
               case e => {
                 logger.error(s"[AppealsController][submitAppeal] - An unknown exception occurred when attempting to store file notifications, with error: ${e.getMessage}")
                 auditStorageFailureOfFileNotifications(seqOfNotifications)
+                returnErrorResponseIfMultiAppeal(isMultiAppeal)(Some("Failed to store file uploads with unknown error"))
               }
             }
+          } else {
+            Future(Ok(""))
           }
-          logger.info(s"[AppealsController][submitAppeal] - Successfully sent appeal submission to PEGA")
-          Ok("")
         }
       )
+    }
+  }
+
+  private def returnErrorResponseIfMultiAppeal(isMultiAppeal: Boolean)(messageIfReturningError: Option[String] = None): Result = {
+    if (isMultiAppeal) {
+      InternalServerError(messageIfReturningError.get)
+    } else {
+      Ok("")
     }
   }
 

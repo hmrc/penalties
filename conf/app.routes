@@ -6,7 +6,7 @@ GET        /etmp/penalties/:enrolmentKey                controllers.PenaltiesFro
 GET        /appeals-data/late-submissions               controllers.AppealsController.getAppealsDataForLateSubmissionPenalty(penaltyId: String, enrolmentKey: String)
 GET        /appeals-data/late-payments                  controllers.AppealsController.getAppealsDataForLatePaymentPenalty(penaltyId: String, enrolmentKey: String, isAdditional: Boolean)
 GET        /appeals-data/reasonable-excuses             controllers.AppealsController.getReasonableExcuses
-POST       /appeals/submit-appeal                       controllers.AppealsController.submitAppeal(enrolmentKey: String, isLPP: Boolean, penaltyNumber: String, correlationId: String)
+POST       /appeals/submit-appeal                       controllers.AppealsController.submitAppeal(enrolmentKey: String, isLPP: Boolean, penaltyNumber: String, correlationId: String, isMultiAppeal: Boolean ?= false)
 GET        /appeals-data/multiple-penalties             controllers.AppealsController.getMultiplePenaltyData(penaltyId: String, enrolmentKey: String)
 
 # Compliance
