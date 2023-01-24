@@ -32,7 +32,7 @@ import models.notification._
 import models.upload.UploadJourney
 import play.api.Configuration
 import play.api.libs.json.Json
-import play.api.mvc.{Action, AnyContent, ControllerComponents, Request, ResponseHeader, Result}
+import play.api.mvc._
 import services.auditing.AuditService
 import services.{AppealService, GetPenaltyDetailsService}
 import uk.gov.hmrc.http.HeaderCarrier
@@ -174,31 +174,31 @@ class AppealsController @Inject()(val appConfig: AppConfig,
                 response.status match {
                   case OK =>
                     logger.info(s"[AppealsController][submitAppeal] - Received OK from file notification orchestrator")
-                    Ok("")
+                    Ok(responseModel.caseID)
                   case status =>
                     PagerDutyHelper.logStatusCode("submitAppeal", status)(RECEIVED_4XX_FROM_FILE_NOTIFICATION_ORCHESTRATOR, RECEIVED_5XX_FROM_FILE_NOTIFICATION_ORCHESTRATOR)
                     logger.error(s"[AppealsController][submitAppeal] - Received unknown response ($status) from file notification orchestrator. Response body: ${response.body}")
                     auditStorageFailureOfFileNotifications(seqOfNotifications)
-                    returnErrorResponseIfMultiAppeal(isMultiAppeal)(Some(s"Received $status response from file notification orchestrator"))
+                    returnErrorResponseIfMultiAppeal(isMultiAppeal)(s"Received $status response from file notification orchestrator")
                 }
             }.recover {
               case e => {
                 logger.error(s"[AppealsController][submitAppeal] - An unknown exception occurred when attempting to store file notifications, with error: ${e.getMessage}")
                 auditStorageFailureOfFileNotifications(seqOfNotifications)
-                returnErrorResponseIfMultiAppeal(isMultiAppeal)(Some("Failed to store file uploads with unknown error"))
+                returnErrorResponseIfMultiAppeal(isMultiAppeal)("Failed to store file uploads with unknown error")
               }
             }
           } else {
-            Future(Ok(""))
+            Future(Ok(responseModel.caseID))
           }
         }
       )
     }
   }
 
-  private def returnErrorResponseIfMultiAppeal(isMultiAppeal: Boolean)(messageIfReturningError: Option[String] = None): Result = {
+  private def returnErrorResponseIfMultiAppeal(isMultiAppeal: Boolean)(messageIfReturningError: String): Result = {
     if (isMultiAppeal) {
-      InternalServerError(messageIfReturningError.get)
+      InternalServerError(messageIfReturningError)
     } else {
       Ok("")
     }
