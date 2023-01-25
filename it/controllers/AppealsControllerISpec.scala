@@ -385,11 +385,11 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
           |    "customerReferenceNo": "123456789",
           |    "dateOfAppeal": "2020-01-01T00:00:00",
           |    "isLPP": false,
-          |    "appealSubmittedBy": "client",
+          |    "appealSubmittedBy": "customer",
           |    "appealInformation": {
           |						"reasonableExcuse": "bereavement",
           |           "honestyDeclaration": true,
-          |           "startDateOfEvent": "2021-04-23T00:00",
+          |           "startDateOfEvent": "2021-04-23T00:00:00",
           |						"statement": "This is a statement",
           |           "lateAppeal": false
           |		}
@@ -411,11 +411,11 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
           |    "customerReferenceNo": "123456789",
           |    "dateOfAppeal": "2020-01-01T00:00:00",
           |    "isLPP": false,
-          |    "appealSubmittedBy": "client",
+          |    "appealSubmittedBy": "customer",
           |    "appealInformation": {
           |						 "reasonableExcuse": "crime",
           |            "honestyDeclaration": true,
-          |            "startDateOfEvent": "2021-04-23T00:00",
+          |            "startDateOfEvent": "2021-04-23T00:00:00",
           |            "reportedIssueToPolice": "yes",
           |						 "statement": "This is a statement",
           |            "lateAppeal": false
@@ -438,11 +438,11 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
           |    "customerReferenceNo": "123456789",
           |    "dateOfAppeal": "2020-01-01T00:00:00",
           |    "isLPP": false,
-          |    "appealSubmittedBy": "client",
+          |    "appealSubmittedBy": "customer",
           |    "appealInformation": {
-          |          "reasonableExcuse": "fireOrFlood",
+          |          "reasonableExcuse": "fireandflood",
           |          "honestyDeclaration": true,
-          |          "startDateOfEvent": "2021-04-23T00:00",
+          |          "startDateOfEvent": "2021-04-23T00:00:00",
           |          "statement": "This is a statement",
           |          "lateAppeal": false
           |    }
@@ -464,11 +464,11 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
           |    "customerReferenceNo": "123456789",
           |    "dateOfAppeal": "2020-01-01T00:00:00",
           |    "isLPP": false,
-          |    "appealSubmittedBy": "client",
+          |    "appealSubmittedBy": "customer",
           |    "appealInformation": {
-          |						 "reasonableExcuse": "lossOfStaff",
+          |						 "reasonableExcuse": "lossOfEssentialStaff",
           |            "honestyDeclaration": true,
-          |            "startDateOfEvent": "2021-04-23T00:00",
+          |            "startDateOfEvent": "2021-04-23T00:00:00",
           |						 "statement": "This is a statement",
           |            "lateAppeal": false
           |		}
@@ -490,12 +490,12 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
           |    "customerReferenceNo": "123456789",
           |    "dateOfAppeal": "2020-01-01T00:00:00",
           |    "isLPP": false,
-          |    "appealSubmittedBy": "client",
+          |    "appealSubmittedBy": "customer",
           |    "appealInformation": {
-          |					 	 "reasonableExcuse": "technicalIssues",
+          |					 	 "reasonableExcuse": "technicalIssue",
           |            "honestyDeclaration": true,
-          |            "startDateOfEvent": "2021-04-23T00:00",
-          |            "endDateOfEvent": "2021-04-24T23:59:59.999999999",
+          |            "startDateOfEvent": "2021-04-23T00:00:00",
+          |            "endDateOfEvent": "2021-04-24T23:59:59",
           |						 "statement": "This is a statement",
           |            "lateAppeal": false
           |		}
@@ -518,11 +518,11 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
             |    "customerReferenceNo": "123456789",
             |    "dateOfAppeal": "2020-01-01T00:00:00",
             |    "isLPP": false,
-            |    "appealSubmittedBy": "client",
+            |    "appealSubmittedBy": "customer",
             |    "appealInformation": {
             |						 "reasonableExcuse": "health",
             |            "honestyDeclaration": true,
-            |            "startDateOfEvent": "2021-04-23T00:00",
+            |            "startDateOfEvent": "2021-04-23T00:00:00",
             |            "hospitalStayInvolved": false,
             |            "eventOngoing": false,
             |						 "statement": "This is a statement",
@@ -546,11 +546,11 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
             |    "customerReferenceNo": "123456789",
             |    "dateOfAppeal": "2020-01-01T00:00:00",
             |    "isLPP": false,
-            |    "appealSubmittedBy": "client",
+            |    "appealSubmittedBy": "customer",
             |    "appealInformation": {
             |						 "reasonableExcuse": "health",
             |            "honestyDeclaration": true,
-            |            "startDateOfEvent": "2021-04-23T00:00",
+            |            "startDateOfEvent": "2021-04-23T00:00:00",
             |            "hospitalStayInvolved": true,
             |            "eventOngoing": true,
             |						 "statement": "This is a statement",
@@ -574,12 +574,12 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
             |    "customerReferenceNo": "123456789",
             |    "dateOfAppeal": "2020-01-01T00:00:00",
             |    "isLPP": false,
-            |    "appealSubmittedBy": "client",
+            |    "appealSubmittedBy": "customer",
             |    "appealInformation": {
             |						 "reasonableExcuse": "health",
             |            "honestyDeclaration": true,
-            |            "startDateOfEvent": "2021-04-23T00:00",
-            |            "endDateOfEvent": "2021-04-23T18:25:43.511Z",
+            |            "startDateOfEvent": "2021-04-23T00:00:00",
+            |            "endDateOfEvent": "2021-04-23T23:59:59",
             |            "hospitalStayInvolved": true,
             |            "eventOngoing": false,
             |						 "statement": "This is a statement",
@@ -604,11 +604,11 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
             |    "customerReferenceNo": "123456789",
             |    "dateOfAppeal": "2020-01-01T00:00:00",
             |    "isLPP": false,
-            |    "appealSubmittedBy": "client",
+            |    "appealSubmittedBy": "customer",
             |    "appealInformation": {
             |						 "reasonableExcuse": "other",
             |            "honestyDeclaration": true,
-            |            "startDateOfEvent": "2021-04-23T00:00",
+            |            "startDateOfEvent": "2021-04-23T00:00:00",
             |						 "statement": "This is a statement",
             |            "lateAppeal": false,
             |            "uploadedFiles": [
@@ -651,11 +651,11 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
             |    "customerReferenceNo": "123456789",
             |    "dateOfAppeal": "2020-01-01T00:00:00",
             |    "isLPP": false,
-            |    "appealSubmittedBy": "client",
+            |    "appealSubmittedBy": "customer",
             |    "appealInformation": {
             |						 "reasonableExcuse": "other",
             |            "honestyDeclaration": true,
-            |            "startDateOfEvent": "2021-04-23T00:00",
+            |            "startDateOfEvent": "2021-04-23T00:00:00",
             |						 "statement": "This is a statement",
             |            "lateAppeal": false,
             |            "uploadedFiles": [
@@ -700,11 +700,11 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
             |    "customerReferenceNo": "123456789",
             |    "dateOfAppeal": "2020-01-01T00:00:00",
             |    "isLPP": true,
-            |    "appealSubmittedBy": "client",
+            |    "appealSubmittedBy": "customer",
             |    "appealInformation": {
             |						 "reasonableExcuse": "crime",
             |            "honestyDeclaration": true,
-            |            "startDateOfEvent": "2021-04-23T00:00",
+            |            "startDateOfEvent": "2021-04-23T00:00:00",
             |            "reportedIssueToPolice": "yes",
             |						 "statement": "This is a statement",
             |            "lateAppeal": false
@@ -728,11 +728,11 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
             |    "customerReferenceNo": "123456789",
             |    "dateOfAppeal": "2020-01-01T00:00:00",
             |    "isLPP": false,
-            |    "appealSubmittedBy": "client",
+            |    "appealSubmittedBy": "customer",
             |    "appealInformation": {
             |						 "reasonableExcuse": "other",
             |            "honestyDeclaration": true,
-            |            "startDateOfEvent": "2021-04-23T00:00",
+            |            "startDateOfEvent": "2021-04-23T00:00:00",
             |						 "statement": "This is a statement",
             |            "lateAppeal": false,
             |            "uploadedFiles": [
@@ -796,11 +796,11 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
             |    "customerReferenceNo": "123456789",
             |    "dateOfAppeal": "2020-01-01T00:00:00",
             |    "isLPP": false,
-            |    "appealSubmittedBy": "client",
+            |    "appealSubmittedBy": "customer",
             |    "appealInformation": {
             |						 "reasonableExcuse": "crime",
             |            "honestyDeclaration": true,
-            |            "startDateOfEvent": "2021-04-23T00:00",
+            |            "startDateOfEvent": "2021-04-23T00:00:00",
             |            "reportedIssueToPolice": "yes",
             |						 "statement": "This is a statement",
             |            "lateAppeal": false
@@ -823,11 +823,11 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
             |    "customerReferenceNo": "123456789",
             |    "dateOfAppeal": "2020-01-01T00:00:00",
             |    "isLPP": false,
-            |    "appealSubmittedBy": "client",
+            |    "appealSubmittedBy": "customer",
             |    "appealInformation": {
             |						 "reasonableExcuse": "crime",
             |            "honestyDeclaration": true,
-            |            "startDateOfEvent": "2021-04-23T00:00",
+            |            "startDateOfEvent": "2021-04-23T00:00:00",
             |            "reportedIssueToPolice": "yes",
             |						 "statement": "This is a statement",
             |            "lateAppeal": false
