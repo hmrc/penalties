@@ -28,8 +28,7 @@ class AppealService @Inject()(appealsConnector: PEGAConnector)
                              (implicit ec: ExecutionContext) {
 
   def submitAppeal(appealSubmission: AppealSubmission,
-                   enrolmentKey: String, isLPP: Boolean, penaltyNumber: String, correlationId: String): Future[Either[AppealsParser.ErrorResponse, AppealResponseModel]]= {
-
+                   enrolmentKey: String, isLPP: Boolean, penaltyNumber: String, correlationId: String): Future[Either[AppealsParser.ErrorResponse, AppealResponseModel]] = {
     appealsConnector.submitAppeal(appealSubmission, enrolmentKey, isLPP, penaltyNumber, correlationId).flatMap {
       _.fold(
         error => {

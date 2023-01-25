@@ -472,7 +472,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
             |    "customerReferenceNo": "123456789",
             |    "dateOfAppeal": "2020-01-01T00:00:00",
             |    "isLPP": true,
-            |    "appealSubmittedBy": "client"
+            |    "appealSubmittedBy": "customer"
             |}
             |""".stripMargin)
 
@@ -495,11 +495,11 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
             |    "customerReferenceNo": "123456789",
             |    "dateOfAppeal": "2020-01-01T00:00:00",
             |    "isLPP": true,
-            |    "appealSubmittedBy": "client",
+            |    "appealSubmittedBy": "customer",
             |    "appealInformation": {
             |						 "reasonableExcuse": "crime",
             |            "honestyDeclaration": true,
-            |            "startDateOfEvent": "2021-04-23T00:00",
+            |            "startDateOfEvent": "2021-04-23T00:00:00",
             |            "reportedIssueToPolice": "yes",
             |						 "statement": "This is a statement",
             |            "lateAppeal": false
@@ -523,11 +523,11 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
             |    "customerReferenceNo": "123456789",
             |    "dateOfAppeal": "2020-01-01T00:00:00",
             |    "isLPP": true,
-            |    "appealSubmittedBy": "client",
+            |    "appealSubmittedBy": "customer",
             |    "appealInformation": {
             |						 "reasonableExcuse": "crime",
             |            "honestyDeclaration": true,
-            |            "startDateOfEvent": "2021-04-23T00:00",
+            |            "startDateOfEvent": "2021-04-23T00:00:00",
             |            "reportedIssueToPolice": "yes",
             |            "lateAppeal": false
             |		}
@@ -548,11 +548,11 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
             |    "customerReferenceNo": "123456789",
             |    "dateOfAppeal": "2020-01-01T00:00:00",
             |    "isLPP": true,
-            |    "appealSubmittedBy": "client",
+            |    "appealSubmittedBy": "customer",
             |    "appealInformation": {
-            |						 "reasonableExcuse": "lossOfStaff",
+            |						 "reasonableExcuse": "lossOfEssentialStaff",
             |            "honestyDeclaration": true,
-            |            "startDateOfEvent": "2021-04-23T00:00",
+            |            "startDateOfEvent": "2021-04-23T00:00:00",
             |            "lateAppeal": false
             |		}
             |}
@@ -572,11 +572,11 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
             |    "customerReferenceNo": "123456789",
             |    "dateOfAppeal": "2020-01-01T00:00:00",
             |    "isLPP": true,
-            |    "appealSubmittedBy": "client",
+            |    "appealSubmittedBy": "customer",
             |    "appealInformation": {
-            |						 "reasonableExcuse": "fireOrFlood",
+            |						 "reasonableExcuse": "fireandflood",
             |            "honestyDeclaration": true,
-            |            "startDateOfEvent": "2021-04-23T00:00",
+            |            "startDateOfEvent": "2021-04-23T00:00:00",
             |            "lateAppeal": false
             |		}
             |}
@@ -596,12 +596,12 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
             |    "customerReferenceNo": "123456789",
             |    "dateOfAppeal": "2020-01-01T00:00:00",
             |    "isLPP": true,
-            |    "appealSubmittedBy": "client",
+            |    "appealSubmittedBy": "customer",
             |    "appealInformation": {
-            |						 "reasonableExcuse": "technicalIssues",
+            |						 "reasonableExcuse": "technicalIssue",
             |            "honestyDeclaration": true,
-            |            "startDateOfEvent": "2021-04-23T00:00",
-            |            "endDateOfEvent": "2021-04-24T23:59:59.999999999",
+            |            "startDateOfEvent": "2021-04-23T00:00:00",
+            |            "endDateOfEvent": "2021-04-24T23:59:59",
             |            "lateAppeal": false
             |		}
             |}
@@ -622,11 +622,11 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
               |    "customerReferenceNo": "123456789",
               |    "dateOfAppeal": "2020-01-01T00:00:00",
               |    "isLPP": true,
-              |    "appealSubmittedBy": "client",
+              |    "appealSubmittedBy": "customer",
               |    "appealInformation": {
               |						 "reasonableExcuse": "health",
               |            "honestyDeclaration": true,
-              |            "startDateOfEvent": "2021-04-23T00:00",
+              |            "startDateOfEvent": "2021-04-23T00:00:00",
               |            "hospitalStayInvolved": false,
               |            "eventOngoing": false,
               |            "lateAppeal": false
@@ -648,11 +648,11 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
               |    "customerReferenceNo": "123456789",
               |    "dateOfAppeal": "2020-01-01T00:00:00",
               |    "isLPP": true,
-              |    "appealSubmittedBy": "client",
+              |    "appealSubmittedBy": "customer",
               |    "appealInformation": {
               |						 "reasonableExcuse": "health",
               |            "honestyDeclaration": true,
-              |            "startDateOfEvent": "2021-04-23T00:00",
+              |            "startDateOfEvent": "2021-04-23T00:00:00",
               |            "hospitalStayInvolved": true,
               |            "eventOngoing": true,
               |            "lateAppeal": false
@@ -674,11 +674,11 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
               |    "customerReferenceNo": "123456789",
               |    "dateOfAppeal": "2020-01-01T00:00:00",
               |    "isLPP": true,
-              |    "appealSubmittedBy": "client",
+              |    "appealSubmittedBy": "customer",
               |    "appealInformation": {
               |						 "reasonableExcuse": "health",
               |            "honestyDeclaration": true,
-              |            "startDateOfEvent": "2021-04-23T00:00",
+              |            "startDateOfEvent": "2021-04-23T00:00:00",
               |            "endDateOfEvent": "2021-04-23T18:25:43.511Z",
               |            "hospitalStayInvolved": true,
               |            "eventOngoing": false,
@@ -701,11 +701,11 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
               |    "customerReferenceNo": "123456789",
               |    "dateOfAppeal": "2020-01-01T00:00:00",
               |    "isLPP": true,
-              |    "appealSubmittedBy": "client",
+              |    "appealSubmittedBy": "customer",
               |    "appealInformation": {
               |						"reasonableExcuse": "crime",
               |           "honestyDeclaration": true,
-              |           "startDateOfEvent": "2021-04-23T00:00",
+              |           "startDateOfEvent": "2021-04-23T00:00:00",
               |           "reportedIssueToPolice": "yes",
               |           "lateAppeal": false
               |		}
@@ -734,11 +734,11 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
             |    "customerReferenceNo": "123456789",
             |    "dateOfAppeal": "2020-01-01T00:00:00",
             |    "isLPP": true,
-            |    "appealSubmittedBy": "client",
+            |    "appealSubmittedBy": "customer",
             |    "appealInformation": {
             |						 "reasonableExcuse": "other",
             |            "honestyDeclaration": true,
-            |            "startDateOfEvent": "2021-04-23T00:00",
+            |            "startDateOfEvent": "2021-04-23T00:00:00",
             |						 "statement": "This is a statement",
             |            "lateAppeal": false,
             |            "uploadedFiles": [
@@ -791,11 +791,11 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
             |    "customerReferenceNo": "123456789",
             |    "dateOfAppeal": "2020-01-01T00:00:00",
             |    "isLPP": true,
-            |    "appealSubmittedBy": "client",
+            |    "appealSubmittedBy": "customer",
             |    "appealInformation": {
             |						 "reasonableExcuse": "other",
             |            "honestyDeclaration": true,
-            |            "startDateOfEvent": "2021-04-23T00:00",
+            |            "startDateOfEvent": "2021-04-23T00:00:00",
             |						 "statement": "This is a statement",
             |            "lateAppeal": false,
             |            "uploadedFiles": [
@@ -864,11 +864,11 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
             |    "customerReferenceNo": "123456789",
             |    "dateOfAppeal": "2020-01-01T00:00:00",
             |    "isLPP": true,
-            |    "appealSubmittedBy": "client",
+            |    "appealSubmittedBy": "customer",
             |    "appealInformation": {
             |						 "reasonableExcuse": "other",
             |            "honestyDeclaration": true,
-            |            "startDateOfEvent": "2021-04-23T00:00",
+            |            "startDateOfEvent": "2021-04-23T00:00:00",
             |						 "statement": "This is a statement",
             |            "lateAppeal": false,
             |            "uploadedFiles": [
@@ -938,11 +938,11 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
             |    "customerReferenceNo": "123456789",
             |    "dateOfAppeal": "2020-01-01T00:00:00",
             |    "isLPP": true,
-            |    "appealSubmittedBy": "client",
+            |    "appealSubmittedBy": "customer",
             |    "appealInformation": {
             |						 "reasonableExcuse": "other",
             |            "honestyDeclaration": true,
-            |            "startDateOfEvent": "2021-04-23T00:00",
+            |            "startDateOfEvent": "2021-04-23T00:00:00",
             |						 "statement": "This is a statement",
             |            "lateAppeal": false,
             |            "uploadedFiles": [
@@ -996,11 +996,11 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
             |    "customerReferenceNo": "123456789",
             |    "dateOfAppeal": "2020-01-01T00:00:00",
             |    "isLPP": true,
-            |    "appealSubmittedBy": "client",
+            |    "appealSubmittedBy": "customer",
             |    "appealInformation": {
             |						 "reasonableExcuse": "other",
             |            "honestyDeclaration": true,
-            |            "startDateOfEvent": "2021-04-23T00:00",
+            |            "startDateOfEvent": "2021-04-23T00:00:00",
             |						 "statement": "This is a statement",
             |            "lateAppeal": false,
             |            "uploadedFiles": [
@@ -1070,11 +1070,11 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
             |    "customerReferenceNo": "123456789",
             |    "dateOfAppeal": "2020-01-01T00:00:00",
             |    "isLPP": true,
-            |    "appealSubmittedBy": "client",
+            |    "appealSubmittedBy": "customer",
             |    "appealInformation": {
             |						 "reasonableExcuse": "other",
             |            "honestyDeclaration": true,
-            |            "startDateOfEvent": "2021-04-23T00:00",
+            |            "startDateOfEvent": "2021-04-23T00:00:00",
             |						 "statement": "This is a statement",
             |            "lateAppeal": false,
             |            "uploadedFiles": [

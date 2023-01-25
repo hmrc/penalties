@@ -19,7 +19,7 @@ package models.appeals
 import models.upload.UploadJourney
 import play.api.libs.json._
 
-import java.time.LocalDateTime
+import java.time.{LocalDateTime, ZoneOffset}
 
 sealed trait AppealInformation {
   val statement: Option[String]
@@ -44,8 +44,9 @@ object BereavementAppealInformation {
   implicit val bereavementAppealInformationFormatter: OFormat[BereavementAppealInformation] = Json.format[BereavementAppealInformation]
 
   val bereavementAppealWrites: Writes[BereavementAppealInformation] = (bereavementAppealInformation: BereavementAppealInformation) => {
+    val startDateOfEventZoned: String = LocalDateTime.parse(bereavementAppealInformation.startDateOfEvent).toInstant(ZoneOffset.UTC).toString
     Json.obj(
-      "startDateOfEvent" -> bereavementAppealInformation.startDateOfEvent,
+      "startDateOfEvent" -> startDateOfEventZoned,
       "lateAppeal" -> bereavementAppealInformation.lateAppeal,
       "reasonableExcuse" -> bereavementAppealInformation.reasonableExcuse,
       "honestyDeclaration" -> bereavementAppealInformation.honestyDeclaration
@@ -93,8 +94,9 @@ object CrimeAppealInformation {
   implicit val crimeAppealInformationFormatter: OFormat[CrimeAppealInformation] = Json.format[CrimeAppealInformation]
 
   val crimeAppealWrites: Writes[CrimeAppealInformation] = (crimeAppealInformation: CrimeAppealInformation) => {
+    val startDateOfEventZoned: String = LocalDateTime.parse(crimeAppealInformation.startDateOfEvent).toInstant(ZoneOffset.UTC).toString
     Json.obj(
-      "startDateOfEvent" -> crimeAppealInformation.startDateOfEvent,
+      "startDateOfEvent" -> startDateOfEventZoned,
       "reportedIssueToPolice" -> crimeAppealInformation.reportedIssueToPolice,
       "lateAppeal" -> crimeAppealInformation.lateAppeal,
       "reasonableExcuse" -> crimeAppealInformation.reasonableExcuse,
@@ -142,8 +144,9 @@ object FireOrFloodAppealInformation {
   implicit val fireOrFloodAppealInformationFormatter: OFormat[FireOrFloodAppealInformation] = Json.format[FireOrFloodAppealInformation]
 
   val fireOrFloodAppealWrites: Writes[FireOrFloodAppealInformation] = (fireOrFloodAppealInformation: FireOrFloodAppealInformation) => {
+    val startDateOfEventZoned: String = LocalDateTime.parse(fireOrFloodAppealInformation.startDateOfEvent).toInstant(ZoneOffset.UTC).toString
     Json.obj(
-      "startDateOfEvent" -> fireOrFloodAppealInformation.startDateOfEvent,
+      "startDateOfEvent" -> startDateOfEventZoned,
       "lateAppeal" -> fireOrFloodAppealInformation.lateAppeal,
       "reasonableExcuse" -> fireOrFloodAppealInformation.reasonableExcuse,
       "honestyDeclaration" -> fireOrFloodAppealInformation.honestyDeclaration
@@ -190,8 +193,9 @@ object LossOfStaffAppealInformation {
   implicit val lossOfStaffAppealInformationFormatter: OFormat[LossOfStaffAppealInformation] = Json.format[LossOfStaffAppealInformation]
 
   val lossOfStaffAppealWrites: Writes[LossOfStaffAppealInformation] = (lossOfStaffAppealInformation: LossOfStaffAppealInformation) => {
+    val startDateOfEventZoned: String = LocalDateTime.parse(lossOfStaffAppealInformation.startDateOfEvent).toInstant(ZoneOffset.UTC).toString
     Json.obj(
-      "startDateOfEvent" -> lossOfStaffAppealInformation.startDateOfEvent,
+      "startDateOfEvent" -> startDateOfEventZoned,
       "lateAppeal" -> lossOfStaffAppealInformation.lateAppeal,
       "reasonableExcuse" -> lossOfStaffAppealInformation.reasonableExcuse,
       "honestyDeclaration" -> lossOfStaffAppealInformation.honestyDeclaration
@@ -239,9 +243,11 @@ object TechnicalIssuesAppealInformation {
   implicit val technicalIssuesAppealInformationFormatter: OFormat[TechnicalIssuesAppealInformation] = Json.format[TechnicalIssuesAppealInformation]
 
   val technicalIssuesAppealWrites: Writes[TechnicalIssuesAppealInformation] = (technicalIssuesAppealInformation: TechnicalIssuesAppealInformation) => {
+    val startDateOfEventZoned: String = LocalDateTime.parse(technicalIssuesAppealInformation.startDateOfEvent).toInstant(ZoneOffset.UTC).toString
+    val endDateOfEventZoned: String = LocalDateTime.parse(technicalIssuesAppealInformation.endDateOfEvent).toInstant(ZoneOffset.UTC).toString
     Json.obj(
-      "startDateOfEvent" -> technicalIssuesAppealInformation.startDateOfEvent,
-      "endDateOfEvent" -> technicalIssuesAppealInformation.endDateOfEvent,
+      "startDateOfEvent" -> startDateOfEventZoned,
+      "endDateOfEvent" -> endDateOfEventZoned,
       "lateAppeal" -> technicalIssuesAppealInformation.lateAppeal,
       "reasonableExcuse" -> technicalIssuesAppealInformation.reasonableExcuse,
       "honestyDeclaration" -> technicalIssuesAppealInformation.honestyDeclaration
@@ -322,22 +328,23 @@ object HealthAppealInformation {
         isClientResponsibleForLateSubmission => Json.obj("isClientResponsibleForLateSubmission" -> isClientResponsibleForLateSubmission)
       )
     )
-
+    val startDateOfEventZoned: String = LocalDateTime.parse(healthAppealInformation.startDateOfEvent.get).toInstant(ZoneOffset.UTC).toString
     val additionalHealthInfo = (healthAppealInformation.hospitalStayInvolved, healthAppealInformation.eventOngoing) match {
       case (true, true) =>
         Json.obj(
-          "startDateOfEvent" -> healthAppealInformation.startDateOfEvent.get,
+          "startDateOfEvent" -> startDateOfEventZoned,
           "eventOngoing" -> healthAppealInformation.eventOngoing
         )
       case (true, false) =>
+        val endDateOfEventZoned: String = LocalDateTime.parse(healthAppealInformation.endDateOfEvent.get).toInstant(ZoneOffset.UTC).toString
         Json.obj(
-          "startDateOfEvent" -> healthAppealInformation.startDateOfEvent.get,
+          "startDateOfEvent" -> startDateOfEventZoned,
           "eventOngoing" -> healthAppealInformation.eventOngoing,
-          "endDateOfEvent" -> healthAppealInformation.endDateOfEvent.get
+          "endDateOfEvent" -> endDateOfEventZoned
         )
       case _ =>
         Json.obj(
-          "startDateOfEvent" -> healthAppealInformation.startDateOfEvent.get
+          "startDateOfEvent" -> startDateOfEventZoned
         )
     }
 
@@ -363,8 +370,9 @@ object OtherAppealInformation {
   implicit val otherAppealInformationFormatter: OFormat[OtherAppealInformation] = Json.format[OtherAppealInformation]
 
   val otherAppealInformationWrites: Writes[OtherAppealInformation] = (otherAppealInformation: OtherAppealInformation) => {
+    val startDateOfEventZoned: String = LocalDateTime.parse(otherAppealInformation.startDateOfEvent).toInstant(ZoneOffset.UTC).toString
     Json.obj(
-      "startDateOfEvent" -> otherAppealInformation.startDateOfEvent,
+      "startDateOfEvent" -> startDateOfEventZoned,
       "statement" -> otherAppealInformation.statement.get,
       "lateAppeal" -> otherAppealInformation.lateAppeal,
       "reasonableExcuse" -> otherAppealInformation.reasonableExcuse,
@@ -446,11 +454,11 @@ object AppealSubmission {
         Json.fromJson(payload)(BereavementAppealInformation.bereavementAppealInformationFormatter)
       case "crime" =>
         Json.fromJson(payload)(CrimeAppealInformation.crimeAppealInformationFormatter)
-      case "fireOrFlood" =>
+      case "fireandflood" =>
         Json.fromJson(payload)(FireOrFloodAppealInformation.fireOrFloodAppealInformationFormatter)
-      case "lossOfStaff" =>
+      case "lossOfEssentialStaff" =>
         Json.fromJson(payload)(LossOfStaffAppealInformation.lossOfStaffAppealInformationFormatter)
-      case "technicalIssues" =>
+      case "technicalIssue" =>
         Json.fromJson(payload)(TechnicalIssuesAppealInformation.technicalIssuesAppealInformationFormatter)
       case "health" =>
         Json.fromJson(payload)(HealthAppealInformation.healthAppealInformationFormatter)
@@ -467,11 +475,11 @@ object AppealSubmission {
         Json.toJson(payload.asInstanceOf[BereavementAppealInformation])(BereavementAppealInformation.bereavementAppealWrites)
       case "crime" =>
         Json.toJson(payload.asInstanceOf[CrimeAppealInformation])(CrimeAppealInformation.crimeAppealWrites)
-      case "fireOrFlood" =>
+      case "fireandflood" =>
         Json.toJson(payload.asInstanceOf[FireOrFloodAppealInformation])(FireOrFloodAppealInformation.fireOrFloodAppealWrites)
-      case "lossOfStaff" =>
+      case "lossOfEssentialStaff" =>
         Json.toJson(payload.asInstanceOf[LossOfStaffAppealInformation])(LossOfStaffAppealInformation.lossOfStaffAppealWrites)
-      case "technicalIssues" =>
+      case "technicalIssue" =>
         Json.toJson(payload.asInstanceOf[TechnicalIssuesAppealInformation])(TechnicalIssuesAppealInformation.technicalIssuesAppealWrites)
       case "health" =>
         Json.toJson(payload.asInstanceOf[HealthAppealInformation])(HealthAppealInformation.healthAppealWrites)
@@ -506,11 +514,12 @@ object AppealSubmission {
   }
 
   implicit val apiWrites: Writes[AppealSubmission] = (appealSubmission: AppealSubmission) => {
+    val dateOfAppealZoned: String = appealSubmission.dateOfAppeal.toInstant(ZoneOffset.UTC).toString
     Json.obj(
       "sourceSystem" -> appealSubmission.sourceSystem,
       "taxRegime" -> appealSubmission.taxRegime,
       "customerReferenceNo" -> appealSubmission.customerReferenceNo,
-      "dateOfAppeal" -> appealSubmission.dateOfAppeal,
+      "dateOfAppeal" -> dateOfAppealZoned,
       "isLPP" -> appealSubmission.isLPP,
       "appealSubmittedBy" -> appealSubmission.appealSubmittedBy,
       "appealInformation" -> parseAppealInformationToJson(appealSubmission.appealInformation)
