@@ -52,7 +52,7 @@ class AppealServiceSpec extends SpecBase {
       agentDetails = None,
       appealInformation = CrimeAppealInformation(
         startDateOfEvent = "2021-04-23T00:00",
-        reportedIssueToPolice = true,
+        reportedIssueToPolice = "yes",
         reasonableExcuse = "crime",
         honestyDeclaration = true,
         statement = None,

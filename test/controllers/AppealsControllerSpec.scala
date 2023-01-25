@@ -500,7 +500,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
             |						 "reasonableExcuse": "crime",
             |            "honestyDeclaration": true,
             |            "startDateOfEvent": "2021-04-23T00:00",
-            |            "reportedIssueToPolice": true,
+            |            "reportedIssueToPolice": "yes",
             |						 "statement": "This is a statement",
             |            "lateAppeal": false
             |		}
@@ -528,7 +528,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
             |						 "reasonableExcuse": "crime",
             |            "honestyDeclaration": true,
             |            "startDateOfEvent": "2021-04-23T00:00",
-            |            "reportedIssueToPolice": true,
+            |            "reportedIssueToPolice": "yes",
             |            "lateAppeal": false
             |		}
             |}
@@ -706,7 +706,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
               |						"reasonableExcuse": "crime",
               |           "honestyDeclaration": true,
               |           "startDateOfEvent": "2021-04-23T00:00",
-              |           "reportedIssueToPolice": true,
+              |           "reportedIssueToPolice": "yes",
               |           "lateAppeal": false
               |		}
               |}

@@ -146,7 +146,7 @@ Example payload:
             "reasonableExcuse": "crime",
             "honestyDeclaration": true,
             "startDateOfEvent": "2021-04-23T00:00",
-            "reportedIssueToPolice": true,
+            "reportedIssueToPolice": "yes",
             "lateAppeal": true,
             "lateAppealReason": "Reason",
             "isClientResponsibleForSubmission": false,

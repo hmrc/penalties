@@ -63,7 +63,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       |						 "reasonableExcuse": "crime",
       |            "honestyDeclaration": true,
       |            "startDateOfEvent": "2021-04-23T00:00",
-      |            "reportedIssueToPolice": true,
+      |            "reportedIssueToPolice": "yes",
       |            "lateAppeal": true,
       |            "lateAppealReason": "Reason",
       |            "isClientResponsibleForSubmission": false,
@@ -275,7 +275,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       |						"reasonableExcuse": "crime",
       |           "honestyDeclaration": true,
       |           "startDateOfEvent": "2021-04-23T00:00",
-      |           "reportedIssueToPolice": true
+      |           "reportedIssueToPolice": "yes"
       |		}
       |}
       |""".stripMargin)
@@ -417,7 +417,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       |   "reasonableExcuse": "crime",
       |   "honestyDeclaration": true,
       |   "startDateOfEvent": "2021-04-23T00:00",
-      |   "reportedIssueToPolice": true,
+      |   "reportedIssueToPolice": "yes",
       |   "lateAppeal": true,
       |   "lateAppealReason": "Reason",
       |   "isClientResponsibleForSubmission": false,
@@ -453,7 +453,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
     """
       |{
       |   "startDateOfEvent": "2021-04-23T00:00",
-      |   "reportedIssueToPolice": true
+      |   "reportedIssueToPolice": "yes"
       |}
       |""".stripMargin
   )
@@ -683,7 +683,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
         result.isSuccess shouldBe true
         result.get shouldBe CrimeAppealInformation(
           startDateOfEvent = "2021-04-23T00:00",
-          reportedIssueToPolice = true,
+          reportedIssueToPolice = "yes",
           statement = None,
           lateAppeal = true,
           lateAppealReason = Some("Reason"),
@@ -906,7 +906,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       "parse the appeal information model into a JsObject" in {
         val model = CrimeAppealInformation(
           startDateOfEvent = "2021-04-23T00:00",
-          reportedIssueToPolice = true,
+          reportedIssueToPolice = "yes",
           statement = None,
           lateAppeal = true,
           lateAppealReason = Some("Reason"),
@@ -1142,7 +1142,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           agentDetails = Some(AgentDetails(agentReferenceNo = "AGENT1", isExcuseRelatedToAgent = true)),
           appealInformation = CrimeAppealInformation(
             startDateOfEvent = "2021-04-23T00:00",
-            reportedIssueToPolice = true,
+            reportedIssueToPolice = "yes",
             statement = None,
             lateAppeal = true,
             lateAppealReason = Some("Reason"),
@@ -1517,7 +1517,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           agentDetails = Some(AgentDetails(agentReferenceNo = "AGENT1", isExcuseRelatedToAgent = true)),
           appealInformation = CrimeAppealInformation(
             startDateOfEvent = "2021-04-23T00:00",
-            reportedIssueToPolice = true,
+            reportedIssueToPolice = "yes",
             statement = None,
             lateAppeal = true,
             lateAppealReason = Some("Reason"),
@@ -1542,7 +1542,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             "reasonableExcuse" -> "crime",
             "honestyDeclaration" -> true,
             "startDateOfEvent" -> "2021-04-23T00:00",
-            "reportedIssueToPolice" -> true,
+            "reportedIssueToPolice" -> "yes",
             "lateAppeal" -> true,
             "lateAppealReason" -> "Reason",
             "isClientResponsibleForSubmission" -> false,
@@ -2104,7 +2104,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       "write the appeal model to JSON" in {
         val model = CrimeAppealInformation(
           startDateOfEvent = "2021-04-23T00:00",
-          reportedIssueToPolice = true,
+          reportedIssueToPolice = "yes",
           statement = None,
           lateAppeal = false,
           lateAppealReason = None,
@@ -2117,7 +2117,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
         result shouldBe Json.obj(
           "reasonableExcuse" -> "crime",
           "startDateOfEvent" -> "2021-04-23T00:00",
-          "reportedIssueToPolice" -> true,
+          "reportedIssueToPolice" -> "yes",
           "lateAppeal" -> false,
           "isClientResponsibleForSubmission" -> false,
           "isClientResponsibleForLateSubmission" -> true,
