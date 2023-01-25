@@ -67,7 +67,7 @@ class PEGAConnectorSpec extends SpecBase with FeatureSwitching with LogCapturing
         agentDetails = Some(AgentDetails(agentReferenceNo = "AGENT1", isExcuseRelatedToAgent = true)),
         appealInformation = CrimeAppealInformation(
           startDateOfEvent = "2021-04-23T00:00",
-          reportedIssueToPolice = true,
+          reportedIssueToPolice = "yes",
           statement = None,
           lateAppeal = false,
           lateAppealReason = None,
@@ -105,7 +105,7 @@ class PEGAConnectorSpec extends SpecBase with FeatureSwitching with LogCapturing
         agentDetails = Some(AgentDetails(agentReferenceNo = "AGENT1", isExcuseRelatedToAgent = true)),
         appealInformation = CrimeAppealInformation(
           startDateOfEvent = "2021-04-23T00:00",
-          reportedIssueToPolice = true,
+          reportedIssueToPolice = "yes",
           statement = None,
           lateAppeal = false,
           lateAppealReason = None,
@@ -139,7 +139,7 @@ class PEGAConnectorSpec extends SpecBase with FeatureSwitching with LogCapturing
         agentDetails = Some(AgentDetails(agentReferenceNo = "AGENT1", isExcuseRelatedToAgent = true)),
         appealInformation = CrimeAppealInformation(
           startDateOfEvent = "2021-04-23T00:00",
-          reportedIssueToPolice = true,
+          reportedIssueToPolice = "yes",
           statement = None,
           lateAppeal = false,
           lateAppealReason = None,
@@ -178,7 +178,7 @@ class PEGAConnectorSpec extends SpecBase with FeatureSwitching with LogCapturing
         agentDetails = Some(AgentDetails(agentReferenceNo = "AGENT1", isExcuseRelatedToAgent = true)),
         appealInformation = CrimeAppealInformation(
           startDateOfEvent = "2021-04-23T00:00",
-          reportedIssueToPolice = true,
+          reportedIssueToPolice = "yes",
           statement = None,
           lateAppeal = false,
           lateAppealReason = None,
@@ -217,7 +217,7 @@ class PEGAConnectorSpec extends SpecBase with FeatureSwitching with LogCapturing
         agentDetails = Some(AgentDetails(agentReferenceNo = "AGENT1", isExcuseRelatedToAgent = true)),
         appealInformation = CrimeAppealInformation(
           startDateOfEvent = "2021-04-23T00:00",
-          reportedIssueToPolice = true,
+          reportedIssueToPolice = "yes",
           statement = None,
           lateAppeal = false,
           lateAppealReason = None,

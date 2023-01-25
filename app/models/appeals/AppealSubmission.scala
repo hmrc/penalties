@@ -79,7 +79,7 @@ object BereavementAppealInformation {
 
 case class CrimeAppealInformation(
                                    startDateOfEvent: String,
-                                   reportedIssueToPolice: Boolean,
+                                   reportedIssueToPolice: String,
                                    statement: Option[String],
                                    lateAppeal: Boolean,
                                    lateAppealReason: Option[String],
