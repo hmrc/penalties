@@ -17,9 +17,9 @@
 package connectors.parsers
 
 import models.appeals.AppealResponseModel
-import uk.gov.hmrc.http.{HttpReads, HttpResponse}
 import play.api.http.Status.{BAD_REQUEST, OK}
 import play.api.libs.json.JsSuccess
+import uk.gov.hmrc.http.{HttpReads, HttpResponse}
 import utils.Logger.logger
 import utils.PagerDutyHelper
 import utils.PagerDutyHelper.PagerDutyKeys._
@@ -41,12 +41,12 @@ object AppealsParser {
           }
         case BAD_REQUEST =>
           PagerDutyHelper.log("AppealSubmissionResponseReads", RECEIVED_4XX_FROM_1808_API)
-          logger.debug(s"[AppealSubmissionResponseReads][read]: Bad request returned with reason: ${response.body}")
+          logger.debug(s"[AppealSubmissionResponseReads][read]: Bad request returned with reason: ${response.body} from PEGA")
           Left(BadRequest)
         case status =>
           PagerDutyHelper.logStatusCode("AppealSubmissionResponseReads", status)(RECEIVED_4XX_FROM_1808_API, RECEIVED_5XX_FROM_1808_API)
           logger.warn(s"[AppealSubmissionResponseReads][read]: Unexpected response, status $status returned")
-          Left(UnexpectedFailure(status, s"Unexpected response, status $status returned"))
+          Left(UnexpectedFailure(status, s"Unexpected response, status $status returned on submission to PEGA"))
       }
     }
   }
@@ -58,12 +58,12 @@ object AppealsParser {
 
   case object InvalidJson extends ErrorResponse {
     override val status: Int = BAD_REQUEST
-    override val body: String = "Invalid JSON received"
+    override val body: String = "Invalid JSON received from PEGA"
   }
 
   case object BadRequest extends ErrorResponse {
     override val status: Int = BAD_REQUEST
-    override val body: String = "Incorrect Json body sent"
+    override val body: String = "Incorrect Json body sent to PEGA"
   }
 
   case class UnexpectedFailure(

@@ -28,7 +28,11 @@ import utils.{AppealWiremock, ETMPWiremock, FileNotificationOrchestratorWiremock
 import java.time.LocalDate
 import scala.jdk.CollectionConverters._
 
-class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock with AppealWiremock with FileNotificationOrchestratorWiremock with FeatureSwitching {
+class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
+  with AppealWiremock
+  with FileNotificationOrchestratorWiremock
+  with FeatureSwitching {
+
   val controller: AppealsController = injector.instanceOf[AppealsController]
 
   val appealJson: JsValue = Json.parse(
@@ -636,7 +640,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
         result.status shouldBe OK
       }
 
-      "call the connector and send the appeal data received in the request body - returns OK when successful for other with file upload (audit storage failure)" in {
+      "call the connector and send the appeal data received in the request body - returns OK when successful for other with file upload (audit storage failure) - single appeal" in {
         mockResponseForAppealSubmissionStub(OK, "HMRC-MTD-VAT~VRN~123456789", penaltyNumber = "123456789")
         mockResponseForFileNotificationOrchestrator(INTERNAL_SERVER_ERROR)
         val jsonToSubmit: JsValue = Json.parse(
@@ -711,6 +715,57 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
           jsonToSubmit
         ))
         result.status shouldBe OK
+      }
+
+      "call the connector and send the appeal data received in the request body - returns OK when successful for other with file upload (audit storage failure) - part of multi appeal" in {
+        mockResponseForAppealSubmissionStub(OK, "HMRC-MTD-VAT~VRN~123456789", penaltyNumber = "123456789")
+        mockResponseForFileNotificationOrchestrator(INTERNAL_SERVER_ERROR)
+        val jsonToSubmit: JsValue = Json.parse(
+          """
+            |{
+            |    "sourceSystem": "MDTP",
+            |    "taxRegime": "VAT",
+            |    "customerReferenceNo": "123456789",
+            |    "dateOfAppeal": "2020-01-01T00:00:00",
+            |    "isLPP": false,
+            |    "appealSubmittedBy": "client",
+            |    "appealInformation": {
+            |						 "reasonableExcuse": "other",
+            |            "honestyDeclaration": true,
+            |            "startDateOfEvent": "2021-04-23T00:00",
+            |						 "statement": "This is a statement",
+            |            "lateAppeal": false,
+            |            "uploadedFiles": [
+            |               {
+            |                 "reference":"reference-3000",
+            |                 "fileStatus":"READY",
+            |                 "downloadUrl":"download.file",
+            |                 "uploadDetails": {
+            |                     "fileName":"file1.txt",
+            |                     "fileMimeType":"text/plain",
+            |                     "uploadTimestamp":"2018-04-24T09:30:00",
+            |                     "checksum":"check12345678",
+            |                     "size":987
+            |                 },
+            |                 "uploadFields": {
+            |                     "key": "abcxyz",
+            |                     "x-amz-algorithm" : "AWS4-HMAC-SHA256"
+            |                 },
+            |                 "lastUpdated":"2018-04-24T09:30:00"
+            |               }
+            |            ]
+            |		}
+            |}
+            |""".stripMargin
+        )
+        val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=false&penaltyNumber=123456789&correlationId=correlationId&isMultiAppeal=true").post(
+          jsonToSubmit
+        ))
+        result.status shouldBe INTERNAL_SERVER_ERROR
+        result.body shouldBe "Received 500 response from file notification orchestrator"
+        eventually {
+          wireMockServer.findAll(postRequestedFor(urlEqualTo("/write/audit"))).asScala.toList.exists(_.getBodyAsString.contains("PenaltyAppealFileNotificationStorageFailure")) shouldBe true
+        }
       }
     }
 

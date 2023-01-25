@@ -73,7 +73,7 @@ class AppealsParserSpec extends SpecBase with LogCapturing {
     s"return $UnexpectedFailure if random non Success status code returned" in new Setup(Status.INTERNAL_SERVER_ERROR) {
       withCaptureOfLoggingFrom(logger) {
         logs => {
-          readResponse shouldBe Left(UnexpectedFailure(500, "Unexpected response, status 500 returned"))
+          readResponse shouldBe Left(UnexpectedFailure(500, "Unexpected response, status 500 returned on submission to PEGA"))
           logs.exists(_.getMessage.contains(PagerDutyKeys.RECEIVED_5XX_FROM_1808_API.toString)) shouldBe true
         }
       }
