@@ -179,13 +179,13 @@ class AppealsController @Inject()(val appConfig: AppConfig,
                     PagerDutyHelper.logStatusCode("submitAppeal", status)(RECEIVED_4XX_FROM_FILE_NOTIFICATION_ORCHESTRATOR, RECEIVED_5XX_FROM_FILE_NOTIFICATION_ORCHESTRATOR)
                     logger.error(s"[AppealsController][submitAppeal] - Received unknown response ($status) from file notification orchestrator. Response body: ${response.body}")
                     auditStorageFailureOfFileNotifications(seqOfNotifications)
-                    returnErrorResponseIfMultiAppeal(isMultiAppeal)(s"Appeal submitted but received $status response from file notification orchestrator")
+                    returnErrorResponseIfMultiAppeal(isMultiAppeal)(s"Appeal submitted (case ID: ${responseModel.caseID}) but received $status response from file notification orchestrator")(responseModel.caseID)
                 }
             }.recover {
               case e => {
                 logger.error(s"[AppealsController][submitAppeal] - An unknown exception occurred when attempting to store file notifications, with error: ${e.getMessage}")
                 auditStorageFailureOfFileNotifications(seqOfNotifications)
-                returnErrorResponseIfMultiAppeal(isMultiAppeal)("Appeal submitted but failed to store file uploads with unknown error")
+                returnErrorResponseIfMultiAppeal(isMultiAppeal)(s"Appeal submitted (case ID: ${responseModel.caseID}) but failed to store file uploads with unknown error")(responseModel.caseID)
               }
             }
           } else {
@@ -196,11 +196,11 @@ class AppealsController @Inject()(val appConfig: AppConfig,
     }
   }
 
-  private def returnErrorResponseIfMultiAppeal(isMultiAppeal: Boolean)(messageIfReturningError: String): Result = {
+  private def returnErrorResponseIfMultiAppeal(isMultiAppeal: Boolean)(messageIfReturningError: String)(caseId: String): Result = {
     if (isMultiAppeal) {
       MultiStatus(messageIfReturningError)
     } else {
-      Ok("")
+      Ok(caseId)
     }
   }
 

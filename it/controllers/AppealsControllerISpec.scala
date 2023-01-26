@@ -762,7 +762,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
           jsonToSubmit
         ))
         result.status shouldBe MULTI_STATUS
-        result.body shouldBe "Appeal submitted but received 500 response from file notification orchestrator"
+        result.body shouldBe "Appeal submitted (case ID: PR-1234567889) but received 500 response from file notification orchestrator"
         eventually {
           wireMockServer.findAll(postRequestedFor(urlEqualTo("/write/audit"))).asScala.toList.exists(_.getBodyAsString.contains("PenaltyAppealFileNotificationStorageFailure")) shouldBe true
         }
