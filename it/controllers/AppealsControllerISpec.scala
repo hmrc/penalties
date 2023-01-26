@@ -761,8 +761,8 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
         val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=false&penaltyNumber=123456789&correlationId=correlationId&isMultiAppeal=true").post(
           jsonToSubmit
         ))
-        result.status shouldBe INTERNAL_SERVER_ERROR
-        result.body shouldBe "Received 500 response from file notification orchestrator"
+        result.status shouldBe MULTI_STATUS
+        result.body shouldBe "Appeal submitted but received 500 response from file notification orchestrator"
         eventually {
           wireMockServer.findAll(postRequestedFor(urlEqualTo("/write/audit"))).asScala.toList.exists(_.getBodyAsString.contains("PenaltyAppealFileNotificationStorageFailure")) shouldBe true
         }
