@@ -50,6 +50,11 @@ class LSPPenaltyCategoryEnumSpec extends SpecBase {
     result.get shouldBe LSPPenaltyCategoryEnum.Charge
   }
 
+  "be readable from JSON for 'Point' (P) when Category is blank" in {
+    val result = Json.fromJson(JsString(" "))(LSPPenaltyCategoryEnum.format)
+    result.get shouldBe LSPPenaltyCategoryEnum.Point
+  }
+
   "return JsError when the enum is not readable" in {
     val result = Json.fromJson(JsString("unknown"))(LSPPenaltyCategoryEnum.format)
     result.isError shouldBe true
