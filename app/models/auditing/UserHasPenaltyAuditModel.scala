@@ -154,18 +154,18 @@ case class UserHasPenaltyAuditModel(
   )
 
   private val ttpDetail: JsValue = jsonObjNoNulls(
-    "isTTPActive" -> isTTPActive,
-    "ttpStartDate" -> ttpStartDate,
-    "ttpEndDate" -> ttpEndDate
+    "isTimeToPayActive" -> isTTPActive,
+    "timeToPayStartDate" -> ttpStartDate,
+    "timeToPayEndDate" -> ttpEndDate
   )
 
   private val penaltyInformation: JsValue = jsonObjNoNulls(
     "totalTaxDue" -> totalTaxDue,
     "totalFinancialPenaltyDue" -> totalFinancialPenaltyDue,
     "totalDue" -> totalDue,
-    "lSPDetail" -> lspDetail,
-    "lPPDetail" -> lppDetail,
-    "ttpInformation" -> ttpDetail
+    "lateSubmissionPenaltyDetail" -> lspDetail,
+    "latePaymentPenaltyDetail" -> lppDetail,
+    "timeToPayInformation" -> ttpDetail
   )
 
   override val detail: JsValue = jsonObjNoNulls(

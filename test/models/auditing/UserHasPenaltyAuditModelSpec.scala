@@ -1073,125 +1073,125 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
       }
 
       "the user has LSPPs (no appeals)" in {
-        (auditModelWithLSPPs.detail \ "penaltyInformation" \ "lSPDetail" \ "penaltyPointsThreshold").validate[Int].get shouldBe 5
-        (auditModelWithLSPPs.detail \ "penaltyInformation" \ "lSPDetail" \ "pointsTotal").validate[Int].get shouldBe 2
-        (auditModelWithLSPPs.detail \ "penaltyInformation" \ "lSPDetail" \ "financialPenalties").validate[Int].get shouldBe 0
-        (auditModelWithLSPPs.detail \ "penaltyInformation" \ "lSPDetail" \ "numberOfPaidPenalties").validate[Int].get shouldBe 0
-        (auditModelWithLSPPs.detail \ "penaltyInformation" \ "lSPDetail" \ "underAppeal").validate[Int].get shouldBe 0
-        (auditModelWithLSPPs.detail \ "penaltyInformation" \ "lSPDetail" \ "numberOfPartiallyPaidLSPs").validate[Int].get shouldBe 0
-        (auditModelWithLSPPs.detail \ "penaltyInformation" \ "lSPDetail" \ "numberOfUnpaidPenalties").validate[Int].get shouldBe 0
+        (auditModelWithLSPPs.detail \ "penaltyInformation" \ "lateSubmissionPenaltyDetail" \ "penaltyPointsThreshold").validate[Int].get shouldBe 5
+        (auditModelWithLSPPs.detail \ "penaltyInformation" \ "lateSubmissionPenaltyDetail" \ "pointsTotal").validate[Int].get shouldBe 2
+        (auditModelWithLSPPs.detail \ "penaltyInformation" \ "lateSubmissionPenaltyDetail" \ "financialPenalties").validate[Int].get shouldBe 0
+        (auditModelWithLSPPs.detail \ "penaltyInformation" \ "lateSubmissionPenaltyDetail" \ "numberOfPaidPenalties").validate[Int].get shouldBe 0
+        (auditModelWithLSPPs.detail \ "penaltyInformation" \ "lateSubmissionPenaltyDetail" \ "underAppeal").validate[Int].get shouldBe 0
+        (auditModelWithLSPPs.detail \ "penaltyInformation" \ "lateSubmissionPenaltyDetail" \ "numberOfPartiallyPaidLSPs").validate[Int].get shouldBe 0
+        (auditModelWithLSPPs.detail \ "penaltyInformation" \ "lateSubmissionPenaltyDetail" \ "numberOfUnpaidPenalties").validate[Int].get shouldBe 0
       }
 
       "the user has LSPPs (with appeals)" in {
-        (auditModelWithLSPPsUnderReview.detail \ "penaltyInformation" \ "lSPDetail" \ "penaltyPointsThreshold").validate[Int].get shouldBe 5
-        (auditModelWithLSPPsUnderReview.detail \ "penaltyInformation" \ "lSPDetail" \ "pointsTotal").validate[Int].get shouldBe 2
-        (auditModelWithLSPPsUnderReview.detail \ "penaltyInformation" \ "lSPDetail" \ "financialPenalties").validate[Int].get shouldBe 0
-        (auditModelWithLPPsUnderReview.detail  \ "penaltyInformation" \ "lSPDetail" \ "numberOfPaidPenalties").validate[Int].get shouldBe 0
-        (auditModelWithLSPPsUnderReview.detail \ "penaltyInformation" \ "lSPDetail" \ "underAppeal").validate[Int].get shouldBe 2
-        (auditModelWithLSPPsUnderReview.detail \ "penaltyInformation" \ "lSPDetail" \ "numberOfPartiallyPaidLSPs").validate[Int].get shouldBe 0
-        (auditModelWithLSPPsUnderReview.detail \ "penaltyInformation" \ "lSPDetail" \ "numberOfUnpaidPenalties").validate[Int].get shouldBe 0
+        (auditModelWithLSPPsUnderReview.detail \ "penaltyInformation" \ "lateSubmissionPenaltyDetail" \ "penaltyPointsThreshold").validate[Int].get shouldBe 5
+        (auditModelWithLSPPsUnderReview.detail \ "penaltyInformation" \ "lateSubmissionPenaltyDetail" \ "pointsTotal").validate[Int].get shouldBe 2
+        (auditModelWithLSPPsUnderReview.detail \ "penaltyInformation" \ "lateSubmissionPenaltyDetail" \ "financialPenalties").validate[Int].get shouldBe 0
+        (auditModelWithLPPsUnderReview.detail  \ "penaltyInformation" \ "lateSubmissionPenaltyDetail" \ "numberOfPaidPenalties").validate[Int].get shouldBe 0
+        (auditModelWithLSPPsUnderReview.detail \ "penaltyInformation" \ "lateSubmissionPenaltyDetail" \ "underAppeal").validate[Int].get shouldBe 2
+        (auditModelWithLSPPsUnderReview.detail \ "penaltyInformation" \ "lateSubmissionPenaltyDetail" \ "numberOfPartiallyPaidLSPs").validate[Int].get shouldBe 0
+        (auditModelWithLSPPsUnderReview.detail \ "penaltyInformation" \ "lateSubmissionPenaltyDetail" \ "numberOfUnpaidPenalties").validate[Int].get shouldBe 0
       }
 
       "the user has LSPPs (with reviewed appeals)" in {
-        (auditModelWithLSPPsAppealed.detail \ "penaltyInformation" \ "lSPDetail" \ "penaltyPointsThreshold").validate[Int].get shouldBe 5
-        (auditModelWithLSPPsAppealed.detail \ "penaltyInformation" \ "lSPDetail" \ "pointsTotal").validate[Int].get shouldBe 0
-        (auditModelWithLSPPsAppealed.detail \ "penaltyInformation" \ "lSPDetail" \ "financialPenalties").validate[Int].get shouldBe 0
-        (auditModelWithLSPPsAppealed.detail \ "penaltyInformation" \ "lSPDetail" \ "numberOfPaidPenalties").validate[Int].get shouldBe 0
-        (auditModelWithLSPPsAppealed.detail \ "penaltyInformation" \ "lSPDetail" \ "underAppeal").validate[Int].get shouldBe 0
-        (auditModelWithLSPPsAppealed.detail \ "penaltyInformation" \ "lSPDetail" \ "numberOfPartiallyPaidLSPs").validate[Int].get shouldBe 0
-        (auditModelWithLSPPsAppealed.detail \ "penaltyInformation" \ "lSPDetail" \ "numberOfUnpaidPenalties").validate[Int].get shouldBe 0
+        (auditModelWithLSPPsAppealed.detail \ "penaltyInformation" \ "lateSubmissionPenaltyDetail" \ "penaltyPointsThreshold").validate[Int].get shouldBe 5
+        (auditModelWithLSPPsAppealed.detail \ "penaltyInformation" \ "lateSubmissionPenaltyDetail" \ "pointsTotal").validate[Int].get shouldBe 0
+        (auditModelWithLSPPsAppealed.detail \ "penaltyInformation" \ "lateSubmissionPenaltyDetail" \ "financialPenalties").validate[Int].get shouldBe 0
+        (auditModelWithLSPPsAppealed.detail \ "penaltyInformation" \ "lateSubmissionPenaltyDetail" \ "numberOfPaidPenalties").validate[Int].get shouldBe 0
+        (auditModelWithLSPPsAppealed.detail \ "penaltyInformation" \ "lateSubmissionPenaltyDetail" \ "underAppeal").validate[Int].get shouldBe 0
+        (auditModelWithLSPPsAppealed.detail \ "penaltyInformation" \ "lateSubmissionPenaltyDetail" \ "numberOfPartiallyPaidLSPs").validate[Int].get shouldBe 0
+        (auditModelWithLSPPsAppealed.detail \ "penaltyInformation" \ "lateSubmissionPenaltyDetail" \ "numberOfUnpaidPenalties").validate[Int].get shouldBe 0
       }
 
       "the user has LSPs that are paid and unpaid" in {
-        (auditModelWithLSPUnpaidAndPaid.detail \ "penaltyInformation" \ "lSPDetail" \ "penaltyPointsThreshold").validate[Int].get shouldBe 2
-        (auditModelWithLSPUnpaidAndPaid.detail \ "penaltyInformation" \ "lSPDetail" \ "pointsTotal").validate[Int].get shouldBe 2
-        (auditModelWithLSPUnpaidAndPaid.detail \ "penaltyInformation" \ "lSPDetail" \ "financialPenalties").validate[Int].get shouldBe 1
-        (auditModelWithLSPUnpaidAndPaid.detail \ "penaltyInformation" \ "lSPDetail" \ "numberOfPaidPenalties").validate[Int].get shouldBe 1
-        (auditModelWithLSPUnpaidAndPaid.detail \ "penaltyInformation" \ "lSPDetail" \ "underAppeal").validate[Int].get shouldBe 0
-        (auditModelWithLSPUnpaidAndPaid.detail \ "penaltyInformation" \ "lSPDetail" \ "numberOfPartiallyPaidLSPs").validate[Int].get shouldBe 0
-        (auditModelWithLSPUnpaidAndPaid.detail \ "penaltyInformation" \ "lSPDetail" \ "numberOfUnpaidPenalties").validate[Int].get shouldBe 1
+        (auditModelWithLSPUnpaidAndPaid.detail \ "penaltyInformation" \ "lateSubmissionPenaltyDetail" \ "penaltyPointsThreshold").validate[Int].get shouldBe 2
+        (auditModelWithLSPUnpaidAndPaid.detail \ "penaltyInformation" \ "lateSubmissionPenaltyDetail" \ "pointsTotal").validate[Int].get shouldBe 2
+        (auditModelWithLSPUnpaidAndPaid.detail \ "penaltyInformation" \ "lateSubmissionPenaltyDetail" \ "financialPenalties").validate[Int].get shouldBe 1
+        (auditModelWithLSPUnpaidAndPaid.detail \ "penaltyInformation" \ "lateSubmissionPenaltyDetail" \ "numberOfPaidPenalties").validate[Int].get shouldBe 1
+        (auditModelWithLSPUnpaidAndPaid.detail \ "penaltyInformation" \ "lateSubmissionPenaltyDetail" \ "underAppeal").validate[Int].get shouldBe 0
+        (auditModelWithLSPUnpaidAndPaid.detail \ "penaltyInformation" \ "lateSubmissionPenaltyDetail" \ "numberOfPartiallyPaidLSPs").validate[Int].get shouldBe 0
+        (auditModelWithLSPUnpaidAndPaid.detail \ "penaltyInformation" \ "lateSubmissionPenaltyDetail" \ "numberOfUnpaidPenalties").validate[Int].get shouldBe 1
       }
 
       "the user has LSPs  that are partially paid" in {
-        (auditModelWithPartiallyPaidLSPs.detail \ "penaltyInformation" \ "lSPDetail" \ "penaltyPointsThreshold").validate[Int].get shouldBe 5
-        (auditModelWithPartiallyPaidLSPs.detail \ "penaltyInformation" \ "lSPDetail" \ "pointsTotal").validate[Int].get shouldBe 2
-        (auditModelWithPartiallyPaidLSPs.detail \ "penaltyInformation" \ "lSPDetail" \ "financialPenalties").validate[Int].get shouldBe 0
-        (auditModelWithPartiallyPaidLSPs.detail \ "penaltyInformation" \ "lSPDetail" \ "numberOfPaidPenalties").validate[Int].get shouldBe 0
-        (auditModelWithPartiallyPaidLSPs.detail \ "penaltyInformation" \ "lSPDetail" \ "underAppeal").validate[Int].get shouldBe 0
-        (auditModelWithPartiallyPaidLSPs.detail \ "penaltyInformation" \ "lSPDetail" \ "numberOfPartiallyPaidLSPs").validate[Int].get shouldBe 1
+        (auditModelWithPartiallyPaidLSPs.detail \ "penaltyInformation" \ "lateSubmissionPenaltyDetail" \ "penaltyPointsThreshold").validate[Int].get shouldBe 5
+        (auditModelWithPartiallyPaidLSPs.detail \ "penaltyInformation" \ "lateSubmissionPenaltyDetail" \ "pointsTotal").validate[Int].get shouldBe 2
+        (auditModelWithPartiallyPaidLSPs.detail \ "penaltyInformation" \ "lateSubmissionPenaltyDetail" \ "financialPenalties").validate[Int].get shouldBe 0
+        (auditModelWithPartiallyPaidLSPs.detail \ "penaltyInformation" \ "lateSubmissionPenaltyDetail" \ "numberOfPaidPenalties").validate[Int].get shouldBe 0
+        (auditModelWithPartiallyPaidLSPs.detail \ "penaltyInformation" \ "lateSubmissionPenaltyDetail" \ "underAppeal").validate[Int].get shouldBe 0
+        (auditModelWithPartiallyPaidLSPs.detail \ "penaltyInformation" \ "lateSubmissionPenaltyDetail" \ "numberOfPartiallyPaidLSPs").validate[Int].get shouldBe 1
       }
 
       "the user has LSPs" in {
-        (auditModelWithInterest.detail \ "penaltyInformation" \ "lSPDetail" \ "penaltyPointsThreshold").validate[Int].get shouldBe 1
-        (auditModelWithInterest.detail \ "penaltyInformation" \ "lSPDetail" \ "pointsTotal").validate[Int].get shouldBe 2
-        (auditModelWithInterest.detail \ "penaltyInformation" \ "lSPDetail" \ "financialPenalties").validate[Int].get shouldBe 2
-        (auditModelWithInterest.detail \ "penaltyInformation" \ "lSPDetail" \ "numberOfPaidPenalties").validate[Int].get shouldBe 0
-        (auditModelWithInterest.detail \ "penaltyInformation" \ "lSPDetail" \ "underAppeal").validate[Int].get shouldBe 0
-        (auditModelWithInterest.detail \ "penaltyInformation" \ "lSPDetail" \ "numberOfUnpaidPenalties").validate[Int].get shouldBe 2
+        (auditModelWithInterest.detail \ "penaltyInformation" \ "lateSubmissionPenaltyDetail" \ "penaltyPointsThreshold").validate[Int].get shouldBe 1
+        (auditModelWithInterest.detail \ "penaltyInformation" \ "lateSubmissionPenaltyDetail" \ "pointsTotal").validate[Int].get shouldBe 2
+        (auditModelWithInterest.detail \ "penaltyInformation" \ "lateSubmissionPenaltyDetail" \ "financialPenalties").validate[Int].get shouldBe 2
+        (auditModelWithInterest.detail \ "penaltyInformation" \ "lateSubmissionPenaltyDetail" \ "numberOfPaidPenalties").validate[Int].get shouldBe 0
+        (auditModelWithInterest.detail \ "penaltyInformation" \ "lateSubmissionPenaltyDetail" \ "underAppeal").validate[Int].get shouldBe 0
+        (auditModelWithInterest.detail \ "penaltyInformation" \ "lateSubmissionPenaltyDetail" \ "numberOfUnpaidPenalties").validate[Int].get shouldBe 2
       }
 
       "the user has inactive LSPs" in {
-        (auditModelWithActiveAndInactiveLSPPs.detail \ "penaltyInformation" \ "lSPDetail" \ "penaltyPointsThreshold").validate[Int].get shouldBe 5
-        (auditModelWithActiveAndInactiveLSPPs.detail \ "penaltyInformation" \ "lSPDetail" \ "pointsTotal").validate[Int].get shouldBe 2
-        (auditModelWithActiveAndInactiveLSPPs.detail \ "penaltyInformation" \ "lSPDetail" \ "inactivePoints").validate[Int].get shouldBe 1
-        (auditModelWithActiveAndInactiveLSPPs.detail \ "penaltyInformation" \ "lSPDetail" \ "financialPenalties").validate[Int].get shouldBe 0
-        (auditModelWithActiveAndInactiveLSPPs.detail \ "penaltyInformation" \ "lSPDetail" \ "underAppeal").validate[Int].get shouldBe 0
-        (auditModelWithActiveAndInactiveLSPPs.detail \ "penaltyInformation" \ "lSPDetail" \ "numberOfUnpaidPenalties").validate[Int].get shouldBe 0
+        (auditModelWithActiveAndInactiveLSPPs.detail \ "penaltyInformation" \ "lateSubmissionPenaltyDetail" \ "penaltyPointsThreshold").validate[Int].get shouldBe 5
+        (auditModelWithActiveAndInactiveLSPPs.detail \ "penaltyInformation" \ "lateSubmissionPenaltyDetail" \ "pointsTotal").validate[Int].get shouldBe 2
+        (auditModelWithActiveAndInactiveLSPPs.detail \ "penaltyInformation" \ "lateSubmissionPenaltyDetail" \ "inactivePoints").validate[Int].get shouldBe 1
+        (auditModelWithActiveAndInactiveLSPPs.detail \ "penaltyInformation" \ "lateSubmissionPenaltyDetail" \ "financialPenalties").validate[Int].get shouldBe 0
+        (auditModelWithActiveAndInactiveLSPPs.detail \ "penaltyInformation" \ "lateSubmissionPenaltyDetail" \ "underAppeal").validate[Int].get shouldBe 0
+        (auditModelWithActiveAndInactiveLSPPs.detail \ "penaltyInformation" \ "lateSubmissionPenaltyDetail" \ "numberOfUnpaidPenalties").validate[Int].get shouldBe 0
       }
 
       "the user has LPPs (all paid)" in {
-        (auditModelWithLPPsPaid.detail \ "penaltyInformation" \ "lPPDetail" \ "numberOfPaidPenalties").validate[Int].get shouldBe 2
-        (auditModelWithLPPsPaid.detail \ "penaltyInformation" \ "lPPDetail" \ "numberOfUnpaidPenalties").validate[Int].get shouldBe 0
-        (auditModelWithLPPsPaid.detail \ "penaltyInformation" \ "lPPDetail" \ "totalNumberOfPenalties").validate[Int].get shouldBe 2
-        (auditModelWithLPPsPaid.detail \ "penaltyInformation" \ "lPPDetail" \ "underAppeal").validate[Int].get shouldBe 0
-        (auditModelWithLPPsPaid.detail \ "penaltyInformation" \ "ttpInformation" \ "isTTPActive").validate[Boolean].get shouldBe false
+        (auditModelWithLPPsPaid.detail \ "penaltyInformation" \ "latePaymentPenaltyDetail" \ "numberOfPaidPenalties").validate[Int].get shouldBe 2
+        (auditModelWithLPPsPaid.detail \ "penaltyInformation" \ "latePaymentPenaltyDetail" \ "numberOfUnpaidPenalties").validate[Int].get shouldBe 0
+        (auditModelWithLPPsPaid.detail \ "penaltyInformation" \ "latePaymentPenaltyDetail" \ "totalNumberOfPenalties").validate[Int].get shouldBe 2
+        (auditModelWithLPPsPaid.detail \ "penaltyInformation" \ "latePaymentPenaltyDetail" \ "underAppeal").validate[Int].get shouldBe 0
+        (auditModelWithLPPsPaid.detail \ "penaltyInformation" \ "timeToPayInformation" \ "isTimeToPayActive").validate[Boolean].get shouldBe false
       }
 
       "the user has LPPs (all partially paid)" in {
-        (auditModelWithLPPsPartiallyPaid.detail \ "penaltyInformation" \ "lPPDetail" \ "numberOfPaidPenalties").validate[Int].get shouldBe 0
-        (auditModelWithLPPsPartiallyPaid.detail \ "penaltyInformation" \ "lPPDetail" \ "numberOfUnpaidPenalties").validate[Int].get shouldBe 0
-        (auditModelWithLPPsPartiallyPaid.detail \ "penaltyInformation" \ "lPPDetail" \ "numberOfPartiallyPaidPenalties").validate[Int].get shouldBe 2
-        (auditModelWithLPPsPartiallyPaid.detail \ "penaltyInformation" \ "lPPDetail" \ "totalNumberOfPenalties").validate[Int].get shouldBe 3
-        (auditModelWithLPPsPartiallyPaid.detail \ "penaltyInformation" \ "lPPDetail" \ "underAppeal").validate[Int].get shouldBe 0
+        (auditModelWithLPPsPartiallyPaid.detail \ "penaltyInformation" \ "latePaymentPenaltyDetail" \ "numberOfPaidPenalties").validate[Int].get shouldBe 0
+        (auditModelWithLPPsPartiallyPaid.detail \ "penaltyInformation" \ "latePaymentPenaltyDetail" \ "numberOfUnpaidPenalties").validate[Int].get shouldBe 0
+        (auditModelWithLPPsPartiallyPaid.detail \ "penaltyInformation" \ "latePaymentPenaltyDetail" \ "numberOfPartiallyPaidPenalties").validate[Int].get shouldBe 2
+        (auditModelWithLPPsPartiallyPaid.detail \ "penaltyInformation" \ "latePaymentPenaltyDetail" \ "totalNumberOfPenalties").validate[Int].get shouldBe 3
+        (auditModelWithLPPsPartiallyPaid.detail \ "penaltyInformation" \ "latePaymentPenaltyDetail" \ "underAppeal").validate[Int].get shouldBe 0
       }
 
       "the user has LPPs (all unpaid)" in {
-        (auditModelWithLPPsUnpaid.detail \ "penaltyInformation" \ "lPPDetail" \ "numberOfPaidPenalties").validate[Int].get shouldBe 0
-        (auditModelWithLPPsUnpaid.detail \ "penaltyInformation" \ "lPPDetail" \ "numberOfUnpaidPenalties").validate[Int].get shouldBe 2
-        (auditModelWithLPPsUnpaid.detail \ "penaltyInformation" \ "lPPDetail" \ "totalNumberOfPenalties").validate[Int].get shouldBe 2
-        (auditModelWithLPPsUnpaid.detail \ "penaltyInformation" \ "lPPDetail" \ "underAppeal").validate[Int].get shouldBe 0
+        (auditModelWithLPPsUnpaid.detail \ "penaltyInformation" \ "latePaymentPenaltyDetail" \ "numberOfPaidPenalties").validate[Int].get shouldBe 0
+        (auditModelWithLPPsUnpaid.detail \ "penaltyInformation" \ "latePaymentPenaltyDetail" \ "numberOfUnpaidPenalties").validate[Int].get shouldBe 2
+        (auditModelWithLPPsUnpaid.detail \ "penaltyInformation" \ "latePaymentPenaltyDetail" \ "totalNumberOfPenalties").validate[Int].get shouldBe 2
+        (auditModelWithLPPsUnpaid.detail \ "penaltyInformation" \ "latePaymentPenaltyDetail" \ "underAppeal").validate[Int].get shouldBe 0
       }
 
       "the user has a combination of unpaid and paid and partially paid LPPs" in {
-        (auditModelWithLPPsUnpaidAndPaidAndPartiallyPaid.detail \ "penaltyInformation" \ "lPPDetail" \ "numberOfPaidPenalties").validate[Int].get shouldBe 1
-        (auditModelWithLPPsUnpaidAndPaidAndPartiallyPaid.detail \ "penaltyInformation" \ "lPPDetail" \ "numberOfUnpaidPenalties").validate[Int].get shouldBe 1
-        (auditModelWithLPPsUnpaidAndPaidAndPartiallyPaid.detail \ "penaltyInformation" \ "lPPDetail" \ "numberOfPartiallyPaidPenalties").validate[Int].get shouldBe 1
-        (auditModelWithLPPsUnpaidAndPaidAndPartiallyPaid.detail \ "penaltyInformation" \ "lPPDetail" \ "totalNumberOfPenalties").validate[Int].get shouldBe 3
-        (auditModelWithLPPsUnpaidAndPaidAndPartiallyPaid.detail \ "penaltyInformation" \ "lPPDetail" \ "underAppeal").validate[Int].get shouldBe 0
+        (auditModelWithLPPsUnpaidAndPaidAndPartiallyPaid.detail \ "penaltyInformation" \ "latePaymentPenaltyDetail" \ "numberOfPaidPenalties").validate[Int].get shouldBe 1
+        (auditModelWithLPPsUnpaidAndPaidAndPartiallyPaid.detail \ "penaltyInformation" \ "latePaymentPenaltyDetail" \ "numberOfUnpaidPenalties").validate[Int].get shouldBe 1
+        (auditModelWithLPPsUnpaidAndPaidAndPartiallyPaid.detail \ "penaltyInformation" \ "latePaymentPenaltyDetail" \ "numberOfPartiallyPaidPenalties").validate[Int].get shouldBe 1
+        (auditModelWithLPPsUnpaidAndPaidAndPartiallyPaid.detail \ "penaltyInformation" \ "latePaymentPenaltyDetail" \ "totalNumberOfPenalties").validate[Int].get shouldBe 3
+        (auditModelWithLPPsUnpaidAndPaidAndPartiallyPaid.detail \ "penaltyInformation" \ "latePaymentPenaltyDetail" \ "underAppeal").validate[Int].get shouldBe 0
         (auditModelWithLPPsUnpaidAndPaidAndPartiallyPaid.detail \ "penaltyInformation" \ "totalFinancialPenaltyDue").validate[Int].get shouldBe 400
         (auditModelWithLPPsUnpaidAndPaidAndPartiallyPaid.detail \ "penaltyInformation" \ "totalDue").validate[Int].get shouldBe 400
       }
 
       "the user has LPPs (with appeals)" in {
-        (auditModelWithLPPsUnderReview.detail \ "penaltyInformation" \ "lPPDetail" \ "numberOfPaidPenalties").validate[Int].get shouldBe 1
-        (auditModelWithLPPsUnderReview.detail \ "penaltyInformation" \ "lPPDetail" \ "numberOfUnpaidPenalties").validate[Int].get shouldBe 0
-        (auditModelWithLPPsUnderReview.detail \ "penaltyInformation" \ "lPPDetail" \ "totalNumberOfPenalties").validate[Int].get shouldBe 2
-        (auditModelWithLPPsUnderReview.detail \ "penaltyInformation" \ "lPPDetail" \ "underAppeal").validate[Int].get shouldBe 1
+        (auditModelWithLPPsUnderReview.detail \ "penaltyInformation" \ "latePaymentPenaltyDetail" \ "numberOfPaidPenalties").validate[Int].get shouldBe 1
+        (auditModelWithLPPsUnderReview.detail \ "penaltyInformation" \ "latePaymentPenaltyDetail" \ "numberOfUnpaidPenalties").validate[Int].get shouldBe 0
+        (auditModelWithLPPsUnderReview.detail \ "penaltyInformation" \ "latePaymentPenaltyDetail" \ "totalNumberOfPenalties").validate[Int].get shouldBe 2
+        (auditModelWithLPPsUnderReview.detail \ "penaltyInformation" \ "latePaymentPenaltyDetail" \ "underAppeal").validate[Int].get shouldBe 1
       }
 
       "the user has LPPs (with reviewed appeals)" in {
-        (auditModelWithLPPsAccepted.detail \ "penaltyInformation" \ "lPPDetail" \ "numberOfPaidPenalties").validate[Int].get shouldBe 1
-        (auditModelWithLPPsAccepted.detail \ "penaltyInformation" \ "lPPDetail" \ "numberOfUnpaidPenalties").validate[Int].get shouldBe 0
-        (auditModelWithLPPsAccepted.detail \ "penaltyInformation" \ "lPPDetail" \ "totalNumberOfPenalties").validate[Int].get shouldBe 1
-        (auditModelWithLPPsAccepted.detail \ "penaltyInformation" \ "lPPDetail" \ "underAppeal").validate[Int].get shouldBe 0
+        (auditModelWithLPPsAccepted.detail \ "penaltyInformation" \ "latePaymentPenaltyDetail" \ "numberOfPaidPenalties").validate[Int].get shouldBe 1
+        (auditModelWithLPPsAccepted.detail \ "penaltyInformation" \ "latePaymentPenaltyDetail" \ "numberOfUnpaidPenalties").validate[Int].get shouldBe 0
+        (auditModelWithLPPsAccepted.detail \ "penaltyInformation" \ "latePaymentPenaltyDetail" \ "totalNumberOfPenalties").validate[Int].get shouldBe 1
+        (auditModelWithLPPsAccepted.detail \ "penaltyInformation" \ "latePaymentPenaltyDetail" \ "underAppeal").validate[Int].get shouldBe 0
       }
 
       "the user has an active TTP" in {
         when(mockDateHelper.dateNow()).thenReturn(LocalDate.of(2022, 2, 1))
         val auditModelWithLPPsUnpaid: UserHasPenaltyAuditModel = basicModel.copy(getPenaltyDetailsModelWithLPPsUnpaid, "1234", "VRN", None)(fakeRequest.withHeaders("User-Agent" -> "penalties-frontend"))
-        (auditModelWithLPPsUnpaid.detail \ "penaltyInformation" \ "ttpInformation" \ "isTTPActive").validate[Boolean].get shouldBe true
-        (auditModelWithLPPsUnpaid.detail \ "penaltyInformation" \ "ttpInformation" \ "ttpStartDate").validate[LocalDate].get shouldBe LocalDate.of(2022, 1, 1)
-        (auditModelWithLPPsUnpaid.detail \ "penaltyInformation" \ "ttpInformation" \ "ttpEndDate").validate[LocalDate].get shouldBe LocalDate.of(2022, 12, 31)
+        (auditModelWithLPPsUnpaid.detail \ "penaltyInformation" \ "timeToPayInformation" \ "isTimeToPayActive").validate[Boolean].get shouldBe true
+        (auditModelWithLPPsUnpaid.detail \ "penaltyInformation" \ "timeToPayInformation" \ "timeToPayStartDate").validate[LocalDate].get shouldBe LocalDate.of(2022, 1, 1)
+        (auditModelWithLPPsUnpaid.detail \ "penaltyInformation" \ "timeToPayInformation" \ "timeToPayEndDate").validate[LocalDate].get shouldBe LocalDate.of(2022, 12, 31)
       }
     }
 
