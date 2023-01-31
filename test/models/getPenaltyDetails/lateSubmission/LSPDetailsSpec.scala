@@ -238,37 +238,6 @@ class LSPDetailsSpec extends SpecBase {
     chargeAmount = Some(200)
   )
 
-  val modelWithInactiveCategory: LSPDetails = LSPDetails(
-    penaltyNumber = "12345678901234",
-    penaltyOrder = "01",
-    penaltyCategory = LSPPenaltyCategoryEnum.Inactive,
-    penaltyStatus = LSPPenaltyStatusEnum.Active,
-    penaltyCreationDate = LocalDate.of(2022, 10, 30),
-    penaltyExpiryDate = LocalDate.of(2022, 10, 30),
-    communicationsDate = Some(LocalDate.of(2022, 10, 30)),
-    FAPIndicator = Some("X"),
-    lateSubmissions = Some(
-      Seq(
-        LateSubmission(
-          taxPeriodStartDate = Some(LocalDate.of(2022, 1, 1)),
-          taxPeriodEndDate = Some(LocalDate.of(2022, 12, 31)),
-          taxPeriodDueDate = Some(LocalDate.of(2023, 2, 7)),
-          returnReceiptDate = Some(LocalDate.of(2023, 2, 1)),
-          taxReturnStatus = TaxReturnStatusEnum.Fulfilled
-        )
-      )
-    ),
-    expiryReason = Some(ExpiryReasonEnum.Adjustment),
-    appealInformation = Some(
-      Seq(
-        AppealInformationType(appealStatus = Some(AppealStatusEnum.Under_Appeal), appealLevel = Some(AppealLevelEnum.HMRC))
-      )
-    ),
-    chargeDueDate = Some(LocalDate.of(2022, 10, 30)),
-    chargeOutstandingAmount = Some(200),
-    chargeAmount = Some(200)
-  )
-
   "be readable from JSON" in {
     val result: JsResult[LSPDetails] = Json.fromJson(jsonRepresentingModel)(LSPDetails.reads)
     result.isSuccess shouldBe true
@@ -290,7 +259,7 @@ class LSPDetailsSpec extends SpecBase {
   "be readable from JSON when the penaltyCategory is ' '" in {
     val result = Json.fromJson(jsonRespresentingModelWithBlankCategory)(LSPDetails.reads)
     result.isSuccess shouldBe true
-    result.get shouldBe modelWithInactiveCategory
+    result.get shouldBe model
   }
 
   "be writable to JSON" in {

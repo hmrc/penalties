@@ -22,7 +22,6 @@ object LSPPenaltyCategoryEnum extends Enumeration {
   val Point: LSPPenaltyCategoryEnum.Value = Value("P")
   val Threshold: LSPPenaltyCategoryEnum.Value = Value("T")
   val Charge: LSPPenaltyCategoryEnum.Value = Value("C")
-  val Inactive: LSPPenaltyCategoryEnum.Value = Value(" ")
 
   implicit val format: Format[LSPPenaltyCategoryEnum.Value] = new Format[LSPPenaltyCategoryEnum.Value] {
     override def writes(o: LSPPenaltyCategoryEnum.Value): JsValue = {
@@ -32,9 +31,9 @@ object LSPPenaltyCategoryEnum extends Enumeration {
     override def reads(json: JsValue): JsResult[LSPPenaltyCategoryEnum.Value] = {
       json.as[String].toUpperCase match {
         case "P" => JsSuccess(Point)
+        case " " => JsSuccess(Point)
         case "T" => JsSuccess(Threshold)
         case "C" => JsSuccess(Charge)
-        case " " => JsSuccess(Inactive)
         case e => JsError(s"$e not recognised")
       }
     }

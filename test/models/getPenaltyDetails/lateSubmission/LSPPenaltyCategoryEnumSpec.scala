@@ -35,11 +35,6 @@ class LSPPenaltyCategoryEnumSpec extends SpecBase {
     result shouldBe JsString("C")
   }
 
-  "be writable to JSOn for 'Inactive' (' ')" in {
-    val result = Json.toJson(LSPPenaltyCategoryEnum.Inactive)
-    result shouldBe JsString(" ")
-  }
-
   "be readable from JSON for 'Point' (P)" in {
     val result = Json.fromJson(JsString("P"))(LSPPenaltyCategoryEnum.format)
     result.get shouldBe LSPPenaltyCategoryEnum.Point
@@ -55,9 +50,9 @@ class LSPPenaltyCategoryEnumSpec extends SpecBase {
     result.get shouldBe LSPPenaltyCategoryEnum.Charge
   }
 
-  "be readable from JSON for 'Inactive' (' ') when Category is blank" in {
+  "be readable from JSON for 'Point' (P) when Category is blank" in {
     val result = Json.fromJson(JsString(" "))(LSPPenaltyCategoryEnum.format)
-    result.get shouldBe LSPPenaltyCategoryEnum.Inactive
+    result.get shouldBe LSPPenaltyCategoryEnum.Point
   }
 
   "return JsError when the enum is not readable" in {
