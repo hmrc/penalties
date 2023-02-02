@@ -20,11 +20,10 @@ import java.time.LocalDate
 
 import config.featureSwitches.{CallAPI1812ETMP, FeatureSwitching}
 import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser.{GetPenaltyDetailsFailureResponse, GetPenaltyDetailsMalformed, GetPenaltyDetailsNoContent, GetPenaltyDetailsResponse, GetPenaltyDetailsSuccessResponse}
-import models.getPenaltyDetails.{GetPenaltyDetails, Totalisations}
+import models.getPenaltyDetails.GetPenaltyDetails
 import models.getPenaltyDetails.appealInfo.{AppealInformationType, AppealStatusEnum}
-import models.getPenaltyDetails.lateSubmission.{LSPDetails, LSPPenaltyCategoryEnum, LSPPenaltyStatusEnum, LSPSummary, LateSubmission, LateSubmissionPenalty, TaxReturnStatusEnum}
+import models.getPenaltyDetails.lateSubmission._
 import play.api.http.Status
-import play.api.libs.json.Json
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import utils.{ETMPWiremock, IntegrationSpecCommonBase}
@@ -97,7 +96,7 @@ class GetPenaltyDetailsConnectorISpec extends IntegrationSpecCommonBase with ETM
             inactivePenaltyPoints = 2,
             regimeThreshold = 2,
             penaltyChargeAmount = 200.00,
-            PoCAchievementDate = LocalDate.of(2021,4,23)
+            PoCAchievementDate = LocalDate.of(2021, 4, 23)
           ),
           details = Seq(
             LSPDetails(
@@ -105,17 +104,17 @@ class GetPenaltyDetailsConnectorISpec extends IntegrationSpecCommonBase with ETM
               penaltyOrder = "1",
               penaltyCategory = LSPPenaltyCategoryEnum.Point,
               penaltyStatus = LSPPenaltyStatusEnum.Inactive,
-              penaltyCreationDate = LocalDate.of(2021,4,23),
-              penaltyExpiryDate = LocalDate.of(2021,4,23),
-              communicationsDate = Some(LocalDate.of(2021,4,23)),
+              penaltyCreationDate = LocalDate.of(2021, 4, 23),
+              penaltyExpiryDate = LocalDate.of(2021, 4, 23),
+              communicationsDate = Some(LocalDate.of(2021, 4, 23)),
               FAPIndicator = None,
               lateSubmissions = Some(
                 Seq(
                   LateSubmission(
-                    taxPeriodStartDate = Some(LocalDate.of(2021,4,23)),
-                    taxPeriodEndDate = Some(LocalDate.of(2021,4,23)),
-                    taxPeriodDueDate = Some(LocalDate.of(2021,4,23)),
-                    returnReceiptDate = Some(LocalDate.of(2021,4,23)),
+                    taxPeriodStartDate = Some(LocalDate.of(2021, 4, 23)),
+                    taxPeriodEndDate = Some(LocalDate.of(2021, 4, 23)),
+                    taxPeriodDueDate = Some(LocalDate.of(2021, 4, 23)),
+                    returnReceiptDate = Some(LocalDate.of(2021, 4,23)),
                     taxReturnStatus = TaxReturnStatusEnum.Open
                   )
                 )),
