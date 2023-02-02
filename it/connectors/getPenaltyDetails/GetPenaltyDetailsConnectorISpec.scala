@@ -16,8 +16,13 @@
 
 package connectors.getPenaltyDetails
 
+import java.time.LocalDate
+
 import config.featureSwitches.{CallAPI1812ETMP, FeatureSwitching}
-import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser.{GetPenaltyDetailsFailureResponse, GetPenaltyDetailsMalformed, GetPenaltyDetailsNoContent, GetPenaltyDetailsResponse}
+import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser.{GetPenaltyDetailsFailureResponse, GetPenaltyDetailsMalformed, GetPenaltyDetailsNoContent, GetPenaltyDetailsResponse, GetPenaltyDetailsSuccessResponse}
+import models.getPenaltyDetails.GetPenaltyDetails
+import models.getPenaltyDetails.appealInfo.{AppealInformationType, AppealStatusEnum}
+import models.getPenaltyDetails.lateSubmission._
 import play.api.http.Status
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
@@ -37,6 +42,103 @@ class GetPenaltyDetailsConnectorISpec extends IntegrationSpecCommonBase with ETM
       mockResponseForGetPenaltyDetails(Status.OK, "123456789")
       val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails("123456789")(hc))
       result.isRight shouldBe true
+    }
+
+    "return a successful response with the penaltyCategory returning as a point when it is blank in the body" in new Setup {
+      enableFeatureSwitch(CallAPI1812ETMP)
+      val bodyWithEmptyCategory: String =
+          """
+            |{
+            |    "lateSubmissionPenalty": {
+            |      "summary": {
+            |        "activePenaltyPoints": 2,
+            |        "inactivePenaltyPoints": 2,
+            |        "PoCAchievementDate": "2021-04-23",
+            |        "regimeThreshold": 2,
+            |        "penaltyChargeAmount": 200.00
+            |      },
+            |      "details": [
+            |        {
+            |          "penaltyCategory": " ",
+            |          "penaltyNumber": "123456793",
+            |          "penaltyOrder": "1",
+            |          "penaltyCreationDate": "2021-04-23",
+            |          "penaltyExpiryDate": "2021-04-23",
+            |          "penaltyStatus": "INACTIVE",
+            |          "appealInformation": [
+            |            {
+            |              "appealStatus": "99"
+            |            }
+            |          ],
+            |          "chargeAmount": 200.00,
+            |          "chargeOutstandingAmount": 200.00,
+            |          "communicationsDate": "2021-04-23",
+            |          "lateSubmissions": [
+            |            {
+            |              "taxPeriodStartDate": "2021-04-23",
+            |              "taxPeriodEndDate": "2021-04-23",
+            |              "taxPeriodDueDate": "2021-04-23",
+            |              "returnReceiptDate": "2021-04-23",
+            |              "taxReturnStatus": "OPEN"
+            |            }
+            |          ]
+            |        }
+            |      ]
+            |    }
+            |}
+            """.stripMargin
+
+      val model: GetPenaltyDetails = GetPenaltyDetails(
+        totalisations = None,
+        lateSubmissionPenalty = Some(LateSubmissionPenalty(
+          summary = LSPSummary(
+            activePenaltyPoints = 2,
+            inactivePenaltyPoints = 2,
+            regimeThreshold = 2,
+            penaltyChargeAmount = 200.00,
+            PoCAchievementDate = LocalDate.of(2021, 4, 23)
+          ),
+          details = Seq(
+            LSPDetails(
+              penaltyNumber = "123456793",
+              penaltyOrder = "1",
+              penaltyCategory = LSPPenaltyCategoryEnum.Point,
+              penaltyStatus = LSPPenaltyStatusEnum.Inactive,
+              penaltyCreationDate = LocalDate.of(2021, 4, 23),
+              penaltyExpiryDate = LocalDate.of(2021, 4, 23),
+              communicationsDate = Some(LocalDate.of(2021, 4, 23)),
+              FAPIndicator = None,
+              lateSubmissions = Some(
+                Seq(
+                  LateSubmission(
+                    taxPeriodStartDate = Some(LocalDate.of(2021, 4, 23)),
+                    taxPeriodEndDate = Some(LocalDate.of(2021, 4, 23)),
+                    taxPeriodDueDate = Some(LocalDate.of(2021, 4, 23)),
+                    returnReceiptDate = Some(LocalDate.of(2021, 4,23)),
+                    taxReturnStatus = TaxReturnStatusEnum.Open
+                  )
+                )),
+              expiryReason = None,
+              appealInformation = Some(
+                Seq(
+                  AppealInformationType(
+                    appealStatus = Some(AppealStatusEnum.Unappealable),
+                    appealLevel = None
+                  )
+                )
+              ),
+              chargeDueDate = None,
+              chargeOutstandingAmount = Some(200.00),
+              chargeAmount = Some(200.00)
+            )
+          )
+        )),
+        latePaymentPenalty = None
+      )
+      mockResponseForGetPenaltyDetails(Status.OK, "123456789", body = Some(bodyWithEmptyCategory))
+      val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails("123456789")(hc))
+      result.isRight shouldBe true
+      result.getOrElse(false) shouldBe GetPenaltyDetailsSuccessResponse(model)
     }
 
     s"return a $GetPenaltyDetailsMalformed response when called" in new Setup {

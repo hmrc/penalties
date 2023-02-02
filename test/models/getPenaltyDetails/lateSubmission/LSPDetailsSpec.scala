@@ -115,6 +115,40 @@ class LSPDetailsSpec extends SpecBase {
       |}
       |""".stripMargin)
 
+  val jsonRespresentingModelWithBlankCategory: JsValue = Json.parse(
+    """
+      |{
+      |   "penaltyNumber": "12345678901234",
+      |   "penaltyOrder": "01",
+      |   "penaltyCategory": " ",
+      |   "penaltyStatus": "ACTIVE",
+      |   "FAPIndicator": "X",
+      |   "penaltyCreationDate": "2022-10-30",
+      |   "penaltyExpiryDate": "2022-10-30",
+      |   "expiryReason": "FAP",
+      |   "communicationsDate": "2022-10-30",
+      |   "lateSubmissions": [
+      |      {
+      |        "taxPeriodStartDate": "2022-01-01",
+      |        "taxPeriodEndDate": "2022-12-31",
+      |        "taxPeriodDueDate": "2023-02-07",
+      |        "returnReceiptDate": "2023-02-01",
+      |        "taxReturnStatus": "Fulfilled"
+      |      }
+      |   ],
+      |   "appealInformation": [
+      |      {
+      |        "appealStatus": "A",
+      |        "appealLevel": "01"
+      |      }
+      |   ],
+      |   "chargeDueDate": "2022-10-30",
+      |   "chargeOutstandingAmount": 200,
+      |   "chargeAmount": 200
+      |}
+      |""".stripMargin
+  )
+
   val model: LSPDetails = LSPDetails(
     penaltyNumber = "12345678901234",
     penaltyOrder = "01",
@@ -220,6 +254,12 @@ class LSPDetailsSpec extends SpecBase {
     val result: JsResult[LSPDetails] = Json.fromJson(jsonRepresentingModelWithBlankAppealLevel)(LSPDetails.reads)
     result.isSuccess shouldBe true
     result.get shouldBe modelWithBlankAppealLevel
+  }
+
+  "be readable from JSON when the penaltyCategory is ' '" in {
+    val result = Json.fromJson(jsonRespresentingModelWithBlankCategory)(LSPDetails.reads)
+    result.isSuccess shouldBe true
+    result.get shouldBe model
   }
 
   "be writable to JSON" in {
