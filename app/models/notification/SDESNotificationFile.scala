@@ -24,8 +24,7 @@ case class SDESNotificationFile(
                                  location: String,
                                  checksum: SDESChecksum,
                                  size: Int,
-                                 caseId: SDESProperties,
-                                 sourceFileUploadDate: SDESProperties
+                                 properties: Seq[SDESProperties]
                                )
 
 object SDESNotificationFile {

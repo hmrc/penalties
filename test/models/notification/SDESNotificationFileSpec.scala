@@ -27,8 +27,8 @@ class SDESNotificationFileSpec extends AnyWordSpec with Matchers {
       name = "file1.txt",
       location = "http://location.url/download",
       checksum = SDESChecksum("algorithm", "123dasd89"),
-      size = 200, caseId = SDESProperties("key", "value"),
-      sourceFileUploadDate = SDESProperties("foo", "bar")
+      size = 200,
+      properties = Seq(SDESProperties("key", "value"))
     )
     val expectedResult: JsValue = Json.obj(
       "recipientOrSender" -> "sample1",
@@ -39,12 +39,12 @@ class SDESNotificationFileSpec extends AnyWordSpec with Matchers {
         "value" -> "123dasd89"
       ),
       "size" -> 200,
-      "caseId" -> Json.obj(
-        "name" -> "key",
-        "value" -> "value"),
-      "sourceFileUploadDate" -> Json.obj(
-        "name" -> "foo",
-        "value" -> "bar")
+      "properties" -> Json.arr(
+        Json.obj(
+          "name" -> "key",
+          "value" -> "value"
+        )
+      )
     )
     Json.toJson(model) shouldBe expectedResult
   }

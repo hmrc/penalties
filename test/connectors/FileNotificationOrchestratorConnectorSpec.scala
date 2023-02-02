@@ -49,8 +49,7 @@ class FileNotificationOrchestratorConnectorSpec extends SpecBase {
           location = "http://location.url/download",
           checksum = SDESChecksum("algorithm", "123dasd89"),
           size = 200,
-          caseId = SDESProperties("key", "value"),
-          sourceFileUploadDate = SDESProperties("foo", "bar")
+          properties = Seq(SDESProperties("key", "value"))
         ),
         audit = SDESAudit(
           correlationID = "corr12345"

@@ -222,8 +222,10 @@ class AppealsController @Inject()(val appConfig: AppConfig,
                   location = upload.downloadUrl.get,
                   checksum = SDESChecksum(algorithm = uploadAlgorithm, value = details.checksum),
                   size = details.size,
-                  caseId = SDESProperties(name = "CaseId", value = caseID),
-                  sourceFileUploadDate = SDESProperties(name = "SourceFileUploadDate", value = details.uploadTimestamp.toString)
+                  properties = Seq(
+                    SDESProperties(name = "CaseId", value = caseID),
+                    SDESProperties(name = "SourceFileUploadDate", value = details.uploadTimestamp.toString)
+                  )
                 ),
                 audit = SDESAudit(correlationID = idGenerator.generateUUID)
               )

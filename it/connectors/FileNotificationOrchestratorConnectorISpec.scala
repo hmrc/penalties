@@ -42,8 +42,8 @@ class FileNotificationOrchestratorConnectorISpec extends IntegrationSpecCommonBa
           name = "file1.txt",
           location = "http://location.url/download",
           checksum = SDESChecksum("algorithm", "123dasd89"),
-          size = 200, caseId = SDESProperties("key", "value"),
-          sourceFileUploadDate = SDESProperties("foo", "bar")
+          size = 200,
+          properties = Seq(SDESProperties("key", "value"))
         ),
         audit = SDESAudit(
           correlationID = "corr12345"

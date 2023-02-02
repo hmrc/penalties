@@ -25,15 +25,15 @@ class PenaltyAppealFileNotificationStorageFailureModelSpec extends SpecBase with
     SDESNotification(
       informationType = "S18",
       file = SDESNotificationFile(
-        recipientOrSender = "123456789012",
-        name = "file1.txt",
-        location = "download.file",
-        checksum = SDESChecksum("md5", "check12345678"),
-        size = 987,
-        caseId = SDESProperties("CaseId", "PR-123456789"),
-        sourceFileUploadDate = SDESProperties("SourceFileUploadDate", "2018-04-24T09:30")
-      ),
-      audit = SDESAudit("corr-123456")
+        recipientOrSender = "123456789012", name = "file1.txt", location = "download.file", checksum = SDESChecksum("md5", "check12345678"), size = 987, properties = Seq(
+          SDESProperties(
+            "CaseId", "PR-123456789"
+          ),
+          SDESProperties(
+            "SourceFileUploadDate", "2018-04-24T09:30"
+          )
+        )
+      ), audit = SDESAudit("corr-123456")
     )
   )
   val model = PenaltyAppealFileNotificationStorageFailureModel(notifications)
