@@ -30,7 +30,8 @@ class SDESNotificationSpec extends AnyWordSpec with Matchers {
         location = "http://location.url/download",
         checksum = SDESChecksum("algorithm", "123dasd89"),
         size = 200,
-        properties = Seq(SDESProperties("key", "value"))
+        caseId = SDESProperties("key", "value"),
+        sourceFileUploadDate = SDESProperties("foo", "bar")
       ),
       audit = SDESAudit(
         correlationID = "corr12345"
@@ -47,12 +48,12 @@ class SDESNotificationSpec extends AnyWordSpec with Matchers {
           "value" -> "123dasd89"
         ),
         "size" -> 200,
-        "properties" -> Json.arr(
-          Json.obj(
-            "name" -> "key",
-            "value" -> "value"
-          )
-        )
+        "caseId" -> Json.obj(
+          "name" -> "key",
+          "value" -> "value"),
+        "sourceFileUploadDate" -> Json.obj(
+          "name" -> "foo",
+          "value" -> "bar")
       ),
       "audit" -> Json.obj(
         "correlationID" -> "corr12345"
