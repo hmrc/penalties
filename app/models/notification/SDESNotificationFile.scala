@@ -29,12 +29,23 @@ case class SDESNotificationFile(
 
 object SDESNotificationFile {
   implicit val writes: Writes[SDESNotificationFile] = Json.writes[SDESNotificationFile]
+  val auditWrites: Writes[SDESNotificationFile] = (notificationFile: SDESNotificationFile) => Json.obj(
+    "recipientOrSender" -> notificationFile.recipientOrSender,
+    "name" -> notificationFile.name,
+    "location" -> notificationFile.location,
+    "checksum" -> notificationFile.checksum,
+    "size" -> notificationFile.size,
+    "properties" -> Json.toJson(notificationFile.properties)(SDESProperties.auditSeqWrites)
+  )
 }
 
 case class SDESProperties(name: String, value: String)
 
 object SDESProperties {
   implicit val writes: Writes[SDESProperties] = Json.writes[SDESProperties]
+  val auditSeqWrites: Writes[Seq[SDESProperties]] =
+    (properties: Seq[SDESProperties]) => Json.toJson(properties)(Writes.seq(auditWrites))
+  private val auditWrites: Writes[SDESProperties] = (properties: SDESProperties) => Json.obj(properties.name -> properties.value)
 }
 
 case class SDESChecksum(algorithm: String, value: String)
