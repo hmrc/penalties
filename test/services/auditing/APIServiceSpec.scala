@@ -100,7 +100,8 @@ class APIServiceSpec extends SpecBase {
                 )
               )
             )
-          )
+          ),
+          breathingSpace = None
         )
         service.getNumberOfEstimatedPenalties(penaltyDetails) shouldBe 2
       }
@@ -174,7 +175,8 @@ class APIServiceSpec extends SpecBase {
                 )
               )
             )
-          )
+          ),
+          breathingSpace = None
         )
         service.getNumberOfEstimatedPenalties(penaltyDetails) shouldBe 0
       }
@@ -250,7 +252,8 @@ class APIServiceSpec extends SpecBase {
               )
             )
           )
-        )
+        ),
+        breathingSpace = None
       )
       val result: BigDecimal = service.findEstimatedPenaltiesAmount(penaltyDetails)
       result shouldBe BigDecimal(20.43)
@@ -260,7 +263,8 @@ class APIServiceSpec extends SpecBase {
       val penaltyDetails: GetPenaltyDetails = GetPenaltyDetails(
         lateSubmissionPenalty = None,
         totalisations = None,
-        latePaymentPenalty = None
+        latePaymentPenalty = None,
+        breathingSpace = None
       )
       val result: BigDecimal = service.findEstimatedPenaltiesAmount(penaltyDetails)
       result shouldBe BigDecimal(0)
@@ -305,7 +309,8 @@ class APIServiceSpec extends SpecBase {
               )
             )
           )
-        )
+        ),
+        breathingSpace = None
       )
       val result: BigDecimal = service.findEstimatedPenaltiesAmount(penaltyDetails)
       result shouldBe BigDecimal(0)
@@ -382,7 +387,8 @@ class APIServiceSpec extends SpecBase {
                 )
               )
             )
-          )
+          ),
+          breathingSpace = None
         )
         service.checkIfHasAnyPenaltyData(penaltyDetails) shouldBe true
       }
@@ -419,7 +425,8 @@ class APIServiceSpec extends SpecBase {
             )
           ),
           totalisations = None,
-          latePaymentPenalty = None
+          latePaymentPenalty = None,
+          breathingSpace = None
         )
         service.checkIfHasAnyPenaltyData(penaltyDetails) shouldBe true
       }
@@ -463,7 +470,8 @@ class APIServiceSpec extends SpecBase {
                 )
               )
             )
-          )
+          ),
+          breathingSpace = None
         )
         service.checkIfHasAnyPenaltyData(penaltyDetails) shouldBe true
       }
@@ -472,7 +480,7 @@ class APIServiceSpec extends SpecBase {
     "return false" when {
       "penalty details has NO LPP and NO LSP" in new Setup {
         val penaltyDetails: GetPenaltyDetails = GetPenaltyDetails(
-          totalisations = None, lateSubmissionPenalty = None, latePaymentPenalty = None
+          totalisations = None, lateSubmissionPenalty = None, latePaymentPenalty = None, breathingSpace = None
         )
         service.checkIfHasAnyPenaltyData(penaltyDetails) shouldBe false
       }
@@ -548,7 +556,8 @@ class APIServiceSpec extends SpecBase {
               )
             )
           )
-        )
+        ),
+        breathingSpace = None
       )
       val result = service.getNumberOfCrystallisedPenalties(penaltyDetails)
       result shouldBe 1
@@ -621,7 +630,8 @@ class APIServiceSpec extends SpecBase {
               )
             )
           )
-        )
+        ),
+        breathingSpace = None
       )
       val result: Int = service.getNumberOfCrystallisedPenalties(penaltyDetails)
       result shouldBe 0
@@ -714,7 +724,8 @@ class APIServiceSpec extends SpecBase {
               )
             )
           )
-        )
+        ),
+        breathingSpace = None
       )
       val result: BigDecimal = service.getCrystallisedPenaltyTotal(penaltyDetails)
       result shouldBe BigDecimal(210.21)
@@ -803,7 +814,8 @@ class APIServiceSpec extends SpecBase {
               )
             )
           )
-        )
+        ),
+        breathingSpace = None
       )
       val result: BigDecimal = service.getCrystallisedPenaltyTotal(penaltyDetails)
       result shouldBe BigDecimal(0)

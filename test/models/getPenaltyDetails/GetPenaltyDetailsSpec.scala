@@ -19,6 +19,7 @@ package models.getPenaltyDetails
 import base.SpecBase
 import models.getFinancialDetails.MainTransactionEnum
 import models.getPenaltyDetails.appealInfo.{AppealInformationType, AppealLevelEnum, AppealStatusEnum}
+import models.getPenaltyDetails.breathingSpace.BreathingSpace
 import models.getPenaltyDetails.latePayment._
 import models.getPenaltyDetails.lateSubmission._
 import play.api.libs.json.{JsResult, JsValue, Json}
@@ -109,7 +110,13 @@ class GetPenaltyDetailsSpec extends SpecBase {
       |       "principalChargeDueDate": "2022-10-30",
       |       "principalChargeMainTransaction": "4700"
       |   }]
-      | }
+      | },
+      | "breathingSpace": [
+      |   {
+      |     "BSStartDate": "2023-01-01",
+      |     "BSEndDate": "2023-12-31"
+      |   }
+      | ]
       |}
       |""".stripMargin)
 
@@ -189,7 +196,13 @@ class GetPenaltyDetailsSpec extends SpecBase {
       |       "principalChargeDueDate": "2022-10-30",
       |       "principalChargeMainTransaction": "4700"
       |   }]
-      | }
+      | },
+      | "breathingSpace": [
+      |   {
+      |     "BSStartDate": "2023-01-01",
+      |     "BSEndDate": "2023-12-31"
+      |   }
+      | ]
       |}
       |""".stripMargin)
 
@@ -281,7 +294,8 @@ class GetPenaltyDetailsSpec extends SpecBase {
           )
         )
       )
-    ))
+    )),
+    breathingSpace = Some(Seq(BreathingSpace(BSStartDate = LocalDate.of(2023, 1, 1), BSEndDate = LocalDate.of(2023, 12, 31))))
   )
 
   "be readable from JSON" in {

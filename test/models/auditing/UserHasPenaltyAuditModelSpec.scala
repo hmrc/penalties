@@ -34,7 +34,8 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
   val basicGetPenaltyDetailsModel: GetPenaltyDetails = GetPenaltyDetails(
     totalisations = None,
     lateSubmissionPenalty = None,
-    latePaymentPenalty = None
+    latePaymentPenalty = None,
+    breathingSpace = None
   )
 
   val getPenaltyDetailsModelWithVATDue: GetPenaltyDetails = basicGetPenaltyDetailsModel.copy(

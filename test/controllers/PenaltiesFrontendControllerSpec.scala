@@ -220,7 +220,8 @@ class PenaltiesFrontendControllerSpec extends SpecBase with LogCapturing {
           )
         )
       )
-    )
+    ),
+    breathingSpace = None
   )
 
   "use API 1812 data and combine with API 1811 data" must {
@@ -284,7 +285,8 @@ class PenaltiesFrontendControllerSpec extends SpecBase with LogCapturing {
       val penaltyDetails: GetPenaltyDetails = GetPenaltyDetails(
         totalisations = None,
         lateSubmissionPenalty = None,
-        latePaymentPenalty = None
+        latePaymentPenalty = None,
+        breathingSpace = None
       )
       when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(Matchers.any())(Matchers.any()))
         .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(penaltyDetails))))

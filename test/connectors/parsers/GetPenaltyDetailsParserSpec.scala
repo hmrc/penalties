@@ -33,7 +33,8 @@ class GetPenaltyDetailsParserSpec extends AnyWordSpec with Matchers with LogCapt
   val mockGetPenaltyDetailsModelv3: GetPenaltyDetails = GetPenaltyDetails(
     totalisations = None,
     lateSubmissionPenalty = None,
-    latePaymentPenalty = None
+    latePaymentPenalty = None,
+    breathingSpace = None
   )
 
   val mockOKHttpResponseWithValidBody: HttpResponse = HttpResponse.apply(status = Status.OK, json = Json.toJson(mockGetPenaltyDetailsModelv3), headers = Map.empty)

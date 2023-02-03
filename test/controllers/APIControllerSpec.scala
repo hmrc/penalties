@@ -82,7 +82,8 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
           details = Seq() //omitted
         )
       ),
-      latePaymentPenalty = None
+      latePaymentPenalty = None,
+      breathingSpace = None
     )
 
     val getPenaltyDetailsFullAPIResponse: GetPenaltyDetails = GetPenaltyDetails(
@@ -218,7 +219,8 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
             )
           )
         )
-      )
+      ),
+      breathingSpace = None
     )
 
     s"return ISE (${Status.INTERNAL_SERVER_ERROR}) when the call fails" in new Setup(isFSEnabled = true) {

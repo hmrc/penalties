@@ -140,7 +140,8 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
           )
         )
       ),
-      latePaymentPenalty = None
+      latePaymentPenalty = None,
+      breathingSpace = None
     )
     s"return NOT_FOUND (${Status.NOT_FOUND}) when ETMP can not find the data for the given enrolment key" in new Setup {
       val sampleEnrolmentKey: String = "HMRC-MTD-VAT~VRN~123456789"
@@ -276,7 +277,8 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
             )
           )
         )
-      )
+      ),
+      breathingSpace = None
     )
 
     s"return NOT_FOUND (${Status.NOT_FOUND}) when ETMP can not find the data for the given enrolment key" in new Setup {
@@ -1228,7 +1230,8 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
             )
           )
         )
-      )
+      ),
+      breathingSpace = None
     )
 
     val getPenaltyDetailsTwoPenalties: GetPenaltyDetails = GetPenaltyDetails(
@@ -1297,7 +1300,8 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
             )
           )
         )
-      )
+      ),
+      breathingSpace = None
     )
 
     val getPenaltyDetailsTwoPenaltiesWithAppeal: GetPenaltyDetails = GetPenaltyDetails(
@@ -1371,7 +1375,8 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
             )
           )
         )
-      )
+      ),
+      breathingSpace = None
     )
 
     s"return NOT_FOUND (${Status.NOT_FOUND}) when ETMP can not find the data for the given enrolment key" in new Setup {

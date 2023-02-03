@@ -51,7 +51,8 @@ class GetPenaltyDetailsConnectorSpec extends SpecBase with LogCapturing {
   val mockGetPenaltyDetailsModelAPI1812: GetPenaltyDetails = GetPenaltyDetails(
     totalisations = None,
     lateSubmissionPenalty = None,
-    latePaymentPenalty = None
+    latePaymentPenalty = None,
+    breathingSpace = None
   )
 
   "getPenaltiesDetails" should {
