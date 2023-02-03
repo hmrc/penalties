@@ -56,9 +56,38 @@ class PenaltyAppealFileNotificationStorageFailureModelSpec extends SpecBase with
     }
 
     "show the correct audit details" in {
-      model.detail shouldBe Json.obj(
-        "notifications" -> Json.toJson(notifications)(SDESNotification.auditSeqWrites)
-      )
+      val expectedDetails = Json.parse(
+        """
+          |{
+          | "notifications": [
+          |   {
+          |     "informationType": "S18",
+          |     "file": {
+          |       "recipientOrSender": "123456789012",
+          |       "name": "file1.txt",
+          |       "location": "download.file",
+          |       "checksum": {
+          |         "algorithm": "md5",
+          |         "value": "check12345678"
+          |       },
+          |       "size": 987,
+          |       "properties": [
+          |         {
+          |           "CaseId": "PR-123456789"
+          |         },
+          |         {
+          |           "SourceFileUploadDate": "2018-04-24T09:30"
+          |         }
+          |       ]
+          |     },
+          |     "audit": {
+          |       "correlationID": "corr-123456"
+          |     }
+          |   }
+          | ]
+          |}
+          |""".stripMargin)
+      model.detail shouldBe expectedDetails
     }
   }
 }

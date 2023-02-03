@@ -16,7 +16,7 @@
 
 package models.notification
 
-import play.api.libs.json.{JsValue, Json, Writes}
+import play.api.libs.json.{Json, Writes}
 
 case class SDESNotification(
                              informationType: String,
