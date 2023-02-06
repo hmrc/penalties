@@ -25,15 +25,23 @@ class PenaltyAppealFileNotificationStorageFailureModelSpec extends SpecBase with
     SDESNotification(
       informationType = "S18",
       file = SDESNotificationFile(
-        recipientOrSender = "123456789012", name = "file1.txt", location = "download.file", checksum = SDESChecksum("md5", "check12345678"), size = 987, properties = Seq(
+        recipientOrSender = "123456789012",
+        name = "file1.txt",
+        location = "download.file",
+        checksum = SDESChecksum("md5", "check12345678"),
+        size = 987,
+        properties = Seq(
           SDESProperties(
-            "CaseId", "PR-123456789"
+            "CaseId",
+            "PR-123456789"
           ),
           SDESProperties(
-            "SourceFileUploadDate", "2018-04-24T09:30"
+            "SourceFileUploadDate",
+            "2018-04-24T09:30"
           )
         )
-      ), audit = SDESAudit("corr-123456")
+      ),
+      audit = SDESAudit("corr-123456")
     )
   )
   val model = PenaltyAppealFileNotificationStorageFailureModel(notifications)
@@ -48,9 +56,38 @@ class PenaltyAppealFileNotificationStorageFailureModelSpec extends SpecBase with
     }
 
     "show the correct audit details" in {
-      model.detail shouldBe Json.obj(
-        "notifications" -> Json.toJson(notifications)
-      )
+      val expectedDetails = Json.parse(
+        """
+          |{
+          | "notifications": [
+          |   {
+          |     "informationType": "S18",
+          |     "file": {
+          |       "recipientOrSender": "123456789012",
+          |       "name": "file1.txt",
+          |       "location": "download.file",
+          |       "checksum": {
+          |         "algorithm": "md5",
+          |         "value": "check12345678"
+          |       },
+          |       "size": 987,
+          |       "properties": [
+          |         {
+          |           "CaseId": "PR-123456789"
+          |         },
+          |         {
+          |           "SourceFileUploadDate": "2018-04-24T09:30"
+          |         }
+          |       ]
+          |     },
+          |     "audit": {
+          |       "correlationID": "corr-123456"
+          |     }
+          |   }
+          | ]
+          |}
+          |""".stripMargin)
+      model.detail shouldBe expectedDetails
     }
   }
 }

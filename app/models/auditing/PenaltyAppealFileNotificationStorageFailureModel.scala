@@ -17,13 +17,13 @@
 package models.auditing
 
 import models.notification.SDESNotification
-import play.api.libs.json.JsValue
+import play.api.libs.json.{JsValue, Json}
 import utils.JsonUtils
 
 case class PenaltyAppealFileNotificationStorageFailureModel(notifications: Seq[SDESNotification]) extends JsonAuditModel with JsonUtils {
   override val auditType: String = "PenaltyAppealFileNotificationStorageFailure"
   override val transactionName: String = "penalties-file-notification-storage-failure"
   override val detail: JsValue = jsonObjNoNulls(
-    "notifications" -> notifications
+    "notifications" -> Json.toJson(notifications)(SDESNotification.auditSeqWrites)
   )
 }
