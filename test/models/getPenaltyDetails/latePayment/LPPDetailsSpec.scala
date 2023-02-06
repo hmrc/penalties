@@ -29,8 +29,8 @@ class LPPDetailsSpec extends SpecBase {
       |{
       |   "penaltyChargeReference": "12345678901234",
       |   "penaltyCategory": "LPP1",
-      |   "penaltyStatus": "A",
-      |   "penaltyAmountPosted": 1001.45,
+      |   "penaltyStatus": "P",
+      |   "penaltyAmountPosted": 1101.44,
       |   "penaltyAmountPaid": 1001.45,
       |   "penaltyAmountOutstanding": 99.99,
       |   "LPP1LRCalculationAmount": 144.21,
@@ -67,11 +67,47 @@ class LPPDetailsSpec extends SpecBase {
       |{
       |   "penaltyChargeReference": "12345678901234",
       |   "penaltyCategory": "LPP1",
-      |   "penaltyStatus": "A",
+      |   "penaltyStatus": "P",
       |   "LPP1LRCalculationAmount": 144.21,
       |   "LPP1LRDays": "15",
       |   "penaltyAmountPaid": 1001.45,
       |   "penaltyAmountOutstanding": 99.99,
+      |   "penaltyAmountPosted": 1101.44,
+      |   "LPP1LRPercentage": 2.00,
+      |   "LPP1HRCalculationAmount": 144.21,
+      |   "LPP1HRDays": "31",
+      |   "LPP1HRPercentage": 2.00,
+      |   "LPP2Days": "31",
+      |   "LPP2Percentage": 4.00,
+      |   "penaltyChargeCreationDate": "2022-10-30",
+      |   "communicationsDate": "2022-10-30",
+      |   "penaltyChargeDueDate": "2022-10-30",
+      |   "principalChargeReference": "1234567890",
+      |   "appealInformation":
+      |   [{
+      |     "appealStatus": "99",
+      |     "appealLevel": "01"
+      |   }],
+      |   "principalChargeBillingFrom": "2022-10-30",
+      |   "principalChargeBillingTo": "2022-10-30",
+      |   "principalChargeDueDate": "2022-10-30",
+      |   "principalChargeMainTransaction": "4700",
+      |   "penaltyAmountAccruing": 144.21
+      |}
+      |""".stripMargin
+  )
+
+  val jsonRepresentingModelAsPaidPenalty: JsValue = Json.parse(
+    """
+      |{
+      |   "penaltyChargeReference": "12345678901234",
+      |   "penaltyCategory": "LPP1",
+      |   "penaltyStatus": "P",
+      |   "LPP1LRCalculationAmount": 144.21,
+      |   "LPP1LRDays": "15",
+      |   "penaltyAmountPaid": 1001.45,
+      |   "penaltyAmountOutstanding": 0,
+      |   "penaltyAmountPosted": 1001.45,
       |   "LPP1LRPercentage": 2.00,
       |   "LPP1HRCalculationAmount": 144.21,
       |   "LPP1HRDays": "31",
@@ -101,7 +137,7 @@ class LPPDetailsSpec extends SpecBase {
     principalChargeReference = "1234567890",
     penaltyChargeReference = Some("12345678901234"),
     penaltyChargeCreationDate = Some(LocalDate.of(2022, 10, 30)),
-    penaltyStatus = LPPPenaltyStatusEnum.Accruing,
+    penaltyStatus = LPPPenaltyStatusEnum.Posted,
     appealInformation = Some(Seq(AppealInformationType(appealStatus = Some(AppealStatusEnum.Unappealable), appealLevel = Some(AppealLevelEnum.HMRC)))),
     principalChargeBillingFrom = LocalDate.of(2022, 10, 30),
     principalChargeBillingTo = LocalDate.of(2022, 10, 30),
@@ -109,6 +145,36 @@ class LPPDetailsSpec extends SpecBase {
     communicationsDate = Some(LocalDate.of(2022, 10, 30)),
     penaltyAmountOutstanding = Some(99.99),
     penaltyAmountPaid = Some(1001.45),
+    penaltyAmountPosted = Some(1101.44),
+    LPP1LRDays = Some("15"),
+    LPP1HRDays = Some("31"),
+    LPP2Days = Some("31"),
+    LPP1HRCalculationAmount = Some(144.21),
+    LPP1LRCalculationAmount = Some(144.21),
+    LPP2Percentage = Some(BigDecimal(4.00).setScale(2)),
+    LPP1LRPercentage = Some(BigDecimal(2.00).setScale(2)),
+    LPP1HRPercentage = Some(BigDecimal(2.00).setScale(2)),
+    penaltyChargeDueDate = Some(LocalDate.of(2022, 10, 30)),
+    principalChargeLatestClearing = None,
+    metadata = LPPDetailsMetadata(),
+    penaltyAmountAccruing = BigDecimal(144.21),
+    principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
+  )
+
+  val modelAsPaidPenalty: LPPDetails = LPPDetails(
+    penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
+    principalChargeReference = "1234567890",
+    penaltyChargeReference = Some("12345678901234"),
+    penaltyChargeCreationDate = Some(LocalDate.of(2022, 10, 30)),
+    penaltyStatus = LPPPenaltyStatusEnum.Posted,
+    appealInformation = Some(Seq(AppealInformationType(appealStatus = Some(AppealStatusEnum.Unappealable), appealLevel = Some(AppealLevelEnum.HMRC)))),
+    principalChargeBillingFrom = LocalDate.of(2022, 10, 30),
+    principalChargeBillingTo = LocalDate.of(2022, 10, 30),
+    principalChargeDueDate = LocalDate.of(2022, 10, 30),
+    communicationsDate = Some(LocalDate.of(2022, 10, 30)),
+    penaltyAmountOutstanding = None,
+    penaltyAmountPaid = Some(1001.45),
+    penaltyAmountPosted = Some(1001.45),
     LPP1LRDays = Some("15"),
     LPP1HRDays = Some("31"),
     LPP2Days = Some("31"),
@@ -133,5 +199,10 @@ class LPPDetailsSpec extends SpecBase {
   "be writable to JSON" in {
     val result: JsValue = Json.toJson(model)(LPPDetails.format)
     result shouldBe jsonRepresentingModel
+  }
+
+  "be writable to JSON - and return outstandingAmount = 0 when penaltyAmountPaid == penaltyAmountPosted" in {
+    val result: JsValue = Json.toJson(modelAsPaidPenalty)(LPPDetails.format)
+    result shouldBe jsonRepresentingModelAsPaidPenalty
   }
 }
