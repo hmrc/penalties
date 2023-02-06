@@ -146,7 +146,6 @@ object LPPDetails extends JsonUtils {
         "communicationsDate" -> o.communicationsDate,
         "penaltyAmountOutstanding" -> penaltyAmountOutstanding,
         "penaltyAmountPaid" -> o.penaltyAmountPaid,
-        "penaltyAmountPosted" -> o.penaltyAmountPosted,
         "LPP1LRDays" -> o.LPP1LRDays,
         "LPP1HRDays" -> o.LPP1HRDays,
         "LPP2Days" -> o.LPP2Days,
