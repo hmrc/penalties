@@ -1,4 +1,4 @@
- 
+  
 # Penalties
 
 The backend for the penalties services such as `penalties-frontend` and `penalties-appeals-frontend`. It handles the following:
