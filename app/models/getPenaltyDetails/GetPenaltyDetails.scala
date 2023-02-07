@@ -16,6 +16,7 @@
 
 package models.getPenaltyDetails
 
+import models.getPenaltyDetails.breathingSpace.BreathingSpace
 import models.getPenaltyDetails.latePayment.LatePaymentPenalty
 import models.getPenaltyDetails.lateSubmission.LateSubmissionPenalty
 import play.api.libs.json.{Format, Json}
@@ -23,7 +24,8 @@ import play.api.libs.json.{Format, Json}
 case class GetPenaltyDetails(
                               totalisations: Option[Totalisations],
                               lateSubmissionPenalty: Option[LateSubmissionPenalty],
-                              latePaymentPenalty: Option[LatePaymentPenalty]
+                              latePaymentPenalty: Option[LatePaymentPenalty],
+                              breathingSpace: Option[Seq[BreathingSpace]]
                             )
 
 object GetPenaltyDetails {

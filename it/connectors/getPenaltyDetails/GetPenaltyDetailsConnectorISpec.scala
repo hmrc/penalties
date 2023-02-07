@@ -133,7 +133,8 @@ class GetPenaltyDetailsConnectorISpec extends IntegrationSpecCommonBase with ETM
             )
           )
         )),
-        latePaymentPenalty = None
+        latePaymentPenalty = None,
+        breathingSpace = None
       )
       mockResponseForGetPenaltyDetails(Status.OK, "123456789", body = Some(bodyWithEmptyCategory))
       val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails("123456789")(hc))

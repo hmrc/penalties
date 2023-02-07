@@ -93,7 +93,8 @@ class PenaltiesFrontendServiceSpec extends SpecBase {
               )
             )
           )
-        ))
+        )),
+        breathingSpace = None
       )
 
       val financialDetails: FinancialDetails = FinancialDetails(
@@ -223,7 +224,8 @@ class PenaltiesFrontendServiceSpec extends SpecBase {
               )
             )
           )
-        ))
+        )),
+        breathingSpace = None
       )
 
       val financialDetails: FinancialDetails = FinancialDetails(
@@ -323,7 +325,8 @@ class PenaltiesFrontendServiceSpec extends SpecBase {
               )
             )
           )
-        ))
+        )),
+        breathingSpace = None
       )
 
       val financialDetails: FinancialDetails = FinancialDetails(
@@ -456,7 +459,8 @@ class PenaltiesFrontendServiceSpec extends SpecBase {
               )
             )
           )
-        ))
+        )),
+        breathingSpace = None
       )
 
       val financialDetails: FinancialDetails = FinancialDetails(
@@ -569,7 +573,8 @@ class PenaltiesFrontendServiceSpec extends SpecBase {
           )
         ),
         lateSubmissionPenalty = None,
-        latePaymentPenalty = None
+        latePaymentPenalty = None,
+        breathingSpace = None
       )
 
       val financialDetails: FinancialDetails = FinancialDetails(
@@ -599,7 +604,8 @@ class PenaltiesFrontendServiceSpec extends SpecBase {
       val penaltyDetails = GetPenaltyDetails(
         totalisations = None,
         lateSubmissionPenalty = None,
-        latePaymentPenalty = None
+        latePaymentPenalty = None,
+        breathingSpace = None
       )
 
       val financialDetails: FinancialDetails = FinancialDetails(
