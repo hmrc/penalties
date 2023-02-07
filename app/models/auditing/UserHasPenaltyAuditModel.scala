@@ -104,19 +104,21 @@ case class UserHasPenaltyAuditModel(
     "numberOfUnpaidPenalties" -> amountOfLspChargesUnpaid
   )
 
-  private val numberOfPaidLPPs: Int = penaltyDetails.latePaymentPenalty.flatMap(_.details.map(_.count(lpp =>
-    lpp.penaltyAmountOutstanding.contains(0) &&
-      !lpp.appealInformation.exists(_.exists(_.appealStatus.contains(AppealStatusEnum.Upheld)))
+  private val numberOfPaidLPPs: Int = penaltyDetails.latePaymentPenalty.flatMap(_.details.map(_.count(penalty =>
+    penalty.penaltyAmountPosted.isDefined && penalty.penaltyAmountPaid.isDefined &&
+      penalty.penaltyAmountPosted.get.equals(penalty.penaltyAmountPaid.get) &&
+      !penalty.appealInformation.exists(_.exists(_.appealStatus.contains(AppealStatusEnum.Upheld)))
   ))).getOrElse(0)
 
   private val numberOfUnpaidLPPs: Int = penaltyDetails.latePaymentPenalty.flatMap(_.details.map(_.count(penalty =>
-    !penalty.penaltyAmountOutstanding.contains(0) && penalty.penaltyAmountPaid.contains(0) &&
+    penalty.penaltyAmountPosted.isDefined && penalty.penaltyAmountOutstanding.isDefined &&
+      penalty.penaltyAmountPosted.get.equals(penalty.penaltyAmountOutstanding.get) &&
       !penalty.appealInformation.exists(_.exists(_.appealStatus.contains(AppealStatusEnum.Upheld)))
   ))).getOrElse(0)
 
   private val numberOfPartiallyPaidLPPs: Int = penaltyDetails.latePaymentPenalty.flatMap(_.details.map(_.count(penalty =>
-    !penalty.penaltyAmountOutstanding.contains(0) &&
-      !penalty.penaltyAmountPaid.contains(0) &&
+    penalty.penaltyAmountOutstanding.exists(_ > BigDecimal(0)) &&
+      penalty.penaltyAmountPaid.exists(_ > BigDecimal(0)) &&
       !penalty.penaltyStatus.equals(LPPPenaltyStatusEnum.Accruing) &&
       !penalty.appealInformation.exists(_.exists(_.appealStatus.contains(AppealStatusEnum.Upheld)))
   ))).getOrElse(0)

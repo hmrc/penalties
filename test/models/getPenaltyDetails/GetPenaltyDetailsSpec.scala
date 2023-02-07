@@ -264,6 +264,7 @@ class GetPenaltyDetailsSpec extends SpecBase {
             communicationsDate = Some(LocalDate.of(2022, 10, 30)),
             penaltyAmountOutstanding = None,
             penaltyAmountPaid = None,
+            penaltyAmountPosted = None,
             LPP1LRDays = Some("15"),
             LPP1HRDays = Some("31"),
             LPP2Days = Some("31"),
