@@ -41,6 +41,7 @@ import utils.Logger.logger
 import utils.PagerDutyHelper.PagerDutyKeys._
 import utils.{PagerDutyHelper, PenaltyPeriodHelper, RegimeHelper, UUIDGenerator}
 
+import java.time.format.DateTimeFormatter
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -205,6 +206,7 @@ class AppealsController @Inject()(val appConfig: AppConfig,
   }
 
   def createSDESNotifications(optUploadJourney: Option[Seq[UploadJourney]], caseID: String): Seq[SDESNotification] = {
+    val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")
     optUploadJourney match {
       case Some(uploads) => uploads.flatMap { upload =>
         upload.uploadDetails.flatMap { details =>
@@ -224,7 +226,7 @@ class AppealsController @Inject()(val appConfig: AppConfig,
                   size = details.size,
                   properties = Seq(
                     SDESProperties(name = "CaseId", value = caseID),
-                    SDESProperties(name = "SourceFileUploadDate", value = details.uploadTimestamp.toString)
+                    SDESProperties(name = "SourceFileUploadDate", value = details.uploadTimestamp.format(dateTimeFormatter))
                   )
                 ),
                 audit = SDESAudit(correlationID = idGenerator.generateUUID)
