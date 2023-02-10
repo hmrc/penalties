@@ -844,7 +844,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
                   "CaseId", "PR-123456789"
                 ),
                 SDESProperties(
-                  "SourceFileUploadDate", "2018-04-24T09:30"
+                  "SourceFileUploadDate", "2018-04-24T09:30:00Z"
                 )
               )
             ), audit = SDESAudit(correlationId)
@@ -916,7 +916,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
                   "CaseId", "PR-123456789"
                 ),
                 SDESProperties(
-                  "SourceFileUploadDate", "2018-04-24T09:30"
+                  "SourceFileUploadDate", "2018-04-24T09:30:00Z"
                 )
               )
             ), audit = SDESAudit(correlationId)
@@ -1050,7 +1050,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
                   "CaseId", "PR-123456789"
                 ),
                 SDESProperties(
-                  "SourceFileUploadDate", "2018-04-24T09:30"
+                  "SourceFileUploadDate", "2018-04-24T09:30:00Z"
                 )
               )
             ), audit = SDESAudit(correlationId)
@@ -1124,7 +1124,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
                   "CaseId", "PR-123456789"
                 ),
                 SDESProperties(
-                  "SourceFileUploadDate", "2018-04-24T09:30"
+                  "SourceFileUploadDate", "2018-04-24T09:30:00Z"
                 )
               )
             ), audit = SDESAudit(correlationId)
@@ -1175,7 +1175,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
               size = 1,
               properties = Seq(
                 SDESProperties(name = "CaseId", value = "PR-1234"),
-                SDESProperties(name = "SourceFileUploadDate", value = "2018-04-24T09:30")
+                SDESProperties(name = "SourceFileUploadDate", value = "2018-04-24T09:30:00Z")
               )
             ),
             audit = SDESAudit(
