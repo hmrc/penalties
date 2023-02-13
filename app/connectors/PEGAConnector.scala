@@ -59,7 +59,6 @@ class PEGAConnector @Inject()(httpClient: HttpClient,
       ACCEPT             -> MimeTypes.JSON,
       AUTHORIZATION -> s"Bearer $bearerToken"
     )
-    logger.debug(s"[PEGAConnector][headersForEIS] - EIS send headers $headers")
     HeaderCarrier(otherHeaders = headers)
   }
 }
