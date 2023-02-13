@@ -169,7 +169,7 @@ class AppealsController @Inject()(val appConfig: AppConfig,
             case _ => Seq.empty
           }
           if (seqOfNotifications.nonEmpty) {
-            val redactedNotification = seqOfNotifications.map(notification=> notification.copy(file = notification.file.copy(location = "HIDDEN")))
+            val redactedNotification = seqOfNotifications.map(notification => notification.copy(file = notification.file.copy(location = "HIDDEN")))
             logger.debug(s"[AppealsController][submitAppeal] Posting SDESNotifications: $redactedNotification to Orchestrator")
             fileNotificationOrchestratorConnector.postFileNotifications(seqOfNotifications).map {
               response =>
