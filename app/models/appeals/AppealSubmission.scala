@@ -424,7 +424,8 @@ object ObligationAppealInformation {
     Json.obj(
       "statement" -> obligationAppealInformation.statement.get,
       "reasonableExcuse" -> obligationAppealInformation.reasonableExcuse,
-      "honestyDeclaration" -> obligationAppealInformation.honestyDeclaration
+      "honestyDeclaration" -> obligationAppealInformation.honestyDeclaration,
+      "lateAppeal" -> false //NOTE: at the time of writing, users are not asked why they appealed 30 days after the penalty was issued - so default to false
     ).deepMerge(
       obligationAppealInformation.supportingEvidence.fold(
         Json.obj()

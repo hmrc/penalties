@@ -576,6 +576,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       |   "honestyDeclaration": true,
       |   "reasonableExcuse": "obligation",
       |   "statement": "A valid statement",
+      |   "lateAppeal": false,
       |   "supportingEvidence": {
       |     "noOfUploadedFiles": 1
       |   }
@@ -588,7 +589,8 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       |{
       |   "statement": "A valid statement",
       |   "reasonableExcuse": "obligation",
-      |   "honestyDeclaration": true
+      |   "honestyDeclaration": true,
+      |   "lateAppeal": false
       |}
       |""".stripMargin)
 
@@ -2029,7 +2031,8 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
               "noOfUploadedFiles" -> 1
             ),
             "honestyDeclaration" -> true,
-            "reasonableExcuse" -> "obligation"
+            "reasonableExcuse" -> "obligation",
+            "lateAppeal" -> false
           )
         )
 
@@ -2064,7 +2067,8 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           "appealInformation" -> Json.obj(
             "statement" -> "A valid statement",
             "honestyDeclaration" -> true,
-            "reasonableExcuse" -> "obligation"
+            "reasonableExcuse" -> "obligation",
+            "lateAppeal" -> false
           )
         )
 
