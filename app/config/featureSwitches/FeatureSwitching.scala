@@ -19,7 +19,7 @@ package config.featureSwitches
 import play.api.Configuration
 import utils.Logger.logger
 
-import java.time.LocalDate
+import java.time.LocalDateTime
 
 trait FeatureSwitching {
   implicit val config: Configuration
@@ -33,21 +33,21 @@ trait FeatureSwitching {
   def enableFeatureSwitch(featureSwitch: FeatureSwitch): Unit =
     sys.props += featureSwitch.name -> FEATURE_SWITCH_ON
 
-  def setTimeMachineDate(dateToSet: Option[LocalDate]): Unit = {
-    logger.debug(s"[FeatureSwitching][setTimeMachineDate] - setting time machine date to: $dateToSet")
-    dateToSet.fold(sys.props -= TIME_MACHINE_NOW)(sys.props += TIME_MACHINE_NOW -> _.toString)
+  def setTimeMachineDate(dateTimeToSet: Option[LocalDateTime]): Unit = {
+    logger.debug(s"[FeatureSwitching][setTimeMachineDate] - setting time machine date to: $dateTimeToSet")
+    dateTimeToSet.fold(sys.props -= TIME_MACHINE_NOW)(sys.props += TIME_MACHINE_NOW -> _.toString)
   }
 
-  def getTimeMachineDate: LocalDate = {
+  def getTimeMachineDateTime: LocalDateTime = {
     sys.props.get(TIME_MACHINE_NOW).fold({
       val optDateAsString = config.getOptional[String]("feature.switch.time-machine-now")
       val dateAsString = optDateAsString.getOrElse("")
       if(dateAsString.isEmpty) {
-        LocalDate.now()
+        LocalDateTime.now()
       } else {
-        LocalDate.parse(dateAsString)
+        LocalDateTime.parse(dateAsString)
       }
-    })(LocalDate.parse(_))
+    })(LocalDateTime.parse(_))
   }
 
   def disableFeatureSwitch(featureSwitch: FeatureSwitch): Unit =

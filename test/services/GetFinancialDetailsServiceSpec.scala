@@ -31,7 +31,7 @@ import play.api.http.Status.IM_A_TEAPOT
 import play.api.test.Helpers._
 import uk.gov.hmrc.http.HeaderCarrier
 
-import java.time.LocalDate
+import java.time.LocalDateTime
 import scala.concurrent.{ExecutionContext, Future}
 
 class GetFinancialDetailsServiceSpec extends SpecBase with FeatureSwitching {
@@ -70,7 +70,7 @@ class GetFinancialDetailsServiceSpec extends SpecBase with FeatureSwitching {
     }
 
     s"call the connector and return a $GetFinancialDetailsSuccessResponse when the request is successful (with the time machine date)" in new Setup {
-      setTimeMachineDate(Some(LocalDate.of(2024, 1, 1)))
+      setTimeMachineDate(Some(LocalDateTime.of(2024, 1, 1, 0, 0, 0)))
       when(mockGetFinancialDetailsConnector.getFinancialDetails(Matchers.eq("123456789"))(any()))
         .thenReturn(Future.successful(Right(GetFinancialDetailsSuccessResponse(mockGetFinancialDetailsResponseAsModel))))
       val result: GetFinancialDetailsResponse = await(service.getFinancialDetails("123456789"))
