@@ -22,7 +22,7 @@ import play.api.mvc.{Action, AnyContent, ControllerComponents, Result}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import utils.Logger.logger
 
-import java.time.LocalDate
+import java.time.LocalDateTime
 import javax.inject.Inject
 import scala.util.Try
 
@@ -41,20 +41,20 @@ class FeatureSwitchController @Inject()(cc: ControllerComponents)
       })
   }
 
-  def setTimeMachineDate(dateToSet: Option[String]): Action[AnyContent] = Action {
-    dateToSet.fold({
+  def setTimeMachineDate(dateTimeToSet: Option[String]): Action[AnyContent] = Action {
+    dateTimeToSet.fold({
       super.setTimeMachineDate(None)
-      Ok(s"Time machine set to: ${LocalDate.now()}")
+      Ok(s"Time machine set to: ${LocalDateTime.now()}")
     })(
-      dateAsString => {
-        Try(LocalDate.parse(dateAsString)).fold(
+      dateTimeAsString => {
+        Try(LocalDateTime.parse(dateTimeAsString)).fold(
           err => {
             logger.debug(s"[FeatureSwitchController][setDateFeature] - Exception was thrown when setting time machine date: ${err.getMessage}")
             BadRequest("The date provided is in an invalid format")
           },
-          date => {
-            setTimeMachineDate(Some(date))
-            Ok(s"Time machine set to: $date")
+          dateTime => {
+            setTimeMachineDate(Some(dateTime))
+            Ok(s"Time machine set to: $dateTime")
           }
         )
       }

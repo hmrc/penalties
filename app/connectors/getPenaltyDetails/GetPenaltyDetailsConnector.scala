@@ -16,31 +16,35 @@
 
 package connectors.getPenaltyDetails
 
-import java.util.UUID.randomUUID
-
 import config.AppConfig
-import config.featureSwitches.AddReceiptDateHeaderToAPI1812
+import config.featureSwitches.FeatureSwitching
 import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser.{GetPenaltyDetailsFailureResponse, GetPenaltyDetailsResponse}
-import javax.inject.Inject
+import play.api.Configuration
 import play.api.http.Status.INTERNAL_SERVER_ERROR
 import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse, UpstreamErrorResponse}
 import utils.Logger.logger
-import utils.PagerDutyHelper
+import utils.{DateHelper, PagerDutyHelper}
 import utils.PagerDutyHelper.PagerDutyKeys._
 
+import java.time.LocalDateTime
+import java.util.UUID.randomUUID
+import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class GetPenaltyDetailsConnector @Inject()(httpClient: HttpClient,
                                            appConfig: AppConfig)
-                                          (implicit ec: ExecutionContext) {
+                                          (implicit ec: ExecutionContext, val config: Configuration) extends FeatureSwitching {
 
-  private def headers: Seq[(String, String)] = Seq(
-    "Authorization" -> s"Bearer ${appConfig.eiOutboundBearerToken}",
-    "CorrelationId" -> randomUUID().toString,
-    "Environment" -> appConfig.eisEnvironment,
-    if(appConfig.isEnabled(AddReceiptDateHeaderToAPI1812)) "ReceiptDate" -> "2023-05-23T17:32:28Z" else "" -> ""
-  ).filter(_._1.nonEmpty)
+  private def headers: Seq[(String, String)] = {
+    val timeMachineDateAsDateTime: LocalDateTime = getTimeMachineDateTime
+    Seq(
+      "Authorization" -> s"Bearer ${appConfig.eiOutboundBearerToken}",
+      "CorrelationId" -> randomUUID().toString,
+      "Environment" -> appConfig.eisEnvironment,
+      "ReceiptDate" -> timeMachineDateAsDateTime.format(DateHelper.dateTimeFormatter)
+    ).filter(_._1.nonEmpty)
+  }
 
   def getPenaltyDetails(vrn: String)(implicit hc: HeaderCarrier): Future[GetPenaltyDetailsResponse] = {
     val url = appConfig.getPenaltyDetailsUrl + vrn

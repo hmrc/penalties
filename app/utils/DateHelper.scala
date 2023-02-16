@@ -20,11 +20,12 @@ import config.featureSwitches.FeatureSwitching
 import play.api.Configuration
 
 import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 
 class DateHelper @Inject()(val config: Configuration) extends FeatureSwitching {
   def dateNow(): LocalDate = {
-    getTimeMachineDate
+    getTimeMachineDateTime.toLocalDate
   }
 }
 
@@ -36,4 +37,6 @@ object DateHelper {
   def isDateAfterOrEqual(thisDate: LocalDate, thatDate: LocalDate): Boolean = {
     thisDate.isAfter(thatDate) || thisDate.isEqual(thatDate)
   }
+
+  val dateTimeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")
 }

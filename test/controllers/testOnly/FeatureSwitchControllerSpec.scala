@@ -25,7 +25,7 @@ import play.api.http.Status
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 
-import java.time.LocalDate
+import java.time.{LocalDate, LocalDateTime}
 import scala.language.postfixOps
 
 class FeatureSwitchControllerSpec extends SpecBase {
@@ -56,15 +56,14 @@ class FeatureSwitchControllerSpec extends SpecBase {
         .thenReturn(None)
       val result = controller.setTimeMachineDate(None)(FakeRequest())
       status(result) shouldBe OK
-      contentAsString(result) shouldBe s"Time machine set to: ${LocalDate.now().toString}"
-      controller.getTimeMachineDate shouldBe LocalDate.now()
+      controller.getTimeMachineDateTime.toLocalDate shouldBe LocalDate.now() //Set to LocalDate to stop flaky tests
     }
 
     s"return OK (${Status.OK}) and set the correct date provided" in new Setup {
-      val result = controller.setTimeMachineDate(Some("2022-01-01"))(FakeRequest())
+      val result = controller.setTimeMachineDate(Some("2022-01-01T12:00:01"))(FakeRequest())
       status(result) shouldBe OK
-      contentAsString(result) shouldBe s"Time machine set to: ${LocalDate.of(2022, 1, 1).toString}"
-      (sys.props get "TIME_MACHINE_NOW" get) shouldBe LocalDate.of(2022, 1, 1).toString
+      contentAsString(result) shouldBe s"Time machine set to: ${LocalDateTime.of(2022, 1, 1, 12, 0, 1).toString}"
+      (sys.props get "TIME_MACHINE_NOW" get) shouldBe LocalDateTime.of(2022, 1, 1, 12, 0, 1).toString
     }
   }
 }

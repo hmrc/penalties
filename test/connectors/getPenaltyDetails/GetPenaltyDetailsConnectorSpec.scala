@@ -18,34 +18,44 @@ package connectors.getPenaltyDetails
 
 import base.{LogCapturing, SpecBase}
 import config.AppConfig
-import config.featureSwitches.AddReceiptDateHeaderToAPI1812
+import config.featureSwitches.FeatureSwitching
 import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser.{GetPenaltyDetailsFailureResponse, GetPenaltyDetailsResponse, GetPenaltyDetailsSuccessResponse}
 import models.getPenaltyDetails.GetPenaltyDetails
 import org.mockito.Mockito.{mock, reset, when}
 import org.mockito.{ArgumentCaptor, Matchers}
+import play.api.Configuration
 import play.api.http.Status
 import play.api.libs.json.Json
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse, UpstreamErrorResponse}
+import utils.DateHelper
 import utils.Logger.logger
 import utils.PagerDutyHelper.PagerDutyKeys
 
+import java.time.{LocalDate, LocalDateTime}
 import scala.concurrent.{ExecutionContext, Future}
 
-class GetPenaltyDetailsConnectorSpec extends SpecBase with LogCapturing {
+class GetPenaltyDetailsConnectorSpec extends SpecBase with LogCapturing with FeatureSwitching {
+  override implicit val config: Configuration = injector.instanceOf[Configuration]
+
   implicit val ec: ExecutionContext = ExecutionContext.Implicits.global
   implicit val hc: HeaderCarrier = HeaderCarrier()
   val mockHttpClient: HttpClient = mock(classOf[HttpClient])
   val mockAppConfig: AppConfig = mock(classOf[AppConfig])
+  implicit val mockConfiguration: Configuration = mock(classOf[Configuration])
 
   class Setup {
     reset(mockHttpClient)
     reset(mockAppConfig)
+    reset(mockConfiguration)
 
-    val connector = new GetPenaltyDetailsConnector(mockHttpClient, mockAppConfig)
+    val connector = new GetPenaltyDetailsConnector(mockHttpClient, mockAppConfig)(implicitly, mockConfiguration)
     when(mockAppConfig.getPenaltyDetailsUrl).thenReturn("/penalty/details/VATC/VRN/")
     when(mockAppConfig.eisEnvironment).thenReturn("env")
     when(mockAppConfig.eiOutboundBearerToken).thenReturn("token")
+    when(mockConfiguration.getOptional[String](Matchers.eq("feature.switch.time-machine-now"))(Matchers.any()))
+      .thenReturn(None)
+    sys.props -= TIME_MACHINE_NOW
   }
 
   val mockGetPenaltyDetailsModelAPI1812: GetPenaltyDetails = GetPenaltyDetails(
@@ -69,7 +79,7 @@ class GetPenaltyDetailsConnectorSpec extends SpecBase with LogCapturing {
       result.isRight shouldBe true
     }
 
-    "send the 'ReceiptDate' header when the feature switch is enabled" in new Setup {
+    "send the 'ReceiptDate' header to the value set in the feature switch" in new Setup {
       val argumentCaptorForHeaders = ArgumentCaptor.forClass(classOf[Seq[(String, String)]])
       when(mockHttpClient.GET[GetPenaltyDetailsResponse](Matchers.eq("/penalty/details/VATC/VRN/123456789"),
         Matchers.any(),
@@ -78,15 +88,14 @@ class GetPenaltyDetailsConnectorSpec extends SpecBase with LogCapturing {
           Matchers.any(),
           Matchers.any()))
         .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(mockGetPenaltyDetailsModelAPI1812))))
-      when(mockAppConfig.isEnabled(Matchers.eq(AddReceiptDateHeaderToAPI1812)))
-        .thenReturn(true)
-      val connectorForTest = new GetPenaltyDetailsConnector(mockHttpClient, mockAppConfig)
+      setTimeMachineDate(Some(LocalDateTime.parse("2023-01-01T01:01:01Z", DateHelper.dateTimeFormatter)))
+      val connectorForTest = new GetPenaltyDetailsConnector(mockHttpClient, mockAppConfig)(implicitly, config)
       val result: GetPenaltyDetailsResponse = await(connectorForTest.getPenaltyDetails("123456789"))
       result.isRight shouldBe true
-      argumentCaptorForHeaders.getValue.exists(_._1 == "ReceiptDate") shouldBe true
+      argumentCaptorForHeaders.getValue.find(_._1 == "ReceiptDate").get._2 shouldBe "2023-01-01T01:01:01Z"
     }
 
-    "don't send the 'ReceiptDate' header when the feature switch is disabled" in new Setup {
+    "send the 'ReceiptDate' header to the value set in the config" in new Setup {
       val argumentCaptorForHeaders = ArgumentCaptor.forClass(classOf[Seq[(String, String)]])
       when(mockHttpClient.GET[GetPenaltyDetailsResponse](Matchers.eq("/penalty/details/VATC/VRN/123456789"),
         Matchers.any(),
@@ -95,12 +104,27 @@ class GetPenaltyDetailsConnectorSpec extends SpecBase with LogCapturing {
           Matchers.any(),
           Matchers.any()))
         .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(mockGetPenaltyDetailsModelAPI1812))))
-      when(mockAppConfig.isEnabled(Matchers.eq(AddReceiptDateHeaderToAPI1812)))
-        .thenReturn(false)
-      val connectorForTest = new GetPenaltyDetailsConnector(mockHttpClient, mockAppConfig)
+      when(mockConfiguration.getOptional[String](Matchers.eq("feature.switch.time-machine-now"))(Matchers.any()))
+        .thenReturn(Some("2023-01-01T01:01:01"))
+      val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails("123456789"))
+      result.isRight shouldBe true
+      argumentCaptorForHeaders.getValue.find(_._1 == "ReceiptDate").get._2 shouldBe "2023-01-01T01:01:01Z"
+    }
+
+    "send the 'ReceiptDate' header to the system date time when feature switch not set" in new Setup {
+      val argumentCaptorForHeaders = ArgumentCaptor.forClass(classOf[Seq[(String, String)]])
+      when(mockHttpClient.GET[GetPenaltyDetailsResponse](Matchers.eq("/penalty/details/VATC/VRN/123456789"),
+        Matchers.any(),
+        argumentCaptorForHeaders.capture())
+        (Matchers.any(),
+          Matchers.any(),
+          Matchers.any()))
+        .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(mockGetPenaltyDetailsModelAPI1812))))
+      val connectorForTest = new GetPenaltyDetailsConnector(mockHttpClient, mockAppConfig)(implicitly, config)
       val result: GetPenaltyDetailsResponse = await(connectorForTest.getPenaltyDetails("123456789"))
       result.isRight shouldBe true
-      argumentCaptorForHeaders.getValue.exists(_._1 == "ReceiptDate") shouldBe false
+      val receiptDateValue: String = argumentCaptorForHeaders.getValue.find(_._1 == "ReceiptDate").get._2
+      LocalDateTime.parse(receiptDateValue, DateHelper.dateTimeFormatter).toLocalDate shouldBe LocalDate.now() //Set to LocalDate to stop flaky tests
     }
 
     s"return a 404 when the call fails for Not Found" in new Setup {
