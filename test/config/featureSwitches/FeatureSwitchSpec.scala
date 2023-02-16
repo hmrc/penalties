@@ -108,20 +108,6 @@ class FeatureSwitchSpec extends SpecBase {
       featureSwitching.isEnabled(CallAPI1811ETMP) shouldBe false
     }
 
-    "return true is AddReceiptDateHeaderToAPI1812 feature switch is enabled" in new Setup {
-      featureSwitching.enableFeatureSwitch(AddReceiptDateHeaderToAPI1812)
-      featureSwitching.isEnabled(AddReceiptDateHeaderToAPI1812) shouldBe true
-    }
-
-    "return false if AddReceiptDateHeaderToAPI1812 feature switch is disabled" in new Setup {
-      featureSwitching.disableFeatureSwitch(AddReceiptDateHeaderToAPI1812)
-      featureSwitching.isEnabled(AddReceiptDateHeaderToAPI1812) shouldBe false
-    }
-
-    "return false if AddReceiptDateHeaderToAPI1812 feature switch does not exist" in new Setup {
-      featureSwitching.isEnabled(AddReceiptDateHeaderToAPI1812) shouldBe false
-    }
-
     "return true is UseInternalAuth feature switch is enabled" in new Setup {
       featureSwitching.enableFeatureSwitch(UseInternalAuth)
       featureSwitching.isEnabled(UseInternalAuth) shouldBe true
@@ -180,11 +166,6 @@ class FeatureSwitchSpec extends SpecBase {
     s"set ${CallAPI1811ETMP.name} property to false" in new Setup {
       featureSwitching.disableFeatureSwitch(CallAPI1811ETMP)
       (sys.props get CallAPI1811ETMP.name get) shouldBe "false"
-    }
-
-    s"set ${AddReceiptDateHeaderToAPI1812.name} property to false" in new Setup {
-      featureSwitching.disableFeatureSwitch(AddReceiptDateHeaderToAPI1812)
-      (sys.props get AddReceiptDateHeaderToAPI1812.name get) shouldBe "false"
     }
 
     s"set ${UseInternalAuth.name} property to false" in new Setup {
