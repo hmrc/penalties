@@ -26,6 +26,7 @@ import utils.{DateHelper, JsonUtils}
 import utils.Logger.logger
 
 import java.time.LocalDate
+import scala.math.Ordered.orderingToOrdered
 
 case class UserHasPenaltyAuditModel(
                                      penaltyDetails: GetPenaltyDetails,
@@ -136,8 +137,12 @@ case class UserHasPenaltyAuditModel(
       lppDetails <- lpp.details
       optSeqTimeToPay <- lppDetails.find(_.metadata.timeToPay.isDefined).map(_.metadata.timeToPay.get)
       optActiveTimeToPay <- optSeqTimeToPay.find(
-        penalty => penalty.TTPEndDate.exists(DateHelper.isDateAfterOrEqual(_, dateNow)) &&
-          penalty.TTPStartDate.exists(DateHelper.isDateBeforeOrEqual(_, dateNow)))
+        penalty => (penalty.TTPEndDate, penalty.TTPStartDate) match {
+          case (Some(endDate), Some(startDate)) => startDate < dateNow && dateNow < endDate
+          case (None, Some(startDate)) => startDate < dateNow
+          case (_,_) => false
+        }
+      )
     } yield optActiveTimeToPay
   }
 
