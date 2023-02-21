@@ -26,7 +26,6 @@ import utils.{DateHelper, JsonUtils}
 import utils.Logger.logger
 
 import java.time.LocalDate
-import scala.math.Ordered.orderingToOrdered
 
 case class UserHasPenaltyAuditModel(
                                      penaltyDetails: GetPenaltyDetails,
