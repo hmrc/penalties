@@ -238,6 +238,12 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
       |             "appealLevel": "01"
       |           }
       |         ],
+      |         "timeToPay": [
+      |             {
+      |                 "TTPStartDate": "2022-01-01",
+      |                 "TTPEndDate": "2022-12-31"
+      |             }
+      |         ],
       |         "principalChargeMainTransaction": "4700",
       |         "penaltyAmountAccruing": 99.99
       |       }
@@ -290,6 +296,12 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
       |                "LPP2Percentage": 4,
       |                "LPP1LRCalculationAmount": 99.99,
       |                "principalChargeMainTransaction": "4700",
+      |                "timeToPay": [
+      |                 {
+      |                   "TTPStartDate": "2022-01-01",
+      |                   "TTPEndDate": "2022-12-31"
+      |                 }
+      |                ],
       |                "penaltyAmountAccruing": 99.99
       |            }
       |        ]

@@ -42,7 +42,7 @@ class PenaltiesFrontendService @Inject()() {
               penaltyAmountOutstanding = Some(oldLPPDetails.penaltyAmountAccruing),
               metadata = LPPDetailsMetadata(
                 mainTransaction = Some(oldLPPDetails.principalChargeMainTransaction),
-                timeToPay = None
+                timeToPay = oldLPPDetails.metadata.timeToPay
               )
             )
           } else {
