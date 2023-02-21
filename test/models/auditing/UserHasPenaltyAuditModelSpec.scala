@@ -628,6 +628,93 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
     )
   )
 
+  val getPenaltyDetailsModelWithLPPsUnpaidNoTTPEndDate: GetPenaltyDetails = basicGetPenaltyDetailsModel.copy(
+    totalisations = Some(Totalisations(
+      penalisedPrincipalTotal = Some(2000.12),
+      LPPPostedTotal = None,
+      LPPEstimatedTotal = None,
+      LSPTotalValue = None,
+      totalAccountOverdue = None,
+      totalAccountPostedInterest = None,
+      totalAccountAccruingInterest = None
+    )),
+    lateSubmissionPenalty = None,
+    latePaymentPenalty = Some(
+      LatePaymentPenalty(
+        details = Some(
+          Seq(
+            LPPDetails(
+              penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
+              principalChargeReference = "123456789",
+              penaltyChargeReference = Some("1234567891"),
+              penaltyChargeCreationDate = Some(LocalDate.of(2022, 1, 1)),
+              penaltyStatus = LPPPenaltyStatusEnum.Posted,
+              appealInformation = None,
+              principalChargeBillingFrom = LocalDate.of(2022, 1, 1),
+              principalChargeBillingTo = LocalDate.of(2022, 1, 1),
+              principalChargeDueDate = LocalDate.of(2022, 1, 1),
+              communicationsDate = Some(LocalDate.of(2022, 1, 1)),
+              penaltyAmountOutstanding = Some(144.21),
+              penaltyAmountPaid = None,
+              penaltyAmountPosted = Some(144.21),
+              LPP1LRDays = None,
+              LPP1HRDays = None,
+              LPP2Days = None,
+              LPP1HRCalculationAmount = None,
+              LPP1LRCalculationAmount = None,
+              LPP2Percentage = None,
+              LPP1LRPercentage = None,
+              LPP1HRPercentage = None,
+              penaltyChargeDueDate = Some(LocalDate.of(2022, 1, 1)),
+              principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
+              metadata = LPPDetailsMetadata(
+                timeToPay = Some(Seq(TimeToPay(
+                  TTPStartDate = Some(LocalDate.of(2022, 1, 1)),
+                  TTPEndDate = None
+                )))
+              ),
+              penaltyAmountAccruing = BigDecimal(0),
+              principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
+            ),
+            LPPDetails(
+              penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
+              principalChargeReference = "123456789",
+              penaltyChargeReference = Some("1234567890"),
+              penaltyChargeCreationDate = Some(LocalDate.of(2022, 1, 1)),
+              penaltyStatus = LPPPenaltyStatusEnum.Posted,
+              appealInformation = None,
+              principalChargeBillingFrom = LocalDate.of(2022, 1, 1),
+              principalChargeBillingTo = LocalDate.of(2022, 1, 1),
+              principalChargeDueDate = LocalDate.of(2022, 1, 1),
+              communicationsDate = Some(LocalDate.of(2022, 1, 1)),
+              penaltyAmountOutstanding = Some(144.21),
+              penaltyAmountPaid = None,
+              penaltyAmountPosted = Some(144.21),
+              LPP1LRDays = None,
+              LPP1HRDays = None,
+              LPP2Days = None,
+              LPP1HRCalculationAmount = None,
+              LPP1LRCalculationAmount = None,
+              LPP2Percentage = None,
+              LPP1LRPercentage = None,
+              LPP1HRPercentage = None,
+              penaltyChargeDueDate = Some(LocalDate.of(2022, 1, 1)),
+              principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
+              metadata = LPPDetailsMetadata(
+                timeToPay = Some(Seq(TimeToPay(
+                  TTPStartDate = Some(LocalDate.of(2022, 1, 1)),
+                  TTPEndDate = None
+                )))
+              ),
+              penaltyAmountAccruing = BigDecimal(0),
+              principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
+            )
+          )
+        )
+      )
+    )
+  )
+
   val getPenaltyDetailsModelWithLPPsPartiallyPaid: GetPenaltyDetails = basicGetPenaltyDetailsModel.copy(
     totalisations = Some(Totalisations(
       penalisedPrincipalTotal = Some(2000.12),
@@ -1201,12 +1288,21 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
         (auditModelWithLPPsAccepted.detail \ "penaltyInformation" \ "latePaymentPenaltyDetail" \ "underAppeal").validate[Int].get shouldBe 0
       }
 
-      "the user has an active TTP" in {
+      "the user has an active TTP - With end date" in {
         when(mockDateHelper.dateNow()).thenReturn(LocalDate.of(2022, 2, 1))
         val auditModelWithLPPsUnpaid: UserHasPenaltyAuditModel = basicModel.copy(getPenaltyDetailsModelWithLPPsUnpaid, "1234", "VRN", None)(fakeRequest.withHeaders("User-Agent" -> "penalties-frontend"))
         (auditModelWithLPPsUnpaid.detail \ "penaltyInformation" \ "timeToPayInformation" \ "isTimeToPayActive").validate[Boolean].get shouldBe true
         (auditModelWithLPPsUnpaid.detail \ "penaltyInformation" \ "timeToPayInformation" \ "timeToPayStartDate").validate[LocalDate].get shouldBe LocalDate.of(2022, 1, 1)
         (auditModelWithLPPsUnpaid.detail \ "penaltyInformation" \ "timeToPayInformation" \ "timeToPayEndDate").validate[LocalDate].get shouldBe LocalDate.of(2022, 12, 31)
+      }
+
+      "the user has an active TTP - With no end date" in {
+        when(mockDateHelper.dateNow()).thenReturn(LocalDate.of(2022, 2, 1))
+        val auditModelWithLPPsUnpaid: UserHasPenaltyAuditModel = basicModel.copy(
+          getPenaltyDetailsModelWithLPPsUnpaidNoTTPEndDate, "1234", "VRN", None)(fakeRequest.withHeaders("User-Agent" -> "penalties-frontend"))
+        (auditModelWithLPPsUnpaid.detail \ "penaltyInformation" \ "timeToPayInformation" \ "isTimeToPayActive").validate[Boolean].get shouldBe true
+        (auditModelWithLPPsUnpaid.detail \ "penaltyInformation" \ "timeToPayInformation" \ "timeToPayStartDate").validate[LocalDate].get shouldBe LocalDate.of(2022, 1, 1)
+        (auditModelWithLPPsUnpaid.detail \ "penaltyInformation" \ "timeToPayInformation" \ "timeToPayEndDate").isDefined shouldBe false
       }
     }
 
