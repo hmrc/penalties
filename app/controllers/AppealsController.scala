@@ -54,6 +54,10 @@ class AppealsController @Inject()(val appConfig: AppConfig,
                                   cc: ControllerComponents)(implicit ec: ExecutionContext, val config: Configuration)
   extends BackendController(cc) with FeatureSwitching {
 
+  private val regexToSanitiseFileName: String = "[^a-zA-Z0-9_\\-.]"
+
+  private val regexToRemoveSpacesAndControlCharacters: String = "\\s+"
+
   private def getAppealDataForPenalty(penaltyId: String, enrolmentKey: String,
                                       penaltyType: AppealTypeEnum.Value)(implicit hc: HeaderCarrier): Future[Result] = {
     val vrn = RegimeHelper.getIdentifierFromEnrolmentKey(enrolmentKey)
@@ -215,11 +219,12 @@ class AppealsController @Inject()(val appConfig: AppConfig,
                 case "AWS4-HMAC-SHA256" => "SHA-256"
                 case _ => throw new Exception("[AppealsController][createSDESNotifications] failed to recognise Checksum algorithm")
               }
+              val sanitisedFileName: String = details.fileName.replaceAll(regexToRemoveSpacesAndControlCharacters,"_").replaceAll(regexToSanitiseFileName, "_")
               SDESNotification(
                 informationType = appConfig.SDESNotificationInfoType,
                 file = SDESNotificationFile(
                   recipientOrSender = appConfig.SDESNotificationFileRecipient,
-                  name = details.fileName,
+                  name = sanitisedFileName,
                   location = upload.downloadUrl.get,
                   checksum = SDESChecksum(algorithm = uploadAlgorithm, value = details.checksum),
                   size = details.size,

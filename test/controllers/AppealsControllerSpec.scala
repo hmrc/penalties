@@ -1336,7 +1336,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
     }
   }
 
-  "createSDESNotification" should {
+  "createSDESNotifications" should {
     "return an empty Seq" when {
       "None is passed to the uploadJourney" in new Setup {
         val result = controller.createSDESNotifications(None, "")
@@ -1372,6 +1372,52 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
             file = SDESNotificationFile(
               recipientOrSender = "123456789012",
               name = "file1",
+              location = "/",
+              checksum = SDESChecksum(algorithm = "SHA-256", value = "check123456789"),
+              size = 1,
+              properties = Seq(
+                SDESProperties(name = "CaseId", value = "PR-1234"),
+                SDESProperties(name = "SourceFileUploadDate", value = "2018-04-24T09:30:00Z")
+              )
+            ),
+            audit = SDESAudit(
+              correlationID = correlationId
+            )
+          )
+        )
+
+        when(mockUUIDGenerator.generateUUID).thenReturn(correlationId)
+        val result = controller.createSDESNotifications(Some(uploads), caseID = "PR-1234")
+        result shouldBe expectedResult
+      }
+
+      "notifications are sent and then should sanitise the file names" in new Setup {
+        val mockDateTime: LocalDateTime = LocalDateTime.of(2020, 1, 1, 0, 0, 0)
+        val uploads = Seq(
+          UploadJourney(reference = "ref-123",
+            fileStatus = UploadStatusEnum.READY,
+            downloadUrl = Some("/"),
+            uploadDetails = Some(UploadDetails(
+              fileName = "file 1  !3 !something £4 x-y_z.txt",
+              fileMimeType = "text/plain",
+              uploadTimestamp = LocalDateTime.of(2018, 4, 24, 9, 30, 0),
+              checksum = "check123456789",
+              size = 1
+            )),
+            lastUpdated = mockDateTime,
+            uploadFields = Some(Map(
+              "key" -> "abcxyz",
+              "x-amz-algorithm" -> "AWS4-HMAC-SHA256"
+            ))
+          )
+        )
+
+        val expectedResult = Seq(
+          SDESNotification(
+            informationType = "S18",
+            file = SDESNotificationFile(
+              recipientOrSender = "123456789012",
+              name = "file_1__3__something__4_x-y_z.txt",
               location = "/",
               checksum = SDESChecksum(algorithm = "SHA-256", value = "check123456789"),
               size = 1,
