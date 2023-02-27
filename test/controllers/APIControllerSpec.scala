@@ -237,6 +237,32 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
       status(result) shouldBe Status.NOT_FOUND
     }
 
+    s"return OK (${Status.UNPROCESSABLE_ENTITY}) when the call returns invalid ID" in new Setup(isFSEnabled = true) {
+      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(any())(any()))
+        .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(Status.UNPROCESSABLE_ENTITY))))
+      when(mockAPIService.checkIfHasAnyPenaltyData(any())).thenReturn(false)
+      when(mockAPIService.getNumberOfEstimatedPenalties(any())).thenReturn(0)
+      when(mockAPIService.findEstimatedPenaltiesAmount(any()))
+        .thenReturn(BigDecimal(0))
+      when(mockAPIService.getNumberOfCrystallisedPenalties(any())).thenReturn(0)
+      when(mockAPIService.getCrystallisedPenaltyTotal(any())).thenReturn(BigDecimal(0))
+      val result = controller.getSummaryDataForVRN("123456789")(fakeRequest)
+      status(result) shouldBe Status.OK
+      contentAsJson(result) shouldBe Json.parse(
+        """
+          |{
+          |  "noOfPoints": 0,
+          |  "noOfEstimatedPenalties": 0,
+          |  "noOfCrystalisedPenalties": 0,
+          |  "estimatedPenaltyAmount": 0,
+          |  "crystalisedPenaltyAmountDue": 0,
+          |  "hasAnyPenaltyData": false
+          |}
+          |""".stripMargin
+      )
+      verify(mockAuditService, times(0)).audit(any())(any(), any(), any())
+    }
+
     s"return NO_CONTENT (${Status.NO_CONTENT}) when the VRN is found but has no data" in new Setup(isFSEnabled = true) {
       when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(any())(any()))
         .thenReturn(Future.successful(Left(GetPenaltyDetailsNoContent)))

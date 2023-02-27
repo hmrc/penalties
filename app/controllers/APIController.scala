@@ -60,6 +60,15 @@ class APIController @Inject()(auditService: AuditService,
               logger.info(s"[APIController][getSummaryDataForVRN] - 1812 call (VATVC/BTA API) returned $status for VRN: $vrn")
               NotFound(s"A downstream call returned 404 for VRN: $vrn")
             }
+            case GetPenaltyDetailsParser.GetPenaltyDetailsFailureResponse(status) if status == UNPROCESSABLE_ENTITY => {
+              //Temporary measure to avoid 422 causing issues
+              val responsePayload = GetPenaltyDetailsSuccessResponse(GetPenaltyDetails(totalisations = None, lateSubmissionPenalty = None, latePaymentPenalty = None, breathingSpace = None))
+              logger.info(s"[APIController][getSummaryDataForVRN] - 1812 call (VATVC/BTA API) returned $status for VRN: $vrn - Overriding to 200 response")
+              //TODO Change to NoContent response when PRM-2347 is actioned
+
+                            returnResponseForAPI(responsePayload.penaltyDetails, enrolmentKey)
+//              NoContent
+            }
             case GetPenaltyDetailsParser.GetPenaltyDetailsFailureResponse(status) => {
               logger.info(s"[APIController][getSummaryDataForVRN] - 1812 call (VATVC/BTA API) returned an unexpected status: $status")
               InternalServerError(s"A downstream call returned an unexpected status: $status")
