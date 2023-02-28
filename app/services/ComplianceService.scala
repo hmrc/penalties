@@ -35,7 +35,7 @@ class ComplianceService @Inject()(complianceConnector: ComplianceConnector)(impl
     complianceConnector.getComplianceData(vrn, startDate, endDate).map {
       _.fold[Either[Int, CompliancePayload]]({
         failureModel =>
-          logger.error(s"[ComplianceService][getComplianceData] - Received error back from DES for compliance data with error: ${failureModel.message}")
+          logger.error(s"[ComplianceService][getComplianceData] - Received error back from DES for compliance data for VRN: $vrn with error: ${failureModel.message}")
           failureModel match {
             case ComplianceParser.CompliancePayloadFailureResponse(status) => Left(status)
             case ComplianceParser.CompliancePayloadNoData => Left(NOT_FOUND)

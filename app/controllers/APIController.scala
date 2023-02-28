@@ -71,11 +71,11 @@ class APIController @Inject()(auditService: AuditService,
             }
             case GetPenaltyDetailsParser.GetPenaltyDetailsFailureResponse(status) => {
               logger.info(s"[APIController][getSummaryDataForVRN] - 1812 call (VATVC/BTA API) returned an unexpected status: $status")
-              InternalServerError(s"A downstream call returned an unexpected status: $status")
+              InternalServerError(s"A downstream call returned an unexpected status: $status for VRN: $vrn")
             }
             case GetPenaltyDetailsParser.GetPenaltyDetailsMalformed => {
               PagerDutyHelper.log("getSummaryDataForVRN", MALFORMED_RESPONSE_FROM_1812_API)
-              logger.error(s"[APIController][getSummaryDataForVRN] - 1812 call (VATVC/BTA API) returned invalid body - failed to parse penalty details response")
+              logger.error(s"[APIController][getSummaryDataForVRN] - 1812 call (VATVC/BTA API) returned invalid body - failed to parse penalty details response for VRN: $vrn")
               InternalServerError(s"We were unable to parse penalty data.")
             }
             case GetPenaltyDetailsParser.GetPenaltyDetailsNoContent => {

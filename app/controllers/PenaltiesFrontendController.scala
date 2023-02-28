@@ -55,12 +55,12 @@ class PenaltiesFrontendController @Inject()(
             Future(NotFound(s"A downstream call returned 404 for VRN: $vrn"))
           }
           case GetPenaltyDetailsFailureResponse(status) => {
-            logger.error(s"[PenaltiesFrontendController][getPenaltiesData] - 1812 call returned an unexpected status: $status")
+            logger.error(s"[PenaltiesFrontendController][getPenaltiesData] - 1812 call returned an unexpected status: $status for VRN: $vrn")
             Future(InternalServerError(s"A downstream call returned an unexpected status: $status"))
           }
           case GetPenaltyDetailsMalformed => {
             PagerDutyHelper.log("getPenaltiesData", MALFORMED_RESPONSE_FROM_1812_API)
-            logger.error(s"[PenaltiesFrontendController][getPenaltiesData] - 1812 call returned invalid body - failed to parse penalty details response")
+            logger.error(s"[PenaltiesFrontendController][getPenaltiesData] - 1812 call returned invalid body - failed to parse penalty details response for VRN: $vrn")
             Future(InternalServerError(s"We were unable to parse penalty data."))
           }
         },
@@ -99,7 +99,7 @@ class PenaltiesFrontendController @Inject()(
           }
           case GetFinancialDetailsMalformed => {
             PagerDutyHelper.log("getPenaltiesData", MALFORMED_RESPONSE_FROM_1811_API)
-            logger.error(s"[PenaltiesFrontendController][handleGetFinancialDetailsCall] - 1811 call returned invalid body - failed to parse financial details response")
+            logger.error(s"[PenaltiesFrontendController][handleGetFinancialDetailsCall] - 1811 call returned invalid body - failed to parse financial details response for VRN: $vrn")
             InternalServerError(s"We were unable to parse penalty data.")
           }
         },
