@@ -1107,7 +1107,8 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
           logs => {
             val result: Result = await(controller.submitAppeal("HMRC-MTD-VAT~VRN~123456789", isLPP = false, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = true)(fakeRequest.withJsonBody(appealsJson)))
             result.header.status shouldBe MULTI_STATUS
-            logs.exists(_.getMessage == "[AppealsController][submitAppeal] - An unknown exception occurred when attempting to store file notifications, with error: failed") shouldBe true
+            println(logs)
+            logs.exists(_.getMessage == "[AppealsController][submitAppeal] Unable to store file notification for user with enrollment: HMRC-MTD-VAT~VRN~123456789 penalty 123456789 - An unknown exception occurred when attempting to store file notifications, with error: failed") shouldBe true
             contentAsString(Future(result)) shouldBe "Appeal submitted (case ID: PR-123456789) but failed to store file uploads with unknown error"
             eventually {
               verify(mockAuditService, times(1)).audit(argumentCaptorForAuditModel.capture())(any(), any(), any())

@@ -35,7 +35,7 @@ class GetPenaltyDetailsService @Inject()(getPenaltyDetailsConnector: GetPenaltyD
   }
 
   private def handleConnectorResponse(connectorResponse: GetPenaltyDetailsResponse)
-                                     (implicit startOfLogMsg: String): GetPenaltyDetailsResponse = {
+                                     (implicit startOfLogMsg: String, vrn: String): GetPenaltyDetailsResponse = {
     connectorResponse match {
       case res@Right(_@GetPenaltyDetailsSuccessResponse(penaltyDetails)) =>
         logger.debug(s"$startOfLogMsg - Got a success response from the connector. Parsed model: $penaltyDetails")
@@ -44,10 +44,10 @@ class GetPenaltyDetailsService @Inject()(getPenaltyDetailsConnector: GetPenaltyD
         logger.debug(s"$startOfLogMsg - Got a 404 response and no data was found for GetPenaltyDetails call")
         res
       case res@Left(GetPenaltyDetailsMalformed) =>
-        logger.info(s"$startOfLogMsg - Failed to parse HTTP response into model.")
+        logger.info(s"$startOfLogMsg - Failed to parse HTTP response into model for VRN: $vrn")
         res
       case res@Left(GetPenaltyDetailsFailureResponse(_)) =>
-        logger.error(s"$startOfLogMsg - Unknown status returned from connector.")
+        logger.error(s"$startOfLogMsg - Unknown status returned from connector for VRN: $vrn")
         res
     }
   }
