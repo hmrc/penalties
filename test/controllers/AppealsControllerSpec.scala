@@ -143,6 +143,78 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
       latePaymentPenalty = None,
       breathingSpace = None
     )
+
+    val getPenaltyDetailsNoCommunicationsDate: GetPenaltyDetails = GetPenaltyDetails(
+      totalisations = None,
+      lateSubmissionPenalty = Some(
+        LateSubmissionPenalty(
+          summary = LSPSummary(
+            activePenaltyPoints = 2,
+            inactivePenaltyPoints = 0,
+            regimeThreshold = 5,
+            penaltyChargeAmount = 200,
+            PoCAchievementDate = LocalDate.of(2022, 1, 1)
+          ),
+          details = Seq(
+            LSPDetails(
+              penaltyNumber = "123456789",
+              penaltyOrder = "1",
+              penaltyCategory = LSPPenaltyCategoryEnum.Point,
+              penaltyStatus = LSPPenaltyStatusEnum.Active,
+              penaltyCreationDate = LocalDate.of(2022, 4, 1),
+              penaltyExpiryDate = LocalDate.of(2022, 4, 1),
+              communicationsDate = None,
+              FAPIndicator = None,
+              lateSubmissions = Some(
+                Seq(
+                  LateSubmission(
+                    taxPeriodStartDate = Some(LocalDate.of(2022, 1, 1)),
+                    taxPeriodEndDate = Some(LocalDate.of(2022, 3, 31)),
+                    taxPeriodDueDate = Some(LocalDate.of(2022, 5, 7)),
+                    returnReceiptDate = Some(LocalDate.of(2022, 5, 9)),
+                    taxReturnStatus = TaxReturnStatusEnum.Fulfilled
+                  )
+                )
+              ),
+              expiryReason = None,
+              appealInformation = None,
+              chargeDueDate = None,
+              chargeOutstandingAmount = None,
+              chargeAmount = None
+            ),
+            LSPDetails(
+              penaltyNumber = "123456788",
+              penaltyOrder = "2",
+              penaltyCategory = LSPPenaltyCategoryEnum.Point,
+              penaltyStatus = LSPPenaltyStatusEnum.Active,
+              penaltyCreationDate = LocalDate.of(2022, 4, 1),
+              penaltyExpiryDate = LocalDate.of(2022, 4, 1),
+              communicationsDate = None,
+              FAPIndicator = None,
+              lateSubmissions = Some(
+                Seq(
+                  LateSubmission(
+                    taxPeriodStartDate = Some(LocalDate.of(2022, 4, 1)),
+                    taxPeriodEndDate = Some(LocalDate.of(2022, 6, 30)),
+                    taxPeriodDueDate = Some(LocalDate.of(2022, 8, 7)),
+                    returnReceiptDate = Some(LocalDate.of(2022, 8, 9)),
+                    taxReturnStatus = TaxReturnStatusEnum.Fulfilled
+                  )
+                )
+              ),
+              expiryReason = None,
+              appealInformation = None,
+              chargeDueDate = None,
+              chargeOutstandingAmount = None,
+              chargeAmount = None
+            )
+          )
+        )
+      ),
+      latePaymentPenalty = None,
+      breathingSpace = None
+    )
+
     s"return NOT_FOUND (${Status.NOT_FOUND}) when ETMP can not find the data for the given enrolment key" in new Setup {
       val sampleEnrolmentKey: String = "HMRC-MTD-VAT~VRN~123456789"
       val vrn: String = "123456789"
@@ -188,6 +260,25 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
           logs.exists(_.getMessage.contains(PagerDutyKeys.MALFORMED_RESPONSE_FROM_1812_API.toString)) shouldBe true
         }
       }
+    }
+
+    s"return OK (${Status.OK}) when the call to ETMP succeeds and the penalty ID matches (defaulting comms date if not present)" in new Setup {
+      val samplePenaltyId: String = "123456789"
+      val sampleEnrolmentKey: String = "HMRC-MTD-VAT~VRN~123456789"
+      val vrn: String = "123456789"
+      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(Matchers.eq(vrn))(Matchers.any()))
+        .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetailsNoCommunicationsDate))))
+      when(mockAppConfig.getTimeMachineDateTime).thenReturn(LocalDateTime.now)
+      val result: Future[Result] = controller.getAppealsDataForLateSubmissionPenalty(samplePenaltyId, sampleEnrolmentKey)(fakeRequest)
+      status(result) shouldBe Status.OK
+      val appealDataToReturn: AppealData = AppealData(
+        Late_Submission,
+        startDate = LocalDate.of(2022, 1, 1),
+        endDate = LocalDate.of(2022, 3, 31),
+        dueDate = LocalDate.of(2022, 5, 7),
+        dateCommunicationSent = LocalDate.now
+      )
+      contentAsString(result) shouldBe Json.toJson(appealDataToReturn).toString()
     }
 
     s"return OK (${Status.OK}) when the call to ETMP succeeds and the penalty ID matches" in new Setup {
@@ -257,6 +348,76 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
                 principalChargeBillingTo = LocalDate.of(2022, 3, 31),
                 principalChargeDueDate = LocalDate.of(2022, 5, 7),
                 communicationsDate = Some(LocalDate.of(2022, 5, 8)),
+                penaltyAmountOutstanding = Some(100),
+                penaltyAmountPaid = Some(13.45),
+                penaltyAmountPosted = Some(113.45),
+                LPP1LRDays = None,
+                LPP1HRDays = None,
+                LPP2Days = None,
+                LPP1HRCalculationAmount = None,
+                LPP1LRCalculationAmount = None,
+                LPP2Percentage = None,
+                LPP1LRPercentage = None,
+                LPP1HRPercentage = None,
+                penaltyChargeDueDate = Some(LocalDate.of(2022, 8, 7)),
+                principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
+                metadata = LPPDetailsMetadata(),
+                penaltyAmountAccruing = BigDecimal(0),
+                principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
+              )
+            )
+          )
+        )
+      ),
+      breathingSpace = None
+    )
+
+    val getPenaltyDetailsNoCommunicationsDate: GetPenaltyDetails = GetPenaltyDetails(
+      totalisations = None,
+      lateSubmissionPenalty = None,
+      latePaymentPenalty = Some(
+        LatePaymentPenalty(
+          Some(
+            Seq(
+              LPPDetails(
+                penaltyCategory = LPPPenaltyCategoryEnum.SecondPenalty,
+                principalChargeReference = "123456801",
+                penaltyChargeReference = Some("1234567891"),
+                penaltyChargeCreationDate = Some(LocalDate.of(2022, 1, 1)),
+                penaltyStatus = LPPPenaltyStatusEnum.Accruing,
+                appealInformation = None,
+                principalChargeBillingFrom = LocalDate.of(2022, 4, 1),
+                principalChargeBillingTo = LocalDate.of(2022, 6, 30),
+                principalChargeDueDate = LocalDate.of(2022, 8, 7),
+                communicationsDate = None,
+                penaltyAmountOutstanding = None,
+                penaltyAmountPaid = None,
+                penaltyAmountPosted = None,
+                LPP1LRDays = None,
+                LPP1HRDays = None,
+                LPP2Days = None,
+                LPP1HRCalculationAmount = None,
+                LPP1LRCalculationAmount = None,
+                LPP2Percentage = None,
+                LPP1LRPercentage = None,
+                LPP1HRPercentage = None,
+                penaltyChargeDueDate = Some(LocalDate.of(2022, 8, 7)),
+                principalChargeLatestClearing = None,
+                metadata = LPPDetailsMetadata(),
+                penaltyAmountAccruing = BigDecimal(100),
+                principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
+              ),
+              LPPDetails(
+                penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
+                principalChargeReference = "123456800",
+                penaltyChargeReference = Some("1234567890"),
+                penaltyChargeCreationDate = Some(LocalDate.of(2022, 1, 1)),
+                penaltyStatus = LPPPenaltyStatusEnum.Posted,
+                appealInformation = None,
+                principalChargeBillingFrom = LocalDate.of(2022, 1, 1),
+                principalChargeBillingTo = LocalDate.of(2022, 3, 31),
+                principalChargeDueDate = LocalDate.of(2022, 5, 7),
+                communicationsDate = None,
                 penaltyAmountOutstanding = Some(100),
                 penaltyAmountPaid = Some(13.45),
                 penaltyAmountPosted = Some(113.45),
@@ -367,6 +528,46 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
         endDate = LocalDate.of(2022, 6, 30),
         dueDate = LocalDate.of(2022, 8, 7),
         dateCommunicationSent = LocalDate.of(2022, 8, 8)
+      )
+      contentAsString(result) shouldBe Json.toJson(appealDataToReturn).toString()
+    }
+
+    s"return OK (${Status.OK}) when the call to ETMP succeeds and the penalty ID matches (LPP1 - defaulting comms date if not present)" in new Setup {
+      val samplePenaltyId: String = "1234567890"
+      val sampleEnrolmentKey: String = "HMRC-MTD-VAT~VRN~123456789"
+      val vrn: String = "123456789"
+      when(mockAppConfig.getTimeMachineDateTime).thenReturn(LocalDateTime.now)
+      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(Matchers.eq(vrn))(Matchers.any()))
+        .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetailsNoCommunicationsDate))))
+      val result: Future[Result] = controller.getAppealsDataForLatePaymentPenalty(samplePenaltyId, sampleEnrolmentKey,
+        isAdditional = false)(fakeRequest)
+      status(result) shouldBe Status.OK
+      val appealDataToReturn: AppealData = AppealData(
+        `type` = Late_Payment,
+        startDate = LocalDate.of(2022, 1, 1),
+        endDate = LocalDate.of(2022, 3, 31),
+        dueDate = LocalDate.of(2022, 5, 7),
+        dateCommunicationSent = LocalDate.now
+      )
+      contentAsString(result) shouldBe Json.toJson(appealDataToReturn).toString()
+    }
+
+    s"return OK (${Status.OK}) when the call to ETMP succeeds and the penalty ID matches (LPP2 - defaulting comms date if not present)" in new Setup {
+      val samplePenaltyId: String = "1234567891"
+      val sampleEnrolmentKey: String = "HMRC-MTD-VAT~VRN~123456789"
+      val vrn: String = "123456789"
+      when(mockAppConfig.getTimeMachineDateTime).thenReturn(LocalDateTime.now)
+      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(Matchers.eq(vrn))(Matchers.any()))
+        .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetailsNoCommunicationsDate))))
+      val result: Future[Result] = controller.getAppealsDataForLatePaymentPenalty(samplePenaltyId, sampleEnrolmentKey,
+        isAdditional = true)(fakeRequest)
+      status(result) shouldBe Status.OK
+      val appealDataToReturn: AppealData = AppealData(
+        `type` = Additional,
+        startDate = LocalDate.of(2022, 4, 1),
+        endDate = LocalDate.of(2022, 6, 30),
+        dueDate = LocalDate.of(2022, 8, 7),
+        dateCommunicationSent = LocalDate.now
       )
       contentAsString(result) shouldBe Json.toJson(appealDataToReturn).toString()
     }
@@ -1305,6 +1506,76 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
       breathingSpace = None
     )
 
+    val getPenaltyDetailsTwoPenaltiesNoCommunicationsDate: GetPenaltyDetails = GetPenaltyDetails(
+      totalisations = None,
+      lateSubmissionPenalty = None,
+      latePaymentPenalty = Some(
+        LatePaymentPenalty(
+          Some(
+            Seq(
+              LPPDetails(
+                penaltyCategory = LPPPenaltyCategoryEnum.SecondPenalty,
+                principalChargeReference = "123456801",
+                penaltyChargeReference = Some("1234567892"),
+                penaltyChargeCreationDate = Some(LocalDate.of(2022, 1, 1)),
+                penaltyStatus = LPPPenaltyStatusEnum.Posted,
+                appealInformation = None,
+                principalChargeBillingFrom = LocalDate.of(2022, 4, 1),
+                principalChargeBillingTo = LocalDate.of(2022, 6, 30),
+                principalChargeDueDate = LocalDate.of(2022, 8, 7),
+                communicationsDate = None,
+                penaltyAmountOutstanding = Some(100),
+                penaltyAmountPaid = Some(13.44),
+                penaltyAmountPosted = Some(113.44),
+                LPP1LRDays = None,
+                LPP1HRDays = None,
+                LPP2Days = None,
+                LPP1HRCalculationAmount = None,
+                LPP1LRCalculationAmount = None,
+                LPP2Percentage = None,
+                LPP1LRPercentage = None,
+                LPP1HRPercentage = None,
+                penaltyChargeDueDate = Some(LocalDate.of(2022, 8, 7)),
+                principalChargeLatestClearing = None,
+                metadata = LPPDetailsMetadata(),
+                penaltyAmountAccruing = BigDecimal(0),
+                principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
+              ),
+              LPPDetails(
+                penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
+                principalChargeReference = "123456801",
+                penaltyChargeReference = Some("1234567891"),
+                penaltyChargeCreationDate = Some(LocalDate.of(2022, 1, 1)),
+                penaltyStatus = LPPPenaltyStatusEnum.Posted,
+                appealInformation = None,
+                principalChargeBillingFrom = LocalDate.of(2022, 4, 1),
+                principalChargeBillingTo = LocalDate.of(2022, 6, 30),
+                principalChargeDueDate = LocalDate.of(2022, 8, 7),
+                communicationsDate = None,
+                penaltyAmountOutstanding = Some(100),
+                penaltyAmountPaid = Some(13.45),
+                penaltyAmountPosted = Some(113.45),
+                LPP1LRDays = None,
+                LPP1HRDays = None,
+                LPP2Days = None,
+                LPP1HRCalculationAmount = None,
+                LPP1LRCalculationAmount = None,
+                LPP2Percentage = None,
+                LPP1LRPercentage = None,
+                LPP1HRPercentage = None,
+                penaltyChargeDueDate = Some(LocalDate.of(2022, 8, 7)),
+                principalChargeLatestClearing = None,
+                metadata = LPPDetailsMetadata(),
+                penaltyAmountAccruing = BigDecimal(0),
+                principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
+              )
+            )
+          )
+        )
+      ),
+      breathingSpace = None
+    )
+
     val getPenaltyDetailsTwoPenaltiesWithAppeal: GetPenaltyDetails = GetPenaltyDetails(
       totalisations = None,
       lateSubmissionPenalty = None,
@@ -1432,6 +1703,25 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
         secondPenaltyAmount = 113.44,
         firstPenaltyCommunicationDate = LocalDate.of(2022, 8, 8),
         secondPenaltyCommunicationDate = LocalDate.of(2022, 9, 8)
+      )
+      status(result) shouldBe Status.OK
+      contentAsJson(result) shouldBe Json.toJson(expectedReturnModel)
+    }
+
+    s"return OK (${Status.OK}) when there is two penalties under this principal charge (defaulting the comms date if not present)" in new Setup {
+      val sampleEnrolmentKey: String = "HMRC-MTD-VAT~VRN~123456789"
+      val vrn: String = "123456789"
+      when(mockAppConfig.getTimeMachineDateTime).thenReturn(LocalDateTime.now)
+      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(Matchers.eq(vrn))(Matchers.any()))
+        .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetailsTwoPenaltiesNoCommunicationsDate))))
+      val result: Future[Result] = controller.getMultiplePenaltyData("1234567892", sampleEnrolmentKey)(fakeRequest)
+      val expectedReturnModel: MultiplePenaltiesData = MultiplePenaltiesData(
+        firstPenaltyChargeReference = "1234567891",
+        firstPenaltyAmount = 113.45,
+        secondPenaltyChargeReference = "1234567892",
+        secondPenaltyAmount = 113.44,
+        firstPenaltyCommunicationDate = LocalDate.now,
+        secondPenaltyCommunicationDate = LocalDate.now
       )
       status(result) shouldBe Status.OK
       contentAsJson(result) shouldBe Json.toJson(expectedReturnModel)

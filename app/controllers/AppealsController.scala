@@ -99,7 +99,7 @@ class AppealsController @Inject()(val appConfig: AppConfig,
         startDate = sortedDate.taxPeriodStartDate.get,
         endDate = sortedDate.taxPeriodEndDate.get,
         dueDate = sortedDate.taxPeriodDueDate.get,
-        dateCommunicationSent = penaltyBasedOnId.communicationsDate.get
+        dateCommunicationSent = penaltyBasedOnId.communicationsDate.getOrElse(appConfig.getTimeMachineDateTime.toLocalDate)
       )
       Ok(Json.toJson(dataToReturn))
     } else if ((appealType == AppealTypeEnum.Late_Payment || appealType == AppealTypeEnum.Additional) && lppPenaltyIdInPenaltyDetailsPayload.isDefined) {
@@ -110,7 +110,7 @@ class AppealsController @Inject()(val appConfig: AppConfig,
         startDate = penaltyBasedOnId.principalChargeBillingFrom,
         endDate = penaltyBasedOnId.principalChargeBillingTo,
         dueDate = penaltyBasedOnId.principalChargeDueDate,
-        dateCommunicationSent = penaltyBasedOnId.communicationsDate.get
+        dateCommunicationSent = penaltyBasedOnId.communicationsDate.getOrElse(appConfig.getTimeMachineDateTime.toLocalDate)
       )
       Ok(Json.toJson(dataToReturn))
     } else {
@@ -261,8 +261,8 @@ class AppealsController @Inject()(val appConfig: AppConfig,
                 firstPenaltyAmount = firstPenalty.penaltyAmountOutstanding.getOrElse(BigDecimal(0)) + firstPenalty.penaltyAmountPaid.getOrElse(BigDecimal(0)),
                 secondPenaltyChargeReference = secondPenalty.penaltyChargeReference.get,
                 secondPenaltyAmount = secondPenalty.penaltyAmountOutstanding.getOrElse(BigDecimal(0)) + secondPenalty.penaltyAmountPaid.getOrElse(BigDecimal(0)),
-                firstPenaltyCommunicationDate = firstPenalty.communicationsDate.get,
-                secondPenaltyCommunicationDate = secondPenalty.communicationsDate.get
+                firstPenaltyCommunicationDate = firstPenalty.communicationsDate.getOrElse(appConfig.getTimeMachineDateTime.toLocalDate),
+                secondPenaltyCommunicationDate = secondPenalty.communicationsDate.getOrElse(appConfig.getTimeMachineDateTime.toLocalDate)
               )
               Ok(Json.toJson(returnModel))
             } else {
