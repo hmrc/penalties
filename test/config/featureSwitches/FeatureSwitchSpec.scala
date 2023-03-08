@@ -39,8 +39,8 @@ class FeatureSwitchSpec extends SpecBase {
   }
 
   "FeatureSwitch listOfAllFeatureSwitches" should {
-    "be all the featureswitches in the app" in {
-      FeatureSwitch.listOfAllFeatureSwitches shouldBe List(CallPEGA, CallDES, CallAPI1812ETMP, CallAPI1811ETMP, UseInternalAuth)
+    "list all the feature switches in the app" in {
+      FeatureSwitch.listOfAllFeatureSwitches shouldBe List(CallPEGA, CallDES, CallAPI1812ETMP, CallAPI1811ETMP, UseInternalAuth, SanitiseFileName)
     }
   }
   "FeatureSwitching constants" should {
@@ -51,127 +51,45 @@ class FeatureSwitchSpec extends SpecBase {
   }
 
   "FeatureSwitching isEnabled" should {
+    FeatureSwitch.listOfAllFeatureSwitches.foreach(
+      featureSwitch => {
+        s"return true if ${featureSwitch.name} is enabled" in new Setup {
+          featureSwitching.enableFeatureSwitch(featureSwitch)
+          featureSwitching.isEnabled(featureSwitch) shouldBe true
+        }
 
-    s"return true if PEGA feature switch is enabled" in new Setup {
-      featureSwitching.enableFeatureSwitch(CallPEGA)
-      featureSwitching.isEnabled(CallPEGA) shouldBe true
-    }
+        s"return false if ${featureSwitch.name} is disabled" in new Setup {
+          featureSwitching.disableFeatureSwitch(featureSwitch)
+          featureSwitching.isEnabled(featureSwitch) shouldBe false
+        }
 
-    s"return false if PEGA feature switch is disabled" in new Setup {
-      featureSwitching.disableFeatureSwitch(CallPEGA)
-      featureSwitching.isEnabled(CallPEGA) shouldBe false
-    }
-
-    "return false if PEGA feature switch does not exist" in new Setup {
-      featureSwitching.isEnabled(CallPEGA) shouldBe false
-    }
-
-    "return true if DES feature switch is enabled" in new Setup {
-      featureSwitching.enableFeatureSwitch(CallDES)
-      featureSwitching.isEnabled(CallDES) shouldBe true
-    }
-
-    "return false if DES feature switch is disabled" in new Setup {
-      featureSwitching.disableFeatureSwitch(CallDES)
-      featureSwitching.isEnabled(CallDES) shouldBe false
-    }
-
-    "return false if DES feature switch does not exist" in new Setup {
-      featureSwitching.isEnabled(CallDES) shouldBe false
-    }
-
-    "return true if CallAPI1812ETMP feature switch is enabled" in new Setup {
-      featureSwitching.enableFeatureSwitch(CallAPI1812ETMP)
-      featureSwitching.isEnabled(CallAPI1812ETMP) shouldBe true
-    }
-
-    "return false if CallAPI1812ETMP feature switch is disabled" in new Setup {
-      featureSwitching.disableFeatureSwitch(CallAPI1812ETMP)
-      featureSwitching.isEnabled(CallAPI1812ETMP) shouldBe false
-    }
-
-    "return false if CallAPI1812ETMP feature switch does not exist" in new Setup {
-      featureSwitching.isEnabled(CallAPI1812ETMP) shouldBe false
-    }
-
-    "return true is CallAPI1811ETMP feature switch is enabled" in new Setup {
-      featureSwitching.enableFeatureSwitch(CallAPI1811ETMP)
-      featureSwitching.isEnabled(CallAPI1811ETMP) shouldBe true
-    }
-
-    "return false if CallAPI1811ETMP feature switch is disabled" in new Setup {
-      featureSwitching.disableFeatureSwitch(CallAPI1811ETMP)
-      featureSwitching.isEnabled(CallAPI1811ETMP) shouldBe false
-    }
-
-    "return false if CallAPI1811ETMP feature switch does not exist" in new Setup {
-      featureSwitching.isEnabled(CallAPI1811ETMP) shouldBe false
-    }
-
-    "return true is UseInternalAuth feature switch is enabled" in new Setup {
-      featureSwitching.enableFeatureSwitch(UseInternalAuth)
-      featureSwitching.isEnabled(UseInternalAuth) shouldBe true
-    }
-
-    "return false if UseInternalAuth feature switch is disabled" in new Setup {
-      featureSwitching.disableFeatureSwitch(UseInternalAuth)
-      featureSwitching.isEnabled(UseInternalAuth) shouldBe false
-    }
-
-    "return false if UseInternalAuth feature switch does not exist" in new Setup {
-      featureSwitching.isEnabled(UseInternalAuth) shouldBe false
-    }
+        s"return false if ${featureSwitch.name} does not exist" in new Setup {
+          featureSwitching.isEnabled(featureSwitch) shouldBe false
+        }
+      }
+    )
   }
 
   "FeatureSwitching enableFeatureSwitch" should {
-
-    s"set ${CallPEGA.name} property to true" in new Setup {
-      featureSwitching.enableFeatureSwitch(CallPEGA)
-      (sys.props get CallPEGA.name get) shouldBe "true"
-    }
-
-    s"set ${CallDES.name} property to true" in new Setup {
-      featureSwitching.enableFeatureSwitch(CallDES)
-      (sys.props get CallDES.name get) shouldBe "true"
-    }
-
-    s"set ${CallAPI1812ETMP.name} property to true" in new Setup {
-      featureSwitching.enableFeatureSwitch(CallAPI1812ETMP)
-      (sys.props get CallAPI1812ETMP.name get) shouldBe "true"
-    }
-
-    s"set ${CallAPI1811ETMP.name} property to true" in new Setup {
-      featureSwitching.enableFeatureSwitch(CallAPI1811ETMP)
-      (sys.props get CallAPI1811ETMP.name get) shouldBe "true"
-    }
+    FeatureSwitch.listOfAllFeatureSwitches.foreach(
+      featureSwitch => {
+        s"set ${featureSwitch.name} property to true" in new Setup {
+          featureSwitching.enableFeatureSwitch(featureSwitch)
+          (sys.props get featureSwitch.name get) shouldBe "true"
+        }
+      }
+    )
   }
 
   "FeatureSwitching disableFeatureSwitch" should {
-
-    s"set ${CallPEGA.name} property to false" in new Setup {
-      featureSwitching.disableFeatureSwitch(CallPEGA)
-      (sys.props get CallPEGA.name get) shouldBe "false"
-    }
-
-    s"set ${CallDES.name} property to false" in new Setup {
-      featureSwitching.disableFeatureSwitch(CallDES)
-      (sys.props get CallDES.name get) shouldBe "false"
-    }
-
-    s"set ${CallAPI1812ETMP.name} property to false" in new Setup {
-      featureSwitching.disableFeatureSwitch(CallAPI1812ETMP)
-      (sys.props get CallAPI1812ETMP.name get) shouldBe "false"
-    }
-
-    s"set ${CallAPI1811ETMP.name} property to false" in new Setup {
-      featureSwitching.disableFeatureSwitch(CallAPI1811ETMP)
-      (sys.props get CallAPI1811ETMP.name get) shouldBe "false"
-    }
-
-    s"set ${UseInternalAuth.name} property to false" in new Setup {
-      featureSwitching.disableFeatureSwitch(UseInternalAuth)
-      (sys.props get UseInternalAuth.name get) shouldBe "false"
-    }
+    FeatureSwitch.listOfAllFeatureSwitches.foreach(
+      featureSwitch => {
+        s"set ${featureSwitch.name} property to false" in new Setup {
+          featureSwitching.disableFeatureSwitch(featureSwitch)
+          (sys.props get featureSwitch.name get) shouldBe "false"
+        }
+      }
+    )
   }
 
   "FeatureSwitching setTimeMachineDate" should {

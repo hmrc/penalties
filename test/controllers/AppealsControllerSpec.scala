@@ -31,7 +31,6 @@ import models.getPenaltyDetails.appealInfo.{AppealInformationType, AppealLevelEn
 import models.getPenaltyDetails.latePayment._
 import models.getPenaltyDetails.lateSubmission._
 import models.notification._
-import models.upload.{UploadDetails, UploadJourney, UploadStatusEnum}
 import org.mockito.Matchers.any
 import org.mockito.Mockito._
 import org.mockito.{ArgumentCaptor, Matchers}
@@ -46,7 +45,6 @@ import services.{AppealService, GetPenaltyDetailsService}
 import uk.gov.hmrc.http.HttpResponse
 import utils.Logger.logger
 import utils.PagerDutyHelper.PagerDutyKeys
-import utils.UUIDGenerator
 
 import java.time.{LocalDate, LocalDateTime}
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -55,12 +53,24 @@ import scala.concurrent.Future
 class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCapturing {
   val mockAppealsService: AppealService = mock(classOf[AppealService])
   val mockAppConfig: AppConfig = mock(classOf[AppConfig])
-  val mockUUIDGenerator: UUIDGenerator = mock(classOf[UUIDGenerator])
   val mockAuditService: AuditService = mock(classOf[AuditService])
   val mockGetPenaltyDetailsService: GetPenaltyDetailsService = mock(classOf[GetPenaltyDetailsService])
   val correlationId = "id-1234567890"
   val mockFileNotificationConnector: FileNotificationOrchestratorConnector = mock(classOf[FileNotificationOrchestratorConnector])
   implicit val config: Configuration = mockAppConfig.config
+  val sampleSDESNotifications: Seq[SDESNotification] = Seq(SDESNotification(
+    informationType = "S18",
+    file = SDESNotificationFile(
+      recipientOrSender = "123456789012", name = "file1.txt", location = "download.file", checksum = SDESChecksum("SHA-256", "check12345678"), size = 987, properties = Seq(
+        SDESProperties(
+          "CaseId", "PR-123456789"
+        ),
+        SDESProperties(
+          "SourceFileUploadDate", "2018-04-24T09:30:00Z"
+        )
+      )
+    ), audit = SDESAudit(correlationId)
+  ))
 
   class Setup(withRealAppConfig: Boolean = true) {
     reset(mockAppConfig)
@@ -69,7 +79,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
     reset(mockFileNotificationConnector)
     reset(mockAuditService)
     val controller = new AppealsController(if (withRealAppConfig) appConfig
-    else mockAppConfig, mockAppealsService, mockGetPenaltyDetailsService, mockUUIDGenerator, mockFileNotificationConnector, mockAuditService, stubControllerComponents())
+    else mockAppConfig, mockAppealsService, mockGetPenaltyDetailsService, mockFileNotificationConnector, mockAuditService, stubControllerComponents())
   }
 
   "getAppealsDataForLateSubmissionPenalty" should {
@@ -929,8 +939,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
         when(mockFileNotificationConnector.postFileNotifications(any())(any()))
           .thenReturn(Future.successful(HttpResponse.apply(INTERNAL_SERVER_ERROR, "")))
         val argumentCaptorForAuditModel = ArgumentCaptor.forClass(classOf[PenaltyAppealFileNotificationStorageFailureModel])
-        when(mockUUIDGenerator.generateUUID).thenReturn(correlationId)
-
+        when(mockAppealsService.createSDESNotifications(any(), any())).thenReturn(sampleSDESNotifications)
         val appealsJson: JsValue = Json.parse(
           """
             |{
@@ -986,7 +995,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
         when(mockFileNotificationConnector.postFileNotifications(any())(any()))
           .thenReturn(Future.successful(HttpResponse.apply(BAD_REQUEST, "")))
         val argumentCaptorForAuditModel = ArgumentCaptor.forClass(classOf[PenaltyAppealFileNotificationStorageFailureModel])
-        when(mockUUIDGenerator.generateUUID).thenReturn(correlationId)
+        when(mockAppealsService.createSDESNotifications(any(), any())).thenReturn(sampleSDESNotifications)
 
         val appealsJson: JsValue = Json.parse(
           """
@@ -1036,21 +1045,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
           }
         }
 
-        argumentCaptorForAuditModel.getValue shouldBe PenaltyAppealFileNotificationStorageFailureModel(Seq(
-          SDESNotification(
-            informationType = "S18",
-            file = SDESNotificationFile(
-              recipientOrSender = "123456789012", name = "file1.txt", location = "download.file", checksum = SDESChecksum("SHA-256", "check12345678"), size = 987, properties = Seq(
-                SDESProperties(
-                  "CaseId", "PR-123456789"
-                ),
-                SDESProperties(
-                  "SourceFileUploadDate", "2018-04-24T09:30:00Z"
-                )
-              )
-            ), audit = SDESAudit(correlationId)
-          )
-        ))
+        argumentCaptorForAuditModel.getValue shouldBe PenaltyAppealFileNotificationStorageFailureModel(sampleSDESNotifications)
       }
 
       "return 200 (OK) even if the file notification call fails (with exception) and audit the storage failure" in new Setup {
@@ -1059,7 +1054,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
         when(mockFileNotificationConnector.postFileNotifications(any())(any()))
           .thenReturn(Future.failed(new Exception("failed")))
         val argumentCaptorForAuditModel = ArgumentCaptor.forClass(classOf[PenaltyAppealFileNotificationStorageFailureModel])
-        when(mockUUIDGenerator.generateUUID).thenReturn(correlationId)
+        when(mockAppealsService.createSDESNotifications(any(), any())).thenReturn(sampleSDESNotifications)
 
         val appealsJson: JsValue = Json.parse(
           """
@@ -1108,21 +1103,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
           }
         }
 
-        argumentCaptorForAuditModel.getValue shouldBe PenaltyAppealFileNotificationStorageFailureModel(Seq(
-          SDESNotification(
-            informationType = "S18",
-            file = SDESNotificationFile(
-              recipientOrSender = "123456789012", name = "file1.txt", location = "download.file", checksum = SDESChecksum("SHA-256", "check12345678"), size = 987, properties = Seq(
-                SDESProperties(
-                  "CaseId", "PR-123456789"
-                ),
-                SDESProperties(
-                  "SourceFileUploadDate", "2018-04-24T09:30:00Z"
-                )
-              )
-            ), audit = SDESAudit(correlationId)
-          )
-        ))
+        argumentCaptorForAuditModel.getValue shouldBe PenaltyAppealFileNotificationStorageFailureModel(sampleSDESNotifications)
       }
     }
 
@@ -1133,7 +1114,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
         when(mockFileNotificationConnector.postFileNotifications(any())(any()))
           .thenReturn(Future.successful(HttpResponse.apply(INTERNAL_SERVER_ERROR, "")))
         val argumentCaptorForAuditModel = ArgumentCaptor.forClass(classOf[PenaltyAppealFileNotificationStorageFailureModel])
-        when(mockUUIDGenerator.generateUUID).thenReturn(correlationId)
+        when(mockAppealsService.createSDESNotifications(any(), any())).thenReturn(sampleSDESNotifications)
 
         val appealsJson: JsValue = Json.parse(
           """
@@ -1191,7 +1172,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
         when(mockFileNotificationConnector.postFileNotifications(any())(any()))
           .thenReturn(Future.successful(HttpResponse.apply(BAD_REQUEST, "")))
         val argumentCaptorForAuditModel = ArgumentCaptor.forClass(classOf[PenaltyAppealFileNotificationStorageFailureModel])
-        when(mockUUIDGenerator.generateUUID).thenReturn(correlationId)
+        when(mockAppealsService.createSDESNotifications(any(), any())).thenReturn(sampleSDESNotifications)
 
         val appealsJson: JsValue = Json.parse(
           """
@@ -1242,21 +1223,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
           }
         }
 
-        argumentCaptorForAuditModel.getValue shouldBe PenaltyAppealFileNotificationStorageFailureModel(Seq(
-          SDESNotification(
-            informationType = "S18",
-            file = SDESNotificationFile(
-              recipientOrSender = "123456789012", name = "file1.txt", location = "download.file", checksum = SDESChecksum("SHA-256", "check12345678"), size = 987, properties = Seq(
-                SDESProperties(
-                  "CaseId", "PR-123456789"
-                ),
-                SDESProperties(
-                  "SourceFileUploadDate", "2018-04-24T09:30:00Z"
-                )
-              )
-            ), audit = SDESAudit(correlationId)
-          )
-        ))
+        argumentCaptorForAuditModel.getValue shouldBe PenaltyAppealFileNotificationStorageFailureModel(sampleSDESNotifications)
       }
 
       "return 207 (MULTI_STATUS) if the file notification call fails (with exception) and audit the storage failure" in new Setup {
@@ -1265,7 +1232,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
         when(mockFileNotificationConnector.postFileNotifications(any())(any()))
           .thenReturn(Future.failed(new Exception("failed")))
         val argumentCaptorForAuditModel = ArgumentCaptor.forClass(classOf[PenaltyAppealFileNotificationStorageFailureModel])
-        when(mockUUIDGenerator.generateUUID).thenReturn(correlationId)
+        when(mockAppealsService.createSDESNotifications(any(), any())).thenReturn(sampleSDESNotifications)
 
         val appealsJson: JsValue = Json.parse(
           """
@@ -1317,78 +1284,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
           }
         }
 
-        argumentCaptorForAuditModel.getValue shouldBe PenaltyAppealFileNotificationStorageFailureModel(Seq(
-          SDESNotification(
-            informationType = "S18",
-            file = SDESNotificationFile(
-              recipientOrSender = "123456789012", name = "file1.txt", location = "download.file", checksum = SDESChecksum("SHA-256", "check12345678"), size = 987, properties = Seq(
-                SDESProperties(
-                  "CaseId", "PR-123456789"
-                ),
-                SDESProperties(
-                  "SourceFileUploadDate", "2018-04-24T09:30:00Z"
-                )
-              )
-            ), audit = SDESAudit(correlationId)
-          )
-        ))
-      }
-    }
-  }
-
-  "createSDESNotification" should {
-    "return an empty Seq" when {
-      "None is passed to the uploadJourney" in new Setup {
-        val result = controller.createSDESNotifications(None, "")
-        result shouldBe Seq.empty
-      }
-    }
-
-    "return a Seq of SDES notifications" when {
-      "Some uploadJourneys are passed in" in new Setup {
-        val mockDateTime: LocalDateTime = LocalDateTime.of(2020, 1, 1, 0, 0, 0)
-        val uploads = Seq(
-          UploadJourney(reference = "ref-123",
-            fileStatus = UploadStatusEnum.READY,
-            downloadUrl = Some("/"),
-            uploadDetails = Some(UploadDetails(
-              fileName = "file1",
-              fileMimeType = "text/plain",
-              uploadTimestamp = LocalDateTime.of(2018, 4, 24, 9, 30, 0),
-              checksum = "check123456789",
-              size = 1
-            )),
-            lastUpdated = mockDateTime,
-            uploadFields = Some(Map(
-              "key" -> "abcxyz",
-              "x-amz-algorithm" -> "AWS4-HMAC-SHA256"
-            ))
-          )
-        )
-
-        val expectedResult = Seq(
-          SDESNotification(
-            informationType = "S18",
-            file = SDESNotificationFile(
-              recipientOrSender = "123456789012",
-              name = "file1",
-              location = "/",
-              checksum = SDESChecksum(algorithm = "SHA-256", value = "check123456789"),
-              size = 1,
-              properties = Seq(
-                SDESProperties(name = "CaseId", value = "PR-1234"),
-                SDESProperties(name = "SourceFileUploadDate", value = "2018-04-24T09:30:00Z")
-              )
-            ),
-            audit = SDESAudit(
-              correlationID = correlationId
-            )
-          )
-        )
-
-        when(mockUUIDGenerator.generateUUID).thenReturn(correlationId)
-        val result = controller.createSDESNotifications(Some(uploads), caseID = "PR-1234")
-        result shouldBe expectedResult
+        argumentCaptorForAuditModel.getValue shouldBe PenaltyAppealFileNotificationStorageFailureModel(sampleSDESNotifications)
       }
     }
   }
