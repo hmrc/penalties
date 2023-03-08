@@ -28,9 +28,9 @@ class GetPenaltyDetailsService @Inject()(getPenaltyDetailsConnector: GetPenaltyD
                                         (implicit ec: ExecutionContext){
 
   def getDataFromPenaltyServiceForVATCVRN(vrn: String)(implicit hc: HeaderCarrier): Future[GetPenaltyDetailsResponse] = {
-    implicit val startOfLogMsg: String = "[GetPenaltyDetailsService][getDataFromPenaltyServiceForVATCVRN]"
+    val startOfLogMsg: String = "[GetPenaltyDetailsService][getDataFromPenaltyServiceForVATCVRN]"
     getPenaltyDetailsConnector.getPenaltyDetails(vrn).map {
-      handleConnectorResponse(_)
+      handleConnectorResponse(_)(startOfLogMsg, vrn)
     }
   }
 

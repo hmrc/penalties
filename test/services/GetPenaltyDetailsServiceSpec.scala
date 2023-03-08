@@ -16,7 +16,7 @@
 
 package services
 
-import base.SpecBase
+import base.{LogCapturing, SpecBase}
 import connectors.getPenaltyDetails.GetPenaltyDetailsConnector
 import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser.{GetPenaltyDetailsFailureResponse, GetPenaltyDetailsMalformed, GetPenaltyDetailsNoContent, GetPenaltyDetailsResponse, GetPenaltyDetailsSuccessResponse}
 import models.getFinancialDetails.MainTransactionEnum
@@ -30,11 +30,12 @@ import org.mockito.Matchers.any
 import org.mockito.Mockito.{mock, reset, when}
 import play.api.test.Helpers.{IM_A_TEAPOT, await, defaultAwaitTimeout}
 import uk.gov.hmrc.http.HeaderCarrier
+import utils.Logger.logger
 
 import java.time.LocalDate
 import scala.concurrent.{ExecutionContext, Future}
 
-class GetPenaltyDetailsServiceSpec extends SpecBase {
+class GetPenaltyDetailsServiceSpec extends SpecBase with LogCapturing {
   implicit val ec: ExecutionContext = ExecutionContext.Implicits.global
   implicit val hc: HeaderCarrier = HeaderCarrier()
   val mockGetPenaltyDetailsConnector: GetPenaltyDetailsConnector = mock(classOf[GetPenaltyDetailsConnector])
@@ -155,28 +156,40 @@ class GetPenaltyDetailsServiceSpec extends SpecBase {
     s"return $GetPenaltyDetailsMalformed when the response body is malformed" in new Setup {
       when(mockGetPenaltyDetailsConnector.getPenaltyDetails(Matchers.eq("123456789"))(any()))
         .thenReturn(Future.successful(Left(GetPenaltyDetailsMalformed)))
-
-      val result: GetPenaltyDetailsResponse = await(service.getDataFromPenaltyServiceForVATCVRN("123456789"))
-      result.isLeft shouldBe true
-      result.left.getOrElse(false) shouldBe GetPenaltyDetailsMalformed
+      withCaptureOfLoggingFrom(logger) {
+        logs => {
+          val result: GetPenaltyDetailsResponse = await(service.getDataFromPenaltyServiceForVATCVRN("123456789"))
+          result.isLeft shouldBe true
+          result.left.getOrElse(false) shouldBe GetPenaltyDetailsMalformed
+          logs.exists(_.getMessage.contains("[GetPenaltyDetailsService][getDataFromPenaltyServiceForVATCVRN] - Failed to parse HTTP response into model for VRN: 123456789")) shouldBe true
+        }
+      }
     }
 
     s"return $GetPenaltyDetailsNoContent when the response body contains NO_DATA_FOUND" in new Setup {
       when(mockGetPenaltyDetailsConnector.getPenaltyDetails(Matchers.eq("123456789"))(any()))
         .thenReturn(Future.successful(Left(GetPenaltyDetailsNoContent)))
-
-      val result: GetPenaltyDetailsResponse = await(service.getDataFromPenaltyServiceForVATCVRN("123456789"))
-      result.isLeft shouldBe true
-      result.left.getOrElse(false) shouldBe GetPenaltyDetailsNoContent
+      withCaptureOfLoggingFrom(logger) {
+        logs => {
+          val result: GetPenaltyDetailsResponse = await(service.getDataFromPenaltyServiceForVATCVRN("123456789"))
+          result.isLeft shouldBe true
+          result.left.getOrElse(false) shouldBe GetPenaltyDetailsNoContent
+          logs.exists(_.getMessage.contains("[GetPenaltyDetailsService][getDataFromPenaltyServiceForVATCVRN] - Got a 404 response and no data was found for GetPenaltyDetails call")) shouldBe true
+        }
+      }
     }
 
     s"return $GetPenaltyDetailsFailureResponse when the connector receives an unmatched status code" in new Setup {
       when(mockGetPenaltyDetailsConnector.getPenaltyDetails(Matchers.eq("123456789"))(any()))
         .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(IM_A_TEAPOT))))
-
-      val result: GetPenaltyDetailsResponse = await(service.getDataFromPenaltyServiceForVATCVRN("123456789"))
-      result.isLeft shouldBe true
-      result.left.getOrElse(false) shouldBe GetPenaltyDetailsFailureResponse(IM_A_TEAPOT)
+      withCaptureOfLoggingFrom(logger) {
+        logs => {
+          val result: GetPenaltyDetailsResponse = await(service.getDataFromPenaltyServiceForVATCVRN("123456789"))
+          result.isLeft shouldBe true
+          result.left.getOrElse(false) shouldBe GetPenaltyDetailsFailureResponse(IM_A_TEAPOT)
+          logs.exists(_.getMessage.contains("[GetPenaltyDetailsService][getDataFromPenaltyServiceForVATCVRN] - Unknown status returned from connector for VRN: 123456789")) shouldBe true
+        }
+      }
     }
 
     s"throw an exception when something unknown has happened" in new Setup {

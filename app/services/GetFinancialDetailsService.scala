@@ -29,9 +29,9 @@ class GetFinancialDetailsService @Inject()(getFinancialDetailsConnector: GetFina
                                           (implicit ec: ExecutionContext, val config: Configuration) {
 
   def getFinancialDetails(vrn: String)(implicit hc: HeaderCarrier): Future[GetFinancialDetailsResponse] = {
-    implicit val startOfLogMsg: String = "[GetFinancialDetailsService][getDataFromFinancialServiceForVATVCN]"
+    val startOfLogMsg: String = "[GetFinancialDetailsService][getDataFromFinancialServiceForVATCVRN]"
     getFinancialDetailsConnector.getFinancialDetails(vrn).map {
-      handleConnectorResponse(_)
+      handleConnectorResponse(_)(startOfLogMsg, vrn)
     }
   }
 
