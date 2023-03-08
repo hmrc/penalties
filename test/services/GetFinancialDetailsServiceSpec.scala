@@ -16,7 +16,7 @@
 
 package services
 
-import base.SpecBase
+import base.{LogCapturing, SpecBase}
 import config.featureSwitches.FeatureSwitching
 import connectors.getFinancialDetails.GetFinancialDetailsConnector
 import connectors.parsers.getFinancialDetails.GetFinancialDetailsParser._
@@ -30,11 +30,12 @@ import play.api.Configuration
 import play.api.http.Status.IM_A_TEAPOT
 import play.api.test.Helpers._
 import uk.gov.hmrc.http.HeaderCarrier
+import utils.Logger.logger
 
 import java.time.LocalDateTime
 import scala.concurrent.{ExecutionContext, Future}
 
-class GetFinancialDetailsServiceSpec extends SpecBase with FeatureSwitching {
+class GetFinancialDetailsServiceSpec extends SpecBase with FeatureSwitching with LogCapturing {
   implicit val ec: ExecutionContext = ExecutionContext.Implicits.global
   implicit val hc: HeaderCarrier = HeaderCarrier()
   implicit val config: Configuration = mock(classOf[Configuration])
@@ -83,9 +84,14 @@ class GetFinancialDetailsServiceSpec extends SpecBase with FeatureSwitching {
         .thenReturn(None)
       when(mockGetFinancialDetailsConnector.getFinancialDetails(Matchers.eq("123456789"))(any()))
         .thenReturn(Future.successful(Left(GetFinancialDetailsNoContent)))
-      val result: GetFinancialDetailsResponse = await(service.getFinancialDetails("123456789"))
-      result.isLeft shouldBe true
-      result.left.getOrElse(false) shouldBe GetFinancialDetailsNoContent
+      withCaptureOfLoggingFrom(logger) {
+        logs => {
+          val result: GetFinancialDetailsResponse = await(service.getFinancialDetails("123456789"))
+          result.isLeft shouldBe true
+          result.left.getOrElse(false) shouldBe GetFinancialDetailsNoContent
+          logs.exists(_.getMessage.contains("[GetFinancialDetailsService][getDataFromFinancialServiceForVATCVRN] - Got a 404 response and no data was found for GetFinancialDetails call")) shouldBe true
+        }
+      }
     }
 
     s"call the connector and return $GetFinancialDetailsMalformed when the response body is malformed" in new Setup {
@@ -93,9 +99,14 @@ class GetFinancialDetailsServiceSpec extends SpecBase with FeatureSwitching {
         .thenReturn(None)
       when(mockGetFinancialDetailsConnector.getFinancialDetails(Matchers.eq("123456789"))(any()))
         .thenReturn(Future.successful(Left(GetFinancialDetailsMalformed)))
-      val result: GetFinancialDetailsResponse = await(service.getFinancialDetails("123456789"))
-      result.isLeft shouldBe true
-      result.left.getOrElse(false) shouldBe GetFinancialDetailsMalformed
+      withCaptureOfLoggingFrom(logger) {
+        logs => {
+          val result: GetFinancialDetailsResponse = await(service.getFinancialDetails("123456789"))
+          result.isLeft shouldBe true
+          result.left.getOrElse(false) shouldBe GetFinancialDetailsMalformed
+          logs.exists(_.getMessage.contains("[GetFinancialDetailsService][getDataFromFinancialServiceForVATCVRN] - Failed to parse HTTP response into model for VRN: 123456789")) shouldBe true
+        }
+      }
     }
 
     s"call the connector and return $GetFinancialDetailsFailureResponse when an unknown status is returned" in new Setup {
@@ -103,9 +114,14 @@ class GetFinancialDetailsServiceSpec extends SpecBase with FeatureSwitching {
         .thenReturn(None)
       when(mockGetFinancialDetailsConnector.getFinancialDetails(Matchers.eq("123456789"))(any()))
         .thenReturn(Future.successful(Left(GetFinancialDetailsFailureResponse(IM_A_TEAPOT))))
-      val result: GetFinancialDetailsResponse = await(service.getFinancialDetails("123456789"))
-      result.isLeft shouldBe true
-      result.left.getOrElse(false) shouldBe GetFinancialDetailsFailureResponse(IM_A_TEAPOT)
+      withCaptureOfLoggingFrom(logger) {
+        logs => {
+          val result: GetFinancialDetailsResponse = await(service.getFinancialDetails("123456789"))
+          result.isLeft shouldBe true
+          result.left.getOrElse(false) shouldBe GetFinancialDetailsFailureResponse(IM_A_TEAPOT)
+          logs.exists(_.getMessage.contains("[GetFinancialDetailsService][getDataFromFinancialServiceForVATCVRN] - Unknown status returned from connector for VRN: 123456789")) shouldBe true
+        }
+      }
     }
 
     s"throw an exception when something unknown has happened" in new Setup {
