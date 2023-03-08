@@ -29,7 +29,6 @@ import models.getPenaltyDetails.GetPenaltyDetails
 import models.getPenaltyDetails.latePayment.{LPPDetails, LPPPenaltyCategoryEnum}
 import models.getPenaltyDetails.lateSubmission.LSPDetails
 import models.notification._
-import models.upload.UploadJourney
 import play.api.Configuration
 import play.api.libs.json.Json
 import play.api.mvc._
@@ -39,7 +38,7 @@ import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import utils.Logger.logger
 import utils.PagerDutyHelper.PagerDutyKeys._
-import utils.{DateHelper, PagerDutyHelper, PenaltyPeriodHelper, RegimeHelper, UUIDGenerator}
+import utils.{PagerDutyHelper, PenaltyPeriodHelper, RegimeHelper}
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
@@ -48,15 +47,10 @@ import scala.concurrent.{ExecutionContext, Future}
 class AppealsController @Inject()(val appConfig: AppConfig,
                                   appealService: AppealService,
                                   getPenaltyDetailsService: GetPenaltyDetailsService,
-                                  idGenerator: UUIDGenerator,
                                   fileNotificationOrchestratorConnector: FileNotificationOrchestratorConnector,
                                   auditService: AuditService,
                                   cc: ControllerComponents)(implicit ec: ExecutionContext, val config: Configuration)
   extends BackendController(cc) with FeatureSwitching {
-
-  private val regexToSanitiseFileName: String = "[^a-zA-Z0-9_\\-.]"
-
-  private val regexToRemoveSpacesAndControlCharacters: String = "\\s+"
 
   private def getAppealDataForPenalty(penaltyId: String, enrolmentKey: String,
                                       penaltyType: AppealTypeEnum.Value)(implicit hc: HeaderCarrier): Future[Result] = {
@@ -166,9 +160,9 @@ class AppealsController @Inject()(val appConfig: AppConfig,
           logger.debug(s"[AppealsController][submitAppeal] Received caseID response: ${responseModel.caseID} from downstream.")
           val seqOfNotifications = appeal match {
             case otherAppeal: OtherAppealInformation if otherAppeal.uploadedFiles.isDefined =>
-              createSDESNotifications(otherAppeal.uploadedFiles, responseModel.caseID)
+              appealService.createSDESNotifications(otherAppeal.uploadedFiles, responseModel.caseID)
             case obligationAppeal: ObligationAppealInformation if obligationAppeal.uploadedFiles.isDefined =>
-              createSDESNotifications(obligationAppeal.uploadedFiles, responseModel.caseID)
+              appealService.createSDESNotifications(obligationAppeal.uploadedFiles, responseModel.caseID)
             case _ => Seq.empty
           }
           if (seqOfNotifications.nonEmpty) {
@@ -206,40 +200,6 @@ class AppealsController @Inject()(val appConfig: AppConfig,
       MultiStatus(messageIfReturningError)
     } else {
       Ok(caseId)
-    }
-  }
-
-  def createSDESNotifications(optUploadJourney: Option[Seq[UploadJourney]], caseID: String): Seq[SDESNotification] = {
-    optUploadJourney match {
-      case Some(uploads) => uploads.flatMap { upload =>
-        upload.uploadDetails.flatMap { details =>
-          upload.uploadFields.map(
-            fields => {
-              val uploadAlgorithm = fields("x-amz-algorithm") match {
-                case "AWS4-HMAC-SHA256" => "SHA-256"
-                case _ => throw new Exception("[AppealsController][createSDESNotifications] failed to recognise Checksum algorithm")
-              }
-              val sanitisedFileName: String = details.fileName.replaceAll(regexToRemoveSpacesAndControlCharacters,"_").replaceAll(regexToSanitiseFileName, "_")
-              SDESNotification(
-                informationType = appConfig.SDESNotificationInfoType,
-                file = SDESNotificationFile(
-                  recipientOrSender = appConfig.SDESNotificationFileRecipient,
-                  name = sanitisedFileName,
-                  location = upload.downloadUrl.get,
-                  checksum = SDESChecksum(algorithm = uploadAlgorithm, value = details.checksum),
-                  size = details.size,
-                  properties = Seq(
-                    SDESProperties(name = "CaseId", value = caseID),
-                    SDESProperties(name = "SourceFileUploadDate", value = details.uploadTimestamp.format(DateHelper.dateTimeFormatter))
-                  )
-                ),
-                audit = SDESAudit(correlationID = idGenerator.generateUUID)
-              )
-            }
-          )
-        }
-      }
-      case None => Seq.empty
     }
   }
 
