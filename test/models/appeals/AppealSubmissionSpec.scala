@@ -114,7 +114,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       |						 "reasonableExcuse": "technicalIssue",
       |            "honestyDeclaration": true,
       |            "startDateOfEvent": ${if(withZone) "\"2020-01-01T00:00:00Z\"" else "\"2020-01-01T00:00:00\""},
-      |            "endDateOfEvent": ${if(withZone) "\"2020-01-01T23:59:59Z\"" else "\"2020-01-01T23:59:59\""},
+      |            "endDateOfEvent": ${if(withZone) "\"2020-01-01T00:00:01Z\"" else "\"2020-01-01T00:00:01\""},
       |            "lateAppeal": true,
       |            "lateAppealReason": "Reason",
       |            "isClientResponsibleForSubmission": false,
@@ -140,7 +140,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       |{
       |   "reasonableExcuse": "technicalIssue",
       |   "startDateOfEvent": ${if(withZone) "\"2020-01-01T00:00:00Z\"" else "\"2020-01-01T00:00:00\""},
-      |   "endDateOfEvent": ${if(withZone) "\"2020-01-01T23:59:59Z\"" else "\"2020-01-01T23:59:59\""},
+      |   "endDateOfEvent": ${if(withZone) "\"2020-01-01T00:00:01Z\"" else "\"2020-01-01T00:00:01\""},
       |   "lateAppeal": true,
       |   "lateAppealReason": "Reason",
       |   "isClientResponsibleForSubmission": false,
@@ -244,7 +244,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       |           "reasonableExcuse": "health",
       |           "honestyDeclaration": true,
       |           "startDateOfEvent": ${if(withZone) "\"2020-01-01T00:00:00Z\"" else "\"2020-01-01T00:00:00\""},
-      |           "endDateOfEvent": ${if(withZone) "\"2020-01-01T23:59:59Z\"" else "\"2020-01-01T23:59:59\""},
+      |           "endDateOfEvent": ${if(withZone) "\"2020-01-01T00:00:01Z\"" else "\"2020-01-01T00:00:01\""},
       |           "hospitalStayInvolved": true,
       |           "eventOngoing": false,
       |           "lateAppeal": false,
@@ -482,7 +482,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       |   "reasonableExcuse": "health",
       |   "honestyDeclaration": true,
       |   "startDateOfEvent": ${if(withZone) "\"2020-01-01T00:00:00Z\"" else "\"2020-01-01T00:00:00\""},
-      |   "endDateOfEvent": ${if(withZone) "\"2020-01-01T23:59:59Z\"" else "\"2020-01-01T23:59:59\""},
+      |   "endDateOfEvent": ${if(withZone) "\"2020-01-01T00:00:01Z\"" else "\"2020-01-01T00:00:01\""},
       |   "eventOngoing": false,
       |   "hospitalStayInvolved": true,
       |   "lateAppeal": false,
@@ -730,7 +730,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
         result.isSuccess shouldBe true
         result.get shouldBe TechnicalIssuesAppealInformation(
           startDateOfEvent = "2020-01-01T00:00:00",
-          endDateOfEvent = "2020-01-01T23:59:59",
+          endDateOfEvent = "2020-01-01T00:00:01",
           statement = None,
           lateAppeal = true,
           lateAppealReason = Some("Reason"),
@@ -790,7 +790,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           result.isSuccess shouldBe true
           result.get shouldBe HealthAppealInformation(
             startDateOfEvent = Some("2020-01-01T00:00:00"),
-            endDateOfEvent = Some("2020-01-01T23:59:59"),
+            endDateOfEvent = Some("2020-01-01T00:00:01"),
             eventOngoing = false,
             statement = None,
             lateAppeal = false,
@@ -961,7 +961,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       "parse the appeal information model into a JsObject" in {
         val model = TechnicalIssuesAppealInformation(
           startDateOfEvent = "2020-01-01T00:00:00",
-          endDateOfEvent = "2020-01-01T23:59:59",
+          endDateOfEvent = "2020-01-01T00:00:01",
           statement = None,
           lateAppeal = true,
           lateAppealReason = Some("Reason"),
@@ -979,7 +979,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       "parse the appeal information model into a JsObject (when a startDateOfEvent and endDateOfEvent is present)" in {
         val model = HealthAppealInformation(
           startDateOfEvent = Some("2020-01-01T00:00:00"),
-          endDateOfEvent = Some("2020-01-01T23:59:59"),
+          endDateOfEvent = Some("2020-01-01T00:00:01"),
           eventOngoing = false,
           statement = None,
           lateAppeal = false,
@@ -1242,7 +1242,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           agentDetails = Some(AgentDetails(agentReferenceNo = "AGENT1", isExcuseRelatedToAgent = true)),
           appealInformation = TechnicalIssuesAppealInformation(
             startDateOfEvent = "2020-01-01T00:00:00",
-            endDateOfEvent = "2020-01-01T23:59:59",
+            endDateOfEvent = "2020-01-01T00:00:01",
             statement = None,
             lateAppeal = true,
             lateAppealReason = Some("Reason"),
@@ -1329,7 +1329,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           agentDetails = Some(AgentDetails(agentReferenceNo = "AGENT1", isExcuseRelatedToAgent = true)),
           appealInformation = HealthAppealInformation(
             startDateOfEvent = Some("2020-01-01T00:00:00"),
-            endDateOfEvent = Some("2020-01-01T23:59:59"),
+            endDateOfEvent = Some("2020-01-01T00:00:01"),
             eventOngoing = false,
             statement = None,
             lateAppeal = false,
@@ -1665,7 +1665,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             agentDetails = Some(AgentDetails(agentReferenceNo = "AGENT1", isExcuseRelatedToAgent = true)),
             appealInformation = HealthAppealInformation(
               startDateOfEvent = Some("2020-01-01T00:00:00"),
-              endDateOfEvent = Some("2020-01-01T23:59:59"),
+              endDateOfEvent = Some("2020-01-01T00:00:01"),
               eventOngoing = false,
               statement = None,
               lateAppeal = true,
@@ -1692,7 +1692,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
               "reasonableExcuse" -> "unexpectedHospitalStay",
               "honestyDeclaration" -> true,
               "startDateOfEvent" -> "2020-01-01T00:00:00Z",
-              "endDateOfEvent" -> "2020-01-01T23:59:59Z",
+              "endDateOfEvent" -> "2020-01-01T00:00:01Z",
               "eventOngoing" -> false,
               "lateAppeal" -> true,
               "lateAppealReason" -> "Reason",
@@ -1813,7 +1813,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           agentDetails = Some(AgentDetails(agentReferenceNo = "AGENT1", isExcuseRelatedToAgent = true)),
           appealInformation = TechnicalIssuesAppealInformation(
             startDateOfEvent = "2021-04-23T00:00:00",
-            endDateOfEvent = "2021-04-24T23:59:59",
+            endDateOfEvent = "2021-04-24T00:00:01",
             statement = None,
             lateAppeal = false,
             lateAppealReason = None,
@@ -1839,7 +1839,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             "reasonableExcuse" -> "technicalIssue",
             "honestyDeclaration" -> true,
             "startDateOfEvent" -> "2021-04-23T00:00:00Z",
-            "endDateOfEvent" -> "2021-04-24T23:59:59Z",
+            "endDateOfEvent" -> "2021-04-24T00:00:01Z",
             "lateAppeal" -> false,
             "isClientResponsibleForSubmission" -> false,
             "isClientResponsibleForLateSubmission" -> true
@@ -2189,7 +2189,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       "write the appeal model to JSON" in {
         val model = TechnicalIssuesAppealInformation(
           startDateOfEvent = "2021-04-23T00:00:00",
-          endDateOfEvent = "2021-04-24T23:59:59",
+          endDateOfEvent = "2021-04-24T00:00:01",
           statement = None,
           lateAppeal = true,
           lateAppealReason = Some("Reason"),
@@ -2202,7 +2202,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
         result shouldBe Json.obj(
           "reasonableExcuse" -> "technicalIssue",
           "startDateOfEvent" -> "2021-04-23T00:00:00Z",
-          "endDateOfEvent" -> "2021-04-24T23:59:59Z",
+          "endDateOfEvent" -> "2021-04-24T00:00:01Z",
           "lateAppeal" -> true,
           "lateAppealReason" -> "Reason",
           "isClientResponsibleForSubmission" -> false,
@@ -2219,7 +2219,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
         "there has been a hospital stay - and is no longer ongoing (both start and end date) - write the appeal model to JSON" in {
           val model = HealthAppealInformation(
             startDateOfEvent = Some("2020-01-01T00:00:00"),
-            endDateOfEvent = Some("2020-01-01T23:59:59"),
+            endDateOfEvent = Some("2020-01-01T00:00:01"),
             eventOngoing = false,
             statement = None,
             lateAppeal = true,
@@ -2234,7 +2234,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           result shouldBe Json.obj(
             "reasonableExcuse" -> "unexpectedHospitalStay",
             "startDateOfEvent" -> "2020-01-01T00:00:00Z",
-            "endDateOfEvent" -> "2020-01-01T23:59:59Z",
+            "endDateOfEvent" -> "2020-01-01T00:00:01Z",
             "eventOngoing" -> false,
             "lateAppeal" -> true,
             "lateAppealReason" -> "Reason",

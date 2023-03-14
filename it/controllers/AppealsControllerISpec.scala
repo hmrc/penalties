@@ -495,7 +495,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
           |					 	 "reasonableExcuse": "technicalIssue",
           |            "honestyDeclaration": true,
           |            "startDateOfEvent": "2021-04-23T00:00:00",
-          |            "endDateOfEvent": "2021-04-24T23:59:59",
+          |            "endDateOfEvent": "2021-04-24T00:00:01",
           |						 "statement": "This is a statement",
           |            "lateAppeal": false
           |		}
@@ -579,7 +579,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
             |						 "reasonableExcuse": "health",
             |            "honestyDeclaration": true,
             |            "startDateOfEvent": "2021-04-23T00:00:00",
-            |            "endDateOfEvent": "2021-04-23T23:59:59",
+            |            "endDateOfEvent": "2021-04-23T00:00:01",
             |            "hospitalStayInvolved": true,
             |            "eventOngoing": false,
             |						 "statement": "This is a statement",
