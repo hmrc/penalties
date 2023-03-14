@@ -41,11 +41,11 @@ object AppealsParser {
           }
         case BAD_REQUEST =>
           PagerDutyHelper.log("AppealSubmissionResponseReads", RECEIVED_4XX_FROM_1808_API)
-          logger.debug(s"[AppealSubmissionResponseReads][read]: Bad request returned with reason: ${response.body} from PEGA")
+          logger.error(s"[AppealSubmissionResponseReads][read]: Bad request returned with reason: ${response.body} from PEGA")
           Left(BadRequest)
         case status =>
           PagerDutyHelper.logStatusCode("AppealSubmissionResponseReads", status)(RECEIVED_4XX_FROM_1808_API, RECEIVED_5XX_FROM_1808_API)
-          logger.warn(s"[AppealSubmissionResponseReads][read]: Unexpected response, status $status returned")
+          logger.error(s"[AppealSubmissionResponseReads][read]: Unexpected response, status $status returned with body: ${response.body}")
           Left(UnexpectedFailure(status, s"Unexpected response, status $status returned on submission to PEGA"))
       }
     }

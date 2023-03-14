@@ -31,6 +31,14 @@ trait AppealWiremock {
       |""".stripMargin
   )
 
+  val errorResponse: JsValue = Json.parse(
+    """
+      |{
+      | "error": "this is an error"
+      |}
+      |""".stripMargin
+  )
+
   def mockResponseForAppealSubmissionPEGA(status: Int, penaltyNumber: String): StubMapping = {
     stubFor(post(urlEqualTo(s"/penalty/first-stage-appeal/$penaltyNumber"))
       .willReturn(
@@ -44,7 +52,7 @@ trait AppealWiremock {
     stubFor(post(urlEqualTo(s"/penalties-stub/appeals/submit?enrolmentKey=$enrolmentKey&isLPP=$isLPP&penaltyNumber=$penaltyNumber"))
       .willReturn(
         aResponse()
-          .withBody(appealResponseModel.toString())
+          .withBody(if(status == 200) appealResponseModel.toString() else errorResponse.toString())
           .withStatus(status)
       ))
   }
