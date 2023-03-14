@@ -816,7 +816,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
             |						 "reasonableExcuse": "technicalIssue",
             |            "honestyDeclaration": true,
             |            "startDateOfEvent": "2021-04-23T00:00:00",
-            |            "endDateOfEvent": "2021-04-24T23:59:59",
+            |            "endDateOfEvent": "2021-04-24T00:00:01",
             |            "lateAppeal": false
             |		}
             |}
