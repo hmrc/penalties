@@ -1145,9 +1145,9 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
       }
 
       "the service is BTA" in {
-        (basicModelWithUserAgent("business-account").detail \ "taxIdentifier").validate[String].get shouldBe "1234"
-        (basicModelWithUserAgent("business-account").detail \ "identifierType").validate[String].get shouldBe "VRN"
-        (basicModelWithUserAgent("business-account").detail \ "callingService").validate[String].get shouldBe "BTA"
+        (basicModelWithUserAgent("business-tax-account").detail \ "taxIdentifier").validate[String].get shouldBe "1234"
+        (basicModelWithUserAgent("business-tax-account").detail \ "identifierType").validate[String].get shouldBe "VRN"
+        (basicModelWithUserAgent("business-tax-account").detail \ "callingService").validate[String].get shouldBe "BTA"
       }
 
       "the service is VATVC" in {
