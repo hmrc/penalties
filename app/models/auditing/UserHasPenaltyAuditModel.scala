@@ -41,7 +41,7 @@ case class UserHasPenaltyAuditModel(
 
   private val callingService: String = request.headers.get("User-Agent") match {
     case Some(x) if x.contains("penalties-frontend") => "penalties-frontend"
-    case Some(x) if x.contains("business-account") => "BTA"
+    case Some(x) if x.contains("business-tax-account") => "BTA"
     case Some(x) if x.contains("vat-through-software") => "VATVC"
     case Some(_) | None =>
       logger.error("[UserHasPenaltyAuditModel] - could not distinguish referer for audit")
