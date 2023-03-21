@@ -187,7 +187,7 @@ class APIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock wit
     }
 
     s"return NO_CONTENT (${Status.NO_CONTENT})" when {
-      "the get penalty detials call returns 404 (with NO_DATA_FOUND in body)" in {
+      "the get penalty details call returns 404 (with NO_DATA_FOUND in body)" in {
         val notFoundResponseBody: String =
           """
             |{
@@ -200,6 +200,13 @@ class APIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock wit
             |}
             |""".stripMargin
         mockStubResponseForGetPenaltyDetails(Status.NOT_FOUND, "123456789", body = Some(notFoundResponseBody))
+        val result = await(buildClientForRequestToApp(uri = "/vat/penalties/summary/123456789").get())
+        result.status shouldBe NO_CONTENT
+      }
+
+      "the get penalty details call returns 200 with an empty body" in {
+        val emptyResponse: String = "{}"
+        mockStubResponseForGetPenaltyDetails(Status.OK, "123456789", body = Some(emptyResponse))
         val result = await(buildClientForRequestToApp(uri = "/vat/penalties/summary/123456789").get())
         result.status shouldBe NO_CONTENT
       }

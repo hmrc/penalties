@@ -86,6 +86,13 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
       breathingSpace = None
     )
 
+    val getPenaltyDetailsEmptyBody: GetPenaltyDetails = GetPenaltyDetails(
+      totalisations = None,
+      lateSubmissionPenalty = None,
+      latePaymentPenalty = None,
+      breathingSpace = None
+    )
+
     val getPenaltyDetailsFullAPIResponse: GetPenaltyDetails = GetPenaltyDetails(
       totalisations = None,
       lateSubmissionPenalty = Some(
@@ -237,7 +244,7 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
       status(result) shouldBe Status.NOT_FOUND
     }
 
-    s"return OK (${Status.UNPROCESSABLE_ENTITY}) when the call returns invalid ID" in new Setup(isFSEnabled = true) {
+    s"return NO_CONTENT (${Status.NO_CONTENT}) when the call returns invalid ID" in new Setup(isFSEnabled = true) {
       when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(any())(any()))
         .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(Status.UNPROCESSABLE_ENTITY))))
       when(mockAPIService.checkIfHasAnyPenaltyData(any())).thenReturn(false)
@@ -247,19 +254,27 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
       when(mockAPIService.getNumberOfCrystallisedPenalties(any())).thenReturn(0)
       when(mockAPIService.getCrystallisedPenaltyTotal(any())).thenReturn(BigDecimal(0))
       val result = controller.getSummaryDataForVRN("123456789")(fakeRequest)
-      status(result) shouldBe Status.OK
-      contentAsJson(result) shouldBe Json.parse(
-        """
-          |{
-          |  "noOfPoints": 0,
-          |  "noOfEstimatedPenalties": 0,
-          |  "noOfCrystalisedPenalties": 0,
-          |  "estimatedPenaltyAmount": 0,
-          |  "crystalisedPenaltyAmountDue": 0,
-          |  "hasAnyPenaltyData": false
-          |}
-          |""".stripMargin
-      )
+      status(result) shouldBe Status.NO_CONTENT
+      verify(mockAuditService, times(0)).audit(any())(any(), any(), any())
+    }
+
+    s"return NO_CONTENT (${Status.NO_CONTENT}) when the call returns an empty body" in new Setup(isFSEnabled = true) {
+      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(any())(any()))
+        .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetailsEmptyBody))))
+      when(mockAPIService.checkIfHasAnyPenaltyData(any())).thenReturn(false)
+      when(mockAPIService.getNumberOfEstimatedPenalties(any())).thenReturn(0)
+      when(mockAPIService.findEstimatedPenaltiesAmount(any()))
+        .thenReturn(BigDecimal(0))
+      when(mockAPIService.getNumberOfCrystallisedPenalties(any())).thenReturn(0)
+      when(mockAPIService.getCrystallisedPenaltyTotal(any())).thenReturn(BigDecimal(0))
+      withCaptureOfLoggingFrom(logger) {
+        logs => {
+          val result = await(controller.getSummaryDataForVRN("123456789")(fakeRequest))
+          result.header.status shouldBe Status.NO_CONTENT
+          logs.exists(_.getMessage == "[APIController][returnResponseForAPI] - User had no penalty data, returning 204 to caller") shouldBe true
+        }
+      }
+
       verify(mockAuditService, times(0)).audit(any())(any(), any(), any())
     }
 
