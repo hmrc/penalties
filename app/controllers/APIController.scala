@@ -63,11 +63,8 @@ class APIController @Inject()(auditService: AuditService,
             case GetPenaltyDetailsParser.GetPenaltyDetailsFailureResponse(status) if status == UNPROCESSABLE_ENTITY => {
               //Temporary measure to avoid 422 causing issues
               val responsePayload = GetPenaltyDetailsSuccessResponse(GetPenaltyDetails(totalisations = None, lateSubmissionPenalty = None, latePaymentPenalty = None, breathingSpace = None))
-              logger.info(s"[APIController][getSummaryDataForVRN] - 1812 call (VATVC/BTA API) returned $status for VRN: $vrn - Overriding to 200 response")
-              //TODO Change to NoContent response when PRM-2347 is actioned
-
-                            returnResponseForAPI(responsePayload.penaltyDetails, enrolmentKey)
-//              NoContent
+              logger.info(s"[APIController][getSummaryDataForVRN] - 1812 call (VATVC/BTA API) returned $status for VRN: $vrn - Overriding response")
+              returnResponseForAPI(responsePayload.penaltyDetails, enrolmentKey)
             }
             case GetPenaltyDetailsParser.GetPenaltyDetailsFailureResponse(status) => {
               logger.info(s"[APIController][getSummaryDataForVRN] - 1812 call (VATVC/BTA API) returned an unexpected status: $status")
@@ -106,7 +103,8 @@ class APIController @Inject()(auditService: AuditService,
       noOfCrystalisedPenalties = crystallisedPenaltyAmount,
       estimatedPenaltyAmount = penaltyAmountWithEstimateStatus,
       crystalisedPenaltyAmountDue = crystallisedPenaltyTotal,
-      hasAnyPenaltyData = hasAnyPenaltyData)
+      hasAnyPenaltyData = hasAnyPenaltyData
+    )
     if (hasAnyPenaltyData) {
       val auditModel = UserHasPenaltyAuditModel(
         penaltyDetails = penaltyDetails,
@@ -115,8 +113,11 @@ class APIController @Inject()(auditService: AuditService,
         arn = None, //TODO: need to check this
         dateHelper = dateHelper)
       auditService.audit(auditModel)
+      Ok(Json.toJson(responseData))
+    } else {
+      logger.info("[APIController][returnResponseForAPI] - User had no penalty data, returning 204 to caller")
+      NoContent
     }
-    Ok(Json.toJson(responseData))
   }
 
   def getFinancialDetails(vrn: String,
