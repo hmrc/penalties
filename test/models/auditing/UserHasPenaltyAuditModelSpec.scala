@@ -1151,9 +1151,28 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
       }
 
       "the service is VATVC" in {
-        (basicModelWithUserAgent("vat-through-software").detail \ "taxIdentifier").validate[String].get shouldBe "1234"
-        (basicModelWithUserAgent("vat-through-software").detail \ "identifierType").validate[String].get shouldBe "VRN"
-        (basicModelWithUserAgent("vat-through-software").detail \ "callingService").validate[String].get shouldBe "VATVC"
+        (basicModelWithUserAgent("vat-summary-frontend").detail \ "taxIdentifier").validate[String].get shouldBe "1234"
+        (basicModelWithUserAgent("vat-summary-frontend").detail \ "identifierType").validate[String].get shouldBe "VRN"
+        (basicModelWithUserAgent("vat-summary-frontend").detail \ "callingService").validate[String].get shouldBe "VATVC"
+      }
+
+      "the service is VATVC (Agent service)" in {
+        (basicModelWithUserAgent("vat-summary-frontend").detail \ "taxIdentifier").validate[String].get shouldBe "1234"
+        (basicModelWithUserAgent("vat-summary-frontend").detail \ "identifierType").validate[String].get shouldBe "VRN"
+        (basicModelWithUserAgent("vat-summary-frontend").detail \ "callingService").validate[String].get shouldBe "VATVC"
+      }
+
+      "the service is unknown" in {
+        (basicModelWithUserAgent("rogue-service").detail \ "taxIdentifier").validate[String].get shouldBe "1234"
+        (basicModelWithUserAgent("rogue-service").detail \ "identifierType").validate[String].get shouldBe "VRN"
+        (basicModelWithUserAgent("rogue-service").detail \ "callingService").validate[String].get shouldBe "rogue-service"
+      }
+
+      "the user agent is unknown" in {
+        val basicModelWithNoUserAgentField = basicModel.copy()(fakeRequest)
+        (basicModelWithNoUserAgentField.detail \ "taxIdentifier").validate[String].get shouldBe "1234"
+        (basicModelWithNoUserAgentField.detail \ "identifierType").validate[String].get shouldBe "VRN"
+        (basicModelWithNoUserAgentField.detail \ "callingService").validate[String].get shouldBe ""
       }
 
       "the user is an agent" in {
@@ -1306,11 +1325,20 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
       }
     }
 
-    "set the callingService to blank string and log error when the User-Agent can not be matched" in {
+    "set the callingService to service name and log error when the User-Agent can not be matched" in {
       withCaptureOfLoggingFrom(Logger.logger) {
         logs => {
-          (basicModelWithUserAgent("").detail \ "callingService").validate[String].get shouldBe ""
-          logs.exists(_.getMessage.equals("[UserHasPenaltyAuditModel] - could not distinguish referer for audit")) shouldBe true
+          (basicModelWithUserAgent("rogue-service").detail \ "callingService").validate[String].get shouldBe "rogue-service"
+          logs.exists(_.getMessage.equals("[UserHasPenaltyAuditModel] - unknown caller has been identified retrieving summary data: rogue-service")) shouldBe true
+        }
+      }
+    }
+
+    "set the callingService to blank and log error when the User-Agent is not provided" in {
+      withCaptureOfLoggingFrom(Logger.logger) {
+        logs => {
+          (basicModel.copy()(fakeRequest).detail \ "callingService").validate[String].get shouldBe ""
+          logs.exists(_.getMessage.equals("[UserHasPenaltyAuditModel] - could not distinguish referer for audit - setting value to blank")) shouldBe true
         }
       }
     }
