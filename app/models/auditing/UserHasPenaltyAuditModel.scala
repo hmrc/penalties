@@ -42,9 +42,14 @@ case class UserHasPenaltyAuditModel(
   private val callingService: String = request.headers.get("User-Agent") match {
     case Some(x) if x.contains("penalties-frontend") => "penalties-frontend"
     case Some(x) if x.contains("business-tax-account") => "BTA"
-    case Some(x) if x.contains("vat-through-software") => "VATVC"
-    case Some(_) | None =>
-      logger.error("[UserHasPenaltyAuditModel] - could not distinguish referer for audit")
+    case Some(x) if x.contains("vat-agent-client-lookup-frontend") => "VATVC"
+    case Some(x) if x.contains("vat-summary-frontend") => "VATVC"
+    case Some(service) =>
+      logger.warn(s"[UserHasPenaltyAuditModel] - unknown caller has been identified retrieving summary data: $service")
+      logger.debug(s"[UserHasPenaltyAuditModel] - request headers: \n ${request.headers.headers}")
+      service
+    case None =>
+      logger.error("[UserHasPenaltyAuditModel] - could not distinguish referer for audit - setting value to blank")
       logger.debug(s"[UserHasPenaltyAuditModel] - request headers: \n ${request.headers.headers}")
       ""
   }
