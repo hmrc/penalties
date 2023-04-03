@@ -1160,6 +1160,9 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
         (basicModelWithUserAgent("vat-agent-client-lookup-frontend").detail \ "taxIdentifier").validate[String].get shouldBe "1234"
         (basicModelWithUserAgent("vat-agent-client-lookup-frontend").detail \ "identifierType").validate[String].get shouldBe "VRN"
         (basicModelWithUserAgent("vat-agent-client-lookup-frontend").detail \ "callingService").validate[String].get shouldBe "VATVC Agent"
+        //ARN is unavailable for anonymous calls from VATVC
+        (basicModelWithUserAgent("vat-agent-client-lookup-frontend").detail \ "userType").validate[String].get shouldBe "Agent"
+        (basicModelWithUserAgent("vat-agent-client-lookup-frontend").detail \ "agentReferenceNumber").isEmpty shouldBe true
       }
 
       "the service is unknown" in {
@@ -1176,14 +1179,14 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
       }
 
       "the user is an agent" in {
-        (basicAgentModel.detail \ "agentReferenceNumber").isDefined
+        (basicAgentModel.detail \ "agentReferenceNumber").isDefined shouldBe true
         (basicAgentModel.detail \ "agentReferenceNumber").validate[String].get shouldBe "ARN123"
-        (basicAgentModel.detail \ "userType").isDefined
+        (basicAgentModel.detail \ "userType").isDefined shouldBe true
         (basicAgentModel.detail \ "userType").validate[String].get shouldBe "Agent"
       }
 
       "the user is a trader" in {
-        (basicModel.detail \ "userType").isDefined
+        (basicModel.detail \ "userType").isDefined shouldBe true
         (basicModel.detail \ "userType").validate[String].get shouldBe "Trader"
       }
 
