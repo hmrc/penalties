@@ -1157,9 +1157,9 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
       }
 
       "the service is VATVC (Agent service)" in {
-        (basicModelWithUserAgent("vat-summary-frontend").detail \ "taxIdentifier").validate[String].get shouldBe "1234"
-        (basicModelWithUserAgent("vat-summary-frontend").detail \ "identifierType").validate[String].get shouldBe "VRN"
-        (basicModelWithUserAgent("vat-summary-frontend").detail \ "callingService").validate[String].get shouldBe "VATVC"
+        (basicModelWithUserAgent("vat-agent-client-lookup-frontend").detail \ "taxIdentifier").validate[String].get shouldBe "1234"
+        (basicModelWithUserAgent("vat-agent-client-lookup-frontend").detail \ "identifierType").validate[String].get shouldBe "VRN"
+        (basicModelWithUserAgent("vat-agent-client-lookup-frontend").detail \ "callingService").validate[String].get shouldBe "VATVC Agent"
       }
 
       "the service is unknown" in {

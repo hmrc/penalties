@@ -42,7 +42,7 @@ case class UserHasPenaltyAuditModel(
   private val callingService: String = request.headers.get("User-Agent") match {
     case Some(x) if x.contains("penalties-frontend") => "penalties-frontend"
     case Some(x) if x.contains("business-tax-account") => "BTA"
-    case Some(x) if x.contains("vat-agent-client-lookup-frontend") => "VATVC"
+    case Some(x) if x.contains("vat-agent-client-lookup-frontend") => "VATVC Agent"
     case Some(x) if x.contains("vat-summary-frontend") => "VATVC"
     case Some(service) =>
       logger.warn(s"[UserHasPenaltyAuditModel] - unknown caller has been identified retrieving summary data: $service")
