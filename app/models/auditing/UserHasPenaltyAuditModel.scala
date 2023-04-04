@@ -37,7 +37,6 @@ case class UserHasPenaltyAuditModel(
 
   override val auditType: String = "PenaltyUserHasPenalty"
   override val transactionName: String = "penalties-user-has-penalty"
-  val userType: String = if (arn.isDefined) "Agent" else "Trader"
 
   private val callingService: String = request.headers.get("User-Agent") match {
     case Some(x) if x.contains("penalties-frontend") => "penalties-frontend"
@@ -53,6 +52,8 @@ case class UserHasPenaltyAuditModel(
       logger.debug(s"[UserHasPenaltyAuditModel] - request headers: \n ${request.headers.headers}")
       ""
   }
+
+  val userType: String = if (arn.isDefined || callingService == "VATVC Agent") "Agent" else "Trader"
 
   private val amountOfLspChargesPaid: Int = penaltyDetails.lateSubmissionPenalty.map(_.details.count(point => point.chargeOutstandingAmount.contains(0)
     && (point.penaltyCategory.equals(LSPPenaltyCategoryEnum.Charge) || point.penaltyCategory.equals(LSPPenaltyCategoryEnum.Threshold))
