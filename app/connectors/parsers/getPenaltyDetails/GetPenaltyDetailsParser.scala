@@ -18,6 +18,7 @@ package connectors.parsers.getPenaltyDetails
 
 import models.failure.{FailureCodeEnum, FailureResponse}
 import models.getPenaltyDetails.GetPenaltyDetails
+import models.getPenaltyDetails.latePayment.{LPPPenaltyCategoryEnum, LPPPenaltyStatusEnum, LatePaymentPenalty}
 import play.api.http.Status._
 import play.api.libs.json.{JsError, JsSuccess, JsValue}
 import uk.gov.hmrc.http.{HttpReads, HttpResponse}
@@ -25,6 +26,7 @@ import utils.Logger.logger
 import utils.PagerDutyHelper
 import utils.PagerDutyHelper.PagerDutyKeys._
 
+import java.time.LocalDate
 import scala.util.Try
 
 object GetPenaltyDetailsParser {
@@ -49,7 +51,7 @@ object GetPenaltyDetailsParser {
           logger.debug(s"[GetPenaltyDetailsReads][read] Json response: ${response.json}")
           response.json.validate[GetPenaltyDetails] match {
             case JsSuccess(getPenaltyDetails, _) =>
-              Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetails))
+              Right(GetPenaltyDetailsSuccessResponse(addMissingLPP1principalChargeLatestClearing(getPenaltyDetails)))
             case JsError(errors) =>
               logger.debug(s"[GetPenaltyDetailsReads][read] Json validation errors: $errors")
               Left(GetPenaltyDetailsMalformed)
@@ -99,5 +101,29 @@ object GetPenaltyDetailsParser {
         }
       }
     )
+  }
+
+  private def addMissingLPP1principalChargeLatestClearing(penaltyDetails: GetPenaltyDetails): GetPenaltyDetails = {
+    val newDetails = penaltyDetails.latePaymentPenalty.flatMap(
+      _.details.map(_.map(
+        oldLPPDetails => {
+          (oldLPPDetails.penaltyCategory, oldLPPDetails.penaltyStatus, oldLPPDetails.principalChargeLatestClearing.isEmpty) match {
+            case (LPPPenaltyCategoryEnum.FirstPenalty, LPPPenaltyStatusEnum.Posted, true) =>
+              val filteredList = penaltyDetails.latePaymentPenalty.get.details.get.filter(_.penaltyCategory.equals(LPPPenaltyCategoryEnum.SecondPenalty))
+                .filter(_.principalChargeReference.equals(oldLPPDetails.principalChargeReference))
+              val Missingdate: Option[LocalDate] = if (filteredList.nonEmpty) filteredList.head.principalChargeLatestClearing else None
+              oldLPPDetails.copy(principalChargeLatestClearing = Missingdate)
+            case _ =>
+              oldLPPDetails
+          }
+        }
+      )
+      )
+    )
+    if (newDetails.nonEmpty) {
+      penaltyDetails.copy(latePaymentPenalty = Some(LatePaymentPenalty(newDetails)))
+    } else {
+      penaltyDetails
+    }
   }
 }
