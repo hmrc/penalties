@@ -51,7 +51,7 @@ object GetPenaltyDetailsParser {
           logger.debug(s"[GetPenaltyDetailsReads][read] Json response: ${response.json}")
           response.json.validate[GetPenaltyDetails] match {
             case JsSuccess(getPenaltyDetails, _) =>
-              Right(GetPenaltyDetailsSuccessResponse(addMissingLPP1principalChargeLatestClearing(getPenaltyDetails)))
+              Right(GetPenaltyDetailsSuccessResponse(addMissingLPP1PrincipalChargeLatestClearing(getPenaltyDetails)))
             case JsError(errors) =>
               logger.debug(s"[GetPenaltyDetailsReads][read] Json validation errors: $errors")
               Left(GetPenaltyDetailsMalformed)
@@ -103,16 +103,16 @@ object GetPenaltyDetailsParser {
     )
   }
 
-  private def addMissingLPP1principalChargeLatestClearing(penaltyDetails: GetPenaltyDetails): GetPenaltyDetails = {
+  private def addMissingLPP1PrincipalChargeLatestClearing(penaltyDetails: GetPenaltyDetails): GetPenaltyDetails = {
     val newDetails = penaltyDetails.latePaymentPenalty.flatMap(
-      _.details.map(_.map(
+      _.details.map(latePaymentPenalties => latePaymentPenalties.map(
         oldLPPDetails => {
           (oldLPPDetails.penaltyCategory, oldLPPDetails.penaltyStatus, oldLPPDetails.principalChargeLatestClearing.isEmpty) match {
             case (LPPPenaltyCategoryEnum.FirstPenalty, LPPPenaltyStatusEnum.Posted, true) =>
-              val filteredList = penaltyDetails.latePaymentPenalty.get.details.get.filter(_.penaltyCategory.equals(LPPPenaltyCategoryEnum.SecondPenalty))
+              val filteredList = latePaymentPenalties.filter(_.penaltyCategory.equals(LPPPenaltyCategoryEnum.SecondPenalty))
                 .filter(_.principalChargeReference.equals(oldLPPDetails.principalChargeReference))
-              val Missingdate: Option[LocalDate] = if (filteredList.nonEmpty) filteredList.head.principalChargeLatestClearing else None
-              oldLPPDetails.copy(principalChargeLatestClearing = Missingdate)
+              val optPrincipalChargeClearingDate: Option[LocalDate] = filteredList.headOption.flatMap(_.principalChargeLatestClearing)
+              oldLPPDetails.copy(principalChargeLatestClearing = optPrincipalChargeClearingDate)
             case _ =>
               oldLPPDetails
           }

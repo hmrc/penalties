@@ -43,7 +43,7 @@ class GetPenaltyDetailsParserSpec extends AnyWordSpec with Matchers with LogCapt
 
   val mockOKHttpResponseWithValidBody: HttpResponse = HttpResponse.apply(status = Status.OK, json = Json.toJson(mockGetPenaltyDetailsModelv3), headers = Map.empty)
 
-  val lpp1details: LPPDetails = LPPDetails(
+  val lpp1Details: LPPDetails = LPPDetails(
     penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
     penaltyChargeReference = Some("123456789"),
     principalChargeReference = "1000001",
@@ -72,12 +72,12 @@ class GetPenaltyDetailsParserSpec extends AnyWordSpec with Matchers with LogCapt
     metadata = LPPDetailsMetadata(None, Some(BigDecimal(0)))
   )
 
-  val lpp2Details: LPPDetails = lpp1details.copy(penaltyCategory = LPPPenaltyCategoryEnum.SecondPenalty, penaltyChargeReference = Some("123456790"), principalChargeLatestClearing = Some(LocalDate.now()))
+  val lpp2Details: LPPDetails = lpp1Details.copy(penaltyCategory = LPPPenaltyCategoryEnum.SecondPenalty, penaltyChargeReference = Some("123456790"), principalChargeLatestClearing = Some(LocalDate.now()))
 
   val mockGetPenaltyDetailsModelWithMissingClearingDateForOnePostedLPP1: GetPenaltyDetails = GetPenaltyDetails(
     totalisations = None,
     lateSubmissionPenalty = None,
-    latePaymentPenalty = Some(LatePaymentPenalty(Some(Seq(lpp1details, lpp2Details)))),
+    latePaymentPenalty = Some(LatePaymentPenalty(Some(Seq(lpp1Details, lpp2Details)))),
     breathingSpace = None
   )
 
@@ -86,7 +86,7 @@ class GetPenaltyDetailsParserSpec extends AnyWordSpec with Matchers with LogCapt
   val mockGetPenaltyDetailsModelWithMissingClearingDateForMultiplePostedLPP1s: GetPenaltyDetails = GetPenaltyDetails(
     totalisations = None,
     lateSubmissionPenalty = None,
-    latePaymentPenalty = Some(LatePaymentPenalty(Some(Seq(lpp1details, lpp2Details, lpp1details.copy(penaltyChargeReference = Some("123456791"), principalChargeReference = "1000002"), lpp2Details.copy(penaltyChargeReference = Some("123456792"), principalChargeReference = "1000002", principalChargeLatestClearing = Some(LocalDate.now().plusDays(1))))))),
+    latePaymentPenalty = Some(LatePaymentPenalty(Some(Seq(lpp1Details, lpp2Details, lpp1Details.copy(penaltyChargeReference = Some("123456791"), principalChargeReference = "1000002"), lpp2Details.copy(penaltyChargeReference = Some("123456792"), principalChargeReference = "1000002", principalChargeLatestClearing = Some(LocalDate.now().plusDays(1))))))),
     breathingSpace = None
   )
 
@@ -147,15 +147,15 @@ class GetPenaltyDetailsParserSpec extends AnyWordSpec with Matchers with LogCapt
         val result = GetPenaltyDetailsParser.GetPenaltyDetailsReads.read("GET", "/", mockOKHttpResponseWithMissingClearingDateForOnePostedLPP1Body)
 
         result.isRight shouldBe true
-        result.toOption.get.asInstanceOf[GetPenaltyDetailsSuccessResponse].penaltyDetails.latePaymentPenalty.get.details.get.head.principalChargeLatestClearing shouldBe lpp2Details.principalChargeLatestClearing
+        result.toOption.get.asInstanceOf[GetPenaltyDetailsSuccessResponse].penaltyDetails.latePaymentPenalty.get.details.get.filter(_.penaltyChargeReference.contains("123456789")).head.principalChargeLatestClearing.get shouldBe lpp2Details.principalChargeLatestClearing.get
       }
 
-      "there  are missing clearing dates for posted LPP1s" in {
+      "there are missing clearing dates for posted LPP1s" in {
         val result = GetPenaltyDetailsParser.GetPenaltyDetailsReads.read("GET", "/", mockOKHttpResponseWithMissingClearingDateForMultiplePostedLPP1sBody)
 
         result.isRight shouldBe true
-        result.toOption.get.asInstanceOf[GetPenaltyDetailsSuccessResponse].penaltyDetails.latePaymentPenalty.get.details.get.head.principalChargeLatestClearing shouldBe lpp2Details.principalChargeLatestClearing
-        result.toOption.get.asInstanceOf[GetPenaltyDetailsSuccessResponse].penaltyDetails.latePaymentPenalty.get.details.get(2).principalChargeLatestClearing.get shouldBe lpp2Details.principalChargeLatestClearing.get.plusDays(1)
+        result.toOption.get.asInstanceOf[GetPenaltyDetailsSuccessResponse].penaltyDetails.latePaymentPenalty.get.details.get.filter(_.penaltyChargeReference.contains("123456789")).head.principalChargeLatestClearing.get shouldBe lpp2Details.principalChargeLatestClearing.get
+        result.toOption.get.asInstanceOf[GetPenaltyDetailsSuccessResponse].penaltyDetails.latePaymentPenalty.get.details.get.filter(_.penaltyChargeReference.contains("123456791")).head.principalChargeLatestClearing.get shouldBe lpp2Details.principalChargeLatestClearing.get.plusDays(1)
       }
     }
 
