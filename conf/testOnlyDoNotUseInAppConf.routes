@@ -10,7 +10,8 @@
 # Failing to follow this rule may result in test routes deployed in production.
 
 # Add all the application routes to the prod.routes file
-->         /                                              prod.Routes
-GET        /penalties/test-only/feature-switch            controllers.testOnly.FeatureSwitchController.enableOrDisableFeature(name: String, enable: Boolean)
-GET        /penalties/test-only/time-machine-now          controllers.testOnly.FeatureSwitchController.setTimeMachineDate(dateToSet: Option[String])
-GET        /penalties/test-only/bearer-token              controllers.testOnly.BearerTokenController.getBearerToken(tokenName: String)
+->         /                                                            prod.Routes
+GET        /penalties/test-only/feature-switch                          controllers.testOnly.FeatureSwitchController.enableOrDisableFeature(name: String, enable: Boolean)
+GET        /penalties/test-only/time-machine-now                        controllers.testOnly.FeatureSwitchController.setTimeMachineDate(dateToSet: Option[String])
+GET        /penalties/test-only/esyimated-lpp1-filter-end-date          controllers.testOnly.FeatureSwitchController.setTimeMachineDate(dateToSet: Option[String])
+GET        /penalties/test-only/bearer-token                            controllers.testOnly.BearerTokenController.getBearerToken(tokenName: String)

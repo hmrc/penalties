@@ -24,6 +24,7 @@ import java.time.LocalDateTime
 trait FeatureSwitching {
   implicit val config: Configuration
   val TIME_MACHINE_NOW = "TIME_MACHINE_NOW"
+  val ESTIMATED_LPP1_FILTER_END_DATE = "ESTIMATED_LPP1_FILTER_END_DATE"
   val FEATURE_SWITCH_ON = "true"
   val FEATURE_SWITCH_OFF = "false"
 
@@ -49,6 +50,25 @@ trait FeatureSwitching {
       }
     })(LocalDateTime.parse(_))
   }
+
+  def setEstimatedLPP1FilterEndDate(dateTimeToSet: Option[LocalDateTime]): Unit = {
+    logger.debug(s"[FeatureSwitching][setEstimatedLPP1FilterEndDate] - setting estimated LPP1 filter end date to: $dateTimeToSet")
+    dateTimeToSet.fold(sys.props -= ESTIMATED_LPP1_FILTER_END_DATE)(sys.props += ESTIMATED_LPP1_FILTER_END_DATE -> _.toString)
+  }
+
+  def getEstimatedLPP1FilterEndDate: LocalDateTime = {
+    sys.props.get(ESTIMATED_LPP1_FILTER_END_DATE).fold({
+      val optDateAsString = config.getOptional[String]("feature.switch.estimated-lpp1-filter-end-date")
+      val dateAsString = optDateAsString.getOrElse("")
+      if (dateAsString.isEmpty) {
+        LocalDateTime.now().minusDays(1)
+      } else {
+        LocalDateTime.parse(dateAsString)
+      }
+    })(LocalDateTime.parse(_))
+  }
+
+  def withinLPP1FilterWindow:Boolean = LocalDateTime.now().isBefore(getEstimatedLPP1FilterEndDate)
 
   def disableFeatureSwitch(featureSwitch: FeatureSwitch): Unit =
     sys.props += featureSwitch.name -> FEATURE_SWITCH_OFF

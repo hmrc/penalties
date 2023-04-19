@@ -36,6 +36,7 @@ class FeatureSwitchSpec extends SpecBase {
     }
     FeatureSwitch.listOfAllFeatureSwitches.foreach(sys.props -= _.name)
     sys.props -= featureSwitching.TIME_MACHINE_NOW
+    sys.props -= featureSwitching.ESTIMATED_LPP1_FILTER_END_DATE
   }
 
   "FeatureSwitch listOfAllFeatureSwitches" should {
@@ -145,6 +146,86 @@ class FeatureSwitchSpec extends SpecBase {
       when(mockConfig.getOptional[String](any())(any()))
         .thenReturn(None)
       featureSwitching.getTimeMachineDateTime.toLocalDate shouldBe LocalDate.now() //Set to LocalDate to stop flaky tests
+    }
+  }
+
+  "FeatureSwitching setEstimatedLPP1FilterEndDate" should {
+    lazy val dateTimeNow: LocalDateTime = LocalDateTime.now()
+    s"set the date when the parameter is $Some" in new Setup {
+      val dateMinus1Day: LocalDateTime = dateTimeNow.minusDays(1)
+      (sys.props get featureSwitching.ESTIMATED_LPP1_FILTER_END_DATE) shouldBe None
+      featureSwitching.setEstimatedLPP1FilterEndDate(Some(dateMinus1Day))
+      (sys.props get featureSwitching.ESTIMATED_LPP1_FILTER_END_DATE) shouldBe Some(dateMinus1Day.toString)
+    }
+
+    s"overwrite an existing date when the parameter is $Some" in new Setup {
+      val dateMinus1Day: LocalDateTime = dateTimeNow.minusDays(1)
+      val dateMinus2Days: LocalDateTime = dateTimeNow.minusDays(2)
+      featureSwitching.setEstimatedLPP1FilterEndDate(Some(dateMinus1Day))
+      (sys.props get featureSwitching.ESTIMATED_LPP1_FILTER_END_DATE) shouldBe Some(dateMinus1Day.toString)
+      featureSwitching.setEstimatedLPP1FilterEndDate(Some(dateMinus2Days))
+      (sys.props get featureSwitching.ESTIMATED_LPP1_FILTER_END_DATE) shouldBe Some(dateMinus2Days.toString)
+    }
+
+    s"remove an existing date when the parameter is $None" in new Setup {
+      featureSwitching.setEstimatedLPP1FilterEndDate(Some(dateTimeNow))
+      (sys.props get featureSwitching.ESTIMATED_LPP1_FILTER_END_DATE) shouldBe Some(dateTimeNow.toString)
+      featureSwitching.setEstimatedLPP1FilterEndDate(None)
+      (sys.props get featureSwitching.ESTIMATED_LPP1_FILTER_END_DATE) shouldBe None
+    }
+  }
+
+  "FeatureSwitching getEstimatedLPP1FilterEndDate" should {
+    lazy val dateTimeNowMinus1Day: LocalDateTime = LocalDateTime.parse(LocalDateTime.now().format(DateHelper.dateTimeFormatter), DateHelper.dateTimeFormatter).minusDays(1)
+    s"get the date when it exists in system properties" in new Setup {
+      featureSwitching.setEstimatedLPP1FilterEndDate(Some(dateTimeNowMinus1Day))
+      (sys.props get featureSwitching.ESTIMATED_LPP1_FILTER_END_DATE) shouldBe Some(dateTimeNowMinus1Day.toString)
+      featureSwitching.getEstimatedLPP1FilterEndDate shouldBe dateTimeNowMinus1Day
+    }
+
+    s"get the date from config when the key value exists and is non-empty" in new Setup {
+      (sys.props get featureSwitching.ESTIMATED_LPP1_FILTER_END_DATE) shouldBe None
+      when(mockConfig.getOptional[String](any())(any()))
+        .thenReturn(Some(dateTimeNowMinus1Day.toString))
+      featureSwitching.getEstimatedLPP1FilterEndDate shouldBe dateTimeNowMinus1Day
+    }
+
+    s"get the date from the system when it does not exist in properties nor in config (value empty)" in new Setup {
+      (sys.props get featureSwitching.ESTIMATED_LPP1_FILTER_END_DATE) shouldBe None
+      when(mockConfig.getOptional[String](any())(any()))
+        .thenReturn(Some(""))
+      featureSwitching.getEstimatedLPP1FilterEndDate.toLocalDate shouldBe LocalDate.now().minusDays(1) //Set to LocalDate to stop flaky tests
+    }
+
+    s"get the date from the system when it does not exist in properties nor in config (kv not present)" in new Setup {
+      (sys.props get featureSwitching.ESTIMATED_LPP1_FILTER_END_DATE) shouldBe None
+      when(mockConfig.getOptional[String](any())(any()))
+        .thenReturn(None)
+      featureSwitching.getEstimatedLPP1FilterEndDate.toLocalDate shouldBe LocalDate.now().minusDays(1) //Set to LocalDate to stop flaky tests
+    }
+  }
+
+  "FeatureSwitching withinLPP1FilterWindow" should {
+
+    "return true" when{
+      "now is before set date" in new Setup {
+        featureSwitching.setEstimatedLPP1FilterEndDate(Some(LocalDateTime.now().plusDays(1)))
+        featureSwitching.withinLPP1FilterWindow shouldBe true
+      }
+    }
+
+    "return false" when{
+      "now is after set date" in new Setup {
+        featureSwitching.setEstimatedLPP1FilterEndDate(Some(LocalDateTime.now().minusDays(1)))
+        featureSwitching.withinLPP1FilterWindow shouldBe false
+      }
+
+      "an end date is mot set (Default to Off)" in new Setup {
+        (sys.props get featureSwitching.ESTIMATED_LPP1_FILTER_END_DATE) shouldBe None
+        when(mockConfig.getOptional[String](any())(any()))
+          .thenReturn(None)
+        featureSwitching.withinLPP1FilterWindow shouldBe false
+      }
     }
   }
 }

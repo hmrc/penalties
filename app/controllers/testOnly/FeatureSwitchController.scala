@@ -60,4 +60,24 @@ class FeatureSwitchController @Inject()(cc: ControllerComponents)
       }
     )
   }
+
+  def setEstimatedLPP1FilterEndDate(dateTimeToSet: Option[String]): Action[AnyContent] = Action {
+    dateTimeToSet.fold({
+      super.setEstimatedLPP1FilterEndDate(None)
+      Ok(s"Estimated LPP1 filter end date to: ${LocalDateTime.now()}")
+    })(
+      dateTimeAsString => {
+        Try(LocalDateTime.parse(dateTimeAsString)).fold(
+          err => {
+            logger.debug(s"[setEstimatedLPP1FilterEndDate][setDateFeature] - Exception was thrown when setting the estimated LPP1 filter end datte: ${err.getMessage}")
+            BadRequest("The date provided is in an invalid format")
+          },
+          dateTime => {
+            setEstimatedLPP1FilterEndDate(Some(dateTime))
+            Ok(s"Estimated LPP1 filter end date to: $dateTime")
+          }
+        )
+      }
+    )
+  }
 }
