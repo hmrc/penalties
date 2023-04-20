@@ -66,26 +66,27 @@ class FeatureSwitchControllerSpec extends SpecBase {
       (sys.props get "TIME_MACHINE_NOW" get) shouldBe LocalDateTime.of(2022, 1, 1, 12, 0, 1).toString
     }
   }
+
   "setEstimatedLPP1FilterEndDate" should {
-    s"return NOT_FOUND (${Status.NOT_FOUND}) when the date provided is invalid" in new Setup {
+    s"return BAD_REQUEST (${Status.BAD_REQUEST}) when the date provided is invalid" in new Setup {
       val result = controller.setEstimatedLPP1FilterEndDate(Some("this-is-invalid"))(FakeRequest())
       status(result) shouldBe BAD_REQUEST
       contentAsString(result) shouldBe "The date provided is in an invalid format"
     }
 
-    s"return OK (${Status.OK}) and reset the date back to today's minus 1 day date if no date provided" in new Setup {
+    s"return OK (${Status.OK}) and return NONE if no date provided" in new Setup {
       when(mockConfig.getOptional[String](any())(any()))
         .thenReturn(None)
       val result = controller.setEstimatedLPP1FilterEndDate(None)(FakeRequest())
       status(result) shouldBe OK
-      controller.getEstimatedLPP1FilterEndDate.toLocalDate shouldBe LocalDate.now().minusDays(1) //Set to LocalDate to stop flaky tests
+      controller.getEstimatedLPP1FilterEndDate shouldBe None
     }
 
     s"return OK (${Status.OK}) and set the correct date provided" in new Setup {
-      val result = controller.setEstimatedLPP1FilterEndDate(Some("2022-01-01T12:00:01"))(FakeRequest())
+      val result = controller.setEstimatedLPP1FilterEndDate(Some("2022-01-01"))(FakeRequest())
       status(result) shouldBe OK
-      contentAsString(result) shouldBe s"Estimated LPP1 filter end date to: ${LocalDateTime.of(2022, 1, 1, 12, 0, 1).toString}"
-      (sys.props get "ESTIMATED_LPP1_FILTER_END_DATE" get) shouldBe LocalDateTime.of(2022, 1, 1, 12, 0, 1).toString
+      contentAsString(result) shouldBe s"Estimated LPP1 filter end date set to: ${LocalDate.of(2022, 1, 1).toString}"
+      (sys.props get "ESTIMATED_LPP1_FILTER_END_DATE" get) shouldBe LocalDate.of(2022, 1, 1).toString
     }
   }
 }

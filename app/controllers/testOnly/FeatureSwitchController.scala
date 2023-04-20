@@ -22,7 +22,7 @@ import play.api.mvc.{Action, AnyContent, ControllerComponents, Result}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import utils.Logger.logger
 
-import java.time.LocalDateTime
+import java.time.{LocalDate, LocalDateTime}
 import javax.inject.Inject
 import scala.util.Try
 
@@ -64,17 +64,17 @@ class FeatureSwitchController @Inject()(cc: ControllerComponents)
   def setEstimatedLPP1FilterEndDate(dateTimeToSet: Option[String]): Action[AnyContent] = Action {
     dateTimeToSet.fold({
       super.setEstimatedLPP1FilterEndDate(None)
-      Ok(s"Estimated LPP1 filter end date to: ${LocalDateTime.now()}")
+      Ok(s"Estimated LPP1 filter end date to: ${LocalDate.now()}")
     })(
-      dateTimeAsString => {
-        Try(LocalDateTime.parse(dateTimeAsString)).fold(
+      dateAsString => {
+        Try(LocalDate.parse(dateAsString)).fold(
           err => {
-            logger.debug(s"[setEstimatedLPP1FilterEndDate][setDateFeature] - Exception was thrown when setting the estimated LPP1 filter end datte: ${err.getMessage}")
+            logger.debug(s"[FeatureSwitchController][setEstimatedLPP1FilterEndDate] - Exception was thrown when setting the estimated LPP1 filter end date: ${err.getMessage}")
             BadRequest("The date provided is in an invalid format")
           },
-          dateTime => {
-            setEstimatedLPP1FilterEndDate(Some(dateTime))
-            Ok(s"Estimated LPP1 filter end date to: $dateTime")
+          date => {
+            setEstimatedLPP1FilterEndDate(Some(date))
+            Ok(s"Estimated LPP1 filter end date set to: $date")
           }
         )
       }
