@@ -73,9 +73,9 @@ trait FeatureSwitching {
     }
   }
 
-  def withinLPP1FilterWindow: Boolean =  {
+  def withinLPP1FilterWindow(date: LocalDate): Boolean = {
     getEstimatedLPP1FilterEndDate match {
-      case Some(filterEndDate) => !getTimeMachineDateTime.toLocalDate.isAfter(filterEndDate)
+      case Some(filterEndDate) => !date.isAfter(filterEndDate)
       case None => false
     }
   }

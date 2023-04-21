@@ -203,35 +203,35 @@ class FeatureSwitchSpec extends SpecBase {
   "FeatureSwitching withinLPP1FilterWindow" should {
 
     "return true" when {
-      "now is before set date" in new Setup {
+      "the date given is before set date" in new Setup {
         when(mockConfig.getOptional[String](any())(any()))
           .thenReturn(None)
         featureSwitching.setEstimatedLPP1FilterEndDate(Some(LocalDate.now().plusDays(1)))
-        featureSwitching.withinLPP1FilterWindow shouldBe true
+        featureSwitching.withinLPP1FilterWindow(LocalDate.now()) shouldBe true
       }
 
-      "today is the last day of filtering" in new Setup {
+      "the date given is the last day of filtering" in new Setup {
         when(mockConfig.getOptional[String](any())(any()))
           .thenReturn(None)
         featureSwitching.setEstimatedLPP1FilterEndDate(Some(LocalDate.now()))
-        featureSwitching.withinLPP1FilterWindow shouldBe true
+        featureSwitching.withinLPP1FilterWindow(LocalDate.now()) shouldBe true
       }
     }
 
     "return false" when {
-      "now is after set date" in new Setup {
+      "the date given is after set date" in new Setup {
         when(mockConfig.getOptional[String](any())(any()))
           .thenReturn(None)
         featureSwitching.setEstimatedLPP1FilterEndDate(Some(LocalDate.now().minusDays(1)))
 
-        featureSwitching.withinLPP1FilterWindow shouldBe false
+        featureSwitching.withinLPP1FilterWindow(LocalDate.now()) shouldBe false
       }
 
       "an end date is not set" in new Setup {
         when(mockConfig.getOptional[String](any())(any()))
           .thenReturn(None)
 
-        featureSwitching.withinLPP1FilterWindow shouldBe false
+        featureSwitching.withinLPP1FilterWindow(LocalDate.now()) shouldBe false
       }
     }
   }
