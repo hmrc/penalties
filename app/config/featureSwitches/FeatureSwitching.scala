@@ -19,11 +19,12 @@ package config.featureSwitches
 import play.api.Configuration
 import utils.Logger.logger
 
-import java.time.LocalDateTime
+import java.time.{LocalDate, LocalDateTime}
 
 trait FeatureSwitching {
   implicit val config: Configuration
   val TIME_MACHINE_NOW = "TIME_MACHINE_NOW"
+  val ESTIMATED_LPP1_FILTER_END_DATE = "ESTIMATED_LPP1_FILTER_END_DATE"
   val FEATURE_SWITCH_ON = "true"
   val FEATURE_SWITCH_OFF = "false"
 
@@ -48,6 +49,35 @@ trait FeatureSwitching {
         LocalDateTime.parse(dateAsString)
       }
     })(LocalDateTime.parse(_))
+  }
+
+  def setEstimatedLPP1FilterEndDate(dateTimeToSet: Option[LocalDate]): Unit = {
+    logger.debug(s"[FeatureSwitching][setEstimatedLPP1FilterEndDate] - setting estimated LPP1 filter end date to: $dateTimeToSet")
+    dateTimeToSet.fold(sys.props -= ESTIMATED_LPP1_FILTER_END_DATE)(sys.props += ESTIMATED_LPP1_FILTER_END_DATE -> _.toString)
+  }
+
+  def getEstimatedLPP1FilterEndDate: Option[LocalDate] = {
+    val optDateAsString = config.getOptional[String]("feature.switch.estimated-lpp1-filter-end-date")
+    val sysProp: Option[String] = sys.props.get(ESTIMATED_LPP1_FILTER_END_DATE)
+
+    (sysProp, optDateAsString) match {
+      case (Some(systemPropDate), _) =>
+        logger.debug(s"[FeatureSwitching][getEstimatedLPP1FilterEndDate] Found Estimated LPP1 filter end date in system properties: $systemPropDate")
+        Some(LocalDate.parse(systemPropDate))
+      case (None, Some(configDate)) =>
+        logger.debug(s"[FeatureSwitching][getEstimatedLPP1FilterEndDate] Found Estimated LPP1 filter end date in config: $configDate")
+        Some(LocalDate.parse(configDate))
+      case _ =>
+        logger.debug(s"[FeatureSwitching][getEstimatedLPP1FilterEndDate] No Estimated LPP1 filter end date set, returning NONE")
+        None
+    }
+  }
+
+  def withinLPP1FilterWindow(date: LocalDate): Boolean = {
+    getEstimatedLPP1FilterEndDate match {
+      case Some(filterEndDate) => !date.isAfter(filterEndDate)
+      case None => false
+    }
   }
 
   def disableFeatureSwitch(featureSwitch: FeatureSwitch): Unit =
