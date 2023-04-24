@@ -42,7 +42,7 @@ class GetPenaltyDetailsService @Inject()(getPenaltyDetailsConnector: GetPenaltyD
     connectorResponse match {
       case res@Right(_@GetPenaltyDetailsSuccessResponse(penaltyDetails)) =>
         logger.debug(s"$startOfLogMsg - Got a success response from the connector. Parsed model: $penaltyDetails")
-        Right(GetPenaltyDetailsSuccessResponse(filterEsyimatedLPP1(penaltyDetails, vrn)))
+        Right(GetPenaltyDetailsSuccessResponse(filterEstimatedLPP1(penaltyDetails, vrn)))
       case res@Left(GetPenaltyDetailsNoContent) =>
         logger.debug(s"$startOfLogMsg - Got a 404 response and no data was found for GetPenaltyDetails call")
         res
@@ -55,7 +55,7 @@ class GetPenaltyDetailsService @Inject()(getPenaltyDetailsConnector: GetPenaltyD
     }
   }
 
-  private def filterEsyimatedLPP1(penaltiesDetails: GetPenaltyDetails, vrn: String): GetPenaltyDetails = {
+  private def filterEstimatedLPP1(penaltiesDetails: GetPenaltyDetails, vrn: String): GetPenaltyDetails = {
     if (penaltiesDetails.latePaymentPenalty.nonEmpty) {
       val filteredLPPs: Option[Seq[LPPDetails]] = penaltiesDetails.latePaymentPenalty.flatMap(
         _.details.map(latePaymentPenalties => latePaymentPenalties.filterNot(lpp =>
@@ -67,15 +67,15 @@ class GetPenaltyDetailsService @Inject()(getPenaltyDetailsConnector: GetPenaltyD
 
       if (filteredLPPs.nonEmpty) {
         val numberOfFilteredLPPs: Int = filteredLPPs.get.size - penaltiesDetails.latePaymentPenalty.get.details.size
-        logger.info(s"[GetPenaltyDetailsService][filterEsyimatedLPP1] - Filtered $numberOfFilteredLPPs LPP1(s) from payload for VRN: $vrn")
+        logger.info(s"[GetPenaltyDetailsService][filterEstimatedLPP1] - Filtered $numberOfFilteredLPPs LPP1(s) from payload for VRN: $vrn")
         penaltiesDetails.copy(latePaymentPenalty = Some(LatePaymentPenalty(filteredLPPs)))
       } else {
         val numberOfFilteredLPPs: Int = penaltiesDetails.latePaymentPenalty.get.details.size
-        logger.info(s"[GetPenaltyDetailsService][filterEsyimatedLPP1] - Filtered $numberOfFilteredLPPs LPP1(s) from payload for VRN: $vrn")
+        logger.info(s"[GetPenaltyDetailsService][filterEstimatedLPP1] - Filtered $numberOfFilteredLPPs LPP1(s) from payload for VRN: $vrn")
         penaltiesDetails.copy(latePaymentPenalty = None)
       }
     } else {
-      logger.info(s"[GetPenaltyDetailsService][filterEsyimatedLPP1] - No LPPs to filter for VRN: $vrn")
+      logger.info(s"[GetPenaltyDetailsService][filterEstimatedLPP1] - No LPPs to filter for VRN: $vrn")
       penaltiesDetails
     }
   }

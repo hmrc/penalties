@@ -42,9 +42,16 @@ class GetPenaltyDetailsServiceSpec extends SpecBase with LogCapturing {
   implicit val ec: ExecutionContext = ExecutionContext.Implicits.global
   implicit val hc: HeaderCarrier = HeaderCarrier()
   val mockGetPenaltyDetailsConnector: GetPenaltyDetailsConnector = mock(classOf[GetPenaltyDetailsConnector])
-  class Setup {
-    val service = new GetPenaltyDetailsService(mockGetPenaltyDetailsConnector)
+  class Setup(withRealConfig: Boolean = true) {
+    val mockConfig: Configuration = mock(classOf[Configuration])
+    val mockServicesConfig: ServicesConfig = mock(classOf[ServicesConfig])
+
+    val mockAppConfig: AppConfig = new AppConfig(mockConfig, mockServicesConfig)
+    val service = new GetPenaltyDetailsService(mockGetPenaltyDetailsConnector)(implicitly, appConfig = if(withRealConfig) appConfig else mockAppConfig)
+
     reset(mockGetPenaltyDetailsConnector)
+    reset(mockConfig)
+    reset(mockServicesConfig)
   }
 
   "getDataFromPenaltyServiceForVATCVRN" should {
@@ -202,17 +209,8 @@ class GetPenaltyDetailsServiceSpec extends SpecBase with LogCapturing {
       val result: Exception = intercept[Exception](await(service.getDataFromPenaltyServiceForVATCVRN("123456789")))
       result.getMessage shouldBe "Something has gone wrong."
     }
-
-    class SetUpWithMockConfig {
-      val mockConfig: Configuration = mock(classOf[Configuration])
-      val mockServiceConfig: ServicesConfig = mock(classOf[ServicesConfig])
-
-      val appConfig: AppConfig = new AppConfig(mockConfig, mockServiceConfig)
-      val service = new GetPenaltyDetailsService(mockGetPenaltyDetailsConnector)(ec = ec, appConfig = appConfig)
-      reset(mockGetPenaltyDetailsConnector)
-    }
-
-    val lpp1PrincipleChargeDueToday: LPPDetails = LPPDetails(
+    
+    val lpp1PrincipalChargeDueToday: LPPDetails = LPPDetails(
       penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
       principalChargeReference = "1234567890",
       penaltyChargeReference = Some("123456789"),
@@ -245,26 +243,26 @@ class GetPenaltyDetailsServiceSpec extends SpecBase with LogCapturing {
       penaltyAmountAccruing = BigDecimal(144.21),
       principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
     )
-    val lpp2: LPPDetails = lpp1PrincipleChargeDueToday.copy(penaltyCategory = LPPPenaltyCategoryEnum.SecondPenalty)
-    val lpp1PrincipleChargeDueYesterday: LPPDetails = lpp1PrincipleChargeDueToday.copy(principalChargeDueDate = LocalDate.now().minusDays(1))
-    val lpp1PrincipleChargeDueYesterdayPosted: LPPDetails = lpp1PrincipleChargeDueToday.copy(principalChargeDueDate = LocalDate.now().minusDays(1), penaltyStatus = LPPPenaltyStatusEnum.Posted)
-    val lpp1PrincipleChargeDueTomorrow: LPPDetails = lpp1PrincipleChargeDueToday.copy(principalChargeDueDate = LocalDate.now().plusDays(1))
+    val lpp2: LPPDetails = lpp1PrincipalChargeDueToday.copy(penaltyCategory = LPPPenaltyCategoryEnum.SecondPenalty)
+    val lpp1PrincipalChargeDueYesterday: LPPDetails = lpp1PrincipalChargeDueToday.copy(principalChargeDueDate = LocalDate.now().minusDays(1))
+    val lpp1PrincipalChargeDueYesterdayPosted: LPPDetails = lpp1PrincipalChargeDueToday.copy(principalChargeDueDate = LocalDate.now().minusDays(1), penaltyStatus = LPPPenaltyStatusEnum.Posted)
+    val lpp1PrincipalChargeDueTomorrow: LPPDetails = lpp1PrincipalChargeDueToday.copy(principalChargeDueDate = LocalDate.now().plusDays(1))
 
-    "filter any estimated LPP1s with a principle charge due date within the filtering window" in new SetUpWithMockConfig {
+    "filter any estimated LPP1s with a Principal charge due date within the filtering window" in new Setup(false) {
       val penaltyDetails = GetPenaltyDetails(totalisations = None,
         lateSubmissionPenalty = None,
         latePaymentPenalty = Some(LatePaymentPenalty(Some(Seq(
           lpp2,
-          lpp1PrincipleChargeDueToday,
-          lpp1PrincipleChargeDueTomorrow,
-          lpp1PrincipleChargeDueYesterday,
-          lpp1PrincipleChargeDueYesterdayPosted)))),
+          lpp1PrincipalChargeDueToday,
+          lpp1PrincipalChargeDueTomorrow,
+          lpp1PrincipalChargeDueYesterday,
+          lpp1PrincipalChargeDueYesterdayPosted)))),
         breathingSpace = None
       )
 
       val expectedResult = GetPenaltyDetailsSuccessResponse(GetPenaltyDetails(totalisations = None,
         lateSubmissionPenalty = None,
-        latePaymentPenalty = Some(LatePaymentPenalty(Some(Seq(lpp2, lpp1PrincipleChargeDueTomorrow, lpp1PrincipleChargeDueYesterdayPosted)))),
+        latePaymentPenalty = Some(LatePaymentPenalty(Some(Seq(lpp2, lpp1PrincipalChargeDueTomorrow, lpp1PrincipalChargeDueYesterdayPosted)))),
         breathingSpace = None
       ))
 
@@ -279,19 +277,19 @@ class GetPenaltyDetailsServiceSpec extends SpecBase with LogCapturing {
       result.toOption.get shouldBe expectedResult
     }
 
-    "not filter any LPP1s with a principle charge due date outside the filtering window" in new SetUpWithMockConfig {
+    "not filter any LPP1s with a Principal charge due date outside the filtering window" in new Setup(false) {
       val penaltyDetails = GetPenaltyDetails(totalisations = None,
         lateSubmissionPenalty = None,
         latePaymentPenalty = Some(LatePaymentPenalty(Some(Seq(
           lpp2,
-          lpp1PrincipleChargeDueTomorrow,
-          lpp1PrincipleChargeDueYesterdayPosted)))),
+          lpp1PrincipalChargeDueTomorrow,
+          lpp1PrincipalChargeDueYesterdayPosted)))),
         breathingSpace = None
       )
 
       val expectedResult = GetPenaltyDetailsSuccessResponse(GetPenaltyDetails(totalisations = None,
         lateSubmissionPenalty = None,
-        latePaymentPenalty = Some(LatePaymentPenalty(Some(Seq(lpp2, lpp1PrincipleChargeDueTomorrow, lpp1PrincipleChargeDueYesterdayPosted)))),
+        latePaymentPenalty = Some(LatePaymentPenalty(Some(Seq(lpp2, lpp1PrincipalChargeDueTomorrow, lpp1PrincipalChargeDueYesterdayPosted)))),
         breathingSpace = None
       ))
 
