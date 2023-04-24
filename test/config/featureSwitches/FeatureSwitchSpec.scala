@@ -177,13 +177,13 @@ class FeatureSwitchSpec extends SpecBase {
 
   "FeatureSwitching getEstimatedLPP1FilterEndDate" should {
     lazy val dateNowMinus1Day: LocalDate = LocalDate.now().minusDays(1)
-    s"get the date when it exists in system properties" in new Setup {
+    "get the date when it exists in system properties" in new Setup {
       featureSwitching.setEstimatedLPP1FilterEndDate(Some(dateNowMinus1Day))
       (sys.props get featureSwitching.ESTIMATED_LPP1_FILTER_END_DATE) shouldBe Some(dateNowMinus1Day.toString)
       featureSwitching.getEstimatedLPP1FilterEndDate.get shouldBe dateNowMinus1Day
     }
 
-    s"get the date from config when the key value exists and is non-empty" in new Setup {
+    "get the date from config when the key value exists and is non-empty" in new Setup {
       (sys.props get featureSwitching.ESTIMATED_LPP1_FILTER_END_DATE) shouldBe None
       when(mockConfig.getOptional[String](any())(any()))
         .thenReturn(Some(dateNowMinus1Day.toString))
@@ -191,7 +191,7 @@ class FeatureSwitchSpec extends SpecBase {
     }
 
     "return NONE" when {
-      s"it does not exist in properties nor in config (kv not present)" in new Setup {
+      "it does not exist in properties nor in config (kv not present)" in new Setup {
         (sys.props get featureSwitching.ESTIMATED_LPP1_FILTER_END_DATE) shouldBe None
         when(mockConfig.getOptional[String](any())(any()))
           .thenReturn(None)
