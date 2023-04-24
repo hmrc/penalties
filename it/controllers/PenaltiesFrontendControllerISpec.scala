@@ -339,16 +339,6 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
       val getPenaltyDetailsNoLPPJson: JsValue = Json.parse(
         """
           |{
-          | "lateSubmissionPenalty": {
-          |   "summary": {
-          |     "activePenaltyPoints": 0,
-          |     "inactivePenaltyPoints": 0,
-          |     "regimeThreshold": 5,
-          |     "penaltyChargeAmount": 200.00,
-          |     "PoCAchievementDate": "2022-01-01"
-          |   },
-          |   "details": []
-          | }
           |}
           |""".stripMargin)
       val noDataFoundBody =

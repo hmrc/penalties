@@ -154,6 +154,79 @@ class GetPenaltyDetailsServiceSpec extends SpecBase with LogCapturing {
       ))
     )
 
+
+    val lpp1PrincipalChargeDueToday: LPPDetails = LPPDetails(
+      penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
+      principalChargeReference = "1234567890",
+      penaltyChargeReference = Some("123456789"),
+      penaltyChargeCreationDate = Some(LocalDate.of(2022, 10, 30)),
+      penaltyStatus = LPPPenaltyStatusEnum.Accruing,
+      appealInformation = Some(Seq(AppealInformationType(appealStatus = Some(AppealStatusEnum.Unappealable), appealLevel = Some(AppealLevelEnum.HMRC)))),
+      principalChargeBillingFrom = LocalDate.of(2022, 10, 30),
+      principalChargeBillingTo = LocalDate.of(2022, 10, 30),
+      principalChargeDueDate = LocalDate.now(),
+      communicationsDate = Some(LocalDate.of(2022, 10, 30)),
+      penaltyAmountOutstanding = None,
+      penaltyAmountPaid = None,
+      penaltyAmountPosted = None,
+      LPP1LRDays = Some("15"),
+      LPP1HRDays = Some("31"),
+      LPP2Days = None,
+      LPP1HRCalculationAmount = Some(99.99),
+      LPP1LRCalculationAmount = Some(99.99),
+      LPP2Percentage = None,
+      LPP1LRPercentage = Some(BigDecimal(2.00).setScale(2)),
+      LPP1HRPercentage = Some(BigDecimal(2.00).setScale(2)),
+      penaltyChargeDueDate = Some(LocalDate.of(2022, 10, 30)),
+      principalChargeLatestClearing = None,
+      metadata = LPPDetailsMetadata(
+        timeToPay = Some(Seq(TimeToPay(
+          TTPStartDate = Some(LocalDate.of(2022, 1, 1)),
+          TTPEndDate = Some(LocalDate.of(2022, 12, 31))
+        )))
+      ),
+      penaltyAmountAccruing = BigDecimal(144.21),
+      principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
+    )
+
+    val lpp2: LPPDetails = LPPDetails(
+      penaltyCategory = LPPPenaltyCategoryEnum.SecondPenalty,
+      principalChargeReference = "1234567890",
+      penaltyChargeReference = Some("123456789"),
+      penaltyChargeCreationDate = Some(LocalDate.of(2022, 10, 30)),
+      penaltyStatus = LPPPenaltyStatusEnum.Accruing,
+      appealInformation = Some(Seq(AppealInformationType(appealStatus = Some(AppealStatusEnum.Unappealable), appealLevel = Some(AppealLevelEnum.HMRC)))),
+      principalChargeBillingFrom = LocalDate.of(2022, 10, 30),
+      principalChargeBillingTo = LocalDate.of(2022, 10, 30),
+      principalChargeDueDate = LocalDate.now(),
+      communicationsDate = Some(LocalDate.of(2022, 10, 30)),
+      penaltyAmountOutstanding = None,
+      penaltyAmountPaid = None,
+      penaltyAmountPosted = None,
+      LPP1LRDays = None,
+      LPP1HRDays = None,
+      LPP2Days = Some("31"),
+      LPP1HRCalculationAmount = None,
+      LPP1LRCalculationAmount = None,
+      LPP2Percentage = Some(BigDecimal(4.00).setScale(2)),
+      LPP1LRPercentage = None,
+      LPP1HRPercentage = None,
+      penaltyChargeDueDate = Some(LocalDate.of(2022, 10, 30)),
+      principalChargeLatestClearing = None,
+      metadata = LPPDetailsMetadata(
+        timeToPay = Some(Seq(TimeToPay(
+          TTPStartDate = Some(LocalDate.of(2022, 1, 1)),
+          TTPEndDate = Some(LocalDate.of(2022, 12, 31))
+        )))
+      ),
+      penaltyAmountAccruing = BigDecimal(144.21),
+      principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
+    )
+
+    val lpp1PrincipalChargeDueYesterday: LPPDetails = lpp1PrincipalChargeDueToday.copy(principalChargeDueDate = LocalDate.now().minusDays(1))
+    val lpp1PrincipalChargeDueYesterdayPosted: LPPDetails = lpp1PrincipalChargeDueToday.copy(principalChargeDueDate = LocalDate.now().minusDays(1), penaltyStatus = LPPPenaltyStatusEnum.Posted)
+    val lpp1PrincipalChargeDueTomorrow: LPPDetails = lpp1PrincipalChargeDueToday.copy(principalChargeDueDate = LocalDate.now().plusDays(1))
+
     s"call the connector and return a $GetPenaltyDetailsSuccessResponse when the request is successful" in new Setup {
       when(mockGetPenaltyDetailsConnector.getPenaltyDetails(Matchers.eq("123456789"))(any()))
         .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(mockGetPenaltyDetailsResponseAsModel))))
@@ -209,46 +282,8 @@ class GetPenaltyDetailsServiceSpec extends SpecBase with LogCapturing {
       val result: Exception = intercept[Exception](await(service.getDataFromPenaltyServiceForVATCVRN("123456789")))
       result.getMessage shouldBe "Something has gone wrong."
     }
-    
-    val lpp1PrincipalChargeDueToday: LPPDetails = LPPDetails(
-      penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
-      principalChargeReference = "1234567890",
-      penaltyChargeReference = Some("123456789"),
-      penaltyChargeCreationDate = Some(LocalDate.of(2022, 10, 30)),
-      penaltyStatus = LPPPenaltyStatusEnum.Accruing,
-      appealInformation = Some(Seq(AppealInformationType(appealStatus = Some(AppealStatusEnum.Unappealable), appealLevel = Some(AppealLevelEnum.HMRC)))),
-      principalChargeBillingFrom = LocalDate.of(2022, 10, 30),
-      principalChargeBillingTo = LocalDate.of(2022, 10, 30),
-      principalChargeDueDate = LocalDate.now(),
-      communicationsDate = Some(LocalDate.of(2022, 10, 30)),
-      penaltyAmountOutstanding = None,
-      penaltyAmountPaid = None,
-      penaltyAmountPosted = None,
-      LPP1LRDays = Some("15"),
-      LPP1HRDays = Some("31"),
-      LPP2Days = Some("31"),
-      LPP1HRCalculationAmount = Some(99.99),
-      LPP1LRCalculationAmount = Some(99.99),
-      LPP2Percentage = Some(BigDecimal(4.00).setScale(2)),
-      LPP1LRPercentage = Some(BigDecimal(2.00).setScale(2)),
-      LPP1HRPercentage = Some(BigDecimal(2.00).setScale(2)),
-      penaltyChargeDueDate = Some(LocalDate.of(2022, 10, 30)),
-      principalChargeLatestClearing = None,
-      metadata = LPPDetailsMetadata(
-        timeToPay = Some(Seq(TimeToPay(
-          TTPStartDate = Some(LocalDate.of(2022, 1, 1)),
-          TTPEndDate = Some(LocalDate.of(2022, 12, 31))
-        )))
-      ),
-      penaltyAmountAccruing = BigDecimal(144.21),
-      principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
-    )
-    val lpp2: LPPDetails = lpp1PrincipalChargeDueToday.copy(penaltyCategory = LPPPenaltyCategoryEnum.SecondPenalty)
-    val lpp1PrincipalChargeDueYesterday: LPPDetails = lpp1PrincipalChargeDueToday.copy(principalChargeDueDate = LocalDate.now().minusDays(1))
-    val lpp1PrincipalChargeDueYesterdayPosted: LPPDetails = lpp1PrincipalChargeDueToday.copy(principalChargeDueDate = LocalDate.now().minusDays(1), penaltyStatus = LPPPenaltyStatusEnum.Posted)
-    val lpp1PrincipalChargeDueTomorrow: LPPDetails = lpp1PrincipalChargeDueToday.copy(principalChargeDueDate = LocalDate.now().plusDays(1))
 
-    "filter any estimated LPP1s with a Principal charge due date within the filtering window" in new Setup(false) {
+    "filter any estimated LPP1s with a principal charge due date within the filtering window" in new Setup(false) {
       val penaltyDetails = GetPenaltyDetails(totalisations = None,
         lateSubmissionPenalty = None,
         latePaymentPenalty = Some(LatePaymentPenalty(Some(Seq(
@@ -277,7 +312,7 @@ class GetPenaltyDetailsServiceSpec extends SpecBase with LogCapturing {
       result.toOption.get shouldBe expectedResult
     }
 
-    "not filter any LPP1s with a Principal charge due date outside the filtering window" in new Setup(false) {
+    "not filter any LPP1s with a principal charge due date outside the filtering window" in new Setup(false) {
       val penaltyDetails = GetPenaltyDetails(totalisations = None,
         lateSubmissionPenalty = None,
         latePaymentPenalty = Some(LatePaymentPenalty(Some(Seq(
