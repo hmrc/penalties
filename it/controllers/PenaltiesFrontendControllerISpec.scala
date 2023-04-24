@@ -348,9 +348,6 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
           |     "PoCAchievementDate": "2022-01-01"
           |   },
           |   "details": []
-          | },
-          | "latePaymentPenalty": {
-          |
           | }
           |}
           |""".stripMargin)
