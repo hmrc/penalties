@@ -5,11 +5,9 @@ The backend for the penalties services such as `penalties-frontend` and `penalti
 
 - Retrieving penalties and compliance data
 - The retrieval and submission of appeals
-- Providing other teams with penalties summary data
+- Providing other teams with penalties data
 
 ## Running
-
-This services requires MongoDB to be running.
 
 The service manager configuration name for this service is `PENALTIES`. 
 But it can be started with`sm --start PENALTIES_ALL` along with dependent services such as `penalties-stub` and more. 
@@ -17,16 +15,14 @@ It can also be started specifically with `sm --start PENALTIES`.
 
 To run local changes you will have to stop the service in service manager using `sm --stop PENALTIES` then run the script mentioned below.
 
-This application runs on port 9182 .
+This application runs on port 9182.
 
 To start the service use the `./run.sh` script.
 
 
 ## Endpoints
 
-The payload must be pre-existing in Mongo before attempting a retrieval.
-
-#### `GET        /penalties/vat/penalties/summary/:VRN`
+#### `GET /penalties/vat/penalties/summary/:VRN`
 Retrieve penalties summary information belonging to a VRN.
 
 Example VRN: `123456789`
@@ -49,7 +45,7 @@ Example payload:
 | Invalid VRN format    | 400    |
 | No data found for VRN | 404    |
 
-#### `GET        /penalties/etmp/penalties/:enrolmentKey`
+#### `GET /penalties/etmp/penalties/:enrolmentKey`
 Get data for penalties belonging to an enrolment key. 
 
 Example enrolmentKey format: `HMRC-MTD-VAT~VRN~123456789`
@@ -61,7 +57,7 @@ Example enrolmentKey format: `HMRC-MTD-VAT~VRN~123456789`
 | No data found for VRN | 404    |
 
 ### Appeals:
-#### `GET        /penalties/appeals-data/late-submissions`
+#### `GET /penalties/appeals-data/late-submissions`
 
 Get Late Submission Penalty data for an appeal.
 
@@ -71,7 +67,6 @@ The following query parameters should be specified:
 |------------------|--------|-----------|
 | `penaltyId`      | String | Yes       |
 | `enrolmentKey`   | String | Yes       |
-| `useNewApiModel` | String | Yes       |
 
 URL format - `/penalties/appeals-data/late-submissions?{penaltyId}=[idvalue]&{enrolementKey}=[key]`
 
@@ -83,7 +78,7 @@ Example URL - `/penalties/appeals-data/late-submissions?penaltyId=1234567890&enr
 | No data found for penaltyId | 404    |
 | Internal server error       | 500    |
 
-#### `GET        /penalties/appeals-data/late-payments`
+#### `GET /penalties/appeals-data/late-payments`
 
 Get Late Payment Penalty data for an appeal.
 
@@ -94,7 +89,6 @@ The following query parameters should be specified:
 | `penaltyId`      | String  | Yes       |
 | `enrolmentKey`   | String  | Yes       |       
 | `isAdditional`   | Boolean | Yes       |     
-| `useNewApiModel` | Boolean | Yes       |    
 
 URL format - `/appeals-data/late-submissions?{penaltyId}=[idvalue]&{enrolementKey}=[value]&{isAdditional}=[booleanValue]`
 
@@ -106,7 +100,7 @@ Example URL - `/appeals-data/late-submissions?penaltyId=1234567890&enrolementKey
 | No data found for penaltyId | 404    |
 | Internal server error       | 500    |
 
-#### `GET        /penalties/appeals-data/reasonable-excuses`
+#### `GET /penalties/appeals-data/reasonable-excuses`
 
 Get list of reasonable excuses used to make an appeal.
 
@@ -115,7 +109,7 @@ Get list of reasonable excuses used to make an appeal.
 | Successful retrieval | 200    |
 
 
-#### `POST       /penalties/appeals/submit-appeal`
+#### `POST /penalties/appeals/submit-appeal`
 
 Submit an appeal for a penalty.
 
@@ -145,7 +139,7 @@ Example payload:
     "appealInformation": {
             "reasonableExcuse": "crime",
             "honestyDeclaration": true,
-            "startDateOfEvent": "2021-04-23T00:00",
+            "startDateOfEvent": "2021-04-23T00:00:00",
             "reportedIssueToPolice": "yes",
             "lateAppeal": true,
             "lateAppealReason": "Reason",
@@ -162,7 +156,7 @@ Example payload:
 | Internal server error                            | 500    |
 
 ### Compliance
-#### `GET        /penalties/compliance/des/compliance-data`
+#### `GET /penalties/compliance/des/compliance-data`
 Get compliance data of penalty for VRN in a period.
 
 The following query parameters should be specified:
@@ -185,7 +179,7 @@ Example URL - `/penalties/compliance/des/compliance-data?VRN=1234567890&fromDate
 | Internal server error    | 500    |
 
 ### Get Financial Details (API 1811)
-#### `GET        /penalties/penalty/financial-data/VRN/:VRN/VATC`
+#### `GET /penalties/penalty/financial-data/VRN/:VRN/VATC`
 
 Gets the financial details for the specified VRN.
 
@@ -217,10 +211,10 @@ Example URL - `/penalties/penalty/financial-data/VRN/:VRN/VATC?searchType=CHGREF
 | Internal server error                                                                                                                           | 500    |
 | Dependent systems are not available                                                                                                             | 503    |
 
-The data returned is outlined in v2.3.0 of the GetFinancialDetails API specification.
+The data returned is outlined in v2.7.0 of the GetFinancialDetails API specification.
 
 ### Get Penalty Details (API 1812)
-### `GET        /penalties/penalty-details/VAT/VRN/:VRN`
+### `GET /penalties/penalty-details/VAT/VRN/:VRN`
 
 Gets the penalty details for specified VRN.
 
@@ -240,7 +234,7 @@ Example URL - `/penalties/penalty-details/VAT/VRN/:VRN?dateLimit=09`
 | Internal server error                                                                                                                           | 500    |
 | Dependent systems are not available                                                                                                             | 503    |
 
-The data returned is outlined in v1.1.0 of the GetPenaltyDetails API specification.
+The data returned is outlined in v1.4.1 of the GetPenaltyDetails API specification.
 
 ## Testing
 
