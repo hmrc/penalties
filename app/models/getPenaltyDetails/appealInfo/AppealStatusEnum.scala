@@ -24,6 +24,10 @@ object AppealStatusEnum extends Enumeration {
   val Upheld: AppealStatusEnum.Value = Value("B")
   val Rejected: AppealStatusEnum.Value = Value("C")
   val Unappealable: AppealStatusEnum.Value = Value("99")
+  val AppealRejectedChargeAlreadyReversed: AppealStatusEnum.Value = Value("C")
+  val AppealRejectedPointAlreadyRemoved: AppealStatusEnum.Value = Value("C")
+  val AppealUpheldPointAlreadyRemoved: AppealStatusEnum.Value = Value("B")
+  val AppealUpheldChargeAlreadyReversed: AppealStatusEnum.Value = Value("B")
 
   implicit val format: Format[AppealStatusEnum.Value] = new Format[AppealStatusEnum.Value] {
 
@@ -34,6 +38,10 @@ object AppealStatusEnum extends Enumeration {
       case "B" => JsSuccess(Upheld)
       case "C" => JsSuccess(Rejected)
       case "99" => JsSuccess(Unappealable)
+      case "91" => JsSuccess(AppealRejectedChargeAlreadyReversed)
+      case "92" => JsSuccess(AppealUpheldPointAlreadyRemoved)
+      case "93" => JsSuccess(AppealUpheldChargeAlreadyReversed)
+      case "94" => JsSuccess(AppealRejectedPointAlreadyRemoved)
       case e => JsError(s"$e not recognised")
     }
   }
