@@ -22,49 +22,39 @@ import play.api.libs.json.{JsString, Json}
 class AppealStatusEnumSpec extends SpecBase {
 
   "AppealStatusEnum" should {
-    "be writable to JSON for UNDER_APPEAL" in {
-      val result = Json.toJson(AppealStatusEnum.Under_Appeal)(AppealStatusEnum.format)
-      result shouldBe JsString("A")
+
+    def writableTest(friendlyName: String, appealStatusEnum: AppealStatusEnum.Value, expectedResult: String): Unit = {
+      s"be writable to JSON for $friendlyName" in {
+        val result = Json.toJson(appealStatusEnum)(AppealStatusEnum.format)
+        result shouldBe JsString(expectedResult)
+      }
     }
 
-    "be writable to JSON for UPHELD" in {
-      val result = Json.toJson(AppealStatusEnum.Upheld)(AppealStatusEnum.format)
-      result shouldBe JsString("B")
+    def readableTest(friendlyName: String, appealStatusValue: String, expectedResult: AppealStatusEnum.Value): Unit = {
+      s"be readable from JSON for $friendlyName" in {
+        val result = Json.fromJson(JsString(appealStatusValue))(AppealStatusEnum.format)
+        result.isSuccess shouldBe true
+        result.get shouldBe expectedResult
+      }
     }
 
-    "be writable to JSON for REJECTED" in {
-      val result = Json.toJson(AppealStatusEnum.Rejected)(AppealStatusEnum.format)
-      result shouldBe JsString("C")
-    }
+    writableTest("UNDER_APPEAL", AppealStatusEnum.Under_Appeal, "A")
+    writableTest("UPHELD", AppealStatusEnum.Upheld, "B")
+    writableTest("REJECTED", AppealStatusEnum.Rejected, "C")
+    writableTest("UNAPPEALABLE", AppealStatusEnum.Unappealable, "99")
+    writableTest("CHARGE ALREADY REVERSED - Appeal Rejection", AppealStatusEnum.AppealRejectedChargeAlreadyReversed, "C")
+    writableTest("POINT ALREADY REMOVED - Appeal Upheld", AppealStatusEnum.AppealUpheldPointAlreadyRemoved, "B")
+    writableTest("CHARGE ALREADY REVERSED - Appeal Upheld", AppealStatusEnum.AppealUpheldChargeAlreadyReversed, "B")
+    writableTest("POINT ALREADY REMOVED - Appeal Rejection", AppealStatusEnum.AppealRejectedPointAlreadyRemoved, "C")
 
-    "be writable to JSON for UNAPPEALABLE" in {
-      val result = Json.toJson(AppealStatusEnum.Unappealable)(AppealStatusEnum.format)
-      result shouldBe JsString("99")
-    }
-
-    "be readable from JSON for UNDER_APPEAL" in{
-      val result = Json.fromJson(JsString("A"))(AppealStatusEnum.format)
-      result.isSuccess shouldBe true
-      result.get shouldBe AppealStatusEnum.Under_Appeal
-    }
-
-    "be readable from JSON for UPHELD" in{
-      val result = Json.fromJson(JsString("B"))(AppealStatusEnum.format)
-      result.isSuccess shouldBe true
-      result.get shouldBe AppealStatusEnum.Upheld
-    }
-
-    "be readable from JSON for REJECTED" in{
-      val result = Json.fromJson(JsString("C"))(AppealStatusEnum.format)
-      result.isSuccess shouldBe true
-      result.get shouldBe AppealStatusEnum.Rejected
-    }
-
-    "be readable from JSON for UNAPPEALABLE" in{
-      val result = Json.fromJson(JsString("99"))(AppealStatusEnum.format)
-      result.isSuccess shouldBe true
-      result.get shouldBe AppealStatusEnum.Unappealable
-    }
+    readableTest("UNDER_APPEAL", "A", AppealStatusEnum.Under_Appeal)
+    readableTest("UPHELD", "B", AppealStatusEnum.Upheld)
+    readableTest("REJECTED", "C", AppealStatusEnum.Rejected)
+    readableTest("UNAPPEALABLE", "99", AppealStatusEnum.Unappealable)
+    readableTest("CHARGE ALREADY REVERSED - Appeal Rejection", "91", AppealStatusEnum.AppealRejectedChargeAlreadyReversed)
+    readableTest("POINT ALREADY REMOVED - Appeal Upheld", "92", AppealStatusEnum.AppealUpheldPointAlreadyRemoved)
+    readableTest("CHARGE ALREADY REVERSED - Appeal Upheld", "93", AppealStatusEnum.AppealUpheldChargeAlreadyReversed)
+    readableTest("POINT ALREADY REMOVED - Appeal Rejection", "94", AppealStatusEnum.AppealRejectedPointAlreadyRemoved)
 
     "return JsError when the enum is not recognised" in {
       val result = Json.fromJson(JsString("error"))(AppealStatusEnum.format)
