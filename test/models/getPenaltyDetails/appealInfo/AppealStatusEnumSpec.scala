@@ -23,14 +23,14 @@ class AppealStatusEnumSpec extends SpecBase {
 
   "AppealStatusEnum" should {
 
-    def writableTests(friendlyName: String, appealStatusEnum: AppealStatusEnum.Value, expectedResult: String): Unit = {
+    def writableTest(friendlyName: String, appealStatusEnum: AppealStatusEnum.Value, expectedResult: String): Unit = {
       s"be writable to JSON for $friendlyName" in {
         val result = Json.toJson(appealStatusEnum)(AppealStatusEnum.format)
         result shouldBe JsString(expectedResult)
       }
     }
 
-    def readableTests(friendlyName: String, appealStatusValue: String, expectedResult: AppealStatusEnum.Value): Unit = {
+    def readableTest(friendlyName: String, appealStatusValue: String, expectedResult: AppealStatusEnum.Value): Unit = {
       s"be readable from JSON for $friendlyName" in {
         val result = Json.fromJson(JsString(appealStatusValue))(AppealStatusEnum.format)
         result.isSuccess shouldBe true
@@ -38,23 +38,23 @@ class AppealStatusEnumSpec extends SpecBase {
       }
     }
 
-    writableTests("UNDER_APPEAL", AppealStatusEnum.Under_Appeal, "A")
-    writableTests("UPHELD", AppealStatusEnum.Upheld, "B")
-    writableTests("REJECTED", AppealStatusEnum.Rejected, "C")
-    writableTests("UNAPPEALABLE", AppealStatusEnum.Unappealable, "99")
-    writableTests("CHARGE ALREADY REVERSED - Appeal Rejection", AppealStatusEnum.AppealRejectedChargeAlreadyReversed, "C")
-    writableTests("POINT ALREADY REMOVED - Appeal Upheld", AppealStatusEnum.AppealUpheldPointAlreadyRemoved, "B")
-    writableTests("CHARGE ALREADY REVERSED - Appeal Upheld", AppealStatusEnum.AppealUpheldChargeAlreadyReversed, "B")
-    writableTests("POINT ALREADY REMOVED - Appeal Rejection", AppealStatusEnum.AppealRejectedPointAlreadyRemoved, "C")
+    writableTest("UNDER_APPEAL", AppealStatusEnum.Under_Appeal, "A")
+    writableTest("UPHELD", AppealStatusEnum.Upheld, "B")
+    writableTest("REJECTED", AppealStatusEnum.Rejected, "C")
+    writableTest("UNAPPEALABLE", AppealStatusEnum.Unappealable, "99")
+    writableTest("CHARGE ALREADY REVERSED - Appeal Rejection", AppealStatusEnum.AppealRejectedChargeAlreadyReversed, "C")
+    writableTest("POINT ALREADY REMOVED - Appeal Upheld", AppealStatusEnum.AppealUpheldPointAlreadyRemoved, "B")
+    writableTest("CHARGE ALREADY REVERSED - Appeal Upheld", AppealStatusEnum.AppealUpheldChargeAlreadyReversed, "B")
+    writableTest("POINT ALREADY REMOVED - Appeal Rejection", AppealStatusEnum.AppealRejectedPointAlreadyRemoved, "C")
 
-    readableTests("UNDER_APPEAL", "A", AppealStatusEnum.Under_Appeal)
-    readableTests("UPHELD", "B", AppealStatusEnum.Upheld)
-    readableTests("REJECTED", "C", AppealStatusEnum.Rejected)
-    readableTests("UNAPPEALABLE", "99", AppealStatusEnum.Unappealable)
-    readableTests("CHARGE ALREADY REVERSED - Appeal Rejection", "91", AppealStatusEnum.AppealRejectedChargeAlreadyReversed)
-    readableTests("POINT ALREADY REMOVED - Appeal Upheld", "92", AppealStatusEnum.AppealUpheldPointAlreadyRemoved)
-    readableTests("CHARGE ALREADY REVERSED - Appeal Upheld", "93", AppealStatusEnum.AppealUpheldChargeAlreadyReversed)
-    readableTests("POINT ALREADY REMOVED - Appeal Rejection", "94", AppealStatusEnum.AppealRejectedPointAlreadyRemoved)
+    readableTest("UNDER_APPEAL", "A", AppealStatusEnum.Under_Appeal)
+    readableTest("UPHELD", "B", AppealStatusEnum.Upheld)
+    readableTest("REJECTED", "C", AppealStatusEnum.Rejected)
+    readableTest("UNAPPEALABLE", "99", AppealStatusEnum.Unappealable)
+    readableTest("CHARGE ALREADY REVERSED - Appeal Rejection", "91", AppealStatusEnum.AppealRejectedChargeAlreadyReversed)
+    readableTest("POINT ALREADY REMOVED - Appeal Upheld", "92", AppealStatusEnum.AppealUpheldPointAlreadyRemoved)
+    readableTest("CHARGE ALREADY REVERSED - Appeal Upheld", "93", AppealStatusEnum.AppealUpheldChargeAlreadyReversed)
+    readableTest("POINT ALREADY REMOVED - Appeal Rejection", "94", AppealStatusEnum.AppealRejectedPointAlreadyRemoved)
 
     "return JsError when the enum is not recognised" in {
       val result = Json.fromJson(JsString("error"))(AppealStatusEnum.format)
