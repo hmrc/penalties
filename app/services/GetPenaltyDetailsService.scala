@@ -16,8 +16,11 @@
 
 package services
 
+import config.AppConfig
 import connectors.getPenaltyDetails.GetPenaltyDetailsConnector
 import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser._
+import models.getPenaltyDetails.GetPenaltyDetails
+import models.getPenaltyDetails.latePayment.{LPPDetails, LPPPenaltyCategoryEnum, LPPPenaltyStatusEnum, LatePaymentPenalty}
 import uk.gov.hmrc.http.HeaderCarrier
 import utils.Logger.logger
 
@@ -25,7 +28,7 @@ import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class GetPenaltyDetailsService @Inject()(getPenaltyDetailsConnector: GetPenaltyDetailsConnector)
-                                        (implicit ec: ExecutionContext){
+                                        (implicit ec: ExecutionContext, appConfig: AppConfig) {
 
   def getDataFromPenaltyServiceForVATCVRN(vrn: String)(implicit hc: HeaderCarrier): Future[GetPenaltyDetailsResponse] = {
     val startOfLogMsg: String = "[GetPenaltyDetailsService][getDataFromPenaltyServiceForVATCVRN]"
@@ -39,7 +42,7 @@ class GetPenaltyDetailsService @Inject()(getPenaltyDetailsConnector: GetPenaltyD
     connectorResponse match {
       case res@Right(_@GetPenaltyDetailsSuccessResponse(penaltyDetails)) =>
         logger.debug(s"$startOfLogMsg - Got a success response from the connector. Parsed model: $penaltyDetails")
-        res
+        Right(GetPenaltyDetailsSuccessResponse(filterEstimatedLPP1(penaltyDetails, vrn)))
       case res@Left(GetPenaltyDetailsNoContent) =>
         logger.debug(s"$startOfLogMsg - Got a 404 response and no data was found for GetPenaltyDetails call")
         res
@@ -49,6 +52,31 @@ class GetPenaltyDetailsService @Inject()(getPenaltyDetailsConnector: GetPenaltyD
       case res@Left(GetPenaltyDetailsFailureResponse(_)) =>
         logger.error(s"$startOfLogMsg - Unknown status returned from connector for VRN: $vrn")
         res
+    }
+  }
+
+  private def filterEstimatedLPP1(penaltiesDetails: GetPenaltyDetails, vrn: String): GetPenaltyDetails = {
+    if (penaltiesDetails.latePaymentPenalty.nonEmpty) {
+      val filteredLPPs: Option[Seq[LPPDetails]] = penaltiesDetails.latePaymentPenalty.flatMap(
+        _.details.map(latePaymentPenalties => latePaymentPenalties.filterNot(lpp =>
+          lpp.penaltyCategory.equals(LPPPenaltyCategoryEnum.FirstPenalty) &&
+            lpp.penaltyStatus.equals(LPPPenaltyStatusEnum.Accruing) &&
+            appConfig.withinLPP1FilterWindow(lpp.principalChargeDueDate))
+        )
+      )
+
+      if (filteredLPPs.nonEmpty) {
+        val numberOfFilteredLPPs: Int = filteredLPPs.get.size - penaltiesDetails.latePaymentPenalty.get.details.size
+        logger.info(s"[GetPenaltyDetailsService][filterEstimatedLPP1] - Filtered $numberOfFilteredLPPs LPP1(s) from payload for VRN: $vrn")
+        penaltiesDetails.copy(latePaymentPenalty = Some(LatePaymentPenalty(filteredLPPs)))
+      } else {
+        val numberOfFilteredLPPs: Int = penaltiesDetails.latePaymentPenalty.get.details.size
+        logger.info(s"[GetPenaltyDetailsService][filterEstimatedLPP1] - Filtered $numberOfFilteredLPPs LPP1(s) from payload for VRN: $vrn")
+        penaltiesDetails.copy(latePaymentPenalty = None)
+      }
+    } else {
+      logger.info(s"[GetPenaltyDetailsService][filterEstimatedLPP1] - No LPPs to filter for VRN: $vrn")
+      penaltiesDetails
     }
   }
 }
