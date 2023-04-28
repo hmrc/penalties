@@ -109,7 +109,7 @@ class EstimatedLPP1FilterSpec extends SpecBase with LPPDetailsBase {
         breathingSpace = None
       )
 
-      val expectedResult = GetPenaltyDetails(None, None, Some(LatePaymentPenalty(Some(List()))), None)
+      val expectedResult = GetPenaltyDetails(None, None, None, None)
 
       when(mockConfig.getOptional[String](any())(any()))
         .thenReturn(Some(LocalDate.now().toString))

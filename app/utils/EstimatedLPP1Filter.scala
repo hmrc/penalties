@@ -35,7 +35,7 @@ class EstimatedLPP1Filter @Inject()()(implicit ec: ExecutionContext, appConfig: 
   def returnFilteredLPPs(penaltiesDetails: GetPenaltyDetails, function: String, method: String, vrn: String): GetPenaltyDetails = {
     if(penaltiesDetails.latePaymentPenalty.nonEmpty) {
       val filtered: Option[Seq[LPPDetails]] = filterEstimatedLPP1(penaltiesDetails)
-      if (filtered.nonEmpty) {
+      if (filtered.nonEmpty || filtered.get.nonEmpty) {
         logger.info(s"[EstimatedLPP1Filter][returnFilteredLPPs] Filtering for [$function][$method] -" +
           s" Filtered ${numberOfFilteredLPPs(filtered, penaltiesDetails)} LPP1(s) from payload for VRN: $vrn")
         penaltiesDetails.copy(latePaymentPenalty = Some(LatePaymentPenalty(filtered)))

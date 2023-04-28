@@ -631,10 +631,7 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
         |     "PoCAchievementDate": "2022-01-01"
         |   },
         |   "details": []
-        |   },
-        |   "latePaymentPenalty":{
-        |      "details":[]
-        | }
+        |   }
         |}
         |""".stripMargin)
     mockStubResponseForGetPenaltyDetails(Status.OK, "123456789", body = Some(getPenaltyDetailsWithNoPointsAsJson.toString()))

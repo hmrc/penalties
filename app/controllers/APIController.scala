@@ -208,6 +208,7 @@ class APIController @Inject()(auditService: AuditService,
 
   private def filterResponseBody(resBody: JsValue, vrn: String, method: String): JsValue = {
     val penaltiesDetails = GetPenaltyDetails.format.reads(resBody)
+    println(Console.BLUE + penaltiesDetails + Console.RESET)
     GetPenaltyDetails.format.writes(filter.returnFilteredLPPs(penaltiesDetails.get, "APIConnector", method, vrn))
   }
 }
