@@ -169,6 +169,8 @@ class GetPenaltyDetailsServiceSpec extends SpecBase with LogCapturing with LPPDe
       when(mockGetPenaltyDetailsConnector.getPenaltyDetails(Matchers.eq("123456789"))(any()))
         .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(mockGetPenaltyDetailsResponseAsModel))))
 
+      featureSwitching.setEstimatedLPP1FilterEndDate(Some(LocalDate.of(2022, 10, 28)))
+
       val result: GetPenaltyDetailsResponse = await(service.getDataFromPenaltyServiceForVATCVRN("123456789"))
       result.isRight shouldBe true
       result.toOption.get shouldBe GetPenaltyDetailsSuccessResponse(mockGetPenaltyDetailsResponseAsModel)

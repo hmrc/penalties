@@ -192,7 +192,7 @@ class APIController @Inject()(auditService: AuditService,
             case OK =>
               logger.info(s"[APIController][getPenaltyDetails] - 1812 call (3rd party API) returned 200 for VRN: $vrn")
               logger.debug("[APIController][getPenaltyDetails] Ok response received: " + res)
-              Ok(res.json)
+              Ok(processedResBody)
             case NOT_FOUND =>
               logger.error("[APIController][getPenaltyDetails] - 1812 call (3rd party API) returned 404 - error received: " + res)
               Status(res.status)(Json.toJson(res.body))
