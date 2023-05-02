@@ -179,20 +179,19 @@ class APIController @Inject()(auditService: AuditService,
       response.map(
         res => {
           val processedResBody = filter.tryJsonParseOrJsSting(res.body)
-          val auditToSend = ThirdParty1812APIRetrievalAuditModel(vrn, res.status,
-            if(res.status.equals(OK) || !processedResBody.isInstanceOf[JsString]) {
+          val filteredResBody = if(res.status.equals(OK) || !processedResBody.isInstanceOf[JsString]) {
             filterResponseBody(
               processedResBody, vrn, "getPenaltyDetails")
           } else {
-              processedResBody
-            }
-          )
+            processedResBody
+          }
+          val auditToSend = ThirdParty1812APIRetrievalAuditModel(vrn, res.status, filteredResBody)
           auditService.audit(auditToSend)
           res.status match {
             case OK =>
               logger.info(s"[APIController][getPenaltyDetails] - 1812 call (3rd party API) returned 200 for VRN: $vrn")
               logger.debug("[APIController][getPenaltyDetails] Ok response received: " + res)
-              Ok(processedResBody)
+              Ok(filteredResBody)
             case NOT_FOUND =>
               logger.error("[APIController][getPenaltyDetails] - 1812 call (3rd party API) returned 404 - error received: " + res)
               Status(res.status)(Json.toJson(res.body))
