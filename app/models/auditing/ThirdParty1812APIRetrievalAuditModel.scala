@@ -16,23 +16,20 @@
 
 package models.auditing
 
-import play.api.libs.json.{JsString, JsValue, Json}
+import play.api.libs.json.JsValue
 import utils.JsonUtils
-
-import scala.util.Try
 
 case class ThirdParty1812APIRetrievalAuditModel(
                                             vrn: String,
                                             responseCode: Int,
-                                            responseBody: String
+                                            responseBody: JsValue
                                           ) extends JsonAuditModel with JsonUtils {
   override val auditType: String = "Penalties3rdPartyPenaltyDetailsDataRetrieval"
   override val transactionName: String = "penalty-penalty-data-retrieval"
-  val response: JsValue = Try(Json.parse(responseBody)).getOrElse(JsString(responseBody))
 
   override val detail: JsValue = jsonObjNoNulls(
     "vrn" -> vrn,
     "responseCodeSentAPIService" -> responseCode,
-    "etmp-response" -> response
+    "etmp-response" -> responseBody
   )
 }

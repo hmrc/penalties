@@ -26,16 +26,15 @@ class ThirdParty1812APIRetrievalAuditModelSpec extends SpecBase with LogCapturin
   )
   val sampleJsonResponseAsString: String = Json.stringify(sampleJsonResponse)
 
-  val modelWithJsonifiedBody = ThirdParty1812APIRetrievalAuditModel("123456789", Status.OK, sampleJsonResponseAsString)
-  val modelWithStringBody = ThirdParty1812APIRetrievalAuditModel("123456789", Status.INTERNAL_SERVER_ERROR, "An error occurred")
+  val modelWithJsonifiedBody = ThirdParty1812APIRetrievalAuditModel("123456789", Status.OK, sampleJsonResponse)
 
   "UserHasPenaltyAuditModel" should {
     "have the correct audit type" in {
-      modelWithStringBody.auditType shouldBe "Penalties3rdPartyPenaltyDetailsDataRetrieval"
+      modelWithJsonifiedBody.auditType shouldBe "Penalties3rdPartyPenaltyDetailsDataRetrieval"
     }
 
     "have the correct transaction name" in {
-      modelWithStringBody.transactionName shouldBe "penalty-penalty-data-retrieval"
+      modelWithJsonifiedBody.transactionName shouldBe "penalty-penalty-data-retrieval"
     }
 
     "show the correct audit details" when {
@@ -43,12 +42,6 @@ class ThirdParty1812APIRetrievalAuditModelSpec extends SpecBase with LogCapturin
         (modelWithJsonifiedBody.detail \ "vrn").validate[String].get shouldBe "123456789"
         (modelWithJsonifiedBody.detail \ "responseCodeSentAPIService").validate[Int].get shouldBe Status.OK
         (modelWithJsonifiedBody.detail \ "etmp-response").validate[JsValue].get shouldBe sampleJsonResponse
-      }
-
-      "the correct detail information is present (when the audit has a non-JSON body)" in {
-        (modelWithStringBody.detail \ "vrn").validate[String].get shouldBe "123456789"
-        (modelWithStringBody.detail \ "responseCodeSentAPIService").validate[Int].get shouldBe Status.INTERNAL_SERVER_ERROR
-        (modelWithStringBody.detail \ "etmp-response").validate[JsValue].get shouldBe JsString("An error occurred")
       }
     }
   }

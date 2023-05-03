@@ -16,6 +16,8 @@
 
 package controllers
 
+import java.time.LocalDate
+
 import base.{LogCapturing, SpecBase}
 import config.featureSwitches.FeatureSwitching
 import connectors.getFinancialDetails.GetFinancialDetailsConnector
@@ -34,11 +36,10 @@ import play.api.test.Helpers._
 import services.auditing.AuditService
 import services.{APIService, AppealService, GetPenaltyDetailsService}
 import uk.gov.hmrc.http.HttpResponse
-import utils.DateHelper
 import utils.Logger.logger
 import utils.PagerDutyHelper.PagerDutyKeys
+import utils.{DateHelper, EstimatedLPP1Filter}
 
-import java.time.LocalDate
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
@@ -51,11 +52,13 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
   val mockGetFinancialDetailsConnector: GetFinancialDetailsConnector = mock(classOf[GetFinancialDetailsConnector])
   val mockGetPenaltyDetailsConnector: GetPenaltyDetailsConnector = mock(classOf[GetPenaltyDetailsConnector])
   implicit val config: Configuration = appConfig.config
+  val filter: EstimatedLPP1Filter = injector.instanceOf(classOf[EstimatedLPP1Filter])
 
   class Setup(isFSEnabled: Boolean = false) {
     reset(mockAppealsService)
     reset(mockAuditService)
     reset(mockAPIService)
+    reset(mockGetPenaltyDetailsConnector)
     val controller = new APIController(
       mockAuditService,
       mockAPIService,
@@ -63,7 +66,8 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
       mockGetFinancialDetailsConnector,
       mockGetPenaltyDetailsConnector,
       dateHelper,
-      stubControllerComponents()
+      stubControllerComponents(),
+      filter
     )
   }
 
@@ -537,7 +541,8 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
           |     "activePenaltyPoints": 10,
           |     "inactivePenaltyPoints": 12,
           |     "regimeThreshold": 10,
-          |     "penaltyChargeAmount": 684.25
+          |     "penaltyChargeAmount": 684.25,
+          |     "PoCAchievementDate": "2022-10-30"
           |   },
           |   "details": [
           |     {
@@ -586,6 +591,8 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
           |       "principalChargeBillingTo": "2022-10-30",
           |       "principalChargeDueDate": "2022-10-30",
           |       "communicationsDate": "2022-10-30",
+          |       "penaltyAmountAccruing": 1.11,
+          |       "principalChargeMainTransaction": "4700",
           |       "penaltyAmountOutstanding": 99.99,
           |       "penaltyAmountPaid": 1001.45,
           |       "LPP1LRDays": "15",
