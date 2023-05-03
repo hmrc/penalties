@@ -32,21 +32,20 @@ class EstimatedLPP1Filter @Inject()()(implicit ec: ExecutionContext, appConfig: 
     Try(Json.parse(body)).getOrElse(JsString(body))
   }
 
-  def returnFilteredLPPs(penaltiesDetails: GetPenaltyDetails, function: String, method: String, vrn: String): GetPenaltyDetails = {
+  def returnFilteredLPPs(penaltiesDetails: GetPenaltyDetails, callingClass: String, function: String, vrn: String): GetPenaltyDetails = {
     if(penaltiesDetails.latePaymentPenalty.nonEmpty) {
       val filtered: Option[Seq[LPPDetails]] = filterEstimatedLPP1(penaltiesDetails)
       val numberOfFiltered = numberOfFilteredLPPs(filtered, penaltiesDetails)
       if (filtered.nonEmpty && filtered.get.nonEmpty && numberOfFiltered >= 0) {
-        logger.info(s"[EstimatedLPP1Filter][returnFilteredLPPs] Filtering for [$function][$method] -" +
+        logger.info(s"[EstimatedLPP1Filter][returnFilteredLPPs] Filtering for [$callingClass][$function] -" +
           s" Filtered ${numberOfFiltered} LPP1(s) from payload for VRN: $vrn")
         penaltiesDetails.copy(latePaymentPenalty = Some(LatePaymentPenalty(filtered)))
       } else {
-        val numberOfFilteredLPPs = penaltiesDetails.latePaymentPenalty.get.details.get.size
-        logger.info(s"[EstimatedLPP1Filter][returnFilteredLPPs] Filtering for [$function][$method] - Filtered all LPP1s from payload for VRN: $vrn")
+        logger.info(s"[EstimatedLPP1Filter][returnFilteredLPPs] Filtering for [$callingClass][$function] - Filtered all LPP1s from payload for VRN: $vrn")
         penaltiesDetails.copy(latePaymentPenalty = None)
       }
     } else {
-      logger.info(s"[EstimatedLPP1Filter][returnFilteredLPPs] Filtering for [$function][$method] - No LPPs to filter for VRN: $vrn")
+      logger.info(s"[EstimatedLPP1Filter][returnFilteredLPPs] Filtering for [$callingClass][$function] - No LPPs to filter for VRN: $vrn")
       penaltiesDetails
     }
   }
