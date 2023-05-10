@@ -39,7 +39,7 @@ class PenaltiesFrontendService @Inject()() {
       _.details.map(_.map(
         oldLPPDetails => {
           (oldLPPDetails.penaltyStatus, oldLPPDetails.appealInformation) match {
-            case (_, Some(appealInformation)) if appealInformation.exists(_.appealStatus.contains(AppealStatusEnum.Upheld)) => {
+            case (_, Some(appealInformation)) if appealInformation.exists(_.appealStatus.exists(isAppealStatusUpheldOrChargeReversed)) => {
               oldLPPDetails.copy(
                 metadata = LPPDetailsMetadata(
                   mainTransaction = Some(oldLPPDetails.principalChargeMainTransaction),
@@ -76,6 +76,12 @@ class PenaltiesFrontendService @Inject()() {
         }
       ))
     )
+  }
+
+  private def isAppealStatusUpheldOrChargeReversed(appealStatus: AppealStatusEnum.Value): Boolean = {
+    appealStatus.toString == AppealStatusEnum.Upheld.toString ||
+      appealStatus == AppealStatusEnum.AppealUpheldChargeAlreadyReversed ||
+      appealStatus == AppealStatusEnum.AppealRejectedChargeAlreadyReversed
   }
 
   private def combineTotalisations(penaltyDetails: GetPenaltyDetails, financialDetails: FinancialDetails): GetPenaltyDetails = {
