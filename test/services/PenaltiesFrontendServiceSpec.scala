@@ -631,7 +631,7 @@ class PenaltiesFrontendServiceSpec extends SpecBase {
       result.totalisations.get shouldBe expectedResult
     }
 
-    "not combine the financial data when the LPP has been appealed" in {
+    "not combine the financial data when the LPP has been appealed successfully" in {
       val penaltyDetailsWithSecondPenalty = GetPenaltyDetails(
         totalisations = None, lateSubmissionPenalty = None,
         latePaymentPenalty = Some(LatePaymentPenalty(

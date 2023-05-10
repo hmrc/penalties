@@ -57,10 +57,10 @@ class PenaltiesFrontendService @Inject()() {
               )
             }
             case _ => {
-              val isAdditional = oldLPPDetails.penaltyCategory.equals(LPPPenaltyCategoryEnum.SecondPenalty)
+              val isLPP2 = oldLPPDetails.penaltyCategory.equals(LPPPenaltyCategoryEnum.SecondPenalty)
               val firstAndMaybeSecondPenalty = financialDetails.documentDetails.get.filter(_.chargeReferenceNumber.exists(_.equals(oldLPPDetails.penaltyChargeReference.get)))
               val penaltyToCopy = firstAndMaybeSecondPenalty.find(lpp => {
-                if (isAdditional) MainTransactionEnum.secondCharges.contains(lpp.lineItemDetails.get.head.mainTransaction.get)
+                if (isLPP2) MainTransactionEnum.secondCharges.contains(lpp.lineItemDetails.get.head.mainTransaction.get)
                 else MainTransactionEnum.firstCharges.contains(lpp.lineItemDetails.get.head.mainTransaction.get)
               }
               )
