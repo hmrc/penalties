@@ -111,14 +111,14 @@ case class UserHasPenaltyAuditModel(
   )
 
   private val numberOfPaidLPPs: Int = penaltyDetails.latePaymentPenalty.flatMap(_.details.map(_.count(penalty =>
-    penalty.penaltyAmountPosted.isDefined && penalty.penaltyAmountPaid.isDefined &&
-      penalty.penaltyAmountPosted.get.equals(penalty.penaltyAmountPaid.get) &&
+     penalty.penaltyAmountPaid.isDefined &&
+      penalty.penaltyAmountPosted.equals(penalty.penaltyAmountPaid.get) &&
       !penalty.appealInformation.exists(_.exists(_.appealStatus.contains(AppealStatusEnum.Upheld)))
   ))).getOrElse(0)
 
   private val numberOfUnpaidLPPs: Int = penaltyDetails.latePaymentPenalty.flatMap(_.details.map(_.count(penalty =>
-    penalty.penaltyAmountPosted.isDefined && penalty.penaltyAmountOutstanding.isDefined &&
-      penalty.penaltyAmountPosted.get.equals(penalty.penaltyAmountOutstanding.get) &&
+    penalty.penaltyAmountOutstanding.isDefined &&
+      penalty.penaltyAmountPosted.equals(penalty.penaltyAmountOutstanding.get) &&
       !penalty.appealInformation.exists(_.exists(_.appealStatus.contains(AppealStatusEnum.Upheld)))
   ))).getOrElse(0)
 
