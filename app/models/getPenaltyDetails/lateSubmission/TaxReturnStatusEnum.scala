@@ -30,6 +30,7 @@ object TaxReturnStatusEnum extends Enumeration {
       case "OPEN" => JsSuccess(Open)
       case "FULFILLED" => JsSuccess(Fulfilled)
       case "REVERSED" => JsSuccess(Reversed)
+      case " " => JsSuccess(Fulfilled)
       case e => JsError(s"$e not recognised")
     }
   }
