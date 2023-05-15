@@ -483,7 +483,7 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
         |         {
         |            "principalChargeDueDate":"2022-10-30",
         |            "principalChargeBillingTo":"2022-10-30",
-        |            "penaltyAmountPosted": 99.99,
+        |            "penaltyAmountPosted": 0,
         |            "LPP1LRPercentage":2,
         |            "LPP1HRDays":"31",
         |            "penaltyChargeDueDate":"2022-10-30",
@@ -508,7 +508,7 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
         |            ],
         |            "LPP1LRCalculationAmount":99.99,
         |            "principalChargeMainTransaction": "4700",
-        |            "penaltyAmountOutstanding":99.99
+        |            "penaltyAmountOutstanding":0
         |         }
         |      ]
         |   }
@@ -570,7 +570,7 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
         |         {
         |            "principalChargeDueDate":"2022-10-30",
         |            "principalChargeBillingTo":"2022-10-30",
-        |            "penaltyAmountPosted": 99.99,
+        |            "penaltyAmountPosted": 0,
         |            "LPP1LRPercentage":2,
         |            "LPP1HRDays":"31",
         |            "penaltyChargeDueDate":"2022-10-30",
@@ -596,7 +596,7 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
         |               }
         |            ],
         |            "LPP1LRCalculationAmount":99.99,
-        |            "penaltyAmountOutstanding":99.99
+        |            "penaltyAmountOutstanding":0
         |         }
         |      ]
         |   }

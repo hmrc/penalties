@@ -905,7 +905,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
         |          "penaltyCategory": "LPP2",
         |          "penaltyStatus": "P",
         |          "penaltyAmountPaid": 0,
-        |          "penaltyAmountPosted": 0,
+        |          "penaltyAmountPosted": 144.00,
         |          "penaltyAmountOutstanding": 144.00,
         |          "penaltyAmountAccruing": 0,
         |          "LPP1LRCalculationAmount": 99.99,
