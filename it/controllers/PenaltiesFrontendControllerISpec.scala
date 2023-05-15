@@ -483,8 +483,7 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
         |         {
         |            "principalChargeDueDate":"2022-10-30",
         |            "principalChargeBillingTo":"2022-10-30",
-        |            "penaltyAmountPaid":0,
-        |            "penaltyAmountPosted": 0,
+        |            "penaltyAmountPosted": 99.99,
         |            "LPP1LRPercentage":2,
         |            "LPP1HRDays":"31",
         |            "penaltyChargeDueDate":"2022-10-30",
@@ -571,8 +570,7 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
         |         {
         |            "principalChargeDueDate":"2022-10-30",
         |            "principalChargeBillingTo":"2022-10-30",
-        |            "penaltyAmountPaid":0,
-        |            "penaltyAmountPosted": 0,
+        |            "penaltyAmountPosted": 99.99,
         |            "LPP1LRPercentage":2,
         |            "LPP1HRDays":"31",
         |            "penaltyChargeDueDate":"2022-10-30",

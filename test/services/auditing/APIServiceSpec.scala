@@ -452,7 +452,7 @@ class APIServiceSpec extends SpecBase {
                     communicationsDate = Some(LocalDate.of(2022, 1, 1)),
                     penaltyAmountOutstanding = None,
                     penaltyAmountPaid = None,
-                    penaltyAmountPosted = 0,
+                    penaltyAmountPosted = 144.21,
                     LPP1LRDays = None,
                     LPP1HRDays = None,
                     LPP2Days = None,

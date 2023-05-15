@@ -164,7 +164,7 @@ class PenaltiesFrontendControllerSpec extends SpecBase with LogCapturing {
               communicationsDate = Some(LocalDate.of(2022, 1, 1)),
               penaltyAmountOutstanding = Some(144),
               penaltyAmountPaid = Some(0.21),
-              penaltyAmountPosted = 44.21,
+              penaltyAmountPosted = 144.21,
               LPP1LRDays = None,
               LPP1HRDays = None,
               LPP2Days = None,
