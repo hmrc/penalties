@@ -29,11 +29,11 @@ import play.api.Configuration
 import play.api.libs.json.{JsString, JsValue, Json}
 import play.api.mvc._
 import services.auditing.AuditService
-import services.{APIService, GetPenaltyDetailsService}
+import services.{APIService, FilterService, GetPenaltyDetailsService}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import utils.Logger.logger
 import utils.PagerDutyHelper.PagerDutyKeys._
-import utils.{DateHelper, EstimatedLPP1Filter, PagerDutyHelper, RegimeHelper}
+import utils.{DateHelper, PagerDutyHelper, RegimeHelper}
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.matching.Regex
@@ -45,7 +45,7 @@ class APIController @Inject()(auditService: AuditService,
                               getPenaltyDetailsConnector: GetPenaltyDetailsConnector,
                               dateHelper: DateHelper,
                               cc: ControllerComponents,
-                              filter: EstimatedLPP1Filter)(implicit ec: ExecutionContext, val config: Configuration) extends BackendController(cc) with FeatureSwitching {
+                              filter: FilterService)(implicit ec: ExecutionContext, val config: Configuration) extends BackendController(cc) with FeatureSwitching {
 
   private val vrnRegex: Regex = "^[0-9]{1,9}$".r
 
@@ -207,6 +207,6 @@ class APIController @Inject()(auditService: AuditService,
 
   private def filterResponseBody(resBody: JsValue, vrn: String, method: String): JsValue = {
     val penaltiesDetails = GetPenaltyDetails.format.reads(resBody)
-    GetPenaltyDetails.format.writes(filter.returnFilteredLPPs(penaltiesDetails.get, "APIConnector", method, vrn))
+    GetPenaltyDetails.format.writes(filter.filterEstimatedLPP1DuringPeriodOfFamiliarisation(filter.filterPenaltiesWith9xAppealStatus(penaltiesDetails.get)("APIConnector", method, vrn), "APIConnector", method, vrn))
   }
 }

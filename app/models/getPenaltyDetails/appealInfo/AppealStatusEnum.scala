@@ -24,10 +24,10 @@ object AppealStatusEnum extends Enumeration {
   val Upheld: AppealStatusEnum.Value = Value("B")
   val Rejected: AppealStatusEnum.Value = Value("C")
   val Unappealable: AppealStatusEnum.Value = Value("99")
-  val AppealRejectedChargeAlreadyReversed: AppealStatusEnum.Value = Value("C")
-  val AppealRejectedPointAlreadyRemoved: AppealStatusEnum.Value = Value("C")
-  val AppealUpheldPointAlreadyRemoved: AppealStatusEnum.Value = Value("B")
-  val AppealUpheldChargeAlreadyReversed: AppealStatusEnum.Value = Value("B")
+  val AppealRejectedChargeAlreadyReversed: AppealStatusEnum.Value = Value("91")
+  val AppealUpheldPointAlreadyRemoved: AppealStatusEnum.Value = Value("92")
+  val AppealUpheldChargeAlreadyReversed: AppealStatusEnum.Value = Value("93")
+  val AppealRejectedPointAlreadyRemoved: AppealStatusEnum.Value = Value("94")
 
   implicit val format: Format[AppealStatusEnum.Value] = new Format[AppealStatusEnum.Value] {
 

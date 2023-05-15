@@ -37,7 +37,6 @@ import utils.Logger.logger
 import java.time.LocalDate
 
 import config.featureSwitches.FeatureSwitching
-import utils.EstimatedLPP1Filter
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -48,7 +47,7 @@ class GetPenaltyDetailsServiceSpec extends SpecBase with LogCapturing with LPPDe
   class Setup(withRealConfig: Boolean = true) {
     val mockConfig: Configuration = mock(classOf[Configuration])
     val mockServicesConfig: ServicesConfig = mock(classOf[ServicesConfig])
-    val filter: EstimatedLPP1Filter = injector.instanceOf(classOf[EstimatedLPP1Filter])
+    val filter: FilterService = injector.instanceOf(classOf[FilterService])
 
     val featureSwitching: FeatureSwitching = new FeatureSwitching {
       override implicit val config: Configuration = mockConfig

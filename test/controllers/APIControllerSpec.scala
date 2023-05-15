@@ -34,11 +34,11 @@ import play.api.http.Status
 import play.api.libs.json.Json
 import play.api.test.Helpers._
 import services.auditing.AuditService
-import services.{APIService, AppealService, GetPenaltyDetailsService}
+import services.{APIService, AppealService, FilterService, GetPenaltyDetailsService}
 import uk.gov.hmrc.http.HttpResponse
 import utils.Logger.logger
 import utils.PagerDutyHelper.PagerDutyKeys
-import utils.{DateHelper, EstimatedLPP1Filter}
+import utils.DateHelper
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -52,7 +52,7 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
   val mockGetFinancialDetailsConnector: GetFinancialDetailsConnector = mock(classOf[GetFinancialDetailsConnector])
   val mockGetPenaltyDetailsConnector: GetPenaltyDetailsConnector = mock(classOf[GetPenaltyDetailsConnector])
   implicit val config: Configuration = appConfig.config
-  val filter: EstimatedLPP1Filter = injector.instanceOf(classOf[EstimatedLPP1Filter])
+  val filter: FilterService = injector.instanceOf(classOf[FilterService])
 
   class Setup(isFSEnabled: Boolean = false) {
     reset(mockAppealsService)

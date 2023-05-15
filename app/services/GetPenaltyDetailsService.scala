@@ -21,13 +21,12 @@ import connectors.getPenaltyDetails.GetPenaltyDetailsConnector
 import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser._
 import javax.inject.Inject
 import uk.gov.hmrc.http.HeaderCarrier
-import utils.EstimatedLPP1Filter
 import utils.Logger.logger
 
 import scala.concurrent.{ExecutionContext, Future}
 
 class GetPenaltyDetailsService @Inject()(getPenaltyDetailsConnector: GetPenaltyDetailsConnector,
-                                         filter: EstimatedLPP1Filter)
+                                         filter: FilterService)
                                         (implicit ec: ExecutionContext, appConfig: AppConfig) {
 
   def getDataFromPenaltyServiceForVATCVRN(vrn: String)(implicit hc: HeaderCarrier): Future[GetPenaltyDetailsResponse] = {
@@ -41,8 +40,10 @@ class GetPenaltyDetailsService @Inject()(getPenaltyDetailsConnector: GetPenaltyD
                                      (implicit startOfLogMsg: String, vrn: String): GetPenaltyDetailsResponse = {
     connectorResponse match {
       case res@Right(_@GetPenaltyDetailsSuccessResponse(penaltyDetails)) =>
-        logger.debug(s"$startOfLogMsg - Got a success response from the connector. Parsed model: $penaltyDetails")
-        Right(GetPenaltyDetailsSuccessResponse(filter.returnFilteredLPPs(penaltyDetails, "GetPenaltiesDetailsService", "handleConnectorResponse", vrn)))
+        implicit val callingClass: String = "GetPenaltiesDetailsService"
+        implicit val function: String = "handleConnectorResponse"
+    logger.debug(s"$startOfLogMsg - Got a success response from the connector. Parsed model: $penaltyDetails")
+        Right(GetPenaltyDetailsSuccessResponse(filter.filterEstimatedLPP1DuringPeriodOfFamiliarisation(filter.filterPenaltiesWith9xAppealStatus(penaltyDetails)(callingClass, function, vrn), callingClass, function, vrn)))
       case res@Left(GetPenaltyDetailsNoContent) =>
         logger.debug(s"$startOfLogMsg - Got a 404 response and no data was found for GetPenaltyDetails call")
         res
