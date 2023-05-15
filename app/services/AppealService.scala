@@ -43,7 +43,7 @@ class AppealService @Inject()(appealsConnector: PEGAConnector,
     appealsConnector.submitAppeal(appealSubmission, enrolmentKey, isLPP, penaltyNumber, correlationId).flatMap {
       _.fold(
         error => {
-          logger.error(s"[AppealService][submitAppeal] - Submit appeal call failed with error: ${error.body} and status: ${error.status} for enrollment: $enrolmentKey")
+          logger.error(s"[AppealService][submitAppeal] - Submit appeal call failed with error: ${error.body} and status: ${error.status} for enrolment: $enrolmentKey")
           Future(Left(error))
         },
         responseModel => {
