@@ -49,7 +49,6 @@ class PenaltiesFrontendService @Inject()() {
             }
             case (LPPPenaltyStatusEnum.Accruing, _) => {
               oldLPPDetails.copy(
-                penaltyAmountOutstanding = Some(oldLPPDetails.penaltyAmountAccruing),
                 metadata = LPPDetailsMetadata(
                   mainTransaction = Some(oldLPPDetails.principalChargeMainTransaction),
                   timeToPay = oldLPPDetails.metadata.timeToPay

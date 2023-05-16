@@ -106,7 +106,7 @@ class GetPenaltyDetailsServiceISpec extends IntegrationSpecCommonBase with ETMPW
               communicationsDate = Some(LocalDate.of(2022, 10, 30)),
               penaltyAmountOutstanding = None,
               penaltyAmountPaid = None,
-              penaltyAmountPosted = None,
+              penaltyAmountPosted = 0,
               LPP1LRDays = Some("15"),
               LPP1HRDays = Some("31"),
               LPP2Days = Some("31"),

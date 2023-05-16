@@ -85,6 +85,7 @@ trait ETMPWiremock {
       |       "principalChargeMainTransaction": "4700",
       |       "principalChargeDueDate": "2022-10-30",
       |       "communicationsDate": "2022-10-30",
+      |       "penaltyAmountPosted": 0,
       |       "penaltyAmountAccruing": 99.99,
       |       "LPP1LRDays": "15",
       |       "LPP1HRDays": "31",

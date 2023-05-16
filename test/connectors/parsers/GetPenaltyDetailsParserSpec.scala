@@ -58,7 +58,7 @@ class GetPenaltyDetailsParserSpec extends AnyWordSpec with Matchers with LogCapt
     principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
     penaltyAmountOutstanding = Some(BigDecimal(144.21)),
     penaltyAmountPaid = Some(BigDecimal(0)),
-    penaltyAmountPosted = Some(BigDecimal(144.21)),
+    penaltyAmountPosted = BigDecimal(144.21),
     LPP1LRDays = None,
     LPP1HRDays = None,
     LPP2Days = None,

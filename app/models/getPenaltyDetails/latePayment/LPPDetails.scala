@@ -38,7 +38,7 @@ case class LPPDetails(
                        principalChargeMainTransaction: MainTransactionEnum.Value,
                        penaltyAmountOutstanding: Option[BigDecimal],
                        penaltyAmountPaid: Option[BigDecimal],
-                       penaltyAmountPosted: Option[BigDecimal],
+                       penaltyAmountPosted: BigDecimal,
                        LPP1LRDays: Option[String],
                        LPP1HRDays: Option[String],
                        LPP2Days: Option[String],
@@ -68,7 +68,7 @@ object LPPDetails extends JsonUtils {
         communicationsDate <- (json \ "communicationsDate").validateOpt[LocalDate]
         penaltyAmountOutstanding <- (json \ "penaltyAmountOutstanding").validateOpt[BigDecimal]
         penaltyAmountPaid <- (json \ "penaltyAmountPaid").validateOpt[BigDecimal]
-        penaltyAmountPosted <- (json \ "penaltyAmountPosted").validateOpt[BigDecimal]
+        penaltyAmountPosted <- (json \ "penaltyAmountPosted").validate[BigDecimal]
         lpp1LRDays <- (json \ "LPP1LRDays").validateOpt[String]
         lpp1HRDays <- (json \ "LPP1HRDays").validateOpt[String]
         lpp2Days <- (json \ "LPP2Days").validateOpt[String]
@@ -114,25 +114,8 @@ object LPPDetails extends JsonUtils {
       }
     }
 
-    private def setPenaltyAmountOutstanding(penaltyAmountOutstanding: Option[BigDecimal])
-                                           (penaltyAmountPosted: Option[BigDecimal], penaltyAmountPaid: Option[BigDecimal]): Option[BigDecimal] = {
-      if(penaltyAmountOutstanding.isEmpty) {
-        if(penaltyAmountPaid.isDefined && penaltyAmountPosted.isDefined) {
-          if(penaltyAmountPaid.get.equals(penaltyAmountPosted.get)) {
-            Some(BigDecimal(0)) //If amount paid is equal to the amount posted then the penalty has been paid
-          } else {
-            None
-          }
-        } else {
-          None
-        }
-      } else {
-        penaltyAmountOutstanding
-      }
-    }
 
     override def writes(o: LPPDetails): JsValue = {
-      val penaltyAmountOutstanding = setPenaltyAmountOutstanding(o.penaltyAmountOutstanding)(o.penaltyAmountPosted, o.penaltyAmountPaid)
       jsonObjNoNulls(
         "penaltyCategory" -> o.penaltyCategory,
         "penaltyChargeReference" -> o.penaltyChargeReference,
@@ -144,7 +127,8 @@ object LPPDetails extends JsonUtils {
         "principalChargeBillingTo" -> o.principalChargeBillingTo,
         "principalChargeDueDate" -> o.principalChargeDueDate,
         "communicationsDate" -> o.communicationsDate,
-        "penaltyAmountOutstanding" -> penaltyAmountOutstanding,
+        "penaltyAmountOutstanding" -> o.penaltyAmountOutstanding,
+        "penaltyAmountPosted" -> o.penaltyAmountPosted,
         "penaltyAmountPaid" -> o.penaltyAmountPaid,
         "LPP1LRDays" -> o.LPP1LRDays,
         "LPP1HRDays" -> o.LPP1HRDays,
