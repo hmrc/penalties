@@ -52,7 +52,7 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
   val mockGetFinancialDetailsConnector: GetFinancialDetailsConnector = mock(classOf[GetFinancialDetailsConnector])
   val mockGetPenaltyDetailsConnector: GetPenaltyDetailsConnector = mock(classOf[GetPenaltyDetailsConnector])
   implicit val config: Configuration = appConfig.config
-  val filter: FilterService = injector.instanceOf(classOf[FilterService])
+  val filterService: FilterService = injector.instanceOf(classOf[FilterService])
 
   class Setup(isFSEnabled: Boolean = false) {
     reset(mockAppealsService)
@@ -67,7 +67,7 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
       mockGetPenaltyDetailsConnector,
       dateHelper,
       stubControllerComponents(),
-      filter
+      filterService
     )
   }
 

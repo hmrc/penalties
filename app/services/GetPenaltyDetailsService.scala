@@ -17,8 +17,11 @@
 package services
 
 import config.AppConfig
+import config.featureSwitches.{FeatureSwitching, Filter9xAppealStatus}
 import connectors.getPenaltyDetails.GetPenaltyDetailsConnector
 import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser._
+import play.api.Configuration
+
 import javax.inject.Inject
 import uk.gov.hmrc.http.HeaderCarrier
 import utils.Logger.logger
@@ -26,8 +29,8 @@ import utils.Logger.logger
 import scala.concurrent.{ExecutionContext, Future}
 
 class GetPenaltyDetailsService @Inject()(getPenaltyDetailsConnector: GetPenaltyDetailsConnector,
-                                         filter: FilterService)
-                                        (implicit ec: ExecutionContext, appConfig: AppConfig) {
+                                         filterService: FilterService)
+                                        (implicit ec: ExecutionContext, val config: Configuration, appConfig: AppConfig) extends FeatureSwitching {
 
   def getDataFromPenaltyServiceForVATCVRN(vrn: String)(implicit hc: HeaderCarrier): Future[GetPenaltyDetailsResponse] = {
     val startOfLogMsg: String = "[GetPenaltyDetailsService][getDataFromPenaltyServiceForVATCVRN]"
@@ -43,7 +46,11 @@ class GetPenaltyDetailsService @Inject()(getPenaltyDetailsConnector: GetPenaltyD
         val callingClass: String = "GetPenaltiesDetailsService"
         val function: String = "handleConnectorResponse"
     logger.debug(s"$startOfLogMsg - Got a success response from the connector. Parsed model: $penaltyDetails")
-        Right(GetPenaltyDetailsSuccessResponse(filter.filterEstimatedLPP1DuringPeriodOfFamiliarisation(filter.filterPenaltiesWith9xAppealStatus(penaltyDetails)(callingClass, function, vrn), callingClass, function, vrn)))
+        if (appConfig.isEnabled(Filter9xAppealStatus)) {
+          Right(GetPenaltyDetailsSuccessResponse(filterService.filterEstimatedLPP1DuringPeriodOfFamiliarisation(filterService.filterPenaltiesWith9xAppealStatus(penaltyDetails)(callingClass, function, vrn), callingClass, function, vrn)))
+        } else {
+          Right(GetPenaltyDetailsSuccessResponse(filterService.filterEstimatedLPP1DuringPeriodOfFamiliarisation(penaltyDetails, callingClass, function, vrn)))
+        }
       case res@Left(GetPenaltyDetailsNoContent) =>
         logger.debug(s"$startOfLogMsg - Got a 404 response and no data was found for GetPenaltyDetails call")
         res

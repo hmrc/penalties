@@ -58,12 +58,12 @@ class FilterServiceSpec extends SpecBase with LSPDetailsBase with LPPDetailsBase
           | "foo": "bar"
           |}
           |""".stripMargin)
-      val result = filter.tryJsonParseOrJsSting(sampleJsonResponse.toString())
+      val result = filter.tryJsonParseOrJsString(sampleJsonResponse.toString())
       result shouldBe expectedResult
     }
 
     "return a JsString when body cannot be parsed" in {
-      val result = filter.tryJsonParseOrJsSting("error")
+      val result = filter.tryJsonParseOrJsString("error")
       val expectedResult: JsString = JsString("error")
       result shouldBe expectedResult
     }
@@ -275,7 +275,7 @@ class FilterServiceSpec extends SpecBase with LSPDetailsBase with LPPDetailsBase
     result.latePaymentPenalty shouldBe expectedResult.latePaymentPenalty
   }
 
-  "Not filter LSPs and LPPs" in {
+  "Not filter LSPs and LPPs when there no penalties with appeal status 91, 92, 93 or 94" in {
     val lspSummary = LSPSummary(
       activePenaltyPoints = 2,
       inactivePenaltyPoints = 2,

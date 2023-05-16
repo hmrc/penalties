@@ -17,7 +17,7 @@
 package base
 
 import models.getPenaltyDetails.appealInfo.{AppealInformationType, AppealLevelEnum, AppealStatusEnum}
-import models.getPenaltyDetails.lateSubmission.{LSPDetails, LSPPenaltyCategoryEnum, LSPPenaltyStatusEnum, LateSubmission, TaxReturnStatusEnum}
+import models.getPenaltyDetails.lateSubmission.{ExpiryReasonEnum, LSPDetails, LSPPenaltyCategoryEnum, LSPPenaltyStatusEnum, LateSubmission, TaxReturnStatusEnum}
 
 import java.time.LocalDate
 
@@ -45,13 +45,13 @@ trait LSPDetailsBase {
     chargeAmount = None
   )
 
-  def lspPointDetailsWithAppealStatus(status: String):LSPDetails = lspPointDetails.copy(appealInformation = Some(Seq(AppealInformationType(appealStatus = Some(AppealStatusEnum.withName(status)), appealLevel = Some(AppealLevelEnum.HMRC)))))
+  def lspPointDetailsWithAppealStatus(status: String):LSPDetails = lspPointDetails.copy(appealInformation = Some(Seq(AppealInformationType(appealStatus = Some(AppealStatusEnum.withName(status)), appealLevel = Some(AppealLevelEnum.HMRC)))), expiryReason = Some(ExpiryReasonEnum.Appeal), penaltyStatus = LSPPenaltyStatusEnum.Inactive)
 
   val lspThresholdDetails: LSPDetails = lspPointDetails.copy(penaltyCategory = LSPPenaltyCategoryEnum.Threshold, chargeAmount = Some(200), chargeOutstandingAmount = Some(200), chargeDueDate = Some(LocalDate.now()))
 
-  def lspThresholdDetailsWithAppealStatus(status: String):LSPDetails = lspThresholdDetails.copy(appealInformation = Some(Seq(AppealInformationType(appealStatus = Some(AppealStatusEnum.withName(status)), appealLevel = Some(AppealLevelEnum.HMRC)))))
+  def lspThresholdDetailsWithAppealStatus(status: String):LSPDetails = lspThresholdDetails.copy(appealInformation = Some(Seq(AppealInformationType(appealStatus = Some(AppealStatusEnum.withName(status)), appealLevel = Some(AppealLevelEnum.HMRC)))), expiryReason = Some(ExpiryReasonEnum.Appeal), penaltyStatus = LSPPenaltyStatusEnum.Inactive)
 
   val lspChargeDetails: LSPDetails = lspPointDetails.copy(penaltyCategory = LSPPenaltyCategoryEnum.Charge, chargeAmount = Some(200), chargeOutstandingAmount = Some(200), chargeDueDate = Some(LocalDate.now()))
 
-  def lspChargeDetailsWithAppealStatus(status: String): LSPDetails = lspChargeDetails.copy(appealInformation = Some(Seq(AppealInformationType(appealStatus = Some(AppealStatusEnum.withName(status)), appealLevel = Some(AppealLevelEnum.HMRC)))))
+  def lspChargeDetailsWithAppealStatus(status: String): LSPDetails = lspChargeDetails.copy(appealInformation = Some(Seq(AppealInformationType(appealStatus = Some(AppealStatusEnum.withName(status)), appealLevel = Some(AppealLevelEnum.HMRC)))), expiryReason = Some(ExpiryReasonEnum.Appeal), penaltyStatus = LSPPenaltyStatusEnum.Inactive)
 }

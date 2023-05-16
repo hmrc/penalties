@@ -45,9 +45,9 @@ class GetPenaltyDetailsServiceSpec extends SpecBase with LogCapturing with LPPDe
   implicit val hc: HeaderCarrier = HeaderCarrier()
   val mockGetPenaltyDetailsConnector: GetPenaltyDetailsConnector = mock(classOf[GetPenaltyDetailsConnector])
   class Setup(withRealConfig: Boolean = true) {
-    val mockConfig: Configuration = mock(classOf[Configuration])
+    val mockConfig = mock(classOf[Configuration])
     val mockServicesConfig: ServicesConfig = mock(classOf[ServicesConfig])
-    val filter: FilterService = injector.instanceOf(classOf[FilterService])
+    val filterService: FilterService = injector.instanceOf(classOf[FilterService])
 
     val featureSwitching: FeatureSwitching = new FeatureSwitching {
       override implicit val config: Configuration = mockConfig
@@ -57,7 +57,7 @@ class GetPenaltyDetailsServiceSpec extends SpecBase with LogCapturing with LPPDe
     sys.props -= featureSwitching.ESTIMATED_LPP1_FILTER_END_DATE
 
     val mockAppConfig: AppConfig = new AppConfig(mockConfig, mockServicesConfig)
-    val service = new GetPenaltyDetailsService(mockGetPenaltyDetailsConnector, filter)(implicitly, appConfig = if(withRealConfig) appConfig else mockAppConfig)
+    val service = new GetPenaltyDetailsService(mockGetPenaltyDetailsConnector, filterService)(implicitly, mockConfig, appConfig = if(withRealConfig) appConfig else mockAppConfig)
 
     reset(mockGetPenaltyDetailsConnector)
     reset(mockConfig)
