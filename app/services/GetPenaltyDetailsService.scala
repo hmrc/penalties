@@ -40,8 +40,8 @@ class GetPenaltyDetailsService @Inject()(getPenaltyDetailsConnector: GetPenaltyD
                                      (implicit startOfLogMsg: String, vrn: String): GetPenaltyDetailsResponse = {
     connectorResponse match {
       case res@Right(_@GetPenaltyDetailsSuccessResponse(penaltyDetails)) =>
-        implicit val callingClass: String = "GetPenaltiesDetailsService"
-        implicit val function: String = "handleConnectorResponse"
+        val callingClass: String = "GetPenaltiesDetailsService"
+        val function: String = "handleConnectorResponse"
     logger.debug(s"$startOfLogMsg - Got a success response from the connector. Parsed model: $penaltyDetails")
         Right(GetPenaltyDetailsSuccessResponse(filter.filterEstimatedLPP1DuringPeriodOfFamiliarisation(filter.filterPenaltiesWith9xAppealStatus(penaltyDetails)(callingClass, function, vrn), callingClass, function, vrn)))
       case res@Left(GetPenaltyDetailsNoContent) =>

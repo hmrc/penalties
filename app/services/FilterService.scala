@@ -36,12 +36,12 @@ class FilterService @Inject()()(implicit ec: ExecutionContext, appConfig: AppCon
 
   def filterEstimatedLPP1DuringPeriodOfFamiliarisation(penaltiesDetails: GetPenaltyDetails, callingClass: String, function: String, vrn: String): GetPenaltyDetails = {
     if (penaltiesDetails.latePaymentPenalty.nonEmpty) {
-      val filtered: Option[Seq[LPPDetails]] = filterEstimatedLPP1(penaltiesDetails)
-      val numberOfFiltered = numberOfFilteredLPPs(filtered, penaltiesDetails)
-      if (filtered.nonEmpty && filtered.get.nonEmpty && numberOfFiltered >= 0) {
+      val filteredLPPs: Option[Seq[LPPDetails]] = filterEstimatedLPP1DuringPOF(penaltiesDetails)
+      val numberOfFiltered = numberOfFilteredLPPs(filteredLPPs, penaltiesDetails)
+      if (filteredLPPs.nonEmpty && filteredLPPs.get.nonEmpty && numberOfFiltered >= 0) {
         logger.info(s"[FilterService][filterEstimatedLPP1DuringPeriodOfFamiliarisation] Filtering for [$callingClass][$function] -" +
           s" Filtered ${numberOfFiltered} LPP1(s) from payload for VRN: $vrn")
-        penaltiesDetails.copy(latePaymentPenalty = Some(LatePaymentPenalty(filtered)))
+        penaltiesDetails.copy(latePaymentPenalty = Some(LatePaymentPenalty(filteredLPPs)))
       } else {
         logger.info(s"[FilterService][filterEstimatedLPP1DuringPeriodOfFamiliarisation] Filtering for [$callingClass][$function] - Filtered all LPP1s from payload for VRN: $vrn")
         penaltiesDetails.copy(latePaymentPenalty = None)
@@ -52,7 +52,7 @@ class FilterService @Inject()()(implicit ec: ExecutionContext, appConfig: AppCon
     }
   }
 
-  private def filterEstimatedLPP1(penaltiesDetails: GetPenaltyDetails): Option[Seq[LPPDetails]] = {
+  private def filterEstimatedLPP1DuringPOF(penaltiesDetails: GetPenaltyDetails): Option[Seq[LPPDetails]] = {
     penaltiesDetails.latePaymentPenalty.flatMap(
       _.details.map(latePaymentPenalties => latePaymentPenalties.filterNot(lpp => {
         lpp.penaltyCategory.equals(LPPPenaltyCategoryEnum.FirstPenalty) &&
@@ -64,42 +64,39 @@ class FilterService @Inject()()(implicit ec: ExecutionContext, appConfig: AppCon
   }
 
   def filterPenaltiesWith9xAppealStatus(penaltiesDetails: GetPenaltyDetails)(implicit callingClass: String, function: String, vrn: String): GetPenaltyDetails = {
-    val filteredLSPs: Option[Seq[LSPDetails]] = if (penaltiesDetails.lateSubmissionPenalty.nonEmpty) filterLSPWith9xAppealStatus(penaltiesDetails) else None
-    val noOfFilteredLSPs:Int = numberOfFilteredLSPs(filteredLSPs, penaltiesDetails)
-    val filteredLPPs: Option[Seq[LPPDetails]] = if (penaltiesDetails.latePaymentPenalty.nonEmpty) filterLPPWith9xAppealStatus(penaltiesDetails) else None
+    val filteredLSPs: Option[Seq[LSPDetails]] = filterLSPWith9xAppealStatus(penaltiesDetails)
+    val noOfFilteredLSPs: Int = numberOfFilteredLSPs(filteredLSPs, penaltiesDetails)
+    val filteredLPPs: Option[Seq[LPPDetails]] = filterLPPWith9xAppealStatus(penaltiesDetails)
     val noOfFilteredLPPs: Int = numberOfFilteredLPPs(filteredLPPs, penaltiesDetails)
 
-    (noOfFilteredLSPs, noOfFilteredLPPs) match {
-      case (x , 0) if x > 0 => penaltiesDetails.copy(lateSubmissionPenalty = prepareLateSubmissionPenaltiesAfterFilter(penaltiesDetails, filteredLSPs, noOfFilteredLSPs, vrn, callingClass, function))
-      case (0, x) if x > 0 =>
-        penaltiesDetails.copy(latePaymentPenalty = prepareLatePaymentPenaltiesAfterFilter(filteredLPPs, noOfFilteredLPPs, vrn, callingClass, function))
-      case (x, y) if x > 0 && y > 0 =>
-        val newLasteSubmissions: Option[LateSubmissionPenalty] = prepareLateSubmissionPenaltiesAfterFilter(penaltiesDetails, filteredLSPs, noOfFilteredLSPs, vrn, callingClass, function)
-        val newLastePaymentPenalties: Option[LatePaymentPenalty] = prepareLatePaymentPenaltiesAfterFilter(filteredLPPs, noOfFilteredLPPs, vrn, callingClass, function)
-        penaltiesDetails.copy(lateSubmissionPenalty = newLasteSubmissions, latePaymentPenalty = newLastePaymentPenalties)
-      case _ =>
-        logger.info(s"[FilterService][filterPenaltiesWith9xAppealStatus] Filtering for [$callingClass][$function] - No LSPs or LPPs to filter for VRN: $vrn")
-        penaltiesDetails
-    }
+    penaltiesDetails.copy(lateSubmissionPenalty = prepareLateSubmissionPenaltiesAfterFilter(penaltiesDetails, filteredLSPs, noOfFilteredLSPs, vrn, callingClass, function), latePaymentPenalty = prepareLatePaymentPenaltiesAfterFilter(penaltiesDetails, filteredLPPs, noOfFilteredLPPs, vrn, callingClass, function))
   }
 
-  private def prepareLateSubmissionPenaltiesAfterFilter(penaltiesDetails: GetPenaltyDetails, filteredLSPs: Option[Seq[LSPDetails]], noOfFilteredLSPs: Int, vrn: String, callingClass: String, function: String) = {
-    if (filteredLSPs.nonEmpty && filteredLSPs.get.nonEmpty && noOfFilteredLSPs >= 0) {
+  private def prepareLateSubmissionPenaltiesAfterFilter(penaltiesDetails: GetPenaltyDetails, filteredLSPs: Option[Seq[LSPDetails]], noOfFilteredLSPs: Int, vrn: String, callingClass: String, function: String): Option[LateSubmissionPenalty] = {
+    if (filteredLSPs.nonEmpty && filteredLSPs.get.nonEmpty && noOfFilteredLSPs > 0) {
       logger.info(s"[FilterService][filterPenaltiesWith9xAppealStatus] Filtering for [$callingClass][$function] -" +
-        s" Filtered ${noOfFilteredLSPs} LSP(s) from payload for VRN: $vrn")
+        s" Filtered $noOfFilteredLSPs LSP(s) from payload for VRN: $vrn")
       val summary = penaltiesDetails.lateSubmissionPenalty.map(lateSubmissionPenalty => lateSubmissionPenalty.summary)
       Some(LateSubmissionPenalty(summary = summary.get, details = filteredLSPs.getOrElse(Seq.empty[LSPDetails])))
+    } else if (noOfFilteredLSPs == 0) {
+      logger.info(s"[FilterService][filterPenaltiesWith9xAppealStatus] Filtering for [$callingClass][$function] -" +
+        s" No LSPs to filter from payload for VRN: $vrn")
+      penaltiesDetails.lateSubmissionPenalty
     } else {
       logger.info(s"[FilterService][filterPenaltiesWith9xAppealStatus] Filtering for [$callingClass][$function] - Filtered all LSPs from payload for VRN: $vrn")
       None
     }
   }
 
-  private def prepareLatePaymentPenaltiesAfterFilter(filteredLPPs: Option[Seq[LPPDetails]], noOfFilteredLPPs: Int, vrn: String, callingClass: String, function: String) = {
-    if (filteredLPPs.nonEmpty && filteredLPPs.get.nonEmpty && noOfFilteredLPPs >= 0) {
+  private def prepareLatePaymentPenaltiesAfterFilter(penaltiesDetails: GetPenaltyDetails, filteredLPPs: Option[Seq[LPPDetails]], noOfFilteredLPPs: Int, vrn: String, callingClass: String, function: String): Option[LatePaymentPenalty] = {
+    if (filteredLPPs.nonEmpty && filteredLPPs.get.nonEmpty && noOfFilteredLPPs > 0) {
       logger.info(s"[FilterService][filterPenaltiesWith9xAppealStatus] Filtering for [$callingClass][$function] -" +
         s" Filtered ${noOfFilteredLPPs} LPP(s) from payload for VRN: $vrn")
       Some(LatePaymentPenalty(filteredLPPs))
+    } else if (noOfFilteredLPPs == 0) {
+      logger.info(s"[FilterService][filterPenaltiesWith9xAppealStatus] Filtering for [$callingClass][$function] -" +
+        s" No LPPs to filter from payload for VRN: $vrn")
+      penaltiesDetails.latePaymentPenalty
     } else {
       logger.info(s"[FilterService][filterPenaltiesWith9xAppealStatus] Filtering for [$callingClass][$function] - Filtered all LPPs from payload for VRN: $vrn")
       None

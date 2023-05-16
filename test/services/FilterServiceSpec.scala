@@ -147,7 +147,7 @@ class FilterServiceSpec extends SpecBase with LSPDetailsBase with LPPDetailsBase
 
   "filterPenaltiesWith9xAppealStatus" should {
     "filter LSPs with am appeal state of 91,92, 93 or 94" in {
-      val LspSummary = LSPSummary(
+      val lspSummary = LSPSummary(
         activePenaltyPoints = 2,
         inactivePenaltyPoints = 2,
         regimeThreshold = 2,
@@ -157,7 +157,7 @@ class FilterServiceSpec extends SpecBase with LSPDetailsBase with LPPDetailsBase
 
       val penaltiesDetails = GetPenaltyDetails(
         totalisations = None,
-        lateSubmissionPenalty = Some(LateSubmissionPenalty(summary = LspSummary, details = Seq(
+        lateSubmissionPenalty = Some(LateSubmissionPenalty(summary = lspSummary, details = Seq(
           lspThresholdDetails,
           lspThresholdDetailsWithAppealStatus(AppealStatusEnum.AppealRejectedPointAlreadyRemoved.toString),
           lspPointDetails,
@@ -168,7 +168,7 @@ class FilterServiceSpec extends SpecBase with LSPDetailsBase with LPPDetailsBase
       )
 
       val expectedResult = GetPenaltyDetails(totalisations = None,
-        lateSubmissionPenalty = Some(LateSubmissionPenalty(summary = LspSummary, details = Seq(
+        lateSubmissionPenalty = Some(LateSubmissionPenalty(summary = lspSummary, details = Seq(
           lspThresholdDetails,
           lspPointDetails))),
         latePaymentPenalty = None,
@@ -180,7 +180,7 @@ class FilterServiceSpec extends SpecBase with LSPDetailsBase with LPPDetailsBase
         expectedResult.lateSubmissionPenalty.get.details
     }
 
-    "filter LPPs with am appeal state of 91,92, 93 or 94" in {
+    "filter LPPs with an appeal status of 91,92, 93 or 94" in {
       val penaltiesDetails = GetPenaltyDetails(
         totalisations = None,
         lateSubmissionPenalty = None,
@@ -205,9 +205,8 @@ class FilterServiceSpec extends SpecBase with LSPDetailsBase with LPPDetailsBase
     }
   }
 
-
-  "filter LSPs and LPPs with am appeal state of 91,92, 93 or 94" in {
-    val LspSummary = LSPSummary(
+  "filter LSPs and LPPs with an appeal status of 91,92, 93 or 94" in {
+    val lspSummary = LSPSummary(
       activePenaltyPoints = 2,
       inactivePenaltyPoints = 2,
       regimeThreshold = 2,
@@ -217,7 +216,7 @@ class FilterServiceSpec extends SpecBase with LSPDetailsBase with LPPDetailsBase
 
     val penaltiesDetails = GetPenaltyDetails(
       totalisations = None,
-      lateSubmissionPenalty = Some(LateSubmissionPenalty(summary = LspSummary, details = Seq(
+      lateSubmissionPenalty = Some(LateSubmissionPenalty(summary = lspSummary, details = Seq(
         lspThresholdDetails,
         lspThresholdDetailsWithAppealStatus(AppealStatusEnum.AppealRejectedPointAlreadyRemoved.toString),
         lspPointDetails,
@@ -231,7 +230,7 @@ class FilterServiceSpec extends SpecBase with LSPDetailsBase with LPPDetailsBase
     )
 
     val expectedResult = GetPenaltyDetails(totalisations = None,
-      lateSubmissionPenalty = Some(LateSubmissionPenalty(summary = LspSummary, details = Seq(
+      lateSubmissionPenalty = Some(LateSubmissionPenalty(summary = lspSummary, details = Seq(
         lspThresholdDetails,
         lspPointDetails))),
       latePaymentPenalty = Some(LatePaymentPenalty(Some(Seq(
@@ -245,8 +244,8 @@ class FilterServiceSpec extends SpecBase with LSPDetailsBase with LPPDetailsBase
     result.latePaymentPenalty.get.details shouldBe expectedResult.latePaymentPenalty.get.details
   }
 
-  "Not filter LSPs and LPPs" in {
-    val LspSummary = LSPSummary(
+  "filter all LSPs and LPPs with an appeal status of 91,92, 93 or 94" in {
+    val lspSummary = LSPSummary(
       activePenaltyPoints = 2,
       inactivePenaltyPoints = 2,
       regimeThreshold = 2,
@@ -256,7 +255,38 @@ class FilterServiceSpec extends SpecBase with LSPDetailsBase with LPPDetailsBase
 
     val penaltiesDetails = GetPenaltyDetails(
       totalisations = None,
-      lateSubmissionPenalty = Some(LateSubmissionPenalty(summary = LspSummary, details = Seq(
+      lateSubmissionPenalty = Some(LateSubmissionPenalty(summary = lspSummary, details = Seq(
+        lspThresholdDetailsWithAppealStatus(AppealStatusEnum.AppealRejectedPointAlreadyRemoved.toString),
+        lspPointDetailsWithAppealStatus(AppealStatusEnum.AppealUpheldPointAlreadyRemoved.toString)))),
+      latePaymentPenalty = Some(LatePaymentPenalty(Some(Seq(
+        lpp2WithAppealStatus(AppealStatusEnum.AppealUpheldChargeAlreadyReversed.toString),
+        lpp1PrincipalChargeDueTodayAppealStatus(AppealStatusEnum.AppealRejectedChargeAlreadyReversed.toString))))),
+      breathingSpace = None
+    )
+
+    val expectedResult = GetPenaltyDetails(totalisations = None,
+      lateSubmissionPenalty = None,
+      latePaymentPenalty = None,
+      breathingSpace = None
+    )
+
+    val result = filter.filterPenaltiesWith9xAppealStatus(penaltiesDetails)("foo", "bar", "123456789")
+    result.lateSubmissionPenalty shouldBe expectedResult.lateSubmissionPenalty
+    result.latePaymentPenalty shouldBe expectedResult.latePaymentPenalty
+  }
+
+  "Not filter LSPs and LPPs" in {
+    val lspSummary = LSPSummary(
+      activePenaltyPoints = 2,
+      inactivePenaltyPoints = 2,
+      regimeThreshold = 2,
+      penaltyChargeAmount = 200,
+      PoCAchievementDate = LocalDate.now().plusYears(2)
+    )
+
+    val penaltiesDetails = GetPenaltyDetails(
+      totalisations = None,
+      lateSubmissionPenalty = Some(LateSubmissionPenalty(summary = lspSummary, details = Seq(
         lspThresholdDetails,
         lspPointDetails))),
       latePaymentPenalty = Some(LatePaymentPenalty(Some(Seq(
@@ -266,7 +296,7 @@ class FilterServiceSpec extends SpecBase with LSPDetailsBase with LPPDetailsBase
     )
 
     val expectedResult = GetPenaltyDetails(totalisations = None,
-      lateSubmissionPenalty = Some(LateSubmissionPenalty(summary = LspSummary, details = Seq(
+      lateSubmissionPenalty = Some(LateSubmissionPenalty(summary = lspSummary, details = Seq(
         lspThresholdDetails,
         lspPointDetails))),
       latePaymentPenalty = Some(LatePaymentPenalty(Some(Seq(
