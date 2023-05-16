@@ -107,7 +107,6 @@ class LPPDetailsSpec extends SpecBase {
       |   "LPP1LRDays": "15",
       |   "penaltyAmountPaid": 1001.45,
       |   "penaltyAmountPosted": 1001.45,
-      |   "penaltyAmountOutstanding": 0,
       |   "LPP1LRPercentage": 2.00,
       |   "LPP1HRCalculationAmount": 144.21,
       |   "LPP1HRDays": "31",
