@@ -16,11 +16,13 @@
 
 package controllers
 
-import config.featureSwitches.FeatureSwitching
+import config.AppConfig
+import config.featureSwitches.{FeatureSwitching, Filter9xAppealStatus}
 import connectors.getFinancialDetails.GetFinancialDetailsConnector
 import connectors.getPenaltyDetails.GetPenaltyDetailsConnector
 import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser
 import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser.GetPenaltyDetailsSuccessResponse
+
 import javax.inject.Inject
 import models.api.APIModel
 import models.auditing.{ThirdParty1812APIRetrievalAuditModel, ThirdPartyAPI1811RetrievalAuditModel, UserHasPenaltyAuditModel}
@@ -29,11 +31,11 @@ import play.api.Configuration
 import play.api.libs.json.{JsString, JsValue, Json}
 import play.api.mvc._
 import services.auditing.AuditService
-import services.{APIService, GetPenaltyDetailsService}
+import services.{APIService, FilterService, GetPenaltyDetailsService}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import utils.Logger.logger
 import utils.PagerDutyHelper.PagerDutyKeys._
-import utils.{DateHelper, EstimatedLPP1Filter, PagerDutyHelper, RegimeHelper}
+import utils.{DateHelper, PagerDutyHelper, RegimeHelper}
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.matching.Regex
@@ -45,7 +47,7 @@ class APIController @Inject()(auditService: AuditService,
                               getPenaltyDetailsConnector: GetPenaltyDetailsConnector,
                               dateHelper: DateHelper,
                               cc: ControllerComponents,
-                              filter: EstimatedLPP1Filter)(implicit ec: ExecutionContext, val config: Configuration) extends BackendController(cc) with FeatureSwitching {
+                              filterService: FilterService)(implicit ec: ExecutionContext, val config: Configuration, appConfig: AppConfig) extends BackendController(cc) with FeatureSwitching {
 
   private val vrnRegex: Regex = "^[0-9]{1,9}$".r
 
@@ -178,7 +180,7 @@ class APIController @Inject()(auditService: AuditService,
       val response = getPenaltyDetailsConnector.getPenaltyDetailsForAPI(vrn, dateLimit)
       response.map(
         res => {
-          val processedResBody = filter.tryJsonParseOrJsSting(res.body)
+          val processedResBody = filterService.tryJsonParseOrJsString(res.body)
           val filteredResBody = if(res.status.equals(OK) || !processedResBody.isInstanceOf[JsString]) {
             filterResponseBody(
               processedResBody, vrn, "getPenaltyDetails")
@@ -207,6 +209,10 @@ class APIController @Inject()(auditService: AuditService,
 
   private def filterResponseBody(resBody: JsValue, vrn: String, method: String): JsValue = {
     val penaltiesDetails = GetPenaltyDetails.format.reads(resBody)
-    GetPenaltyDetails.format.writes(filter.returnFilteredLPPs(penaltiesDetails.get, "APIConnector", method, vrn))
+    if (appConfig.isEnabled(Filter9xAppealStatus)) {
+      GetPenaltyDetails.format.writes(filterService.filterEstimatedLPP1DuringPeriodOfFamiliarisation(filterService.filterPenaltiesWith9xAppealStatus(penaltiesDetails.get)("APIConnector", method, vrn), "APIConnector", method, vrn))
+    } else {
+      GetPenaltyDetails.format.writes(filterService.filterEstimatedLPP1DuringPeriodOfFamiliarisation(penaltiesDetails.get, "APIConnector", method, vrn))
+    }
   }
 }

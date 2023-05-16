@@ -17,10 +17,10 @@
 package base
 
 import java.time.LocalDate
-
 import models.getFinancialDetails.MainTransactionEnum
 import models.getPenaltyDetails.appealInfo.{AppealInformationType, AppealLevelEnum, AppealStatusEnum}
 import models.getPenaltyDetails.latePayment.{LPPDetails, LPPDetailsMetadata, LPPPenaltyCategoryEnum, LPPPenaltyStatusEnum, TimeToPay}
+import models.getPenaltyDetails.lateSubmission.LSPDetails
 
 trait LPPDetailsBase {
   val lpp1PrincipalChargeDueToday: LPPDetails = LPPDetails(
@@ -94,4 +94,8 @@ trait LPPDetailsBase {
   val lpp1PrincipalChargeDueYesterday: LPPDetails = lpp1PrincipalChargeDueToday.copy(principalChargeDueDate = LocalDate.now().minusDays(1))
   val lpp1PrincipalChargeDueYesterdayPosted: LPPDetails = lpp1PrincipalChargeDueToday.copy(principalChargeDueDate = LocalDate.now().minusDays(1), penaltyStatus = LPPPenaltyStatusEnum.Posted)
   val lpp1PrincipalChargeDueTomorrow: LPPDetails = lpp1PrincipalChargeDueToday.copy(principalChargeDueDate = LocalDate.now().plusDays(1))
+
+  def lpp2WithAppealStatus(status: String): LPPDetails = lpp2.copy(appealInformation = Some(Seq(AppealInformationType(appealStatus = Some(AppealStatusEnum.withName(status)), appealLevel = Some(AppealLevelEnum.HMRC)))))
+
+  def lpp1PrincipalChargeDueTodayAppealStatus(status: String): LPPDetails = lpp1PrincipalChargeDueToday.copy(appealInformation = Some(Seq(AppealInformationType(appealStatus = Some(AppealStatusEnum.withName(status)), appealLevel = Some(AppealLevelEnum.HMRC)))))
 }
