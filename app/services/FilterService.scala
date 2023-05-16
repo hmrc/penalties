@@ -37,10 +37,10 @@ class FilterService @Inject()()(implicit ec: ExecutionContext, appConfig: AppCon
   def filterEstimatedLPP1DuringPeriodOfFamiliarisation(penaltiesDetails: GetPenaltyDetails, callingClass: String, function: String, vrn: String): GetPenaltyDetails = {
     if (penaltiesDetails.latePaymentPenalty.nonEmpty) {
       val filteredLPPs: Option[Seq[LPPDetails]] = findEstimatedLPP1DuringPeriodOfFamiliarisation(penaltiesDetails)
-      val numberOfFiltered = numberOfFilteredLPPs(filteredLPPs, penaltiesDetails)
-      if (filteredLPPs.nonEmpty && filteredLPPs.get.nonEmpty && numberOfFiltered >= 0) {
+      val numberOfFilteredLPPs = countNumberOfFilteredLPPs(filteredLPPs, penaltiesDetails)
+      if (filteredLPPs.nonEmpty && filteredLPPs.get.nonEmpty && numberOfFilteredLPPs >= 0) {
         logger.info(s"[FilterService][filterEstimatedLPP1DuringPeriodOfFamiliarisation] Filtering for [$callingClass][$function] -" +
-          s" Filtered ${numberOfFiltered} LPP1(s) from payload for VRN: $vrn")
+          s" Filtered ${numberOfFilteredLPPs} LPP1(s) from payload for VRN: $vrn")
         penaltiesDetails.copy(latePaymentPenalty = Some(LatePaymentPenalty(filteredLPPs)))
       } else {
         logger.info(s"[FilterService][filterEstimatedLPP1DuringPeriodOfFamiliarisation] Filtering for [$callingClass][$function] - Filtered all LPP1s from payload for VRN: $vrn")
@@ -65,11 +65,11 @@ class FilterService @Inject()()(implicit ec: ExecutionContext, appConfig: AppCon
 
   def filterPenaltiesWith9xAppealStatus(penaltiesDetails: GetPenaltyDetails)(implicit callingClass: String, function: String, vrn: String): GetPenaltyDetails = {
     val filteredLSPs: Option[Seq[LSPDetails]] = filterLSPWith9xAppealStatus(penaltiesDetails)
-    val noOfFilteredLSPs: Int = numberOfFilteredLSPs(filteredLSPs, penaltiesDetails)
+    val numberOfFilteredLSPs: Int = countNumberOfFilteredLSPs(filteredLSPs, penaltiesDetails)
     val filteredLPPs: Option[Seq[LPPDetails]] = findLPPWith9xAppealStatus(penaltiesDetails)
-    val noOfFilteredLPPs: Int = numberOfFilteredLPPs(filteredLPPs, penaltiesDetails)
+    val numberOfFilteredLPPs: Int = countNumberOfFilteredLPPs(filteredLPPs, penaltiesDetails)
 
-    penaltiesDetails.copy(lateSubmissionPenalty = prepareLateSubmissionPenaltiesAfterFilter(penaltiesDetails, filteredLSPs, noOfFilteredLSPs, vrn, callingClass, function), latePaymentPenalty = prepareLatePaymentPenaltiesAfterFilter(penaltiesDetails, filteredLPPs, noOfFilteredLPPs, vrn, callingClass, function))
+    penaltiesDetails.copy(lateSubmissionPenalty = prepareLateSubmissionPenaltiesAfterFilter(penaltiesDetails, filteredLSPs, numberOfFilteredLSPs, vrn, callingClass, function), latePaymentPenalty = prepareLatePaymentPenaltiesAfterFilter(penaltiesDetails, filteredLPPs, numberOfFilteredLPPs, vrn, callingClass, function))
   }
 
   private def prepareLateSubmissionPenaltiesAfterFilter(penaltiesDetails: GetPenaltyDetails, filteredLSPs: Option[Seq[LSPDetails]], noOfFilteredLSPs: Int, vrn: String, callingClass: String, function: String): Option[LateSubmissionPenalty] = {
@@ -118,7 +118,7 @@ class FilterService @Inject()()(implicit ec: ExecutionContext, appConfig: AppCon
   }
 
 
-  private def numberOfFilteredLPPs(filteredLPPs: Option[Seq[LPPDetails]], penaltiesDetails: GetPenaltyDetails): Int = {
+  private def countNumberOfFilteredLPPs(filteredLPPs: Option[Seq[LPPDetails]], penaltiesDetails: GetPenaltyDetails): Int = {
     if (penaltiesDetails.latePaymentPenalty.nonEmpty) {
       penaltiesDetails.latePaymentPenalty.get.details.get.size - filteredLPPs.get.size
     } else {
@@ -126,7 +126,7 @@ class FilterService @Inject()()(implicit ec: ExecutionContext, appConfig: AppCon
     }
   }
 
-  private def numberOfFilteredLSPs(filteredLSPs: Option[Seq[LSPDetails]], penaltiesDetails: GetPenaltyDetails): Int = {
+  private def countNumberOfFilteredLSPs(filteredLSPs: Option[Seq[LSPDetails]], penaltiesDetails: GetPenaltyDetails): Int = {
     if (penaltiesDetails.lateSubmissionPenalty.nonEmpty) {
       penaltiesDetails.lateSubmissionPenalty.get.details.size - filteredLSPs.get.size
     } else {

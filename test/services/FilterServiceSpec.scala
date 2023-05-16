@@ -45,7 +45,7 @@ class FilterServiceSpec extends SpecBase with LSPDetailsBase with LPPDetailsBase
   sys.props -= featureSwitching.ESTIMATED_LPP1_FILTER_END_DATE
 
   val mockAppConfig: AppConfig = new AppConfig(mockConfig, mockServicesConfig)
-  val filter = new FilterService
+  val filterService = new FilterService
 
   "tryJsonParseOrJsString" should {
     "return a JsValue when the body can be parsed" in {
@@ -58,19 +58,19 @@ class FilterServiceSpec extends SpecBase with LSPDetailsBase with LPPDetailsBase
           | "foo": "bar"
           |}
           |""".stripMargin)
-      val result = filter.tryJsonParseOrJsString(sampleJsonResponse.toString())
+      val result = filterService.tryJsonParseOrJsString(sampleJsonResponse.toString())
       result shouldBe expectedResult
     }
 
     "return a JsString when body cannot be parsed" in {
-      val result = filter.tryJsonParseOrJsString("error")
+      val result = filterService.tryJsonParseOrJsString("error")
       val expectedResult: JsString = JsString("error")
       result shouldBe expectedResult
     }
   }
 
   "filterEstimatedLPP1DuringPeriodOfFamiliarisation" should {
-    "filter LPP1s with a principle charge due within the filtering window" in {
+    "filter LPP1s with a principal charge due within the filtering window" in {
       val penaltiesDetails = GetPenaltyDetails(
         totalisations = None,
         lateSubmissionPenalty = None,
@@ -93,11 +93,11 @@ class FilterServiceSpec extends SpecBase with LSPDetailsBase with LPPDetailsBase
 
       featureSwitching.setEstimatedLPP1FilterEndDate(Some(LocalDate.now()))
 
-      val result = filter.filterEstimatedLPP1DuringPeriodOfFamiliarisation(penaltiesDetails, "foo", "bar", "123456789")
+      val result = filterService.filterEstimatedLPP1DuringPeriodOfFamiliarisation(penaltiesDetails, "foo", "bar", "123456789")
       result shouldBe expectedResult
     }
 
-    "remove all LPP1s with a principle charge due within the filtering window" in {
+    "remove all LPP1s with a principal charge due within the filtering window" in {
       val penaltiesDetails = GetPenaltyDetails(
         totalisations = None,
         lateSubmissionPenalty = None,
@@ -115,11 +115,11 @@ class FilterServiceSpec extends SpecBase with LSPDetailsBase with LPPDetailsBase
 
       featureSwitching.setEstimatedLPP1FilterEndDate(Some(LocalDate.now()))
 
-      val result = filter.filterEstimatedLPP1DuringPeriodOfFamiliarisation(penaltiesDetails, "foo", "bar", "123456789")
+      val result = filterService.filterEstimatedLPP1DuringPeriodOfFamiliarisation(penaltiesDetails, "foo", "bar", "123456789")
       result shouldBe expectedResult
     }
 
-    "remove no LPP1s when their principle charges are NOT due in the filtering window" in {
+    "remove no LPP1s when their principal charges are NOT due in the filtering window" in {
       val penaltiesDetails = GetPenaltyDetails(
         totalisations = None,
         lateSubmissionPenalty = None,
@@ -140,13 +140,13 @@ class FilterServiceSpec extends SpecBase with LSPDetailsBase with LPPDetailsBase
 
       featureSwitching.setEstimatedLPP1FilterEndDate(Some(LocalDate.now()))
 
-      val result = filter.filterEstimatedLPP1DuringPeriodOfFamiliarisation(penaltiesDetails, "foo", "bar", "123456789")
+      val result = filterService.filterEstimatedLPP1DuringPeriodOfFamiliarisation(penaltiesDetails, "foo", "bar", "123456789")
       result shouldBe expectedResult
     }
   }
 
   "filterPenaltiesWith9xAppealStatus" should {
-    "filter LSPs with am appeal state of 91,92, 93 or 94" in {
+    "filter LSPs with an appeal status of 91,92, 93 or 94" in {
       val lspSummary = LSPSummary(
         activePenaltyPoints = 2,
         inactivePenaltyPoints = 2,
@@ -175,7 +175,7 @@ class FilterServiceSpec extends SpecBase with LSPDetailsBase with LPPDetailsBase
         breathingSpace = None
       )
 
-      val result = filter.filterPenaltiesWith9xAppealStatus(penaltiesDetails)("foo", "bar", "123456789")
+      val result = filterService.filterPenaltiesWith9xAppealStatus(penaltiesDetails)("foo", "bar", "123456789")
       result.lateSubmissionPenalty.get.details shouldBe
         expectedResult.lateSubmissionPenalty.get.details
     }
@@ -200,7 +200,7 @@ class FilterServiceSpec extends SpecBase with LSPDetailsBase with LPPDetailsBase
         breathingSpace = None
       )
 
-      val result = filter.filterPenaltiesWith9xAppealStatus(penaltiesDetails)("foo", "bar", "123456789")
+      val result = filterService.filterPenaltiesWith9xAppealStatus(penaltiesDetails)("foo", "bar", "123456789")
       result.latePaymentPenalty.get.details shouldBe expectedResult.latePaymentPenalty.get.details
     }
   }
@@ -239,7 +239,7 @@ class FilterServiceSpec extends SpecBase with LSPDetailsBase with LPPDetailsBase
       breathingSpace = None
     )
 
-    val result = filter.filterPenaltiesWith9xAppealStatus(penaltiesDetails)("foo", "bar", "123456789")
+    val result = filterService.filterPenaltiesWith9xAppealStatus(penaltiesDetails)("foo", "bar", "123456789")
     result.lateSubmissionPenalty.get.details shouldBe expectedResult.lateSubmissionPenalty.get.details
     result.latePaymentPenalty.get.details shouldBe expectedResult.latePaymentPenalty.get.details
   }
@@ -270,7 +270,7 @@ class FilterServiceSpec extends SpecBase with LSPDetailsBase with LPPDetailsBase
       breathingSpace = None
     )
 
-    val result = filter.filterPenaltiesWith9xAppealStatus(penaltiesDetails)("foo", "bar", "123456789")
+    val result = filterService.filterPenaltiesWith9xAppealStatus(penaltiesDetails)("foo", "bar", "123456789")
     result.lateSubmissionPenalty shouldBe expectedResult.lateSubmissionPenalty
     result.latePaymentPenalty shouldBe expectedResult.latePaymentPenalty
   }
@@ -305,7 +305,7 @@ class FilterServiceSpec extends SpecBase with LSPDetailsBase with LPPDetailsBase
       breathingSpace = None
     )
 
-    val result = filter.filterPenaltiesWith9xAppealStatus(penaltiesDetails)("foo", "bar", "123456789")
+    val result = filterService.filterPenaltiesWith9xAppealStatus(penaltiesDetails)("foo", "bar", "123456789")
     result.lateSubmissionPenalty.get.details shouldBe expectedResult.lateSubmissionPenalty.get.details
     result.latePaymentPenalty.get.details shouldBe expectedResult.latePaymentPenalty.get.details
   }
