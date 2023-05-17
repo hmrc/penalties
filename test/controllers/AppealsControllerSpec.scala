@@ -1224,7 +1224,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
         val expectedJsonResponse: JsObject = Json.obj(
           "caseId" -> "PR-123456789",
           "status" -> MULTI_STATUS,
-          "error" -> s"Appeal submitted (case ID: PR-123456789,, correlation ID: $correlationId) but received 400 response from file notification orchestrator"
+          "error" -> s"Appeal submitted (case ID: PR-123456789, correlation ID: $correlationId) but received 400 response from file notification orchestrator"
         )
         withCaptureOfLoggingFrom(logger) {
           logs => {
@@ -1295,7 +1295,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
           logs => {
             val result: Result = await(controller.submitAppeal("HMRC-MTD-VAT~VRN~123456789", isLPP = false, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = true)(fakeRequest.withJsonBody(appealsJson)))
             result.header.status shouldBe MULTI_STATUS
-            logs.exists(_.getMessage == "[AppealsController][submitAppeal] Unable to store file notification for user with enrollment: HMRC-MTD-VAT~VRN~123456789 penalty 123456789 - An unknown exception occurred when attempting to store file notifications, with error: failed") shouldBe true
+            logs.exists(_.getMessage == s"[AppealsController][submitAppeal] Unable to store file notification for user with enrolment: HMRC-MTD-VAT~VRN~123456789 penalty 123456789 (correlation ID: $correlationId) - An unknown exception occurred when attempting to store file notifications, with error: failed") shouldBe true
             contentAsJson(Future(result)) shouldBe expectedJsonResponse
             eventually {
               verify(mockAuditService, times(1)).audit(argumentCaptorForAuditModel.capture())(any(), any(), any())
