@@ -124,14 +124,14 @@ class AppealsController @Inject()(val appConfig: AppConfig,
   def submitAppeal(enrolmentKey: String, isLPP: Boolean, penaltyNumber: String, correlationId: String, isMultiAppeal: Boolean): Action[AnyContent] = Action.async {
     implicit request => {
       request.body.asJson.fold({
-        logger.error(s"[AppealsController][submitAppeal] Unable to submit appel for user with enrollment: $enrolmentKey penalty $penaltyNumber - Failed to validate request body as JSON")
+        logger.error(s"[AppealsController][submitAppeal] Unable to submit appel for user with enrolment: $enrolmentKey penalty $penaltyNumber - Failed to validate request body as JSON")
         Future(BadRequest("Invalid body received i.e. could not be parsed to JSON"))
       })(
         jsonBody => {
           val parseResultToModel = Json.fromJson(jsonBody)(AppealSubmission.apiReads)
           parseResultToModel.fold(
             failure => {
-              logger.error(s"[AppealsController][submitAppeal] Unable to submit appel for user with enrollment: $enrolmentKey penalty $penaltyNumber - Failed to parse request body to model")
+              logger.error(s"[AppealsController][submitAppeal] Unable to submit appel for user with enrolment: $enrolmentKey penalty $penaltyNumber - Failed to parse request body to model")
               logger.debug(s"[AppealsController][submitAppeal] Parse failure(s): $failure")
               Future(BadRequest("Failed to parse to model"))
             },
@@ -150,12 +150,14 @@ class AppealsController @Inject()(val appConfig: AppConfig,
     appealService.submitAppeal(appealSubmission, enrolmentKey, isLPP, penaltyNumber, correlationId).flatMap {
       _.fold(
         error => {
-          logger.error(s"[AppealsController][submitAppeal] Error submiting appeal to PEGA for user with enrollment: $enrolmentKey penalty $penaltyNumber - Received error from PEGA with status ${error.status} and error message: ${error.body}")
+          logger.error(s"[AppealsController][submitAppeal] Error submiting appeal to PEGA for user with enrolment: $enrolmentKey penalty $penaltyNumber - Received error from PEGA with status ${error.status} and error message: ${error.body} " +
+            s"for correlation ID: $correlationId")
           logger.debug(s"[AppealsController][submitAppeal] Returning ${error.status} to calling service.")
           Future(Status(error.status)(error.body))
         },
         responseModel => {
-          logger.info(s"[AppealsController][submitAppeal] - Successfully sent appeal submission to PEGA for user with enrollment: $enrolmentKey penalty $penaltyNumber")
+          logger.info(s"[AppealsController][submitAppeal] - Successfully sent appeal submission to PEGA for user with enrolment: $enrolmentKey and penalty number: $penaltyNumber" +
+            s" (correlation ID: $correlationId)")
           val appeal = appealSubmission.appealInformation
           logger.debug(s"[AppealsController][submitAppeal] Received caseID response: ${responseModel.caseID} from downstream.")
           val seqOfNotifications = appeal match {
@@ -172,19 +174,19 @@ class AppealsController @Inject()(val appConfig: AppConfig,
               response =>
                 response.status match {
                   case OK =>
-                    logger.info(s"[AppealsController][submitAppeal] - Received OK from file notification orchestrator")
+                    logger.info(s"[AppealsController][submitAppeal] - Received OK from file notification orchestrator for correlation ID: $correlationId")
                     Ok(responseModel.caseID)
                   case status =>
                     PagerDutyHelper.logStatusCode("submitAppeal", status)(RECEIVED_4XX_FROM_FILE_NOTIFICATION_ORCHESTRATOR, RECEIVED_5XX_FROM_FILE_NOTIFICATION_ORCHESTRATOR)
-                    logger.error(s"[AppealsController][submitAppeal] Unable to store file notification for user with enrollment: $enrolmentKey penalty $penaltyNumber - Received unknown response ($status) from file notification orchestrator. Response body: ${response.body}")
+                    logger.error(s"[AppealsController][submitAppeal] Unable to store file notification for user with enrolment: $enrolmentKey penalty $penaltyNumber (correlation ID: $correlationId) - Received unknown response ($status) from file notification orchestrator. Response body: ${response.body}")
                     auditStorageFailureOfFileNotifications(seqOfNotifications)
-                    returnErrorResponseIfMultiAppeal(isMultiAppeal)(s"Appeal submitted (case ID: ${responseModel.caseID}) but received $status response from file notification orchestrator")(responseModel.caseID)
+                    returnErrorResponseIfMultiAppeal(isMultiAppeal)(s"Appeal submitted (case ID: ${responseModel.caseID}, correlation ID: $correlationId) but received $status response from file notification orchestrator")(responseModel.caseID)
                 }
             }.recover {
               case e => {
-                logger.error(s"[AppealsController][submitAppeal] Unable to store file notification for user with enrollment: $enrolmentKey penalty $penaltyNumber - An unknown exception occurred when attempting to store file notifications, with error: ${e.getMessage}")
+                logger.error(s"[AppealsController][submitAppeal] Unable to store file notification for user with enrolment: $enrolmentKey penalty $penaltyNumber (correlation ID: $correlationId) - An unknown exception occurred when attempting to store file notifications, with error: ${e.getMessage}")
                 auditStorageFailureOfFileNotifications(seqOfNotifications)
-                returnErrorResponseIfMultiAppeal(isMultiAppeal)(s"Appeal submitted (case ID: ${responseModel.caseID}) but failed to store file uploads with unknown error")(responseModel.caseID)
+                returnErrorResponseIfMultiAppeal(isMultiAppeal)(s"Appeal submitted (case ID: ${responseModel.caseID}, correlation ID: $correlationId) but failed to store file uploads with unknown error")(responseModel.caseID)
               }
             }
           } else {

@@ -1157,7 +1157,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
           logs => {
             val result: Result = await(controller.submitAppeal("HMRC-MTD-VAT~VRN~123456789", isLPP = false, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = true)(fakeRequest.withJsonBody(appealsJson)))
             result.header.status shouldBe MULTI_STATUS
-            contentAsString(Future(result)) shouldBe "Appeal submitted (case ID: PR-123456789) but received 500 response from file notification orchestrator"
+            contentAsString(Future(result)) shouldBe s"Appeal submitted (case ID: PR-123456789, correlation ID: $correlationId) but received 500 response from file notification orchestrator"
             eventually {
               verify(mockAuditService, times(1)).audit(argumentCaptorForAuditModel.capture())(any(), any(), any())
               logs.exists(_.getMessage.contains(PagerDutyKeys.RECEIVED_5XX_FROM_FILE_NOTIFICATION_ORCHESTRATOR.toString)) shouldBe true
@@ -1215,7 +1215,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
           logs => {
             val result: Result = await(controller.submitAppeal("HMRC-MTD-VAT~VRN~123456789", isLPP = false, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = true)(fakeRequest.withJsonBody(appealsJson)))
             result.header.status shouldBe MULTI_STATUS
-            contentAsString(Future(result)) shouldBe "Appeal submitted (case ID: PR-123456789) but received 400 response from file notification orchestrator"
+            contentAsString(Future(result)) shouldBe s"Appeal submitted (case ID: PR-123456789, correlation ID: $correlationId) but received 400 response from file notification orchestrator"
             eventually {
               verify(mockAuditService, times(1)).audit(argumentCaptorForAuditModel.capture())(any(), any(), any())
               logs.exists(_.getMessage.contains(PagerDutyKeys.RECEIVED_4XX_FROM_FILE_NOTIFICATION_ORCHESTRATOR.toString)) shouldBe true
@@ -1275,9 +1275,8 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
           logs => {
             val result: Result = await(controller.submitAppeal("HMRC-MTD-VAT~VRN~123456789", isLPP = false, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = true)(fakeRequest.withJsonBody(appealsJson)))
             result.header.status shouldBe MULTI_STATUS
-            println(logs)
-            logs.exists(_.getMessage == "[AppealsController][submitAppeal] Unable to store file notification for user with enrollment: HMRC-MTD-VAT~VRN~123456789 penalty 123456789 - An unknown exception occurred when attempting to store file notifications, with error: failed") shouldBe true
-            contentAsString(Future(result)) shouldBe "Appeal submitted (case ID: PR-123456789) but failed to store file uploads with unknown error"
+            logs.exists(_.getMessage == s"[AppealsController][submitAppeal] Unable to store file notification for user with enrolment: HMRC-MTD-VAT~VRN~123456789 penalty 123456789 (correlation ID: $correlationId) - An unknown exception occurred when attempting to store file notifications, with error: failed") shouldBe true
+            contentAsString(Future(result)) shouldBe s"Appeal submitted (case ID: PR-123456789, correlation ID: $correlationId) but failed to store file uploads with unknown error"
             eventually {
               verify(mockAuditService, times(1)).audit(argumentCaptorForAuditModel.capture())(any(), any(), any())
             }

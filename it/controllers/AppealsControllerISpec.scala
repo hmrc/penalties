@@ -400,7 +400,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
           |}
           |""".stripMargin
       )
-      val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=false&penaltyNumber=123456789&correlationId=correlationId").post(
+      val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=false&penaltyNumber=123456789&correlationId=uuid-1").post(
         jsonToSubmit
       ))
       result.status shouldBe OK
@@ -426,7 +426,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
           |		}
           |}
           |""".stripMargin)
-      val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=false&penaltyNumber=123456789&correlationId=correlationId").post(
+      val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=false&penaltyNumber=123456789&correlationId=uuid-1").post(
         jsonToSubmit
       ))
       result.status shouldBe OK
@@ -452,7 +452,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
           |    }
           |}
           |""".stripMargin)
-      val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=false&penaltyNumber=123456789&correlationId=correlationId").post(
+      val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=false&penaltyNumber=123456789&correlationId=uuid-1").post(
         jsonToSubmit
       ))
       result.status shouldBe OK
@@ -478,7 +478,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
           |		}
           |}
           |""".stripMargin)
-      val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=false&penaltyNumber=123456789&correlationId=correlationId").post(
+      val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=false&penaltyNumber=123456789&correlationId=uuid-1").post(
         jsonToSubmit
       ))
       result.status shouldBe OK
@@ -505,7 +505,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
           |		}
           |}
           |""".stripMargin)
-      val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=false&penaltyNumber=123456789&correlationId=correlationId").post(
+      val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=false&penaltyNumber=123456789&correlationId=uuid-1").post(
         jsonToSubmit
       ))
       result.status shouldBe OK
@@ -534,7 +534,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
             |		}
             |}
             |""".stripMargin)
-        val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=false&penaltyNumber=123456789&correlationId=correlationId").post(
+        val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=false&penaltyNumber=123456789&correlationId=uuid-1").post(
           jsonToSubmit
         ))
         result.status shouldBe OK
@@ -562,7 +562,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
             |		}
             |}
             |""".stripMargin)
-        val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=false&penaltyNumber=123456789&correlationId=correlationId").post(
+        val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=false&penaltyNumber=123456789&correlationId=uuid-1").post(
           jsonToSubmit
         ))
         result.status shouldBe OK
@@ -591,7 +591,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
             |		}
             |}
             |""".stripMargin)
-        val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=false&penaltyNumber=123456789&correlationId=correlationId").post(
+        val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=false&penaltyNumber=123456789&correlationId=uuid-1").post(
           jsonToSubmit
         ))
         result.status shouldBe OK
@@ -638,7 +638,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
             |}
             |""".stripMargin
         )
-        val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=false&penaltyNumber=123456789&correlationId=correlationId").post(
+        val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=false&penaltyNumber=123456789&correlationId=uuid-1").post(
           jsonToSubmit
         ))
         result.status shouldBe OK
@@ -685,7 +685,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
             |}
             |""".stripMargin
         )
-        val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=false&penaltyNumber=123456789&correlationId=correlationId").post(
+        val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=false&penaltyNumber=123456789&correlationId=uuid-1").post(
           jsonToSubmit
         ))
         result.status shouldBe OK
@@ -715,7 +715,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
             |		}
             |}
             |""".stripMargin)
-        val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=true&penaltyNumber=123456789&correlationId=correlationId").post(
+        val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=true&penaltyNumber=123456789&correlationId=uuid-1").post(
           jsonToSubmit
         ))
         result.status shouldBe OK
@@ -762,11 +762,11 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
             |}
             |""".stripMargin
         )
-        val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=false&penaltyNumber=123456789&correlationId=correlationId&isMultiAppeal=true").post(
+        val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=false&penaltyNumber=123456789&correlationId=uuid-1&isMultiAppeal=true").post(
           jsonToSubmit
         ))
         result.status shouldBe MULTI_STATUS
-        result.body shouldBe "Appeal submitted (case ID: PR-1234567889) but received 500 response from file notification orchestrator"
+        result.body shouldBe s"Appeal submitted (case ID: PR-1234567889, correlation ID: uuid-1) but received 500 response from file notification orchestrator"
         eventually {
           wireMockServer.findAll(postRequestedFor(urlEqualTo("/write/audit"))).asScala.toList.exists(_.getBodyAsString.contains("PenaltyAppealFileNotificationStorageFailure")) shouldBe true
         }
@@ -775,14 +775,14 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
 
     "return BAD_REQUEST (400)" when {
       "no JSON body is in the request" in {
-        val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=true&penaltyNumber=123456789&correlationId=correlationId").post(
+        val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=true&penaltyNumber=123456789&correlationId=uuid-1").post(
           ""
         ))
         result.status shouldBe BAD_REQUEST
       }
 
       "JSON body is present but it can not be parsed to a model" in {
-        val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=true&penaltyNumber=123456789&correlationId=correlationId").post(
+        val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=true&penaltyNumber=123456789&correlationId=uuid-1").post(
           Json.parse("{}")
         ))
         result.status shouldBe BAD_REQUEST
@@ -811,7 +811,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
             |		}
             |}
             |""".stripMargin)
-        val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=false&penaltyNumber=123456789&correlationId=correlationId").post(
+        val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=false&penaltyNumber=123456789&correlationId=uuid-1").post(
           jsonToSubmit
         ))
         result.status shouldBe GATEWAY_TIMEOUT
@@ -838,7 +838,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
             |		}
             |}
             |""".stripMargin)
-        val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=false&penaltyNumber=123456789&correlationId=correlationId").post(
+        val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=false&penaltyNumber=123456789&correlationId=uuid-1").post(
           jsonToSubmit
         ))
         result.status shouldBe INTERNAL_SERVER_ERROR
