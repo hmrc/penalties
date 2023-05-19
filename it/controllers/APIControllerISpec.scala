@@ -46,7 +46,46 @@ class APIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock wit
         |     "penaltyChargeAmount": 200.00,
         |     "PoCAchievementDate": "2022-01-01"
         |   },
-        |   "details": []
+        |   "details": [
+        |   {
+        |       "penaltyNumber": "12345678901234",
+        |       "penaltyOrder": "02",
+        |       "penaltyCategory": "P",
+        |       "penaltyStatus": "ACTIVE",
+        |       "expiryReason": " ",
+        |       "penaltyCreationDate": "2023-02-20",
+        |       "penaltyExpiryDate": "2025-02-20",
+        |       "communicationsDate": "2023-10-30",
+        |       "lateSubmissions": [
+        |         {
+        |           "taxPeriodStartDate": "2022-01-01",
+        |           "taxPeriodEndDate": "2022-12-31",
+        |           "taxPeriodDueDate": "2023-02-07",
+        |           "returnReceiptDate": "2023-02-01",
+        |           "taxReturnStatus": "Fulfilled"
+        |         }
+        |       ]
+        |     },
+        |     {
+        |       "penaltyNumber": "12345678901235",
+        |       "penaltyOrder": "01",
+        |       "penaltyCategory": "P",
+        |       "penaltyStatus": "ACTIVE",
+        |       "expiryReason": " ",
+        |       "penaltyCreationDate": "2024-02-20",
+        |       "penaltyExpiryDate": "2026-02-20",
+        |       "communicationsDate": "2024-02-20",
+        |       "lateSubmissions": [
+        |         {
+        |           "taxPeriodStartDate": "2023-01-01",
+        |           "taxPeriodEndDate": "2023-12-31",
+        |           "taxPeriodDueDate": "2024-02-07",
+        |           "returnReceiptDate": "2024-02-01",
+        |           "taxReturnStatus": "Fulfilled"
+        |         }
+        |       ]
+        |     }
+        |   ]
         | },
         | "latePaymentPenalty": {
         |     "details": [

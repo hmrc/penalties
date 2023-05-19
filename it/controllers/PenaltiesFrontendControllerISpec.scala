@@ -266,16 +266,6 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
       |        "totalAccountPostedInterest": 12.34,
       |        "totalAccountAccruingInterest": 43.21
       |    },
-      |    "lateSubmissionPenalty": {
-      |        "summary": {
-      |            "activePenaltyPoints": 0,
-      |            "inactivePenaltyPoints": 0,
-      |            "regimeThreshold": 5,
-      |            "penaltyChargeAmount": 200,
-      |            "PoCAchievementDate": "2022-01-01"
-      |        },
-      |        "details": []
-      |    },
       |    "latePaymentPenalty": {
       |        "details": [
       |            {
@@ -623,17 +613,7 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
         |   "totalAccountOverdue": 1000,
         |   "totalAccountPostedInterest": 12.34,
         |   "totalAccountAccruingInterest": 43.21
-        | },
-        | "lateSubmissionPenalty": {
-        |   "summary": {
-        |     "activePenaltyPoints": 0,
-        |     "inactivePenaltyPoints": 0,
-        |     "regimeThreshold": 0,
-        |     "penaltyChargeAmount": 0.00,
-        |     "PoCAchievementDate": "2022-01-01"
-        |   },
-        |   "details": []
-        |   }
+        | }
         |}
         |""".stripMargin)
     mockStubResponseForGetPenaltyDetails(Status.OK, "123456789", body = Some(getPenaltyDetailsWithNoPointsAsJson.toString()))

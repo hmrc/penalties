@@ -146,7 +146,7 @@ class FilterServiceSpec extends SpecBase with LSPDetailsBase with LPPDetailsBase
   }
 
   "filterPenaltiesWith9xAppealStatus" should {
-    "filter LSPs with an appeal status of 91,92, 93 or 94" in {
+    "filter LSPs with an appeal status of 91, 92, 93 or 94" in {
       val lspSummary = LSPSummary(
         activePenaltyPoints = 2,
         inactivePenaltyPoints = 2,
@@ -176,11 +176,10 @@ class FilterServiceSpec extends SpecBase with LSPDetailsBase with LPPDetailsBase
       )
 
       val result = filterService.filterPenaltiesWith9xAppealStatus(penaltiesDetails)("foo", "bar", "123456789")
-      result.lateSubmissionPenalty.get.details shouldBe
-        expectedResult.lateSubmissionPenalty.get.details
+      result.lateSubmissionPenalty.get.details shouldBe expectedResult.lateSubmissionPenalty.get.details
     }
 
-    "filter LPPs with an appeal status of 91,92, 93 or 94" in {
+    "filter LPPs with an appeal status of 91, 92, 93 or 94" in {
       val penaltiesDetails = GetPenaltyDetails(
         totalisations = None,
         lateSubmissionPenalty = None,
@@ -205,7 +204,7 @@ class FilterServiceSpec extends SpecBase with LSPDetailsBase with LPPDetailsBase
     }
   }
 
-  "filter LSPs and LPPs with an appeal status of 91,92, 93 or 94" in {
+  "filter LSPs and LPPs with an appeal status of 91, 92, 93 or 94" in {
     val lspSummary = LSPSummary(
       activePenaltyPoints = 2,
       inactivePenaltyPoints = 2,
@@ -244,7 +243,7 @@ class FilterServiceSpec extends SpecBase with LSPDetailsBase with LPPDetailsBase
     result.latePaymentPenalty.get.details shouldBe expectedResult.latePaymentPenalty.get.details
   }
 
-  "filter all LSPs and LPPs with an appeal status of 91,92, 93 or 94" in {
+  "filter all LSPs and LPPs with an appeal status of 91, 92, 93 or 94" in {
     val lspSummary = LSPSummary(
       activePenaltyPoints = 2,
       inactivePenaltyPoints = 2,
