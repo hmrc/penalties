@@ -30,7 +30,7 @@ import models.getPenaltyDetails.latePayment.{LPPDetails, LPPPenaltyCategoryEnum}
 import models.getPenaltyDetails.lateSubmission.LSPDetails
 import models.notification._
 import play.api.Configuration
-import play.api.libs.json.Json
+import play.api.libs.json.{JsValue, Json}
 import play.api.mvc._
 import services.auditing.AuditService
 import services.{AppealService, GetPenaltyDetailsService}
@@ -136,7 +136,11 @@ class AppealsController @Inject()(val appConfig: AppConfig,
               Future(BadRequest("Failed to parse to model"))
             },
             appealSubmission => {
-              submitAppealToPEGA(appealSubmission, enrolmentKey, isLPP, penaltyNumber, correlationId, isMultiAppeal)
+              submitAppealToPEGA(appealSubmission, enrolmentKey, isLPP, penaltyNumber, correlationId, isMultiAppeal).map {
+                responseModel => {
+                  Status(responseModel.status)(Json.toJson(responseModel))
+                }
+              }
             }
           )
         }
@@ -146,14 +150,15 @@ class AppealsController @Inject()(val appConfig: AppConfig,
 
   private def submitAppealToPEGA(appealSubmission: AppealSubmission, enrolmentKey: String,
                                  isLPP: Boolean, penaltyNumber: String, correlationId: String, isMultiAppeal: Boolean)
-                                (implicit hc: HeaderCarrier, request: Request[_]): Future[Result] = {
+                                (implicit hc: HeaderCarrier, request: Request[_]): Future[AppealSubmissionResponseModel] = {
     appealService.submitAppeal(appealSubmission, enrolmentKey, isLPP, penaltyNumber, correlationId).flatMap {
       _.fold(
         error => {
           logger.error(s"[AppealsController][submitAppeal] Error submiting appeal to PEGA for user with enrolment: $enrolmentKey penalty $penaltyNumber - Received error from PEGA with status ${error.status} and error message: ${error.body} " +
             s"for correlation ID: $correlationId")
           logger.debug(s"[AppealsController][submitAppeal] Returning ${error.status} to calling service.")
-          Future(Status(error.status)(error.body))
+          val responseModel = AppealSubmissionResponseModel(error = Some(error.body), status = error.status)
+          Future(responseModel)
         },
         responseModel => {
           logger.info(s"[AppealsController][submitAppeal] - Successfully sent appeal submission to PEGA for user with enrolment: $enrolmentKey and penalty number: $penaltyNumber" +
@@ -175,7 +180,8 @@ class AppealsController @Inject()(val appConfig: AppConfig,
                 response.status match {
                   case OK =>
                     logger.info(s"[AppealsController][submitAppeal] - Received OK from file notification orchestrator for correlation ID: $correlationId")
-                    Ok(responseModel.caseID)
+                    val submissionResponseModel = AppealSubmissionResponseModel(caseId = Some(responseModel.caseID), status = OK)
+                    submissionResponseModel
                   case status =>
                     PagerDutyHelper.logStatusCode("submitAppeal", status)(RECEIVED_4XX_FROM_FILE_NOTIFICATION_ORCHESTRATOR, RECEIVED_5XX_FROM_FILE_NOTIFICATION_ORCHESTRATOR)
                     logger.error(s"[AppealsController][submitAppeal] Unable to store file notification for user with enrolment: $enrolmentKey penalty $penaltyNumber (correlation ID: $correlationId) - Received unknown response ($status) from file notification orchestrator. Response body: ${response.body}")
@@ -190,19 +196,21 @@ class AppealsController @Inject()(val appConfig: AppConfig,
               }
             }
           } else {
-            Future(Ok(responseModel.caseID))
+            val submissionResponseModel = AppealSubmissionResponseModel(caseId = Some(responseModel.caseID), status = OK)
+            Future(submissionResponseModel)
           }
         }
       )
     }
   }
 
-  private def returnErrorResponseIfMultiAppeal(isMultiAppeal: Boolean)(messageIfReturningError: String)(caseId: String): Result = {
+  private def returnErrorResponseIfMultiAppeal(isMultiAppeal: Boolean)(messageIfReturningError: String)(caseId: String): AppealSubmissionResponseModel = {
     if (isMultiAppeal) {
-      MultiStatus(messageIfReturningError)
+      AppealSubmissionResponseModel(caseId = Some(caseId), status = MULTI_STATUS, error = Some(messageIfReturningError))
     } else {
-      Ok(caseId)
+      AppealSubmissionResponseModel(caseId = Some(caseId), status = OK)
     }
+
   }
 
   def getMultiplePenaltyData(penaltyId: String, enrolmentKey: String): Action[AnyContent] = Action.async {

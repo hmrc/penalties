@@ -21,7 +21,7 @@ import config.featureSwitches.FeatureSwitching
 import models.appeals.MultiplePenaltiesData
 import org.scalatest.concurrent.Eventually.eventually
 import play.api.http.Status
-import play.api.libs.json.{JsValue, Json}
+import play.api.libs.json.{JsObject, JsValue, Json}
 import play.api.test.Helpers._
 import utils.{AppealWiremock, ETMPWiremock, FileNotificationOrchestratorWiremock, IntegrationSpecCommonBase}
 
@@ -644,7 +644,8 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
         result.status shouldBe OK
       }
 
-      "call the connector and send the appeal data received in the request body - returns OK when successful for other with file upload (audit storage failure) - single appeal" in {
+      "call the connector and send the appeal data received in the request body - returns OK when successful for other " +
+        "with file upload (audit storage failure) - single appeal" in {
         mockResponseForAppealSubmissionStub(OK, "HMRC-MTD-VAT~VRN~123456789", penaltyNumber = "123456789")
         mockResponseForFileNotificationOrchestrator(INTERNAL_SERVER_ERROR)
         val jsonToSubmit: JsValue = Json.parse(
@@ -721,7 +722,8 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
         result.status shouldBe OK
       }
 
-      "call the connector and send the appeal data received in the request body - returns OK when successful for other with file upload (audit storage failure) - part of multi appeal" in {
+      "call the connector and send the appeal data received in the request body - returns OK when successful for other" +
+        " with file upload (audit storage failure) - part of multi appeal" in {
         mockResponseForAppealSubmissionStub(OK, "HMRC-MTD-VAT~VRN~123456789", penaltyNumber = "123456789")
         mockResponseForFileNotificationOrchestrator(INTERNAL_SERVER_ERROR)
         val jsonToSubmit: JsValue = Json.parse(
@@ -762,11 +764,16 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
             |}
             |""".stripMargin
         )
+        val expectedJsonResponse: JsObject = Json.obj(
+          "caseId" -> "PR-1234567889",
+          "status" -> MULTI_STATUS,
+          "error" -> "Appeal submitted (case ID: PR-1234567889, correlation ID: uuid-1) but received 500 response from file notification orchestrator"
+        )
         val result = await(buildClientForRequestToApp(uri = "/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=false&penaltyNumber=123456789&correlationId=uuid-1&isMultiAppeal=true").post(
           jsonToSubmit
         ))
         result.status shouldBe MULTI_STATUS
-        result.body shouldBe s"Appeal submitted (case ID: PR-1234567889, correlation ID: uuid-1) but received 500 response from file notification orchestrator"
+        Json.parse(result.body) shouldBe expectedJsonResponse
         eventually {
           wireMockServer.findAll(postRequestedFor(urlEqualTo("/write/audit"))).asScala.toList.exists(_.getBodyAsString.contains("PenaltyAppealFileNotificationStorageFailure")) shouldBe true
         }
