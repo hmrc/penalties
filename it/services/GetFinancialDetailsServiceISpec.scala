@@ -23,8 +23,15 @@ import play.api.http.Status
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import utils.{ETMPWiremock, IntegrationSpecCommonBase}
 
+import java.time.LocalDate
+
 class GetFinancialDetailsServiceISpec extends IntegrationSpecCommonBase with ETMPWiremock {
   val service: GetFinancialDetailsService = injector.instanceOf[GetFinancialDetailsService]
+  val financialDataQueryParam: String = {
+      s"includeClearedItems=true&includeStatisticalItems=true&includePaymentOnAccount=true" +
+      s"&addRegimeTotalisation=true&addLockInformation=true&addPenaltyDetails=true&addPostedInterestDetails=true&addAccruingInterestDetails=true" +
+      s"&dateType=POSTING&dateFrom=${LocalDate.now().minusYears(2).toString}&dateTo=${LocalDate.now().toString}"
+  }
 
   "getFinancialDetails" when {
 
@@ -41,14 +48,14 @@ class GetFinancialDetailsServiceISpec extends IntegrationSpecCommonBase with ETM
     )
 
     "call the connector and return a successful result" in {
-      mockStubResponseForGetFinancialDetails(Status.OK, s"VRN/123456789/VATC?includeClearedItems=true&includeStatisticalItems=true&includePaymentOnAccount=true&addRegimeTotalisation=true&addLockInformation=true&addPenaltyDetails=true&addPostedInterestDetails=true&addAccruingInterestDetails=true")
+      mockStubResponseForGetFinancialDetails(Status.OK, s"VRN/123456789/VATC?$financialDataQueryParam")
       val result = await(service.getFinancialDetails("123456789"))
       result.isRight shouldBe true
       result.toOption.get shouldBe GetFinancialDetailsSuccessResponse(getFinancialDetailsModel)
     }
 
     s"the response body is not well formed: $GetFinancialDetailsMalformed" in {
-      mockStubResponseForGetFinancialDetails(Status.OK, s"VRN/123456789/VATC?includeClearedItems=true&includeStatisticalItems=true&includePaymentOnAccount=true&addRegimeTotalisation=true&addLockInformation=true&addPenaltyDetails=true&addPostedInterestDetails=true&addAccruingInterestDetails=true", body = Some(
+      mockStubResponseForGetFinancialDetails(Status.OK, s"VRN/123456789/VATC?$financialDataQueryParam", Some(
         """
           {
            "documentDetails": [
@@ -75,14 +82,14 @@ class GetFinancialDetailsServiceISpec extends IntegrationSpecCommonBase with ETM
           | ]
           |}
           |""".stripMargin
-      mockStubResponseForGetFinancialDetails(Status.NOT_FOUND, s"VRN/123456789/VATC?includeClearedItems=true&includeStatisticalItems=true&includePaymentOnAccount=true&addRegimeTotalisation=true&addLockInformation=true&addPenaltyDetails=true&addPostedInterestDetails=true&addAccruingInterestDetails=true", body = Some(noDataFoundBody))
+      mockStubResponseForGetFinancialDetails(Status.NOT_FOUND, s"VRN/123456789/VATC?$financialDataQueryParam", Some(noDataFoundBody))
       val result = await(service.getFinancialDetails("123456789"))
       result.isLeft shouldBe true
       result.left.getOrElse(false) shouldBe GetFinancialDetailsNoContent
     }
 
     s"an unknown response is returned from the connector - $GetFinancialDetailsFailureResponse" in {
-      mockStubResponseForGetFinancialDetails(Status.IM_A_TEAPOT, s"VRN/123456789/VATC?includeClearedItems=true&includeStatisticalItems=true&includePaymentOnAccount=true&addRegimeTotalisation=true&addLockInformation=true&addPenaltyDetails=true&addPostedInterestDetails=true&addAccruingInterestDetails=true")
+      mockStubResponseForGetFinancialDetails(Status.IM_A_TEAPOT, s"VRN/123456789/VATC?$financialDataQueryParam")
       val result = await(service.getFinancialDetails("123456789"))
       result.isLeft shouldBe true
       result.left.getOrElse(false) shouldBe GetFinancialDetailsFailureResponse(Status.IM_A_TEAPOT)

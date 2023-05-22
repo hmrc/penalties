@@ -17,9 +17,12 @@
 package config
 
 import config.featureSwitches._
+
 import javax.inject.{Inject, Singleton}
 import play.api.Configuration
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
+
+import java.time.LocalDate
 
 @Singleton
 class AppConfig @Inject()(val config: Configuration, servicesConfig: ServicesConfig) extends FeatureSwitching {
@@ -36,6 +39,10 @@ class AppConfig @Inject()(val config: Configuration, servicesConfig: ServicesCon
       s"&addPostedInterestDetails=${config.get[Boolean]("eis.calculateAccruedInterest")}" +
       s"&addAccruingInterestDetails=${config.get[Boolean]("eis.calculateAccruedInterest")}"
   }
+
+  def addDateRangeQueryParameters(): String = s"&dateType=${config.get[String]("eis.dateType")}" +
+    s"&dateFrom=${getTimeMachineDateTime.toLocalDate.minusYears(2)}" +
+    s"&dateTo=${getTimeMachineDateTime.toLocalDate}"
 
   lazy val appName: String = config.get[String]("appName")
 

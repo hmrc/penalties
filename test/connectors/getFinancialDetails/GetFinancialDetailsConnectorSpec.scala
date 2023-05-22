@@ -46,6 +46,7 @@ class GetFinancialDetailsConnectorSpec extends SpecBase with LogCapturing {
     when(mockAppConfig.eiOutboundBearerToken).thenReturn("1234")
     when(mockAppConfig.eisEnvironment).thenReturn("asdf")
     when(mockAppConfig.queryParametersForGetFinancialDetails).thenReturn("?foo=bar")
+    when(mockAppConfig.addDateRangeQueryParameters()).thenReturn("&bar=wizz")
   }
 
   val mockGetFinancialDetailsModelAPI1811: FinancialDetails = FinancialDetails(
@@ -62,7 +63,7 @@ class GetFinancialDetailsConnectorSpec extends SpecBase with LogCapturing {
 
   "getFinancialDetails" should {
     "return a 200 when the call succeeds" in new Setup {
-      when(mockHttpClient.GET[GetFinancialDetailsResponse](Matchers.eq("/VRN/123456789/VATC?foo=bar"),
+      when(mockHttpClient.GET[GetFinancialDetailsResponse](Matchers.eq("/VRN/123456789/VATC?foo=bar&bar=wizz"),
         Matchers.any(),
         Matchers.any())
         (Matchers.any(),
@@ -75,7 +76,7 @@ class GetFinancialDetailsConnectorSpec extends SpecBase with LogCapturing {
     }
 
     s"return a 404 when the call fails for Not Found" in new Setup {
-      when(mockHttpClient.GET[GetFinancialDetailsResponse](Matchers.eq("/VRN/123456789/VATC?foo=bar"),
+      when(mockHttpClient.GET[GetFinancialDetailsResponse](Matchers.eq("/VRN/123456789/VATC?foo=bar&bar=wizz"),
         Matchers.any(),
         Matchers.any())
         (Matchers.any(),
@@ -88,7 +89,7 @@ class GetFinancialDetailsConnectorSpec extends SpecBase with LogCapturing {
     }
 
     s"return a 400 when the call fails for Bad Request" in new Setup {
-      when(mockHttpClient.GET[GetFinancialDetailsResponse](Matchers.eq("/VRN/123456789/VATC?foo=bar"),
+      when(mockHttpClient.GET[GetFinancialDetailsResponse](Matchers.eq("/VRN/123456789/VATC?foo=bar&bar=wizz"),
         Matchers.any(),
         Matchers.any())
         (Matchers.any(),
@@ -101,7 +102,7 @@ class GetFinancialDetailsConnectorSpec extends SpecBase with LogCapturing {
     }
 
     s"return a 409 when the call fails for Conflict" in new Setup {
-      when(mockHttpClient.GET[GetFinancialDetailsResponse](Matchers.eq("/VRN/123456789/VATC?foo=bar"),
+      when(mockHttpClient.GET[GetFinancialDetailsResponse](Matchers.eq("/VRN/123456789/VATC?foo=bar&bar=wizz"),
         Matchers.any(),
         Matchers.any())
         (Matchers.any(),
@@ -114,7 +115,7 @@ class GetFinancialDetailsConnectorSpec extends SpecBase with LogCapturing {
     }
 
     s"return a 422 when the call fails for Unprocessable Entity" in new Setup {
-      when(mockHttpClient.GET[GetFinancialDetailsResponse](Matchers.eq("/VRN/123456789/VATC?foo=bar"),
+      when(mockHttpClient.GET[GetFinancialDetailsResponse](Matchers.eq("/VRN/123456789/VATC?foo=bar&bar=wizz"),
         Matchers.any(),
         Matchers.any())
         (Matchers.any(),
@@ -127,7 +128,7 @@ class GetFinancialDetailsConnectorSpec extends SpecBase with LogCapturing {
     }
 
     s"return a 500 when the call fails for Internal Server Error" in new Setup {
-      when(mockHttpClient.GET[GetFinancialDetailsResponse](Matchers.eq("/VRN/123456789/VATC?foo=bar"),
+      when(mockHttpClient.GET[GetFinancialDetailsResponse](Matchers.eq("/VRN/123456789/VATC?foo=bar&bar=wizz"),
         Matchers.any(),
         Matchers.any())
         (Matchers.any(),
@@ -140,7 +141,7 @@ class GetFinancialDetailsConnectorSpec extends SpecBase with LogCapturing {
     }
 
     s"return a 403 when the call fails" in new Setup {
-      when(mockHttpClient.GET[GetFinancialDetailsResponse](Matchers.eq("/VRN/123456789/VATC?foo=bar"),
+      when(mockHttpClient.GET[GetFinancialDetailsResponse](Matchers.eq("/VRN/123456789/VATC?foo=bar&bar=wizz"),
         Matchers.any(),
         Matchers.any())
         (Matchers.any(),
@@ -153,7 +154,7 @@ class GetFinancialDetailsConnectorSpec extends SpecBase with LogCapturing {
     }
 
     s"return a 503 when the call fails" in new Setup {
-      when(mockHttpClient.GET[GetFinancialDetailsResponse](Matchers.eq("/VRN/123456789/VATC?foo=bar"),
+      when(mockHttpClient.GET[GetFinancialDetailsResponse](Matchers.eq("/VRN/123456789/VATC?foo=bar&bar=wizz"),
         Matchers.any(),
         Matchers.any())
         (Matchers.any(),
@@ -166,7 +167,7 @@ class GetFinancialDetailsConnectorSpec extends SpecBase with LogCapturing {
     }
 
     "return a 500 when the call fails due to an UpstreamErrorResponse(5xx) exception" in new Setup {
-      when(mockHttpClient.GET[HttpResponse](Matchers.eq(s"/VRN/123456789/VATC?foo=bar"),
+      when(mockHttpClient.GET[HttpResponse](Matchers.eq(s"/VRN/123456789/VATC?foo=bar&bar=wizz"),
         Matchers.any(),
         Matchers.any())
         (Matchers.any(),
@@ -184,7 +185,7 @@ class GetFinancialDetailsConnectorSpec extends SpecBase with LogCapturing {
     }
 
     "return a 400 when the call fails due to an UpstreamErrorResponse(4xx) exception" in new Setup {
-      when(mockHttpClient.GET[HttpResponse](Matchers.eq(s"/VRN/123456789/VATC?foo=bar"),
+      when(mockHttpClient.GET[HttpResponse](Matchers.eq(s"/VRN/123456789/VATC?foo=bar&bar=wizz"),
         Matchers.any(),
         Matchers.any())
         (Matchers.any(),
@@ -202,7 +203,7 @@ class GetFinancialDetailsConnectorSpec extends SpecBase with LogCapturing {
     }
 
     "return a 500 when the call fails due to an unexpected exception" in new Setup {
-      when(mockHttpClient.GET[GetFinancialDetailsResponse](Matchers.eq("/VRN/123456789/VATC?foo=bar"),
+      when(mockHttpClient.GET[GetFinancialDetailsResponse](Matchers.eq("/VRN/123456789/VATC?foo=bar&bar=wizz"),
         Matchers.any(),
         Matchers.any())
         (Matchers.any(),
