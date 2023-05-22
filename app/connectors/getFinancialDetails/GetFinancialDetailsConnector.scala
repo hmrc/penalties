@@ -28,6 +28,7 @@ import uk.gov.hmrc.http.HttpReads.Implicits._
 import utils.PagerDutyHelper
 import utils.PagerDutyHelper.PagerDutyKeys._
 
+import java.time.LocalDate
 import scala.concurrent.{ExecutionContext, Future}
 
 class GetFinancialDetailsConnector @Inject()(httpClient: HttpClient,
@@ -40,9 +41,10 @@ class GetFinancialDetailsConnector @Inject()(httpClient: HttpClient,
     "Environment" -> appConfig.eisEnvironment
   )
 
+
   def getFinancialDetails(vrn: String)(implicit hc: HeaderCarrier): Future[GetFinancialDetailsResponse] = {
     httpClient.GET[GetFinancialDetailsResponse](url =
-      appConfig.getFinancialDetailsUrl(vrn) + appConfig.queryParametersForGetFinancialDetails, headers = headers).recover {
+      appConfig.getFinancialDetailsUrl(vrn) + appConfig.queryParametersForGetFinancialDetails + appConfig.addDateRangeQueryParameters(), headers = headers).recover {
       case e: UpstreamErrorResponse => {
         PagerDutyHelper.logStatusCode("getFinancialDetails", e.statusCode)(RECEIVED_4XX_FROM_1811_API, RECEIVED_5XX_FROM_1811_API)
         logger.error(s"[GetFinancialDetailsConnector][getFinancialDetails] - Received ${e.statusCode} status from API 1811 call - returning status to caller")

@@ -18,11 +18,14 @@ package config
 
 import config.featureSwitches._
 import org.mockito.Matchers
+import org.mockito.Matchers.any
 import org.mockito.Mockito._
 import org.scalatest.matchers.should.{Matchers => ShouldMatchers}
 import org.scalatest.wordspec.AnyWordSpec
 import play.api.Configuration
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
+
+import java.time.{LocalDateTime, LocalDate}
 
 class AppConfigSpec extends AnyWordSpec with ShouldMatchers with FeatureSwitching {
   val mockConfiguration: Configuration = mock(classOf[Configuration])
@@ -35,13 +38,25 @@ class AppConfigSpec extends AnyWordSpec with ShouldMatchers with FeatureSwitchin
     val config: AppConfig = new AppConfig(mockConfiguration, mockServicesConfig)
   }
 
+  "addDateRangeQueryParameters" should {
+    "set the correct dateTo and dateFrom" in new Setup {
+      when(mockConfiguration.getOptional[String](any())(any())).thenReturn(Some(LocalDateTime.now().toString))
+      when(mockConfiguration.get[String](any())(any())).thenReturn("POSTING")
+      val expectedResult: String = s"&dateType=POSTING" +
+        s"&dateFrom=${LocalDate.now().minusYears(2)}" +
+        s"&dateTo=${LocalDate.now()}"
+
+      val result: String = config.addDateRangeQueryParameters()
+      result shouldBe expectedResult
+    }
+  }
+
   "getPenaltyDetailsUrl" should {
     "call API1812 when the feature switch is enabled" in new Setup {
       enableFeatureSwitch(CallAPI1812ETMP)
-       when(mockServicesConfig.baseUrl(Matchers.any()))
+      when(mockServicesConfig.baseUrl(Matchers.any()))
         .thenReturn("localhost:0000")
       val result: String = config.getPenaltyDetailsUrl
-      //TODO: change this once we have the correct URL
       result shouldBe "localhost:0000/penalty/details/VATC/VRN/"
     }
 
@@ -60,7 +75,6 @@ class AppConfigSpec extends AnyWordSpec with ShouldMatchers with FeatureSwitchin
       when(mockServicesConfig.baseUrl(Matchers.any()))
         .thenReturn("localhost:0000")
       val result: String = config.getFinancialDetailsUrl("123456789")
-      //TODO: change this once we have the correct URL
       result shouldBe "localhost:0000/penalty/financial-data/VRN/123456789/VATC"
     }
 

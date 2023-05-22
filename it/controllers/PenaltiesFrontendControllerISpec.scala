@@ -22,10 +22,16 @@ import play.api.libs.json.{JsValue, Json}
 import play.api.test.Helpers._
 import utils.{ETMPWiremock, IntegrationSpecCommonBase}
 
+import java.time.LocalDate
 import scala.jdk.CollectionConverters._
 
 class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock {
   val controller: PenaltiesFrontendController = injector.instanceOf[PenaltiesFrontendController]
+  val financialDataQueryParam: String = {
+      s"includeClearedItems=true&includeStatisticalItems=true&includePaymentOnAccount=true" +
+      s"&addRegimeTotalisation=true&addLockInformation=true&addPenaltyDetails=true&addPostedInterestDetails=true&addAccruingInterestDetails=true" +
+      s"&dateType=POSTING&dateFrom=${LocalDate.now().minusYears(2).toString}&dateTo=${LocalDate.now().toString}"
+  }
 
   val getPenaltyDetailsJson: JsValue = Json.parse(
     """
@@ -318,8 +324,7 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
 
       mockStubResponseForGetPenaltyDetails(Status.OK, "123456789", body = Some(getPenaltyDetailsJson.toString()))
       mockStubResponseForGetFinancialDetails(Status.OK,
-        s"VRN/123456789/VATC?includeClearedItems=true&includeStatisticalItems=true&includePaymentOnAccount=true" +
-          s"&addRegimeTotalisation=true&addLockInformation=true&addPenaltyDetails=true&addPostedInterestDetails=true&addAccruingInterestDetails=true")
+        s"VRN/123456789/VATC?$financialDataQueryParam")
 
       val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/HMRC-MTD-VAT~VRN~123456789").get())
       result.status shouldBe OK
@@ -328,9 +333,7 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
 
     "the get penalty details call includes blank expiryReason and appealLevel fields" in {
       mockStubResponseForGetPenaltyDetails(Status.OK, "123456789", body = Some(getPenaltyDetailsJsonWithBlankExpiryReasonAndAppealLevel.toString()))
-      mockStubResponseForGetFinancialDetails(Status.OK,
-        s"VRN/123456789/VATC?includeClearedItems=true&includeStatisticalItems=true&includePaymentOnAccount=true" +
-          s"&addRegimeTotalisation=true&addLockInformation=true&addPenaltyDetails=true&addPostedInterestDetails=true&addAccruingInterestDetails=true")
+      mockStubResponseForGetFinancialDetails(Status.OK, s"VRN/123456789/VATC?$financialDataQueryParam")
 
       val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/HMRC-MTD-VAT~VRN~123456789").get())
       result.status shouldBe OK
@@ -355,8 +358,7 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
           |}
           |""".stripMargin
       mockStubResponseForGetFinancialDetails(Status.NOT_FOUND,
-        s"VRN/123456789/VATC?includeClearedItems=true&includeStatisticalItems=true&includePaymentOnAccount=true" +
-          s"&addRegimeTotalisation=true&addLockInformation=true&addPenaltyDetails=true&addPostedInterestDetails=true&addAccruingInterestDetails=true", Some(noDataFoundBody))
+        s"VRN/123456789/VATC?$financialDataQueryParam", Some(noDataFoundBody))
       mockStubResponseForGetPenaltyDetails(Status.OK, "123456789", body = Some(getPenaltyDetailsNoLPPJson.toString()))
       val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/HMRC-MTD-VAT~VRN~123456789").get())
       result.status shouldBe OK
@@ -403,9 +405,7 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
           |}
           |""".stripMargin
       mockStubResponseForGetPenaltyDetails(Status.OK, "123456789", body = Some(getPenaltyDetailsJson.toString()))
-      mockStubResponseForGetFinancialDetails(Status.NOT_FOUND,
-        s"VRN/123456789/VATC?includeClearedItems=true&includeStatisticalItems=true&includePaymentOnAccount=true&addRegimeTotalisation=true" +
-          s"&addLockInformation=true&addPenaltyDetails=true&addPostedInterestDetails=true&addAccruingInterestDetails=true", Some(noDataFoundBody))
+      mockStubResponseForGetFinancialDetails(Status.NOT_FOUND, s"VRN/123456789/VATC?$financialDataQueryParam", Some(noDataFoundBody))
 
       val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/HMRC-MTD-VAT~VRN~123456789").get())
       result.status shouldBe NO_CONTENT
@@ -421,9 +421,7 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
 
     "the get financial details call fails" in {
       mockStubResponseForGetPenaltyDetails(Status.OK, "123456789", body = Some(getPenaltyDetailsJson.toString()))
-      mockStubResponseForGetFinancialDetails(Status.INTERNAL_SERVER_ERROR,
-        s"VRN/123456789/VATC?includeClearedItems=true&includeStatisticalItems=true&includePaymentOnAccount=true&addRegimeTotalisation=true" +
-          s"&addLockInformation=true&addPenaltyDetails=true&addPostedInterestDetails=true&addAccruingInterestDetails=true")
+      mockStubResponseForGetFinancialDetails(Status.INTERNAL_SERVER_ERROR, s"VRN/123456789/VATC?$financialDataQueryParam")
 
       val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/HMRC-MTD-VAT~VRN~123456789").get())
       result.status shouldBe INTERNAL_SERVER_ERROR
@@ -603,9 +601,7 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
         |}
         |""".stripMargin)
     mockStubResponseForGetPenaltyDetails(Status.OK, "123456789", body = Some(penaltyDetailsWithLSPAndLPPs.toString()))
-    mockStubResponseForGetFinancialDetails(Status.OK,
-      s"VRN/123456789/VATC?includeClearedItems=true&includeStatisticalItems=true&includePaymentOnAccount=true&addRegimeTotalisation=true" +
-        s"&addLockInformation=true&addPenaltyDetails=true&addPostedInterestDetails=true&addAccruingInterestDetails=true")
+    mockStubResponseForGetFinancialDetails(Status.OK, s"VRN/123456789/VATC?$financialDataQueryParam")
     val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/HMRC-MTD-VAT~VRN~123456789").get())
     result.status shouldBe Status.OK
     Json.parse(result.body) shouldBe penaltyDetailsWithLSPAndLPPAndFinancialDetails
@@ -637,9 +633,7 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
         |}
         |""".stripMargin)
     mockStubResponseForGetPenaltyDetails(Status.OK, "123456789", body = Some(getPenaltyDetailsWithNoPointsAsJson.toString()))
-    mockStubResponseForGetFinancialDetails(Status.OK,
-      s"VRN/123456789/VATC?includeClearedItems=true&includeStatisticalItems=true&includePaymentOnAccount=true&addRegimeTotalisation=true" +
-        s"&addLockInformation=true&addPenaltyDetails=true&addPostedInterestDetails=true&addAccruingInterestDetails=true")
+    mockStubResponseForGetFinancialDetails(Status.OK, s"VRN/123456789/VATC?$financialDataQueryParam")
     val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/HMRC-MTD-VAT~VRN~123456789").get())
     result.status shouldBe Status.OK
     result.body shouldBe getPenaltyDetailsWithNoPointsAsJson.toString()
