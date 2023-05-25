@@ -888,7 +888,8 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
         |          "principalChargeBillingFrom": "2022-01-01",
         |          "principalChargeBillingTo": "2022-12-31",
         |          "principalChargeDueDate": "2023-02-07",
-        |          "principalChargeMainTransaction": "4700"
+        |          "principalChargeMainTransaction": "4700",
+        |          "principalChargeLatestClearing": "2023-04-01"
         |       }
         |   ]
         | }
@@ -930,7 +931,8 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
         |          "principalChargeMainTransaction": "4700",
         |          "principalChargeBillingFrom": "2022-01-01",
         |          "principalChargeBillingTo": "2022-12-31",
-        |          "principalChargeDueDate": "2023-02-07"
+        |          "principalChargeDueDate": "2023-02-07",
+        |          "principalChargeLatestClearing": "2023-04-01"
         |       },
         |       {
         |          "penaltyChargeReference": "1234567887",
@@ -955,7 +957,8 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
         |          "principalChargeMainTransaction": "4700",
         |          "principalChargeBillingFrom": "2022-01-01",
         |          "principalChargeBillingTo": "2022-12-31",
-        |          "principalChargeDueDate": "2023-02-07"
+        |          "principalChargeDueDate": "2023-02-07",
+        |          "principalChargeLatestClearing": "2023-04-01"
         |       }
         |   ]
         | }
@@ -1003,7 +1006,141 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
         |             "appealStatus": "A",
         |             "appealLevel": "01"
         |           }
-        |           ]
+        |           ],
+        |          "principalChargeLatestClearing": "2023-04-01"
+        |       },
+        |       {
+        |          "penaltyChargeReference": "1234567887",
+        |          "penaltyCategory": "LPP1",
+        |          "penaltyStatus": "P",
+        |          "penaltyAmountPaid": 0,
+        |          "penaltyAmountPosted": 144.01,
+        |          "penaltyAmountOutstanding": 144.01,
+        |          "penaltyAmountAccruing": 0,
+        |          "LPP1LRCalculationAmount": 99.99,
+        |          "LPP1LRDays": "15",
+        |          "LPP1LRPercentage": 2.00,
+        |          "LPP1HRCalculationAmount": 99.99,
+        |          "LPP1HRDays": "31",
+        |          "LPP1HRPercentage": 2.00,
+        |          "LPP2Days": "31",
+        |          "LPP2Percentage": 4.00,
+        |          "penaltyChargeCreationDate": "2022-10-30",
+        |          "communicationsDate": "2023-02-08",
+        |          "penaltyChargeDueDate": "2022-10-30",
+        |          "principalChargeReference": "1234567890",
+        |          "principalChargeBillingFrom": "2022-01-01",
+        |          "principalChargeBillingTo": "2022-12-31",
+        |          "principalChargeMainTransaction": "4700",
+        |          "principalChargeDueDate": "2023-02-07",
+        |          "principalChargeLatestClearing": "2023-04-01"
+        |       }
+        |   ]
+        | }
+        |}
+        |""".stripMargin
+    )
+
+    val getPenaltyDetailsTwoLPPsLPP2AccruingJson: JsValue = Json.parse(
+      """
+        |{
+        | "totalisations": {
+        |   "LSPTotalValue": 200,
+        |   "penalisedPrincipalTotal": 2000,
+        |   "LPPPostedTotal": 165.25,
+        |   "LPPEstimatedTotal": 15.26
+        | },
+        | "latePaymentPenalty": {
+        |     "details": [
+        |       {
+        |          "penaltyCategory": "LPP2",
+        |          "penaltyStatus": "A",
+        |          "penaltyAmountPosted": 0,
+        |          "penaltyAmountAccruing": 99.99,
+        |          "LPP1LRCalculationAmount": 99.99,
+        |          "LPP1LRDays": "15",
+        |          "LPP1LRPercentage": 2.00,
+        |          "LPP1HRCalculationAmount": 99.99,
+        |          "LPP1HRDays": "31",
+        |          "LPP1HRPercentage": 2.00,
+        |          "LPP2Days": "31",
+        |          "LPP2Percentage": 4.00,
+        |          "penaltyChargeCreationDate": "2022-10-30",
+        |          "communicationsDate": "2023-02-08",
+        |          "penaltyChargeDueDate": "2022-10-30",
+        |          "principalChargeReference": "1234567890",
+        |          "principalChargeBillingFrom": "2022-01-01",
+        |          "principalChargeBillingTo": "2022-12-31",
+        |          "principalChargeMainTransaction": "4700",
+        |          "principalChargeDueDate": "2023-02-07"
+        |       },
+        |       {
+        |          "penaltyChargeReference": "1234567887",
+        |          "penaltyCategory": "LPP1",
+        |          "penaltyStatus": "P",
+        |          "penaltyAmountPaid": 0,
+        |          "penaltyAmountPosted": 144.01,
+        |          "penaltyAmountOutstanding": 144.01,
+        |          "penaltyAmountAccruing": 0,
+        |          "LPP1LRCalculationAmount": 99.99,
+        |          "LPP1LRDays": "15",
+        |          "LPP1LRPercentage": 2.00,
+        |          "LPP1HRCalculationAmount": 99.99,
+        |          "LPP1HRDays": "31",
+        |          "LPP1HRPercentage": 2.00,
+        |          "LPP2Days": "31",
+        |          "LPP2Percentage": 4.00,
+        |          "penaltyChargeCreationDate": "2022-10-30",
+        |          "communicationsDate": "2023-02-08",
+        |          "penaltyChargeDueDate": "2022-10-30",
+        |          "principalChargeReference": "1234567890",
+        |          "principalChargeBillingFrom": "2022-01-01",
+        |          "principalChargeBillingTo": "2022-12-31",
+        |          "principalChargeMainTransaction": "4700",
+        |          "principalChargeDueDate": "2023-02-07",
+        |          "principalChargeLatestClearing": "2023-04-01"
+        |       }
+        |   ]
+        | }
+        |}
+        |""".stripMargin
+    )
+
+    val getPenaltyDetailsTwoLPPsVATNotPaidJson: JsValue = Json.parse(
+      """
+        |{
+        | "totalisations": {
+        |   "LSPTotalValue": 200,
+        |   "penalisedPrincipalTotal": 2000,
+        |   "LPPPostedTotal": 165.25,
+        |   "LPPEstimatedTotal": 15.26
+        | },
+        | "latePaymentPenalty": {
+        |     "details": [
+        |       {
+        |          "penaltyChargeReference": "1234567888",
+        |          "penaltyCategory": "LPP2",
+        |          "penaltyStatus": "P",
+        |          "penaltyAmountPaid": 0,
+        |          "penaltyAmountPosted": 144.00,
+        |          "penaltyAmountAccruing": 0,
+        |          "penaltyAmountOutstanding": 144.00,
+        |          "LPP1LRCalculationAmount": 99.99,
+        |          "LPP1LRDays": "15",
+        |          "LPP1LRPercentage": 2.00,
+        |          "LPP1HRCalculationAmount": 99.99,
+        |          "LPP1HRDays": "31",
+        |          "LPP1HRPercentage": 2.00,
+        |          "LPP2Days": "31",
+        |          "LPP2Percentage": 4.00,
+        |          "penaltyChargeCreationDate": "2022-10-30",
+        |          "communicationsDate": "2023-02-08",
+        |          "penaltyChargeDueDate": "2022-10-30",
+        |          "principalChargeReference": "1234567890",
+        |          "principalChargeBillingFrom": "2022-01-01",
+        |          "principalChargeBillingTo": "2022-12-31",
+        |          "principalChargeMainTransaction": "4700",
+        |          "principalChargeDueDate": "2023-02-07"
         |       },
         |       {
         |          "penaltyChargeReference": "1234567887",
@@ -1048,9 +1185,22 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
         val result = await(buildClientForRequestToApp(uri = "/appeals-data/multiple-penalties?penaltyId=1234567887&enrolmentKey=HMRC-MTD-VAT~VRN~123456789").get())
         result.status shouldBe Status.NO_CONTENT
       }
+
+      "either penalty is accruing (LPP2)" in {
+        mockStubResponseForGetPenaltyDetails(Status.OK, "123456789", Some(getPenaltyDetailsTwoLPPsLPP2AccruingJson.toString()))
+        val result = await(buildClientForRequestToApp(uri = "/appeals-data/multiple-penalties?penaltyId=1234567887&enrolmentKey=HMRC-MTD-VAT~VRN~123456789").get())
+        result.status shouldBe Status.NO_CONTENT
+      }
+
+      "the VAT has not been paid" in {
+        mockStubResponseForGetPenaltyDetails(Status.OK, "123456789", Some(getPenaltyDetailsTwoLPPsVATNotPaidJson.toString()))
+        val result = await(buildClientForRequestToApp(uri = "/appeals-data/multiple-penalties?penaltyId=1234567887&enrolmentKey=HMRC-MTD-VAT~VRN~123456789").get())
+        result.status shouldBe Status.NO_CONTENT
+      }
     }
 
-    "call ETMP and return OK when there is two penalties related to the charge" in {
+    "call ETMP and return OK when there is two penalties related to the charge and they are both posted" +
+      " and the VAT has been paid" in {
       mockStubResponseForGetPenaltyDetails(Status.OK, "123456789", Some(getPenaltyDetailsTwoLPPsJson.toString()))
       val result = await(buildClientForRequestToApp(uri = "/appeals-data/multiple-penalties?penaltyId=1234567887&enrolmentKey=HMRC-MTD-VAT~VRN~123456789").get())
       val expectedModel = MultiplePenaltiesData(

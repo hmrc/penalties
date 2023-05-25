@@ -221,28 +221,8 @@ class AppealsController @Inject()(val appConfig: AppConfig,
           handleFailureResponse(_, vrn, enrolmentKey)("getMultiplePenaltyData"),
           success => {
             val penaltyDetails = success.asInstanceOf[GetPenaltyDetailsSuccessResponse].penaltyDetails
-            val lppPenaltyIdInPenaltyDetailsPayload: Option[LPPDetails] = penaltyDetails.latePaymentPenalty.flatMap {
-              _.details.flatMap(_.find(_.penaltyChargeReference.contains(penaltyId)))
-            }
-            val principalChargeReference: String = lppPenaltyIdInPenaltyDetailsPayload.get.principalChargeReference
-            val penaltiesForPrincipalCharge: Seq[LPPDetails] = penaltyDetails.latePaymentPenalty.flatMap(_.details.map(_.filter(_.principalChargeReference.equals(principalChargeReference)))).get
-            val underAppeal = penaltiesForPrincipalCharge.exists(_.appealInformation.isDefined)
-
-            if (penaltiesForPrincipalCharge.size == 2 && !underAppeal) {
-              val secondPenalty = penaltiesForPrincipalCharge.find(_.penaltyCategory.equals(LPPPenaltyCategoryEnum.SecondPenalty)).get
-              val firstPenalty = penaltiesForPrincipalCharge.find(_.penaltyCategory.equals(LPPPenaltyCategoryEnum.FirstPenalty)).get
-              val returnModel = MultiplePenaltiesData(
-                firstPenaltyChargeReference = firstPenalty.penaltyChargeReference.get,
-                firstPenaltyAmount = firstPenalty.penaltyAmountOutstanding.getOrElse(BigDecimal(0)) + firstPenalty.penaltyAmountPaid.getOrElse(BigDecimal(0)),
-                secondPenaltyChargeReference = secondPenalty.penaltyChargeReference.get,
-                secondPenaltyAmount = secondPenalty.penaltyAmountOutstanding.getOrElse(BigDecimal(0)) + secondPenalty.penaltyAmountPaid.getOrElse(BigDecimal(0)),
-                firstPenaltyCommunicationDate = firstPenalty.communicationsDate.getOrElse(appConfig.getTimeMachineDateTime.toLocalDate),
-                secondPenaltyCommunicationDate = secondPenalty.communicationsDate.getOrElse(appConfig.getTimeMachineDateTime.toLocalDate)
-              )
-              Ok(Json.toJson(returnModel))
-            } else {
-              NoContent
-            }
+            val multiplePenaltiesData: Option[MultiplePenaltiesData] = appealService.findMultiplePenalties(penaltyDetails, penaltyId)
+            multiplePenaltiesData.fold(NoContent)(data => Ok(Json.toJson(data)))
           }
         )
       }

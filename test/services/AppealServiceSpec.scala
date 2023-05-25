@@ -23,6 +23,10 @@ import connectors.PEGAConnector
 import connectors.parsers.AppealsParser
 import connectors.parsers.AppealsParser.UnexpectedFailure
 import models.appeals._
+import models.getFinancialDetails.MainTransactionEnum
+import models.getPenaltyDetails.GetPenaltyDetails
+import models.getPenaltyDetails.appealInfo.{AppealInformationType, AppealLevelEnum, AppealStatusEnum}
+import models.getPenaltyDetails.latePayment._
 import models.notification._
 import models.upload._
 import org.mockito.Matchers
@@ -32,7 +36,7 @@ import play.api.test.Helpers._
 import uk.gov.hmrc.http.HeaderCarrier
 import utils.UUIDGenerator
 
-import java.time.LocalDateTime
+import java.time.{LocalDate, LocalDateTime}
 import scala.concurrent.{ExecutionContext, Future}
 
 class AppealServiceSpec extends SpecBase {
@@ -207,6 +211,198 @@ class AppealServiceSpec extends SpecBase {
         when(mockUUIDGenerator.generateUUID).thenReturn(correlationId)
         val result = service.createSDESNotifications(Some(uploads), caseID = "PR-1234")
         result shouldBe expectedResult
+      }
+    }
+  }
+
+  "getMultiplePenaltyData" should {
+    val sampleLPP1 = LPPDetails(
+      penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
+      principalChargeReference = "123456801",
+      penaltyChargeReference = Some("1234567891"),
+      penaltyChargeCreationDate = Some(LocalDate.of(2022, 1, 1)),
+      penaltyStatus = LPPPenaltyStatusEnum.Posted,
+      appealInformation = None,
+      principalChargeBillingFrom = LocalDate.of(2022, 4, 1),
+      principalChargeBillingTo = LocalDate.of(2022, 6, 30),
+      principalChargeDueDate = LocalDate.of(2022, 8, 7),
+      communicationsDate = Some(LocalDate.of(2022, 8, 8)),
+      penaltyAmountOutstanding = Some(100),
+      penaltyAmountPaid = Some(13.45),
+      penaltyAmountPosted = 113.45,
+      LPP1LRDays = None,
+      LPP1HRDays = None,
+      LPP2Days = None,
+      LPP1HRCalculationAmount = None,
+      LPP1LRCalculationAmount = None,
+      LPP2Percentage = None,
+      LPP1LRPercentage = None,
+      LPP1HRPercentage = None,
+      penaltyChargeDueDate = Some(LocalDate.of(2022, 8, 7)),
+      principalChargeLatestClearing = Some(LocalDate.of(2022, 10, 1)),
+      metadata = LPPDetailsMetadata(),
+      penaltyAmountAccruing = BigDecimal(0),
+      principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
+    )
+
+    val sampleLPP2 = LPPDetails(
+      penaltyCategory = LPPPenaltyCategoryEnum.SecondPenalty,
+      principalChargeReference = "123456801",
+      penaltyChargeReference = Some("1234567892"),
+      penaltyChargeCreationDate = Some(LocalDate.of(2022, 1, 1)),
+      penaltyStatus = LPPPenaltyStatusEnum.Posted,
+      appealInformation = None,
+      principalChargeBillingFrom = LocalDate.of(2022, 4, 1),
+      principalChargeBillingTo = LocalDate.of(2022, 6, 30),
+      principalChargeDueDate = LocalDate.of(2022, 8, 7),
+      communicationsDate = Some(LocalDate.of(2022, 9, 8)),
+      penaltyAmountOutstanding = Some(100),
+      penaltyAmountPaid = Some(13.44),
+      penaltyAmountPosted = 113.44,
+      LPP1LRDays = None,
+      LPP1HRDays = None,
+      LPP2Days = None,
+      LPP1HRCalculationAmount = None,
+      LPP1LRCalculationAmount = None,
+      LPP2Percentage = None,
+      LPP1LRPercentage = None,
+      LPP1HRPercentage = None,
+      penaltyChargeDueDate = Some(LocalDate.of(2022, 8, 7)),
+      principalChargeLatestClearing = Some(LocalDate.of(2022, 10, 1)),
+      metadata = LPPDetailsMetadata(),
+      penaltyAmountAccruing = BigDecimal(0),
+      principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
+    )
+
+    val getPenaltyDetailsOnePenalty: GetPenaltyDetails = GetPenaltyDetails(
+      totalisations = None,
+      lateSubmissionPenalty = None,
+      latePaymentPenalty = Some(LatePaymentPenalty(Some(Seq(sampleLPP1)))),
+      breathingSpace = None
+    )
+
+    val getPenaltyDetailsTwoPenalties: GetPenaltyDetails = GetPenaltyDetails(
+      totalisations = None,
+      lateSubmissionPenalty = None,
+      latePaymentPenalty = Some(LatePaymentPenalty(Some(Seq(sampleLPP2, sampleLPP1)))),
+      breathingSpace = None
+    )
+
+    val getPenaltyDetailsTwoPenaltiesNoCommunicationsDate: GetPenaltyDetails = GetPenaltyDetails(
+      totalisations = None,
+      lateSubmissionPenalty = None,
+      latePaymentPenalty = Some(LatePaymentPenalty(Some(Seq(
+        sampleLPP2.copy(communicationsDate = None),
+        sampleLPP1.copy(communicationsDate = None)
+      )))),
+      breathingSpace = None
+    )
+
+    val getPenaltyDetailsTwoPenaltiesWithAppeal: GetPenaltyDetails = GetPenaltyDetails(
+      totalisations = None,
+      lateSubmissionPenalty = None,
+      latePaymentPenalty = Some(
+        LatePaymentPenalty(Some(Seq(
+          sampleLPP2.copy(appealInformation = Some(Seq(AppealInformationType(
+            appealStatus = Some(AppealStatusEnum.Under_Appeal),
+            appealLevel = Some(AppealLevelEnum.HMRC)
+          )))),
+          sampleLPP1
+        )))),
+      breathingSpace = None
+    )
+
+    val getPenaltyDetailsTwoPenaltiesLPP2Accruing: GetPenaltyDetails = GetPenaltyDetails(
+      totalisations = None,
+      lateSubmissionPenalty = None,
+      latePaymentPenalty = Some(
+        LatePaymentPenalty(Some(Seq(
+          sampleLPP2.copy(
+            penaltyStatus = LPPPenaltyStatusEnum.Accruing,
+            penaltyChargeReference = None,
+            principalChargeLatestClearing = None,
+            penaltyAmountPosted = 0,
+            penaltyAmountPaid = None,
+            penaltyAmountOutstanding = None,
+            penaltyAmountAccruing = 144.21,
+            communicationsDate = None
+          ),
+          sampleLPP1
+        )))),
+      breathingSpace = None
+    )
+
+    val getPenaltyDetailsTwoPenaltiesVATNotPaid: GetPenaltyDetails = GetPenaltyDetails(
+      totalisations = None,
+      lateSubmissionPenalty = None,
+      latePaymentPenalty = Some(
+        LatePaymentPenalty(Some(Seq(
+          sampleLPP2.copy(
+            penaltyStatus = LPPPenaltyStatusEnum.Accruing,
+            penaltyChargeReference = None,
+            principalChargeLatestClearing = None,
+            penaltyAmountPosted = 0,
+            penaltyAmountPaid = None,
+            penaltyAmountOutstanding = None,
+            penaltyAmountAccruing = 144.21,
+            communicationsDate = None
+          ),
+          sampleLPP1.copy(
+            principalChargeLatestClearing = None
+          )
+        )))),
+      breathingSpace = None
+    )
+
+    s"return None" when {
+      "there is only one penalty under this principal charge" in new Setup {
+        val result: Option[MultiplePenaltiesData] = service.findMultiplePenalties(getPenaltyDetailsOnePenalty, "1234567891")
+        result shouldBe None
+      }
+
+      "either penalty under the principal charge has appeal in any state" in new Setup {
+        val result: Option[MultiplePenaltiesData] = service.findMultiplePenalties(getPenaltyDetailsTwoPenaltiesWithAppeal, "1234567891")
+        result shouldBe None
+      }
+
+      "either penalty is accruing" in new Setup {
+        val result: Option[MultiplePenaltiesData] = service.findMultiplePenalties(getPenaltyDetailsTwoPenaltiesLPP2Accruing, "1234567891")
+        result shouldBe None
+      }
+
+      "the VAT has not been paid" in new Setup {
+        val result: Option[MultiplePenaltiesData] = service.findMultiplePenalties(getPenaltyDetailsTwoPenaltiesVATNotPaid, "1234567891")
+        result shouldBe None
+      }
+    }
+
+    s"return Some" when {
+      "there is two penalties under this principal charge and they are both POSTED and VAT has been paid" in new Setup {
+        val result: Option[MultiplePenaltiesData] = service.findMultiplePenalties(getPenaltyDetailsTwoPenalties, "1234567892")
+        val expectedReturnModel: MultiplePenaltiesData = MultiplePenaltiesData(
+          firstPenaltyChargeReference = "1234567891",
+          firstPenaltyAmount = 113.45,
+          secondPenaltyChargeReference = "1234567892",
+          secondPenaltyAmount = 113.44,
+          firstPenaltyCommunicationDate = LocalDate.of(2022, 8, 8),
+          secondPenaltyCommunicationDate = LocalDate.of(2022, 9, 8)
+        )
+        result shouldBe Some(expectedReturnModel)
+      }
+
+      s"there is two penalties under this principal charge and they are both POSTED and VAT has been paid" +
+        s" (defaulting the comms date if not present)" in new Setup {
+        when(mockAppConfig.getTimeMachineDateTime).thenReturn(LocalDateTime.now)
+        val result: Option[MultiplePenaltiesData] = service.findMultiplePenalties(getPenaltyDetailsTwoPenaltiesNoCommunicationsDate, "1234567891")
+        val expectedReturnModel: MultiplePenaltiesData = MultiplePenaltiesData(
+          firstPenaltyChargeReference = "1234567891",
+          firstPenaltyAmount = 113.45,
+          secondPenaltyChargeReference = "1234567892",
+          secondPenaltyAmount = 113.44,
+          firstPenaltyCommunicationDate = LocalDate.now,
+          secondPenaltyCommunicationDate = LocalDate.now
+        )
+        result shouldBe Some(expectedReturnModel)
       }
     }
   }

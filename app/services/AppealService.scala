@@ -20,7 +20,9 @@ import config.AppConfig
 import config.featureSwitches.{FeatureSwitching, SanitiseFileName}
 import connectors.PEGAConnector
 import connectors.parsers.AppealsParser
-import models.appeals.{AppealResponseModel, AppealSubmission}
+import models.appeals.{AppealResponseModel, AppealSubmission, MultiplePenaltiesData}
+import models.getPenaltyDetails.GetPenaltyDetails
+import models.getPenaltyDetails.latePayment.{LPPDetails, LPPPenaltyCategoryEnum, LPPPenaltyStatusEnum}
 import models.notification.{SDESAudit, SDESChecksum, SDESNotification, SDESNotificationFile, SDESProperties}
 import models.upload.UploadJourney
 import play.api.Configuration
@@ -93,6 +95,34 @@ class AppealService @Inject()(appealsConnector: PEGAConnector,
       fileName.replaceAll(regexToRemoveSpacesAndControlCharacters, "_").replaceAll(regexToSanitiseFileName, "_")
     } else {
       fileName
+    }
+  }
+
+  def findMultiplePenalties(penaltyDetails: GetPenaltyDetails, penaltyId: String): Option[MultiplePenaltiesData] = {
+    val lppPenaltyIdInPenaltyDetailsPayload: Option[LPPDetails] = penaltyDetails.latePaymentPenalty.flatMap {
+      _.details.flatMap(_.find(_.penaltyChargeReference.contains(penaltyId)))
+    }
+    val principalChargeReference: String = lppPenaltyIdInPenaltyDetailsPayload.get.principalChargeReference
+    val penaltiesForPrincipalCharge: Seq[LPPDetails] = penaltyDetails.latePaymentPenalty.flatMap(_.details.map(_.filter(_.principalChargeReference.equals(principalChargeReference)))).get
+    val underAppeal = penaltiesForPrincipalCharge.exists(_.appealInformation.isDefined)
+    val areBothPenaltiesPostedAndVATPaid: Boolean = penaltiesForPrincipalCharge.forall(penalty => {
+      penalty.penaltyStatus == LPPPenaltyStatusEnum.Posted && penalty.principalChargeLatestClearing.isDefined
+    })
+
+    if (penaltiesForPrincipalCharge.size == 2 && !underAppeal && areBothPenaltiesPostedAndVATPaid) {
+      val secondPenalty = penaltiesForPrincipalCharge.find(_.penaltyCategory.equals(LPPPenaltyCategoryEnum.SecondPenalty)).get
+      val firstPenalty = penaltiesForPrincipalCharge.find(_.penaltyCategory.equals(LPPPenaltyCategoryEnum.FirstPenalty)).get
+      val returnModel = MultiplePenaltiesData(
+        firstPenaltyChargeReference = firstPenalty.penaltyChargeReference.get,
+        firstPenaltyAmount = firstPenalty.penaltyAmountOutstanding.getOrElse(BigDecimal(0)) + firstPenalty.penaltyAmountPaid.getOrElse(BigDecimal(0)),
+        secondPenaltyChargeReference = secondPenalty.penaltyChargeReference.get,
+        secondPenaltyAmount = secondPenalty.penaltyAmountOutstanding.getOrElse(BigDecimal(0)) + secondPenalty.penaltyAmountPaid.getOrElse(BigDecimal(0)),
+        firstPenaltyCommunicationDate = firstPenalty.communicationsDate.getOrElse(appConfig.getTimeMachineDateTime.toLocalDate),
+        secondPenaltyCommunicationDate = secondPenalty.communicationsDate.getOrElse(appConfig.getTimeMachineDateTime.toLocalDate)
+      )
+      Some(returnModel)
+    } else {
+      None
     }
   }
 }
