@@ -18,8 +18,8 @@ package services
 
 import models.getFinancialDetails.{FinancialDetails, MainTransactionEnum}
 import models.getPenaltyDetails.appealInfo.AppealStatusEnum
+import models.getPenaltyDetails.latePayment._
 import models.getPenaltyDetails.{GetPenaltyDetails, Totalisations}
-import models.getPenaltyDetails.latePayment.{LPPDetails, LPPDetailsMetadata, LPPPenaltyCategoryEnum, LPPPenaltyStatusEnum, LatePaymentPenalty}
 
 import javax.inject.Inject
 

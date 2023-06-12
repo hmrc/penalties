@@ -16,7 +16,7 @@
 
 package models.upload
 
-import play.api.libs.json.{Format, JsError, JsResult, JsString, JsSuccess, JsValue}
+import play.api.libs.json._
 
 object UploadStatusEnum extends Enumeration {
   val WAITING: UploadStatusEnum.Value = Value

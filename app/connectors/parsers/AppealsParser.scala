@@ -17,7 +17,7 @@
 package connectors.parsers
 
 import models.appeals.AppealResponseModel
-import play.api.http.Status.{BAD_REQUEST, OK, CONFLICT}
+import play.api.http.Status.{BAD_REQUEST, CONFLICT, OK}
 import play.api.libs.json.JsSuccess
 import uk.gov.hmrc.http.{HttpReads, HttpResponse}
 import utils.Logger.logger

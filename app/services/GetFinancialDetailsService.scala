@@ -16,13 +16,13 @@
 
 package services
 
-import connectors.parsers.getFinancialDetails.GetFinancialDetailsParser._
 import connectors.getFinancialDetails.GetFinancialDetailsConnector
+import connectors.parsers.getFinancialDetails.GetFinancialDetailsParser._
 import play.api.Configuration
-import javax.inject.Inject
 import uk.gov.hmrc.http.HeaderCarrier
 import utils.Logger.logger
 
+import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class GetFinancialDetailsService @Inject()(getFinancialDetailsConnector: GetFinancialDetailsConnector)

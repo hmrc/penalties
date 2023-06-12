@@ -16,7 +16,7 @@
 
 package models.getPenaltyDetails.lateSubmission
 
-import play.api.libs.json.{Format, JsError, JsResult, JsString, JsSuccess, JsValue}
+import play.api.libs.json._
 
 object TaxReturnStatusEnum extends Enumeration {
   val Open: TaxReturnStatusEnum.Value = Value

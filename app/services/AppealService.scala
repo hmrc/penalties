@@ -23,11 +23,11 @@ import connectors.parsers.AppealsParser
 import models.appeals.{AppealResponseModel, AppealSubmission, MultiplePenaltiesData}
 import models.getPenaltyDetails.GetPenaltyDetails
 import models.getPenaltyDetails.latePayment.{LPPDetails, LPPPenaltyCategoryEnum, LPPPenaltyStatusEnum}
-import models.notification.{SDESAudit, SDESChecksum, SDESNotification, SDESNotificationFile, SDESProperties}
+import models.notification._
 import models.upload.UploadJourney
 import play.api.Configuration
-import utils.{DateHelper, UUIDGenerator}
 import utils.Logger.logger
+import utils.{DateHelper, UUIDGenerator}
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}

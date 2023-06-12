@@ -22,8 +22,8 @@ import models.getPenaltyDetails.latePayment.{LPPDetails, LPPPenaltyStatusEnum, T
 import models.getPenaltyDetails.lateSubmission.{LSPDetails, LSPPenaltyCategoryEnum, LSPPenaltyStatusEnum}
 import play.api.libs.json.JsValue
 import play.api.mvc.Request
-import utils.{DateHelper, JsonUtils}
 import utils.Logger.logger
+import utils.{DateHelper, JsonUtils}
 
 import java.time.LocalDate
 
