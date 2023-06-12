@@ -53,7 +53,6 @@ class APIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock wit
         |       {
         |          "penaltyCategory": "LPP2",
         |          "penaltyStatus": "A",
-        |          "penaltyAmountAccruing": 123.45,
         |          "penaltyAmountPosted": 0,
         |          "LPP1LRCalculationAmount": 123.45,
         |          "LPP1LRDays": "15",
