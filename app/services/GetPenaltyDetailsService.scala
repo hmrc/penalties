@@ -21,11 +21,10 @@ import config.featureSwitches.{FeatureSwitching, Filter9xAppealStatus}
 import connectors.getPenaltyDetails.GetPenaltyDetailsConnector
 import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser._
 import play.api.Configuration
-
-import javax.inject.Inject
 import uk.gov.hmrc.http.HeaderCarrier
 import utils.Logger.logger
 
+import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class GetPenaltyDetailsService @Inject()(getPenaltyDetailsConnector: GetPenaltyDetailsConnector,

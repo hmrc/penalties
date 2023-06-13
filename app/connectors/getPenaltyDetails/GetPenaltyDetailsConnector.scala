@@ -24,8 +24,8 @@ import play.api.http.Status.INTERNAL_SERVER_ERROR
 import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse, UpstreamErrorResponse}
 import utils.Logger.logger
-import utils.{DateHelper, PagerDutyHelper}
 import utils.PagerDutyHelper.PagerDutyKeys._
+import utils.{DateHelper, PagerDutyHelper}
 
 import java.time.LocalDateTime
 import java.util.UUID.randomUUID

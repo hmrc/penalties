@@ -26,11 +26,11 @@ import models.appeals._
 import models.appeals.reasonableExcuses.ReasonableExcuse
 import models.auditing.PenaltyAppealFileNotificationStorageFailureModel
 import models.getPenaltyDetails.GetPenaltyDetails
-import models.getPenaltyDetails.latePayment.{LPPDetails, LPPPenaltyCategoryEnum}
+import models.getPenaltyDetails.latePayment.LPPDetails
 import models.getPenaltyDetails.lateSubmission.LSPDetails
 import models.notification._
 import play.api.Configuration
-import play.api.libs.json.{JsValue, Json}
+import play.api.libs.json.Json
 import play.api.mvc._
 import services.auditing.AuditService
 import services.{AppealService, GetPenaltyDetailsService}

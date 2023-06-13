@@ -16,19 +16,17 @@
 
 package connectors.getFinancialDetails
 
-import java.util.UUID.randomUUID
 import config.AppConfig
 import connectors.parsers.getFinancialDetails.GetFinancialDetailsParser.{GetFinancialDetailsFailureResponse, GetFinancialDetailsResponse}
 import play.api.http.Status.INTERNAL_SERVER_ERROR
-
-import javax.inject.Inject
+import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse, UpstreamErrorResponse}
 import utils.Logger.logger
-import uk.gov.hmrc.http.HttpReads.Implicits._
 import utils.PagerDutyHelper
 import utils.PagerDutyHelper.PagerDutyKeys._
 
-import java.time.LocalDate
+import java.util.UUID.randomUUID
+import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class GetFinancialDetailsConnector @Inject()(httpClient: HttpClient,

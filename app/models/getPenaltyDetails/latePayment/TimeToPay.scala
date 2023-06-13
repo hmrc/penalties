@@ -16,7 +16,7 @@
 
 package models.getPenaltyDetails.latePayment
 
-import play.api.libs.json.{OFormat, Json}
+import play.api.libs.json.{Json, OFormat}
 
 import java.time.LocalDate
 

@@ -17,7 +17,7 @@
 package connectors.parsers
 
 import models.appeals.AppealResponseModel
-import play.api.http.Status.{BAD_REQUEST, OK}
+import play.api.http.Status.{BAD_REQUEST, CONFLICT, OK}
 import play.api.libs.json.JsSuccess
 import uk.gov.hmrc.http.{HttpReads, HttpResponse}
 import utils.Logger.logger
@@ -43,6 +43,9 @@ object AppealsParser {
           PagerDutyHelper.log("AppealSubmissionResponseReads", RECEIVED_4XX_FROM_1808_API)
           logger.error(s"[AppealSubmissionResponseReads][read]: Bad request returned with reason: ${response.body} from PEGA")
           Left(BadRequest)
+        case CONFLICT =>
+          logger.error(s"[AppealSubmissionResponseReads][read]: Conflict status has been returned returned with body: ${response.body}")
+          Left(DuplicateAppeal)
         case status =>
           PagerDutyHelper.logStatusCode("AppealSubmissionResponseReads", status)(RECEIVED_4XX_FROM_1808_API, RECEIVED_5XX_FROM_1808_API)
           logger.error(s"[AppealSubmissionResponseReads][read]: Unexpected response, status $status returned with body: ${response.body}")
@@ -64,6 +67,11 @@ object AppealsParser {
   case object BadRequest extends ErrorResponse {
     override val status: Int = BAD_REQUEST
     override val body: String = "Incorrect Json body sent to PEGA"
+  }
+
+  case object DuplicateAppeal extends ErrorResponse {
+    override val status: Int = CONFLICT
+    override val body: String = "User has already submitted an appeal for this penalty"
   }
 
   case class UnexpectedFailure(

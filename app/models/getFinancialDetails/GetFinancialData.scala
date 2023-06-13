@@ -16,7 +16,7 @@
 
 package models.getFinancialDetails
 
-import play.api.libs.json.{JsResult, JsValue, Json, Reads, Writes}
+import play.api.libs.json._
 
 case class GetFinancialData(financialDetails: FinancialDetails)
 

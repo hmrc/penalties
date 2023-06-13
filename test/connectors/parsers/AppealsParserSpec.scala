@@ -17,7 +17,7 @@
 package connectors.parsers
 
 import base.{LogCapturing, SpecBase}
-import connectors.parsers.AppealsParser.{BadRequest, InvalidJson, UnexpectedFailure}
+import connectors.parsers.AppealsParser.{BadRequest, DuplicateAppeal, InvalidJson, UnexpectedFailure}
 import models.appeals.AppealResponseModel
 import play.api.http.Status
 import play.api.libs.json.{JsString, JsValue, Json}
@@ -66,6 +66,15 @@ class AppealsParserSpec extends SpecBase with LogCapturing {
         logs => {
           readResponse shouldBe Left(BadRequest)
           logs.exists(_.getMessage.contains(PagerDutyKeys.RECEIVED_4XX_FROM_1808_API.toString)) shouldBe true
+        }
+      }
+    }
+
+    s"return $DuplicateAppeal if ${Status.CONFLICT} returned (not logging a PagerDuty)" in new Setup(Status.CONFLICT) {
+      withCaptureOfLoggingFrom(logger) {
+        logs => {
+          readResponse shouldBe Left(DuplicateAppeal)
+          logs.exists(_.getMessage.contains(PagerDutyKeys.RECEIVED_4XX_FROM_1808_API.toString)) shouldBe false
         }
       }
     }
