@@ -17,7 +17,7 @@
 package services
 
 import config.AppConfig
-import config.featureSwitches.{FeatureSwitching, Filter9xAppealStatus}
+import config.featureSwitches.FeatureSwitching
 import connectors.getPenaltyDetails.GetPenaltyDetailsConnector
 import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser._
 import play.api.Configuration
@@ -44,12 +44,8 @@ class GetPenaltyDetailsService @Inject()(getPenaltyDetailsConnector: GetPenaltyD
       case res@Right(_@GetPenaltyDetailsSuccessResponse(penaltyDetails)) =>
         val callingClass: String = "GetPenaltiesDetailsService"
         val function: String = "handleConnectorResponse"
-    logger.debug(s"$startOfLogMsg - Got a success response from the connector. Parsed model: $penaltyDetails")
-        if (appConfig.isEnabled(Filter9xAppealStatus)) {
-          Right(GetPenaltyDetailsSuccessResponse(filterService.filterEstimatedLPP1DuringPeriodOfFamiliarisation(filterService.filterPenaltiesWith9xAppealStatus(penaltyDetails)(callingClass, function, vrn), callingClass, function, vrn)))
-        } else {
-          Right(GetPenaltyDetailsSuccessResponse(filterService.filterEstimatedLPP1DuringPeriodOfFamiliarisation(penaltyDetails, callingClass, function, vrn)))
-        }
+        logger.debug(s"$startOfLogMsg - Got a success response from the connector. Parsed model: $penaltyDetails")
+        Right(GetPenaltyDetailsSuccessResponse(filterService.filterEstimatedLPP1DuringPeriodOfFamiliarisation(filterService.filterPenaltiesWith9xAppealStatus(penaltyDetails)(callingClass, function, vrn), callingClass, function, vrn)))
       case res@Left(GetPenaltyDetailsNoContent) =>
         logger.debug(s"$startOfLogMsg - Got a 404 response and no data was found for GetPenaltyDetails call")
         res

@@ -17,7 +17,7 @@
 package controllers
 
 import config.AppConfig
-import config.featureSwitches.{FeatureSwitching, Filter9xAppealStatus}
+import config.featureSwitches.FeatureSwitching
 import connectors.getFinancialDetails.GetFinancialDetailsConnector
 import connectors.getPenaltyDetails.GetPenaltyDetailsConnector
 import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser
@@ -208,10 +208,7 @@ class APIController @Inject()(auditService: AuditService,
 
   private def filterResponseBody(resBody: JsValue, vrn: String, method: String): JsValue = {
     val penaltiesDetails = GetPenaltyDetails.format.reads(resBody)
-    if (appConfig.isEnabled(Filter9xAppealStatus)) {
-      GetPenaltyDetails.format.writes(filterService.filterEstimatedLPP1DuringPeriodOfFamiliarisation(filterService.filterPenaltiesWith9xAppealStatus(penaltiesDetails.get)("APIConnector", method, vrn), "APIConnector", method, vrn))
-    } else {
-      GetPenaltyDetails.format.writes(filterService.filterEstimatedLPP1DuringPeriodOfFamiliarisation(penaltiesDetails.get, "APIConnector", method, vrn))
-    }
+    GetPenaltyDetails.format.writes(filterService.filterEstimatedLPP1DuringPeriodOfFamiliarisation(
+      filterService.filterPenaltiesWith9xAppealStatus(penaltiesDetails.get)("APIConnector", method, vrn), "APIConnector", method, vrn))
   }
 }
