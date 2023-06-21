@@ -27,7 +27,7 @@ import models.notification._
 import models.upload.UploadJourney
 import play.api.Configuration
 import utils.Logger.logger
-import utils.{DateHelper, UUIDGenerator}
+import utils.{DateHelper, FileHelper, UUIDGenerator}
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
@@ -64,7 +64,7 @@ class AppealService @Inject()(appealsConnector: PEGAConnector,
                 case "AWS4-HMAC-SHA256" => "SHA-256"
                 case _ => throw new Exception("[AppealsController][createSDESNotifications] failed to recognise Checksum algorithm")
               }
-              val sanitisedFileName: String = sanitiseFileName(details.fileName)
+              val sanitisedFileName: String = sanitiseFileName(details.fileName)(details.fileMimeType)(upload.reference)
               SDESNotification(
                 informationType = appConfig.SDESNotificationInfoType,
                 file = SDESNotificationFile(
@@ -88,9 +88,10 @@ class AppealService @Inject()(appealsConnector: PEGAConnector,
     }
   }
 
-  private def sanitiseFileName(fileName: String): String = {
+  private def sanitiseFileName(fileName: String)(fileMimeType: String)(fileReference: String): String = {
     if(appConfig.isEnabled(SanitiseFileName)) {
-      fileName.replaceAll(regexToSanitiseFileName, "_")
+      val fileNameWithoutSpecialCharacters = fileName.replaceAll(regexToSanitiseFileName, "_")
+      FileHelper.appendFileExtension(fileNameWithoutSpecialCharacters)(fileMimeType)(fileReference)(appConfig)
     } else {
       fileName
     }

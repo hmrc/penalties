@@ -130,4 +130,23 @@ class AppConfigSpec extends AnyWordSpec with ShouldMatchers with FeatureSwitchin
       result shouldBe "localhost:0000/enterprise/obligation-data/vrn/123456789/VATC?from=2020-01-01&to=2020-12-31"
     }
   }
+
+  "getMimeType" should {
+    "return Some" when {
+      "the config entry exists" in new Setup {
+        when(mockConfiguration.getOptional[String](Matchers.eq("files.extensions.text.plain"))(any())).thenReturn(Some(".txt"))
+        val result: Option[String] = config.getMimeType("text.plain")
+        result.isDefined shouldBe true
+        result.get shouldBe ".txt"
+      }
+    }
+
+    "return None" when {
+      "the config entry does not exist" in new Setup {
+        when(mockConfiguration.getOptional[String](Matchers.eq("files.extensions.text.plain"))(any())).thenReturn(None)
+        val result: Option[String] = config.getMimeType("text.plain")
+        result.isEmpty shouldBe true
+      }
+    }
+  }
 }

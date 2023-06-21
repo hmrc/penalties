@@ -168,13 +168,14 @@ class AppealServiceSpec extends SpecBase {
 
       "notifications are sent and then should sanitise the file names (when feature switch is enabled)" in new Setup {
         when(mockAppConfig.isEnabled(Matchers.eq(SanitiseFileName))).thenReturn(true)
+        when(mockAppConfig.getMimeType(Matchers.eq("text.plain"))).thenReturn(Some(".txt"))
         val mockDateTime: LocalDateTime = LocalDateTime.of(2020, 1, 1, 0, 0, 0)
         val uploads = Seq(
           UploadJourney(reference = "ref-123",
             fileStatus = UploadStatusEnum.READY,
             downloadUrl = Some("/"),
             uploadDetails = Some(UploadDetails(
-              fileName = "file 1 / * 3  something‘ ’ “ ” <4 x>y_z |\" \\.txt",
+              fileName = "file 1 / * 3  something‘ ’ “ ” <4 x>y_z |\" \\",
               fileMimeType = "text/plain",
               uploadTimestamp = LocalDateTime.of(2018, 4, 24, 9, 30, 0),
               checksum = "check123456789",
