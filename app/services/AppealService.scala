@@ -66,7 +66,7 @@ class AppealService @Inject()(appealsConnector: PEGAConnector,
                 case "AWS4-HMAC-SHA256" => "SHA-256"
                 case _ => throw new Exception("[AppealsController][createSDESNotifications] failed to recognise Checksum algorithm")
               }
-              val sanitisedFileName: String = sanitiseFileName(details.fileName)
+              val sanitisedFileName: String = sanitiseFileName(if(details.fileName.length > appConfig.maximumFilenameLength) truncateFilename(details.fileName) else details.fileName)
               SDESNotification(
                 informationType = appConfig.SDESNotificationInfoType,
                 file = SDESNotificationFile(
@@ -123,6 +123,19 @@ class AppealService @Inject()(appealsConnector: PEGAConnector,
       Some(returnModel)
     } else {
       None
+    }
+  }
+
+  def truncateFilename(fileName: String): String = {
+    logger.info(s"[AppealService][truncateFilename] File name length: ${fileName.length}, truncating to ${appConfig.maximumFilenameLength}")
+    if(fileName.contains(".")) {
+      val fileNameSplit = fileName.split("\\.")
+      val fileNameMain = fileNameSplit.head
+      val fileNameExtension = "." ++ fileNameSplit.last
+
+      fileNameMain.substring(0, Math.min(fileNameMain.length(), appConfig.maximumFilenameLength - fileNameExtension.length))  ++fileNameExtension
+    } else {
+      fileName.substring(0, Math.min(fileName.length(), appConfig.maximumFilenameLength))
     }
   }
 }

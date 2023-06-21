@@ -35,9 +35,10 @@ import play.api.Configuration
 import play.api.test.Helpers._
 import uk.gov.hmrc.http.HeaderCarrier
 import utils.UUIDGenerator
-
 import java.time.{LocalDate, LocalDateTime}
+
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.Random
 
 class AppealServiceSpec extends SpecBase {
   implicit val ec: ExecutionContext = ExecutionContext.Implicits.global
@@ -59,6 +60,7 @@ class AppealServiceSpec extends SpecBase {
     when(mockUUIDGenerator.generateUUID).thenReturn(correlationId)
     when(mockAppConfig.SDESNotificationInfoType).thenReturn("S18")
     when(mockAppConfig.SDESNotificationFileRecipient).thenReturn("123456789012")
+    when(mockAppConfig.maximumFilenameLength).thenReturn(150)
   }
 
   "submitAppeal" should {
@@ -127,7 +129,7 @@ class AppealServiceSpec extends SpecBase {
             fileStatus = UploadStatusEnum.READY,
             downloadUrl = Some("/"),
             uploadDetails = Some(UploadDetails(
-              fileName = "file1",
+              fileName = "file1.txt",
               fileMimeType = "text/plain",
               uploadTimestamp = LocalDateTime.of(2018, 4, 24, 9, 30, 0),
               checksum = "check123456789",
@@ -146,7 +148,7 @@ class AppealServiceSpec extends SpecBase {
             informationType = "S18",
             file = SDESNotificationFile(
               recipientOrSender = "123456789012",
-              name = "file1",
+              name = "file1.txt",
               location = "/",
               checksum = SDESChecksum(algorithm = "SHA-256", value = "check123456789"),
               size = 1,
@@ -404,6 +406,19 @@ class AppealServiceSpec extends SpecBase {
         )
         result shouldBe Some(expectedReturnModel)
       }
+    }
+  }
+
+  "truncateFilename" should {
+    val longFilename = Random.alphanumeric.take(160).mkString
+    s"reduce a filename to maximum character length based on maximumFilenameLength including file extension" in new Setup {
+      val result: String = service.truncateFilename(longFilename ++ ".txt")
+      result.length shouldBe mockAppConfig.maximumFilenameLength
+      result.contains(".txt") shouldBe true
+    }
+    s"reduce a filename to maximum character length based on maximumFilenameLength when there is no file extension" in new Setup {
+      val result: String = service.truncateFilename(longFilename)
+      result.length shouldBe mockAppConfig.maximumFilenameLength
     }
   }
 }

@@ -61,6 +61,8 @@ class AppConfig @Inject()(val config: Configuration, servicesConfig: ServicesCon
 
   lazy val internalAuthBearerToken: String = config.get[String]("internal-auth.token")
 
+  lazy val maximumFilenameLength: Int = config.get[Int]("sdes.maximumFilenameLength")
+
   def postFileNotificationUrl: String = s"$fileNotificationOrchestrator/penalties-file-notification-orchestrator/new-notifications"
 
   lazy val SDESNotificationInfoType: String = config.get[String]("SDESNotification.informationType")
