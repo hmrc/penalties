@@ -36,9 +36,7 @@ class AppealService @Inject()(appealsConnector: PEGAConnector,
                               appConfig: AppConfig,
                               idGenerator: UUIDGenerator)(implicit ec: ExecutionContext, val config: Configuration) extends FeatureSwitching {
 
-  private val regexToSanitiseFileName: String = "[^a-zA-Z0-9_\\-.]"
-
-  private val regexToRemoveSpacesAndControlCharacters: String = "\\s+"
+  private val regexToSanitiseFileName: String = "[\\\\\\/:*?<>|\"‘’“”]"
 
   def submitAppeal(appealSubmission: AppealSubmission,
                    enrolmentKey: String, isLPP: Boolean, penaltyNumber: String, correlationId: String): Future[Either[AppealsParser.ErrorResponse, AppealResponseModel]] = {
@@ -92,7 +90,7 @@ class AppealService @Inject()(appealsConnector: PEGAConnector,
 
   private def sanitiseFileName(fileName: String): String = {
     if(appConfig.isEnabled(SanitiseFileName)) {
-      fileName.replaceAll(regexToRemoveSpacesAndControlCharacters, "_").replaceAll(regexToSanitiseFileName, "_")
+      fileName.replaceAll(regexToSanitiseFileName, "_")
     } else {
       fileName
     }
