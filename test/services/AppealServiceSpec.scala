@@ -215,6 +215,88 @@ class AppealServiceSpec extends SpecBase {
         result shouldBe expectedResult
       }
     }
+    s"truncate file name" when {
+      val mockDateTime: LocalDateTime = LocalDateTime.of(2020, 1, 1, 0, 0, 0)
+      val longFilename = Random.alphanumeric.take(160).mkString
+      "filename is above maximumFilenameLength and includes file extension" in new Setup {
+        val uploads = Seq(
+          UploadJourney(reference = "ref-123",
+            fileStatus = UploadStatusEnum.READY,
+            downloadUrl = Some("/"),
+            uploadDetails = Some(UploadDetails(
+              fileName = longFilename + ".txt",
+              fileMimeType = "text/plain",
+              uploadTimestamp = LocalDateTime.of(2018, 4, 24, 9, 30, 0),
+              checksum = "check123456789",
+              size = 1
+            )),
+            lastUpdated = mockDateTime,
+            uploadFields = Some(Map(
+              "key" -> "abcxyz",
+              "x-amz-algorithm" -> "AWS4-HMAC-SHA256"
+            ))
+          )
+        )
+        when(mockUUIDGenerator.generateUUID).thenReturn(correlationId)
+        val result: Seq[SDESNotification] = service.createSDESNotifications(Some(uploads), caseID = "PR-5678")
+        val resultFileName: String = result.head.file.name
+        resultFileName.length shouldBe mockAppConfig.maximumFilenameLength + 4
+        resultFileName.contains(".txt") shouldBe true
+      }
+
+      "reduce a filename to maximum character length based on maximumFilenameLength when there is no file extension" in new Setup {
+        val uploads = Seq(
+          UploadJourney(reference = "ref-123",
+            fileStatus = UploadStatusEnum.READY,
+            downloadUrl = Some("/"),
+            uploadDetails = Some(UploadDetails(
+              fileName = longFilename,
+              fileMimeType = "text/plain",
+              uploadTimestamp = LocalDateTime.of(2018, 4, 24, 9, 30, 0),
+              checksum = "check123456789",
+              size = 1
+            )),
+            lastUpdated = mockDateTime,
+            uploadFields = Some(Map(
+              "key" -> "abcxyz",
+              "x-amz-algorithm" -> "AWS4-HMAC-SHA256"
+            ))
+          )
+        )
+        when(mockUUIDGenerator.generateUUID).thenReturn(correlationId)
+        val result: Seq[SDESNotification] = service.createSDESNotifications(Some(uploads), caseID = "PR-5678")
+        val resultFileName: String = result.head.file.name
+        resultFileName.length shouldBe mockAppConfig.maximumFilenameLength
+      }
+
+      "correctly remove file extension when filename includes periods" in new Setup {
+        val longFilename: String = Random.alphanumeric.take(60).mkString
+        val uploads = Seq(
+          UploadJourney(reference = "ref-123",
+            fileStatus = UploadStatusEnum.READY,
+            downloadUrl = Some("/"),
+            uploadDetails = Some(UploadDetails(
+              fileName = longFilename + "." + longFilename + ".." + longFilename + ".txt",
+              fileMimeType = "text/plain",
+              uploadTimestamp = LocalDateTime.of(2018, 4, 24, 9, 30, 0),
+              checksum = "check123456789",
+              size = 1
+            )),
+            lastUpdated = mockDateTime,
+            uploadFields = Some(Map(
+              "key" -> "abcxyz",
+              "x-amz-algorithm" -> "AWS4-HMAC-SHA256"
+            ))
+          )
+        )
+        when(mockUUIDGenerator.generateUUID).thenReturn(correlationId)
+        val result: Seq[SDESNotification] = service.createSDESNotifications(Some(uploads), caseID = "PR-5678")
+        val resultFileName: String = result.head.file.name
+        resultFileName.length shouldBe mockAppConfig.maximumFilenameLength + 4
+        resultFileName.contains(".txt") shouldBe true
+        resultFileName.count(_ == '.') shouldBe 4
+      }
+    }
   }
 
   "getMultiplePenaltyData" should {
@@ -406,19 +488,6 @@ class AppealServiceSpec extends SpecBase {
         )
         result shouldBe Some(expectedReturnModel)
       }
-    }
-  }
-
-  "truncateFilename" should {
-    val longFilename = Random.alphanumeric.take(160).mkString
-    s"reduce a filename to maximum character length based on maximumFilenameLength including file extension" in new Setup {
-      val result: String = service.truncateFilename(longFilename ++ ".txt")
-      result.length shouldBe mockAppConfig.maximumFilenameLength
-      result.contains(".txt") shouldBe true
-    }
-    s"reduce a filename to maximum character length based on maximumFilenameLength when there is no file extension" in new Setup {
-      val result: String = service.truncateFilename(longFilename)
-      result.length shouldBe mockAppConfig.maximumFilenameLength
     }
   }
 }
