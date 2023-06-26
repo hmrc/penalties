@@ -129,7 +129,7 @@ class AppealServiceSpec extends SpecBase {
             fileStatus = UploadStatusEnum.READY,
             downloadUrl = Some("/"),
             uploadDetails = Some(UploadDetails(
-              fileName = "file1.txt",
+              fileName = "file1",
               fileMimeType = "text/plain",
               uploadTimestamp = LocalDateTime.of(2018, 4, 24, 9, 30, 0),
               checksum = "check123456789",
@@ -148,7 +148,7 @@ class AppealServiceSpec extends SpecBase {
             informationType = "S18",
             file = SDESNotificationFile(
               recipientOrSender = "123456789012",
-              name = "file1.txt",
+              name = "file1",
               location = "/",
               checksum = SDESChecksum(algorithm = "SHA-256", value = "check123456789"),
               size = 1,
