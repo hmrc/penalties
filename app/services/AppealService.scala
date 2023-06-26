@@ -64,12 +64,11 @@ class AppealService @Inject()(appealsConnector: PEGAConnector,
                 case "AWS4-HMAC-SHA256" => "SHA-256"
                 case _ => throw new Exception("[AppealsController][createSDESNotifications] failed to recognise Checksum algorithm")
               }
-              val sanitisedFileName: String = sanitiseFileName(details.fileName)
               SDESNotification(
                 informationType = appConfig.SDESNotificationInfoType,
                 file = SDESNotificationFile(
                   recipientOrSender = appConfig.SDESNotificationFileRecipient,
-                  name = sanitisedFileName,
+                  name = sanitisedAndTruncatedFileName(details.fileName, upload.reference),
                   location = upload.downloadUrl.get,
                   checksum = SDESChecksum(algorithm = uploadAlgorithm, value = details.checksum),
                   size = details.size,
@@ -122,5 +121,24 @@ class AppealService @Inject()(appealsConnector: PEGAConnector,
     } else {
       None
     }
+  }
+
+  private def sanitisedAndTruncatedFileName(fileName: String, reference: String): String = {
+    val sanitisedFileName = sanitiseFileName(fileName)
+    if(sanitisedFileName.length > appConfig.maximumFilenameLength) {
+      if(sanitisedFileName.contains(".")) {
+        val fileRegex = "^(.*)(\\.\\w{1,4})$".r
+        val fileRegex(fileNameMain, fileExtension) = sanitisedFileName
+        logger.info(s"[AppealService][sanitisedAndTruncatedFileName] File name length: ${fileNameMain.length} with reference of: $reference, truncating to ${appConfig.maximumFilenameLength}")
+
+        fileNameMain.substring(0, Math.min(fileNameMain.length(), appConfig.maximumFilenameLength)) ++ fileExtension
+      } else {
+        logger.info(s"[AppealService][sanitisedAndTruncatedFileName] File name length: ${sanitisedFileName.length} with reference of: $reference, truncating to ${appConfig.maximumFilenameLength}")
+        sanitisedFileName.substring(0, Math.min(sanitisedFileName.length(), appConfig.maximumFilenameLength))
+      }
+    } else {
+      sanitisedFileName
+    }
+
   }
 }

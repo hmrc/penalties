@@ -35,9 +35,10 @@ import play.api.Configuration
 import play.api.test.Helpers._
 import uk.gov.hmrc.http.HeaderCarrier
 import utils.UUIDGenerator
-
 import java.time.{LocalDate, LocalDateTime}
+
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.Random
 
 class AppealServiceSpec extends SpecBase {
   implicit val ec: ExecutionContext = ExecutionContext.Implicits.global
@@ -59,6 +60,7 @@ class AppealServiceSpec extends SpecBase {
     when(mockUUIDGenerator.generateUUID).thenReturn(correlationId)
     when(mockAppConfig.SDESNotificationInfoType).thenReturn("S18")
     when(mockAppConfig.SDESNotificationFileRecipient).thenReturn("123456789012")
+    when(mockAppConfig.maximumFilenameLength).thenReturn(150)
   }
 
   "submitAppeal" should {
@@ -211,6 +213,88 @@ class AppealServiceSpec extends SpecBase {
         when(mockUUIDGenerator.generateUUID).thenReturn(correlationId)
         val result = service.createSDESNotifications(Some(uploads), caseID = "PR-1234")
         result shouldBe expectedResult
+      }
+    }
+    s"truncate file name" when {
+      val mockDateTime: LocalDateTime = LocalDateTime.of(2020, 1, 1, 0, 0, 0)
+      val longFilename = Random.alphanumeric.take(160).mkString
+      "filename is above maximumFilenameLength and includes file extension" in new Setup {
+        val uploads = Seq(
+          UploadJourney(reference = "ref-123",
+            fileStatus = UploadStatusEnum.READY,
+            downloadUrl = Some("/"),
+            uploadDetails = Some(UploadDetails(
+              fileName = longFilename + ".txt",
+              fileMimeType = "text/plain",
+              uploadTimestamp = LocalDateTime.of(2018, 4, 24, 9, 30, 0),
+              checksum = "check123456789",
+              size = 1
+            )),
+            lastUpdated = mockDateTime,
+            uploadFields = Some(Map(
+              "key" -> "abcxyz",
+              "x-amz-algorithm" -> "AWS4-HMAC-SHA256"
+            ))
+          )
+        )
+        when(mockUUIDGenerator.generateUUID).thenReturn(correlationId)
+        val result: Seq[SDESNotification] = service.createSDESNotifications(Some(uploads), caseID = "PR-5678")
+        val resultFileName: String = result.head.file.name
+        resultFileName.length shouldBe mockAppConfig.maximumFilenameLength + 4
+        resultFileName.contains(".txt") shouldBe true
+      }
+
+      "reduce a filename to maximum character length based on maximumFilenameLength when there is no file extension" in new Setup {
+        val uploads = Seq(
+          UploadJourney(reference = "ref-123",
+            fileStatus = UploadStatusEnum.READY,
+            downloadUrl = Some("/"),
+            uploadDetails = Some(UploadDetails(
+              fileName = longFilename,
+              fileMimeType = "text/plain",
+              uploadTimestamp = LocalDateTime.of(2018, 4, 24, 9, 30, 0),
+              checksum = "check123456789",
+              size = 1
+            )),
+            lastUpdated = mockDateTime,
+            uploadFields = Some(Map(
+              "key" -> "abcxyz",
+              "x-amz-algorithm" -> "AWS4-HMAC-SHA256"
+            ))
+          )
+        )
+        when(mockUUIDGenerator.generateUUID).thenReturn(correlationId)
+        val result: Seq[SDESNotification] = service.createSDESNotifications(Some(uploads), caseID = "PR-5678")
+        val resultFileName: String = result.head.file.name
+        resultFileName.length shouldBe mockAppConfig.maximumFilenameLength
+      }
+
+      "correctly remove file extension when filename includes periods" in new Setup {
+        val longFilename: String = Random.alphanumeric.take(60).mkString
+        val uploads = Seq(
+          UploadJourney(reference = "ref-123",
+            fileStatus = UploadStatusEnum.READY,
+            downloadUrl = Some("/"),
+            uploadDetails = Some(UploadDetails(
+              fileName = longFilename + "." + longFilename + ".." + longFilename + ".txt",
+              fileMimeType = "text/plain",
+              uploadTimestamp = LocalDateTime.of(2018, 4, 24, 9, 30, 0),
+              checksum = "check123456789",
+              size = 1
+            )),
+            lastUpdated = mockDateTime,
+            uploadFields = Some(Map(
+              "key" -> "abcxyz",
+              "x-amz-algorithm" -> "AWS4-HMAC-SHA256"
+            ))
+          )
+        )
+        when(mockUUIDGenerator.generateUUID).thenReturn(correlationId)
+        val result: Seq[SDESNotification] = service.createSDESNotifications(Some(uploads), caseID = "PR-5678")
+        val resultFileName: String = result.head.file.name
+        resultFileName.length shouldBe mockAppConfig.maximumFilenameLength + 4
+        resultFileName.contains(".txt") shouldBe true
+        resultFileName.count(_ == '.') shouldBe 4
       }
     }
   }
