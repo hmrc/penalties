@@ -95,4 +95,6 @@ class AppConfig @Inject()(val config: Configuration, servicesConfig: ServicesCon
       stubBase + s"/penalties-stub/enterprise/obligation-data/vrn/$vrn/VATC?from=$fromDate&to=$toDate"
     }
   }
+
+  def getMimeType(mimeType: String): Option[String] = config.getOptional[String](s"files.extensions.$mimeType")
 }
