@@ -27,7 +27,7 @@ import models.notification._
 import models.upload.UploadJourney
 import play.api.Configuration
 import utils.Logger.logger
-import utils.{DateHelper, UUIDGenerator}
+import utils.{DateHelper, FileHelper, UUIDGenerator}
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
@@ -68,7 +68,7 @@ class AppealService @Inject()(appealsConnector: PEGAConnector,
                 informationType = appConfig.SDESNotificationInfoType,
                 file = SDESNotificationFile(
                   recipientOrSender = appConfig.SDESNotificationFileRecipient,
-                  name = sanitisedAndTruncatedFileName(details.fileName, upload.reference),
+                  name = sanitisedAndTruncatedFileName(details.fileName)(details.fileMimeType)(upload.reference),
                   location = upload.downloadUrl.get,
                   checksum = SDESChecksum(algorithm = uploadAlgorithm, value = details.checksum),
                   size = details.size,
@@ -84,14 +84,6 @@ class AppealService @Inject()(appealsConnector: PEGAConnector,
         }
       }
       case None => Seq.empty
-    }
-  }
-
-  private def sanitiseFileName(fileName: String): String = {
-    if(appConfig.isEnabled(SanitiseFileName)) {
-      fileName.replaceAll(regexToSanitiseFileName, "_")
-    } else {
-      fileName
     }
   }
 
@@ -123,14 +115,22 @@ class AppealService @Inject()(appealsConnector: PEGAConnector,
     }
   }
 
-  private def sanitisedAndTruncatedFileName(fileName: String, reference: String): String = {
-    val sanitisedFileName = sanitiseFileName(fileName)
+  private def sanitiseFileName(fileName: String)(fileMimeType: String)(fileReference: String): String = {
+    if (appConfig.isEnabled(SanitiseFileName)) {
+      val fileNameWithoutSpecialCharacters = fileName.replaceAll(regexToSanitiseFileName, "_")
+      FileHelper.appendFileExtension(fileNameWithoutSpecialCharacters)(fileMimeType)(fileReference)(appConfig)
+    } else {
+      fileName
+    }
+  }
+
+  private def sanitisedAndTruncatedFileName(fileName: String)(fileMimeType: String)(reference: String): String = {
+    val sanitisedFileName = sanitiseFileName(fileName)(fileMimeType)(reference)
     if(sanitisedFileName.length > appConfig.maximumFilenameLength) {
       if(sanitisedFileName.contains(".")) {
         val fileRegex = "^(.*)(\\.\\w{1,4})$".r
         val fileRegex(fileNameMain, fileExtension) = sanitisedFileName
         logger.info(s"[AppealService][sanitisedAndTruncatedFileName] File name length: ${fileNameMain.length} with reference of: $reference, truncating to ${appConfig.maximumFilenameLength}")
-
         fileNameMain.substring(0, Math.min(fileNameMain.length(), appConfig.maximumFilenameLength)) ++ fileExtension
       } else {
         logger.info(s"[AppealService][sanitisedAndTruncatedFileName] File name length: ${sanitisedFileName.length} with reference of: $reference, truncating to ${appConfig.maximumFilenameLength}")
