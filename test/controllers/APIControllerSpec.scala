@@ -556,6 +556,8 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
           |       "FAPIndicator": "X",
           |       "lateSubmissions": [
           |         {
+          |           "lateSubmissionID": "001",
+          |           "taxPeriod":  "23AA",
           |           "taxPeriodStartDate": "2022-01-01",
           |           "taxPeriodEndDate": "2022-12-31",
           |           "taxPeriodDueDate": "2023-02-07",

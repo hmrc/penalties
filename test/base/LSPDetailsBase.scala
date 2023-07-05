@@ -32,6 +32,8 @@ trait LSPDetailsBase {
     communicationsDate = Some(LocalDate.now()),
     FAPIndicator = None,
     lateSubmissions = Some(Seq(LateSubmission(
+      lateSubmissionID = "001",
+      taxPeriod = "23AA",
       taxPeriodStartDate = Some(LocalDate.now()),
       taxPeriodEndDate = Some(LocalDate.now()),
       taxPeriodDueDate = Some(LocalDate.now()),

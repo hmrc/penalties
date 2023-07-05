@@ -25,6 +25,8 @@ class LateSubmissionSpec extends SpecBase {
   val jsonRepresentingModel: JsValue = Json.parse(
     """
       |{
+      | "lateSubmissionID": "001",
+      | "taxPeriod":  "23AA",
       | "taxPeriodStartDate": "2022-01-01",
       | "taxPeriodEndDate": "2022-12-31",
       | "taxPeriodDueDate": "2023-02-07",
@@ -34,6 +36,8 @@ class LateSubmissionSpec extends SpecBase {
       |""".stripMargin)
 
   val model: LateSubmission = LateSubmission(
+    lateSubmissionID = "001",
+    taxPeriod = "23AA",
     taxPeriodStartDate = Some(LocalDate.of(2022, 1, 1)),
     taxPeriodEndDate = Some(LocalDate.of(2022, 12, 31)),
     taxPeriodDueDate = Some(LocalDate.of(2023, 2, 7)),

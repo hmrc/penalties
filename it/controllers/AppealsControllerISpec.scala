@@ -133,6 +133,8 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
       |       "communicationsDate": "2024-02-08",
       |       "lateSubmissions": [
       |         {
+      |           "lateSubmissionID": "001",
+      |           "taxPeriod":  "23AA",
       |           "taxPeriodStartDate": "2023-01-01",
       |           "taxPeriodEndDate": "2023-12-31",
       |           "taxPeriodDueDate": "2024-02-07",
@@ -164,6 +166,8 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
       |       "communicationsDate": "2022-10-30",
       |       "lateSubmissions": [
       |         {
+      |           "lateSubmissionID": "001",
+      |           "taxPeriod":  "23AA",
       |           "taxPeriodStartDate": "2022-01-01",
       |           "taxPeriodEndDate": "2022-12-31",
       |           "taxPeriodDueDate": "2023-02-07",

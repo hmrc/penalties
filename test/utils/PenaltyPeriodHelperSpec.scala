@@ -26,9 +26,13 @@ class PenaltyPeriodHelperSpec extends SpecBase {
   "sortByPenaltyStartDate" should {
     "return -1 when the first period is earlier than the second period" in {
       val earlierSubmission = LateSubmission(
+        lateSubmissionID = "001",
+        taxPeriod = "23AA",
         taxPeriodStartDate = Some(LocalDate.of(2022, 1, 1)), taxPeriodEndDate = None, taxPeriodDueDate = None, returnReceiptDate = None, taxReturnStatus = TaxReturnStatusEnum.Open
       )
       val laterSubmission = LateSubmission(
+        lateSubmissionID = "001",
+        taxPeriod = "23AA",
         taxPeriodStartDate = Some(LocalDate.of(2022, 1, 2)), taxPeriodEndDate = None, taxPeriodDueDate = None, returnReceiptDate = None,  taxReturnStatus = TaxReturnStatusEnum.Open
       )
       val result = PenaltyPeriodHelper.sortByPenaltyStartDate(earlierSubmission, laterSubmission)
@@ -37,6 +41,8 @@ class PenaltyPeriodHelperSpec extends SpecBase {
 
     "return 0 when the first period is equal to the second period" in {
       val submission = LateSubmission(
+        lateSubmissionID = "001",
+        taxPeriod = "23AA",
         taxPeriodStartDate = Some(LocalDate.of(2022, 1, 1)), taxPeriodEndDate = None, taxPeriodDueDate = None, returnReceiptDate = None,  taxReturnStatus = TaxReturnStatusEnum.Open
       )
       val result = PenaltyPeriodHelper.sortByPenaltyStartDate(submission, submission)
@@ -45,9 +51,13 @@ class PenaltyPeriodHelperSpec extends SpecBase {
 
     "return 1 when the first period is later than the second period" in {
       val earlierSubmission = LateSubmission(
+        lateSubmissionID = "001",
+        taxPeriod = "23AA",
         taxPeriodStartDate = Some(LocalDate.of(2022, 1, 1)), taxPeriodEndDate = None, taxPeriodDueDate = None, returnReceiptDate = None,  taxReturnStatus = TaxReturnStatusEnum.Open
       )
       val laterSubmission = LateSubmission(
+        lateSubmissionID = "001",
+        taxPeriod = "23AA",
         taxPeriodStartDate = Some(LocalDate.of(2022, 1, 2)), taxPeriodEndDate = None, taxPeriodDueDate = None, returnReceiptDate = None,  taxReturnStatus = TaxReturnStatusEnum.Open
       )
       val result = PenaltyPeriodHelper.sortByPenaltyStartDate(laterSubmission, earlierSubmission)
