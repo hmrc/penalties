@@ -115,6 +115,8 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
       |       "communicationsDate": "2022-10-30",
       |       "lateSubmissions": [
       |         {
+      |           "lateSubmissionID": "001",
+      |           "taxPeriod":  "23AA",
       |           "taxPeriodStartDate": "2022-01-01",
       |           "taxPeriodEndDate": "2022-12-31",
       |           "taxPeriodDueDate": "2023-02-07",
@@ -203,6 +205,8 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
       |       "communicationsDate": "2022-10-30",
       |       "lateSubmissions": [
       |         {
+      |           "lateSubmissionID": "001",
+      |           "taxPeriod":  "23AA",
       |           "taxPeriodStartDate": "2022-01-01",
       |           "taxPeriodEndDate": "2022-12-31",
       |           "taxPeriodDueDate": "2023-02-07",
@@ -457,6 +461,8 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
         |            "communicationsDate":"2022-10-30",
         |            "lateSubmissions":[
         |               {
+        |                  "lateSubmissionID": "001",
+        |                  "taxPeriod":  "23AA",
         |                  "taxPeriodStartDate":"2022-01-01",
         |                  "taxPeriodEndDate":"2022-12-31",
         |                  "taxPeriodDueDate":"2023-02-07",
@@ -544,6 +550,8 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
         |            "communicationsDate":"2022-10-30",
         |            "lateSubmissions":[
         |               {
+        |                  "lateSubmissionID": "001",
+        |                  "taxPeriod":  "23AA",
         |                  "taxPeriodStartDate":"2022-01-01",
         |                  "taxPeriodEndDate":"2022-12-31",
         |                  "taxPeriodDueDate":"2023-02-07",

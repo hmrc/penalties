@@ -21,6 +21,8 @@ import play.api.libs.json.{Format, Json}
 import java.time.LocalDate
 
 case class LateSubmission(
+                           lateSubmissionID: String,
+                           taxPeriod: Option[String],
                            taxPeriodStartDate: Option[LocalDate],
                            taxPeriodEndDate: Option[LocalDate],
                            taxPeriodDueDate: Option[LocalDate],

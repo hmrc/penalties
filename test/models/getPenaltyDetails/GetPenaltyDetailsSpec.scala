@@ -59,6 +59,8 @@ class GetPenaltyDetailsSpec extends SpecBase {
       |       "communicationsDate": "2022-10-30",
       |       "lateSubmissions": [
       |         {
+      |           "lateSubmissionID": "001",
+      |           "taxPeriod":  "23AA",
       |           "taxPeriodStartDate": "2022-01-01",
       |           "taxPeriodEndDate": "2022-12-31",
       |           "taxPeriodDueDate": "2023-02-07",
@@ -151,6 +153,8 @@ class GetPenaltyDetailsSpec extends SpecBase {
       |       "communicationsDate": "2022-10-30",
       |       "lateSubmissions": [
       |         {
+      |           "lateSubmissionID": "001",
+      |           "taxPeriod":  "23AA",
       |           "taxPeriodStartDate": "2022-01-01",
       |           "taxPeriodEndDate": "2022-12-31",
       |           "taxPeriodDueDate": "2023-02-07",
@@ -242,6 +246,8 @@ class GetPenaltyDetailsSpec extends SpecBase {
             lateSubmissions = Some(
               Seq(
                 LateSubmission(
+                  lateSubmissionID = "001",
+                  taxPeriod = Some("23AA"),
                   taxPeriodStartDate = Some(LocalDate.of(2022, 1, 1)),
                   taxPeriodEndDate = Some(LocalDate.of(2022, 12, 31)),
                   taxPeriodDueDate = Some(LocalDate.of(2023, 2, 7)),

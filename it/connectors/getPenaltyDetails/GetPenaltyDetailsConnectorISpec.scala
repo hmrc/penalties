@@ -75,6 +75,8 @@ class GetPenaltyDetailsConnectorISpec extends IntegrationSpecCommonBase with ETM
             |          "communicationsDate": "2021-04-23",
             |          "lateSubmissions": [
             |            {
+            |              "lateSubmissionID": "001",
+            |              "taxPeriod":  "23AA",
             |              "taxPeriodStartDate": "2021-04-23",
             |              "taxPeriodEndDate": "2021-04-23",
             |              "taxPeriodDueDate": "2021-04-23",
@@ -111,6 +113,8 @@ class GetPenaltyDetailsConnectorISpec extends IntegrationSpecCommonBase with ETM
               lateSubmissions = Some(
                 Seq(
                   LateSubmission(
+                    lateSubmissionID = "001",
+                    taxPeriod = Some("23AA"),
                     taxPeriodStartDate = Some(LocalDate.of(2021, 4, 23)),
                     taxPeriodEndDate = Some(LocalDate.of(2021, 4, 23)),
                     taxPeriodDueDate = Some(LocalDate.of(2021, 4, 23)),

@@ -99,6 +99,8 @@ class GetPenaltyDetailsServiceSpec extends SpecBase with LogCapturing with LPPDe
               lateSubmissions = Some(
                 Seq(
                   LateSubmission(
+                    lateSubmissionID = "001",
+                    taxPeriod = Some("23AA"),
                     taxPeriodStartDate = Some(LocalDate.of(2022, 1, 1)),
                     taxPeriodEndDate = Some(LocalDate.of(2022, 12, 31)),
                     taxPeriodDueDate = Some(LocalDate.of(2023, 2, 7)),
