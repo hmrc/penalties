@@ -107,7 +107,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
                 Seq(
                   LateSubmission(
                     lateSubmissionID = "001",
-                    taxPeriod = "23AA",
+                    taxPeriod = Some("23AA"),
                     taxPeriodStartDate = Some(LocalDate.of(2022, 1, 1)),
                     taxPeriodEndDate = Some(LocalDate.of(2022, 3, 31)),
                     taxPeriodDueDate = Some(LocalDate.of(2022, 5, 7)),
@@ -135,7 +135,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
                 Seq(
                   LateSubmission(
                     lateSubmissionID = "001",
-                    taxPeriod = "23AA",
+                    taxPeriod = Some("23AA"),
                     taxPeriodStartDate = Some(LocalDate.of(2022, 4, 1)),
                     taxPeriodEndDate = Some(LocalDate.of(2022, 6, 30)),
                     taxPeriodDueDate = Some(LocalDate.of(2022, 8, 7)),
@@ -182,7 +182,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
                 Seq(
                   LateSubmission(
                     lateSubmissionID = "001",
-                    taxPeriod = "23AA",
+                    taxPeriod = Some("23AA"),
                     taxPeriodStartDate = Some(LocalDate.of(2022, 1, 1)),
                     taxPeriodEndDate = Some(LocalDate.of(2022, 3, 31)),
                     taxPeriodDueDate = Some(LocalDate.of(2022, 5, 7)),
@@ -210,7 +210,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
                 Seq(
                   LateSubmission(
                     lateSubmissionID = "001",
-                    taxPeriod = "23AA",
+                    taxPeriod = Some("23AA"),
                     taxPeriodStartDate = Some(LocalDate.of(2022, 4, 1)),
                     taxPeriodEndDate = Some(LocalDate.of(2022, 6, 30)),
                     taxPeriodDueDate = Some(LocalDate.of(2022, 8, 7)),

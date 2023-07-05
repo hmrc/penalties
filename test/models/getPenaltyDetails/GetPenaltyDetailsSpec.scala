@@ -247,7 +247,7 @@ class GetPenaltyDetailsSpec extends SpecBase {
               Seq(
                 LateSubmission(
                   lateSubmissionID = "001",
-                  taxPeriod = "23AA",
+                  taxPeriod = Some("23AA"),
                   taxPeriodStartDate = Some(LocalDate.of(2022, 1, 1)),
                   taxPeriodEndDate = Some(LocalDate.of(2022, 12, 31)),
                   taxPeriodDueDate = Some(LocalDate.of(2023, 2, 7)),

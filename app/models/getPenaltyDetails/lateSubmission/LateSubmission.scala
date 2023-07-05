@@ -22,7 +22,7 @@ import java.time.LocalDate
 
 case class LateSubmission(
                            lateSubmissionID: String,
-                           taxPeriod: String,
+                           taxPeriod: Option[String],
                            taxPeriodStartDate: Option[LocalDate],
                            taxPeriodEndDate: Option[LocalDate],
                            taxPeriodDueDate: Option[LocalDate],
