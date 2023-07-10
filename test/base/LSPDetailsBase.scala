@@ -44,16 +44,18 @@ trait LSPDetailsBase {
     appealInformation = None,
     chargeDueDate = None,
     chargeOutstandingAmount = None,
-    chargeAmount = None
+    chargeAmount = None,
+    triggeringProcess = None,
+    chargeReference = None
   )
 
-  def lspPointDetailsWithAppealStatus(status: String):LSPDetails = lspPointDetails.copy(appealInformation = Some(Seq(AppealInformationType(appealStatus = Some(AppealStatusEnum.withName(status)), appealLevel = Some(AppealLevelEnum.HMRC)))), expiryReason = Some(ExpiryReasonEnum.Appeal), penaltyStatus = if(AppealStatusEnum.withName(status) == AppealStatusEnum.Upheld) LSPPenaltyStatusEnum.Inactive else lspPointDetails.penaltyStatus)
+  def lspPointDetailsWithAppealStatus(status: String): LSPDetails = lspPointDetails.copy(appealInformation = Some(Seq(AppealInformationType(appealStatus = Some(AppealStatusEnum.withName(status)), appealLevel = Some(AppealLevelEnum.HMRC), appealDescription = Some("Some value")))), expiryReason = Some(ExpiryReasonEnum.Appeal), penaltyStatus = if (AppealStatusEnum.withName(status) == AppealStatusEnum.Upheld) LSPPenaltyStatusEnum.Inactive else lspPointDetails.penaltyStatus)
 
   val lspThresholdDetails: LSPDetails = lspPointDetails.copy(penaltyCategory = LSPPenaltyCategoryEnum.Threshold, chargeAmount = Some(200), chargeOutstandingAmount = Some(200), chargeDueDate = Some(LocalDate.now()))
 
-  def lspThresholdDetailsWithAppealStatus(status: String):LSPDetails = lspThresholdDetails.copy(appealInformation = Some(Seq(AppealInformationType(appealStatus = Some(AppealStatusEnum.withName(status)), appealLevel = Some(AppealLevelEnum.HMRC)))), expiryReason = Some(ExpiryReasonEnum.Appeal), penaltyStatus = if(AppealStatusEnum.withName(status) == AppealStatusEnum.Upheld) LSPPenaltyStatusEnum.Inactive else lspPointDetails.penaltyStatus)
+  def lspThresholdDetailsWithAppealStatus(status: String): LSPDetails = lspThresholdDetails.copy(appealInformation = Some(Seq(AppealInformationType(appealStatus = Some(AppealStatusEnum.withName(status)), appealLevel = Some(AppealLevelEnum.HMRC), appealDescription = Some("Some value")))), expiryReason = Some(ExpiryReasonEnum.Appeal), penaltyStatus = if (AppealStatusEnum.withName(status) == AppealStatusEnum.Upheld) LSPPenaltyStatusEnum.Inactive else lspPointDetails.penaltyStatus)
 
   val lspChargeDetails: LSPDetails = lspPointDetails.copy(penaltyCategory = LSPPenaltyCategoryEnum.Charge, chargeAmount = Some(200), chargeOutstandingAmount = Some(200), chargeDueDate = Some(LocalDate.now()))
 
-  def lspChargeDetailsWithAppealStatus(status: String): LSPDetails = lspChargeDetails.copy(appealInformation = Some(Seq(AppealInformationType(appealStatus = Some(AppealStatusEnum.withName(status)), appealLevel = Some(AppealLevelEnum.HMRC)))), expiryReason = Some(ExpiryReasonEnum.Appeal), penaltyStatus = if(AppealStatusEnum.withName(status) == AppealStatusEnum.Upheld) LSPPenaltyStatusEnum.Inactive else lspPointDetails.penaltyStatus)
+  def lspChargeDetailsWithAppealStatus(status: String): LSPDetails = lspChargeDetails.copy(appealInformation = Some(Seq(AppealInformationType(appealStatus = Some(AppealStatusEnum.withName(status)), appealLevel = Some(AppealLevelEnum.HMRC), appealDescription = Some("Some value")))), expiryReason = Some(ExpiryReasonEnum.Appeal), penaltyStatus = if (AppealStatusEnum.withName(status) == AppealStatusEnum.Upheld) LSPPenaltyStatusEnum.Inactive else lspPointDetails.penaltyStatus)
 }

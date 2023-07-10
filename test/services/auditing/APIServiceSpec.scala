@@ -346,7 +346,9 @@ class APIServiceSpec extends SpecBase {
                   appealInformation = None,
                   chargeDueDate = None,
                   chargeOutstandingAmount = None,
-                  chargeAmount = None
+                  chargeAmount = None,
+                  triggeringProcess = None,
+                  chargeReference = None
                 )
               )
             )
@@ -419,7 +421,9 @@ class APIServiceSpec extends SpecBase {
                   appealInformation = None,
                   chargeDueDate = None,
                   chargeOutstandingAmount = None,
-                  chargeAmount = None
+                  chargeAmount = None,
+                  triggeringProcess = None,
+                  chargeReference = None
                 )
               )
             )
@@ -667,7 +671,9 @@ class APIServiceSpec extends SpecBase {
                 appealInformation = None,
                 chargeDueDate = None,
                 chargeOutstandingAmount = Some(200),
-                chargeAmount = None
+                chargeAmount = None,
+                triggeringProcess = None,
+                chargeReference = None
               ),
               LSPDetails(
                 penaltyNumber = "12345678",
@@ -683,7 +689,9 @@ class APIServiceSpec extends SpecBase {
                 appealInformation = None,
                 chargeDueDate = None,
                 chargeOutstandingAmount = None,
-                chargeAmount = None
+                chargeAmount = None,
+                triggeringProcess = None,
+                chargeReference = None
               )
             )
           )
@@ -757,7 +765,9 @@ class APIServiceSpec extends SpecBase {
                 appealInformation = None,
                 chargeDueDate = None,
                 chargeOutstandingAmount = Some(0),
-                chargeAmount = None
+                chargeAmount = None,
+                triggeringProcess = None,
+                chargeReference = None
               ),
               LSPDetails(
                 penaltyNumber = "12345678",
@@ -773,7 +783,9 @@ class APIServiceSpec extends SpecBase {
                 appealInformation = None,
                 chargeDueDate = None,
                 chargeOutstandingAmount = None,
-                chargeAmount = None
+                chargeAmount = None,
+                triggeringProcess = None,
+                chargeReference = None
               )
             )
           )

@@ -390,7 +390,8 @@ class AppealServiceSpec extends SpecBase {
         LatePaymentPenalty(Some(Seq(
           sampleLPP2.copy(appealInformation = Some(Seq(AppealInformationType(
             appealStatus = Some(AppealStatusEnum.Under_Appeal),
-            appealLevel = Some(AppealLevelEnum.HMRC)
+            appealLevel = Some(AppealLevelEnum.HMRC),
+            appealDescription = Some("Some value")
           )))),
           sampleLPP1
         )))),

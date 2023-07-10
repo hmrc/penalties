@@ -569,12 +569,15 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
           |       "appealInformation": [
           |         {
           |           "appealStatus": "99",
-          |           "appealLevel": "01"
+          |           "appealLevel": "01",
+          |         "appealDescription": "Some value"
           |         }
           |       ],
           |       "chargeDueDate": "2022-10-30",
           |       "chargeOutstandingAmount": 200,
-          |       "chargeAmount": 200
+          |       "chargeAmount": 200,
+          |       "triggeringProcess": "P123",
+          |       "chargeReference": "CHARGEREF1"
           |   }]
           | },
           | "latePaymentPenalty": {
@@ -587,7 +590,8 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
           |       "appealInformation":
           |       [{
           |         "appealStatus": "99",
-          |         "appealLevel": "01"
+          |         "appealLevel": "01",
+          |         "appealDescription": "Some value"
           |       }],
           |       "principalChargeBillingFrom": "2022-10-30",
           |       "principalChargeBillingTo": "2022-10-30",
@@ -606,7 +610,9 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
           |       "LPP2Percentage": 4.00,
           |       "LPP1LRPercentage": 2.00,
           |       "LPP1HRPercentage": 2.00,
-          |       "penaltyChargeDueDate": "2022-10-30"
+          |       "penaltyChargeDueDate": "2022-10-30",
+          |       "principalChargeDocNumber": "DOC1",
+          |       "principalChargeSubTransaction": "SUB1"
           |   }]
           | }
           |}

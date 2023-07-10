@@ -35,7 +35,11 @@ case class LSPDetails(
                        appealInformation: Option[Seq[AppealInformationType]],
                        chargeDueDate: Option[LocalDate],
                        chargeOutstandingAmount: Option[BigDecimal],
-                       chargeAmount: Option[BigDecimal]
+                       chargeAmount: Option[BigDecimal],
+                       //NOTE: these fields are required in 1812 spec but have been set to optional as they are only used by 3rd party APIs - START
+                       triggeringProcess: Option[String],
+                       chargeReference: Option[String]
+                       //END NOTE
                      )
 
 object LSPDetails {

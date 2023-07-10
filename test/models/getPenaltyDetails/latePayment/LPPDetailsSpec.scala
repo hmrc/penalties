@@ -48,15 +48,17 @@ class LPPDetailsSpec extends SpecBase {
       |   "appealInformation":
       |   [{
       |     "appealStatus": "99",
-      |     "appealLevel": "01"
+      |     "appealLevel": "01",
+      |     "appealDescription": "Some value"
       |   }],
-      |   "principalChargeDocNumber": "123456789012",
       |   "principalChargeMainTransaction": "4700",
       |   "principalChargeSubTransaction": "1174",
       |   "principalChargeBillingFrom": "2022-10-30",
       |   "principalChargeBillingTo": "2022-10-30",
       |   "principalChargeDueDate": "2022-10-30",
       |   "principalChargeMainTransaction": "4700",
+      |   "principalChargeDocNumber": "DOC1",
+      |   "principalChargeSubTransaction": "SUB1",
       |   "penaltyAmountAccruing": 144.21
       |}
       |""".stripMargin
@@ -86,12 +88,15 @@ class LPPDetailsSpec extends SpecBase {
       |   "appealInformation":
       |   [{
       |     "appealStatus": "99",
-      |     "appealLevel": "01"
+      |     "appealLevel": "01",
+      |     "appealDescription": "Some value"
       |   }],
       |   "principalChargeBillingFrom": "2022-10-30",
       |   "principalChargeBillingTo": "2022-10-30",
       |   "principalChargeDueDate": "2022-10-30",
       |   "principalChargeMainTransaction": "4700",
+      |   "principalChargeDocNumber": "DOC1",
+      |   "principalChargeSubTransaction": "SUB1",
       |   "penaltyAmountAccruing": 144.21
       |}
       |""".stripMargin
@@ -120,12 +125,15 @@ class LPPDetailsSpec extends SpecBase {
       |   "appealInformation":
       |   [{
       |     "appealStatus": "99",
-      |     "appealLevel": "01"
+      |     "appealLevel": "01",
+      |     "appealDescription": "Some value"
       |   }],
       |   "principalChargeBillingFrom": "2022-10-30",
       |   "principalChargeBillingTo": "2022-10-30",
       |   "principalChargeDueDate": "2022-10-30",
       |   "principalChargeMainTransaction": "4700",
+      |   "principalChargeDocNumber": "DOC1",
+      |   "principalChargeSubTransaction": "SUB1",
       |   "penaltyAmountAccruing": 144.21
       |}
       |""".stripMargin
@@ -137,7 +145,7 @@ class LPPDetailsSpec extends SpecBase {
     penaltyChargeReference = Some("12345678901234"),
     penaltyChargeCreationDate = Some(LocalDate.of(2022, 10, 30)),
     penaltyStatus = LPPPenaltyStatusEnum.Posted,
-    appealInformation = Some(Seq(AppealInformationType(appealStatus = Some(AppealStatusEnum.Unappealable), appealLevel = Some(AppealLevelEnum.HMRC)))),
+    appealInformation = Some(Seq(AppealInformationType(appealStatus = Some(AppealStatusEnum.Unappealable), appealLevel = Some(AppealLevelEnum.HMRC), appealDescription = Some("Some value")))),
     principalChargeBillingFrom = LocalDate.of(2022, 10, 30),
     principalChargeBillingTo = LocalDate.of(2022, 10, 30),
     principalChargeDueDate = LocalDate.of(2022, 10, 30),
@@ -155,7 +163,10 @@ class LPPDetailsSpec extends SpecBase {
     LPP1HRPercentage = Some(BigDecimal(2.00).setScale(2)),
     penaltyChargeDueDate = Some(LocalDate.of(2022, 10, 30)),
     principalChargeLatestClearing = None,
-    metadata = LPPDetailsMetadata(),
+    metadata = LPPDetailsMetadata(
+      principalChargeDocNumber = Some("DOC1"),
+      principalChargeSubTransaction = Some("SUB1")
+    ),
     penaltyAmountAccruing = BigDecimal(144.21),
     principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
   )
@@ -166,7 +177,7 @@ class LPPDetailsSpec extends SpecBase {
     penaltyChargeReference = Some("12345678901234"),
     penaltyChargeCreationDate = Some(LocalDate.of(2022, 10, 30)),
     penaltyStatus = LPPPenaltyStatusEnum.Posted,
-    appealInformation = Some(Seq(AppealInformationType(appealStatus = Some(AppealStatusEnum.Unappealable), appealLevel = Some(AppealLevelEnum.HMRC)))),
+    appealInformation = Some(Seq(AppealInformationType(appealStatus = Some(AppealStatusEnum.Unappealable), appealLevel = Some(AppealLevelEnum.HMRC), appealDescription = Some("Some value")))),
     principalChargeBillingFrom = LocalDate.of(2022, 10, 30),
     principalChargeBillingTo = LocalDate.of(2022, 10, 30),
     principalChargeDueDate = LocalDate.of(2022, 10, 30),
@@ -184,7 +195,10 @@ class LPPDetailsSpec extends SpecBase {
     LPP1HRPercentage = Some(BigDecimal(2.00).setScale(2)),
     penaltyChargeDueDate = Some(LocalDate.of(2022, 10, 30)),
     principalChargeLatestClearing = None,
-    metadata = LPPDetailsMetadata(),
+    metadata = LPPDetailsMetadata(
+      principalChargeDocNumber = Some("DOC1"),
+      principalChargeSubTransaction = Some("SUB1")
+    ),
     penaltyAmountAccruing = BigDecimal(144.21),
     principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
   )

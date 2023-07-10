@@ -16,7 +16,6 @@
 
 package controllers
 
-import config.AppConfig
 import config.featureSwitches.FeatureSwitching
 import connectors.getFinancialDetails.GetFinancialDetailsConnector
 import connectors.getPenaltyDetails.GetPenaltyDetailsConnector
@@ -46,7 +45,7 @@ class APIController @Inject()(auditService: AuditService,
                               getPenaltyDetailsConnector: GetPenaltyDetailsConnector,
                               dateHelper: DateHelper,
                               cc: ControllerComponents,
-                              filterService: FilterService)(implicit ec: ExecutionContext, val config: Configuration, appConfig: AppConfig) extends BackendController(cc) with FeatureSwitching {
+                              filterService: FilterService)(implicit ec: ExecutionContext, val config: Configuration) extends BackendController(cc) with FeatureSwitching {
 
   private val vrnRegex: Regex = "^[0-9]{1,9}$".r
 

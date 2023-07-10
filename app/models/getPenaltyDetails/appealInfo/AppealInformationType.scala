@@ -20,7 +20,8 @@ import play.api.libs.json.{JsValue, Json, Reads, Writes}
 
 case class AppealInformationType(
                                   appealStatus: Option[AppealStatusEnum.Value],
-                                  appealLevel: Option[AppealLevelEnum.Value]
+                                  appealLevel: Option[AppealLevelEnum.Value],
+                                  appealDescription: Option[String] //NOTE: this field is required in 1812 spec but has been set to optional as it is only used by 3rd party APIs
                                 )
 
 object AppealInformationType {
@@ -31,12 +32,13 @@ object AppealInformationType {
       val newAppealLevel: Option[AppealLevelEnum.Value] = parseAppealLevel(appealInformation)
       Json.obj(
         "appealStatus" -> appealInformation.appealStatus,
-        "appealLevel" -> newAppealLevel
+        "appealLevel" -> newAppealLevel,
+        "appealDescription" -> appealInformation.appealDescription
       )
     }
   }
 
-  private def parseAppealLevel(appealInformation: AppealInformationType) = {
+  private def parseAppealLevel(appealInformation: AppealInformationType): Option[AppealLevelEnum.Value] = {
     if (appealInformation.appealLevel.contains(AppealLevelEnum.Empty)
       && appealInformation.appealStatus.contains(AppealStatusEnum.Unappealable)) {
       Some(AppealLevelEnum.HMRC)

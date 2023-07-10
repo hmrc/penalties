@@ -62,12 +62,15 @@ trait ETMPWiremock {
       |       "appealInformation": [
       |         {
       |           "appealStatus": "99",
-      |           "appealLevel": " "
+      |           "appealLevel": " ",
+      |           "appealDescription": "Some value"
       |         }
       |       ],
       |       "chargeDueDate": "2022-10-30",
       |       "chargeOutstandingAmount": 200,
-      |       "chargeAmount": 200
+      |       "chargeAmount": 200,
+      |       "triggeringProcess": "P123",
+      |       "chargeReference": "CHARGEREF1"
       |   }]
       | },
       | "latePaymentPenalty": {
@@ -80,11 +83,14 @@ trait ETMPWiremock {
       |       "appealInformation":
       |       [{
       |         "appealStatus": "99",
-      |         "appealLevel": "01"
+      |         "appealLevel": "01",
+      |         "appealDescription": "Some value"
       |       }],
       |       "principalChargeBillingFrom": "2022-10-30",
       |       "principalChargeBillingTo": "2022-10-30",
       |       "principalChargeMainTransaction": "4700",
+      |       "principalChargeDocNumber": "DOC1",
+      |       "principalChargeSubTransaction": "SUB1",
       |       "principalChargeDueDate": "2022-10-30",
       |       "communicationsDate": "2022-10-30",
       |       "penaltyAmountPosted": 0,

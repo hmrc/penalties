@@ -45,7 +45,7 @@ class GetPenaltyDetailsServiceSpec extends SpecBase with LogCapturing with LPPDe
   implicit val hc: HeaderCarrier = HeaderCarrier()
   val mockGetPenaltyDetailsConnector: GetPenaltyDetailsConnector = mock(classOf[GetPenaltyDetailsConnector])
   class Setup(withRealConfig: Boolean = true) {
-    val mockConfig = mock(classOf[Configuration])
+    implicit val mockConfig = mock(classOf[Configuration])
     val mockServicesConfig: ServicesConfig = mock(classOf[ServicesConfig])
     val filterService: FilterService = injector.instanceOf(classOf[FilterService])
 
@@ -57,7 +57,7 @@ class GetPenaltyDetailsServiceSpec extends SpecBase with LogCapturing with LPPDe
     sys.props -= featureSwitching.ESTIMATED_LPP1_FILTER_END_DATE
 
     val mockAppConfig: AppConfig = new AppConfig(mockConfig, mockServicesConfig)
-    val service = new GetPenaltyDetailsService(mockGetPenaltyDetailsConnector, filterService)(implicitly, mockConfig, appConfig = if(withRealConfig) appConfig else mockAppConfig)
+    val service = new GetPenaltyDetailsService(mockGetPenaltyDetailsConnector, filterService)
 
     reset(mockGetPenaltyDetailsConnector)
     reset(mockConfig)
@@ -112,12 +112,14 @@ class GetPenaltyDetailsServiceSpec extends SpecBase with LogCapturing with LPPDe
               expiryReason = Some(ExpiryReasonEnum.Adjustment),
               appealInformation = Some(
                 Seq(
-                    AppealInformationType(appealStatus = Some(AppealStatusEnum.Unappealable), appealLevel = Some(AppealLevelEnum.HMRC))
+                    AppealInformationType(appealStatus = Some(AppealStatusEnum.Unappealable), appealLevel = Some(AppealLevelEnum.HMRC), appealDescription = Some("Some value"))
                 )
               ),
               chargeDueDate = Some(LocalDate.of(2022, 10, 30)),
               chargeOutstandingAmount = Some(200),
-              chargeAmount = Some(200)
+              chargeAmount = Some(200),
+              triggeringProcess = None,
+              chargeReference = None
             )
           )
         )
@@ -131,7 +133,7 @@ class GetPenaltyDetailsServiceSpec extends SpecBase with LogCapturing with LPPDe
               penaltyChargeReference = Some("123456789"),
               penaltyChargeCreationDate = Some(LocalDate.of(2022, 10, 30)),
               penaltyStatus = LPPPenaltyStatusEnum.Accruing,
-              appealInformation = Some(Seq(AppealInformationType(appealStatus = Some(AppealStatusEnum.Unappealable), appealLevel = Some(AppealLevelEnum.HMRC)))),
+              appealInformation = Some(Seq(AppealInformationType(appealStatus = Some(AppealStatusEnum.Unappealable), appealLevel = Some(AppealLevelEnum.HMRC), appealDescription = Some("Some value")))),
               principalChargeBillingFrom = LocalDate.of(2022, 10, 30),
               principalChargeBillingTo = LocalDate.of(2022, 10, 30),
               principalChargeDueDate = LocalDate.of(2022, 10, 30),

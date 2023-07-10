@@ -43,7 +43,9 @@ class PenaltiesFrontendService @Inject()() {
               oldLPPDetails.copy(
                 metadata = LPPDetailsMetadata(
                   mainTransaction = Some(oldLPPDetails.principalChargeMainTransaction),
-                  timeToPay = oldLPPDetails.metadata.timeToPay
+                  timeToPay = oldLPPDetails.metadata.timeToPay,
+                  principalChargeDocNumber = oldLPPDetails.metadata.principalChargeDocNumber,
+                  principalChargeSubTransaction = oldLPPDetails.metadata.principalChargeSubTransaction
                 )
               )
             }
@@ -51,7 +53,9 @@ class PenaltiesFrontendService @Inject()() {
               oldLPPDetails.copy(
                 metadata = LPPDetailsMetadata(
                   mainTransaction = Some(oldLPPDetails.principalChargeMainTransaction),
-                  timeToPay = oldLPPDetails.metadata.timeToPay
+                  timeToPay = oldLPPDetails.metadata.timeToPay,
+                  principalChargeDocNumber = oldLPPDetails.metadata.principalChargeDocNumber,
+                  principalChargeSubTransaction = oldLPPDetails.metadata.principalChargeSubTransaction
                 )
               )
             }
@@ -67,7 +71,9 @@ class PenaltiesFrontendService @Inject()() {
                 metadata = LPPDetailsMetadata(
                   mainTransaction = penaltyToCopy.get.lineItemDetails.get.head.mainTransaction,
                   outstandingAmount = penaltyToCopy.get.documentOutstandingAmount,
-                  timeToPay = oldLPPDetails.metadata.timeToPay
+                  timeToPay = oldLPPDetails.metadata.timeToPay,
+                  principalChargeDocNumber = oldLPPDetails.metadata.principalChargeDocNumber,
+                  principalChargeSubTransaction = oldLPPDetails.metadata.principalChargeSubTransaction
                 )
               )
             }

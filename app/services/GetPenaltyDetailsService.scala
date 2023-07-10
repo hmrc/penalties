@@ -16,7 +16,6 @@
 
 package services
 
-import config.AppConfig
 import config.featureSwitches.FeatureSwitching
 import connectors.getPenaltyDetails.GetPenaltyDetailsConnector
 import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser._
@@ -29,7 +28,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class GetPenaltyDetailsService @Inject()(getPenaltyDetailsConnector: GetPenaltyDetailsConnector,
                                          filterService: FilterService)
-                                        (implicit ec: ExecutionContext, val config: Configuration, appConfig: AppConfig) extends FeatureSwitching {
+                                        (implicit ec: ExecutionContext, val config: Configuration) extends FeatureSwitching {
 
   def getDataFromPenaltyServiceForVATCVRN(vrn: String)(implicit hc: HeaderCarrier): Future[GetPenaltyDetailsResponse] = {
     val startOfLogMsg: String = "[GetPenaltyDetailsService][getDataFromPenaltyServiceForVATCVRN]"

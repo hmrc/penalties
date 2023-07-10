@@ -150,7 +150,11 @@ object LPPDetails extends JsonUtils {
 case class LPPDetailsMetadata(
                                mainTransaction: Option[MainTransactionEnum.Value] = None,
                                outstandingAmount: Option[BigDecimal] = None,
-                               timeToPay: Option[Seq[TimeToPay]] = None
+                               timeToPay: Option[Seq[TimeToPay]] = None,
+                               //NOTE: these fields are required in 1812 spec but have been set to optional as they are only used by 3rd party APIs - START
+                               principalChargeDocNumber: Option[String] = None,
+                               principalChargeSubTransaction: Option[String] = None
+                               //END NOTE
                              )
 
 object LPPDetailsMetadata {

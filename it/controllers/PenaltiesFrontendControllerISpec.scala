@@ -69,6 +69,8 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
       |          "penaltyChargeCreationDate": "2022-10-30",
       |          "penaltyChargeDueDate": "2022-10-30",
       |          "principalChargeReference": "XM002610011594",
+      |          "principalChargeDocNumber": "DOC1",
+      |          "principalChargeSubTransaction": "SUB1",
       |          "principalChargeBillingFrom": "2022-10-30",
       |          "principalChargeBillingTo": "2022-10-30",
       |          "principalChargeDueDate": "2022-10-30",
@@ -113,6 +115,7 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
       |       "penaltyCreationDate": "2022-10-30",
       |       "penaltyExpiryDate": "2022-10-30",
       |       "communicationsDate": "2022-10-30",
+      |       "triggeringProcess": "P123",
       |       "lateSubmissions": [
       |         {
       |           "lateSubmissionID": "001",
@@ -127,7 +130,8 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
       |       "appealInformation": [
       |         {
       |           "appealStatus": "99",
-      |           "appealLevel": " "
+      |           "appealLevel": " ",
+      |           "appealDescription": "Some value"
       |         }
       |       ]
       |     }
@@ -160,10 +164,13 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
       |         "mainTransaction": "4703",
       |         "LPP2Percentage": 4,
       |         "LPP1LRCalculationAmount": 99.99,
+      |         "principalChargeDocNumber": "DOC1",
+      |         "principalChargeSubTransaction": "SUB1",
       |         "appealInformation": [
       |           {
       |             "appealStatus": "99",
-      |             "appealLevel": " "
+      |             "appealLevel": " ",
+      |             "appealDescription": "Some value"
       |           }
       |         ],
       |         "principalChargeMainTransaction": "4700",
@@ -203,6 +210,7 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
       |       "penaltyCreationDate": "2022-10-30",
       |       "penaltyExpiryDate": "2022-10-30",
       |       "communicationsDate": "2022-10-30",
+      |       "triggeringProcess": "P123",
       |       "lateSubmissions": [
       |         {
       |           "lateSubmissionID": "001",
@@ -217,7 +225,8 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
       |       "appealInformation": [
       |         {
       |           "appealStatus": "99",
-      |           "appealLevel": "01"
+      |           "appealLevel": "01",
+      |           "appealDescription": "Some value"
       |         }
       |       ]
       |     }
@@ -240,6 +249,8 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
       |         "penaltyCategory": "LPP1",
       |         "principalChargeReference": "XM002610011594",
       |         "principalChargeBillingFrom": "2022-10-30",
+      |         "principalChargeDocNumber": "DOC1",
+      |         "principalChargeSubTransaction": "SUB1",
       |         "penaltyStatus": "A",
       |         "mainTransaction": "4700",
       |         "LPP2Percentage": 4,
@@ -247,7 +258,8 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
       |         "appealInformation": [
       |           {
       |             "appealStatus": "99",
-      |             "appealLevel": "01"
+      |             "appealLevel": "01",
+      |             "appealDescription": "Some value"
       |           }
       |         ],
       |         "timeToPay": [
@@ -308,6 +320,8 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
       |                "LPP2Percentage": 4,
       |                "LPP1LRCalculationAmount": 99.99,
       |                "principalChargeMainTransaction": "4700",
+      |                "principalChargeDocNumber": "DOC1",
+      |                "principalChargeSubTransaction": "SUB1",
       |                "timeToPay": [
       |                 {
       |                   "TTPStartDate": "2022-01-01",
@@ -325,7 +339,6 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
   s"return OK (${Status.OK})" when {
 
     "the get penalty details call succeeds and the get financial details call succeeds (combining the data together)" in {
-
       mockStubResponseForGetPenaltyDetails(Status.OK, "123456789", body = Some(getPenaltyDetailsJson.toString()))
       mockStubResponseForGetFinancialDetails(Status.OK,
         s"VRN/123456789/VATC?$financialDataQueryParam")
@@ -473,12 +486,15 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
         |            "appealInformation":[
         |               {
         |                  "appealStatus":"99",
-        |                  "appealLevel":"01"
+        |                  "appealLevel":"01",
+        |                  "appealDescription": "Some value"
         |               }
         |            ],
         |            "chargeDueDate":"2022-10-30",
         |            "chargeOutstandingAmount":200,
-        |            "chargeAmount":200
+        |            "chargeAmount":200,
+        |            "triggeringProcess": "P123",
+        |            "chargeReference": "CHARGEREF1"
         |         }
         |      ]
         |   },
@@ -507,12 +523,15 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
         |            "appealInformation":[
         |               {
         |                  "appealStatus":"99",
-        |                  "appealLevel":"01"
+        |                  "appealLevel":"01",
+        |                  "appealDescription": "Some value"
         |               }
         |            ],
         |            "LPP1LRCalculationAmount":99.99,
         |            "principalChargeMainTransaction": "4700",
-        |            "penaltyAmountOutstanding":0
+        |            "penaltyAmountOutstanding":0,
+        |            "principalChargeDocNumber": "DOC1",
+        |            "principalChargeSubTransaction": "SUB1"
         |         }
         |      ]
         |   }
@@ -562,12 +581,15 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
         |            "appealInformation":[
         |               {
         |                  "appealStatus":"99",
-        |                  "appealLevel":"01"
+        |                  "appealLevel":"01",
+        |                  "appealDescription": "Some value"
         |               }
         |            ],
         |            "chargeDueDate":"2022-10-30",
         |            "chargeOutstandingAmount":200,
-        |            "chargeAmount":200
+        |            "chargeAmount":200,
+        |            "triggeringProcess": "P123",
+        |            "chargeReference": "CHARGEREF1"
         |         }
         |      ]
         |   },
@@ -593,12 +615,15 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
         |            "penaltyAmountAccruing": 99.99,
         |            "principalChargeMainTransaction": "4700",
         |            "principalChargeBillingFrom":"2022-10-30",
+        |            "principalChargeDocNumber": "DOC1",
+        |            "principalChargeSubTransaction": "SUB1",
         |            "mainTransaction":"4700",
         |            "LPP2Percentage":4,
         |            "appealInformation":[
         |               {
         |                  "appealStatus":"99",
-        |                  "appealLevel":"01"
+        |                  "appealLevel":"01",
+        |                  "appealDescription": "Some value"
         |               }
         |            ],
         |            "LPP1LRCalculationAmount":99.99,
