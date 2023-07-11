@@ -81,13 +81,15 @@ class GetPenaltyDetailsServiceISpec extends IntegrationSpecCommonBase with ETMPW
               appealInformation = Some(
                 Seq(
                   AppealInformationType(
-                    appealStatus = Some(AppealStatusEnum.Unappealable), appealLevel = Some(AppealLevelEnum.Empty)
+                    appealStatus = Some(AppealStatusEnum.Unappealable), appealLevel = Some(AppealLevelEnum.Empty), appealDescription = Some("Some value")
                   )
                 )
               ),
               chargeDueDate = Some(LocalDate.of(2022, 10, 30)),
               chargeOutstandingAmount = Some(200),
-              chargeAmount = Some(200)
+              chargeAmount = Some(200),
+              triggeringProcess = Some("P123"),
+              chargeReference = Some("CHARGEREF1")
             )
           )
         )
@@ -101,7 +103,7 @@ class GetPenaltyDetailsServiceISpec extends IntegrationSpecCommonBase with ETMPW
               penaltyChargeReference = Some("1234567890"),
               penaltyChargeCreationDate = Some(LocalDate.of(2022, 10, 30)),
               penaltyStatus = LPPPenaltyStatusEnum.Accruing,
-              appealInformation = Some(Seq(AppealInformationType(appealStatus = Some(AppealStatusEnum.Unappealable), appealLevel = Some(AppealLevelEnum.HMRC)))),
+              appealInformation = Some(Seq(AppealInformationType(appealStatus = Some(AppealStatusEnum.Unappealable), appealLevel = Some(AppealLevelEnum.HMRC), appealDescription = Some("Some value")))),
               principalChargeBillingFrom = LocalDate.of(2022, 10, 30),
               principalChargeBillingTo = LocalDate.of(2022, 10, 30),
               principalChargeDueDate = LocalDate.of(2022, 10, 30),
@@ -123,7 +125,9 @@ class GetPenaltyDetailsServiceISpec extends IntegrationSpecCommonBase with ETMPW
                 timeToPay = Some(Seq(TimeToPay(
                   TTPStartDate = Some(LocalDate.of(2022, 1, 1)),
                   TTPEndDate = Some(LocalDate.of(2022, 12, 31))
-                )))
+                ))),
+                principalChargeDocNumber = Some("DOC1"),
+                principalChargeSubTransaction = Some("SUB1")
               ),
               penaltyAmountAccruing = BigDecimal(99.99),
               principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge

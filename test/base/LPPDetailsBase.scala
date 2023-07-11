@@ -29,7 +29,7 @@ trait LPPDetailsBase {
     penaltyChargeReference = Some("123456789"),
     penaltyChargeCreationDate = Some(LocalDate.of(2022, 10, 30)),
     penaltyStatus = LPPPenaltyStatusEnum.Accruing,
-    appealInformation = Some(Seq(AppealInformationType(appealStatus = Some(AppealStatusEnum.Unappealable), appealLevel = Some(AppealLevelEnum.HMRC)))),
+    appealInformation = Some(Seq(AppealInformationType(appealStatus = Some(AppealStatusEnum.Unappealable), appealLevel = Some(AppealLevelEnum.HMRC), appealDescription = Some("Some value")))),
     principalChargeBillingFrom = LocalDate.of(2022, 10, 30),
     principalChargeBillingTo = LocalDate.of(2022, 10, 30),
     principalChargeDueDate = LocalDate.now(),
@@ -63,7 +63,7 @@ trait LPPDetailsBase {
     penaltyChargeReference = Some("123456789"),
     penaltyChargeCreationDate = Some(LocalDate.of(2022, 10, 30)),
     penaltyStatus = LPPPenaltyStatusEnum.Accruing,
-    appealInformation = Some(Seq(AppealInformationType(appealStatus = Some(AppealStatusEnum.Unappealable), appealLevel = Some(AppealLevelEnum.HMRC)))),
+    appealInformation = Some(Seq(AppealInformationType(appealStatus = Some(AppealStatusEnum.Unappealable), appealLevel = Some(AppealLevelEnum.HMRC), appealDescription = Some("Some value")))),
     principalChargeBillingFrom = LocalDate.of(2022, 10, 30),
     principalChargeBillingTo = LocalDate.of(2022, 10, 30),
     principalChargeDueDate = LocalDate.now(),
@@ -95,7 +95,7 @@ trait LPPDetailsBase {
   val lpp1PrincipalChargeDueYesterdayPosted: LPPDetails = lpp1PrincipalChargeDueToday.copy(principalChargeDueDate = LocalDate.now().minusDays(1), penaltyStatus = LPPPenaltyStatusEnum.Posted)
   val lpp1PrincipalChargeDueTomorrow: LPPDetails = lpp1PrincipalChargeDueToday.copy(principalChargeDueDate = LocalDate.now().plusDays(1))
 
-  def lpp2WithAppealStatus(status: String): LPPDetails = lpp2.copy(appealInformation = Some(Seq(AppealInformationType(appealStatus = Some(AppealStatusEnum.withName(status)), appealLevel = Some(AppealLevelEnum.HMRC)))))
+  def lpp2WithAppealStatus(status: String): LPPDetails = lpp2.copy(appealInformation = Some(Seq(AppealInformationType(appealStatus = Some(AppealStatusEnum.withName(status)), appealLevel = Some(AppealLevelEnum.HMRC), appealDescription = Some("Some value")))))
 
-  def lpp1PrincipalChargeDueTodayAppealStatus(status: String): LPPDetails = lpp1PrincipalChargeDueToday.copy(appealInformation = Some(Seq(AppealInformationType(appealStatus = Some(AppealStatusEnum.withName(status)), appealLevel = Some(AppealLevelEnum.HMRC)))))
+  def lpp1PrincipalChargeDueTodayAppealStatus(status: String): LPPDetails = lpp1PrincipalChargeDueToday.copy(appealInformation = Some(Seq(AppealInformationType(appealStatus = Some(AppealStatusEnum.withName(status)), appealLevel = Some(AppealLevelEnum.HMRC), appealDescription = Some("Some value")))))
 }

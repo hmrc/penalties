@@ -49,12 +49,15 @@ class LSPDetailsSpec extends SpecBase {
       |   "appealInformation": [
       |      {
       |        "appealStatus": "A",
-      |        "appealLevel": "01"
+      |        "appealLevel": "01",
+      |        "appealDescription": "Some value"
       |      }
       |   ],
       |   "chargeDueDate": "2022-10-30",
       |   "chargeOutstandingAmount": 200,
-      |   "chargeAmount": 200
+      |   "chargeAmount": 200,
+      |   "triggeringProcess": "P123",
+      |   "chargeReference": "CHARGEREF1"
       |}
       |""".stripMargin)
 
@@ -83,7 +86,9 @@ class LSPDetailsSpec extends SpecBase {
       |   ],
       |   "chargeDueDate": "2022-10-30",
       |   "chargeOutstandingAmount": 200,
-      |   "chargeAmount": 200
+      |   "chargeAmount": 200,
+      |   "triggeringProcess": "P123",
+      |   "chargeReference": "CHARGEREF1"
       |}
       |""".stripMargin)
 
@@ -112,12 +117,15 @@ class LSPDetailsSpec extends SpecBase {
       |   "appealInformation": [
       |      {
       |        "appealStatus": "99",
-      |        "appealLevel": " "
+      |        "appealLevel": " ",
+      |        "appealDescription": "Some value"
       |      }
       |   ],
       |   "chargeDueDate": "2022-10-30",
       |   "chargeOutstandingAmount": 200,
-      |   "chargeAmount": 200
+      |   "chargeAmount": 200,
+      |   "triggeringProcess": "P123",
+      |   "chargeReference": "CHARGEREF1"
       |}
       |""".stripMargin)
 
@@ -147,12 +155,15 @@ class LSPDetailsSpec extends SpecBase {
       |   "appealInformation": [
       |      {
       |        "appealStatus": "A",
-      |        "appealLevel": "01"
+      |        "appealLevel": "01",
+      |        "appealDescription": "Some value"
       |      }
       |   ],
       |   "chargeDueDate": "2022-10-30",
       |   "chargeOutstandingAmount": 200,
-      |   "chargeAmount": 200
+      |   "chargeAmount": 200,
+      |   "triggeringProcess": "P123",
+      |   "chargeReference": "CHARGEREF1"
       |}
       |""".stripMargin
   )
@@ -182,12 +193,14 @@ class LSPDetailsSpec extends SpecBase {
     expiryReason = Some(ExpiryReasonEnum.Adjustment),
     appealInformation = Some(
       Seq(
-        AppealInformationType(appealStatus = Some(AppealStatusEnum.Under_Appeal), appealLevel = Some(AppealLevelEnum.HMRC))
+        AppealInformationType(appealStatus = Some(AppealStatusEnum.Under_Appeal), appealLevel = Some(AppealLevelEnum.HMRC), appealDescription = Some("Some value"))
       )
     ),
     chargeDueDate = Some(LocalDate.of(2022, 10, 30)),
     chargeOutstandingAmount = Some(200),
-    chargeAmount = Some(200)
+    chargeAmount = Some(200),
+    triggeringProcess = Some("P123"),
+    chargeReference = Some("CHARGEREF1")
   )
 
   val modelWithBlankExpiryReason: LSPDetails = LSPDetails(
@@ -216,7 +229,9 @@ class LSPDetailsSpec extends SpecBase {
     appealInformation = None,
     chargeDueDate = Some(LocalDate.of(2022, 10, 30)),
     chargeOutstandingAmount = Some(200),
-    chargeAmount = Some(200)
+    chargeAmount = Some(200),
+    triggeringProcess = Some("P123"),
+    chargeReference = Some("CHARGEREF1")
   )
 
   val modelWithBlankAppealLevel: LSPDetails = LSPDetails(
@@ -244,12 +259,14 @@ class LSPDetailsSpec extends SpecBase {
     expiryReason = None,
     appealInformation = Some(
       Seq(
-        AppealInformationType(appealStatus = Some(AppealStatusEnum.Unappealable), appealLevel = Some(AppealLevelEnum.Empty))
+        AppealInformationType(appealStatus = Some(AppealStatusEnum.Unappealable), appealLevel = Some(AppealLevelEnum.Empty), appealDescription = Some("Some value"))
       )
     ),
     chargeDueDate = Some(LocalDate.of(2022, 10, 30)),
     chargeOutstandingAmount = Some(200),
-    chargeAmount = Some(200)
+    chargeAmount = Some(200),
+    triggeringProcess = Some("P123"),
+    chargeReference = Some("CHARGEREF1")
   )
 
   "be readable from JSON" in {
@@ -306,7 +323,9 @@ class LSPDetailsSpec extends SpecBase {
         |   ],
         |   "chargeDueDate": "2022-10-30",
         |   "chargeOutstandingAmount": 200,
-        |   "chargeAmount": 200
+        |   "chargeAmount": 200,
+        |   "triggeringProcess": "P123",
+        |   "chargeReference": "CHARGEREF1"
         |}
         |""".stripMargin)
     val result: JsValue = Json.toJson(modelWithBlankExpiryReason)(LSPDetails.customWrites)
@@ -339,12 +358,15 @@ class LSPDetailsSpec extends SpecBase {
         |   "appealInformation": [
         |      {
         |        "appealStatus": "99",
-        |        "appealLevel": "01"
+        |        "appealLevel": "01",
+        |        "appealDescription": "Some value"
         |      }
         |   ],
         |   "chargeDueDate": "2022-10-30",
         |   "chargeOutstandingAmount": 200,
-        |   "chargeAmount": 200
+        |   "chargeAmount": 200,
+        |   "triggeringProcess": "P123",
+        |   "chargeReference": "CHARGEREF1"
         |}
         |""".stripMargin)
     val result: JsValue = Json.toJson(modelWithBlankAppealLevel)(LSPDetails.customWrites)

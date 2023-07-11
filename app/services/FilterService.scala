@@ -25,10 +25,9 @@ import play.api.libs.json.{JsString, JsValue, Json}
 import utils.Logger.logger
 
 import javax.inject.Inject
-import scala.concurrent.ExecutionContext
 import scala.util.Try
 
-class FilterService @Inject()()(implicit ec: ExecutionContext, appConfig: AppConfig) {
+class FilterService @Inject()()(implicit appConfig: AppConfig) {
 
   def tryJsonParseOrJsString(body: String): JsValue = {
     Try(Json.parse(body)).getOrElse(JsString(body))

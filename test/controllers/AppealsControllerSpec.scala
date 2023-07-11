@@ -120,7 +120,9 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
               appealInformation = None,
               chargeDueDate = None,
               chargeOutstandingAmount = None,
-              chargeAmount = None
+              chargeAmount = None,
+              triggeringProcess = None,
+              chargeReference = None
             ),
             LSPDetails(
               penaltyNumber = "123456788",
@@ -148,7 +150,9 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
               appealInformation = None,
               chargeDueDate = None,
               chargeOutstandingAmount = None,
-              chargeAmount = None
+              chargeAmount = None,
+              triggeringProcess = None,
+              chargeReference = None
             )
           )
         )
@@ -195,7 +199,9 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
               appealInformation = None,
               chargeDueDate = None,
               chargeOutstandingAmount = None,
-              chargeAmount = None
+              chargeAmount = None,
+              triggeringProcess = None,
+              chargeReference = None
             ),
             LSPDetails(
               penaltyNumber = "123456788",
@@ -223,7 +229,9 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
               appealInformation = None,
               chargeDueDate = None,
               chargeOutstandingAmount = None,
-              chargeAmount = None
+              chargeAmount = None,
+              triggeringProcess = None,
+              chargeReference = None
             )
           )
         )

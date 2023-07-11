@@ -412,12 +412,15 @@ class APIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock wit
             |       "appealInformation": [
             |         {
             |           "appealStatus": "99",
-            |           "appealLevel": "01"
+            |           "appealLevel": "01",
+            |           "appealDescription": "Some value"
             |         }
             |       ],
             |       "chargeDueDate": "2022-10-30",
             |       "chargeOutstandingAmount": 200,
-            |       "chargeAmount": 200
+            |       "chargeAmount": 200,
+            |       "triggeringProcess": "P123",
+            |       "chargeReference": "CHARGEREF1"
             |   }]
             | },
             | "latePaymentPenalty": {
@@ -430,11 +433,14 @@ class APIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock wit
             |       "appealInformation":
             |       [{
             |         "appealStatus": "99",
-            |         "appealLevel": "01"
+            |         "appealLevel": "01",
+            |         "appealDescription": "Some value"
             |       }],
             |       "principalChargeBillingFrom": "2022-10-30",
             |       "principalChargeBillingTo": "2022-10-30",
             |       "principalChargeDueDate": "2022-10-30",
+            |       "principalChargeDocNumber": "DOC1",
+            |       "principalChargeSubTransaction": "SUB1",
             |       "communicationsDate": "2022-10-30",
             |       "penaltyAmountAccruing": 1001.45,
             |       "principalChargeMainTransaction" : "4700",

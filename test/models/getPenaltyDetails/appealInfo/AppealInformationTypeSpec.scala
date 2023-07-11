@@ -25,7 +25,8 @@ class AppealInformationTypeSpec extends SpecBase {
     """
       |{
       |    "appealStatus": "A",
-      |    "appealLevel": "01"
+      |    "appealLevel": "01",
+      |    "appealDescription": "Some value"
       |}
       |""".stripMargin)
 
@@ -33,7 +34,8 @@ class AppealInformationTypeSpec extends SpecBase {
     """
       |{
       |    "appealStatus": "99",
-      |    "appealLevel": " "
+      |    "appealLevel": " ",
+      |    "appealDescription": "Some value"
       |}
       |""".stripMargin)
 
@@ -41,18 +43,21 @@ class AppealInformationTypeSpec extends SpecBase {
     """
       |{
       |    "appealStatus": "99",
-      |    "appealLevel": "01"
+      |    "appealLevel": "01",
+      |    "appealDescription": "Some value"
       |}
       |""".stripMargin)
 
   val appealInfoAsModel: AppealInformationType = AppealInformationType(
     appealStatus = Some(AppealStatusEnum.Under_Appeal),
-    appealLevel = Some(AppealLevelEnum.HMRC)
+    appealLevel = Some(AppealLevelEnum.HMRC),
+    appealDescription = Some("Some value")
   )
 
   val appealInfoAsModelWithDefaultedAppealLevel: AppealInformationType = AppealInformationType(
     appealStatus = Some(AppealStatusEnum.Unappealable),
-    appealLevel = Some(AppealLevelEnum.Empty)
+    appealLevel = Some(AppealLevelEnum.Empty),
+    appealDescription = Some("Some value")
   )
 
   "AppealInformationType" should {

@@ -73,6 +73,7 @@ class GetPenaltyDetailsConnectorISpec extends IntegrationSpecCommonBase with ETM
             |          "chargeAmount": 200.00,
             |          "chargeOutstandingAmount": 200.00,
             |          "communicationsDate": "2021-04-23",
+            |          "triggeringProcess": "P123",
             |          "lateSubmissions": [
             |            {
             |              "lateSubmissionID": "001",
@@ -127,13 +128,16 @@ class GetPenaltyDetailsConnectorISpec extends IntegrationSpecCommonBase with ETM
                 Seq(
                   AppealInformationType(
                     appealStatus = Some(AppealStatusEnum.Unappealable),
-                    appealLevel = None
+                    appealLevel = None,
+                    appealDescription = None
                   )
                 )
               ),
               chargeDueDate = None,
               chargeOutstandingAmount = Some(200.00),
-              chargeAmount = Some(200.00)
+              chargeAmount = Some(200.00),
+              triggeringProcess = Some("P123"),
+              chargeReference = None
             )
           )
         )),

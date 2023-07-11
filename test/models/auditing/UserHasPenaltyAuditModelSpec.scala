@@ -71,7 +71,9 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
           appealInformation = None,
           chargeDueDate = Some(LocalDate.of(2022, 1, 1)),
           chargeOutstandingAmount = Some(200),
-          chargeAmount = Some(200)
+          chargeAmount = Some(200),
+          triggeringProcess = None,
+          chargeReference = None
         ),
         LSPDetails(
           penaltyNumber = "12345677",
@@ -87,7 +89,9 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
           appealInformation = None,
           chargeDueDate = Some(LocalDate.of(2022, 1, 1)),
           chargeOutstandingAmount = Some(200),
-          chargeAmount = Some(200)
+          chargeAmount = Some(200),
+          triggeringProcess = None,
+          chargeReference = None
         )
       )
     ))
@@ -126,7 +130,9 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
           appealInformation = None,
           chargeDueDate = None,
           chargeOutstandingAmount = None,
-          chargeAmount = None
+          chargeAmount = None,
+          triggeringProcess = None,
+          chargeReference = None
         ),
         LSPDetails(
           penaltyNumber = "12345677",
@@ -142,7 +148,9 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
           appealInformation = None,
           chargeDueDate = None,
           chargeOutstandingAmount = None,
-          chargeAmount = None
+          chargeAmount = None,
+          triggeringProcess = None,
+          chargeReference = None
         )
       )
     ))
@@ -181,7 +189,9 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
           appealInformation = None,
           chargeDueDate = None,
           chargeOutstandingAmount = Some(100),
-          chargeAmount = Some(200)
+          chargeAmount = Some(200),
+          triggeringProcess = None,
+          chargeReference = None
         ),
         LSPDetails(
           penaltyNumber = "12345677",
@@ -197,7 +207,9 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
           appealInformation = None,
           chargeDueDate = None,
           chargeOutstandingAmount = Some(0),
-          chargeAmount = Some(200)
+          chargeAmount = Some(200),
+          triggeringProcess = None,
+          chargeReference = None
         )
       )
     ))
@@ -236,7 +248,9 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
           appealInformation = None,
           chargeDueDate = None,
           chargeOutstandingAmount = None,
-          chargeAmount = None
+          chargeAmount = None,
+          triggeringProcess = None,
+          chargeReference = None
         ),
         LSPDetails(
           penaltyNumber = "12345678",
@@ -252,7 +266,9 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
           appealInformation = None,
           chargeDueDate = None,
           chargeOutstandingAmount = None,
-          chargeAmount = None
+          chargeAmount = None,
+          triggeringProcess = None,
+          chargeReference = None
         ),
         LSPDetails(
           penaltyNumber = "12345677",
@@ -268,7 +284,9 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
           appealInformation = None,
           chargeDueDate = None,
           chargeOutstandingAmount = None,
-          chargeAmount = None
+          chargeAmount = None,
+          triggeringProcess = None,
+          chargeReference = None
         )
       )
     ))
@@ -305,10 +323,12 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
           lateSubmissions = None,
           expiryReason = None,
           appealInformation = Some(Seq(
-            AppealInformationType(appealStatus = Some(AppealStatusEnum.Under_Appeal), appealLevel = Some(AppealLevelEnum.HMRC)))),
+            AppealInformationType(appealStatus = Some(AppealStatusEnum.Under_Appeal), appealLevel = Some(AppealLevelEnum.HMRC), appealDescription = Some("Some value")))),
           chargeDueDate = None,
           chargeOutstandingAmount = None,
-          chargeAmount = None
+          chargeAmount = None,
+          triggeringProcess = None,
+          chargeReference = None
         ),
         LSPDetails(
           penaltyNumber = "12345677",
@@ -322,10 +342,12 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
           lateSubmissions = None,
           expiryReason = None,
           appealInformation = Some(Seq(
-            AppealInformationType(appealStatus = Some(AppealStatusEnum.Under_Appeal), appealLevel = Some(AppealLevelEnum.HMRC)))),
+            AppealInformationType(appealStatus = Some(AppealStatusEnum.Under_Appeal), appealLevel = Some(AppealLevelEnum.HMRC), appealDescription = Some("Some value")))),
           chargeDueDate = None,
           chargeOutstandingAmount = None,
-          chargeAmount = None
+          chargeAmount = None,
+          triggeringProcess = None,
+          chargeReference = None
         )
       )
     ))
@@ -362,10 +384,12 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
           lateSubmissions = None,
           expiryReason = None,
           appealInformation = Some(Seq(
-            AppealInformationType(appealStatus = Some(AppealStatusEnum.Upheld), appealLevel = Some(AppealLevelEnum.HMRC)))),
+            AppealInformationType(appealStatus = Some(AppealStatusEnum.Upheld), appealLevel = Some(AppealLevelEnum.HMRC), appealDescription = Some("Some value")))),
           chargeDueDate = None,
           chargeOutstandingAmount = None,
-          chargeAmount = None
+          chargeAmount = None,
+          triggeringProcess = None,
+          chargeReference = None
         ),
         LSPDetails(
           penaltyNumber = "12345677",
@@ -379,11 +403,13 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
           lateSubmissions = None,
           expiryReason = None,
           appealInformation = Some(Seq(
-            AppealInformationType(appealStatus = Some(AppealStatusEnum.Upheld), appealLevel = Some(AppealLevelEnum.HMRC)))
+            AppealInformationType(appealStatus = Some(AppealStatusEnum.Upheld), appealLevel = Some(AppealLevelEnum.HMRC), appealDescription = Some("Some value")))
           ),
           chargeDueDate = None,
           chargeOutstandingAmount = None,
-          chargeAmount = None
+          chargeAmount = None,
+          triggeringProcess = None,
+          chargeReference = None
         )
       )
     ))
@@ -422,7 +448,9 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
           appealInformation = None,
           chargeDueDate = Some(LocalDate.of(2022, 1, 1)),
           chargeOutstandingAmount = Some(0),
-          chargeAmount = Some(200)
+          chargeAmount = Some(200),
+          triggeringProcess = None,
+          chargeReference = None
         ),
         LSPDetails(
           penaltyNumber = "12345678",
@@ -437,12 +465,14 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
           expiryReason = None,
           appealInformation = Some(
             Seq(
-              AppealInformationType(appealStatus = Some(AppealStatusEnum.Upheld), appealLevel = Some(AppealLevelEnum.HMRC))
+              AppealInformationType(appealStatus = Some(AppealStatusEnum.Upheld), appealLevel = Some(AppealLevelEnum.HMRC), appealDescription = Some("Some value"))
             )
           ),
           chargeDueDate = Some(LocalDate.of(2022, 1, 1)),
           chargeOutstandingAmount = Some(200),
-          chargeAmount = Some(200)
+          chargeAmount = Some(200),
+          triggeringProcess = None,
+          chargeReference = None
         ),
         LSPDetails(
           penaltyNumber = "12345677",
@@ -458,7 +488,9 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
           appealInformation = None,
           chargeDueDate = None,
           chargeOutstandingAmount = None,
-          chargeAmount = None
+          chargeAmount = None,
+          triggeringProcess = None,
+          chargeReference = None
         )
       )
     ))
@@ -876,7 +908,7 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
               penaltyStatus = LPPPenaltyStatusEnum.Posted,
               appealInformation = Some(
                 Seq(
-                  AppealInformationType(appealStatus = Some(AppealStatusEnum.Under_Appeal), appealLevel = Some(AppealLevelEnum.HMRC))
+                  AppealInformationType(appealStatus = Some(AppealStatusEnum.Under_Appeal), appealLevel = Some(AppealLevelEnum.HMRC), appealDescription = Some("Some value"))
                 )
               ),
               principalChargeBillingFrom = LocalDate.of(2022, 1, 1),
@@ -957,7 +989,7 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
               penaltyStatus = LPPPenaltyStatusEnum.Posted,
               appealInformation = Some(
                 Seq(
-                  AppealInformationType(appealStatus = Some(AppealStatusEnum.Upheld), appealLevel = Some(AppealLevelEnum.HMRC))
+                  AppealInformationType(appealStatus = Some(AppealStatusEnum.Upheld), appealLevel = Some(AppealLevelEnum.HMRC), appealDescription = Some("Some value"))
                 )
               ),
               principalChargeBillingFrom = LocalDate.of(2022, 1, 1),
