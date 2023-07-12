@@ -4,7 +4,7 @@ import uk.gov.hmrc.DefaultBuildSettings.integrationTestSettings
 
 val appName = "penalties"
 
-val silencerVersion = "1.7.12"
+val silencerVersion = "1.7.13"
 
 lazy val microservice = Project(appName, file("."))
   .enablePlugins(play.sbt.PlayScala, SbtAutoBuildPlugin, SbtGitVersioning, SbtDistributablesPlugin)
