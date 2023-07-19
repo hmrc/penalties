@@ -63,6 +63,8 @@ class AppConfig @Inject()(val config: Configuration, servicesConfig: ServicesCon
 
   lazy val maximumFilenameLength: Int = config.get[Int]("sdes.maximumFilenameLength")
 
+  lazy val checksumAlgorithmForFileNotifications: String = config.get[String]("sdes.checksumAlgorithm")
+
   def postFileNotificationUrl: String = s"$fileNotificationOrchestrator/penalties-file-notification-orchestrator/new-notifications"
 
   lazy val SDESNotificationInfoType: String = config.get[String]("SDESNotification.informationType")
