@@ -16,7 +16,7 @@
 
 package services
 
-import base.SpecBase
+import base.{LogCapturing, SpecBase}
 import config.AppConfig
 import config.featureSwitches.SanitiseFileName
 import connectors.PEGAConnector
@@ -34,13 +34,14 @@ import org.mockito.Mockito._
 import play.api.Configuration
 import play.api.test.Helpers._
 import uk.gov.hmrc.http.HeaderCarrier
+import utils.Logger.logger
 import utils.UUIDGenerator
-import java.time.{LocalDate, LocalDateTime}
 
+import java.time.{LocalDate, LocalDateTime}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Random
 
-class AppealServiceSpec extends SpecBase {
+class AppealServiceSpec extends SpecBase with LogCapturing {
   implicit val ec: ExecutionContext = ExecutionContext.Implicits.global
   implicit val hc: HeaderCarrier = HeaderCarrier(otherHeaders = Seq("CorrelationId" -> "id"))
   val mockAppealsConnector: PEGAConnector = mock(classOf[PEGAConnector])
@@ -123,6 +124,7 @@ class AppealServiceSpec extends SpecBase {
 
     "return a Seq of SDES notifications" when {
       "Some uploadJourneys are passed in" in new Setup {
+        when(mockAppConfig.checksumAlgorithmForFileNotifications).thenReturn("SHA-256")
         val mockDateTime: LocalDateTime = LocalDateTime.of(2020, 1, 1, 0, 0, 0)
         val uploads = Seq(
           UploadJourney(reference = "ref-123",
@@ -168,9 +170,106 @@ class AppealServiceSpec extends SpecBase {
         result shouldBe expectedResult
       }
 
+      "uploads are passed through but some uploads don't have an 'uploadDetails' field" in new Setup {
+        when(mockAppConfig.checksumAlgorithmForFileNotifications).thenReturn("SHA-256")
+        val mockDateTime: LocalDateTime = LocalDateTime.of(2020, 1, 1, 0, 0, 0)
+        val uploads = Seq(
+          UploadJourney(reference = "ref-123",
+            fileStatus = UploadStatusEnum.READY,
+            downloadUrl = Some("/"),
+            uploadDetails = Some(UploadDetails(
+              fileName = "file1",
+              fileMimeType = "text/plain",
+              uploadTimestamp = LocalDateTime.of(2018, 4, 24, 9, 30, 0),
+              checksum = "check123456789",
+              size = 1
+            )),
+            lastUpdated = mockDateTime,
+            uploadFields = Some(Map(
+              "key" -> "abcxyz",
+              "x-amz-algorithm" -> "AWS4-HMAC-SHA256"
+            ))
+          ),
+          UploadJourney(reference = "ref-123",
+            fileStatus = UploadStatusEnum.READY,
+            downloadUrl = Some("/"),
+            uploadDetails = None,
+            lastUpdated = mockDateTime,
+            uploadFields = Some(Map(
+              "key" -> "abcxyz",
+              "x-amz-algorithm" -> "AWS4-HMAC-SHA256"
+            ))
+          ),
+          UploadJourney(reference = "ref-123",
+            fileStatus = UploadStatusEnum.READY,
+            downloadUrl = Some("/"),
+            uploadDetails = Some(UploadDetails(
+              fileName = "file3",
+              fileMimeType = "text/plain",
+              uploadTimestamp = LocalDateTime.of(2018, 4, 24, 9, 30, 0),
+              checksum = "check123456789",
+              size = 1
+            )),
+            lastUpdated = mockDateTime,
+            uploadFields = Some(Map(
+              "key" -> "abcxyz",
+              "x-amz-algorithm" -> "AWS4-HMAC-SHA256"
+            ))
+          )
+        )
+
+        val expectedResult = Seq(
+          SDESNotification(
+            informationType = "S18",
+            file = SDESNotificationFile(
+              recipientOrSender = "123456789012",
+              name = "file1",
+              location = "/",
+              checksum = SDESChecksum(algorithm = "SHA-256", value = "check123456789"),
+              size = 1,
+              properties = Seq(
+                SDESProperties(name = "CaseId", value = "PR-1234"),
+                SDESProperties(name = "SourceFileUploadDate", value = "2018-04-24T09:30:00Z")
+              )
+            ),
+            audit = SDESAudit(
+              correlationID = correlationId
+            )
+          ),
+          SDESNotification(
+            informationType = "S18",
+            file = SDESNotificationFile(
+              recipientOrSender = "123456789012",
+              name = "file3",
+              location = "/",
+              checksum = SDESChecksum(algorithm = "SHA-256", value = "check123456789"),
+              size = 1,
+              properties = Seq(
+                SDESProperties(name = "CaseId", value = "PR-1234"),
+                SDESProperties(name = "SourceFileUploadDate", value = "2018-04-24T09:30:00Z")
+              )
+            ),
+            audit = SDESAudit(
+              correlationID = correlationId
+            )
+          )
+        )
+        when(mockUUIDGenerator.generateUUID).thenReturn(correlationId)
+        withCaptureOfLoggingFrom(logger) {
+          logs => {
+            val result = service.createSDESNotifications(Some(uploads), caseID = "PR-1234")
+            result shouldBe expectedResult
+            logs.exists(_.getMessage == "[AppealService][createSDESNotifications] - There are 3 uploads but" +
+              s" only 2 uploads have upload details defined (possible missing files for case ID: PR-1234)") shouldBe true
+          }
+        }
+
+      }
+
       "notifications are sent and then should sanitise the file names (when feature switch is enabled)" in new Setup {
         when(mockAppConfig.isEnabled(Matchers.eq(SanitiseFileName))).thenReturn(true)
         when(mockAppConfig.getMimeType(Matchers.eq("text.plain"))).thenReturn(Some(".txt"))
+        when(mockAppConfig.checksumAlgorithmForFileNotifications).thenReturn("SHA-256")
         val mockDateTime: LocalDateTime = LocalDateTime.of(2020, 1, 1, 0, 0, 0)
         val uploads = Seq(
           UploadJourney(reference = "ref-123",

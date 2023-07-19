@@ -56,33 +56,32 @@ class AppealService @Inject()(appealsConnector: PEGAConnector,
 
   def createSDESNotifications(optUploadJourney: Option[Seq[UploadJourney]], caseID: String): Seq[SDESNotification] = {
     optUploadJourney match {
-      case Some(uploads) => uploads.flatMap { upload =>
-        upload.uploadDetails.flatMap { details =>
-          upload.uploadFields.map(
-            fields => {
-              val uploadAlgorithm = fields("x-amz-algorithm") match {
-                case "AWS4-HMAC-SHA256" => "SHA-256"
-                case _ => throw new Exception("[AppealsController][createSDESNotifications] failed to recognise Checksum algorithm")
-              }
-              SDESNotification(
-                informationType = appConfig.SDESNotificationInfoType,
-                file = SDESNotificationFile(
-                  recipientOrSender = appConfig.SDESNotificationFileRecipient,
-                  name = sanitisedAndTruncatedFileName(details.fileName)(details.fileMimeType)(upload.reference),
-                  location = upload.downloadUrl.get,
-                  checksum = SDESChecksum(algorithm = uploadAlgorithm, value = details.checksum),
-                  size = details.size,
-                  properties = Seq(
-                    SDESProperties(name = "CaseId", value = caseID),
-                    SDESProperties(name = "SourceFileUploadDate", value = details.uploadTimestamp.format(DateHelper.dateTimeFormatter))
-                  )
-                ),
-                audit = SDESAudit(correlationID = idGenerator.generateUUID)
-              )
-            }
-          )
+      case Some(uploads) =>
+        val countOfUploadsWithUploadDetailsDefined = uploads.count(_.uploadDetails.isDefined)
+        if (countOfUploadsWithUploadDetailsDefined != uploads.size) {
+          logger.warn(s"[AppealService][createSDESNotifications] - There are ${uploads.size} uploads but" +
+            s" only $countOfUploadsWithUploadDetailsDefined uploads have upload details defined (possible missing files for case ID: $caseID)")
         }
-      }
+        uploads.flatMap { upload =>
+          upload.uploadDetails.map { details =>
+            val uploadAlgorithm = appConfig.checksumAlgorithmForFileNotifications
+            SDESNotification(
+              informationType = appConfig.SDESNotificationInfoType,
+              file = SDESNotificationFile(
+                recipientOrSender = appConfig.SDESNotificationFileRecipient,
+                name = sanitisedAndTruncatedFileName(details.fileName)(details.fileMimeType)(upload.reference),
+                location = upload.downloadUrl.get,
+                checksum = SDESChecksum(algorithm = uploadAlgorithm, value = details.checksum),
+                size = details.size,
+                properties = Seq(
+                  SDESProperties(name = "CaseId", value = caseID),
+                  SDESProperties(name = "SourceFileUploadDate", value = details.uploadTimestamp.format(DateHelper.dateTimeFormatter))
+                )
+              ),
+              audit = SDESAudit(correlationID = idGenerator.generateUUID)
+            )
+          }
+        }
       case None => Seq.empty
     }
   }
@@ -126,8 +125,8 @@ class AppealService @Inject()(appealsConnector: PEGAConnector,
 
   private def sanitisedAndTruncatedFileName(fileName: String)(fileMimeType: String)(reference: String): String = {
     val sanitisedFileName = sanitiseFileName(fileName)(fileMimeType)(reference)
-    if(sanitisedFileName.length > appConfig.maximumFilenameLength) {
-      if(sanitisedFileName.contains(".")) {
+    if (sanitisedFileName.length > appConfig.maximumFilenameLength) {
+      if (sanitisedFileName.contains(".")) {
         val fileRegex = "^(.*)(\\.\\w{1,4})$".r
         val fileRegex(fileNameMain, fileExtension) = sanitisedFileName
         logger.info(s"[AppealService][sanitisedAndTruncatedFileName] File name length: ${fileNameMain.length} with reference of: $reference, truncating to ${appConfig.maximumFilenameLength}")
