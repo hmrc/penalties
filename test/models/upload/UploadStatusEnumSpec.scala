@@ -62,7 +62,7 @@ class UploadStatusEnumSpec extends AnyWordSpec with Matchers {
       }
 
       "return a JSError for an unrecognised value" in {
-        val result = Json.fromJson(JsString("INVALID"))(FailureReasonEnum.format)
+        val result = Json.fromJson(JsString("INVALID"))(UploadStatusEnum.format)
         result.isError shouldBe true
       }
     }

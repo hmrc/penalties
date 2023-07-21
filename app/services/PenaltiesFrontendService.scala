@@ -16,18 +16,120 @@
 
 package services
 
+import config.AppConfig
+import connectors.parsers.getFinancialDetails.GetFinancialDetailsParser._
+import models.auditing.UserHasPenaltyAuditModel
 import models.getFinancialDetails.{FinancialDetails, MainTransactionEnum}
 import models.getPenaltyDetails.appealInfo.AppealStatusEnum
 import models.getPenaltyDetails.latePayment._
 import models.getPenaltyDetails.{GetPenaltyDetails, Totalisations}
+import play.api.http.Status.NOT_FOUND
+import play.api.libs.json.Json
+import play.api.mvc.Results.{InternalServerError, NoContent, NotFound, Ok}
+import play.api.mvc.{Request, Result}
+import services.auditing.AuditService
+import uk.gov.hmrc.http.HeaderCarrier
+import utils.Logger.logger
+import utils.PagerDutyHelper.PagerDutyKeys.MALFORMED_RESPONSE_FROM_1811_API
+import utils.{DateHelper, PagerDutyHelper, RegimeHelper}
 
-import javax.inject.Inject
+import javax.inject.{Inject, Singleton}
+import scala.concurrent.{ExecutionContext, Future}
 
-class PenaltiesFrontendService @Inject()() {
-  def combineAPIData(penaltyDetails: GetPenaltyDetails, financialDetails: FinancialDetails): GetPenaltyDetails = {
-    val totalisationsCombined = combineTotalisations(penaltyDetails, financialDetails)
-    val allLPPData = combineLPPData(penaltyDetails, financialDetails)
-    if(allLPPData.isDefined) {
+@Singleton
+class PenaltiesFrontendService @Inject()(getFinancialDetailsService: GetFinancialDetailsService,
+                                         appConfig: AppConfig,
+                                         dateHelper: DateHelper,
+                                         auditService: AuditService) {
+
+  def handleAndCombineGetFinancialDetailsData(penaltyDetails: GetPenaltyDetails, enrolmentKey: String, arn: Option[String])
+                                             (implicit request: Request[_], ec: ExecutionContext, hc: HeaderCarrier): Future[Result] = {
+    val vrn: String = RegimeHelper.getIdentifierFromEnrolmentKey(enrolmentKey)
+    getFinancialDetailsService.getFinancialDetails(vrn, None).flatMap {
+      financialDetailsResponseWithClearedItems =>
+        financialDetailsResponseWithClearedItems.fold({
+          errorResponse => {
+            Future(handleErrorResponseFromGetFinancialDetails(errorResponse, vrn)(handleNoContent = {
+              logger.info(s"[PenaltiesFrontendService][handleAndCombineGetFinancialDetailsData] - 1811 call returned 404 for VRN: $vrn with NO_DATA_FOUND in response body")
+              if (penaltyDetails.latePaymentPenalty.isEmpty || penaltyDetails.latePaymentPenalty.get.details.isEmpty ||
+                penaltyDetails.latePaymentPenalty.get.details.get.isEmpty) {
+                returnResponse(penaltyDetails, enrolmentKey, arn)
+              } else {
+                NoContent
+              }
+            }))
+          }
+        },
+          financialDetailsSuccessWithClearedItems => { //NOTE: The decision was taken to make 2 calls to retrieve data with and without cleared items
+            logger.debug(s"[PenaltiesFrontendService][handleAndCombineGetFinancialDetailsData] - 1811 clearedItems=true call returned 200 for VRN: $vrn")
+            getFinancialDetailsService.getFinancialDetails(vrn, Some(appConfig.queryParametersForGetFinancialDetailsWithoutClearedItems)).map {
+              financialDetailsResponseWithoutClearedItems =>
+                financialDetailsResponseWithoutClearedItems.fold({
+                  handleErrorResponseFromGetFinancialDetails(_, vrn)(handleNoContent = {
+                    logger.info(s"[PenaltiesFrontendService][handleAndCombineGetFinancialDetailsData] - 1811 call returned 404 for VRN: $vrn with NO_DATA_FOUND in response body")
+                    val newPenaltyDetails = combineAPIData(penaltyDetails,
+                      financialDetailsSuccessWithClearedItems.asInstanceOf[GetFinancialDetailsSuccessResponse].financialDetails,
+                      FinancialDetails(None, None))
+                    returnResponse(newPenaltyDetails, enrolmentKey, arn)
+                  })
+                },
+                  financialDetailsSuccessWithoutClearedItems => {
+                    logger.debug(s"[PenaltiesFrontendService][handleAndCombineGetFinancialDetailsData] - 1811 clearedItems=false call returned 200 for VRN: $vrn")
+                    val newPenaltyDetails = combineAPIData(penaltyDetails,
+                      financialDetailsSuccessWithClearedItems.asInstanceOf[GetFinancialDetailsSuccessResponse].financialDetails,
+                      financialDetailsSuccessWithoutClearedItems.asInstanceOf[GetFinancialDetailsSuccessResponse].financialDetails)
+                    logger.info(s"[PenaltiesFrontendService][handleAndCombineGetFinancialDetailsData] - 1811 call returned 200 for VRN: $vrn")
+                    returnResponse(newPenaltyDetails, enrolmentKey, arn)
+                  })
+            }
+          }
+        )
+    }
+  }
+
+  def handleErrorResponseFromGetFinancialDetails(financialDetailsResponseWithClearedItems: GetFinancialDetailsFailure, vrn: String)
+                                                (handleNoContent: => Result): Result = {
+    financialDetailsResponseWithClearedItems match {
+      case GetFinancialDetailsNoContent => handleNoContent
+      case GetFinancialDetailsFailureResponse(status) if status == NOT_FOUND => {
+        logger.info(s"[PenaltiesFrontendController][handleAndCombineGetFinancialDetailsData] - 1811 call returned 404 for VRN: $vrn")
+        NotFound(s"A downstream call returned 404 for VRN: $vrn")
+      }
+      case GetFinancialDetailsFailureResponse(status) => {
+        logger.error(s"[PenaltiesFrontendController][handleAndCombineGetFinancialDetailsData] - 1811 call returned an unexpected status: $status")
+        InternalServerError(s"A downstream call returned an unexpected status: $status")
+      }
+      case GetFinancialDetailsMalformed => {
+        PagerDutyHelper.log("getPenaltiesData", MALFORMED_RESPONSE_FROM_1811_API)
+        logger.error(s"[PenaltiesFrontendController][handleAndCombineGetFinancialDetailsData] - 1811 call returned invalid body - failed to parse financial details response for VRN: $vrn")
+        InternalServerError(s"We were unable to parse penalty data.")
+      }
+    }
+  }
+
+  private def returnResponse(penaltyDetails: GetPenaltyDetails, enrolmentKey: String, arn: Option[String])
+                            (implicit request: Request[_], ec: ExecutionContext, hc: HeaderCarrier): Result = {
+    val hasLSP = penaltyDetails.lateSubmissionPenalty.map(_.summary.activePenaltyPoints).getOrElse(0) > 0
+    val hasLPP = penaltyDetails.latePaymentPenalty.flatMap(_.details.map(_.length)).getOrElse(0) > 0
+
+    if (hasLSP || hasLPP) {
+      val auditModel = UserHasPenaltyAuditModel(
+        penaltyDetails = penaltyDetails,
+        identifier = RegimeHelper.getIdentifierFromEnrolmentKey(enrolmentKey),
+        identifierType = RegimeHelper.getIdentifierTypeFromEnrolmentKey(enrolmentKey),
+        arn = arn,
+        dateHelper = dateHelper)
+      auditService.audit(auditModel)
+    }
+    Ok(Json.toJson(penaltyDetails))
+  }
+
+  def combineAPIData(penaltyDetails: GetPenaltyDetails,
+                     financialDetailsWithClearedItems: FinancialDetails,
+                     financialDetailsWithoutClearedItems: FinancialDetails): GetPenaltyDetails = {
+    val totalisationsCombined = combineTotalisations(penaltyDetails, financialDetailsWithoutClearedItems)
+    val allLPPData = combineLPPData(penaltyDetails, financialDetailsWithClearedItems)
+    if (allLPPData.isDefined) {
       totalisationsCombined.copy(latePaymentPenalty = Some(LatePaymentPenalty(allLPPData)))
     } else {
       totalisationsCombined

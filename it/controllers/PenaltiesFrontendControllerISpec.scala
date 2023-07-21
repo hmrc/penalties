@@ -27,8 +27,13 @@ import scala.jdk.CollectionConverters._
 
 class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock {
   val controller: PenaltiesFrontendController = injector.instanceOf[PenaltiesFrontendController]
-  val financialDataQueryParam: String = {
+  val financialDataQueryParamWithClearedItems: String = {
       s"includeClearedItems=true&includeStatisticalItems=true&includePaymentOnAccount=true" +
+      s"&addRegimeTotalisation=true&addLockInformation=true&addPenaltyDetails=true&addPostedInterestDetails=true&addAccruingInterestDetails=true" +
+      s"&dateType=POSTING&dateFrom=${LocalDate.now().minusYears(2).toString}&dateTo=${LocalDate.now().toString}"
+  }
+  val financialDataQueryParamWithoutClearedItems: String = {
+    s"includeClearedItems=false&includeStatisticalItems=true&includePaymentOnAccount=true" +
       s"&addRegimeTotalisation=true&addLockInformation=true&addPenaltyDetails=true&addPostedInterestDetails=true&addAccruingInterestDetails=true" +
       s"&dateType=POSTING&dateFrom=${LocalDate.now().minusYears(2).toString}&dateTo=${LocalDate.now().toString}"
   }
@@ -336,12 +341,71 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
       |""".stripMargin
   )
 
+  val combinedPenaltyAndFinancialDataWithout1811Totalisations: JsValue = Json.parse(
+    """
+      |{
+      |    "totalisations": {
+      |        "LSPTotalValue": 200,
+      |        "penalisedPrincipalTotal": 2000,
+      |        "LPPPostedTotal": 165.25,
+      |        "LPPEstimatedTotal": 15.26
+      |    },
+      |    "lateSubmissionPenalty": {
+      |        "summary": {
+      |            "activePenaltyPoints": 0,
+      |            "inactivePenaltyPoints": 0,
+      |            "regimeThreshold": 5,
+      |            "penaltyChargeAmount": 200,
+      |            "PoCAchievementDate": "2022-01-01"
+      |        },
+      |        "details": []
+      |    },
+      |    "latePaymentPenalty": {
+      |        "details": [
+      |            {
+      |                "principalChargeDueDate": "2022-10-30",
+      |                "principalChargeBillingTo": "2022-10-30",
+      |                "penaltyAmountPosted": 0,
+      |                "LPP1LRPercentage": 2,
+      |                "LPP1HRDays": "31",
+      |                "penaltyChargeDueDate": "2022-10-30",
+      |                "LPP2Days": "31",
+      |                "penaltyChargeCreationDate": "2022-10-30",
+      |                "LPP1HRPercentage": 2,
+      |                "LPP1LRDays": "15",
+      |                "LPP1HRCalculationAmount": 99.99,
+      |                "penaltyCategory": "LPP1",
+      |                "principalChargeReference": "XM002610011594",
+      |                "principalChargeBillingFrom": "2022-10-30",
+      |                "penaltyStatus": "A",
+      |                "mainTransaction": "4700",
+      |                "LPP2Percentage": 4,
+      |                "LPP1LRCalculationAmount": 99.99,
+      |                "principalChargeMainTransaction": "4700",
+      |                "principalChargeDocNumber": "DOC1",
+      |                "principalChargeSubTransaction": "SUB1",
+      |                "timeToPay": [
+      |                 {
+      |                   "TTPStartDate": "2022-01-01",
+      |                   "TTPEndDate": "2022-12-31"
+      |                 }
+      |                ],
+      |                "penaltyAmountAccruing": 99.99
+      |            }
+      |        ]
+      |    }
+      |}
+      |""".stripMargin
+  )
+
   s"return OK (${Status.OK})" when {
 
     "the get penalty details call succeeds and the get financial details call succeeds (combining the data together)" in {
       mockStubResponseForGetPenaltyDetails(Status.OK, "123456789", body = Some(getPenaltyDetailsJson.toString()))
       mockStubResponseForGetFinancialDetails(Status.OK,
-        s"VRN/123456789/VATC?$financialDataQueryParam")
+        s"VRN/123456789/VATC?$financialDataQueryParamWithClearedItems", Some(getFinancialDetailsWithoutTotalisationsAsJson.toString()))
+      mockStubResponseForGetFinancialDetails(Status.OK,
+        s"VRN/123456789/VATC?$financialDataQueryParamWithoutClearedItems", Some(getFinancialDetailsTotalisationsAsJson.toString()))
 
       val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/HMRC-MTD-VAT~VRN~123456789").get())
       result.status shouldBe OK
@@ -350,11 +414,24 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
 
     "the get penalty details call includes blank expiryReason and appealLevel fields" in {
       mockStubResponseForGetPenaltyDetails(Status.OK, "123456789", body = Some(getPenaltyDetailsJsonWithBlankExpiryReasonAndAppealLevel.toString()))
-      mockStubResponseForGetFinancialDetails(Status.OK, s"VRN/123456789/VATC?$financialDataQueryParam")
+      mockStubResponseForGetFinancialDetails(Status.OK, s"VRN/123456789/VATC?$financialDataQueryParamWithClearedItems")
+      mockStubResponseForGetFinancialDetails(Status.OK, s"VRN/123456789/VATC?$financialDataQueryParamWithoutClearedItems", Some(getFinancialDetailsTotalisationsAsJson.toString()))
 
       val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/HMRC-MTD-VAT~VRN~123456789").get())
       result.status shouldBe OK
       Json.parse(result.body) shouldBe getPenaltyDetailsJsonWithRemovedExpiryReasonAndDefaultedAppealLevel
+    }
+
+    "the get penalty details call succeeds and the get financial details call succeeds (combining the data together - second 1811 call returns NO_CONTENT)" in {
+      mockStubResponseForGetPenaltyDetails(Status.OK, "123456789", body = Some(getPenaltyDetailsJson.toString()))
+      mockStubResponseForGetFinancialDetails(Status.OK,
+        s"VRN/123456789/VATC?$financialDataQueryParamWithClearedItems")
+      mockStubResponseForGetFinancialDetails(Status.NO_CONTENT,
+        s"VRN/123456789/VATC?$financialDataQueryParamWithoutClearedItems")
+
+      val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/HMRC-MTD-VAT~VRN~123456789").get())
+      result.status shouldBe OK
+      Json.parse(result.body) shouldBe combinedPenaltyAndFinancialDataWithout1811Totalisations
     }
 
     s"the get penalty details call succeeds and the get financial details call returns NO_CONTENT (${Status.NO_CONTENT}) (returning penalty details unaltered)" in {
@@ -375,7 +452,7 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
           |}
           |""".stripMargin
       mockStubResponseForGetFinancialDetails(Status.NOT_FOUND,
-        s"VRN/123456789/VATC?$financialDataQueryParam", Some(noDataFoundBody))
+        s"VRN/123456789/VATC?$financialDataQueryParamWithClearedItems", Some(noDataFoundBody))
       mockStubResponseForGetPenaltyDetails(Status.OK, "123456789", body = Some(getPenaltyDetailsNoLPPJson.toString()))
       val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/HMRC-MTD-VAT~VRN~123456789").get())
       result.status shouldBe OK
@@ -422,7 +499,7 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
           |}
           |""".stripMargin
       mockStubResponseForGetPenaltyDetails(Status.OK, "123456789", body = Some(getPenaltyDetailsJson.toString()))
-      mockStubResponseForGetFinancialDetails(Status.NOT_FOUND, s"VRN/123456789/VATC?$financialDataQueryParam", Some(noDataFoundBody))
+      mockStubResponseForGetFinancialDetails(Status.NOT_FOUND, s"VRN/123456789/VATC?$financialDataQueryParamWithClearedItems", Some(noDataFoundBody))
 
       val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/HMRC-MTD-VAT~VRN~123456789").get())
       result.status shouldBe NO_CONTENT
@@ -436,9 +513,18 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
       result.status shouldBe INTERNAL_SERVER_ERROR
     }
 
-    "the get financial details call fails" in {
+    "the first get financial details call fails" in {
       mockStubResponseForGetPenaltyDetails(Status.OK, "123456789", body = Some(getPenaltyDetailsJson.toString()))
-      mockStubResponseForGetFinancialDetails(Status.INTERNAL_SERVER_ERROR, s"VRN/123456789/VATC?$financialDataQueryParam")
+      mockStubResponseForGetFinancialDetails(Status.INTERNAL_SERVER_ERROR, s"VRN/123456789/VATC?$financialDataQueryParamWithClearedItems")
+
+      val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/HMRC-MTD-VAT~VRN~123456789").get())
+      result.status shouldBe INTERNAL_SERVER_ERROR
+    }
+
+    "the second get financial details call fails" in {
+      mockStubResponseForGetPenaltyDetails(Status.OK, "123456789", body = Some(getPenaltyDetailsJson.toString()))
+      mockStubResponseForGetFinancialDetails(Status.OK, s"VRN/123456789/VATC?$financialDataQueryParamWithClearedItems")
+      mockStubResponseForGetFinancialDetails(Status.INTERNAL_SERVER_ERROR, s"VRN/123456789/VATC?$financialDataQueryParamWithoutClearedItems")
 
       val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/HMRC-MTD-VAT~VRN~123456789").get())
       result.status shouldBe INTERNAL_SERVER_ERROR
@@ -634,7 +720,8 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
         |}
         |""".stripMargin)
     mockStubResponseForGetPenaltyDetails(Status.OK, "123456789", body = Some(penaltyDetailsWithLSPAndLPPs.toString()))
-    mockStubResponseForGetFinancialDetails(Status.OK, s"VRN/123456789/VATC?$financialDataQueryParam")
+    mockStubResponseForGetFinancialDetails(Status.OK, s"VRN/123456789/VATC?$financialDataQueryParamWithClearedItems")
+    mockStubResponseForGetFinancialDetails(Status.OK, s"VRN/123456789/VATC?$financialDataQueryParamWithoutClearedItems", Some(getFinancialDetailsTotalisationsAsJson.toString))
     val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/HMRC-MTD-VAT~VRN~123456789").get())
     result.status shouldBe Status.OK
     Json.parse(result.body) shouldBe penaltyDetailsWithLSPAndLPPAndFinancialDetails
@@ -666,7 +753,8 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
         |}
         |""".stripMargin)
     mockStubResponseForGetPenaltyDetails(Status.OK, "123456789", body = Some(getPenaltyDetailsWithNoPointsAsJson.toString()))
-    mockStubResponseForGetFinancialDetails(Status.OK, s"VRN/123456789/VATC?$financialDataQueryParam")
+    mockStubResponseForGetFinancialDetails(Status.OK, s"VRN/123456789/VATC?$financialDataQueryParamWithClearedItems")
+    mockStubResponseForGetFinancialDetails(Status.OK, s"VRN/123456789/VATC?$financialDataQueryParamWithoutClearedItems", Some(getFinancialDetailsTotalisationsAsJson.toString))
     val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/HMRC-MTD-VAT~VRN~123456789").get())
     result.status shouldBe Status.OK
     result.body shouldBe getPenaltyDetailsWithNoPointsAsJson.toString()

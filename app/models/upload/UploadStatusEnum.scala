@@ -22,7 +22,6 @@ object UploadStatusEnum extends Enumeration {
   val WAITING: UploadStatusEnum.Value = Value
   val READY: UploadStatusEnum.Value = Value
   val FAILED: UploadStatusEnum.Value = Value
-  val DUPLICATE: UploadStatusEnum.Value = Value
 
   implicit val format: Format[UploadStatusEnum.Value] = new Format[UploadStatusEnum.Value] {
     override def writes(o: UploadStatusEnum.Value): JsValue = {

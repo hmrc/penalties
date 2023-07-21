@@ -40,9 +40,10 @@ class GetFinancialDetailsConnector @Inject()(httpClient: HttpClient,
   )
 
 
-  def getFinancialDetails(vrn: String)(implicit hc: HeaderCarrier): Future[GetFinancialDetailsResponse] = {
+  def getFinancialDetails(vrn: String, overridingParameters: Option[String])(implicit hc: HeaderCarrier): Future[GetFinancialDetailsResponse] = {
+    val parameters = overridingParameters.fold(appConfig.queryParametersForGetFinancialDetails + appConfig.addDateRangeQueryParameters())(_ + appConfig.addDateRangeQueryParameters())
     httpClient.GET[GetFinancialDetailsResponse](url =
-      appConfig.getFinancialDetailsUrl(vrn) + appConfig.queryParametersForGetFinancialDetails + appConfig.addDateRangeQueryParameters(), headers = headers).recover {
+      appConfig.getFinancialDetailsUrl(vrn) + parameters, headers = headers).recover {
       case e: UpstreamErrorResponse => {
         PagerDutyHelper.logStatusCode("getFinancialDetails", e.statusCode)(RECEIVED_4XX_FROM_1811_API, RECEIVED_5XX_FROM_1811_API)
         logger.error(s"[GetFinancialDetailsConnector][getFinancialDetails] - Received ${e.statusCode} status from API 1811 call - returning status to caller")

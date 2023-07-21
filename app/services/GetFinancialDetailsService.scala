@@ -28,9 +28,9 @@ import scala.concurrent.{ExecutionContext, Future}
 class GetFinancialDetailsService @Inject()(getFinancialDetailsConnector: GetFinancialDetailsConnector)
                                           (implicit ec: ExecutionContext, val config: Configuration) {
 
-  def getFinancialDetails(vrn: String)(implicit hc: HeaderCarrier): Future[GetFinancialDetailsResponse] = {
+  def getFinancialDetails(vrn: String, optionalParameters: Option[String])(implicit hc: HeaderCarrier): Future[GetFinancialDetailsResponse] = {
     val startOfLogMsg: String = "[GetFinancialDetailsService][getDataFromFinancialServiceForVATCVRN]"
-    getFinancialDetailsConnector.getFinancialDetails(vrn).map {
+    getFinancialDetailsConnector.getFinancialDetails(vrn, optionalParameters).map {
       handleConnectorResponse(_)(startOfLogMsg, vrn)
     }
   }
