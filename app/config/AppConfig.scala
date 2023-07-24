@@ -34,7 +34,18 @@ class AppConfig @Inject()(val config: Configuration, servicesConfig: ServicesCon
       s"&addRegimeTotalisation=${config.get[Boolean]("eis.addRegimeTotalisation")}" +
       s"&addLockInformation=${config.get[Boolean]("eis.includeLocks")}" +
       s"&addPenaltyDetails=${config.get[Boolean]("eis.includePenaltyDetails")}" +
-      s"&addPostedInterestDetails=${config.get[Boolean]("eis.calculateAccruedInterest")}" +
+      s"&addPostedInterestDetails=${config.get[Boolean]("eis.calculatePostedInterest")}" +
+      s"&addAccruingInterestDetails=${config.get[Boolean]("eis.calculateAccruedInterest")}"
+  }
+
+  lazy val queryParametersForGetFinancialDetailsWithoutClearedItems: String = {
+    s"?includeClearedItems=false" +
+      s"&includeStatisticalItems=${config.get[Boolean]("eis.includeStatistical")}" +
+      s"&includePaymentOnAccount=${config.get[Boolean]("eis.includePOA")}" +
+      s"&addRegimeTotalisation=${config.get[Boolean]("eis.addRegimeTotalisation")}" +
+      s"&addLockInformation=${config.get[Boolean]("eis.includeLocks")}" +
+      s"&addPenaltyDetails=${config.get[Boolean]("eis.includePenaltyDetails")}" +
+      s"&addPostedInterestDetails=${config.get[Boolean]("eis.calculatePostedInterest")}" +
       s"&addAccruingInterestDetails=${config.get[Boolean]("eis.calculateAccruedInterest")}"
   }
 

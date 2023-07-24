@@ -18,7 +18,7 @@ package models.auditing
 
 import base.{LogCapturing, SpecBase}
 import play.api.http.Status
-import play.api.libs.json.{JsString, JsValue, Json}
+import play.api.libs.json.{JsValue, Json}
 
 class ThirdParty1812APIRetrievalAuditModelSpec extends SpecBase with LogCapturing {
   val sampleJsonResponse: JsValue = Json.toJson(

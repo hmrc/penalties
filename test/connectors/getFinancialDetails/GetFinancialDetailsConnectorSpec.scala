@@ -71,7 +71,20 @@ class GetFinancialDetailsConnectorSpec extends SpecBase with LogCapturing {
           Matchers.any()))
         .thenReturn(Future.successful(Right(GetFinancialDetailsSuccessResponse(mockGetFinancialDetailsModelAPI1811))))
 
-      val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails("123456789")(HeaderCarrier()))
+      val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails("123456789", None)(HeaderCarrier()))
+      result.isRight shouldBe true
+    }
+
+    "pass custom parameters when provided" in new Setup {
+      when(mockHttpClient.GET[GetFinancialDetailsResponse](Matchers.eq("/VRN/123456789/VATC?custom=value&bar=wizz"),
+        Matchers.any(),
+        Matchers.any())
+        (Matchers.any(),
+          Matchers.any(),
+          Matchers.any()))
+        .thenReturn(Future.successful(Right(GetFinancialDetailsSuccessResponse(mockGetFinancialDetailsModelAPI1811))))
+
+      val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails("123456789", Some("?custom=value"))(HeaderCarrier()))
       result.isRight shouldBe true
     }
 
@@ -84,7 +97,7 @@ class GetFinancialDetailsConnectorSpec extends SpecBase with LogCapturing {
           Matchers.any()))
         .thenReturn(Future.successful(Left(GetFinancialDetailsFailureResponse(Status.NOT_FOUND))))
 
-      val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails("123456789")(HeaderCarrier()))
+      val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails("123456789", None)(HeaderCarrier()))
       result.isLeft shouldBe true
     }
 
@@ -97,7 +110,7 @@ class GetFinancialDetailsConnectorSpec extends SpecBase with LogCapturing {
           Matchers.any()))
         .thenReturn(Future.successful(Left(GetFinancialDetailsFailureResponse(Status.BAD_REQUEST))))
 
-      val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails("123456789")(HeaderCarrier()))
+      val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails("123456789", None)(HeaderCarrier()))
       result.isLeft shouldBe true
     }
 
@@ -110,7 +123,7 @@ class GetFinancialDetailsConnectorSpec extends SpecBase with LogCapturing {
           Matchers.any()))
         .thenReturn(Future.successful(Left(GetFinancialDetailsFailureResponse(Status.CONFLICT))))
 
-      val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails("123456789")(HeaderCarrier()))
+      val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails("123456789", None)(HeaderCarrier()))
       result.isLeft shouldBe true
     }
 
@@ -123,7 +136,7 @@ class GetFinancialDetailsConnectorSpec extends SpecBase with LogCapturing {
           Matchers.any()))
         .thenReturn(Future.successful(Left(GetFinancialDetailsFailureResponse(Status.UNPROCESSABLE_ENTITY))))
 
-      val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails("123456789")(HeaderCarrier()))
+      val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails("123456789", None)(HeaderCarrier()))
       result.isLeft shouldBe true
     }
 
@@ -136,7 +149,7 @@ class GetFinancialDetailsConnectorSpec extends SpecBase with LogCapturing {
           Matchers.any()))
         .thenReturn(Future.successful(Left(GetFinancialDetailsFailureResponse(Status.INTERNAL_SERVER_ERROR))))
 
-      val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails("123456789")(HeaderCarrier()))
+      val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails("123456789", None)(HeaderCarrier()))
       result.isLeft shouldBe true
     }
 
@@ -149,7 +162,7 @@ class GetFinancialDetailsConnectorSpec extends SpecBase with LogCapturing {
           Matchers.any()))
         .thenReturn(Future.successful(Left(GetFinancialDetailsFailureResponse(Status.FORBIDDEN))))
 
-      val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails("123456789")(HeaderCarrier()))
+      val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails("123456789", None)(HeaderCarrier()))
       result.isLeft shouldBe true
     }
 
@@ -162,7 +175,7 @@ class GetFinancialDetailsConnectorSpec extends SpecBase with LogCapturing {
           Matchers.any()))
         .thenReturn(Future.successful(Left(GetFinancialDetailsFailureResponse(Status.SERVICE_UNAVAILABLE))))
 
-      val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails("123456789")(HeaderCarrier()))
+      val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails("123456789", None)(HeaderCarrier()))
       result.isLeft shouldBe true
     }
 
@@ -177,7 +190,7 @@ class GetFinancialDetailsConnectorSpec extends SpecBase with LogCapturing {
 
       withCaptureOfLoggingFrom(logger) {
         logs => {
-          val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails("123456789")(HeaderCarrier()))
+          val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails("123456789", None)(HeaderCarrier()))
           logs.exists(_.getMessage.contains(PagerDutyKeys.RECEIVED_5XX_FROM_1811_API.toString)) shouldBe true
           result.isLeft shouldBe true
         }
@@ -195,7 +208,7 @@ class GetFinancialDetailsConnectorSpec extends SpecBase with LogCapturing {
 
       withCaptureOfLoggingFrom(logger) {
         logs => {
-          val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails("123456789")(HeaderCarrier()))
+          val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails("123456789", None)(HeaderCarrier()))
           logs.exists(_.getMessage.contains(PagerDutyKeys.RECEIVED_4XX_FROM_1811_API.toString)) shouldBe true
           result.isLeft shouldBe true
         }
@@ -213,7 +226,7 @@ class GetFinancialDetailsConnectorSpec extends SpecBase with LogCapturing {
 
       withCaptureOfLoggingFrom(logger) {
         logs => {
-          val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails("123456789")(HeaderCarrier()))
+          val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails("123456789", None)(HeaderCarrier()))
           logs.exists(_.getMessage.contains(PagerDutyKeys.UNKNOWN_EXCEPTION_CALLING_1811_API.toString)) shouldBe true
           result.isLeft shouldBe true
         }

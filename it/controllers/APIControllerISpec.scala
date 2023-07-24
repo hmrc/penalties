@@ -327,7 +327,7 @@ class APIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock wit
         enableFeatureSwitch(CallAPI1811ETMP)
         mockResponseForGetFinancialDetails(Status.OK, s"VRN/123456789/VATC?searchType=CHGREF&searchItem=XC00178236592&dateType=BILLING&dateFrom=2020-10-03&dateTo=2021-07-12&includeClearedItems=false" +
           s"&includeStatisticalItems=true&includePaymentOnAccount=true&addRegimeTotalisation=false&addLockInformation=true&addPenaltyDetails=true" +
-          s"&addPostedInterestDetails=true&addAccruingInterestDetails=true")
+          s"&addPostedInterestDetails=true&addAccruingInterestDetails=true", Some(getFinancialDetailsAsJson.toString()))
         val result = await(buildClientForRequestToApp(uri = s"/penalty/financial-data/VRN/123456789/VATC?searchType=CHGREF&searchItem=XC00178236592&dateType=BILLING&dateFrom=2020-10-03&dateTo=2021-07-12&includeClearedItems=false" +
           s"&includeStatisticalItems=true&includePaymentOnAccount=true&addRegimeTotalisation=false&addLockInformation=true&addPenaltyDetails=true" +
           s"&addPostedInterestDetails=true&addAccruingInterestDetails=true").get())

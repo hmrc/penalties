@@ -60,7 +60,7 @@ trait LPPDetailsBase {
   val lpp2: LPPDetails = LPPDetails(
     penaltyCategory = LPPPenaltyCategoryEnum.SecondPenalty,
     principalChargeReference = "1234567890",
-    penaltyChargeReference = Some("123456789"),
+    penaltyChargeReference = None,
     penaltyChargeCreationDate = Some(LocalDate.of(2022, 10, 30)),
     penaltyStatus = LPPPenaltyStatusEnum.Accruing,
     appealInformation = Some(Seq(AppealInformationType(appealStatus = Some(AppealStatusEnum.Unappealable), appealLevel = Some(AppealLevelEnum.HMRC), appealDescription = Some("Some value")))),
