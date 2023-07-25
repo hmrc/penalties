@@ -19,7 +19,7 @@ package services
 import base.{LPPDetailsBase, LSPDetailsBase, LogCapturing, SpecBase}
 import config.AppConfig
 import connectors.parsers.getFinancialDetails.GetFinancialDetailsParser._
-import models.getFinancialDetails.MainTransactionEnum.{VATReturnFirstLPP, VATReturnSecondLPP}
+import models.getFinancialDetails.MainTransactionEnum.{VATReturnCharge, VATReturnFirstLPP, VATReturnSecondLPP}
 import models.getFinancialDetails.totalisation.{FinancialDetailsTotalisation, InterestTotalisation, RegimeTotalisation}
 import models.getFinancialDetails.{DocumentDetails, FinancialDetails, LineItemDetails, MainTransactionEnum}
 import models.getPenaltyDetails.appealInfo.{AppealInformationType, AppealLevelEnum, AppealStatusEnum}
@@ -933,7 +933,7 @@ class PenaltiesFrontendServiceSpec extends SpecBase with LogCapturing with LPPDe
                 lpp2.copy(penaltyStatus = LPPPenaltyStatusEnum.Posted,
                   penaltyChargeReference = Some("123456790"),
                   metadata = LPPDetailsMetadata(
-                    mainTransaction = Some(VATReturnSecondLPP),
+                    mainTransaction = Some(VATReturnCharge),
                     outstandingAmount = Some(0),
                     timeToPay = Some(Seq(TimeToPay(
                       TTPStartDate = Some(LocalDate.of(2022, 1, 1)),
@@ -944,7 +944,7 @@ class PenaltiesFrontendServiceSpec extends SpecBase with LogCapturing with LPPDe
                 lpp1PrincipalChargeDueToday.copy(penaltyStatus = LPPPenaltyStatusEnum.Posted,
                   penaltyChargeReference = Some("123456789"),
                   metadata = LPPDetailsMetadata(
-                    mainTransaction = Some(VATReturnFirstLPP),
+                    mainTransaction = Some(VATReturnCharge),
                     outstandingAmount = Some(0),
                     timeToPay = Some(Seq(TimeToPay(
                       TTPStartDate = Some(LocalDate.of(2022, 1, 1)),
