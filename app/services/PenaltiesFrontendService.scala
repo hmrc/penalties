@@ -171,7 +171,7 @@ class PenaltiesFrontendService @Inject()(getFinancialDetailsService: GetFinancia
               )
               oldLPPDetails.copy(
                 metadata = LPPDetailsMetadata(
-                  mainTransaction = penaltyToCopy.get.lineItemDetails.get.head.mainTransaction,
+                  mainTransaction = Some(oldLPPDetails.principalChargeMainTransaction),
                   outstandingAmount = penaltyToCopy.get.documentOutstandingAmount,
                   timeToPay = oldLPPDetails.metadata.timeToPay,
                   principalChargeDocNumber = oldLPPDetails.metadata.principalChargeDocNumber,

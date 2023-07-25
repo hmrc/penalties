@@ -326,7 +326,7 @@ class PenaltiesFrontendServiceSpec extends SpecBase with LogCapturing with LPPDe
               penaltyChargeDueDate = Some(LocalDate.of(2022, 10, 30)),
               principalChargeLatestClearing = None,
               metadata = LPPDetailsMetadata(
-                mainTransaction = Some(MainTransactionEnum.VATReturnFirstLPP),
+                mainTransaction = Some(MainTransactionEnum.VATReturnCharge),
                 outstandingAmount = Some(123.45),
                 timeToPay = Some(Seq(TimeToPay(
                   TTPStartDate = Some(LocalDate.of(2022, 1, 1)),
@@ -427,7 +427,7 @@ class PenaltiesFrontendServiceSpec extends SpecBase with LogCapturing with LPPDe
               penaltyChargeDueDate = Some(LocalDate.of(2022, 10, 30)),
               principalChargeLatestClearing = None,
               metadata = LPPDetailsMetadata(
-                mainTransaction = Some(MainTransactionEnum.VATReturnSecondLPP),
+                mainTransaction = Some(MainTransactionEnum.VATReturnCharge),
                 outstandingAmount = Some(123.45),
                 timeToPay = Some(Seq(TimeToPay(
                   TTPStartDate = Some(LocalDate.of(2022, 1, 1)),
@@ -483,7 +483,7 @@ class PenaltiesFrontendServiceSpec extends SpecBase with LogCapturing with LPPDe
                   )))
                 ),
                 penaltyAmountAccruing = BigDecimal(0),
-                principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
+                principalChargeMainTransaction = MainTransactionEnum.OfficersAssessment
               ),
               LPPDetails(
                 penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
@@ -566,7 +566,7 @@ class PenaltiesFrontendServiceSpec extends SpecBase with LogCapturing with LPPDe
               penaltyChargeDueDate = Some(LocalDate.of(2022, 10, 30)),
               principalChargeLatestClearing = None,
               metadata = LPPDetailsMetadata(
-                mainTransaction = Some(MainTransactionEnum.OfficersAssessmentFirstLPP),
+                mainTransaction = Some(MainTransactionEnum.OfficersAssessment),
                 outstandingAmount = Some(123.45),
                 timeToPay = Some(Seq(TimeToPay(
                   TTPStartDate = Some(LocalDate.of(2022, 1, 1)),
@@ -574,7 +574,7 @@ class PenaltiesFrontendServiceSpec extends SpecBase with LogCapturing with LPPDe
                 )))
               ),
               penaltyAmountAccruing = BigDecimal(0),
-              principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
+              principalChargeMainTransaction = MainTransactionEnum.OfficersAssessment
             ),
             LPPDetails(
               penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
@@ -601,7 +601,7 @@ class PenaltiesFrontendServiceSpec extends SpecBase with LogCapturing with LPPDe
               penaltyChargeDueDate = Some(LocalDate.of(2022, 10, 30)),
               principalChargeLatestClearing = None,
               metadata = LPPDetailsMetadata(
-                mainTransaction = Some(MainTransactionEnum.VATReturnFirstLPP),
+                mainTransaction = Some(MainTransactionEnum.VATReturnCharge),
                 outstandingAmount = Some(123.45),
                 timeToPay = Some(Seq(TimeToPay(
                   TTPStartDate = Some(LocalDate.of(2022, 1, 1)),
