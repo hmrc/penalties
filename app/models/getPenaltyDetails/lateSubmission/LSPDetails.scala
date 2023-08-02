@@ -24,7 +24,7 @@ import java.time.LocalDate
 case class LSPDetails(
                        penaltyNumber: String,
                        penaltyOrder: String,
-                       penaltyCategory: LSPPenaltyCategoryEnum.Value,
+                       penaltyCategory: Option[LSPPenaltyCategoryEnum.Value],
                        penaltyStatus: LSPPenaltyStatusEnum.Value,
                        penaltyCreationDate: LocalDate,
                        penaltyExpiryDate: LocalDate,

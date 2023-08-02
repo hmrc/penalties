@@ -56,13 +56,13 @@ case class UserHasPenaltyAuditModel(
   val userType: String = if (arn.isDefined || callingService == "VATVC Agent") "Agent" else "Trader"
 
   private val amountOfLspChargesPaid: Int = penaltyDetails.lateSubmissionPenalty.map(_.details.count(point => point.chargeOutstandingAmount.contains(0)
-    && (point.penaltyCategory.equals(LSPPenaltyCategoryEnum.Charge) || point.penaltyCategory.equals(LSPPenaltyCategoryEnum.Threshold))
+    && (point.penaltyCategory.contains(LSPPenaltyCategoryEnum.Charge) || point.penaltyCategory.contains(LSPPenaltyCategoryEnum.Threshold))
     && point.penaltyStatus.equals(LSPPenaltyStatusEnum.Active))).getOrElse(0)
 
   private val lspsUnpaidAndUnappealed: Seq[LSPDetails] = penaltyDetails.lateSubmissionPenalty.map(_.details.filter(point =>
     !point.chargeOutstandingAmount.contains(0)
       && !point.penaltyStatus.equals(LSPPenaltyStatusEnum.Inactive)
-      && (point.penaltyCategory.equals(LSPPenaltyCategoryEnum.Threshold) || point.penaltyCategory.equals(LSPPenaltyCategoryEnum.Charge)))).getOrElse(Seq.empty)
+      && (point.penaltyCategory.contains(LSPPenaltyCategoryEnum.Threshold) || point.penaltyCategory.contains(LSPPenaltyCategoryEnum.Charge)))).getOrElse(Seq.empty)
 
   private val lppsUnpaidAndUnappealed: Option[Seq[LPPDetails]] = penaltyDetails.latePaymentPenalty.flatMap(_.details.map(_.filter(point =>
     !point.penaltyAmountOutstanding.contains(0) && !point.penaltyStatus.equals(LSPPenaltyStatusEnum.Inactive))))
@@ -82,11 +82,11 @@ case class UserHasPenaltyAuditModel(
 
   private val amountOfLspChargesUnpaid: Int = penaltyDetails.lateSubmissionPenalty.map(_.details.count(point =>
     (point.chargeOutstandingAmount.isDefined && !point.chargeOutstandingAmount.contains(0)) && (
-      point.penaltyCategory.equals(LSPPenaltyCategoryEnum.Charge) || point.penaltyCategory.equals(LSPPenaltyCategoryEnum.Threshold)))
+      point.penaltyCategory.contains(LSPPenaltyCategoryEnum.Charge) || point.penaltyCategory.contains(LSPPenaltyCategoryEnum.Threshold)))
   ).getOrElse(0)
 
   private val financialLSPs: Int = penaltyDetails.lateSubmissionPenalty.map(_.details.count(point =>
-    (point.penaltyCategory.equals(LSPPenaltyCategoryEnum.Threshold) || point.penaltyCategory.equals(LSPPenaltyCategoryEnum.Charge))
+    (point.penaltyCategory.contains(LSPPenaltyCategoryEnum.Threshold) || point.penaltyCategory.contains(LSPPenaltyCategoryEnum.Charge))
       && !point.penaltyStatus.equals(LSPPenaltyStatusEnum.Inactive)
   )).getOrElse(0)
 

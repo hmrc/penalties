@@ -58,7 +58,7 @@ class GetPenaltyDetailsServiceISpec extends IntegrationSpecCommonBase with ETMPW
             LSPDetails(
               penaltyNumber = "12345678901234",
               penaltyOrder = "01",
-              penaltyCategory = LSPPenaltyCategoryEnum.Point,
+              penaltyCategory = Some(LSPPenaltyCategoryEnum.Point),
               penaltyStatus = LSPPenaltyStatusEnum.Active,
               penaltyCreationDate = LocalDate.of(2022, 10, 30),
               penaltyExpiryDate = LocalDate.of(2022, 10, 30),

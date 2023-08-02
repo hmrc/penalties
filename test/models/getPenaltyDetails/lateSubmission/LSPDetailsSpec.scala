@@ -171,7 +171,7 @@ class LSPDetailsSpec extends SpecBase {
   val model: LSPDetails = LSPDetails(
     penaltyNumber = "12345678901234",
     penaltyOrder = "01",
-    penaltyCategory = LSPPenaltyCategoryEnum.Point,
+    penaltyCategory = Some(LSPPenaltyCategoryEnum.Point),
     penaltyStatus = LSPPenaltyStatusEnum.Active,
     penaltyCreationDate = LocalDate.of(2022, 10, 30),
     penaltyExpiryDate = LocalDate.of(2022, 10, 30),
@@ -206,7 +206,7 @@ class LSPDetailsSpec extends SpecBase {
   val modelWithBlankExpiryReason: LSPDetails = LSPDetails(
     penaltyNumber = "12345678901234",
     penaltyOrder = "01",
-    penaltyCategory = LSPPenaltyCategoryEnum.Point,
+    penaltyCategory = Some(LSPPenaltyCategoryEnum.Point),
     penaltyStatus = LSPPenaltyStatusEnum.Active,
     penaltyCreationDate = LocalDate.of(2022, 10, 30),
     penaltyExpiryDate = LocalDate.of(2022, 10, 30),
@@ -237,7 +237,7 @@ class LSPDetailsSpec extends SpecBase {
   val modelWithBlankAppealLevel: LSPDetails = LSPDetails(
     penaltyNumber = "12345678901234",
     penaltyOrder = "01",
-    penaltyCategory = LSPPenaltyCategoryEnum.Point,
+    penaltyCategory = Some(LSPPenaltyCategoryEnum.Point),
     penaltyStatus = LSPPenaltyStatusEnum.Active,
     penaltyCreationDate = LocalDate.of(2022, 10, 30),
     penaltyExpiryDate = LocalDate.of(2022, 10, 30),

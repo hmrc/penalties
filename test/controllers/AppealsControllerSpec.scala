@@ -97,7 +97,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
             LSPDetails(
               penaltyNumber = "123456789",
               penaltyOrder = "1",
-              penaltyCategory = LSPPenaltyCategoryEnum.Point,
+              penaltyCategory = Some(LSPPenaltyCategoryEnum.Point),
               penaltyStatus = LSPPenaltyStatusEnum.Active,
               penaltyCreationDate = LocalDate.of(2022, 4, 1),
               penaltyExpiryDate = LocalDate.of(2022, 4, 1),
@@ -127,7 +127,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
             LSPDetails(
               penaltyNumber = "123456788",
               penaltyOrder = "2",
-              penaltyCategory = LSPPenaltyCategoryEnum.Point,
+              penaltyCategory = Some(LSPPenaltyCategoryEnum.Point),
               penaltyStatus = LSPPenaltyStatusEnum.Active,
               penaltyCreationDate = LocalDate.of(2022, 4, 1),
               penaltyExpiryDate = LocalDate.of(2022, 4, 1),
@@ -176,7 +176,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
             LSPDetails(
               penaltyNumber = "123456789",
               penaltyOrder = "1",
-              penaltyCategory = LSPPenaltyCategoryEnum.Point,
+              penaltyCategory = Some(LSPPenaltyCategoryEnum.Point),
               penaltyStatus = LSPPenaltyStatusEnum.Active,
               penaltyCreationDate = LocalDate.of(2022, 4, 1),
               penaltyExpiryDate = LocalDate.of(2022, 4, 1),
@@ -206,7 +206,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
             LSPDetails(
               penaltyNumber = "123456788",
               penaltyOrder = "2",
-              penaltyCategory = LSPPenaltyCategoryEnum.Point,
+              penaltyCategory = Some(LSPPenaltyCategoryEnum.Point),
               penaltyStatus = LSPPenaltyStatusEnum.Active,
               penaltyCreationDate = LocalDate.of(2022, 4, 1),
               penaltyExpiryDate = LocalDate.of(2022, 4, 1),
