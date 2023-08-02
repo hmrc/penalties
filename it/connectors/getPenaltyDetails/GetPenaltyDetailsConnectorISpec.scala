@@ -120,7 +120,7 @@ class GetPenaltyDetailsConnectorISpec extends IntegrationSpecCommonBase with ETM
                     taxPeriodEndDate = Some(LocalDate.of(2021, 4, 23)),
                     taxPeriodDueDate = Some(LocalDate.of(2021, 4, 23)),
                     returnReceiptDate = Some(LocalDate.of(2021, 4,23)),
-                    taxReturnStatus = TaxReturnStatusEnum.Open
+                    taxReturnStatus = Some(TaxReturnStatusEnum.Open)
                   )
                 )),
               expiryReason = None,

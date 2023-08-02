@@ -150,7 +150,7 @@ class LateSubmissionPenaltySpec extends SpecBase {
               taxPeriodEndDate = Some(LocalDate.of(2022, 12, 31)),
               taxPeriodDueDate = Some(LocalDate.of(2023, 2, 7)),
               returnReceiptDate = Some(LocalDate.of(2023, 2, 1)),
-              taxReturnStatus = TaxReturnStatusEnum.Fulfilled
+              taxReturnStatus = Some(TaxReturnStatusEnum.Fulfilled)
             )
           )
         ),

@@ -22,7 +22,7 @@ object TaxReturnStatusEnum extends Enumeration {
   val Open: TaxReturnStatusEnum.Value = Value
   val Fulfilled: TaxReturnStatusEnum.Value = Value
   val Reversed: TaxReturnStatusEnum.Value = Value
-  @deprecated("Not to be used, equivalent to None (Added Frequency Adjustment Point)",  "16/05/2023")
+  @deprecated("Not to be used, equivalent to None (Added Frequency Adjustment Point)", "16/05/2023")
   val AddedFAP: TaxReturnStatusEnum.Value = Value(" ")
 
   implicit val format: Format[TaxReturnStatusEnum.Value] = new Format[TaxReturnStatusEnum.Value] {
