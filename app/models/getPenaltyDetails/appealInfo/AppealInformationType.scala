@@ -39,7 +39,7 @@ object AppealInformationType {
   }
 
   private def parseAppealLevel(appealInformation: AppealInformationType): Option[AppealLevelEnum.Value] = {
-    if (appealInformation.appealLevel.contains(AppealLevelEnum.Empty)
+    if (appealInformation.appealLevel.isEmpty
       && appealInformation.appealStatus.contains(AppealStatusEnum.Unappealable)) {
       Some(AppealLevelEnum.HMRC)
     } else {

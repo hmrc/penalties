@@ -31,12 +31,6 @@ class AppealLevelEnumSpec extends SpecBase {
       result shouldBe JsString("02")
     }
 
-    //Only valid when appealStatus is 99 (UNAPPEALABLE)
-    "be writable from JSON for appeal level ' '" in {
-      val result = Json.toJson(AppealLevelEnum.Empty)(AppealLevelEnum.format)
-      result shouldBe JsString(" ")
-    }
-
     "be readable from JSON for appeal level '01'" in{
       val result = Json.fromJson(JsString("01"))(AppealLevelEnum.format)
       result.isSuccess shouldBe true
@@ -47,13 +41,6 @@ class AppealLevelEnumSpec extends SpecBase {
       val result = Json.fromJson(JsString("02"))(AppealLevelEnum.format)
       result.isSuccess shouldBe true
       result.get shouldBe AppealLevelEnum.Tribunal
-    }
-
-    //Only valid when appealStatus is 99 (UNAPPEALABLE)
-    "be readable from JSON for appeal level ' '" in {
-      val result = Json.fromJson(JsString(" "))(AppealLevelEnum.format)
-      result.isSuccess shouldBe true
-      result.get shouldBe AppealLevelEnum.Empty
     }
 
     "return JsError when the enum is not recognised" in {

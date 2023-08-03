@@ -34,7 +34,6 @@ class AppealInformationTypeSpec extends SpecBase {
     """
       |{
       |    "appealStatus": "99",
-      |    "appealLevel": " ",
       |    "appealDescription": "Some value"
       |}
       |""".stripMargin)
@@ -56,7 +55,7 @@ class AppealInformationTypeSpec extends SpecBase {
 
   val appealInfoAsModelWithDefaultedAppealLevel: AppealInformationType = AppealInformationType(
     appealStatus = Some(AppealStatusEnum.Unappealable),
-    appealLevel = Some(AppealLevelEnum.Empty),
+    appealLevel = None,
     appealDescription = Some("Some value")
   )
 
@@ -67,7 +66,7 @@ class AppealInformationTypeSpec extends SpecBase {
       result.get shouldBe appealInfoAsModel
     }
 
-    "be readable from JSON when the appealLevel is blank (when appealStatus is UNAPPEALABLE)" in {
+    "be readable from JSON when the appealLevel is missing (when appealStatus is UNAPPEALABLE)" in {
       val result = Json.fromJson(appealInfoAsJsonEmptyAppealLevel)(AppealInformationType.reads)
       result.isSuccess shouldBe true
       result.get shouldBe appealInfoAsModelWithDefaultedAppealLevel
