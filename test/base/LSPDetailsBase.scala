@@ -38,7 +38,7 @@ trait LSPDetailsBase {
       taxPeriodEndDate = Some(LocalDate.now()),
       taxPeriodDueDate = Some(LocalDate.now()),
       returnReceiptDate = Some(LocalDate.now()),
-      taxReturnStatus = TaxReturnStatusEnum.Fulfilled
+      taxReturnStatus = Some(TaxReturnStatusEnum.Fulfilled)
     ))),
     expiryReason = None,
     appealInformation = None,
