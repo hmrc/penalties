@@ -335,7 +335,7 @@ class APIServiceSpec extends SpecBase {
                 LSPDetails(
                   penaltyNumber = "12345678",
                   penaltyOrder = "1",
-                  penaltyCategory = LSPPenaltyCategoryEnum.Point,
+                  penaltyCategory = Some(LSPPenaltyCategoryEnum.Point),
                   penaltyStatus = LSPPenaltyStatusEnum.Active,
                   penaltyCreationDate = LocalDate.of(2022, 1, 1),
                   penaltyExpiryDate = LocalDate.of(2022, 1, 1),
@@ -410,7 +410,7 @@ class APIServiceSpec extends SpecBase {
                 LSPDetails(
                   penaltyNumber = "12345678",
                   penaltyOrder = "1",
-                  penaltyCategory = LSPPenaltyCategoryEnum.Point,
+                  penaltyCategory = Some(LSPPenaltyCategoryEnum.Point),
                   penaltyStatus = LSPPenaltyStatusEnum.Active,
                   penaltyCreationDate = LocalDate.of(2022, 1, 1),
                   penaltyExpiryDate = LocalDate.of(2022, 1, 1),
@@ -660,7 +660,7 @@ class APIServiceSpec extends SpecBase {
               LSPDetails(
                 penaltyNumber = "12345678",
                 penaltyOrder = "2",
-                penaltyCategory = LSPPenaltyCategoryEnum.Threshold,
+                penaltyCategory = Some(LSPPenaltyCategoryEnum.Threshold),
                 penaltyStatus = LSPPenaltyStatusEnum.Active,
                 penaltyCreationDate = LocalDate.of(2022, 1, 1),
                 penaltyExpiryDate = LocalDate.of(2022, 1, 1),
@@ -678,7 +678,7 @@ class APIServiceSpec extends SpecBase {
               LSPDetails(
                 penaltyNumber = "12345678",
                 penaltyOrder = "1",
-                penaltyCategory = LSPPenaltyCategoryEnum.Point,
+                penaltyCategory = Some(LSPPenaltyCategoryEnum.Point),
                 penaltyStatus = LSPPenaltyStatusEnum.Active,
                 penaltyCreationDate = LocalDate.of(2022, 1, 1),
                 penaltyExpiryDate = LocalDate.of(2022, 1, 1),
@@ -754,7 +754,7 @@ class APIServiceSpec extends SpecBase {
               LSPDetails(
                 penaltyNumber = "12345678",
                 penaltyOrder = "2",
-                penaltyCategory = LSPPenaltyCategoryEnum.Threshold,
+                penaltyCategory = Some(LSPPenaltyCategoryEnum.Threshold),
                 penaltyStatus = LSPPenaltyStatusEnum.Active,
                 penaltyCreationDate = LocalDate.of(2022, 1, 1),
                 penaltyExpiryDate = LocalDate.of(2022, 1, 1),
@@ -772,7 +772,7 @@ class APIServiceSpec extends SpecBase {
               LSPDetails(
                 penaltyNumber = "12345678",
                 penaltyOrder = "1",
-                penaltyCategory = LSPPenaltyCategoryEnum.Point,
+                penaltyCategory = Some(LSPPenaltyCategoryEnum.Point),
                 penaltyStatus = LSPPenaltyStatusEnum.Active,
                 penaltyCreationDate = LocalDate.of(2022, 1, 1),
                 penaltyExpiryDate = LocalDate.of(2022, 1, 1),

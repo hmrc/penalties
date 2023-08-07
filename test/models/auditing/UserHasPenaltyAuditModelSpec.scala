@@ -60,7 +60,7 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
         LSPDetails(
           penaltyNumber = "12345678",
           penaltyOrder = "2",
-          penaltyCategory = LSPPenaltyCategoryEnum.Charge,
+          penaltyCategory = Some(LSPPenaltyCategoryEnum.Charge),
           penaltyStatus = LSPPenaltyStatusEnum.Active,
           penaltyCreationDate = LocalDate.of(2022, 1, 1),
           penaltyExpiryDate = LocalDate.of(2024, 1, 1),
@@ -78,7 +78,7 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
         LSPDetails(
           penaltyNumber = "12345677",
           penaltyOrder = "1",
-          penaltyCategory = LSPPenaltyCategoryEnum.Charge,
+          penaltyCategory = Some(LSPPenaltyCategoryEnum.Charge),
           penaltyStatus = LSPPenaltyStatusEnum.Active,
           penaltyCreationDate = LocalDate.of(2022, 1, 1),
           penaltyExpiryDate = LocalDate.of(2024, 1, 1),
@@ -119,7 +119,7 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
         LSPDetails(
           penaltyNumber = "12345678",
           penaltyOrder = "2",
-          penaltyCategory = LSPPenaltyCategoryEnum.Point,
+          penaltyCategory = Some(LSPPenaltyCategoryEnum.Point),
           penaltyStatus = LSPPenaltyStatusEnum.Active,
           penaltyCreationDate = LocalDate.of(2022, 1, 1),
           penaltyExpiryDate = LocalDate.of(2024, 1, 1),
@@ -137,7 +137,7 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
         LSPDetails(
           penaltyNumber = "12345677",
           penaltyOrder = "1",
-          penaltyCategory = LSPPenaltyCategoryEnum.Point,
+          penaltyCategory = Some(LSPPenaltyCategoryEnum.Point),
           penaltyStatus = LSPPenaltyStatusEnum.Active,
           penaltyCreationDate = LocalDate.of(2022, 1, 1),
           penaltyExpiryDate = LocalDate.of(2024, 1, 1),
@@ -178,7 +178,7 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
         LSPDetails(
           penaltyNumber = "12345678",
           penaltyOrder = "2",
-          penaltyCategory = LSPPenaltyCategoryEnum.Point,
+          penaltyCategory = Some(LSPPenaltyCategoryEnum.Point),
           penaltyStatus = LSPPenaltyStatusEnum.Active,
           penaltyCreationDate = LocalDate.of(2022, 1, 1),
           penaltyExpiryDate = LocalDate.of(2024, 1, 1),
@@ -196,7 +196,7 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
         LSPDetails(
           penaltyNumber = "12345677",
           penaltyOrder = "1",
-          penaltyCategory = LSPPenaltyCategoryEnum.Point,
+          penaltyCategory = Some(LSPPenaltyCategoryEnum.Point),
           penaltyStatus = LSPPenaltyStatusEnum.Active,
           penaltyCreationDate = LocalDate.of(2022, 1, 1),
           penaltyExpiryDate = LocalDate.of(2024, 1, 1),
@@ -237,7 +237,7 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
         LSPDetails(
           penaltyNumber = "12345679",
           penaltyOrder = "3",
-          penaltyCategory = LSPPenaltyCategoryEnum.Point,
+          penaltyCategory = Some(LSPPenaltyCategoryEnum.Point),
           penaltyStatus = LSPPenaltyStatusEnum.Active,
           penaltyCreationDate = LocalDate.of(2022, 1, 1),
           penaltyExpiryDate = LocalDate.of(2024, 1, 1),
@@ -255,7 +255,7 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
         LSPDetails(
           penaltyNumber = "12345678",
           penaltyOrder = "2",
-          penaltyCategory = LSPPenaltyCategoryEnum.Point,
+          penaltyCategory = Some(LSPPenaltyCategoryEnum.Point),
           penaltyStatus = LSPPenaltyStatusEnum.Active,
           penaltyCreationDate = LocalDate.of(2022, 1, 1),
           penaltyExpiryDate = LocalDate.of(2024, 1, 1),
@@ -273,7 +273,7 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
         LSPDetails(
           penaltyNumber = "12345677",
           penaltyOrder = "1",
-          penaltyCategory = LSPPenaltyCategoryEnum.Point,
+          penaltyCategory = Some(LSPPenaltyCategoryEnum.Point),
           penaltyStatus = LSPPenaltyStatusEnum.Inactive,
           penaltyCreationDate = LocalDate.of(2022, 1, 1),
           penaltyExpiryDate = LocalDate.of(2024, 1, 1),
@@ -314,7 +314,7 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
         LSPDetails(
           penaltyNumber = "12345678",
           penaltyOrder = "2",
-          penaltyCategory = LSPPenaltyCategoryEnum.Point,
+          penaltyCategory = Some(LSPPenaltyCategoryEnum.Point),
           penaltyStatus = LSPPenaltyStatusEnum.Active,
           penaltyCreationDate = LocalDate.of(2022, 1, 1),
           penaltyExpiryDate = LocalDate.of(2024, 1, 1),
@@ -333,7 +333,7 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
         LSPDetails(
           penaltyNumber = "12345677",
           penaltyOrder = "1",
-          penaltyCategory = LSPPenaltyCategoryEnum.Point,
+          penaltyCategory = Some(LSPPenaltyCategoryEnum.Point),
           penaltyStatus = LSPPenaltyStatusEnum.Active,
           penaltyCreationDate = LocalDate.of(2022, 1, 1),
           penaltyExpiryDate = LocalDate.of(2024, 1, 1),
@@ -375,7 +375,7 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
         LSPDetails(
           penaltyNumber = "12345678",
           penaltyOrder = "2",
-          penaltyCategory = LSPPenaltyCategoryEnum.Point,
+          penaltyCategory = Some(LSPPenaltyCategoryEnum.Point),
           penaltyStatus = LSPPenaltyStatusEnum.Active,
           penaltyCreationDate = LocalDate.of(2022, 1, 1),
           penaltyExpiryDate = LocalDate.of(2024, 1, 1),
@@ -394,7 +394,7 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
         LSPDetails(
           penaltyNumber = "12345677",
           penaltyOrder = "1",
-          penaltyCategory = LSPPenaltyCategoryEnum.Point,
+          penaltyCategory = Some(LSPPenaltyCategoryEnum.Point),
           penaltyStatus = LSPPenaltyStatusEnum.Active,
           penaltyCreationDate = LocalDate.of(2022, 1, 1),
           penaltyExpiryDate = LocalDate.of(2024, 1, 1),
@@ -437,7 +437,7 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
         LSPDetails(
           penaltyNumber = "12345678",
           penaltyOrder = "3",
-          penaltyCategory = LSPPenaltyCategoryEnum.Charge,
+          penaltyCategory = Some(LSPPenaltyCategoryEnum.Charge),
           penaltyStatus = LSPPenaltyStatusEnum.Active,
           penaltyCreationDate = LocalDate.of(2022, 1, 1),
           penaltyExpiryDate = LocalDate.of(2024, 1, 1),
@@ -455,7 +455,7 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
         LSPDetails(
           penaltyNumber = "12345678",
           penaltyOrder = "2",
-          penaltyCategory = LSPPenaltyCategoryEnum.Threshold,
+          penaltyCategory = Some(LSPPenaltyCategoryEnum.Threshold),
           penaltyStatus = LSPPenaltyStatusEnum.Inactive,
           penaltyCreationDate = LocalDate.of(2022, 1, 1),
           penaltyExpiryDate = LocalDate.of(2024, 1, 1),
@@ -477,7 +477,7 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
         LSPDetails(
           penaltyNumber = "12345677",
           penaltyOrder = "1",
-          penaltyCategory = LSPPenaltyCategoryEnum.Point,
+          penaltyCategory = Some(LSPPenaltyCategoryEnum.Point),
           penaltyStatus = LSPPenaltyStatusEnum.Active,
           penaltyCreationDate = LocalDate.of(2022, 1, 1),
           penaltyExpiryDate = LocalDate.of(2024, 1, 1),
