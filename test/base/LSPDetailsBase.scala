@@ -24,7 +24,7 @@ import java.time.LocalDate
 trait LSPDetailsBase {
   val lspPointDetails: LSPDetails = LSPDetails(
     penaltyNumber = "1234567890",
-    penaltyOrder = "01",
+    penaltyOrder = Some("01"),
     penaltyCategory = Some(LSPPenaltyCategoryEnum.Point),
     penaltyStatus = LSPPenaltyStatusEnum.Active,
     penaltyCreationDate = LocalDate.now(),

@@ -104,7 +104,7 @@ class GetPenaltyDetailsConnectorISpec extends IntegrationSpecCommonBase with ETM
           details = Seq(
             LSPDetails(
               penaltyNumber = "123456793",
-              penaltyOrder = "1",
+              penaltyOrder = Some("1"),
               penaltyCategory = Some(LSPPenaltyCategoryEnum.Point),
               penaltyStatus = LSPPenaltyStatusEnum.Inactive,
               penaltyCreationDate = LocalDate.of(2021, 4, 23),

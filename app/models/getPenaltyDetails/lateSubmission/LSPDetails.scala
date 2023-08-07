@@ -23,7 +23,7 @@ import java.time.LocalDate
 
 case class LSPDetails(
                        penaltyNumber: String,
-                       penaltyOrder: String,
+                       penaltyOrder: Option[String],
                        penaltyCategory: Option[LSPPenaltyCategoryEnum.Value],
                        penaltyStatus: LSPPenaltyStatusEnum.Value,
                        penaltyCreationDate: LocalDate,

@@ -334,7 +334,7 @@ class APIServiceSpec extends SpecBase {
               details = Seq(
                 LSPDetails(
                   penaltyNumber = "12345678",
-                  penaltyOrder = "1",
+                  penaltyOrder = Some("1"),
                   penaltyCategory = Some(LSPPenaltyCategoryEnum.Point),
                   penaltyStatus = LSPPenaltyStatusEnum.Active,
                   penaltyCreationDate = LocalDate.of(2022, 1, 1),
@@ -409,7 +409,7 @@ class APIServiceSpec extends SpecBase {
               details = Seq(
                 LSPDetails(
                   penaltyNumber = "12345678",
-                  penaltyOrder = "1",
+                  penaltyOrder = Some("1"),
                   penaltyCategory = Some(LSPPenaltyCategoryEnum.Point),
                   penaltyStatus = LSPPenaltyStatusEnum.Active,
                   penaltyCreationDate = LocalDate.of(2022, 1, 1),
@@ -659,7 +659,7 @@ class APIServiceSpec extends SpecBase {
             details = Seq(
               LSPDetails(
                 penaltyNumber = "12345678",
-                penaltyOrder = "2",
+                penaltyOrder = Some("2"),
                 penaltyCategory = Some(LSPPenaltyCategoryEnum.Threshold),
                 penaltyStatus = LSPPenaltyStatusEnum.Active,
                 penaltyCreationDate = LocalDate.of(2022, 1, 1),
@@ -677,7 +677,7 @@ class APIServiceSpec extends SpecBase {
               ),
               LSPDetails(
                 penaltyNumber = "12345678",
-                penaltyOrder = "1",
+                penaltyOrder = Some("1"),
                 penaltyCategory = Some(LSPPenaltyCategoryEnum.Point),
                 penaltyStatus = LSPPenaltyStatusEnum.Active,
                 penaltyCreationDate = LocalDate.of(2022, 1, 1),
@@ -753,7 +753,7 @@ class APIServiceSpec extends SpecBase {
             details = Seq(
               LSPDetails(
                 penaltyNumber = "12345678",
-                penaltyOrder = "2",
+                penaltyOrder = Some("2"),
                 penaltyCategory = Some(LSPPenaltyCategoryEnum.Threshold),
                 penaltyStatus = LSPPenaltyStatusEnum.Active,
                 penaltyCreationDate = LocalDate.of(2022, 1, 1),
@@ -771,7 +771,7 @@ class APIServiceSpec extends SpecBase {
               ),
               LSPDetails(
                 penaltyNumber = "12345678",
-                penaltyOrder = "1",
+                penaltyOrder = Some("1"),
                 penaltyCategory = Some(LSPPenaltyCategoryEnum.Point),
                 penaltyStatus = LSPPenaltyStatusEnum.Active,
                 penaltyCreationDate = LocalDate.of(2022, 1, 1),

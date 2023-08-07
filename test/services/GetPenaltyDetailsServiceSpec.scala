@@ -89,7 +89,7 @@ class GetPenaltyDetailsServiceSpec extends SpecBase with LogCapturing with LPPDe
           details = Seq(
             LSPDetails(
               penaltyNumber = "12345678901234",
-              penaltyOrder = "01",
+              penaltyOrder = Some("01"),
               penaltyCategory = Some(LSPPenaltyCategoryEnum.Point),
               penaltyStatus = LSPPenaltyStatusEnum.Active,
               penaltyCreationDate = LocalDate.of(2022, 10, 30),

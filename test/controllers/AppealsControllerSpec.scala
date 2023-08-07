@@ -96,7 +96,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
           details = Seq(
             LSPDetails(
               penaltyNumber = "123456789",
-              penaltyOrder = "1",
+              penaltyOrder = Some("1"),
               penaltyCategory = Some(LSPPenaltyCategoryEnum.Point),
               penaltyStatus = LSPPenaltyStatusEnum.Active,
               penaltyCreationDate = LocalDate.of(2022, 4, 1),
@@ -126,7 +126,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
             ),
             LSPDetails(
               penaltyNumber = "123456788",
-              penaltyOrder = "2",
+              penaltyOrder = Some("2"),
               penaltyCategory = Some(LSPPenaltyCategoryEnum.Point),
               penaltyStatus = LSPPenaltyStatusEnum.Active,
               penaltyCreationDate = LocalDate.of(2022, 4, 1),
@@ -175,7 +175,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
           details = Seq(
             LSPDetails(
               penaltyNumber = "123456789",
-              penaltyOrder = "1",
+              penaltyOrder = Some("1"),
               penaltyCategory = Some(LSPPenaltyCategoryEnum.Point),
               penaltyStatus = LSPPenaltyStatusEnum.Active,
               penaltyCreationDate = LocalDate.of(2022, 4, 1),
@@ -205,7 +205,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
             ),
             LSPDetails(
               penaltyNumber = "123456788",
-              penaltyOrder = "2",
+              penaltyOrder = Some("2"),
               penaltyCategory = Some(LSPPenaltyCategoryEnum.Point),
               penaltyStatus = LSPPenaltyStatusEnum.Active,
               penaltyCreationDate = LocalDate.of(2022, 4, 1),
