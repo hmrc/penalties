@@ -62,7 +62,6 @@ trait ETMPWiremock {
       |       "appealInformation": [
       |         {
       |           "appealStatus": "99",
-      |           "appealLevel": " ",
       |           "appealDescription": "Some value"
       |         }
       |       ],

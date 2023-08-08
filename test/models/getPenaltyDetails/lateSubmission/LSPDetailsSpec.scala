@@ -92,7 +92,7 @@ class LSPDetailsSpec extends SpecBase {
       |}
       |""".stripMargin)
 
-  val jsonRepresentingModelWithBlankAppealLevel: JsValue = Json.parse(
+  val jsonRepresentingModelWithNoAppealLevel: JsValue = Json.parse(
     """
       |{
       |   "penaltyNumber": "12345678901234",
@@ -117,7 +117,6 @@ class LSPDetailsSpec extends SpecBase {
       |   "appealInformation": [
       |      {
       |        "appealStatus": "99",
-      |        "appealLevel": " ",
       |        "appealDescription": "Some value"
       |      }
       |   ],
@@ -259,7 +258,7 @@ class LSPDetailsSpec extends SpecBase {
     expiryReason = None,
     appealInformation = Some(
       Seq(
-        AppealInformationType(appealStatus = Some(AppealStatusEnum.Unappealable), appealLevel = Some(AppealLevelEnum.Empty), appealDescription = Some("Some value"))
+        AppealInformationType(appealStatus = Some(AppealStatusEnum.Unappealable), appealLevel = None, appealDescription = Some("Some value"))
       )
     ),
     chargeDueDate = Some(LocalDate.of(2022, 10, 30)),
@@ -281,8 +280,8 @@ class LSPDetailsSpec extends SpecBase {
     result.get shouldBe modelWithBlankExpiryReason
   }
 
-  "be readable from JSON when appealLevel is ' '" in {
-    val result: JsResult[LSPDetails] = Json.fromJson(jsonRepresentingModelWithBlankAppealLevel)(LSPDetails.reads)
+  "be readable from JSON when appealLevel is missing" in {
+    val result: JsResult[LSPDetails] = Json.fromJson(jsonRepresentingModelWithNoAppealLevel)(LSPDetails.reads)
     result.isSuccess shouldBe true
     result.get shouldBe modelWithBlankAppealLevel
   }

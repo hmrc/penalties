@@ -81,7 +81,7 @@ class GetPenaltyDetailsServiceISpec extends IntegrationSpecCommonBase with ETMPW
               appealInformation = Some(
                 Seq(
                   AppealInformationType(
-                    appealStatus = Some(AppealStatusEnum.Unappealable), appealLevel = Some(AppealLevelEnum.Empty), appealDescription = Some("Some value")
+                    appealStatus = Some(AppealStatusEnum.Unappealable), appealLevel = None, appealDescription = Some("Some value")
                   )
                 )
               ),

@@ -135,7 +135,6 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
       |       "appealInformation": [
       |         {
       |           "appealStatus": "99",
-      |           "appealLevel": " ",
       |           "appealDescription": "Some value"
       |         }
       |       ]
@@ -174,7 +173,6 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
       |         "appealInformation": [
       |           {
       |             "appealStatus": "99",
-      |             "appealLevel": " ",
       |             "appealDescription": "Some value"
       |           }
       |         ],
