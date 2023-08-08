@@ -99,7 +99,7 @@ class GetPenaltyDetailsConnectorISpec extends IntegrationSpecCommonBase with ETM
             inactivePenaltyPoints = 2,
             regimeThreshold = 2,
             penaltyChargeAmount = 200.00,
-            PoCAchievementDate = LocalDate.of(2021, 4, 23)
+            PoCAchievementDate = Some(LocalDate.of(2021, 4, 23))
           ),
           details = Seq(
             LSPDetails(

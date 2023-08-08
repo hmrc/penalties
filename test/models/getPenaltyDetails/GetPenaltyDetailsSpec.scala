@@ -242,7 +242,7 @@ class GetPenaltyDetailsSpec extends SpecBase {
           inactivePenaltyPoints = 12,
           regimeThreshold = 10,
           penaltyChargeAmount = 684.25,
-          PoCAchievementDate = LocalDate.of(2022, 1, 1)
+          PoCAchievementDate = Some(LocalDate.of(2022, 1, 1))
         ),
         details = Seq(
           LSPDetails(

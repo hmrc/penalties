@@ -25,7 +25,7 @@ case class LSPSummary(
                        inactivePenaltyPoints: Int,
                        regimeThreshold: Int,
                        penaltyChargeAmount: BigDecimal,
-                       PoCAchievementDate: LocalDate
+                       PoCAchievementDate: Option[LocalDate]
                      )
 
 object LSPSummary {
