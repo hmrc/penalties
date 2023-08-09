@@ -152,7 +152,7 @@ class FilterServiceSpec extends SpecBase with LSPDetailsBase with LPPDetailsBase
         inactivePenaltyPoints = 2,
         regimeThreshold = 2,
         penaltyChargeAmount = 200,
-        PoCAchievementDate = LocalDate.now().plusYears(2)
+        PoCAchievementDate = Some(LocalDate.now().plusYears(2))
       )
 
       val penaltiesDetails = GetPenaltyDetails(
@@ -211,7 +211,7 @@ class FilterServiceSpec extends SpecBase with LSPDetailsBase with LPPDetailsBase
       inactivePenaltyPoints = 2,
       regimeThreshold = 2,
       penaltyChargeAmount = 200,
-      PoCAchievementDate = LocalDate.now().plusYears(2)
+      PoCAchievementDate = Some(LocalDate.now().plusYears(2))
     )
 
     val penaltiesDetails = GetPenaltyDetails(
@@ -250,7 +250,7 @@ class FilterServiceSpec extends SpecBase with LSPDetailsBase with LPPDetailsBase
       inactivePenaltyPoints = 2,
       regimeThreshold = 2,
       penaltyChargeAmount = 200,
-      PoCAchievementDate = LocalDate.now().plusYears(2)
+      PoCAchievementDate = Some(LocalDate.now().plusYears(2))
     )
 
     val penaltiesDetails = GetPenaltyDetails(
@@ -281,7 +281,7 @@ class FilterServiceSpec extends SpecBase with LSPDetailsBase with LPPDetailsBase
       inactivePenaltyPoints = 2,
       regimeThreshold = 2,
       penaltyChargeAmount = 200,
-      PoCAchievementDate = LocalDate.now().plusYears(2)
+      PoCAchievementDate = Some(LocalDate.now().plusYears(2))
     )
 
     val penaltiesDetails = GetPenaltyDetails(

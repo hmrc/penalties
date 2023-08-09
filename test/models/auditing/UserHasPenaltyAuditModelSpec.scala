@@ -54,7 +54,7 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
         inactivePenaltyPoints = 0,
         regimeThreshold = 1,
         penaltyChargeAmount = 200,
-        PoCAchievementDate = LocalDate.of(2022, 1, 1)
+        PoCAchievementDate = Some(LocalDate.of(2022, 1, 1))
       ),
       details = Seq(
         LSPDetails(
@@ -113,7 +113,7 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
         inactivePenaltyPoints = 0,
         regimeThreshold = 5,
         penaltyChargeAmount = 200,
-        PoCAchievementDate = LocalDate.of(2022, 1, 1)
+        PoCAchievementDate = Some(LocalDate.of(2022, 1, 1))
       ),
       details = Seq(
         LSPDetails(
@@ -172,7 +172,7 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
         inactivePenaltyPoints = 0,
         regimeThreshold = 5,
         penaltyChargeAmount = 200,
-        PoCAchievementDate = LocalDate.of(2022, 1, 1)
+        PoCAchievementDate = Some(LocalDate.of(2022, 1, 1))
       ),
       details = Seq(
         LSPDetails(
@@ -231,7 +231,7 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
         inactivePenaltyPoints = 1,
         regimeThreshold = 5,
         penaltyChargeAmount = 200,
-        PoCAchievementDate = LocalDate.of(2022, 1, 1)
+        PoCAchievementDate = Some(LocalDate.of(2022, 1, 1))
       ),
       details = Seq(
         LSPDetails(
@@ -308,7 +308,7 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
         inactivePenaltyPoints = 0,
         regimeThreshold = 5,
         penaltyChargeAmount = 200,
-        PoCAchievementDate = LocalDate.of(2022, 1, 1)
+        PoCAchievementDate = Some(LocalDate.of(2022, 1, 1))
       ),
       details = Seq(
         LSPDetails(
@@ -369,7 +369,7 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
         inactivePenaltyPoints = 2,
         regimeThreshold = 5,
         penaltyChargeAmount = 200,
-        PoCAchievementDate = LocalDate.of(2022, 1, 1)
+        PoCAchievementDate = None
       ),
       details = Seq(
         LSPDetails(
@@ -431,7 +431,7 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
         inactivePenaltyPoints = 0,
         regimeThreshold = 2,
         penaltyChargeAmount = 200,
-        PoCAchievementDate = LocalDate.of(2022, 1, 1)
+        PoCAchievementDate = Some(LocalDate.of(2022, 1, 1))
       ),
       details = Seq(
         LSPDetails(
