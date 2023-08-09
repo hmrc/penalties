@@ -369,7 +369,7 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
         inactivePenaltyPoints = 2,
         regimeThreshold = 5,
         penaltyChargeAmount = 200,
-        PoCAchievementDate = Some(LocalDate.of(2022, 1, 1))
+        PoCAchievementDate = None
       ),
       details = Seq(
         LSPDetails(
