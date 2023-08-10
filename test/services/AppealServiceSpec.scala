@@ -35,7 +35,6 @@ import play.api.Configuration
 import play.api.test.Helpers._
 import uk.gov.hmrc.http.HeaderCarrier
 import utils.Logger.logger
-import utils.UUIDGenerator
 
 import java.time.{LocalDate, LocalDateTime}
 import scala.concurrent.{ExecutionContext, Future}
@@ -47,18 +46,15 @@ class AppealServiceSpec extends SpecBase with LogCapturing {
   val mockAppealsConnector: PEGAConnector = mock(classOf[PEGAConnector])
   val correlationId: String = "correlationId"
   val mockAppConfig: AppConfig = mock(classOf[AppConfig])
-  val mockUUIDGenerator: UUIDGenerator = mock(classOf[UUIDGenerator])
   implicit val config: Configuration = mockAppConfig.config
 
   class Setup {
     val service = new AppealService(
-      mockAppealsConnector, mockAppConfig, mockUUIDGenerator
+      mockAppealsConnector, mockAppConfig
     )
     reset(mockAppealsConnector)
     reset(mockAppConfig)
-    reset(mockUUIDGenerator)
     when(mockAppConfig.isEnabled(Matchers.eq(SanitiseFileName))).thenReturn(false)
-    when(mockUUIDGenerator.generateUUID).thenReturn(correlationId)
     when(mockAppConfig.SDESNotificationInfoType).thenReturn("S18")
     when(mockAppConfig.SDESNotificationFileRecipient).thenReturn("123456789012")
     when(mockAppConfig.maximumFilenameLength).thenReturn(150)
@@ -160,12 +156,11 @@ class AppealServiceSpec extends SpecBase with LogCapturing {
               )
             ),
             audit = SDESAudit(
-              correlationID = correlationId
+              correlationID = "ref-123"
             )
           )
         )
 
-        when(mockUUIDGenerator.generateUUID).thenReturn(correlationId)
         val result = service.createSDESNotifications(Some(uploads), caseID = "PR-1234")
         result shouldBe expectedResult
       }
@@ -190,7 +185,7 @@ class AppealServiceSpec extends SpecBase with LogCapturing {
               "x-amz-algorithm" -> "AWS4-HMAC-SHA256"
             ))
           ),
-          UploadJourney(reference = "ref-123",
+          UploadJourney(reference = "ref-456",
             fileStatus = UploadStatusEnum.READY,
             downloadUrl = Some("/"),
             uploadDetails = None,
@@ -200,7 +195,7 @@ class AppealServiceSpec extends SpecBase with LogCapturing {
               "x-amz-algorithm" -> "AWS4-HMAC-SHA256"
             ))
           ),
-          UploadJourney(reference = "ref-123",
+          UploadJourney(reference = "ref-789",
             fileStatus = UploadStatusEnum.READY,
             downloadUrl = Some("/"),
             uploadDetails = Some(UploadDetails(
@@ -233,7 +228,7 @@ class AppealServiceSpec extends SpecBase with LogCapturing {
               )
             ),
             audit = SDESAudit(
-              correlationID = correlationId
+              correlationID = "ref-123"
             )
           ),
           SDESNotification(
@@ -250,11 +245,10 @@ class AppealServiceSpec extends SpecBase with LogCapturing {
               )
             ),
             audit = SDESAudit(
-              correlationID = correlationId
+              correlationID = "ref-789"
             )
           )
         )
-        when(mockUUIDGenerator.generateUUID).thenReturn(correlationId)
         withCaptureOfLoggingFrom(logger) {
           logs => {
             val result = service.createSDESNotifications(Some(uploads), caseID = "PR-1234")
@@ -305,12 +299,11 @@ class AppealServiceSpec extends SpecBase with LogCapturing {
               )
             ),
             audit = SDESAudit(
-              correlationID = correlationId
+              correlationID = "ref-123"
             )
           )
         )
 
-        when(mockUUIDGenerator.generateUUID).thenReturn(correlationId)
         val result = service.createSDESNotifications(Some(uploads), caseID = "PR-1234")
         result shouldBe expectedResult
       }
@@ -337,7 +330,6 @@ class AppealServiceSpec extends SpecBase with LogCapturing {
             ))
           )
         )
-        when(mockUUIDGenerator.generateUUID).thenReturn(correlationId)
         val result: Seq[SDESNotification] = service.createSDESNotifications(Some(uploads), caseID = "PR-5678")
         val resultFileName: String = result.head.file.name
         resultFileName.length shouldBe mockAppConfig.maximumFilenameLength + 4
@@ -363,7 +355,6 @@ class AppealServiceSpec extends SpecBase with LogCapturing {
             ))
           )
         )
-        when(mockUUIDGenerator.generateUUID).thenReturn(correlationId)
         val result: Seq[SDESNotification] = service.createSDESNotifications(Some(uploads), caseID = "PR-5678")
         val resultFileName: String = result.head.file.name
         resultFileName.length shouldBe mockAppConfig.maximumFilenameLength
@@ -389,7 +380,6 @@ class AppealServiceSpec extends SpecBase with LogCapturing {
             ))
           )
         )
-        when(mockUUIDGenerator.generateUUID).thenReturn(correlationId)
         val result: Seq[SDESNotification] = service.createSDESNotifications(Some(uploads), caseID = "PR-5678")
         val resultFileName: String = result.head.file.name
         resultFileName.length shouldBe mockAppConfig.maximumFilenameLength + 4
