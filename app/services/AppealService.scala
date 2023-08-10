@@ -27,13 +27,14 @@ import models.notification._
 import models.upload.UploadJourney
 import play.api.Configuration
 import utils.Logger.logger
-import utils.{DateHelper, FileHelper}
+import utils.{DateHelper, FileHelper, UUIDGenerator}
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class AppealService @Inject()(appealsConnector: PEGAConnector,
-                              appConfig: AppConfig)(implicit ec: ExecutionContext, val config: Configuration) extends FeatureSwitching {
+                              appConfig: AppConfig,
+                              idGenerator: UUIDGenerator)(implicit ec: ExecutionContext, val config: Configuration) extends FeatureSwitching {
 
   private val regexToSanitiseFileName: String = "[\\\\\\/:*?<>|\"‘’“”]"
 
@@ -77,7 +78,7 @@ class AppealService @Inject()(appealsConnector: PEGAConnector,
                   SDESProperties(name = "SourceFileUploadDate", value = details.uploadTimestamp.format(DateHelper.dateTimeFormatter))
                 )
               ),
-              audit = SDESAudit(correlationID = upload.reference)
+              audit = SDESAudit(correlationID = idGenerator.generateUUID)
             )
           }
         }
