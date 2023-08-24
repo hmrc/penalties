@@ -396,6 +396,48 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
       |""".stripMargin
   )
 
+  val combinedPenaltyAndFinancialDataWithManualLPP: JsValue = Json.parse(
+    """
+      |{
+      |    "totalisations": {
+      |        "LSPTotalValue": 200,
+      |        "penalisedPrincipalTotal": 2000,
+      |        "LPPPostedTotal": 220.25,
+      |        "LPPEstimatedTotal": 15.26
+      |    },
+      |    "lateSubmissionPenalty": {
+      |        "summary": {
+      |            "activePenaltyPoints": 0,
+      |            "inactivePenaltyPoints": 0,
+      |            "regimeThreshold": 5,
+      |            "penaltyChargeAmount": 200,
+      |            "PoCAchievementDate": "2022-01-01"
+      |        },
+      |        "details": []
+      |    },
+      |    "latePaymentPenalty": {
+      |        "details": [
+      |            {
+      |               "principalChargeReference" : "PENALTY1234",
+      |		            "penaltyCategory": "MANUAL",
+      |		            "penaltyStatus": "P",
+      |		            "penaltyAmountAccruing": 0,
+      |		            "penaltyAmountPosted": 100.00,
+      |		            "penaltyAmountPaid": 45.00,
+      |		            "penaltyAmountOutstanding": 55.00,
+      |		            "penaltyChargeCreationDate": "2023-04-01",
+      |               "principalChargeDueDate": "2023-04-01",
+      |               "principalChargeBillingTo": "2023-04-01",
+      |               "principalChargeBillingFrom": "2023-04-01",
+      |               "mainTransaction": "4787",
+      |               "principalChargeMainTransaction": "4787"
+      |            }
+      |        ]
+      |    }
+      |}
+      |""".stripMargin
+  )
+
   s"return OK (${Status.OK})" when {
 
     "the get penalty details call succeeds and the get financial details call succeeds (combining the data together)" in {
@@ -430,6 +472,64 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
       val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/HMRC-MTD-VAT~VRN~123456789").get())
       result.status shouldBe OK
       Json.parse(result.body) shouldBe combinedPenaltyAndFinancialDataWithout1811Totalisations
+    }
+
+    "the get penalty details call succeeds and the get financial details call succeeds (combining the data together - for manual LPP)" in {
+      val getFinancialDetailsWithManualLPP: JsValue = Json.parse(
+        """
+          |{
+          | "getFinancialData": {
+          |   "financialDetails":{
+          |     "documentDetails": [
+          |     {
+          |      "chargeReferenceNumber": "PENALTY1234",
+          |      "issueDate": "2023-04-01",
+          |      "documentTotalAmount": "100.00",
+          |      "documentOutstandingAmount": "55.00",
+          |      "lineItemDetails": [
+          |        {
+          |          "mainTransaction": "4787"
+          |      }]
+          |    }
+          |  ]
+          |}
+          |}
+          |}
+          |""".stripMargin
+      )
+      val getPenaltyDetailsJson: JsValue = Json.parse(
+        """
+          |{
+          | "totalisations": {
+          |   "LSPTotalValue": 200,
+          |   "penalisedPrincipalTotal": 2000,
+          |   "LPPPostedTotal": 165.25,
+          |   "LPPEstimatedTotal": 15.26
+          | },
+          | "lateSubmissionPenalty": {
+          |   "summary": {
+          |     "activePenaltyPoints": 0,
+          |     "inactivePenaltyPoints": 0,
+          |     "regimeThreshold": 5,
+          |     "penaltyChargeAmount": 200.00,
+          |     "PoCAchievementDate": "2022-01-01"
+          |   },
+          |   "details": []
+          | },
+          | "latePaymentPenalty": {
+          |    "details": []
+          | }
+          |}
+          |""".stripMargin)
+      mockStubResponseForGetPenaltyDetails(Status.OK, "123456789", body = Some(getPenaltyDetailsJson.toString()))
+      mockStubResponseForGetFinancialDetails(Status.OK,
+        s"VRN/123456789/VATC?$financialDataQueryParamWithClearedItems", body = Some(getFinancialDetailsWithManualLPP.toString()))
+      mockStubResponseForGetFinancialDetails(Status.NO_CONTENT,
+        s"VRN/123456789/VATC?$financialDataQueryParamWithoutClearedItems")
+
+      val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/HMRC-MTD-VAT~VRN~123456789").get())
+      result.status shouldBe OK
+      Json.parse(result.body) shouldBe combinedPenaltyAndFinancialDataWithManualLPP
     }
 
     s"the get penalty details call succeeds and the get financial details call returns NO_CONTENT (${Status.NO_CONTENT}) (returning penalty details unaltered)" in {
@@ -747,7 +847,10 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
         |     "PoCAchievementDate": "2022-01-01"
         |   },
         |   "details": []
-        |   }
+        | },
+        | "latePaymentPenalty": {
+        |   "details": []
+        | }
         |}
         |""".stripMargin)
     mockStubResponseForGetPenaltyDetails(Status.OK, "123456789", body = Some(getPenaltyDetailsWithNoPointsAsJson.toString()))

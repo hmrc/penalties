@@ -18,10 +18,14 @@ package models.getFinancialDetails
 
 import play.api.libs.json.{Format, Json}
 
+import java.time.LocalDate
+
 case class DocumentDetails(
                             chargeReferenceNumber: Option[String],
                             documentOutstandingAmount: Option[BigDecimal],
-                            lineItemDetails: Option[Seq[LineItemDetails]]
+                            documentTotalAmount: Option[BigDecimal],
+                            lineItemDetails: Option[Seq[LineItemDetails]],
+                            issueDate: Option[LocalDate]
                           )
 
 object DocumentDetails {

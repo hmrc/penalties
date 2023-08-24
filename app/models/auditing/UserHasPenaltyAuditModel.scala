@@ -64,8 +64,8 @@ case class UserHasPenaltyAuditModel(
       && !point.penaltyStatus.equals(LSPPenaltyStatusEnum.Inactive)
       && (point.penaltyCategory.contains(LSPPenaltyCategoryEnum.Threshold) || point.penaltyCategory.contains(LSPPenaltyCategoryEnum.Charge)))).getOrElse(Seq.empty)
 
-  private val lppsUnpaidAndUnappealed: Option[Seq[LPPDetails]] = penaltyDetails.latePaymentPenalty.flatMap(_.details.map(_.filter(point =>
-    !point.penaltyAmountOutstanding.contains(0) && !point.penaltyStatus.equals(LSPPenaltyStatusEnum.Inactive))))
+  private val lppsUnpaidAndUnappealed: Option[Seq[LPPDetails]] = penaltyDetails.latePaymentPenalty.flatMap(_.details.map(_.filter(penalty =>
+    !penalty.penaltyAmountOutstanding.contains(0) && !penalty.penaltyStatus.equals(LSPPenaltyStatusEnum.Inactive))))
 
   private val totalTaxDue: BigDecimal = penaltyDetails.totalisations.flatMap(_.penalisedPrincipalTotal).getOrElse(0)
 

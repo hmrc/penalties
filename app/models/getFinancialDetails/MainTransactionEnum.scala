@@ -43,6 +43,7 @@ object MainTransactionEnum extends Enumeration {
   val AAReturnCharge: MainTransactionEnum.Value = Value("4702")
   val AAReturnChargeFirstLPP: MainTransactionEnum.Value = Value("4718")
   val AAReturnChargeSecondLPP: MainTransactionEnum.Value = Value("4719")
+  val ManualLPP: MainTransactionEnum.Value = Value("4787")
   val Unknown: MainTransactionEnum.Value = Value("4700")
 
   implicit val format: Format[MainTransactionEnum.Value] = new Format[MainTransactionEnum.Value] {
@@ -76,30 +77,9 @@ object MainTransactionEnum extends Enumeration {
         case "4702" => JsSuccess(AAReturnCharge)
         case "4718" => JsSuccess(AAReturnChargeFirstLPP)
         case "4719" => JsSuccess(AAReturnChargeSecondLPP)
+        case "4787" => JsSuccess(ManualLPP)
         case e => JsSuccess(Unknown)
       }
     }
   }
-
-  val firstCharges: Seq[MainTransactionEnum.Value] = Seq(
-    VATReturnFirstLPP,
-    AAReturnChargeFirstLPP,
-    POAReturnChargeFirstLPP,
-    ErrorCorrectionFirstLPP,
-    AdditionalAssessmentFirstLPP,
-    ProtectiveAssessmentFirstLPP,
-    CentralAssessmentFirstLPP,
-    OfficersAssessmentFirstLPP
-  )
-
-  val secondCharges: Seq[MainTransactionEnum.Value] = Seq(
-    VATReturnSecondLPP,
-    AAReturnChargeSecondLPP,
-    POAReturnChargeSecondLPP,
-    ErrorCorrectionSecondLPP,
-    AdditionalAssessmentSecondLPP,
-    ProtectiveAssessmentSecondLPP,
-    CentralAssessmentSecondLPP,
-    OfficersAssessmentSecondLPP
-  )
 }

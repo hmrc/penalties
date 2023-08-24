@@ -19,6 +19,8 @@ package models.getFinancialDetails
 import base.SpecBase
 import play.api.libs.json.{JsValue, Json}
 
+import java.time.LocalDate
+
 class DocumentDetailsSpec extends SpecBase {
   val modelAsJson: JsValue = Json.parse(
     """
@@ -29,7 +31,9 @@ class DocumentDetailsSpec extends SpecBase {
       |      {
       |         "mainTransaction":"4703"
       |      }
-      |   ]
+      |   ],
+      |   "documentTotalAmount": 100.0,
+      |   "issueDate": "2023-01-01"
       |}
       |""".stripMargin)
 
@@ -40,7 +44,9 @@ class DocumentDetailsSpec extends SpecBase {
       Seq(
         LineItemDetails(Some(MainTransactionEnum.VATReturnFirstLPP))
       )
-    )
+    ),
+    documentTotalAmount = Some(100.00),
+    issueDate = Some(LocalDate.of(2023, 1, 1))
   )
 
   "be readable from JSON" in {
