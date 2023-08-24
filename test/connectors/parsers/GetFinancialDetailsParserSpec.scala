@@ -29,6 +29,8 @@ import uk.gov.hmrc.http.HttpResponse
 import utils.Logger.logger
 import utils.PagerDutyHelper.PagerDutyKeys
 
+import java.time.LocalDate
+
 class GetFinancialDetailsParserSpec extends AnyWordSpec with Matchers with LogCapturing {
 
   val mockGetFinancialDetailsModelAPI1811: GetFinancialData = GetFinancialData(
@@ -36,7 +38,9 @@ class GetFinancialDetailsParserSpec extends AnyWordSpec with Matchers with LogCa
       documentDetails = Some(Seq(DocumentDetails(
         chargeReferenceNumber = None,
         documentOutstandingAmount = Some(0.00),
-        lineItemDetails = Some(Seq(LineItemDetails(None))))
+        lineItemDetails = Some(Seq(LineItemDetails(None))),
+        documentTotalAmount = Some(100.00),
+        issueDate = Some(LocalDate.of(2023, 1, 1)))
       )),
       totalisation = Some(FinancialDetailsTotalisation(
         regimeTotalisations = Some(RegimeTotalisation(totalAccountOverdue = Some(1000.0))),
@@ -53,6 +57,8 @@ class GetFinancialDetailsParserSpec extends AnyWordSpec with Matchers with LogCa
       |     "documentDetails": [
       |     {
       |       "documentOutstandingAmount": 0.0,
+      |       "documentTotalAmount": 100.0,
+      |       "issueDate": "2023-01-01",
       |       "lineItemDetails": [{}]
       |     }
       |   ],

@@ -19,8 +19,8 @@ package services
 import config.AppConfig
 import connectors.parsers.getFinancialDetails.GetFinancialDetailsParser._
 import models.auditing.UserHasPenaltyAuditModel
-import models.getFinancialDetails.{FinancialDetails, MainTransactionEnum}
-import models.getPenaltyDetails.appealInfo.AppealStatusEnum
+import models.getFinancialDetails.MainTransactionEnum.ManualLPP
+import models.getFinancialDetails.{DocumentDetails, FinancialDetails}
 import models.getPenaltyDetails.latePayment._
 import models.getPenaltyDetails.{GetPenaltyDetails, Totalisations}
 import play.api.http.Status.NOT_FOUND
@@ -127,71 +127,57 @@ class PenaltiesFrontendService @Inject()(getFinancialDetailsService: GetFinancia
   def combineAPIData(penaltyDetails: GetPenaltyDetails,
                      financialDetailsWithClearedItems: FinancialDetails,
                      financialDetailsWithoutClearedItems: FinancialDetails): GetPenaltyDetails = {
-    val totalisationsCombined = combineTotalisations(penaltyDetails, financialDetailsWithoutClearedItems)
     val allLPPData = combineLPPData(penaltyDetails, financialDetailsWithClearedItems)
-    if (allLPPData.isDefined) {
-      totalisationsCombined.copy(latePaymentPenalty = Some(LatePaymentPenalty(allLPPData)))
-    } else {
-      totalisationsCombined
-    }
+    val penaltyDetailsWithCombinedLPPs = penaltyDetails.copy(latePaymentPenalty = Some(LatePaymentPenalty(allLPPData)))
+    val totalisationsCombined = combineTotalisations(penaltyDetailsWithCombinedLPPs, financialDetailsWithoutClearedItems)
+    totalisationsCombined
   }
 
   private def combineLPPData(penaltyDetails: GetPenaltyDetails, financialDetails: FinancialDetails): Option[Seq[LPPDetails]] = {
-    penaltyDetails.latePaymentPenalty.flatMap(
-      _.details.map(_.map(
-        oldLPPDetails => {
-          (oldLPPDetails.penaltyStatus, oldLPPDetails.appealInformation) match {
-            case (_, Some(appealInformation)) if appealInformation.exists(_.appealStatus.exists(isAppealStatusUpheldOrChargeReversed)) => {
-              oldLPPDetails.copy(
-                metadata = LPPDetailsMetadata(
-                  mainTransaction = Some(oldLPPDetails.principalChargeMainTransaction),
-                  timeToPay = oldLPPDetails.metadata.timeToPay,
-                  principalChargeDocNumber = oldLPPDetails.metadata.principalChargeDocNumber,
-                  principalChargeSubTransaction = oldLPPDetails.metadata.principalChargeSubTransaction
-                )
-              )
-            }
-            case (LPPPenaltyStatusEnum.Accruing, _) => {
-              oldLPPDetails.copy(
-                metadata = LPPDetailsMetadata(
-                  mainTransaction = Some(oldLPPDetails.principalChargeMainTransaction),
-                  timeToPay = oldLPPDetails.metadata.timeToPay,
-                  principalChargeDocNumber = oldLPPDetails.metadata.principalChargeDocNumber,
-                  principalChargeSubTransaction = oldLPPDetails.metadata.principalChargeSubTransaction
-                )
-              )
-            }
-            case _ => {
-              val isLPP2 = oldLPPDetails.penaltyCategory.equals(LPPPenaltyCategoryEnum.SecondPenalty)
-              val firstAndMaybeSecondPenalty = financialDetails.documentDetails.get.filter(_.chargeReferenceNumber.exists(_.equals(oldLPPDetails.penaltyChargeReference.get)))
-              val penaltyToCopy = firstAndMaybeSecondPenalty.find(lpp => {
-                if (isLPP2) MainTransactionEnum.secondCharges.contains(lpp.lineItemDetails.get.head.mainTransaction.get)
-                else MainTransactionEnum.firstCharges.contains(lpp.lineItemDetails.get.head.mainTransaction.get)
-              }
-              )
-              oldLPPDetails.copy(
-                metadata = LPPDetailsMetadata(
-                  mainTransaction = Some(oldLPPDetails.principalChargeMainTransaction),
-                  outstandingAmount = penaltyToCopy.get.documentOutstandingAmount,
-                  timeToPay = oldLPPDetails.metadata.timeToPay,
-                  principalChargeDocNumber = oldLPPDetails.metadata.principalChargeDocNumber,
-                  principalChargeSubTransaction = oldLPPDetails.metadata.principalChargeSubTransaction
-                )
-              )
-            }
-          }
-        }
-      ))
-    )
-  }
-
-  private def isAppealStatusUpheldOrChargeReversed(appealStatus: AppealStatusEnum.Value): Boolean = {
-    appealStatus.toString == AppealStatusEnum.Upheld.toString ||
-      appealStatus == AppealStatusEnum.AppealUpheldChargeAlreadyReversed ||
-      appealStatus == AppealStatusEnum.AppealRejectedChargeAlreadyReversed
+    val optManualLPPs: Option[Seq[DocumentDetails]] = financialDetails.documentDetails.map(_.filter(_.lineItemDetails.exists(_.exists(_.mainTransaction.contains(ManualLPP)))))
+    val optManualLPPsAs1812Models: Option[Seq[LPPDetails]] = optManualLPPs.map(_.map {
+    manualLPPDetails => {
+      val principalChargeReference = manualLPPDetails.chargeReferenceNumber.get //Set to penaltyChargeReference because Manual LPP's do not have principal charges and we don't use this in Manual LPP cases
+      val penaltyAmountPaid = manualLPPDetails.documentTotalAmount.get - manualLPPDetails.documentOutstandingAmount.getOrElse(manualLPPDetails.documentTotalAmount.get)
+      val penaltyChargeCreationDate = manualLPPDetails.issueDate.get
+      LPPDetails(
+        penaltyCategory = LPPPenaltyCategoryEnum.ManualLPP,
+        penaltyChargeReference = None,
+        principalChargeReference = principalChargeReference,
+        penaltyChargeCreationDate = Some(penaltyChargeCreationDate),
+        penaltyStatus = LPPPenaltyStatusEnum.Posted,
+        penaltyAmountAccruing = 0,
+        penaltyAmountPosted = manualLPPDetails.documentTotalAmount.get,
+        penaltyAmountOutstanding = manualLPPDetails.documentOutstandingAmount,
+        penaltyAmountPaid = Some(penaltyAmountPaid),
+        principalChargeMainTransaction = ManualLPP,
+        principalChargeBillingFrom = penaltyChargeCreationDate,
+        principalChargeBillingTo = penaltyChargeCreationDate,
+        principalChargeDueDate = penaltyChargeCreationDate,
+        None, None, None, None, None, None, None, None, None, None, None, None, LPPDetailsMetadata(
+          mainTransaction = Some(ManualLPP)
+        )
+      )
+    }})
+    val manualLPPAs1812Models = optManualLPPsAs1812Models.getOrElse(Seq())
+    if(penaltyDetails.latePaymentPenalty.isEmpty || penaltyDetails.latePaymentPenalty.exists(_.details.isEmpty)) {
+      Some(manualLPPAs1812Models)
+    } else {
+      penaltyDetails.latePaymentPenalty.flatMap(
+        _.details.map(
+          _.map(
+            penalty => penalty.copy(metadata = penalty.metadata.copy(mainTransaction = Some(penalty.principalChargeMainTransaction)))
+          ) ++ manualLPPAs1812Models
+        )
+      )
+    }
   }
 
   private def combineTotalisations(penaltyDetails: GetPenaltyDetails, financialDetails: FinancialDetails): GetPenaltyDetails = {
+    val totalAmountOfManualLPPs: Option[BigDecimal] = penaltyDetails.latePaymentPenalty.flatMap(
+      _.details.map(_.filter(_.principalChargeMainTransaction.equals(ManualLPP)).map(
+        _.penaltyAmountOutstanding.getOrElse(BigDecimal(0))).sum)
+    ).fold[Option[BigDecimal]](None)(amount => if(amount == BigDecimal(0)) None else Some(amount))
     (financialDetails.totalisation.isDefined, penaltyDetails.totalisations.isDefined) match {
       //If there is totalisations already, add to it
       case (_, true) => {
@@ -200,7 +186,8 @@ class PenaltiesFrontendService @Inject()(getFinancialDetailsService: GetFinancia
             oldTotalisations.copy(
               totalAccountOverdue = financialDetails.totalisation.flatMap(_.regimeTotalisations.flatMap(_.totalAccountOverdue)),
               totalAccountPostedInterest = financialDetails.totalisation.flatMap(_.interestTotalisations.flatMap(_.totalAccountPostedInterest)),
-              totalAccountAccruingInterest = financialDetails.totalisation.flatMap(_.interestTotalisations.flatMap(_.totalAccountAccruingInterest))
+              totalAccountAccruingInterest = financialDetails.totalisation.flatMap(_.interestTotalisations.flatMap(_.totalAccountAccruingInterest)),
+              LPPPostedTotal = oldTotalisations.LPPPostedTotal.map(_ + totalAmountOfManualLPPs.getOrElse(BigDecimal(0)))
             )
           }
         )
@@ -214,14 +201,18 @@ class PenaltiesFrontendService @Inject()(getFinancialDetailsService: GetFinancia
           totalAccountAccruingInterest = financialDetails.totalisation.flatMap(_.interestTotalisations.flatMap(_.totalAccountAccruingInterest)),
           LSPTotalValue = None,
           penalisedPrincipalTotal = None,
-          LPPPostedTotal = None,
+          LPPPostedTotal = totalAmountOfManualLPPs,
           LPPEstimatedTotal = None
         )
         penaltyDetails.copy(totalisations = Some(totalisations))
       }
       case _ => {
-        //No totalisations at all, don't do any processing on totalisation field
-        penaltyDetails
+        //No totalisations at all, don't do any processing on totalisation field (except adding LPPPostedTotal for Manual LPPs
+        val totalisations: Totalisations = new Totalisations(totalAccountOverdue = None, totalAccountPostedInterest = None,
+          totalAccountAccruingInterest = None, LSPTotalValue = None, penalisedPrincipalTotal = None, LPPEstimatedTotal = None,
+          LPPPostedTotal = totalAmountOfManualLPPs
+        )
+        penaltyDetails.copy(totalisations = Some(totalisations))
       }
     }
   }

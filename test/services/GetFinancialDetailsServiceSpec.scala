@@ -32,7 +32,7 @@ import play.api.test.Helpers._
 import uk.gov.hmrc.http.HeaderCarrier
 import utils.Logger.logger
 
-import java.time.LocalDateTime
+import java.time.{LocalDate, LocalDateTime}
 import scala.concurrent.{ExecutionContext, Future}
 
 class GetFinancialDetailsServiceSpec extends SpecBase with FeatureSwitching with LogCapturing {
@@ -52,7 +52,9 @@ class GetFinancialDetailsServiceSpec extends SpecBase with FeatureSwitching with
       documentDetails = Some(Seq(getFinancialDetails.DocumentDetails(
         chargeReferenceNumber = None,
         documentOutstandingAmount = Some(0.00),
-        lineItemDetails = Some(Seq(getFinancialDetails.LineItemDetails(None))))
+        lineItemDetails = Some(Seq(getFinancialDetails.LineItemDetails(None))),
+        documentTotalAmount = Some(100.00),
+        issueDate = Some(LocalDate.of(2023, 1, 1)))
       )),
       totalisation = Some(FinancialDetailsTotalisation(
         regimeTotalisations = Some(RegimeTotalisation(totalAccountOverdue = Some(1000))),

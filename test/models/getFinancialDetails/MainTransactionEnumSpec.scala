@@ -140,6 +140,11 @@ class MainTransactionEnumSpec extends SpecBase {
     result shouldBe JsString("4719")
   }
 
+  "be writable to JSON for 'VAT Manual LPP' (4787)" in {
+    val result = Json.toJson(MainTransactionEnum.ManualLPP)
+    result shouldBe JsString("4787")
+  }
+
   "be readable from JSON for 'VAT Return Charge' (4700)" in {
     val result = Json.fromJson(JsString("4700"))(MainTransactionEnum.format)
     result.get shouldBe MainTransactionEnum.VATReturnCharge
@@ -255,43 +260,18 @@ class MainTransactionEnumSpec extends SpecBase {
     result.get shouldBe MainTransactionEnum.AAReturnChargeFirstLPP
   }
 
-  "be readable from JSON for 'VAT AA Return Charge 2nd LPP' (4744)" in {
+  "be readable from JSON for 'VAT AA Return Charge 2nd LPP' (4719)" in {
     val result = Json.fromJson(JsString("4719"))(MainTransactionEnum.format)
     result.get shouldBe MainTransactionEnum.AAReturnChargeSecondLPP
+  }
+
+  "be readable from JSON for 'VAT Manual LPP' (4787)" in {
+    val result = Json.fromJson(JsString("4787"))(MainTransactionEnum.format)
+    result.get shouldBe MainTransactionEnum.ManualLPP
   }
 
   "return Unknown when the enum is not recognised" in {
     val result = Json.fromJson(JsString("5032"))(MainTransactionEnum.format)
     result.get shouldBe MainTransactionEnum.Unknown
-  }
-
-  "firstCharges" should {
-    "return all the possible first charges" in {
-      MainTransactionEnum.firstCharges shouldBe Seq(
-        MainTransactionEnum.VATReturnFirstLPP,
-        MainTransactionEnum.AAReturnChargeFirstLPP,
-        MainTransactionEnum.POAReturnChargeFirstLPP,
-        MainTransactionEnum.ErrorCorrectionFirstLPP,
-        MainTransactionEnum.AdditionalAssessmentFirstLPP,
-        MainTransactionEnum.ProtectiveAssessmentFirstLPP,
-        MainTransactionEnum.CentralAssessmentFirstLPP,
-        MainTransactionEnum.OfficersAssessmentFirstLPP
-      )
-    }
-  }
-  
-  "secondCharges" should {
-    "return all the possible second charges" in {
-      MainTransactionEnum.secondCharges shouldBe Seq(
-        MainTransactionEnum.VATReturnSecondLPP,
-        MainTransactionEnum.AAReturnChargeSecondLPP,
-        MainTransactionEnum.POAReturnChargeSecondLPP,
-        MainTransactionEnum.ErrorCorrectionSecondLPP,
-        MainTransactionEnum.AdditionalAssessmentSecondLPP,
-        MainTransactionEnum.ProtectiveAssessmentSecondLPP,
-        MainTransactionEnum.CentralAssessmentSecondLPP,
-        MainTransactionEnum.OfficersAssessmentSecondLPP
-      )
-    }
   }
 }

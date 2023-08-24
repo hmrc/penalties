@@ -19,7 +19,7 @@ package services
 import base.{LPPDetailsBase, LSPDetailsBase, LogCapturing, SpecBase}
 import config.AppConfig
 import connectors.parsers.getFinancialDetails.GetFinancialDetailsParser._
-import models.getFinancialDetails.MainTransactionEnum.{VATReturnCharge, VATReturnFirstLPP, VATReturnSecondLPP}
+import models.getFinancialDetails.MainTransactionEnum.ManualLPP
 import models.getFinancialDetails.totalisation.{FinancialDetailsTotalisation, InterestTotalisation, RegimeTotalisation}
 import models.getFinancialDetails.{DocumentDetails, FinancialDetails, LineItemDetails, MainTransactionEnum}
 import models.getPenaltyDetails.appealInfo.{AppealInformationType, AppealLevelEnum, AppealStatusEnum}
@@ -52,6 +52,23 @@ class PenaltiesFrontendServiceSpec extends SpecBase with LogCapturing with LPPDe
   val mockGetFinancialDetailsService: GetFinancialDetailsService = mock(classOf[GetFinancialDetailsService])
   val dateHelper: DateHelper = injector.instanceOf[DateHelper]
 
+  val manualLPP: LPPDetails = LPPDetails(
+    penaltyCategory = LPPPenaltyCategoryEnum.ManualLPP,
+    penaltyChargeReference = None,
+    principalChargeReference = "penalty123456",
+    penaltyChargeCreationDate = Some(LocalDate.of(2023, 4, 1)),
+    penaltyStatus = LPPPenaltyStatusEnum.Posted,
+    penaltyAmountAccruing = 0,
+    penaltyAmountPosted = BigDecimal(100),
+    penaltyAmountOutstanding = Some(BigDecimal(45)),
+    penaltyAmountPaid = Some(BigDecimal(55)),
+    principalChargeMainTransaction = ManualLPP,
+    principalChargeBillingFrom = LocalDate.of(2023, 4, 1),
+    principalChargeBillingTo = LocalDate.of(2023, 4, 1),
+    principalChargeDueDate = LocalDate.of(2023, 4, 1),
+    None, None, None, None, None, None, None, None, None, None, None, None, LPPDetailsMetadata(mainTransaction = Some(ManualLPP))
+  )
+
   val getPenaltyDetails: GetPenaltyDetails = GetPenaltyDetails(
     totalisations = None,
     lateSubmissionPenalty = None,
@@ -78,11 +95,15 @@ class PenaltiesFrontendServiceSpec extends SpecBase with LogCapturing with LPPDe
         DocumentDetails(
           chargeReferenceNumber = Some("123456790"),
           documentOutstandingAmount = Some(123.45),
-          lineItemDetails = Some(Seq(LineItemDetails(Some(MainTransactionEnum.VATReturnSecondLPP))))),
+          lineItemDetails = Some(Seq(LineItemDetails(Some(MainTransactionEnum.VATReturnSecondLPP)))),
+          documentTotalAmount = Some(100.00),
+          issueDate = Some(LocalDate.now())),
         DocumentDetails(
           chargeReferenceNumber = Some("123456789"),
           documentOutstandingAmount = Some(123.45),
-          lineItemDetails = Some(Seq(LineItemDetails(Some(MainTransactionEnum.VATReturnFirstLPP)))))
+          lineItemDetails = Some(Seq(LineItemDetails(Some(MainTransactionEnum.VATReturnFirstLPP)))),
+          documentTotalAmount = Some(100.00),
+          issueDate = Some(LocalDate.now()))
       )),
       totalisation = None
     )
@@ -90,7 +111,337 @@ class PenaltiesFrontendServiceSpec extends SpecBase with LogCapturing with LPPDe
   }
 
   "combineAPIData" should {
-    "update both first and second penalty separately (no TTP)" in new Setup {
+    "combine the financial details totalisations - if totalisations already present" in new Setup {
+      val penaltyDetails = GetPenaltyDetails(
+        totalisations = Some(
+          Totalisations(
+            LSPTotalValue = Some(123.45),
+            penalisedPrincipalTotal = Some(321.45),
+            LPPPostedTotal = None,
+            LPPEstimatedTotal = None,
+            totalAccountOverdue = None,
+            totalAccountPostedInterest = None,
+            totalAccountAccruingInterest = None
+          )
+        ),
+        lateSubmissionPenalty = None,
+        latePaymentPenalty = None,
+        breathingSpace = None
+      )
+
+      val financialDetailsWithClearedItems: FinancialDetails = FinancialDetails(
+        documentDetails = None,
+        totalisation = None
+      )
+
+      val financialDetailsWithoutClearedItems: FinancialDetails = FinancialDetails(
+        totalisation = Some(FinancialDetailsTotalisation(
+          regimeTotalisations = Some(RegimeTotalisation(totalAccountOverdue = Some(123.45))),
+          interestTotalisations = Some(InterestTotalisation(totalAccountPostedInterest = Some(12.34), totalAccountAccruingInterest = Some(43.21)))
+        )),
+        documentDetails = None
+      )
+
+      val expectedResult: Totalisations = Totalisations(
+        LSPTotalValue = Some(123.45),
+        penalisedPrincipalTotal = Some(321.45),
+        LPPPostedTotal = None,
+        LPPEstimatedTotal = None,
+        totalAccountOverdue = Some(123.45),
+        totalAccountPostedInterest = Some(12.34),
+        totalAccountAccruingInterest = Some(43.21)
+      )
+
+      val result = penaltiesFrontendService.combineAPIData(penaltyDetails, financialDetailsWithClearedItems, financialDetailsWithoutClearedItems)
+      result.totalisations.isDefined shouldBe true
+      result.totalisations.get shouldBe expectedResult
+    }
+
+    "combine the financial details totalisations - if totalisations already present (updating LPPPostedAmount with manual LPP amount)" in new Setup {
+      val penaltyDetails = GetPenaltyDetails(
+        totalisations = Some(
+          Totalisations(
+            LSPTotalValue = Some(123.45),
+            penalisedPrincipalTotal = Some(321.45),
+            LPPPostedTotal = Some(100.45),
+            LPPEstimatedTotal = None,
+            totalAccountOverdue = None,
+            totalAccountPostedInterest = None,
+            totalAccountAccruingInterest = None
+          )
+        ),
+        lateSubmissionPenalty = None,
+        latePaymentPenalty = Some(LatePaymentPenalty(Some(Seq(manualLPP)))),
+        breathingSpace = None
+      )
+
+      val financialDetailsWithClearedItems: FinancialDetails = FinancialDetails(
+        documentDetails = None,
+        totalisation = None
+      )
+
+      val financialDetailsWithoutClearedItems: FinancialDetails = FinancialDetails(
+        totalisation = Some(FinancialDetailsTotalisation(
+          regimeTotalisations = Some(RegimeTotalisation(totalAccountOverdue = Some(123.45))),
+          interestTotalisations = Some(InterestTotalisation(totalAccountPostedInterest = Some(12.34), totalAccountAccruingInterest = Some(43.21)))
+        )),
+        documentDetails = None
+      )
+
+      val expectedResult: Totalisations = Totalisations(
+        LSPTotalValue = Some(123.45),
+        penalisedPrincipalTotal = Some(321.45),
+        LPPPostedTotal = Some(145.45),
+        LPPEstimatedTotal = None,
+        totalAccountOverdue = Some(123.45),
+        totalAccountPostedInterest = Some(12.34),
+        totalAccountAccruingInterest = Some(43.21)
+      )
+
+      val result = penaltiesFrontendService.combineAPIData(penaltyDetails, financialDetailsWithClearedItems, financialDetailsWithoutClearedItems)
+      result.totalisations.isDefined shouldBe true
+      result.totalisations.get shouldBe expectedResult
+    }
+
+
+    "combine the financial details totalisations - if totalisations NOT already present" in new Setup {
+      val penaltyDetails = GetPenaltyDetails(
+        totalisations = None,
+        lateSubmissionPenalty = None,
+        latePaymentPenalty = None,
+        breathingSpace = None
+      )
+
+      val financialDetailsWithClearedItems: FinancialDetails = FinancialDetails(
+        documentDetails = None,
+        totalisation = None
+      )
+
+      val financialDetailsWithoutClearedItems: FinancialDetails = FinancialDetails(
+        totalisation = Some(FinancialDetailsTotalisation(
+          regimeTotalisations = Some(RegimeTotalisation(totalAccountOverdue = Some(123.45))),
+          interestTotalisations = Some(InterestTotalisation(totalAccountPostedInterest = Some(12.34), totalAccountAccruingInterest = None))
+        )),
+        documentDetails = None
+      )
+
+      val expectedResult: Totalisations = Totalisations(
+        LSPTotalValue = None,
+        penalisedPrincipalTotal = None,
+        LPPPostedTotal = None,
+        LPPEstimatedTotal = None,
+        totalAccountOverdue = Some(123.45),
+        totalAccountPostedInterest = Some(12.34),
+        totalAccountAccruingInterest = None
+      )
+
+      val result = penaltiesFrontendService.combineAPIData(penaltyDetails, financialDetailsWithClearedItems, financialDetailsWithoutClearedItems)
+      result.totalisations.isDefined shouldBe true
+      result.totalisations.get shouldBe expectedResult
+    }
+
+    "combine the financial details totalisations - if totalisations NOT already present (inserting manual LPP amount)" in new Setup {
+      val penaltyDetails = GetPenaltyDetails(
+        totalisations = None,
+        lateSubmissionPenalty = None,
+        latePaymentPenalty = Some(LatePaymentPenalty(Some(Seq(manualLPP)))),
+        breathingSpace = None
+      )
+
+      val financialDetailsWithClearedItems: FinancialDetails = FinancialDetails(
+        documentDetails = None,
+        totalisation = None
+      )
+
+      val financialDetailsWithoutClearedItems: FinancialDetails = FinancialDetails(
+        totalisation = Some(FinancialDetailsTotalisation(
+          regimeTotalisations = Some(RegimeTotalisation(totalAccountOverdue = Some(123.45))),
+          interestTotalisations = Some(InterestTotalisation(totalAccountPostedInterest = Some(12.34), totalAccountAccruingInterest = None))
+        )),
+        documentDetails = None
+      )
+
+      val expectedResult: Totalisations = Totalisations(
+        LSPTotalValue = None,
+        penalisedPrincipalTotal = None,
+        LPPPostedTotal = Some(45.00),
+        LPPEstimatedTotal = None,
+        totalAccountOverdue = Some(123.45),
+        totalAccountPostedInterest = Some(12.34),
+        totalAccountAccruingInterest = None
+      )
+
+      val result = penaltiesFrontendService.combineAPIData(penaltyDetails, financialDetailsWithClearedItems, financialDetailsWithoutClearedItems)
+      result.totalisations.isDefined shouldBe true
+      result.totalisations.get shouldBe expectedResult
+    }
+
+    "construct a manual LPP from the 1811 data and insert a generated LPP entry into the API 1812 data (appending the new data)" in new Setup {
+        val penaltyDetailsWithFirstAndSecondPenalty = GetPenaltyDetails(
+          totalisations = None, lateSubmissionPenalty = None,
+          latePaymentPenalty = Some(LatePaymentPenalty(
+            details = Some(
+              Seq(
+                LPPDetails(
+                  penaltyCategory = LPPPenaltyCategoryEnum.SecondPenalty,
+                  principalChargeReference = "1234567890",
+                  penaltyChargeReference = Some("1234567890"),
+                  penaltyChargeCreationDate = Some(LocalDate.of(2022, 10, 30)),
+                  penaltyStatus = LPPPenaltyStatusEnum.Accruing,
+                  appealInformation = Some(Seq(AppealInformationType(appealStatus = Some(AppealStatusEnum.Unappealable), appealLevel = Some(AppealLevelEnum.HMRC), appealDescription = Some("Some value")))),
+                  principalChargeBillingFrom = LocalDate.of(2022, 10, 30),
+                  principalChargeBillingTo = LocalDate.of(2022, 10, 30),
+                  principalChargeDueDate = LocalDate.of(2022, 10, 30),
+                  communicationsDate = Some(LocalDate.of(2022, 10, 30)),
+                  penaltyAmountOutstanding = None,
+                  penaltyAmountPaid = None,
+                  penaltyAmountPosted = 0,
+                  LPP1LRDays = Some("15"),
+                  LPP1HRDays = Some("31"),
+                  LPP2Days = Some("31"),
+                  LPP1HRCalculationAmount = Some(99.99),
+                  LPP1LRCalculationAmount = Some(99.99),
+                  LPP2Percentage = Some(BigDecimal(4.00).setScale(2)),
+                  LPP1LRPercentage = Some(BigDecimal(2.00).setScale(2)),
+                  LPP1HRPercentage = Some(BigDecimal(2.00).setScale(2)),
+                  penaltyChargeDueDate = Some(LocalDate.of(2022, 10, 30)),
+                  principalChargeLatestClearing = None,
+                  metadata = LPPDetailsMetadata(),
+                  penaltyAmountAccruing = BigDecimal(99.9),
+                  principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
+                ),
+                LPPDetails(
+                  penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
+                  principalChargeReference = "1234567890",
+                  penaltyChargeReference = Some("1234567890"),
+                  penaltyChargeCreationDate = Some(LocalDate.of(2022, 10, 30)),
+                  penaltyStatus = LPPPenaltyStatusEnum.Accruing,
+                  appealInformation = Some(Seq(AppealInformationType(appealStatus = Some(AppealStatusEnum.Unappealable), appealLevel = Some(AppealLevelEnum.HMRC), appealDescription = Some("Some value")))),
+                  principalChargeBillingFrom = LocalDate.of(2022, 10, 30),
+                  principalChargeBillingTo = LocalDate.of(2022, 10, 30),
+                  principalChargeDueDate = LocalDate.of(2022, 10, 30),
+                  communicationsDate = Some(LocalDate.of(2022, 10, 30)),
+                  penaltyAmountOutstanding = None,
+                  penaltyAmountPaid = None,
+                  penaltyAmountPosted = 0,
+                  LPP1LRDays = Some("15"),
+                  LPP1HRDays = Some("31"),
+                  LPP2Days = Some("31"),
+                  LPP1HRCalculationAmount = Some(99.99),
+                  LPP1LRCalculationAmount = Some(99.99),
+                  LPP2Percentage = Some(BigDecimal(4.00).setScale(2)),
+                  LPP1LRPercentage = Some(BigDecimal(2.00).setScale(2)),
+                  LPP1HRPercentage = Some(BigDecimal(2.00).setScale(2)),
+                  penaltyChargeDueDate = Some(LocalDate.of(2022, 10, 30)),
+                  principalChargeLatestClearing = None,
+                  metadata = LPPDetailsMetadata(),
+                  penaltyAmountAccruing = BigDecimal(99.9),
+                  principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
+                )
+              )
+            )
+          )),
+          breathingSpace = None
+        )
+
+        val financialDetails: FinancialDetails = FinancialDetails(
+          documentDetails = Some(Seq(
+            DocumentDetails(
+              chargeReferenceNumber = Some("1234567890"),
+              documentOutstandingAmount = Some(123.45),
+              lineItemDetails = Some(Seq(LineItemDetails(Some(MainTransactionEnum.VATReturnSecondLPP)))),
+              documentTotalAmount = Some(100),
+              issueDate = Some(LocalDate.of(2022, 1, 1))),
+            DocumentDetails(
+              chargeReferenceNumber = Some("1234567890"),
+              documentOutstandingAmount = Some(123.45),
+              lineItemDetails = Some(Seq(LineItemDetails(Some(MainTransactionEnum.VATReturnFirstLPP)))),
+              documentTotalAmount = Some(100),
+              issueDate = Some(LocalDate.of(2022, 1, 1))),
+            DocumentDetails(
+              chargeReferenceNumber = Some("penalty123456"),
+              documentOutstandingAmount = Some(BigDecimal(45)),
+              lineItemDetails = Some(Seq(LineItemDetails(Some(MainTransactionEnum.ManualLPP)))),
+              documentTotalAmount = Some(BigDecimal(100)),
+              issueDate = Some(LocalDate.of(2023, 4, 1)))
+          )),
+          totalisation = None
+        )
+
+        val expectedResult = LatePaymentPenalty(
+          details = Some(
+            Seq(
+              LPPDetails(
+                penaltyCategory = LPPPenaltyCategoryEnum.SecondPenalty,
+                principalChargeReference = "1234567890",
+                penaltyChargeReference = Some("1234567890"),
+                penaltyChargeCreationDate = Some(LocalDate.of(2022, 10, 30)),
+                penaltyStatus = LPPPenaltyStatusEnum.Accruing,
+                appealInformation = Some(Seq(AppealInformationType(appealStatus = Some(AppealStatusEnum.Unappealable), appealLevel = Some(AppealLevelEnum.HMRC), appealDescription = Some("Some value")))),
+                principalChargeBillingFrom = LocalDate.of(2022, 10, 30),
+                principalChargeBillingTo = LocalDate.of(2022, 10, 30),
+                principalChargeDueDate = LocalDate.of(2022, 10, 30),
+                communicationsDate = Some(LocalDate.of(2022, 10, 30)),
+                penaltyAmountOutstanding = None,
+                penaltyAmountPaid = None,
+                penaltyAmountPosted = 0,
+                LPP1LRDays = Some("15"),
+                LPP1HRDays = Some("31"),
+                LPP2Days = Some("31"),
+                LPP1HRCalculationAmount = Some(99.99),
+                LPP1LRCalculationAmount = Some(99.99),
+                LPP2Percentage = Some(BigDecimal(4.00).setScale(2)),
+                LPP1LRPercentage = Some(BigDecimal(2.00).setScale(2)),
+                LPP1HRPercentage = Some(BigDecimal(2.00).setScale(2)),
+                penaltyChargeDueDate = Some(LocalDate.of(2022, 10, 30)),
+                principalChargeLatestClearing = None,
+                metadata = LPPDetailsMetadata(
+                  mainTransaction = Some(MainTransactionEnum.VATReturnCharge),
+                ),
+                penaltyAmountAccruing = BigDecimal(99.9),
+                principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
+              ),
+              LPPDetails(
+                penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
+                principalChargeReference = "1234567890",
+                penaltyChargeReference = Some("1234567890"),
+                penaltyChargeCreationDate = Some(LocalDate.of(2022, 10, 30)),
+                penaltyStatus = LPPPenaltyStatusEnum.Accruing,
+                appealInformation = Some(Seq(AppealInformationType(appealStatus = Some(AppealStatusEnum.Unappealable), appealLevel = Some(AppealLevelEnum.HMRC), appealDescription = Some("Some value")))),
+                principalChargeBillingFrom = LocalDate.of(2022, 10, 30),
+                principalChargeBillingTo = LocalDate.of(2022, 10, 30),
+                principalChargeDueDate = LocalDate.of(2022, 10, 30),
+                communicationsDate = Some(LocalDate.of(2022, 10, 30)),
+                penaltyAmountOutstanding = None,
+                penaltyAmountPaid = None,
+                penaltyAmountPosted = 0,
+                LPP1LRDays = Some("15"),
+                LPP1HRDays = Some("31"),
+                LPP2Days = Some("31"),
+                LPP1HRCalculationAmount = Some(99.99),
+                LPP1LRCalculationAmount = Some(99.99),
+                LPP2Percentage = Some(BigDecimal(4.00).setScale(2)),
+                LPP1LRPercentage = Some(BigDecimal(2.00).setScale(2)),
+                LPP1HRPercentage = Some(BigDecimal(2.00).setScale(2)),
+                penaltyChargeDueDate = Some(LocalDate.of(2022, 10, 30)),
+                principalChargeLatestClearing = None,
+                metadata = LPPDetailsMetadata(
+                  mainTransaction = Some(MainTransactionEnum.VATReturnCharge),
+                ),
+                penaltyAmountAccruing = BigDecimal(99.9),
+                principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
+              ),
+              manualLPP
+            )
+          )
+        )
+
+        val result = penaltiesFrontendService.combineAPIData(penaltyDetailsWithFirstAndSecondPenalty, financialDetails, FinancialDetails(None, None))
+        result.latePaymentPenalty.isDefined shouldBe true
+        result.latePaymentPenalty.get shouldBe expectedResult
+    }
+
+    "construct a manual LPP from the 1811 data and insert a generated LPP entry into the API 1812 data (appending the new data - defaulting the penaltyAmountOutstanding to documentTotalAmount when not present for penaltyAmountPaid)" in new Setup {
       val penaltyDetailsWithFirstAndSecondPenalty = GetPenaltyDetails(
         totalisations = None, lateSubmissionPenalty = None,
         latePaymentPenalty = Some(LatePaymentPenalty(
@@ -163,11 +514,21 @@ class PenaltiesFrontendServiceSpec extends SpecBase with LogCapturing with LPPDe
           DocumentDetails(
             chargeReferenceNumber = Some("1234567890"),
             documentOutstandingAmount = Some(123.45),
-            lineItemDetails = Some(Seq(LineItemDetails(Some(MainTransactionEnum.VATReturnSecondLPP))))),
+            lineItemDetails = Some(Seq(LineItemDetails(Some(MainTransactionEnum.VATReturnSecondLPP)))),
+            documentTotalAmount = Some(100),
+            issueDate = Some(LocalDate.of(2022, 1, 1))),
           DocumentDetails(
             chargeReferenceNumber = Some("1234567890"),
             documentOutstandingAmount = Some(123.45),
-            lineItemDetails = Some(Seq(LineItemDetails(Some(MainTransactionEnum.VATReturnFirstLPP)))))
+            lineItemDetails = Some(Seq(LineItemDetails(Some(MainTransactionEnum.VATReturnFirstLPP)))),
+            documentTotalAmount = Some(100),
+            issueDate = Some(LocalDate.of(2022, 1, 1))),
+          DocumentDetails(
+            chargeReferenceNumber = Some("penalty123456"),
+            documentOutstandingAmount = Some(BigDecimal(100)),
+            lineItemDetails = Some(Seq(LineItemDetails(Some(MainTransactionEnum.ManualLPP)))),
+            documentTotalAmount = Some(BigDecimal(100)),
+            issueDate = Some(LocalDate.of(2023, 4, 1)))
         )),
         totalisation = None
       )
@@ -200,7 +561,7 @@ class PenaltiesFrontendServiceSpec extends SpecBase with LogCapturing with LPPDe
               penaltyChargeDueDate = Some(LocalDate.of(2022, 10, 30)),
               principalChargeLatestClearing = None,
               metadata = LPPDetailsMetadata(
-                mainTransaction = Some(MainTransactionEnum.VATReturnCharge), outstandingAmount = None
+                mainTransaction = Some(MainTransactionEnum.VATReturnCharge),
               ),
               penaltyAmountAccruing = BigDecimal(99.9),
               principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
@@ -230,11 +591,12 @@ class PenaltiesFrontendServiceSpec extends SpecBase with LogCapturing with LPPDe
               penaltyChargeDueDate = Some(LocalDate.of(2022, 10, 30)),
               principalChargeLatestClearing = None,
               metadata = LPPDetailsMetadata(
-                mainTransaction = Some(MainTransactionEnum.VATReturnCharge), outstandingAmount = None
+                mainTransaction = Some(MainTransactionEnum.VATReturnCharge),
               ),
               penaltyAmountAccruing = BigDecimal(99.9),
               principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
-            )
+            ),
+            manualLPP.copy(penaltyAmountPaid = Some(0), penaltyAmountOutstanding = Some(BigDecimal(100)))
           )
         )
       )
@@ -244,560 +606,6 @@ class PenaltiesFrontendServiceSpec extends SpecBase with LogCapturing with LPPDe
       result.latePaymentPenalty.get shouldBe expectedResult
     }
 
-    "update only the first penalty if no second penalty present" in new Setup {
-      val penaltyDetailsWithFirstPenalty = GetPenaltyDetails(
-        totalisations = None, lateSubmissionPenalty = None,
-        latePaymentPenalty = Some(LatePaymentPenalty(
-          details = Some(
-            Seq(
-              LPPDetails(
-                penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
-                principalChargeReference = "1234567890",
-                penaltyChargeReference = Some("1234567890"),
-                penaltyChargeCreationDate = Some(LocalDate.of(2022, 10, 30)),
-                penaltyStatus = LPPPenaltyStatusEnum.Posted,
-                appealInformation = Some(Seq(AppealInformationType(appealStatus = Some(AppealStatusEnum.Unappealable), appealLevel = Some(AppealLevelEnum.HMRC), appealDescription = Some("Some value")))),
-                principalChargeBillingFrom = LocalDate.of(2022, 10, 30),
-                principalChargeBillingTo = LocalDate.of(2022, 10, 30),
-                principalChargeDueDate = LocalDate.of(2022, 10, 30),
-                communicationsDate = Some(LocalDate.of(2022, 10, 30)),
-                penaltyAmountOutstanding = Some(99.99),
-                penaltyAmountPaid = Some(1001.45),
-                penaltyAmountPosted = 1101.44,
-                LPP1LRDays = Some("15"),
-                LPP1HRDays = Some("31"),
-                LPP2Days = Some("31"),
-                LPP1HRCalculationAmount = Some(99.99),
-                LPP1LRCalculationAmount = Some(99.99),
-                LPP2Percentage = Some(BigDecimal(4.00).setScale(2)),
-                LPP1LRPercentage = Some(BigDecimal(2.00).setScale(2)),
-                LPP1HRPercentage = Some(BigDecimal(2.00).setScale(2)),
-                penaltyChargeDueDate = Some(LocalDate.of(2022, 10, 30)),
-                principalChargeLatestClearing = None,
-                metadata = LPPDetailsMetadata(
-                  timeToPay = Some(Seq(TimeToPay(
-                    TTPStartDate = Some(LocalDate.of(2022, 1, 1)),
-                    TTPEndDate = Some(LocalDate.of(2022, 12, 31))
-                  )))
-                ),
-                penaltyAmountAccruing = BigDecimal(0),
-                principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
-              )
-            )
-          )
-        )),
-        breathingSpace = None
-      )
-
-      val financialDetails: FinancialDetails = FinancialDetails(
-        documentDetails = Some(Seq(DocumentDetails(
-          chargeReferenceNumber = Some("1234567890"),
-          documentOutstandingAmount = Some(123.45),
-          lineItemDetails = Some(Seq(LineItemDetails(Some(MainTransactionEnum.VATReturnFirstLPP)))))
-        )),
-        totalisation = None
-      )
-
-      val expectedResult = LatePaymentPenalty(
-        details = Some(
-          Seq(
-            LPPDetails(
-              penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
-              principalChargeReference = "1234567890",
-              penaltyChargeReference = Some("1234567890"),
-              penaltyChargeCreationDate = Some(LocalDate.of(2022, 10, 30)),
-              penaltyStatus = LPPPenaltyStatusEnum.Posted,
-              appealInformation = Some(Seq(AppealInformationType(appealStatus = Some(AppealStatusEnum.Unappealable), appealLevel = Some(AppealLevelEnum.HMRC), appealDescription = Some("Some value")))),
-              principalChargeBillingFrom = LocalDate.of(2022, 10, 30),
-              principalChargeBillingTo = LocalDate.of(2022, 10, 30),
-              principalChargeDueDate = LocalDate.of(2022, 10, 30),
-              communicationsDate = Some(LocalDate.of(2022, 10, 30)),
-              penaltyAmountOutstanding = Some(99.99),
-              penaltyAmountPaid = Some(1001.45),
-              penaltyAmountPosted = 1101.44,
-              LPP1LRDays = Some("15"),
-              LPP1HRDays = Some("31"),
-              LPP2Days = Some("31"),
-              LPP1HRCalculationAmount = Some(99.99),
-              LPP1LRCalculationAmount = Some(99.99),
-              LPP2Percentage = Some(BigDecimal(4.00).setScale(2)),
-              LPP1LRPercentage = Some(BigDecimal(2.00).setScale(2)),
-              LPP1HRPercentage = Some(BigDecimal(2.00).setScale(2)),
-              penaltyChargeDueDate = Some(LocalDate.of(2022, 10, 30)),
-              principalChargeLatestClearing = None,
-              metadata = LPPDetailsMetadata(
-                mainTransaction = Some(MainTransactionEnum.VATReturnCharge),
-                outstandingAmount = Some(123.45),
-                timeToPay = Some(Seq(TimeToPay(
-                  TTPStartDate = Some(LocalDate.of(2022, 1, 1)),
-                  TTPEndDate = Some(LocalDate.of(2022, 12, 31))
-                )))
-              ),
-              penaltyAmountAccruing = BigDecimal(0),
-              principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
-            )
-          )
-        )
-      )
-
-      val result = penaltiesFrontendService.combineAPIData(penaltyDetailsWithFirstPenalty, financialDetails, FinancialDetails(None, None))
-      result.latePaymentPenalty.isDefined shouldBe true
-      result.latePaymentPenalty.get shouldBe expectedResult
-    }
-
-    "update only the second penalty if no first penalty present" in new Setup {
-      val penaltyDetailsWithSecondPenalty = GetPenaltyDetails(
-        totalisations = None, lateSubmissionPenalty = None,
-        latePaymentPenalty = Some(LatePaymentPenalty(
-          details = Some(
-            Seq(
-              LPPDetails(
-                penaltyCategory = LPPPenaltyCategoryEnum.SecondPenalty,
-                principalChargeReference = "1234567890",
-                penaltyChargeReference = Some("1234567890"),
-                penaltyChargeCreationDate = Some(LocalDate.of(2022, 10, 30)),
-                penaltyStatus = LPPPenaltyStatusEnum.Posted,
-                appealInformation = Some(Seq(AppealInformationType(appealStatus = Some(AppealStatusEnum.Unappealable), appealLevel = Some(AppealLevelEnum.HMRC), appealDescription = Some("Some value")))),
-                principalChargeBillingFrom = LocalDate.of(2022, 10, 30),
-                principalChargeBillingTo = LocalDate.of(2022, 10, 30),
-                principalChargeDueDate = LocalDate.of(2022, 10, 30),
-                communicationsDate = Some(LocalDate.of(2022, 10, 30)),
-                penaltyAmountOutstanding = Some(99.99),
-                penaltyAmountPaid = Some(1001.45),
-                penaltyAmountPosted = 1101.44,
-                LPP1LRDays = Some("15"),
-                LPP1HRDays = Some("31"),
-                LPP2Days = Some("31"),
-                LPP1HRCalculationAmount = Some(99.99),
-                LPP1LRCalculationAmount = Some(99.99),
-                LPP2Percentage = Some(BigDecimal(4.00).setScale(2)),
-                LPP1LRPercentage = Some(BigDecimal(2.00).setScale(2)),
-                LPP1HRPercentage = Some(BigDecimal(2.00).setScale(2)),
-                penaltyChargeDueDate = Some(LocalDate.of(2022, 10, 30)),
-                principalChargeLatestClearing = None,
-                metadata = LPPDetailsMetadata(
-                  timeToPay = Some(Seq(TimeToPay(
-                    TTPStartDate = Some(LocalDate.of(2022, 1, 1)),
-                    TTPEndDate = Some(LocalDate.of(2022, 12, 31))
-                  )))
-                ),
-                penaltyAmountAccruing = BigDecimal(0),
-                principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
-              )
-            )
-          )
-        )),
-        breathingSpace = None
-      )
-
-      val financialDetails: FinancialDetails = FinancialDetails(
-        documentDetails = Some(Seq(DocumentDetails(
-          chargeReferenceNumber = Some("1234567890"),
-          documentOutstandingAmount = Some(123.45),
-          lineItemDetails = Some(Seq(LineItemDetails(Some(MainTransactionEnum.VATReturnSecondLPP)))))
-        )),
-        totalisation = None
-      )
-
-      val expectedResult = LatePaymentPenalty(
-        details = Some(
-          Seq(
-            LPPDetails(
-              penaltyCategory = LPPPenaltyCategoryEnum.SecondPenalty,
-              principalChargeReference = "1234567890",
-              penaltyChargeReference = Some("1234567890"),
-              penaltyChargeCreationDate = Some(LocalDate.of(2022, 10, 30)),
-              penaltyStatus = LPPPenaltyStatusEnum.Posted,
-              appealInformation = Some(Seq(AppealInformationType(appealStatus = Some(AppealStatusEnum.Unappealable), appealLevel = Some(AppealLevelEnum.HMRC), appealDescription = Some("Some value")))),
-              principalChargeBillingFrom = LocalDate.of(2022, 10, 30),
-              principalChargeBillingTo = LocalDate.of(2022, 10, 30),
-              principalChargeDueDate = LocalDate.of(2022, 10, 30),
-              communicationsDate = Some(LocalDate.of(2022, 10, 30)),
-              penaltyAmountOutstanding = Some(99.99),
-              penaltyAmountPaid = Some(1001.45),
-              penaltyAmountPosted = 1101.44,
-              LPP1LRDays = Some("15"),
-              LPP1HRDays = Some("31"),
-              LPP2Days = Some("31"),
-              LPP1HRCalculationAmount = Some(99.99),
-              LPP1LRCalculationAmount = Some(99.99),
-              LPP2Percentage = Some(BigDecimal(4.00).setScale(2)),
-              LPP1LRPercentage = Some(BigDecimal(2.00).setScale(2)),
-              LPP1HRPercentage = Some(BigDecimal(2.00).setScale(2)),
-              penaltyChargeDueDate = Some(LocalDate.of(2022, 10, 30)),
-              principalChargeLatestClearing = None,
-              metadata = LPPDetailsMetadata(
-                mainTransaction = Some(MainTransactionEnum.VATReturnCharge),
-                outstandingAmount = Some(123.45),
-                timeToPay = Some(Seq(TimeToPay(
-                  TTPStartDate = Some(LocalDate.of(2022, 1, 1)),
-                  TTPEndDate = Some(LocalDate.of(2022, 12, 31))
-                )))
-              ),
-              penaltyAmountAccruing = BigDecimal(0),
-              principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
-            )
-          )
-        )
-      )
-
-      val result = penaltiesFrontendService.combineAPIData(penaltyDetailsWithSecondPenalty, financialDetails, FinancialDetails(None, None))
-      result.latePaymentPenalty.isDefined shouldBe true
-      result.latePaymentPenalty.get shouldBe expectedResult
-    }
-
-    "update two different principal charge penalties" in new Setup {
-      val penaltyDetailsWithDifferentPrincipals = GetPenaltyDetails(
-        totalisations = None, lateSubmissionPenalty = None,
-        latePaymentPenalty = Some(LatePaymentPenalty(
-          details = Some(
-            Seq(
-              LPPDetails(
-                penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
-                principalChargeReference = "1234567891",
-                penaltyChargeReference = Some("1234567891"),
-                penaltyChargeCreationDate = Some(LocalDate.of(2022, 10, 30)),
-                penaltyStatus = LPPPenaltyStatusEnum.Posted,
-                appealInformation = Some(Seq(AppealInformationType(appealStatus = Some(AppealStatusEnum.Unappealable), appealLevel = Some(AppealLevelEnum.HMRC), appealDescription = Some("Some value")))),
-                principalChargeBillingFrom = LocalDate.of(2022, 10, 30),
-                principalChargeBillingTo = LocalDate.of(2022, 10, 30),
-                principalChargeDueDate = LocalDate.of(2022, 10, 30),
-                communicationsDate = Some(LocalDate.of(2022, 10, 30)),
-                penaltyAmountOutstanding = Some(99.99),
-                penaltyAmountPaid = Some(1001.45),
-                penaltyAmountPosted = 1101.44,
-                LPP1LRDays = Some("15"),
-                LPP1HRDays = Some("31"),
-                LPP2Days = Some("31"),
-                LPP1HRCalculationAmount = Some(99.99),
-                LPP1LRCalculationAmount = Some(99.99),
-                LPP2Percentage = Some(BigDecimal(4.00).setScale(2)),
-                LPP1LRPercentage = Some(BigDecimal(2.00).setScale(2)),
-                LPP1HRPercentage = Some(BigDecimal(2.00).setScale(2)),
-                penaltyChargeDueDate = Some(LocalDate.of(2022, 10, 30)),
-                principalChargeLatestClearing = None,
-                metadata = LPPDetailsMetadata(
-                  timeToPay = Some(Seq(TimeToPay(
-                    TTPStartDate = Some(LocalDate.of(2022, 1, 1)),
-                    TTPEndDate = Some(LocalDate.of(2022, 12, 31))
-                  )))
-                ),
-                penaltyAmountAccruing = BigDecimal(0),
-                principalChargeMainTransaction = MainTransactionEnum.OfficersAssessment
-              ),
-              LPPDetails(
-                penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
-                principalChargeReference = "1234567890",
-                penaltyChargeReference = Some("1234567890"),
-                penaltyChargeCreationDate = Some(LocalDate.of(2022, 10, 30)),
-                penaltyStatus = LPPPenaltyStatusEnum.Posted,
-                appealInformation = Some(Seq(AppealInformationType(appealStatus = Some(AppealStatusEnum.Unappealable), appealLevel = Some(AppealLevelEnum.HMRC), appealDescription = Some("Some value")))),
-                principalChargeBillingFrom = LocalDate.of(2022, 10, 30),
-                principalChargeBillingTo = LocalDate.of(2022, 10, 30),
-                principalChargeDueDate = LocalDate.of(2022, 10, 30),
-                communicationsDate = Some(LocalDate.of(2022, 10, 30)),
-                penaltyAmountOutstanding = Some(99.99),
-                penaltyAmountPaid = Some(1001.45),
-                penaltyAmountPosted = 1101.44,
-                LPP1LRDays = Some("15"),
-                LPP1HRDays = Some("31"),
-                LPP2Days = Some("31"),
-                LPP1HRCalculationAmount = Some(99.99),
-                LPP1LRCalculationAmount = Some(99.99),
-                LPP2Percentage = Some(BigDecimal(4.00).setScale(2)),
-                LPP1LRPercentage = Some(BigDecimal(2.00).setScale(2)),
-                LPP1HRPercentage = Some(BigDecimal(2.00).setScale(2)),
-                penaltyChargeDueDate = Some(LocalDate.of(2022, 10, 30)),
-                principalChargeLatestClearing = None,
-                metadata = LPPDetailsMetadata(
-                  timeToPay = Some(Seq(TimeToPay(
-                    TTPStartDate = Some(LocalDate.of(2022, 1, 1)),
-                    TTPEndDate = Some(LocalDate.of(2022, 12, 31))
-                  )))
-                ),
-                penaltyAmountAccruing = BigDecimal(0),
-                principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
-              )
-            )
-          )
-        )),
-        breathingSpace = None
-      )
-
-      val financialDetails: FinancialDetails = FinancialDetails(
-        documentDetails = Some(Seq(
-          DocumentDetails(
-            chargeReferenceNumber = Some("1234567891"),
-            documentOutstandingAmount = Some(123.45),
-            lineItemDetails = Some(Seq(LineItemDetails(Some(MainTransactionEnum.OfficersAssessmentFirstLPP))))),
-          DocumentDetails(
-            chargeReferenceNumber = Some("1234567890"),
-            documentOutstandingAmount = Some(123.45),
-            lineItemDetails = Some(Seq(LineItemDetails(Some(MainTransactionEnum.VATReturnFirstLPP)))))
-        )),
-        totalisation = None
-      )
-
-      val expectedResult = LatePaymentPenalty(
-        details = Some(
-          Seq(
-            LPPDetails(
-              penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
-              principalChargeReference = "1234567891",
-              penaltyChargeReference = Some("1234567891"),
-              penaltyChargeCreationDate = Some(LocalDate.of(2022, 10, 30)),
-              penaltyStatus = LPPPenaltyStatusEnum.Posted,
-              appealInformation = Some(Seq(AppealInformationType(appealStatus = Some(AppealStatusEnum.Unappealable), appealLevel = Some(AppealLevelEnum.HMRC), appealDescription = Some("Some value")))),
-              principalChargeBillingFrom = LocalDate.of(2022, 10, 30),
-              principalChargeBillingTo = LocalDate.of(2022, 10, 30),
-              principalChargeDueDate = LocalDate.of(2022, 10, 30),
-              communicationsDate = Some(LocalDate.of(2022, 10, 30)),
-              penaltyAmountOutstanding = Some(99.99),
-              penaltyAmountPaid = Some(1001.45),
-              penaltyAmountPosted = 1101.44,
-              LPP1LRDays = Some("15"),
-              LPP1HRDays = Some("31"),
-              LPP2Days = Some("31"),
-              LPP1HRCalculationAmount = Some(99.99),
-              LPP1LRCalculationAmount = Some(99.99),
-              LPP2Percentage = Some(BigDecimal(4.00).setScale(2)),
-              LPP1LRPercentage = Some(BigDecimal(2.00).setScale(2)),
-              LPP1HRPercentage = Some(BigDecimal(2.00).setScale(2)),
-              penaltyChargeDueDate = Some(LocalDate.of(2022, 10, 30)),
-              principalChargeLatestClearing = None,
-              metadata = LPPDetailsMetadata(
-                mainTransaction = Some(MainTransactionEnum.OfficersAssessment),
-                outstandingAmount = Some(123.45),
-                timeToPay = Some(Seq(TimeToPay(
-                  TTPStartDate = Some(LocalDate.of(2022, 1, 1)),
-                  TTPEndDate = Some(LocalDate.of(2022, 12, 31))
-                )))
-              ),
-              penaltyAmountAccruing = BigDecimal(0),
-              principalChargeMainTransaction = MainTransactionEnum.OfficersAssessment
-            ),
-            LPPDetails(
-              penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
-              principalChargeReference = "1234567890",
-              penaltyChargeReference = Some("1234567890"),
-              penaltyChargeCreationDate = Some(LocalDate.of(2022, 10, 30)),
-              penaltyStatus = LPPPenaltyStatusEnum.Posted,
-              appealInformation = Some(Seq(AppealInformationType(appealStatus = Some(AppealStatusEnum.Unappealable), appealLevel = Some(AppealLevelEnum.HMRC), appealDescription = Some("Some value")))),
-              principalChargeBillingFrom = LocalDate.of(2022, 10, 30),
-              principalChargeBillingTo = LocalDate.of(2022, 10, 30),
-              principalChargeDueDate = LocalDate.of(2022, 10, 30),
-              communicationsDate = Some(LocalDate.of(2022, 10, 30)),
-              penaltyAmountOutstanding = Some(99.99),
-              penaltyAmountPaid = Some(1001.45),
-              penaltyAmountPosted = 1101.44,
-              LPP1LRDays = Some("15"),
-              LPP1HRDays = Some("31"),
-              LPP2Days = Some("31"),
-              LPP1HRCalculationAmount = Some(99.99),
-              LPP1LRCalculationAmount = Some(99.99),
-              LPP2Percentage = Some(BigDecimal(4.00).setScale(2)),
-              LPP1LRPercentage = Some(BigDecimal(2.00).setScale(2)),
-              LPP1HRPercentage = Some(BigDecimal(2.00).setScale(2)),
-              penaltyChargeDueDate = Some(LocalDate.of(2022, 10, 30)),
-              principalChargeLatestClearing = None,
-              metadata = LPPDetailsMetadata(
-                mainTransaction = Some(MainTransactionEnum.VATReturnCharge),
-                outstandingAmount = Some(123.45),
-                timeToPay = Some(Seq(TimeToPay(
-                  TTPStartDate = Some(LocalDate.of(2022, 1, 1)),
-                  TTPEndDate = Some(LocalDate.of(2022, 12, 31))
-                )))
-              ),
-              penaltyAmountAccruing = BigDecimal(0),
-              principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
-            )
-          )
-        )
-      )
-
-      val result = penaltiesFrontendService.combineAPIData(penaltyDetailsWithDifferentPrincipals, financialDetails, FinancialDetails(None, None))
-      result.latePaymentPenalty.isDefined shouldBe true
-      result.latePaymentPenalty.get shouldBe expectedResult
-    }
-
-    "combine the financial details totalisations - if totalisations already present" in new Setup {
-      val penaltyDetails = GetPenaltyDetails(
-        totalisations = Some(
-          Totalisations(
-            LSPTotalValue = Some(123.45),
-            penalisedPrincipalTotal = Some(321.45),
-            LPPPostedTotal = None,
-            LPPEstimatedTotal = None,
-            totalAccountOverdue = None,
-            totalAccountPostedInterest = None,
-            totalAccountAccruingInterest = None
-          )
-        ),
-        lateSubmissionPenalty = None,
-        latePaymentPenalty = None,
-        breathingSpace = None
-      )
-
-      val financialDetailsWithClearedItems: FinancialDetails = FinancialDetails(
-        documentDetails = None,
-        totalisation = None
-      )
-
-      val financialDetailsWithoutClearedItems: FinancialDetails = FinancialDetails(
-        totalisation = Some(FinancialDetailsTotalisation(
-          regimeTotalisations = Some(RegimeTotalisation(totalAccountOverdue = Some(123.45))),
-          interestTotalisations = Some(InterestTotalisation(totalAccountPostedInterest = Some(12.34), totalAccountAccruingInterest = Some(43.21)))
-        )),
-        documentDetails = None
-      )
-
-      val expectedResult: Totalisations = Totalisations(
-        LSPTotalValue = Some(123.45),
-        penalisedPrincipalTotal = Some(321.45),
-        LPPPostedTotal = None,
-        LPPEstimatedTotal = None,
-        totalAccountOverdue = Some(123.45),
-        totalAccountPostedInterest = Some(12.34),
-        totalAccountAccruingInterest = Some(43.21)
-      )
-
-      val result = penaltiesFrontendService.combineAPIData(penaltyDetails, financialDetailsWithClearedItems, financialDetailsWithoutClearedItems)
-      result.totalisations.isDefined shouldBe true
-      result.totalisations.get shouldBe expectedResult
-    }
-
-    "combine the financial details totalisations - if totalisations NOT already present" in new Setup {
-      val penaltyDetails = GetPenaltyDetails(
-        totalisations = None,
-        lateSubmissionPenalty = None,
-        latePaymentPenalty = None,
-        breathingSpace = None
-      )
-
-      val financialDetailsWithClearedItems: FinancialDetails = FinancialDetails(
-        documentDetails = None,
-        totalisation = None
-      )
-
-      val financialDetailsWithoutClearedItems: FinancialDetails = FinancialDetails(
-        totalisation = Some(FinancialDetailsTotalisation(
-          regimeTotalisations = Some(RegimeTotalisation(totalAccountOverdue = Some(123.45))),
-          interestTotalisations = Some(InterestTotalisation(totalAccountPostedInterest = Some(12.34), totalAccountAccruingInterest = None))
-        )),
-        documentDetails = None
-      )
-
-      val expectedResult: Totalisations = Totalisations(
-        LSPTotalValue = None,
-        penalisedPrincipalTotal = None,
-        LPPPostedTotal = None,
-        LPPEstimatedTotal = None,
-        totalAccountOverdue = Some(123.45),
-        totalAccountPostedInterest = Some(12.34),
-        totalAccountAccruingInterest = None
-      )
-
-      val result = penaltiesFrontendService.combineAPIData(penaltyDetails, financialDetailsWithClearedItems, financialDetailsWithoutClearedItems)
-      result.totalisations.isDefined shouldBe true
-      result.totalisations.get shouldBe expectedResult
-    }
-
-    def successfulAppealOrChargeReversedTest(appealStatusEnum: AppealStatusEnum.Value, appealStatusFriendlyName: String) = {
-      s"not combine the financial data when the LPP has been appealed successfully (for $appealStatusFriendlyName)" in new Setup {
-        val penaltyDetailsWithSecondPenalty = GetPenaltyDetails(
-          totalisations = None, lateSubmissionPenalty = None,
-          latePaymentPenalty = Some(LatePaymentPenalty(
-            details = Some(
-              Seq(
-                LPPDetails(
-                  penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
-                  principalChargeReference = "1234567890",
-                  penaltyChargeReference = Some("1234567890"),
-                  penaltyChargeCreationDate = Some(LocalDate.of(2022, 10, 30)),
-                  penaltyStatus = LPPPenaltyStatusEnum.Posted,
-                  appealInformation = Some(Seq(AppealInformationType(appealStatus = Some(appealStatusEnum), appealLevel = Some(AppealLevelEnum.HMRC), appealDescription = Some("Some value")))),
-                  principalChargeBillingFrom = LocalDate.of(2022, 10, 30),
-                  principalChargeBillingTo = LocalDate.of(2022, 10, 30),
-                  principalChargeDueDate = LocalDate.of(2022, 10, 30),
-                  communicationsDate = Some(LocalDate.of(2022, 10, 30)),
-                  penaltyAmountOutstanding = None,
-                  penaltyAmountPaid = None,
-                  penaltyAmountPosted = 1101.44,
-                  LPP1LRDays = Some("15"),
-                  LPP1HRDays = Some("31"),
-                  LPP2Days = Some("31"),
-                  LPP1HRCalculationAmount = Some(99.99),
-                  LPP1LRCalculationAmount = Some(99.99),
-                  LPP2Percentage = Some(BigDecimal(4.00).setScale(2)),
-                  LPP1LRPercentage = Some(BigDecimal(2.00).setScale(2)),
-                  LPP1HRPercentage = Some(BigDecimal(2.00).setScale(2)),
-                  penaltyChargeDueDate = Some(LocalDate.of(2022, 10, 30)),
-                  principalChargeLatestClearing = Some(LocalDate.of(2022, 10, 30)),
-                  metadata = LPPDetailsMetadata(
-                    timeToPay = None
-                  ),
-                  penaltyAmountAccruing = BigDecimal(0),
-                  principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
-                )
-              )
-            )
-          )),
-          breathingSpace = None
-        )
-
-        val financialDetails: FinancialDetails = FinancialDetails(
-          documentDetails = None,
-          totalisation = None
-        )
-
-        val expectedResult = LatePaymentPenalty(
-          details = Some(
-            Seq(
-              LPPDetails(
-                penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
-                principalChargeReference = "1234567890",
-                penaltyChargeReference = Some("1234567890"),
-                penaltyChargeCreationDate = Some(LocalDate.of(2022, 10, 30)),
-                penaltyStatus = LPPPenaltyStatusEnum.Posted,
-                appealInformation = Some(Seq(AppealInformationType(appealStatus = Some(appealStatusEnum), appealLevel = Some(AppealLevelEnum.HMRC), appealDescription = Some("Some value")))),
-                principalChargeBillingFrom = LocalDate.of(2022, 10, 30),
-                principalChargeBillingTo = LocalDate.of(2022, 10, 30),
-                principalChargeDueDate = LocalDate.of(2022, 10, 30),
-                communicationsDate = Some(LocalDate.of(2022, 10, 30)),
-                penaltyAmountOutstanding = None,
-                penaltyAmountPaid = None,
-                penaltyAmountPosted = 1101.44,
-                LPP1LRDays = Some("15"),
-                LPP1HRDays = Some("31"),
-                LPP2Days = Some("31"),
-                LPP1HRCalculationAmount = Some(99.99),
-                LPP1LRCalculationAmount = Some(99.99),
-                LPP2Percentage = Some(BigDecimal(4.00).setScale(2)),
-                LPP1LRPercentage = Some(BigDecimal(2.00).setScale(2)),
-                LPP1HRPercentage = Some(BigDecimal(2.00).setScale(2)),
-                penaltyChargeDueDate = Some(LocalDate.of(2022, 10, 30)),
-                principalChargeLatestClearing = Some(LocalDate.of(2022, 10, 30)),
-                metadata = LPPDetailsMetadata(
-                  mainTransaction = Some(MainTransactionEnum.VATReturnCharge),
-                  outstandingAmount = None,
-                  timeToPay = None
-                ),
-                penaltyAmountAccruing = BigDecimal(0),
-                principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
-              )
-            )
-          )
-        )
-
-        val result = penaltiesFrontendService.combineAPIData(penaltyDetailsWithSecondPenalty, financialDetails, FinancialDetails(None, None))
-        result.latePaymentPenalty.isDefined shouldBe true
-        result.latePaymentPenalty.get shouldBe expectedResult
-      }
-    }
-
-    successfulAppealOrChargeReversedTest(AppealStatusEnum.Upheld, "Upheld")
-    successfulAppealOrChargeReversedTest(AppealStatusEnum.AppealUpheldChargeAlreadyReversed, "AppealUpheldChargeAlreadyReversed")
-    successfulAppealOrChargeReversedTest(AppealStatusEnum.AppealRejectedChargeAlreadyReversed, "AppealRejectedChargeAlreadyReversed")
   }
 
   "handleAndCombineGetFinancialDetailsData" should {
@@ -881,83 +689,6 @@ class PenaltiesFrontendServiceSpec extends SpecBase with LogCapturing with LPPDe
       when(mockGetFinancialDetailsService.getFinancialDetails(Matchers.any(), Matchers.any())(Matchers.any()))
         .thenReturn(Future.successful(Left(GetFinancialDetailsNoContent)))
       val result = penaltiesFrontendService.handleAndCombineGetFinancialDetailsData(penaltyDetails, "123456789", Some(""))(fakeRequest, implicitly, implicitly)
-      status(result) shouldBe Status.OK
-      contentAsJson(result) shouldBe Json.toJson(penaltyDetails)
-    }
-
-    "combine the 1812 and 1811 data and return a new GetPenaltyDetails model" in new Setup {
-      val financialDetailsWithoutTotalisations: FinancialDetails = FinancialDetails(
-        documentDetails = Some(Seq(DocumentDetails(
-          chargeReferenceNumber = Some("123456790"),
-          documentOutstandingAmount = Some(0.00),
-          lineItemDetails = Some(Seq(LineItemDetails(Some(VATReturnSecondLPP))))),
-          DocumentDetails(
-            chargeReferenceNumber = Some("123456789"),
-            documentOutstandingAmount = Some(0.00),
-            lineItemDetails = Some(Seq(LineItemDetails(Some(VATReturnFirstLPP)))))
-        )),
-        totalisation = None
-      )
-
-      val financialDetailsWithTotalisations: FinancialDetails = FinancialDetails(
-        documentDetails = None,
-        totalisation = Some(FinancialDetailsTotalisation(
-          regimeTotalisations = Some(RegimeTotalisation(totalAccountOverdue = Some(1000))),
-          interestTotalisations = Some(InterestTotalisation(totalAccountPostedInterest = Some(123.45), totalAccountAccruingInterest = Some(23.45)))
-        ))
-      )
-
-      when(mockGetFinancialDetailsService.getFinancialDetails(Matchers.any(), Matchers.any())(Matchers.any()))
-        .thenReturn(
-          Future.successful(Right(GetFinancialDetailsSuccessResponse(financialDetailsWithoutTotalisations))),
-          Future.successful(Right(GetFinancialDetailsSuccessResponse(financialDetailsWithTotalisations)))
-        )
-
-      val penaltyDetails = getPenaltyDetails.copy(
-        totalisations = Some(
-          Totalisations(
-            LSPTotalValue = None,
-            penalisedPrincipalTotal = None,
-            LPPPostedTotal = None,
-            LPPEstimatedTotal = None,
-            totalAccountOverdue = Some(1000),
-            totalAccountPostedInterest = Some(123.45),
-            totalAccountAccruingInterest = Some(23.45)
-          )
-        ),
-        lateSubmissionPenalty = None,
-        latePaymentPenalty = Some(
-          LatePaymentPenalty(
-            Some(
-              Seq(
-                lpp2.copy(penaltyStatus = LPPPenaltyStatusEnum.Posted,
-                  penaltyChargeReference = Some("123456790"),
-                  metadata = LPPDetailsMetadata(
-                    mainTransaction = Some(VATReturnCharge),
-                    outstandingAmount = Some(0),
-                    timeToPay = Some(Seq(TimeToPay(
-                      TTPStartDate = Some(LocalDate.of(2022, 1, 1)),
-                      TTPEndDate = Some(LocalDate.of(2022, 12, 31))
-                    )))
-                  )
-                ),
-                lpp1PrincipalChargeDueToday.copy(penaltyStatus = LPPPenaltyStatusEnum.Posted,
-                  penaltyChargeReference = Some("123456789"),
-                  metadata = LPPDetailsMetadata(
-                    mainTransaction = Some(VATReturnCharge),
-                    outstandingAmount = Some(0),
-                    timeToPay = Some(Seq(TimeToPay(
-                      TTPStartDate = Some(LocalDate.of(2022, 1, 1)),
-                      TTPEndDate = Some(LocalDate.of(2022, 12, 31))
-                    )))
-                  ))
-              )
-            )
-          )
-        )
-      )
-
-      val result = penaltiesFrontendService.handleAndCombineGetFinancialDetailsData(getPenaltyDetails, "123456789", Some(""))(fakeRequest, implicitly, implicitly)
       status(result) shouldBe Status.OK
       contentAsJson(result) shouldBe Json.toJson(penaltyDetails)
     }

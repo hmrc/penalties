@@ -16,11 +16,11 @@
 
 package base
 
-import java.time.LocalDate
 import models.getFinancialDetails.MainTransactionEnum
 import models.getPenaltyDetails.appealInfo.{AppealInformationType, AppealLevelEnum, AppealStatusEnum}
-import models.getPenaltyDetails.latePayment.{LPPDetails, LPPDetailsMetadata, LPPPenaltyCategoryEnum, LPPPenaltyStatusEnum, TimeToPay}
-import models.getPenaltyDetails.lateSubmission.LSPDetails
+import models.getPenaltyDetails.latePayment._
+
+import java.time.LocalDate
 
 trait LPPDetailsBase {
   val lpp1PrincipalChargeDueToday: LPPDetails = LPPDetails(

@@ -51,6 +51,7 @@ object GetPenaltyDetailsParser {
           logger.debug(s"[GetPenaltyDetailsReads][read] Json response: ${response.json}")
           response.json.validate[GetPenaltyDetails] match {
             case JsSuccess(getPenaltyDetails, _) =>
+              logger.debug(s"[GetPenaltyDetailsReads][read] Model: $getPenaltyDetails")
               Right(GetPenaltyDetailsSuccessResponse(addMissingLPP1PrincipalChargeLatestClearing(getPenaltyDetails)))
             case JsError(errors) =>
               logger.debug(s"[GetPenaltyDetailsReads][read] Json validation errors: $errors")

@@ -1125,6 +1125,129 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
     )
   )
 
+  val getPenaltyDetailsModelManualLPPPaid: GetPenaltyDetails = basicGetPenaltyDetailsModel.copy(
+    totalisations = None,
+    lateSubmissionPenalty = None,
+    latePaymentPenalty = Some(
+      LatePaymentPenalty(
+        details = Some(
+          Seq(
+            LPPDetails(
+              penaltyCategory = LPPPenaltyCategoryEnum.ManualLPP,
+              principalChargeReference = "123456789",
+              penaltyChargeReference = None,
+              penaltyChargeCreationDate = Some(LocalDate.of(2022, 1, 1)),
+              penaltyStatus = LPPPenaltyStatusEnum.Posted,
+              appealInformation = None,
+              principalChargeBillingFrom = LocalDate.of(2022, 1, 1),
+              principalChargeBillingTo = LocalDate.of(2022, 1, 1),
+              principalChargeDueDate = LocalDate.of(2022, 1, 1),
+              communicationsDate = None,
+              penaltyAmountOutstanding = None,
+              penaltyAmountPaid = Some(200),
+              penaltyAmountPosted = 200,
+              LPP1LRDays = None,
+              LPP1HRDays = None,
+              LPP2Days = None,
+              LPP1HRCalculationAmount = None,
+              LPP1LRCalculationAmount = None,
+              LPP2Percentage = None,
+              LPP1LRPercentage = None,
+              LPP1HRPercentage = None,
+              penaltyChargeDueDate = Some(LocalDate.of(2022, 1, 1)),
+              principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
+              metadata = LPPDetailsMetadata(mainTransaction = Some(MainTransactionEnum.ManualLPP)),
+              penaltyAmountAccruing = BigDecimal(0),
+              principalChargeMainTransaction = MainTransactionEnum.ManualLPP
+            )
+          )
+        )
+      )
+    )
+  )
+
+  val getPenaltyDetailsModelManualLPPPartiallyPaid: GetPenaltyDetails = basicGetPenaltyDetailsModel.copy(
+    totalisations = None,
+    lateSubmissionPenalty = None,
+    latePaymentPenalty = Some(
+      LatePaymentPenalty(
+        details = Some(
+          Seq(
+            LPPDetails(
+              penaltyCategory = LPPPenaltyCategoryEnum.ManualLPP,
+              principalChargeReference = "123456789",
+              penaltyChargeReference = None,
+              penaltyChargeCreationDate = Some(LocalDate.of(2022, 1, 1)),
+              penaltyStatus = LPPPenaltyStatusEnum.Posted,
+              appealInformation = None,
+              principalChargeBillingFrom = LocalDate.of(2022, 1, 1),
+              principalChargeBillingTo = LocalDate.of(2022, 1, 1),
+              principalChargeDueDate = LocalDate.of(2022, 1, 1),
+              communicationsDate = None,
+              penaltyAmountOutstanding = Some(100),
+              penaltyAmountPaid = Some(100),
+              penaltyAmountPosted = 200,
+              LPP1LRDays = None,
+              LPP1HRDays = None,
+              LPP2Days = None,
+              LPP1HRCalculationAmount = None,
+              LPP1LRCalculationAmount = None,
+              LPP2Percentage = None,
+              LPP1LRPercentage = None,
+              LPP1HRPercentage = None,
+              penaltyChargeDueDate = Some(LocalDate.of(2022, 1, 1)),
+              principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
+              metadata = LPPDetailsMetadata(mainTransaction = Some(MainTransactionEnum.ManualLPP)),
+              penaltyAmountAccruing = BigDecimal(0),
+              principalChargeMainTransaction = MainTransactionEnum.ManualLPP
+            )
+          )
+        )
+      )
+    )
+  )
+
+  val getPenaltyDetailsModelManualLPPUnpaid: GetPenaltyDetails = basicGetPenaltyDetailsModel.copy(
+    totalisations = None,
+    lateSubmissionPenalty = None,
+    latePaymentPenalty = Some(
+      LatePaymentPenalty(
+        details = Some(
+          Seq(
+            LPPDetails(
+              penaltyCategory = LPPPenaltyCategoryEnum.ManualLPP,
+              principalChargeReference = "123456789",
+              penaltyChargeReference = None,
+              penaltyChargeCreationDate = Some(LocalDate.of(2022, 1, 1)),
+              penaltyStatus = LPPPenaltyStatusEnum.Posted,
+              appealInformation = None,
+              principalChargeBillingFrom = LocalDate.of(2022, 1, 1),
+              principalChargeBillingTo = LocalDate.of(2022, 1, 1),
+              principalChargeDueDate = LocalDate.of(2022, 1, 1),
+              communicationsDate = None,
+              penaltyAmountOutstanding = Some(200),
+              penaltyAmountPaid = None,
+              penaltyAmountPosted = 200,
+              LPP1LRDays = None,
+              LPP1HRDays = None,
+              LPP2Days = None,
+              LPP1HRCalculationAmount = None,
+              LPP1LRCalculationAmount = None,
+              LPP2Percentage = None,
+              LPP1LRPercentage = None,
+              LPP1HRPercentage = None,
+              penaltyChargeDueDate = Some(LocalDate.of(2022, 1, 1)),
+              principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
+              metadata = LPPDetailsMetadata(mainTransaction = Some(MainTransactionEnum.ManualLPP)),
+              penaltyAmountAccruing = BigDecimal(0),
+              principalChargeMainTransaction = MainTransactionEnum.ManualLPP
+            )
+          )
+        )
+      )
+    )
+  )
+
   val basicModel: UserHasPenaltyAuditModel =
     UserHasPenaltyAuditModel(basicGetPenaltyDetailsModel, "1234", "VRN", None, mockDateHelper)(fakeRequest.withHeaders("User-Agent" -> "penalties-frontend"))
 
@@ -1156,6 +1279,12 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
   val auditModelWithLPPsAccepted: UserHasPenaltyAuditModel = basicModel.copy(getPenaltyDetailsModelWithLPPsAccepted, "1234", "VRN", None)(fakeRequest.withHeaders("User-Agent" -> "penalties-frontend"))
 
   val auditModelWithLPPsUnpaidAndPaidAndPartiallyPaid: UserHasPenaltyAuditModel = basicModel.copy(getPenaltyDetailsModelWithLPPsPaidAndUnpaidAndPartiallyPaid, "1234", "VRN", None)(fakeRequest.withHeaders("User-Agent" -> "penalties-frontend"))
+
+  val auditModelWithManualLPPPaid = basicModel.copy(getPenaltyDetailsModelManualLPPPaid, "1234", "VRN", None)(fakeRequest.withHeaders("User-Agent" -> "penalties-frontend"))
+
+  val auditModelWithManualLPPPartiallyPaid = basicModel.copy(getPenaltyDetailsModelManualLPPPartiallyPaid, "1234", "VRN", None)(fakeRequest.withHeaders("User-Agent" -> "penalties-frontend"))
+
+  val auditModelWithManualLPPUnpaid = basicModel.copy(getPenaltyDetailsModelManualLPPUnpaid, "1234", "VRN", None)(fakeRequest.withHeaders("User-Agent" -> "penalties-frontend"))
 
   val basicModelWithUserAgent: String => UserHasPenaltyAuditModel =
     (userAgent: String) => UserHasPenaltyAuditModel(basicGetPenaltyDetailsModel, "1234", "VRN", None, mockDateHelper)(fakeRequest.withHeaders("User-Agent" -> userAgent))
@@ -1316,6 +1445,29 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
         (auditModelWithLPPsUnpaid.detail \ "penaltyInformation" \ "latePaymentPenaltyDetail" \ "numberOfUnpaidPenalties").validate[Int].get shouldBe 2
         (auditModelWithLPPsUnpaid.detail \ "penaltyInformation" \ "latePaymentPenaltyDetail" \ "totalNumberOfPenalties").validate[Int].get shouldBe 2
         (auditModelWithLPPsUnpaid.detail \ "penaltyInformation" \ "latePaymentPenaltyDetail" \ "underAppeal").validate[Int].get shouldBe 0
+      }
+
+      "the user has a manual LPP - paid" in {
+        (auditModelWithManualLPPPaid.detail \ "penaltyInformation" \ "latePaymentPenaltyDetail" \ "numberOfPaidPenalties").validate[Int].get shouldBe 1
+        (auditModelWithManualLPPPaid.detail \ "penaltyInformation" \ "latePaymentPenaltyDetail" \ "numberOfUnpaidPenalties").validate[Int].get shouldBe 0
+        (auditModelWithManualLPPPaid.detail \ "penaltyInformation" \ "latePaymentPenaltyDetail" \ "totalNumberOfPenalties").validate[Int].get shouldBe 1
+        (auditModelWithManualLPPPaid.detail \ "penaltyInformation" \ "latePaymentPenaltyDetail" \ "underAppeal").validate[Int].get shouldBe 0
+      }
+
+      "the user has a manual LPP - partially paid" in {
+        (auditModelWithManualLPPPartiallyPaid.detail \ "penaltyInformation" \ "latePaymentPenaltyDetail" \ "numberOfPaidPenalties").validate[Int].get shouldBe 0
+        (auditModelWithManualLPPPartiallyPaid.detail \ "penaltyInformation" \ "latePaymentPenaltyDetail" \ "numberOfUnpaidPenalties").validate[Int].get shouldBe 0
+        (auditModelWithManualLPPPartiallyPaid.detail \ "penaltyInformation" \ "latePaymentPenaltyDetail" \ "numberOfPartiallyPaidPenalties").validate[Int].get shouldBe 1
+        (auditModelWithManualLPPPartiallyPaid.detail \ "penaltyInformation" \ "latePaymentPenaltyDetail" \ "totalNumberOfPenalties").validate[Int].get shouldBe 1
+        (auditModelWithManualLPPPartiallyPaid.detail \ "penaltyInformation" \ "latePaymentPenaltyDetail" \ "underAppeal").validate[Int].get shouldBe 0
+      }
+
+      "the user has a manual LPP - unpaid" in {
+        (auditModelWithManualLPPUnpaid.detail \ "penaltyInformation" \ "latePaymentPenaltyDetail" \ "numberOfPaidPenalties").validate[Int].get shouldBe 0
+        (auditModelWithManualLPPUnpaid.detail \ "penaltyInformation" \ "latePaymentPenaltyDetail" \ "numberOfUnpaidPenalties").validate[Int].get shouldBe 1
+        (auditModelWithManualLPPUnpaid.detail \ "penaltyInformation" \ "latePaymentPenaltyDetail" \ "numberOfPartiallyPaidPenalties").validate[Int].get shouldBe 0
+        (auditModelWithManualLPPUnpaid.detail \ "penaltyInformation" \ "latePaymentPenaltyDetail" \ "totalNumberOfPenalties").validate[Int].get shouldBe 1
+        (auditModelWithManualLPPUnpaid.detail \ "penaltyInformation" \ "latePaymentPenaltyDetail" \ "underAppeal").validate[Int].get shouldBe 0
       }
 
       "the user has a combination of unpaid and paid and partially paid LPPs" in {

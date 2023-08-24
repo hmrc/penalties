@@ -135,7 +135,6 @@ class PenaltiesFrontendControllerSpec extends SpecBase with LogCapturing with LP
                   penaltyChargeReference = Some("123456790"),
                   metadata = LPPDetailsMetadata(
                     mainTransaction = Some(VATReturnSecondLPP),
-                    outstandingAmount = Some(0),
                     timeToPay = Some(Seq(TimeToPay(
                       TTPStartDate = Some(LocalDate.of(2022, 1, 1)),
                       TTPEndDate = Some(LocalDate.of(2022, 12, 31))
@@ -146,7 +145,6 @@ class PenaltiesFrontendControllerSpec extends SpecBase with LogCapturing with LP
                   penaltyChargeReference = Some("123456789"),
                   metadata = LPPDetailsMetadata(
                     mainTransaction = Some(VATReturnFirstLPP),
-                    outstandingAmount = Some(0),
                     timeToPay = Some(Seq(TimeToPay(
                       TTPStartDate = Some(LocalDate.of(2022, 1, 1)),
                       TTPEndDate = Some(LocalDate.of(2022, 12, 31))

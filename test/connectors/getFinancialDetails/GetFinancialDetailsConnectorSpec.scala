@@ -30,6 +30,7 @@ import uk.gov.hmrc.http._
 import utils.Logger.logger
 import utils.PagerDutyHelper.PagerDutyKeys
 
+import java.time.LocalDate
 import scala.concurrent.{ExecutionContext, Future}
 
 class GetFinancialDetailsConnectorSpec extends SpecBase with LogCapturing {
@@ -53,7 +54,9 @@ class GetFinancialDetailsConnectorSpec extends SpecBase with LogCapturing {
     documentDetails = Some(Seq(DocumentDetails(
       chargeReferenceNumber = None,
       documentOutstandingAmount = Some(0.00),
-      lineItemDetails = Some(Seq(LineItemDetails(None))))
+      lineItemDetails = Some(Seq(LineItemDetails(None))),
+      documentTotalAmount = Some(100.00),
+      issueDate = Some(LocalDate.of(2023, 1, 1)))
     )),
     totalisation = Some(FinancialDetailsTotalisation(
       regimeTotalisations = Some(RegimeTotalisation(totalAccountOverdue = Some(1000))),
