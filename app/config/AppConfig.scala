@@ -70,8 +70,6 @@ class AppConfig @Inject()(val config: Configuration, servicesConfig: ServicesCon
 
   lazy val fileNotificationOrchestrator: String = servicesConfig.baseUrl("penalties-file-notification-orchestrator")
 
-  lazy val internalAuthBearerToken: String = config.get[String]("internal-auth.token")
-
   lazy val maximumFilenameLength: Int = config.get[Int]("sdes.maximumFilenameLength")
 
   lazy val checksumAlgorithmForFileNotifications: String = config.get[String]("sdes.checksumAlgorithm")

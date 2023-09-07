@@ -35,7 +35,6 @@ class FileNotificationOrchestratorConnectorSpec extends SpecBase {
 
   class Setup {
     reset(mockHttpClient)
-    when(mockAppConfig.internalAuthBearerToken).thenReturn("test-12345")
     val connector = new FileNotificationOrchestratorConnector(mockHttpClient, mockAppConfig)
   }
 
@@ -68,7 +67,6 @@ class FileNotificationOrchestratorConnectorSpec extends SpecBase {
 
       val result: HttpResponse = await(connector.postFileNotifications(Seq(model))(HeaderCarrier()))
       result.status shouldBe OK
-      argumentCaptorForHeaderCarrier.getValue.authorization shouldBe Some(Authorization("test-12345"))
      }
   }
 }
