@@ -54,7 +54,6 @@ class FileNotificationOrchestratorConnectorSpec extends SpecBase {
           correlationID = "corr12345"
         )
       )
-      val argumentCaptorForHeaderCarrier: ArgumentCaptor[HeaderCarrier] = ArgumentCaptor.forClass(classOf[HeaderCarrier])
       when(mockHttpClient.POST[Seq[SDESNotification], HttpResponse](
         Matchers.any(),
         Matchers.any(),

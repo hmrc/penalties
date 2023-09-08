@@ -18,7 +18,7 @@ package connectors
 
 import config.AppConfig
 import models.notification.SDESNotification
-import uk.gov.hmrc.http.HttpReads.Implicits
+import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse}
 
 import javax.inject.Inject
