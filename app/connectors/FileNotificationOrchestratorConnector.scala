@@ -29,7 +29,6 @@ class FileNotificationOrchestratorConnector @Inject()(httpClient: HttpClient,
                                                      (implicit ec: ExecutionContext) {
 
   def postFileNotifications(notifications: Seq[SDESNotification])(implicit hc: HeaderCarrier): Future[HttpResponse] = {
-    httpClient.POST[Seq[SDESNotification], HttpResponse](url = appConfig.postFileNotificationUrl, notifications)(
-      SDESNotification.seqOfWrites, Implicits.readRaw, hc, implicitly)
+    httpClient.POST[Seq[SDESNotification], HttpResponse](url = appConfig.postFileNotificationUrl, notifications)
   }
 }

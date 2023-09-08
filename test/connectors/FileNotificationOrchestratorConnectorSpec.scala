@@ -23,7 +23,7 @@ import org.mockito.Mockito._
 import org.mockito.{ArgumentCaptor, Matchers}
 import play.api.http.Status.OK
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
-import uk.gov.hmrc.http.{Authorization, HeaderCarrier, HttpClient, HttpResponse}
+import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -61,7 +61,7 @@ class FileNotificationOrchestratorConnectorSpec extends SpecBase {
         Matchers.any()
       )(Matchers.any(),
         Matchers.any(),
-        argumentCaptorForHeaderCarrier.capture(),
+        Matchers.any(),
         Matchers.any()))
         .thenReturn(Future.successful(HttpResponse(OK, "")))
 
