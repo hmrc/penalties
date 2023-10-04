@@ -111,7 +111,7 @@ class APIController @Inject()(auditService: AuditService,
         penaltyDetails = penaltyDetails,
         identifier = RegimeHelper.getIdentifierFromEnrolmentKey(enrolmentKey),
         identifierType = RegimeHelper.getIdentifierTypeFromEnrolmentKey(enrolmentKey),
-        arn = None, //TODO: need to check this
+        arn = None,
         dateHelper = dateHelper)
       auditService.audit(auditModel)
       Ok(Json.toJson(responseData))

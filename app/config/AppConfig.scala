@@ -91,7 +91,6 @@ class AppConfig @Inject()(val config: Configuration, servicesConfig: ServicesCon
 
   def getAppealSubmissionURL(enrolmentKey: String, isLPP: Boolean, penaltyNumber: String): String = {
     if (!isEnabled(CallPEGA)) stubBase + s"/penalties-stub/appeals/submit?enrolmentKey=$enrolmentKey&isLPP=$isLPP&penaltyNumber=$penaltyNumber"
-    //TODO: change to relevant URL when implemented
     else pegaBase + s"/penalty/first-stage-appeal/$penaltyNumber"
   }
 

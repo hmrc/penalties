@@ -19,8 +19,8 @@ package connectors
 import base.SpecBase
 import config.AppConfig
 import models.notification._
+import org.mockito.Matchers
 import org.mockito.Mockito._
-import org.mockito.{ArgumentCaptor, Matchers}
 import play.api.http.Status.OK
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse}

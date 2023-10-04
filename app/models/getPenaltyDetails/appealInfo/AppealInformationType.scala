@@ -39,8 +39,7 @@ object AppealInformationType {
   }
 
   private def parseAppealLevel(appealInformation: AppealInformationType): Option[AppealLevelEnum.Value] = {
-    //TODO: Remove Empty enum when R5B is implemented
-    if ((appealInformation.appealLevel.isEmpty || appealInformation.appealLevel.contains(AppealLevelEnum.Empty))
+    if (appealInformation.appealLevel.isEmpty
       && appealInformation.appealStatus.contains(AppealStatusEnum.Unappealable)) {
       Some(AppealLevelEnum.HMRC)
     } else {
