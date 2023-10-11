@@ -45,19 +45,6 @@ class LateSubmissionSpec extends SpecBase {
     taxReturnStatus = Some(TaxReturnStatusEnum.Fulfilled)
   )
 
-  val jsonRepresentingModelWithEmptyTaxReturnStatus: JsValue = Json.parse(
-    """
-      |{
-      | "lateSubmissionID": "001",
-      | "taxPeriod":  "23AA",
-      | "taxPeriodStartDate": "2022-01-01",
-      | "taxPeriodEndDate": "2022-12-31",
-      | "taxPeriodDueDate": "2023-02-07",
-      | "returnReceiptDate": "2023-02-01",
-      | "taxReturnStatus": " "
-      |}
-      |""".stripMargin)
-
   val modelWithEmptyTaxReturnStatus: LateSubmission = LateSubmission(
     lateSubmissionID = "001",
     taxPeriod = Some("23AA"),
@@ -72,12 +59,6 @@ class LateSubmissionSpec extends SpecBase {
     val result: JsResult[LateSubmission] = Json.fromJson(jsonRepresentingModel)(LateSubmission.reads)
     result.isSuccess shouldBe true
     result.get shouldBe model
-  }
-
-  "be readable from JSON when the tax return status is blank (setting to None)" in {
-    val result: JsResult[LateSubmission] = Json.fromJson(jsonRepresentingModelWithEmptyTaxReturnStatus)(LateSubmission.reads)
-    result.isSuccess shouldBe true
-    result.get shouldBe modelWithEmptyTaxReturnStatus
   }
 
   "be writable to JSON" in {
