@@ -58,7 +58,6 @@ trait ETMPWiremock {
       |           "taxReturnStatus": "Fulfilled"
       |         }
       |       ],
-      |       "expiryReason": " ",
       |       "appealInformation": [
       |         {
       |           "appealStatus": "99",

@@ -61,37 +61,6 @@ class LSPDetailsSpec extends SpecBase {
       |}
       |""".stripMargin)
 
-  val jsonRepresentingModelWithBlankExpiryReason: JsValue = Json.parse(
-    """
-      |{
-      |   "penaltyNumber": "12345678901234",
-      |   "penaltyOrder": "01",
-      |   "penaltyCategory": "P",
-      |   "penaltyStatus": "ACTIVE",
-      |   "FAPIndicator": "X",
-      |   "penaltyCreationDate": "2022-10-30",
-      |   "penaltyExpiryDate": "2022-10-30",
-      |   "expiryReason": " ",
-      |   "communicationsDate": "2022-10-30",
-      |   "lateSubmissions": [
-      |      {
-      |        "lateSubmissionID": "001",
-      |        "taxPeriod":  "23AA",
-      |        "taxPeriodStartDate": "2022-01-01",
-      |        "taxPeriodEndDate": "2022-12-31",
-      |        "taxPeriodDueDate": "2023-02-07",
-      |        "returnReceiptDate": "2023-02-01",
-      |        "taxReturnStatus": "Fulfilled"
-      |      }
-      |   ],
-      |   "chargeDueDate": "2022-10-30",
-      |   "chargeOutstandingAmount": 200,
-      |   "chargeAmount": 200,
-      |   "triggeringProcess": "P123",
-      |   "chargeReference": "CHARGEREF1"
-      |}
-      |""".stripMargin)
-
   val jsonRepresentingModelWithNoAppealLevel: JsValue = Json.parse(
     """
       |{
@@ -224,7 +193,7 @@ class LSPDetailsSpec extends SpecBase {
         )
       )
     ),
-    expiryReason = Some(ExpiryReasonEnum.Empty),
+    expiryReason = None,
     appealInformation = None,
     chargeDueDate = Some(LocalDate.of(2022, 10, 30)),
     chargeOutstandingAmount = Some(200),
@@ -274,12 +243,6 @@ class LSPDetailsSpec extends SpecBase {
     result.get shouldBe model
   }
 
-  "be readable from JSON when expiryReason is blank" in {
-    val result: JsResult[LSPDetails] = Json.fromJson(jsonRepresentingModelWithBlankExpiryReason)(LSPDetails.reads)
-    result.isSuccess shouldBe true
-    result.get shouldBe modelWithBlankExpiryReason
-  }
-
   "be readable from JSON when appealLevel is missing" in {
     val result: JsResult[LSPDetails] = Json.fromJson(jsonRepresentingModelWithNoAppealLevel)(LSPDetails.reads)
     result.isSuccess shouldBe true
@@ -293,7 +256,7 @@ class LSPDetailsSpec extends SpecBase {
   }
 
   "be writable to JSON" in {
-    val result: JsValue = Json.toJson(model)(LSPDetails.customWrites)
+    val result: JsValue = Json.toJson(model)
     result shouldBe jsonRepresentingModel
   }
 
@@ -327,7 +290,7 @@ class LSPDetailsSpec extends SpecBase {
         |   "chargeReference": "CHARGEREF1"
         |}
         |""".stripMargin)
-    val result: JsValue = Json.toJson(modelWithBlankExpiryReason)(LSPDetails.customWrites)
+    val result: JsValue = Json.toJson(modelWithBlankExpiryReason)
     result shouldBe jsonRepresentingModel
   }
 
@@ -368,7 +331,7 @@ class LSPDetailsSpec extends SpecBase {
         |   "chargeReference": "CHARGEREF1"
         |}
         |""".stripMargin)
-    val result: JsValue = Json.toJson(modelWithBlankAppealLevel)(LSPDetails.customWrites)
+    val result: JsValue = Json.toJson(modelWithBlankAppealLevel)
     result shouldBe jsonRepresentingModel
   }
 }
