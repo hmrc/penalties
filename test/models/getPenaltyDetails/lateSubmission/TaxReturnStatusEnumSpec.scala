@@ -39,12 +39,6 @@ class TaxReturnStatusEnumSpec extends SpecBase {
     result.get shouldBe TaxReturnStatusEnum.Reversed
   }
 
-  "be readable from JSON for an empty string (FAP) to AddedFAP" in {
-    val result = Json.fromJson(JsString(" "))(TaxReturnStatusEnum.format)
-    result.isSuccess shouldBe true
-    result.get shouldBe TaxReturnStatusEnum.AddedFAP
-  }
-
   "be writable to JSON for OPEN" in {
     val result = Json.toJson(TaxReturnStatusEnum.Open)(TaxReturnStatusEnum.format)
     result shouldBe JsString("Open")
@@ -58,11 +52,6 @@ class TaxReturnStatusEnumSpec extends SpecBase {
   "be writable to JSON for REVERSED" in {
     val result = Json.toJson(TaxReturnStatusEnum.Reversed)(TaxReturnStatusEnum.format)
     result shouldBe JsString("Reversed")
-  }
-
-  "be writable to JSON for AddedFAP" in {
-    val result = Json.toJson(TaxReturnStatusEnum.AddedFAP)(TaxReturnStatusEnum.format)
-    result shouldBe JsString(" ")
   }
 
   "return a JSError for an unrecognised value" in {

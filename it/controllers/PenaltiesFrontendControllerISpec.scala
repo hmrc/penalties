@@ -93,7 +93,7 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
       |}
       |""".stripMargin)
 
-  val getPenaltyDetailsJsonWithBlankExpiryReasonAndAppealLevel: JsValue = Json.parse(
+  val getPenaltyDetailsJsonWithBlankAppealLevel: JsValue = Json.parse(
     """
       |{
       | "totalisations": {
@@ -116,7 +116,6 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
       |       "penaltyOrder": "01",
       |       "penaltyCategory": "P",
       |       "penaltyStatus": "ACTIVE",
-      |       "expiryReason": " ",
       |       "penaltyCreationDate": "2022-10-30",
       |       "penaltyExpiryDate": "2022-10-30",
       |       "communicationsDate": "2022-10-30",
@@ -452,8 +451,8 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
       Json.parse(result.body) shouldBe combinedPenaltyAndFinancialData
     }
 
-    "the get penalty details call includes blank expiryReason and appealLevel fields" in {
-      mockStubResponseForGetPenaltyDetails(Status.OK, "123456789", body = Some(getPenaltyDetailsJsonWithBlankExpiryReasonAndAppealLevel.toString()))
+    "the get penalty details call includes blank appealLevel fields" in {
+      mockStubResponseForGetPenaltyDetails(Status.OK, "123456789", body = Some(getPenaltyDetailsJsonWithBlankAppealLevel.toString()))
       mockStubResponseForGetFinancialDetails(Status.OK, s"VRN/123456789/VATC?$financialDataQueryParamWithClearedItems")
       mockStubResponseForGetFinancialDetails(Status.OK, s"VRN/123456789/VATC?$financialDataQueryParamWithoutClearedItems", Some(getFinancialDetailsTotalisationsAsJson.toString()))
 

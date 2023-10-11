@@ -41,7 +41,7 @@ class FeatureSwitchSpec extends SpecBase {
 
   "FeatureSwitch listOfAllFeatureSwitches" should {
     "list all the feature switches in the app" in {
-      FeatureSwitch.listOfAllFeatureSwitches shouldBe List(CallPEGA, CallDES, CallAPI1812ETMP, CallAPI1811ETMP, SanitiseFileName, EnableR5BProcessing)
+      FeatureSwitch.listOfAllFeatureSwitches shouldBe List(CallPEGA, CallDES, CallAPI1812ETMP, CallAPI1811ETMP, SanitiseFileName)
     }
   }
   "FeatureSwitching constants" should {

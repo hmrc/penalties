@@ -77,7 +77,7 @@ class GetPenaltyDetailsServiceISpec extends IntegrationSpecCommonBase with ETMPW
                   )
                 )
               ),
-              expiryReason = Some(ExpiryReasonEnum.Empty),
+              expiryReason = None,
               appealInformation = Some(
                 Seq(
                   AppealInformationType(

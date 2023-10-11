@@ -16,7 +16,6 @@
 
 package models.getPenaltyDetails.lateSubmission
 
-import models.getPenaltyDetails.lateSubmission.TaxReturnStatusEnum.AddedFAP
 import play.api.libs.json.{JsValue, Json, Reads, Writes}
 
 import java.time.LocalDate
@@ -41,8 +40,7 @@ object LateSubmission {
     returnReceiptDate <- (json \ "returnReceiptDate").validateOpt[LocalDate]
     optTaxReturnStatus <- (json \ "taxReturnStatus").validateOpt[TaxReturnStatusEnum.Value]
   } yield {
-    val taxReturnStatus = if (optTaxReturnStatus.contains(AddedFAP)) None else optTaxReturnStatus
-    LateSubmission(lateSubmissionID, taxPeriod, taxPeriodStartDate, taxPeriodEndDate, taxPeriodDueDate, returnReceiptDate, taxReturnStatus)
+    LateSubmission(lateSubmissionID, taxPeriod, taxPeriodStartDate, taxPeriodEndDate, taxPeriodDueDate, returnReceiptDate, optTaxReturnStatus)
   }
 
   implicit val writes: Writes[LateSubmission] = Json.writes[LateSubmission]
