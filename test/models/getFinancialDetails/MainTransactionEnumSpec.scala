@@ -145,6 +145,11 @@ class MainTransactionEnumSpec extends SpecBase {
     result shouldBe JsString("4787")
   }
 
+  "be writable to JSON for 'VAT Overpayment For Tax' (4764)" in {
+    val result = Json.toJson(MainTransactionEnum.VATOverpaymentForTax)
+    result shouldBe JsString("4764")
+  }
+
   "be readable from JSON for 'VAT Return Charge' (4700)" in {
     val result = Json.fromJson(JsString("4700"))(MainTransactionEnum.format)
     result.get shouldBe MainTransactionEnum.VATReturnCharge
@@ -268,6 +273,11 @@ class MainTransactionEnumSpec extends SpecBase {
   "be readable from JSON for 'VAT Manual LPP' (4787)" in {
     val result = Json.fromJson(JsString("4787"))(MainTransactionEnum.format)
     result.get shouldBe MainTransactionEnum.ManualLPP
+  }
+
+  "be readable from JSON for 'VAT Overpayment For Tax' (4764)" in {
+    val result = Json.fromJson(JsString("4764"))(MainTransactionEnum.format)
+    result.get shouldBe MainTransactionEnum.VATOverpaymentForTax
   }
 
   "return Unknown when the enum is not recognised" in {

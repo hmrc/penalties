@@ -45,6 +45,7 @@ object MainTransactionEnum extends Enumeration {
   val AAReturnChargeSecondLPP: MainTransactionEnum.Value = Value("4719")
   val ManualLPP: MainTransactionEnum.Value = Value("4787")
   val Unknown: MainTransactionEnum.Value = Value("4700")
+  val VATOverpaymentForTax: MainTransactionEnum.Value = Value("4764")
 
   implicit val format: Format[MainTransactionEnum.Value] = new Format[MainTransactionEnum.Value] {
     override def writes(o: MainTransactionEnum.Value): JsValue = {
@@ -78,6 +79,7 @@ object MainTransactionEnum extends Enumeration {
         case "4718" => JsSuccess(AAReturnChargeFirstLPP)
         case "4719" => JsSuccess(AAReturnChargeSecondLPP)
         case "4787" => JsSuccess(ManualLPP)
+        case "4764" => JsSuccess(VATOverpaymentForTax)
         case e => JsSuccess(Unknown)
       }
     }
