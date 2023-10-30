@@ -18,8 +18,8 @@ package services
 
 import models.getPenaltyDetails.GetPenaltyDetails
 import models.getPenaltyDetails.latePayment.{LPPDetails, LPPPenaltyStatusEnum}
-
 import javax.inject.{Inject, Singleton}
+import models.getFinancialDetails.MainTransactionEnum
 
 @Singleton
 class APIService @Inject()() {
@@ -48,7 +48,8 @@ class APIService @Inject()() {
     val postedLPPs = lppDetails.filterNot(penalty => penalty.penaltyStatus.equals(LPPPenaltyStatusEnum.Accruing))
     val outstandingPostedLPPs = postedLPPs.filter(_.penaltyAmountOutstanding.getOrElse(BigDecimal(0)) > BigDecimal(0))
     val numOfDueLPPs = outstandingPostedLPPs.size
-    numOfDueLSPs + numOfDueLPPs
+    val numOfManualLPPs = lppDetails.count(penalty => penalty.principalChargeMainTransaction.equals(MainTransactionEnum.ManualLPP))
+    numOfDueLSPs + numOfDueLPPs + numOfManualLPPs
   }
 
   def getCrystallisedPenaltyTotal(penaltyDetails: GetPenaltyDetails): BigDecimal = {

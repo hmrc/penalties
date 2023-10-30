@@ -19,6 +19,7 @@ package controllers
 import config.featureSwitches.FeatureSwitching
 import connectors.getFinancialDetails.GetFinancialDetailsConnector
 import connectors.getPenaltyDetails.GetPenaltyDetailsConnector
+import connectors.parsers.getFinancialDetails.GetFinancialDetailsParser.GetFinancialDetailsSuccessResponse
 import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser
 import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser.GetPenaltyDetailsSuccessResponse
 import models.api.APIModel
@@ -28,21 +29,25 @@ import play.api.Configuration
 import play.api.libs.json.{JsString, JsValue, Json}
 import play.api.mvc._
 import services.auditing.AuditService
-import services.{APIService, FilterService, GetPenaltyDetailsService}
+import services.{APIService, FilterService, GetFinancialDetailsService, GetPenaltyDetailsService, PenaltiesFrontendService}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import utils.Logger.logger
 import utils.PagerDutyHelper.PagerDutyKeys._
 import utils.{DateHelper, PagerDutyHelper, RegimeHelper}
-
 import javax.inject.Inject
+import models.getFinancialDetails.{FinancialDetails, GetFinancialData}
+import models.getFinancialDetails.MainTransactionEnum.ManualLPP
+import uk.gov.hmrc.http.HeaderCarrier
+
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.matching.Regex
 
 class APIController @Inject()(auditService: AuditService,
                               apiService: APIService,
                               getPenaltyDetailsService: GetPenaltyDetailsService,
+                              getFinancialDetailsService: GetFinancialDetailsService,
                               getFinancialDetailsConnector: GetFinancialDetailsConnector,
-                              getPenaltyDetailsConnector: GetPenaltyDetailsConnector,
+                              getPenaltyDetailsConnector: GetPenaltyDetailsConnector, penaltiesFrontendService: PenaltiesFrontendService,
                               dateHelper: DateHelper,
                               cc: ControllerComponents,
                               filterService: FilterService)(implicit ec: ExecutionContext, val config: Configuration) extends BackendController(cc) with FeatureSwitching {
@@ -83,7 +88,20 @@ class APIController @Inject()(auditService: AuditService,
           },
             success => {
               logger.info(s"[APIController][getSummaryDataForVRN] - 1812 call (VATVC/BTA API) returned 200 for VRN: $vrn")
-              returnResponseForAPI(success.asInstanceOf[GetPenaltyDetailsSuccessResponse].penaltyDetails, enrolmentKey)
+              val penaltyDetails = success.asInstanceOf[GetPenaltyDetailsSuccessResponse].penaltyDetails
+              println(Console.BLUE + s"$penaltyDetails" + Console.RESET)
+              if (penaltyDetails.latePaymentPenalty.exists(LPP =>
+                LPP.ManualLPPIndicator.getOrElse(false))) {
+                callFinancialDetailsForManualLPPs(vrn).map {
+                  x => {
+                    println(Console.BLUE + s"HELLO: $x" + Console.RESET)
+                    returnResponseForAPI(penaltyDetails, enrolmentKey, x)
+                  }
+                }.value.get.get
+              } else {
+                println(Console.BLUE + "No Manual LPPs Detected" + Console.RESET)
+                returnResponseForAPI(penaltyDetails, enrolmentKey)
+              }
             }
           )
         }
@@ -91,11 +109,28 @@ class APIController @Inject()(auditService: AuditService,
     }
   }
 
-  private def returnResponseForAPI(penaltyDetails: GetPenaltyDetails, enrolmentKey: String)(implicit request: Request[_]): Result = {
+  private def callFinancialDetailsForManualLPPs(vrn: String)(implicit hc: HeaderCarrier, request: Request[_]) = {
+    getFinancialDetailsService.getFinancialDetails(vrn, None).map {
+      financialDetailsResponseWithoutClearedItems =>
+        financialDetailsResponseWithoutClearedItems.fold({
+          _ => 0
+        },
+          financialDetailsResponseWithoutClearedItems => {
+            countManualLPPs(financialDetailsResponseWithoutClearedItems.asInstanceOf[GetFinancialDetailsSuccessResponse].financialDetails)
+          })
+    }
+  }
+
+  private def countManualLPPs(financialDetails: FinancialDetails)(implicit hc: HeaderCarrier) = {
+    financialDetails.documentDetails.map(_.count(_.lineItemDetails.exists(_.exists(_.mainTransaction.contains(ManualLPP))))).getOrElse(0)
+  }
+
+  private def returnResponseForAPI(penaltyDetails: GetPenaltyDetails, enrolmentKey: String, numberOfUnpaidManualLPPs: Int = 0)(implicit request: Request[_]): Result = {
     val pointsTotal = penaltyDetails.lateSubmissionPenalty.map(_.summary.activePenaltyPoints).getOrElse(0)
     val penaltyAmountWithEstimateStatus = apiService.findEstimatedPenaltiesAmount(penaltyDetails)
     val noOfEstimatedPenalties = apiService.getNumberOfEstimatedPenalties(penaltyDetails)
-    val crystallisedPenaltyAmount = apiService.getNumberOfCrystallisedPenalties(penaltyDetails)
+    val crystallisedPenaltyAmount = apiService.getNumberOfCrystallisedPenalties(penaltyDetails) + numberOfUnpaidManualLPPs
+    println(Console.GREEN + s"Crystalised Penalty Amount: $crystallisedPenaltyAmount, Number of unpaid Manual LPPs: $numberOfUnpaidManualLPPs" + Console.RESET)
     val crystallisedPenaltyTotal = apiService.getCrystallisedPenaltyTotal(penaltyDetails)
     val hasAnyPenaltyData = apiService.checkIfHasAnyPenaltyData(penaltyDetails)
     val responseData: APIModel = APIModel(
