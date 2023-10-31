@@ -89,7 +89,7 @@ class APIController @Inject()(auditService: AuditService,
             success => {
               logger.info(s"[APIController][getSummaryDataForVRN] - 1812 call (VATVC/BTA API) returned 200 for VRN: $vrn")
               val penaltyDetails = success.asInstanceOf[GetPenaltyDetailsSuccessResponse].penaltyDetails
-              println(Console.BLUE + s"$penaltyDetails" + Console.RESET)
+              println(Console.BLUE + s"${penaltyDetails.latePaymentPenalty}" + Console.RESET)
               if (penaltyDetails.latePaymentPenalty.exists(LPP =>
                 LPP.ManualLPPIndicator.getOrElse(false))) {
                 callFinancialDetailsForManualLPPs(vrn).map {
@@ -110,18 +110,23 @@ class APIController @Inject()(auditService: AuditService,
   }
 
   private def callFinancialDetailsForManualLPPs(vrn: String)(implicit hc: HeaderCarrier, request: Request[_]) = {
+    println(Console.RED + "Testing 1" + Console.RESET)
     getFinancialDetailsService.getFinancialDetails(vrn, None).map {
+      println(Console.RED + "Testing 2" + Console.RESET)
       financialDetailsResponseWithoutClearedItems =>
         financialDetailsResponseWithoutClearedItems.fold({
+          println(Console.RED + s"Testing 5" + Console.RESET)
           _ => 0
         },
           financialDetailsResponseWithoutClearedItems => {
+            println(Console.RED + s"Testing 3" + Console.RESET)
             countManualLPPs(financialDetailsResponseWithoutClearedItems.asInstanceOf[GetFinancialDetailsSuccessResponse].financialDetails)
           })
     }
   }
 
   private def countManualLPPs(financialDetails: FinancialDetails)(implicit hc: HeaderCarrier) = {
+    println(Console.RED + s"Testing 4" + Console.RESET)
     financialDetails.documentDetails.map(_.count(_.lineItemDetails.exists(_.exists(_.mainTransaction.contains(ManualLPP))))).getOrElse(0)
   }
 
