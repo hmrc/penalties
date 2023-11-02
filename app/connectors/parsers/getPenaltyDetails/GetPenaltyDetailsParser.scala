@@ -52,8 +52,6 @@ object GetPenaltyDetailsParser {
           response.json.validate[GetPenaltyDetails] match {
             case JsSuccess(getPenaltyDetails, _) =>
               logger.debug(s"[GetPenaltyDetailsReads][read] Model: $getPenaltyDetails")
-              println(Console.YELLOW + s"Json: ${response.json}" + Console.RESET)
-              println(Console.YELLOW + s"Manual LPP Exists: ${getPenaltyDetails.latePaymentPenalty.get.ManualLPPIndicator.getOrElse(false)}")
               Right(GetPenaltyDetailsSuccessResponse(addMissingLPP1PrincipalChargeLatestClearing(getPenaltyDetails)))
             case JsError(errors) =>
               logger.debug(s"[GetPenaltyDetailsReads][read] Json validation errors: $errors")
@@ -110,7 +108,6 @@ object GetPenaltyDetailsParser {
     val newDetails = penaltyDetails.latePaymentPenalty.flatMap(
       _.details.map(latePaymentPenalties => latePaymentPenalties.map(
         oldLPPDetails => {
-          println(Console.YELLOW + s"LPP Details: ${penaltyDetails.latePaymentPenalty}" + Console.RESET)
           (oldLPPDetails.penaltyCategory, oldLPPDetails.penaltyStatus, oldLPPDetails.principalChargeLatestClearing.isEmpty) match {
             case (LPPPenaltyCategoryEnum.FirstPenalty, LPPPenaltyStatusEnum.Posted, true) =>
               val filteredList = latePaymentPenalties.filter(_.penaltyCategory.equals(LPPPenaltyCategoryEnum.SecondPenalty))
@@ -125,7 +122,6 @@ object GetPenaltyDetailsParser {
       )
     )
     if (newDetails.nonEmpty) {
-      println(Console.CYAN + s"New Details: ${penaltyDetails.copy(latePaymentPenalty = Some(LatePaymentPenalty(newDetails, penaltyDetails.latePaymentPenalty.get.ManualLPPIndicator)))}" + Console.RESET)
       penaltyDetails.copy(latePaymentPenalty = Some(LatePaymentPenalty(newDetails, penaltyDetails.latePaymentPenalty.get.ManualLPPIndicator)))
     } else {
       penaltyDetails

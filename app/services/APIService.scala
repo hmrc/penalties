@@ -19,7 +19,9 @@ package services
 import models.getPenaltyDetails.GetPenaltyDetails
 import models.getPenaltyDetails.latePayment.{LPPDetails, LPPPenaltyStatusEnum}
 import javax.inject.{Inject, Singleton}
-import models.getFinancialDetails.MainTransactionEnum
+import models.getFinancialDetails.MainTransactionEnum.ManualLPP
+import models.getFinancialDetails.{FinancialDetails, MainTransactionEnum}
+import uk.gov.hmrc.http.HeaderCarrier
 
 @Singleton
 class APIService @Inject()() {
@@ -39,7 +41,7 @@ class APIService @Inject()() {
     penaltyDetails.latePaymentPenalty.exists(_.details.exists(_.nonEmpty)) || penaltyDetails.lateSubmissionPenalty.exists(_.details.nonEmpty)
   }
 
-  def getNumberOfCrystallisedPenalties(penaltyDetails: GetPenaltyDetails): Int = {
+  def getNumberOfCrystallisedPenalties(penaltyDetails: GetPenaltyDetails, financialDetails: Option[FinancialDetails]): Int = {
     val numOfDueLSPs: Int = penaltyDetails.lateSubmissionPenalty.map(
       _.details.map(
         penalty => penalty.chargeOutstandingAmount.getOrElse(BigDecimal(0)))).map(_.count(_ > BigDecimal(0)))
@@ -48,11 +50,11 @@ class APIService @Inject()() {
     val postedLPPs = lppDetails.filterNot(penalty => penalty.penaltyStatus.equals(LPPPenaltyStatusEnum.Accruing))
     val outstandingPostedLPPs = postedLPPs.filter(_.penaltyAmountOutstanding.getOrElse(BigDecimal(0)) > BigDecimal(0))
     val numOfDueLPPs = outstandingPostedLPPs.size
-    val numOfManualLPPs = lppDetails.count(penalty => penalty.principalChargeMainTransaction.equals(MainTransactionEnum.ManualLPP))
+    val numOfManualLPPs: Int = if(financialDetails.isDefined) countManualLPPs(financialDetails.get) else 0
     numOfDueLSPs + numOfDueLPPs + numOfManualLPPs
   }
 
-  def getCrystallisedPenaltyTotal(penaltyDetails: GetPenaltyDetails): BigDecimal = {
+  def getCrystallisedPenaltyTotal(penaltyDetails: GetPenaltyDetails, financialDetails: Option[FinancialDetails]): BigDecimal = {
     val crystallisedLSPAmountDue: BigDecimal = penaltyDetails.lateSubmissionPenalty.map(
       _.details.map(
         _.chargeOutstandingAmount.getOrElse(BigDecimal(0))).sum
@@ -60,6 +62,16 @@ class APIService @Inject()() {
     val lppDetails: Seq[LPPDetails] = penaltyDetails.latePaymentPenalty.flatMap(_.details).getOrElse(Seq.empty)
     val postedLPPs = lppDetails.filterNot(penalty => penalty.penaltyStatus.equals(LPPPenaltyStatusEnum.Accruing))
     val crystallisedLPPAmountDue = postedLPPs.map(_.penaltyAmountOutstanding.getOrElse(BigDecimal(0))).sum
-    crystallisedLSPAmountDue + crystallisedLPPAmountDue
+    val manualLPPDue: BigDecimal = if(financialDetails.isDefined) manualLPPTotals(financialDetails.get) else BigDecimal(0)
+    crystallisedLSPAmountDue + crystallisedLPPAmountDue + manualLPPDue
+  }
+
+  private def countManualLPPs(financialDetails: FinancialDetails): Int = {
+    financialDetails.documentDetails.map(_.count(_.lineItemDetails.exists(_.exists(_.mainTransaction.contains(ManualLPP))))).getOrElse(0)
+  }
+
+  private def manualLPPTotals(financialDetails: FinancialDetails): BigDecimal = {
+    val manualLPPs = financialDetails.documentDetails.map(_.filter(_.lineItemDetails.exists(_.exists(_.mainTransaction.contains(ManualLPP)))))
+    manualLPPs.get.map(_.documentOutstandingAmount.getOrElse(BigDecimal(0))).sum
   }
 }

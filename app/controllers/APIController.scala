@@ -19,6 +19,7 @@ package controllers
 import config.featureSwitches.FeatureSwitching
 import connectors.getFinancialDetails.GetFinancialDetailsConnector
 import connectors.getPenaltyDetails.GetPenaltyDetailsConnector
+import connectors.parsers.getFinancialDetails.GetFinancialDetailsParser
 import connectors.parsers.getFinancialDetails.GetFinancialDetailsParser.GetFinancialDetailsSuccessResponse
 import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser
 import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser.GetPenaltyDetailsSuccessResponse
@@ -35,7 +36,7 @@ import utils.Logger.logger
 import utils.PagerDutyHelper.PagerDutyKeys._
 import utils.{DateHelper, PagerDutyHelper, RegimeHelper}
 import javax.inject.Inject
-import models.getFinancialDetails.{FinancialDetails, GetFinancialData}
+import models.getFinancialDetails.FinancialDetails
 import models.getFinancialDetails.MainTransactionEnum.ManualLPP
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -47,7 +48,7 @@ class APIController @Inject()(auditService: AuditService,
                               getPenaltyDetailsService: GetPenaltyDetailsService,
                               getFinancialDetailsService: GetFinancialDetailsService,
                               getFinancialDetailsConnector: GetFinancialDetailsConnector,
-                              getPenaltyDetailsConnector: GetPenaltyDetailsConnector, penaltiesFrontendService: PenaltiesFrontendService,
+                              getPenaltyDetailsConnector: GetPenaltyDetailsConnector,
                               dateHelper: DateHelper,
                               cc: ControllerComponents,
                               filterService: FilterService)(implicit ec: ExecutionContext, val config: Configuration) extends BackendController(cc) with FeatureSwitching {
@@ -60,47 +61,45 @@ class APIController @Inject()(auditService: AuditService,
         Future(BadRequest(s"VRN: $vrn was not in a valid format."))
       } else {
         val enrolmentKey = RegimeHelper.constructMTDVATEnrolmentKey(vrn)
-        getPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(vrn).map {
+        getPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(vrn).flatMap {
           _.fold({
             case GetPenaltyDetailsParser.GetPenaltyDetailsFailureResponse(status) if status == NOT_FOUND => {
               logger.info(s"[APIController][getSummaryDataForVRN] - 1812 call (VATVC/BTA API) returned $status for VRN: $vrn")
-              NotFound(s"A downstream call returned 404 for VRN: $vrn")
+              Future(NotFound(s"A downstream call returned 404 for VRN: $vrn"))
             }
             case GetPenaltyDetailsParser.GetPenaltyDetailsFailureResponse(status) if status == UNPROCESSABLE_ENTITY => {
               //Temporary measure to avoid 422 causing issues
               val responsePayload = GetPenaltyDetailsSuccessResponse(GetPenaltyDetails(totalisations = None, lateSubmissionPenalty = None, latePaymentPenalty = None, breathingSpace = None))
               logger.info(s"[APIController][getSummaryDataForVRN] - 1812 call (VATVC/BTA API) returned $status for VRN: $vrn - Overriding response")
-              returnResponseForAPI(responsePayload.penaltyDetails, enrolmentKey)
+              Future(returnResponseForAPI(responsePayload.penaltyDetails, enrolmentKey))
             }
             case GetPenaltyDetailsParser.GetPenaltyDetailsFailureResponse(status) => {
               logger.info(s"[APIController][getSummaryDataForVRN] - 1812 call (VATVC/BTA API) returned an unexpected status: $status")
-              InternalServerError(s"A downstream call returned an unexpected status: $status for VRN: $vrn")
+              Future(InternalServerError(s"A downstream call returned an unexpected status: $status for VRN: $vrn"))
             }
             case GetPenaltyDetailsParser.GetPenaltyDetailsMalformed => {
               PagerDutyHelper.log("getSummaryDataForVRN", MALFORMED_RESPONSE_FROM_1812_API)
               logger.error(s"[APIController][getSummaryDataForVRN] - 1812 call (VATVC/BTA API) returned invalid body - failed to parse penalty details response for VRN: $vrn")
-              InternalServerError(s"We were unable to parse penalty data.")
+              Future(InternalServerError(s"We were unable to parse penalty data."))
             }
             case GetPenaltyDetailsParser.GetPenaltyDetailsNoContent => {
               logger.info(s"[APIController][getSummaryDataForVRN] - 1812 call (VATVC/BTA API) returned no content for VRN: $vrn")
-              NoContent
+              Future(NoContent)
             }
           },
             success => {
               logger.info(s"[APIController][getSummaryDataForVRN] - 1812 call (VATVC/BTA API) returned 200 for VRN: $vrn")
               val penaltyDetails = success.asInstanceOf[GetPenaltyDetailsSuccessResponse].penaltyDetails
-              println(Console.BLUE + s"${penaltyDetails.latePaymentPenalty}" + Console.RESET)
               if (penaltyDetails.latePaymentPenalty.exists(LPP =>
                 LPP.ManualLPPIndicator.getOrElse(false))) {
+                logger.info(s"[APIController][getSummaryDataForVRN] - 1812 data has ManualLPPIndicator set to true, calling 1811")
                 callFinancialDetailsForManualLPPs(vrn).map {
-                  x => {
-                    println(Console.BLUE + s"HELLO: $x" + Console.RESET)
-                    returnResponseForAPI(penaltyDetails, enrolmentKey, x)
+                  financialDetails => {
+                    returnResponseForAPI(penaltyDetails, enrolmentKey, financialDetails)
                   }
-                }.value.get.get
+                }
               } else {
-                println(Console.BLUE + "No Manual LPPs Detected" + Console.RESET)
-                returnResponseForAPI(penaltyDetails, enrolmentKey)
+                Future(returnResponseForAPI(penaltyDetails, enrolmentKey))
               }
             }
           )
@@ -109,34 +108,38 @@ class APIController @Inject()(auditService: AuditService,
     }
   }
 
-  private def callFinancialDetailsForManualLPPs(vrn: String)(implicit hc: HeaderCarrier, request: Request[_]) = {
-    println(Console.RED + "Testing 1" + Console.RESET)
+  private def callFinancialDetailsForManualLPPs(vrn: String)(implicit hc: HeaderCarrier, request: Request[_]): Future[Option[FinancialDetails]] = {
     getFinancialDetailsService.getFinancialDetails(vrn, None).map {
-      println(Console.RED + "Testing 2" + Console.RESET)
       financialDetailsResponseWithoutClearedItems =>
+        logger.info(s"[APIController][callFinancialDetailsForManualLPPs] - Calling 1811 for response without cleared items")
         financialDetailsResponseWithoutClearedItems.fold({
-          println(Console.RED + s"Testing 5" + Console.RESET)
-          _ => 0
+          case GetFinancialDetailsParser.GetFinancialDetailsFailureResponse(status) =>
+            logger.info(s"[APIController][callFinancialDetailsForManualLPPs] - 1811 call (VATVC/BTA API)" +
+              s" returned an unexpected status: $status, returning None")
+            None
+          case GetFinancialDetailsParser.GetFinancialDetailsMalformed =>
+            PagerDutyHelper.log("callFinancialDetailsForManualLPPs", MALFORMED_RESPONSE_FROM_1811_API)
+            logger.error(s"[APIController][callFinancialDetailsForManualLPPs] - 1811 call (VATVC/BTA API)" +
+              s" returned invalid body - failed to parse penalty details response for VRN: $vrn, returning None")
+            None
+          case GetFinancialDetailsParser.GetFinancialDetailsNoContent =>
+            logger.info(s"[APIController][callFinancialDetailsForManualLPPs] - 1811 call (VATVC/BTA API) returned no content for VRN: $vrn, returning None")
+            None
         },
           financialDetailsResponseWithoutClearedItems => {
-            println(Console.RED + s"Testing 3" + Console.RESET)
-            countManualLPPs(financialDetailsResponseWithoutClearedItems.asInstanceOf[GetFinancialDetailsSuccessResponse].financialDetails)
+            logger.info(s"[APIController][callFinancialDetailsForManualLPPs] - 1811 call (VATVC/BTA API) returned 200 for VRN: $vrn" )
+            Some(financialDetailsResponseWithoutClearedItems.asInstanceOf[GetFinancialDetailsSuccessResponse].financialDetails)
           })
     }
   }
 
-  private def countManualLPPs(financialDetails: FinancialDetails)(implicit hc: HeaderCarrier) = {
-    println(Console.RED + s"Testing 4" + Console.RESET)
-    financialDetails.documentDetails.map(_.count(_.lineItemDetails.exists(_.exists(_.mainTransaction.contains(ManualLPP))))).getOrElse(0)
-  }
-
-  private def returnResponseForAPI(penaltyDetails: GetPenaltyDetails, enrolmentKey: String, numberOfUnpaidManualLPPs: Int = 0)(implicit request: Request[_]): Result = {
+  private def returnResponseForAPI(penaltyDetails: GetPenaltyDetails, enrolmentKey: String,
+                                   financialDetails: Option[FinancialDetails] = None)(implicit request: Request[_]): Result = {
     val pointsTotal = penaltyDetails.lateSubmissionPenalty.map(_.summary.activePenaltyPoints).getOrElse(0)
     val penaltyAmountWithEstimateStatus = apiService.findEstimatedPenaltiesAmount(penaltyDetails)
     val noOfEstimatedPenalties = apiService.getNumberOfEstimatedPenalties(penaltyDetails)
-    val crystallisedPenaltyAmount = apiService.getNumberOfCrystallisedPenalties(penaltyDetails) + numberOfUnpaidManualLPPs
-    println(Console.GREEN + s"Crystalised Penalty Amount: $crystallisedPenaltyAmount, Number of unpaid Manual LPPs: $numberOfUnpaidManualLPPs" + Console.RESET)
-    val crystallisedPenaltyTotal = apiService.getCrystallisedPenaltyTotal(penaltyDetails)
+    val crystallisedPenaltyAmount = apiService.getNumberOfCrystallisedPenalties(penaltyDetails, financialDetails)
+    val crystallisedPenaltyTotal = apiService.getCrystallisedPenaltyTotal(penaltyDetails, financialDetails)
     val hasAnyPenaltyData = apiService.checkIfHasAnyPenaltyData(penaltyDetails)
     val responseData: APIModel = APIModel(
       noOfPoints = pointsTotal,

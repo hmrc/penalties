@@ -66,7 +66,6 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
       mockGetFinancialDetailsConnector,
       mockGetPenaltyDetailsConnector,
       dateHelper,
-      stubControllerComponents(),
       filterService
     )
   }
