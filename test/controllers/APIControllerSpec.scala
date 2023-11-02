@@ -22,8 +22,9 @@ import base.{LogCapturing, SpecBase}
 import config.featureSwitches.FeatureSwitching
 import connectors.getFinancialDetails.GetFinancialDetailsConnector
 import connectors.getPenaltyDetails.GetPenaltyDetailsConnector
+import connectors.parsers.getFinancialDetails.GetFinancialDetailsParser.{GetFinancialDetailsFailureResponse, GetFinancialDetailsMalformed, GetFinancialDetailsNoContent, GetFinancialDetailsSuccessResponse}
 import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser._
-import models.getFinancialDetails.MainTransactionEnum
+import models.getFinancialDetails.{DocumentDetails, FinancialDetails, GetFinancialData, LineItemDetails, MainTransactionEnum}
 import models.getPenaltyDetails.GetPenaltyDetails
 import models.getPenaltyDetails.latePayment._
 import models.getPenaltyDetails.lateSubmission.{LSPSummary, LateSubmissionPenalty}
@@ -32,10 +33,11 @@ import org.mockito.Mockito._
 import play.api.Configuration
 import play.api.http.Status
 import play.api.libs.json.Json
+import play.api.mvc.{ControllerComponents, Result}
 import play.api.test.Helpers._
 import services.auditing.AuditService
-import services.{APIService, AppealService, FilterService, GetPenaltyDetailsService}
-import uk.gov.hmrc.http.HttpResponse
+import services.{APIService, AppealService, FilterService, GetFinancialDetailsService, GetPenaltyDetailsService}
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import utils.Logger.logger
 import utils.PagerDutyHelper.PagerDutyKeys
 import utils.DateHelper
@@ -49,9 +51,12 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
   val dateHelper: DateHelper = injector.instanceOf(classOf[DateHelper])
   val mockAPIService: APIService = mock(classOf[APIService])
   val mockGetPenaltyDetailsService: GetPenaltyDetailsService = mock(classOf[GetPenaltyDetailsService])
+  val mockGetFinancialDetailsService: GetFinancialDetailsService = mock(classOf[GetFinancialDetailsService])
   val mockGetFinancialDetailsConnector: GetFinancialDetailsConnector = mock(classOf[GetFinancialDetailsConnector])
   val mockGetPenaltyDetailsConnector: GetPenaltyDetailsConnector = mock(classOf[GetPenaltyDetailsConnector])
+  val controllerComponents: ControllerComponents = injector.instanceOf(classOf[ControllerComponents])
   implicit val config: Configuration = appConfig.config
+  implicit val hc: HeaderCarrier = HeaderCarrier()
   val filterService: FilterService = injector.instanceOf(classOf[FilterService])
 
   class Setup(isFSEnabled: Boolean = false) {
@@ -59,13 +64,16 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
     reset(mockAuditService)
     reset(mockAPIService)
     reset(mockGetPenaltyDetailsConnector)
+    reset(mockGetFinancialDetailsConnector)
     val controller = new APIController(
       mockAuditService,
       mockAPIService,
       mockGetPenaltyDetailsService,
+      mockGetFinancialDetailsService,
       mockGetFinancialDetailsConnector,
       mockGetPenaltyDetailsConnector,
       dateHelper,
+      controllerComponents,
       filterService
     )
   }
@@ -233,6 +241,38 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
       breathingSpace = None
     )
 
+    val latePaymentPenaltyDetails = getPenaltyDetailsFullAPIResponse.latePaymentPenalty.get.details
+
+    val penaltyDetailsWithManualLPP = getPenaltyDetailsFullAPIResponse.latePaymentPenalty.get.copy(details = latePaymentPenaltyDetails, ManualLPPIndicator = Some(true))
+
+    val getPenaltyDetailsWithManualLPP = getPenaltyDetailsFullAPIResponse.copy(latePaymentPenalty = Some(penaltyDetailsWithManualLPP))
+
+    val financialDetailsWithManualLPP = FinancialDetails(
+      None,
+      documentDetails = Some(Seq(DocumentDetails(
+        chargeReferenceNumber = Some("xyz1234"),
+        documentOutstandingAmount = Some(100.00),
+        documentTotalAmount = Some(200.00),
+        lineItemDetails = Some(Seq(LineItemDetails(
+          mainTransaction = Some(MainTransactionEnum.ManualLPP)
+        ))),
+        issueDate = Some(LocalDate.of(2023,1,1))
+      )))
+    )
+
+    val financialDetailsWithoutManualLPP = FinancialDetails(
+      None,
+      documentDetails = Some(Seq(DocumentDetails(
+        chargeReferenceNumber = Some("xyz1234"),
+        documentOutstandingAmount = Some(100.00),
+        documentTotalAmount = Some(200.00),
+        lineItemDetails = Some(Seq(LineItemDetails(
+          mainTransaction = None
+        ))),
+        issueDate = Some(LocalDate.of(2023,1,1))
+      )))
+    )
+
     s"return ISE (${Status.INTERNAL_SERVER_ERROR}) when the call fails" in new Setup(isFSEnabled = true) {
       when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(any())(any()))
         .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(Status.INTERNAL_SERVER_ERROR))))
@@ -254,8 +294,8 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
       when(mockAPIService.getNumberOfEstimatedPenalties(any())).thenReturn(0)
       when(mockAPIService.findEstimatedPenaltiesAmount(any()))
         .thenReturn(BigDecimal(0))
-      when(mockAPIService.getNumberOfCrystallisedPenalties(any())).thenReturn(0)
-      when(mockAPIService.getCrystallisedPenaltyTotal(any())).thenReturn(BigDecimal(0))
+      when(mockAPIService.getNumberOfCrystallisedPenalties(any(), any())).thenReturn(0)
+      when(mockAPIService.getCrystallisedPenaltyTotal(any(), any())).thenReturn(BigDecimal(0))
       val result = controller.getSummaryDataForVRN("123456789")(fakeRequest)
       status(result) shouldBe Status.NO_CONTENT
       verify(mockAuditService, times(0)).audit(any())(any(), any(), any())
@@ -268,8 +308,8 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
       when(mockAPIService.getNumberOfEstimatedPenalties(any())).thenReturn(0)
       when(mockAPIService.findEstimatedPenaltiesAmount(any()))
         .thenReturn(BigDecimal(0))
-      when(mockAPIService.getNumberOfCrystallisedPenalties(any())).thenReturn(0)
-      when(mockAPIService.getCrystallisedPenaltyTotal(any())).thenReturn(BigDecimal(0))
+      when(mockAPIService.getNumberOfCrystallisedPenalties(any(), any())).thenReturn(0)
+      when(mockAPIService.getCrystallisedPenaltyTotal(any(), any())).thenReturn(BigDecimal(0))
       withCaptureOfLoggingFrom(logger) {
         logs => {
           val result = await(controller.getSummaryDataForVRN("123456789")(fakeRequest))
@@ -313,8 +353,8 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
         .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetailsFullAPIResponse))))
       when(mockAPIService.findEstimatedPenaltiesAmount(any()))
         .thenReturn(BigDecimal(123.45))
-      when(mockAPIService.getNumberOfCrystallisedPenalties(any())).thenReturn(2)
-      when(mockAPIService.getCrystallisedPenaltyTotal(any())).thenReturn(BigDecimal(288))
+      when(mockAPIService.getNumberOfCrystallisedPenalties(any(), any())).thenReturn(2)
+      when(mockAPIService.getCrystallisedPenaltyTotal(any(), any())).thenReturn(BigDecimal(288))
       val result = controller.getSummaryDataForVRN("123456789")(fakeRequest)
       status(result) shouldBe Status.OK
       contentAsJson(result) shouldBe Json.parse(
@@ -339,8 +379,8 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
         .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetailsNoEstimatedLPPs))))
       when(mockAPIService.findEstimatedPenaltiesAmount(any()))
         .thenReturn(BigDecimal(0))
-      when(mockAPIService.getNumberOfCrystallisedPenalties(any())).thenReturn(0)
-      when(mockAPIService.getCrystallisedPenaltyTotal(any())).thenReturn(BigDecimal(0))
+      when(mockAPIService.getNumberOfCrystallisedPenalties(any(), any())).thenReturn(0)
+      when(mockAPIService.getCrystallisedPenaltyTotal(any(), any())).thenReturn(BigDecimal(0))
       val result = controller.getSummaryDataForVRN("123456789")(fakeRequest)
       status(result) shouldBe Status.OK
       contentAsJson(result) shouldBe Json.parse(
@@ -355,6 +395,148 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
           |}
           |""".stripMargin
       )
+    }
+
+    s"return OK (${Status.OK}) when ManualLPPIndicator is true and there is a Manual LPP in the 1811 details" in new Setup(isFSEnabled = true) {
+      when(mockAPIService.checkIfHasAnyPenaltyData(any())).thenReturn(true)
+      when(mockAPIService.getNumberOfEstimatedPenalties(any())).thenReturn(2)
+      when(mockGetFinancialDetailsService.getFinancialDetails(any(), any())(any()))
+        .thenReturn(Future.successful(Right(GetFinancialDetailsSuccessResponse(financialDetailsWithManualLPP))))
+      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(any())(any()))
+        .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetailsWithManualLPP))))
+      when(mockAPIService.findEstimatedPenaltiesAmount(any()))
+        .thenReturn(BigDecimal(123.45))
+      when(mockAPIService.getNumberOfCrystallisedPenalties(any(), any())).thenReturn(3)
+      when(mockAPIService.getCrystallisedPenaltyTotal(any(), any())).thenReturn(BigDecimal(388))
+      val result = controller.getSummaryDataForVRN("123456789")(fakeRequest)
+      status(result) shouldBe Status.OK
+      contentAsJson(result) shouldBe Json.parse(
+        """
+          |{
+          |  "noOfPoints": 2,
+          |  "noOfEstimatedPenalties": 2,
+          |  "noOfCrystalisedPenalties": 3,
+          |  "estimatedPenaltyAmount": 123.45,
+          |  "crystalisedPenaltyAmountDue": 388,
+          |  "hasAnyPenaltyData": true
+          |}
+          |""".stripMargin
+      )
+    }
+
+    s"return OK (${Status.OK}) when ManualLPPIndicator is true and but there is no Manual LPP in the 1811 details" in new Setup(isFSEnabled = true) {
+      when(mockAPIService.checkIfHasAnyPenaltyData(any())).thenReturn(true)
+      when(mockAPIService.getNumberOfEstimatedPenalties(any())).thenReturn(2)
+      when(mockGetFinancialDetailsService.getFinancialDetails(any(), any())(any()))
+        .thenReturn(Future.successful(Right(GetFinancialDetailsSuccessResponse(financialDetailsWithoutManualLPP))))
+      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(any())(any()))
+        .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetailsWithManualLPP))))
+      when(mockAPIService.findEstimatedPenaltiesAmount(any()))
+        .thenReturn(BigDecimal(123.45))
+      when(mockAPIService.getNumberOfCrystallisedPenalties(any(), any())).thenReturn(2)
+      when(mockAPIService.getCrystallisedPenaltyTotal(any(), any())).thenReturn(BigDecimal(288))
+      val result = controller.getSummaryDataForVRN("123456789")(fakeRequest)
+      status(result) shouldBe Status.OK
+      contentAsJson(result) shouldBe Json.parse(
+        """
+          |{
+          |  "noOfPoints": 2,
+          |  "noOfEstimatedPenalties": 2,
+          |  "noOfCrystalisedPenalties": 2,
+          |  "estimatedPenaltyAmount": 123.45,
+          |  "crystalisedPenaltyAmountDue": 288,
+          |  "hasAnyPenaltyData": true
+          |}
+          |""".stripMargin
+      )
+    }
+
+    s"return OK (${Status.OK}) when ManualLPPIndicator is true but the 1811 returns a failure response" in new Setup(isFSEnabled = true) {
+      when(mockAPIService.checkIfHasAnyPenaltyData(any())).thenReturn(true)
+      when(mockAPIService.getNumberOfEstimatedPenalties(any())).thenReturn(2)
+      when(mockGetFinancialDetailsService.getFinancialDetails(any(), any())(any()))
+        .thenReturn(Future.successful(Left(GetFinancialDetailsFailureResponse(Status.UNPROCESSABLE_ENTITY))))
+      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(any())(any()))
+        .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetailsWithManualLPP))))
+      when(mockAPIService.findEstimatedPenaltiesAmount(any()))
+        .thenReturn(BigDecimal(123.45))
+      when(mockAPIService.getNumberOfCrystallisedPenalties(any(), any())).thenReturn(2)
+      when(mockAPIService.getCrystallisedPenaltyTotal(any(), any())).thenReturn(BigDecimal(288))
+      val result = controller.getSummaryDataForVRN("123456789")(fakeRequest)
+      status(result) shouldBe Status.OK
+      contentAsJson(result) shouldBe Json.parse(
+        """
+          |{
+          |  "noOfPoints": 2,
+          |  "noOfEstimatedPenalties": 2,
+          |  "noOfCrystalisedPenalties": 2,
+          |  "estimatedPenaltyAmount": 123.45,
+          |  "crystalisedPenaltyAmountDue": 288,
+          |  "hasAnyPenaltyData": true
+          |}
+          |""".stripMargin
+      )
+    }
+
+    s"return OK (${Status.OK}) when ManualLPPIndicator is true but the 1811 returns No Content" in new Setup(isFSEnabled = true) {
+      when(mockAPIService.checkIfHasAnyPenaltyData(any())).thenReturn(true)
+      when(mockAPIService.getNumberOfEstimatedPenalties(any())).thenReturn(2)
+      when(mockGetFinancialDetailsService.getFinancialDetails(any(), any())(any()))
+        .thenReturn(Future.successful(Left(GetFinancialDetailsNoContent)))
+      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(any())(any()))
+        .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetailsWithManualLPP))))
+      when(mockAPIService.findEstimatedPenaltiesAmount(any()))
+        .thenReturn(BigDecimal(123.45))
+      when(mockAPIService.getNumberOfCrystallisedPenalties(any(), any())).thenReturn(2)
+      when(mockAPIService.getCrystallisedPenaltyTotal(any(), any())).thenReturn(BigDecimal(288))
+      val result: Future[Result] = controller.getSummaryDataForVRN("123456789")(fakeRequest)
+      status(result) shouldBe Status.OK
+      contentAsJson(result) shouldBe Json.parse(
+        """
+          |{
+          |  "noOfPoints": 2,
+          |  "noOfEstimatedPenalties": 2,
+          |  "noOfCrystalisedPenalties": 2,
+          |  "estimatedPenaltyAmount": 123.45,
+          |  "crystalisedPenaltyAmountDue": 288,
+          |  "hasAnyPenaltyData": true
+          |}
+          |""".stripMargin
+      )
+    }
+
+    s"return OK (${Status.OK}) when ManualLPPIndicator is true but the 1811 returns a Malformed Response, which is logged out" in new Setup(isFSEnabled = true) {
+      when(mockAPIService.checkIfHasAnyPenaltyData(any())).thenReturn(true)
+      when(mockAPIService.getNumberOfEstimatedPenalties(any())).thenReturn(2)
+      when(mockGetFinancialDetailsService.getFinancialDetails(any(), any())(any()))
+        .thenReturn(Future.successful(Left(GetFinancialDetailsMalformed)))
+      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(any())(any()))
+        .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetailsWithManualLPP))))
+      when(mockAPIService.findEstimatedPenaltiesAmount(any()))
+        .thenReturn(BigDecimal(123.45))
+      when(mockAPIService.getNumberOfCrystallisedPenalties(any(), any())).thenReturn(2)
+      when(mockAPIService.getCrystallisedPenaltyTotal(any(), any())).thenReturn(BigDecimal(288))
+      val result = controller.getSummaryDataForVRN("123456789")(fakeRequest)
+      status(result) shouldBe Status.OK
+      contentAsJson(result) shouldBe Json.parse(
+        """
+          |{
+          |  "noOfPoints": 2,
+          |  "noOfEstimatedPenalties": 2,
+          |  "noOfCrystalisedPenalties": 2,
+          |  "estimatedPenaltyAmount": 123.45,
+          |  "crystalisedPenaltyAmountDue": 288,
+          |  "hasAnyPenaltyData": true
+          |}
+          |""".stripMargin
+      )
+      withCaptureOfLoggingFrom(logger) {
+        logs => {
+          val result = controller.getSummaryDataForVRN("123456789")(fakeRequest)
+          status(result) shouldBe Status.OK
+          logs.exists(_.getMessage.contains(PagerDutyKeys.MALFORMED_RESPONSE_FROM_1811_API.toString)) shouldBe true
+        }
+      }
     }
   }
 
