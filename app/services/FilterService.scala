@@ -40,7 +40,7 @@ class FilterService @Inject()()(implicit appConfig: AppConfig) {
       if (filteredLPPs.nonEmpty && filteredLPPs.get.nonEmpty && numberOfFilteredLPPs >= 0) {
         logger.info(s"[FilterService][filterEstimatedLPP1DuringPeriodOfFamiliarisation] Filtering for [$callingClass][$function] -" +
           s" Filtered ${numberOfFilteredLPPs} LPP1(s) from payload for VRN: $vrn")
-        penaltiesDetails.copy(latePaymentPenalty = Some(LatePaymentPenalty(filteredLPPs)))
+        penaltiesDetails.copy(latePaymentPenalty = Some(LatePaymentPenalty(filteredLPPs, penaltiesDetails.latePaymentPenalty.get.ManualLPPIndicator)))
       } else {
         logger.info(s"[FilterService][filterEstimatedLPP1DuringPeriodOfFamiliarisation] Filtering for [$callingClass][$function] - Filtered all LPP1s from payload for VRN: $vrn")
         penaltiesDetails.copy(latePaymentPenalty = None)

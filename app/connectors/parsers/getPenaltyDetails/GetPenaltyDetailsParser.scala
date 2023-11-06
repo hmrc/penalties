@@ -122,7 +122,7 @@ object GetPenaltyDetailsParser {
       )
     )
     if (newDetails.nonEmpty) {
-      penaltyDetails.copy(latePaymentPenalty = Some(LatePaymentPenalty(newDetails)))
+      penaltyDetails.copy(latePaymentPenalty = Some(LatePaymentPenalty(newDetails, penaltyDetails.latePaymentPenalty.get.ManualLPPIndicator)))
     } else {
       penaltyDetails
     }
