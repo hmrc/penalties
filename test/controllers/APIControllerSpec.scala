@@ -24,7 +24,7 @@ import connectors.getFinancialDetails.GetFinancialDetailsConnector
 import connectors.getPenaltyDetails.GetPenaltyDetailsConnector
 import connectors.parsers.getFinancialDetails.GetFinancialDetailsParser.{GetFinancialDetailsFailureResponse, GetFinancialDetailsMalformed, GetFinancialDetailsNoContent, GetFinancialDetailsSuccessResponse}
 import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser._
-import models.getFinancialDetails.{DocumentDetails, FinancialDetails, GetFinancialData, LineItemDetails, MainTransactionEnum}
+import models.getFinancialDetails.{DocumentDetails, FinancialDetails, LineItemDetails, MainTransactionEnum}
 import models.getPenaltyDetails.GetPenaltyDetails
 import models.getPenaltyDetails.latePayment._
 import models.getPenaltyDetails.lateSubmission.{LSPSummary, LateSubmissionPenalty}
@@ -36,11 +36,11 @@ import play.api.libs.json.Json
 import play.api.mvc.{ControllerComponents, Result}
 import play.api.test.Helpers._
 import services.auditing.AuditService
-import services.{APIService, AppealService, FilterService, GetFinancialDetailsService, GetPenaltyDetailsService}
+import services._
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
+import utils.DateHelper
 import utils.Logger.logger
 import utils.PagerDutyHelper.PagerDutyKeys
-import utils.DateHelper
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future

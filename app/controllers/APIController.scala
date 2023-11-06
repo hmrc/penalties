@@ -23,22 +23,21 @@ import connectors.parsers.getFinancialDetails.GetFinancialDetailsParser
 import connectors.parsers.getFinancialDetails.GetFinancialDetailsParser.GetFinancialDetailsSuccessResponse
 import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser
 import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser.GetPenaltyDetailsSuccessResponse
+import javax.inject.Inject
 import models.api.APIModel
 import models.auditing.{ThirdParty1812APIRetrievalAuditModel, ThirdPartyAPI1811RetrievalAuditModel, UserHasPenaltyAuditModel}
+import models.getFinancialDetails.FinancialDetails
 import models.getPenaltyDetails.GetPenaltyDetails
 import play.api.Configuration
 import play.api.libs.json.{JsString, JsValue, Json}
 import play.api.mvc._
 import services.auditing.AuditService
-import services.{APIService, FilterService, GetFinancialDetailsService, GetPenaltyDetailsService, PenaltiesFrontendService}
+import services.{APIService, FilterService, GetFinancialDetailsService, GetPenaltyDetailsService}
+import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import utils.Logger.logger
 import utils.PagerDutyHelper.PagerDutyKeys._
 import utils.{DateHelper, PagerDutyHelper, RegimeHelper}
-import javax.inject.Inject
-import models.getFinancialDetails.FinancialDetails
-import models.getFinancialDetails.MainTransactionEnum.ManualLPP
-import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.matching.Regex

@@ -16,12 +16,11 @@
 
 package services
 
+import javax.inject.{Inject, Singleton}
+import models.getFinancialDetails.FinancialDetails
+import models.getFinancialDetails.MainTransactionEnum.ManualLPP
 import models.getPenaltyDetails.GetPenaltyDetails
 import models.getPenaltyDetails.latePayment.{LPPDetails, LPPPenaltyStatusEnum}
-import javax.inject.{Inject, Singleton}
-import models.getFinancialDetails.MainTransactionEnum.ManualLPP
-import models.getFinancialDetails.{FinancialDetails, MainTransactionEnum}
-import uk.gov.hmrc.http.HeaderCarrier
 
 @Singleton
 class APIService @Inject()() {
