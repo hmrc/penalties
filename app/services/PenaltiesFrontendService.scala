@@ -154,7 +154,7 @@ class PenaltiesFrontendService @Inject()(getFinancialDetailsService: GetFinancia
         principalChargeBillingFrom = penaltyChargeCreationDate,
         principalChargeBillingTo = penaltyChargeCreationDate,
         principalChargeDueDate = penaltyChargeCreationDate,
-        None, None, None, None, None, None, None, None, None, None, None, None, LPPDetailsMetadata(
+        None, None, None, None, None, None, None, None, None, None, None, None, None, LPPDetailsMetadata(
           mainTransaction = Some(ManualLPP)
         )
       )
@@ -163,13 +163,18 @@ class PenaltiesFrontendService @Inject()(getFinancialDetailsService: GetFinancia
     if(penaltyDetails.latePaymentPenalty.isEmpty || penaltyDetails.latePaymentPenalty.exists(_.details.isEmpty)) {
       Some(manualLPPAs1812Models)
     } else {
-      penaltyDetails.latePaymentPenalty.flatMap(
-        _.details.map(
-          _.map(
-            penalty => penalty.copy(metadata = penalty.metadata.copy(mainTransaction = Some(penalty.principalChargeMainTransaction)))
-          ) ++ manualLPPAs1812Models
-        )
-      )
+      val optNonManual = financialDetails.documentDetails.map(_.filter(x => !x.lineItemDetails.exists(_.exists(_.mainTransaction.contains(ManualLPP)))))
+      val combinedDetails = optNonManual.map(_.flatMap {
+        lppDetails => {
+          penaltyDetails.latePaymentPenalty.flatMap( x =>
+          for {
+            y <- x.details
+            penalties <- y
+          } yield penalties
+          )
+          }
+        })
+      Some(combinedDetails.getOrElse(Seq()) ++ manualLPPAs1812Models)
     }
   }
 
