@@ -66,7 +66,7 @@ class PenaltiesFrontendServiceSpec extends SpecBase with LogCapturing with LPPDe
     principalChargeBillingFrom = LocalDate.of(2023, 4, 1),
     principalChargeBillingTo = LocalDate.of(2023, 4, 1),
     principalChargeDueDate = LocalDate.of(2023, 4, 1),
-    None, None, None, None, None, None, None, None, None, None, None, None, LPPDetailsMetadata(mainTransaction = Some(ManualLPP))
+    None, None, None, None, None, None, None, None, None, None, None, None, None, LPPDetailsMetadata(mainTransaction = Some(ManualLPP))
   )
 
   val getPenaltyDetails: GetPenaltyDetails = GetPenaltyDetails(
@@ -93,7 +93,7 @@ class PenaltiesFrontendServiceSpec extends SpecBase with LogCapturing with LPPDe
     val sampleFinancialDetails: FinancialDetails = FinancialDetails(
       documentDetails = Some(Seq(
         DocumentDetails(
-          chargeReferenceNumber = Some("123456790"),
+          chargeReferenceNumber = Some("1234567890"),
           documentOutstandingAmount = Some(123.45),
           lineItemDetails = Some(Seq(LineItemDetails(Some(MainTransactionEnum.VATReturnSecondLPP)))),
           documentTotalAmount = Some(100.00),
@@ -308,7 +308,8 @@ class PenaltiesFrontendServiceSpec extends SpecBase with LogCapturing with LPPDe
                   principalChargeLatestClearing = None,
                   metadata = LPPDetailsMetadata(),
                   penaltyAmountAccruing = BigDecimal(99.9),
-                  principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
+                  principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
+                  vatOutstandingAmount = Some(BigDecimal(123.45))
                 ),
                 LPPDetails(
                   penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
@@ -336,7 +337,8 @@ class PenaltiesFrontendServiceSpec extends SpecBase with LogCapturing with LPPDe
                   principalChargeLatestClearing = None,
                   metadata = LPPDetailsMetadata(),
                   penaltyAmountAccruing = BigDecimal(99.9),
-                  principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
+                  principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
+                  vatOutstandingAmount = Some(BigDecimal(123.45))
                 )
               )
             )
@@ -399,7 +401,8 @@ class PenaltiesFrontendServiceSpec extends SpecBase with LogCapturing with LPPDe
                   mainTransaction = Some(MainTransactionEnum.VATReturnCharge),
                 ),
                 penaltyAmountAccruing = BigDecimal(99.9),
-                principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
+                principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
+                vatOutstandingAmount = Some(BigDecimal(123.45))
               ),
               LPPDetails(
                 penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
@@ -429,7 +432,8 @@ class PenaltiesFrontendServiceSpec extends SpecBase with LogCapturing with LPPDe
                   mainTransaction = Some(MainTransactionEnum.VATReturnCharge),
                 ),
                 penaltyAmountAccruing = BigDecimal(99.9),
-                principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
+                principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
+                vatOutstandingAmount = Some(BigDecimal(123.45))
               ),
               manualLPP
             )
@@ -473,7 +477,8 @@ class PenaltiesFrontendServiceSpec extends SpecBase with LogCapturing with LPPDe
                 principalChargeLatestClearing = None,
                 metadata = LPPDetailsMetadata(),
                 penaltyAmountAccruing = BigDecimal(99.9),
-                principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
+                principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
+                vatOutstandingAmount = Some(BigDecimal(123.45))
               ),
               LPPDetails(
                 penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
@@ -501,7 +506,8 @@ class PenaltiesFrontendServiceSpec extends SpecBase with LogCapturing with LPPDe
                 principalChargeLatestClearing = None,
                 metadata = LPPDetailsMetadata(),
                 penaltyAmountAccruing = BigDecimal(99.9),
-                principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
+                principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
+                vatOutstandingAmount = Some(BigDecimal(123.45))
               )
             )
           )
@@ -564,7 +570,8 @@ class PenaltiesFrontendServiceSpec extends SpecBase with LogCapturing with LPPDe
                 mainTransaction = Some(MainTransactionEnum.VATReturnCharge),
               ),
               penaltyAmountAccruing = BigDecimal(99.9),
-              principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
+              principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
+              vatOutstandingAmount = Some(BigDecimal(123.45))
             ),
             LPPDetails(
               penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
@@ -594,7 +601,8 @@ class PenaltiesFrontendServiceSpec extends SpecBase with LogCapturing with LPPDe
                 mainTransaction = Some(MainTransactionEnum.VATReturnCharge),
               ),
               penaltyAmountAccruing = BigDecimal(99.9),
-              principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
+              principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
+              vatOutstandingAmount = Some(BigDecimal(123.45))
             ),
             manualLPP.copy(penaltyAmountPaid = Some(0), penaltyAmountOutstanding = Some(BigDecimal(100)))
           )
@@ -606,6 +614,101 @@ class PenaltiesFrontendServiceSpec extends SpecBase with LogCapturing with LPPDe
       result.latePaymentPenalty.get shouldBe expectedResult
     }
 
+    "combined the financial details when there is no outstanding amount (there is no vatOutstandingAmount)" in new Setup {
+      val penaltyDetailsWithFirstPenalty: GetPenaltyDetails = GetPenaltyDetails(
+        totalisations = None, lateSubmissionPenalty = None,
+        latePaymentPenalty = Some(LatePaymentPenalty(
+          details = Some(
+            Seq(
+              LPPDetails(
+                penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
+                principalChargeReference = "1234567890",
+                penaltyChargeReference = Some("1234567890"),
+                penaltyChargeCreationDate = Some(LocalDate.of(2022, 10, 30)),
+                penaltyStatus = LPPPenaltyStatusEnum.Accruing,
+                appealInformation = Some(Seq(AppealInformationType(appealStatus = Some(AppealStatusEnum.Unappealable), appealLevel = Some(AppealLevelEnum.HMRC), appealDescription = Some("Some value")))),
+                principalChargeBillingFrom = LocalDate.of(2022, 10, 30),
+                principalChargeBillingTo = LocalDate.of(2022, 10, 30),
+                principalChargeDueDate = LocalDate.of(2022, 10, 30),
+                communicationsDate = Some(LocalDate.of(2022, 10, 30)),
+                penaltyAmountOutstanding = None,
+                penaltyAmountPaid = None,
+                penaltyAmountPosted = 0,
+                LPP1LRDays = Some("15"),
+                LPP1HRDays = Some("31"),
+                LPP2Days = Some("31"),
+                LPP1HRCalculationAmount = Some(99.99),
+                LPP1LRCalculationAmount = Some(99.99),
+                LPP2Percentage = Some(BigDecimal(4.00).setScale(2)),
+                LPP1LRPercentage = Some(BigDecimal(2.00).setScale(2)),
+                LPP1HRPercentage = Some(BigDecimal(2.00).setScale(2)),
+                penaltyChargeDueDate = Some(LocalDate.of(2022, 10, 30)),
+                principalChargeLatestClearing = None,
+                metadata = LPPDetailsMetadata(),
+                penaltyAmountAccruing = BigDecimal(99.9),
+                principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
+                vatOutstandingAmount = None
+              )
+            )
+          )
+        )),
+        breathingSpace = None
+      )
+
+      val financialDetails: FinancialDetails = FinancialDetails(
+        documentDetails = Some(Seq(
+          DocumentDetails(
+            chargeReferenceNumber = Some("1234567890"),
+            documentOutstandingAmount = None,
+            lineItemDetails = Some(Seq(LineItemDetails(Some(MainTransactionEnum.VATReturnFirstLPP)))),
+            documentTotalAmount = Some(100.00),
+            issueDate = Some(LocalDate.now()))
+        )),
+        totalisation = None
+      )
+
+      val expectedResult: LatePaymentPenalty = LatePaymentPenalty(
+        details = Some(
+          Seq(
+            LPPDetails(
+              penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
+              principalChargeReference = "1234567890",
+              penaltyChargeReference = Some("1234567890"),
+              penaltyChargeCreationDate = Some(LocalDate.of(2022, 10, 30)),
+              penaltyStatus = LPPPenaltyStatusEnum.Accruing,
+              appealInformation = Some(Seq(AppealInformationType(appealStatus = Some(AppealStatusEnum.Unappealable), appealLevel = Some(AppealLevelEnum.HMRC), appealDescription = Some("Some value")))),
+              principalChargeBillingFrom = LocalDate.of(2022, 10, 30),
+              principalChargeBillingTo = LocalDate.of(2022, 10, 30),
+              principalChargeDueDate = LocalDate.of(2022, 10, 30),
+              communicationsDate = Some(LocalDate.of(2022, 10, 30)),
+              penaltyAmountOutstanding = None,
+              penaltyAmountPaid = None,
+              penaltyAmountPosted = 0,
+              LPP1LRDays = Some("15"),
+              LPP1HRDays = Some("31"),
+              LPP2Days = Some("31"),
+              LPP1HRCalculationAmount = Some(99.99),
+              LPP1LRCalculationAmount = Some(99.99),
+              LPP2Percentage = Some(BigDecimal(4.00).setScale(2)),
+              LPP1LRPercentage = Some(BigDecimal(2.00).setScale(2)),
+              LPP1HRPercentage = Some(BigDecimal(2.00).setScale(2)),
+              penaltyChargeDueDate = Some(LocalDate.of(2022, 10, 30)),
+              principalChargeLatestClearing = None,
+              metadata = LPPDetailsMetadata(
+                mainTransaction = Some(MainTransactionEnum.VATReturnCharge),
+              ),
+              penaltyAmountAccruing = BigDecimal(99.9),
+              principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
+              vatOutstandingAmount = None
+            )
+          )
+        )
+      )
+
+      val result: GetPenaltyDetails = penaltiesFrontendService.combineAPIData(penaltyDetailsWithFirstPenalty, financialDetails, FinancialDetails(None, None))
+      result.latePaymentPenalty.isDefined shouldBe true
+      result.latePaymentPenalty.get shouldBe expectedResult
+    }
   }
 
   "handleAndCombineGetFinancialDetailsData" should {

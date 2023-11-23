@@ -54,7 +54,8 @@ trait LPPDetailsBase {
       )))
     ),
     penaltyAmountAccruing = BigDecimal(144.21),
-    principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
+    principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
+    vatOutstandingAmount = Some(BigDecimal(123.45))
   )
 
   val lpp2: LPPDetails = LPPDetails(
@@ -88,7 +89,8 @@ trait LPPDetailsBase {
       )))
     ),
     penaltyAmountAccruing = BigDecimal(144.21),
-    principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
+    principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
+    vatOutstandingAmount = Some(BigDecimal(123.45))
   )
 
   val lpp1PrincipalChargeDueYesterday: LPPDetails = lpp1PrincipalChargeDueToday.copy(principalChargeDueDate = LocalDate.now().minusDays(1))

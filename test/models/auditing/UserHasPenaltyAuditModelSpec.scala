@@ -537,7 +537,8 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
               principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
               metadata = LPPDetailsMetadata(),
               penaltyAmountAccruing = BigDecimal(0),
-              principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
+              principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
+              vatOutstandingAmount = Some(BigDecimal(123.45))
             ),
             LPPDetails(
               penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
@@ -565,7 +566,8 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
               principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
               metadata = LPPDetailsMetadata(),
               penaltyAmountAccruing = BigDecimal(0),
-              principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
+              principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
+              vatOutstandingAmount = Some(BigDecimal(123.45))
             )
           )
         )
@@ -619,7 +621,8 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
                 )))
               ),
               penaltyAmountAccruing = BigDecimal(0),
-              principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
+              principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
+              vatOutstandingAmount = Some(BigDecimal(123.45))
             ),
             LPPDetails(
               penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
@@ -652,7 +655,8 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
                 )))
               ),
               penaltyAmountAccruing = BigDecimal(0),
-              principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
+              principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
+              vatOutstandingAmount = Some(BigDecimal(123.45))
             )
           )
         )
@@ -706,7 +710,8 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
                 )))
               ),
               penaltyAmountAccruing = BigDecimal(0),
-              principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
+              principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
+              vatOutstandingAmount = Some(BigDecimal(123.45))
             ),
             LPPDetails(
               penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
@@ -739,7 +744,8 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
                 )))
               ),
               penaltyAmountAccruing = BigDecimal(0),
-              principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
+              principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
+              vatOutstandingAmount = Some(BigDecimal(123.45))
             )
           )
         )
@@ -793,7 +799,8 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
                 )))
               ),
               penaltyAmountAccruing = BigDecimal(0),
-              principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
+              principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
+              vatOutstandingAmount = Some(BigDecimal(123.45))
             ),
             LPPDetails(
               penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
@@ -821,7 +828,8 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
               principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
               metadata = LPPDetailsMetadata(),
               penaltyAmountAccruing = BigDecimal(0),
-              principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
+              principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
+              vatOutstandingAmount = Some(BigDecimal(123.45))
             ),
             LPPDetails(
               penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
@@ -849,7 +857,8 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
               principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
               metadata = LPPDetailsMetadata(),
               penaltyAmountAccruing = BigDecimal(99.99),
-              principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
+              principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
+              vatOutstandingAmount = Some(BigDecimal(123.45))
             )
           )
         )
@@ -898,7 +907,8 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
               principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
               metadata = LPPDetailsMetadata(),
               penaltyAmountAccruing = BigDecimal(0),
-              principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
+              principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
+              vatOutstandingAmount = Some(BigDecimal(123.45))
             ),
             LPPDetails(
               penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
@@ -930,7 +940,8 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
               principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
               metadata = LPPDetailsMetadata(),
               penaltyAmountAccruing = BigDecimal(0),
-              principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
+              principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
+              vatOutstandingAmount = Some(BigDecimal(123.45))
             )
           )
         )
@@ -979,7 +990,8 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
               principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
               metadata = LPPDetailsMetadata(),
               penaltyAmountAccruing = BigDecimal(0),
-              principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
+              principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
+              vatOutstandingAmount = Some(BigDecimal(123.45))
             ),
             LPPDetails(
               penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
@@ -1011,7 +1023,8 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
               principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
               metadata = LPPDetailsMetadata(),
               penaltyAmountAccruing = BigDecimal(0),
-              principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
+              principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
+              vatOutstandingAmount = Some(BigDecimal(123.45))
             )
           )
         )
@@ -1060,7 +1073,8 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
               principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
               metadata = LPPDetailsMetadata(),
               penaltyAmountAccruing = BigDecimal(0),
-              principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
+              principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
+              vatOutstandingAmount = Some(BigDecimal(123.45))
             ),
             LPPDetails(
               penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
@@ -1088,7 +1102,8 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
               principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
               metadata = LPPDetailsMetadata(),
               penaltyAmountAccruing = BigDecimal(0),
-              principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
+              principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
+              vatOutstandingAmount = Some(BigDecimal(123.45))
             ),
             LPPDetails(
               penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
@@ -1117,7 +1132,8 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
               metadata = LPPDetailsMetadata(),
               penaltyAmountAccruing = BigDecimal(0),
 
-              principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
+              principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
+              vatOutstandingAmount = Some(BigDecimal(123.45))
             )
           )
         )
@@ -1158,7 +1174,8 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
               principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
               metadata = LPPDetailsMetadata(mainTransaction = Some(MainTransactionEnum.ManualLPP)),
               penaltyAmountAccruing = BigDecimal(0),
-              principalChargeMainTransaction = MainTransactionEnum.ManualLPP
+              principalChargeMainTransaction = MainTransactionEnum.ManualLPP,
+              vatOutstandingAmount = None
             )
           )
         )
@@ -1199,7 +1216,8 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
               principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
               metadata = LPPDetailsMetadata(mainTransaction = Some(MainTransactionEnum.ManualLPP)),
               penaltyAmountAccruing = BigDecimal(0),
-              principalChargeMainTransaction = MainTransactionEnum.ManualLPP
+              principalChargeMainTransaction = MainTransactionEnum.ManualLPP,
+              vatOutstandingAmount = None
             )
           )
         )
@@ -1240,7 +1258,8 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
               principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
               metadata = LPPDetailsMetadata(mainTransaction = Some(MainTransactionEnum.ManualLPP)),
               penaltyAmountAccruing = BigDecimal(0),
-              principalChargeMainTransaction = MainTransactionEnum.ManualLPP
+              principalChargeMainTransaction = MainTransactionEnum.ManualLPP,
+              vatOutstandingAmount = None
             )
           )
         )

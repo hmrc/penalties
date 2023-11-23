@@ -271,7 +271,8 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
       |             }
       |         ],
       |         "principalChargeMainTransaction": "4700",
-      |         "penaltyAmountAccruing": 99.99
+      |         "penaltyAmountAccruing": 99.99,
+      |         "vatOutstandingAmount": 543.21
       |       }
       |   ]
       | }
@@ -330,7 +331,8 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
       |                   "TTPEndDate": "2022-12-31"
       |                 }
       |                ],
-      |                "penaltyAmountAccruing": 99.99
+      |                "penaltyAmountAccruing": 99.99,
+      |                "vatOutstandingAmount": 543.21
       |            }
       |        ]
       |    }
@@ -387,7 +389,8 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
       |                   "TTPEndDate": "2022-12-31"
       |                 }
       |                ],
-      |                "penaltyAmountAccruing": 99.99
+      |                "penaltyAmountAccruing": 99.99,
+      |                "vatOutstandingAmount": 543.21
       |            }
       |        ]
       |    }
@@ -810,7 +813,8 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
         |               }
         |            ],
         |            "LPP1LRCalculationAmount":99.99,
-        |            "penaltyAmountOutstanding":0
+        |            "penaltyAmountOutstanding":0,
+        |            "vatOutstandingAmount": 543.21
         |         }
         |      ]
         |   }

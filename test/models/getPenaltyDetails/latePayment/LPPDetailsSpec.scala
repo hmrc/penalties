@@ -168,7 +168,8 @@ class LPPDetailsSpec extends SpecBase {
       principalChargeSubTransaction = Some("SUB1")
     ),
     penaltyAmountAccruing = BigDecimal(144.21),
-    principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
+    principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
+    vatOutstandingAmount = None
   )
 
   val modelAsPaidPenalty: LPPDetails = LPPDetails(
@@ -200,7 +201,8 @@ class LPPDetailsSpec extends SpecBase {
       principalChargeSubTransaction = Some("SUB1")
     ),
     penaltyAmountAccruing = BigDecimal(144.21),
-    principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
+    principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
+    vatOutstandingAmount = None
   )
 
   "be readable from JSON" in {

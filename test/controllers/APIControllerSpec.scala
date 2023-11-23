@@ -148,7 +148,8 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
                 principalChargeLatestClearing = None,
                 metadata = LPPDetailsMetadata(),
                 penaltyAmountAccruing = BigDecimal(100.00),
-                principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
+                principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
+                vatOutstandingAmount = Some(BigDecimal(123.45))
               ),
               LPPDetails(
                 penaltyCategory = LPPPenaltyCategoryEnum.SecondPenalty,
@@ -176,7 +177,8 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
                 principalChargeLatestClearing = None,
                 metadata = LPPDetailsMetadata(),
                 penaltyAmountAccruing = BigDecimal(100.00),
-                principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
+                principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
+                vatOutstandingAmount = Some(BigDecimal(123.45))
               ),
               LPPDetails(
                 penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
@@ -204,7 +206,8 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
                 principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
                 metadata = LPPDetailsMetadata(),
                 penaltyAmountAccruing = BigDecimal(0),
-                principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
+                principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
+                vatOutstandingAmount = Some(BigDecimal(123.45))
               ),
               LPPDetails(
                 penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
@@ -232,7 +235,8 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
                 principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
                 metadata = LPPDetailsMetadata(),
                 penaltyAmountAccruing = BigDecimal(0),
-                principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
+                principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
+                vatOutstandingAmount = Some(BigDecimal(123.45))
               )
             )
           )

@@ -130,7 +130,8 @@ class GetPenaltyDetailsServiceISpec extends IntegrationSpecCommonBase with ETMPW
                 principalChargeSubTransaction = Some("SUB1")
               ),
               penaltyAmountAccruing = BigDecimal(99.99),
-              principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
+              principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
+              vatOutstandingAmount = None
             )
           )
         )
