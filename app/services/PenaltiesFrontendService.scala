@@ -180,7 +180,10 @@ class PenaltiesFrontendService @Inject()(getFinancialDetailsService: GetFinancia
           _.map(
             penalty => penalty.copy(metadata = penalty.metadata.copy(
               mainTransaction = Some(penalty.principalChargeMainTransaction)),
-              vatOutstandingAmount = vatAmounts(Some(penalty.principalChargeReference)))
+              vatOutstandingAmount = if(vatAmounts.contains(Some(penalty.principalChargeReference))) {
+                vatAmounts(Some(penalty.principalChargeReference))
+              } else None
+            )
           ) ++ manualLPPAs1812Models
         )
       )
