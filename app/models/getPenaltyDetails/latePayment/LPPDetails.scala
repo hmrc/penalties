@@ -49,6 +49,7 @@ case class LPPDetails(
                        penaltyChargeDueDate: Option[LocalDate],
                        appealInformation: Option[Seq[AppealInformationType]],
                        principalChargeLatestClearing: Option[LocalDate],
+                       vatOutstandingAmount: Option[BigDecimal],
                        metadata: LPPDetailsMetadata
                      )
 
@@ -81,6 +82,7 @@ object LPPDetails extends JsonUtils {
         principalChargeLatestClearing <- (json \ "principalChargeLatestClearing").validateOpt[LocalDate]
         penaltyAmountAccruing <- (json \ "penaltyAmountAccruing").validate[BigDecimal]
         principalChargeMainTransaction <- (json \ "principalChargeMainTransaction").validate[MainTransactionEnum.Value]
+        vatOutstandingAmount <- (json \ "vatOutstandingAmount").validateOpt[BigDecimal]
         metadata <- Json.fromJson(json)(LPPDetailsMetadata.format)
       } yield {
         LPPDetails(
@@ -109,6 +111,7 @@ object LPPDetails extends JsonUtils {
           principalChargeDueDate = principalChargeDueDate,
           appealInformation = appealInformation,
           principalChargeLatestClearing = principalChargeLatestClearing,
+          vatOutstandingAmount = vatOutstandingAmount,
           metadata = metadata
         )
       }
@@ -141,7 +144,8 @@ object LPPDetails extends JsonUtils {
         "penaltyChargeDueDate" -> o.penaltyChargeDueDate,
         "principalChargeLatestClearing" -> o.principalChargeLatestClearing,
         "penaltyAmountAccruing" -> o.penaltyAmountAccruing,
-        "principalChargeMainTransaction" -> o.principalChargeMainTransaction
+        "principalChargeMainTransaction" -> o.principalChargeMainTransaction,
+        "vatOutstandingAmount" -> o.vatOutstandingAmount
       ).deepMerge(Json.toJsObject(o.metadata)(LPPDetailsMetadata.format))
     }
   }

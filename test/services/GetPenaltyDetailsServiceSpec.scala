@@ -158,7 +158,8 @@ class GetPenaltyDetailsServiceSpec extends SpecBase with LogCapturing with LPPDe
                 )))
               ),
               penaltyAmountAccruing = BigDecimal(144.21),
-              principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
+              principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
+              vatOutstandingAmount = Some(BigDecimal(123.45))
             )
           )
         )

@@ -314,7 +314,8 @@ class GetPenaltyDetailsSpec extends SpecBase {
               principalChargeSubTransaction = Some("SUB1")
             ),
             penaltyAmountAccruing = BigDecimal(99.99),
-            principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
+            principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
+            vatOutstandingAmount = None
           )
         )
       )

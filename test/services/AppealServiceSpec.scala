@@ -426,7 +426,8 @@ class AppealServiceSpec extends SpecBase with LogCapturing {
       principalChargeLatestClearing = Some(LocalDate.of(2022, 10, 1)),
       metadata = LPPDetailsMetadata(),
       penaltyAmountAccruing = BigDecimal(0),
-      principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
+      principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
+      vatOutstandingAmount = Some(BigDecimal(123.45))
     )
 
     val sampleLPP2 = LPPDetails(
@@ -455,7 +456,8 @@ class AppealServiceSpec extends SpecBase with LogCapturing {
       principalChargeLatestClearing = Some(LocalDate.of(2022, 10, 1)),
       metadata = LPPDetailsMetadata(),
       penaltyAmountAccruing = BigDecimal(0),
-      principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge
+      principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
+      vatOutstandingAmount = Some(BigDecimal(123.45))
     )
 
     val getPenaltyDetailsOnePenalty: GetPenaltyDetails = GetPenaltyDetails(

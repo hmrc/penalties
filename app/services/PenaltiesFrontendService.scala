@@ -136,40 +136,58 @@ class PenaltiesFrontendService @Inject()(getFinancialDetailsService: GetFinancia
   private def combineLPPData(penaltyDetails: GetPenaltyDetails, financialDetails: FinancialDetails): Option[Seq[LPPDetails]] = {
     val optManualLPPs: Option[Seq[DocumentDetails]] = financialDetails.documentDetails.map(_.filter(_.lineItemDetails.exists(_.exists(_.mainTransaction.contains(ManualLPP)))))
     val optManualLPPsAs1812Models: Option[Seq[LPPDetails]] = optManualLPPs.map(_.map {
-    manualLPPDetails => {
-      val principalChargeReference = manualLPPDetails.chargeReferenceNumber.get //Set to penaltyChargeReference because Manual LPP's do not have principal charges and we don't use this in Manual LPP cases
-      val penaltyAmountPaid = manualLPPDetails.documentTotalAmount.get - manualLPPDetails.documentOutstandingAmount.getOrElse(manualLPPDetails.documentTotalAmount.get)
-      val penaltyChargeCreationDate = manualLPPDetails.issueDate.get
-      LPPDetails(
-        penaltyCategory = LPPPenaltyCategoryEnum.ManualLPP,
-        penaltyChargeReference = None,
-        principalChargeReference = principalChargeReference,
-        penaltyChargeCreationDate = Some(penaltyChargeCreationDate),
-        penaltyStatus = LPPPenaltyStatusEnum.Posted,
-        penaltyAmountAccruing = 0,
-        penaltyAmountPosted = manualLPPDetails.documentTotalAmount.get,
-        penaltyAmountOutstanding = manualLPPDetails.documentOutstandingAmount,
-        penaltyAmountPaid = Some(penaltyAmountPaid),
-        principalChargeMainTransaction = ManualLPP,
-        principalChargeBillingFrom = penaltyChargeCreationDate,
-        principalChargeBillingTo = penaltyChargeCreationDate,
-        principalChargeDueDate = penaltyChargeCreationDate,
-        None, None, None, None, None, None, None, None, None, None, None, None, LPPDetailsMetadata(
-          mainTransaction = Some(ManualLPP)
+      manualLPPDetails => {
+        val principalChargeReference = manualLPPDetails.chargeReferenceNumber.get //Set to penaltyChargeReference because Manual LPP's do not have principal charges and we don't use this in Manual LPP cases
+        val penaltyAmountPaid = manualLPPDetails.documentTotalAmount.get - manualLPPDetails.documentOutstandingAmount.getOrElse(manualLPPDetails.documentTotalAmount.get)
+        val penaltyChargeCreationDate = manualLPPDetails.issueDate.get
+        LPPDetails(
+          penaltyCategory = LPPPenaltyCategoryEnum.ManualLPP,
+          penaltyChargeReference = None,
+          principalChargeReference = principalChargeReference,
+          penaltyChargeCreationDate = Some(penaltyChargeCreationDate),
+          penaltyStatus = LPPPenaltyStatusEnum.Posted,
+          penaltyAmountAccruing = 0,
+          penaltyAmountPosted = manualLPPDetails.documentTotalAmount.get,
+          penaltyAmountOutstanding = manualLPPDetails.documentOutstandingAmount,
+          penaltyAmountPaid = Some(penaltyAmountPaid),
+          principalChargeMainTransaction = ManualLPP,
+          principalChargeBillingFrom = penaltyChargeCreationDate,
+          principalChargeBillingTo = penaltyChargeCreationDate,
+          principalChargeDueDate = penaltyChargeCreationDate,
+          None, None, None, None, None, None, None, None, None, None, None, None, None, LPPDetailsMetadata(
+            mainTransaction = Some(ManualLPP)
+          )
         )
-      )
-    }})
+      }
+    })
     val manualLPPAs1812Models = optManualLPPsAs1812Models.getOrElse(Seq())
-    if(penaltyDetails.latePaymentPenalty.isEmpty || penaltyDetails.latePaymentPenalty.exists(_.details.isEmpty)) {
+    if (penaltyDetails.latePaymentPenalty.isEmpty || penaltyDetails.latePaymentPenalty.exists(_.details.isEmpty)) {
       Some(manualLPPAs1812Models)
     } else {
+      val optNotManual = financialDetails.copy(documentDetails = financialDetails.documentDetails.map(_.filter(x => !x.lineItemDetails.exists(_.exists(_.mainTransaction.contains(ManualLPP))))))
+      val vatAmounts = optNotManual.documentDetails.map(docs => docs.map(doc => doc.chargeReferenceNumber -> doc.documentOutstandingAmount)).getOrElse(Seq.empty).toMap
+      if (vatAmounts.isEmpty) {
+        penaltyDetails.latePaymentPenalty.flatMap(
+          _.details.map(
+            _.map(
+              penalty => penalty.copy(metadata = penalty.metadata.copy(mainTransaction = Some(penalty.principalChargeMainTransaction)))
+            ) ++ manualLPPAs1812Models
+          )
+        )
+      } else {
       penaltyDetails.latePaymentPenalty.flatMap(
         _.details.map(
           _.map(
-            penalty => penalty.copy(metadata = penalty.metadata.copy(mainTransaction = Some(penalty.principalChargeMainTransaction)))
+            penalty => penalty.copy(metadata = penalty.metadata.copy(
+              mainTransaction = Some(penalty.principalChargeMainTransaction)),
+              vatOutstandingAmount = if(vatAmounts.contains(Some(penalty.principalChargeReference))) {
+                vatAmounts(Some(penalty.principalChargeReference))
+              } else None
+            )
           ) ++ manualLPPAs1812Models
         )
       )
+    }
     }
   }
 
