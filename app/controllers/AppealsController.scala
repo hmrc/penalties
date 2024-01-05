@@ -168,8 +168,6 @@ class AppealsController @Inject()(val appConfig: AppConfig,
           val seqOfNotifications = appeal match {
             case otherAppeal: OtherAppealInformation if otherAppeal.uploadedFiles.isDefined =>
               appealService.createSDESNotifications(otherAppeal.uploadedFiles, responseModel.caseID)
-            case obligationAppeal: ObligationAppealInformation if obligationAppeal.uploadedFiles.isDefined =>
-              appealService.createSDESNotifications(obligationAppeal.uploadedFiles, responseModel.caseID)
             case _ => Seq.empty
           }
           if (seqOfNotifications.nonEmpty) {

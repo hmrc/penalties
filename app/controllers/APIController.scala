@@ -107,7 +107,7 @@ class APIController @Inject()(auditService: AuditService,
     }
   }
 
-  private def callFinancialDetailsForManualLPPs(vrn: String)(implicit hc: HeaderCarrier, request: Request[_]): Future[Option[FinancialDetails]] = {
+  private def callFinancialDetailsForManualLPPs(vrn: String)(implicit hc: HeaderCarrier): Future[Option[FinancialDetails]] = {
     getFinancialDetailsService.getFinancialDetails(vrn, None).map {
       financialDetailsResponseWithoutClearedItems =>
         logger.info(s"[APIController][callFinancialDetailsForManualLPPs] - Calling 1811 for response without cleared items")

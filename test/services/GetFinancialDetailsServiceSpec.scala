@@ -90,7 +90,7 @@ class GetFinancialDetailsServiceSpec extends SpecBase with FeatureSwitching with
         logs => {
           val result: GetFinancialDetailsResponse = await(service.getFinancialDetails("123456789", None))
           result.isLeft shouldBe true
-          result.left.getOrElse(false) shouldBe GetFinancialDetailsNoContent
+          result.left.getOrElse(GetFinancialDetailsFailureResponse(IM_A_TEAPOT)) shouldBe GetFinancialDetailsNoContent
           logs.exists(_.getMessage.contains("[GetFinancialDetailsService][getDataFromFinancialServiceForVATCVRN] - Got a 404 response and no data was found for GetFinancialDetails call")) shouldBe true
         }
       }
@@ -105,7 +105,7 @@ class GetFinancialDetailsServiceSpec extends SpecBase with FeatureSwitching with
         logs => {
           val result: GetFinancialDetailsResponse = await(service.getFinancialDetails("123456789", None))
           result.isLeft shouldBe true
-          result.left.getOrElse(false) shouldBe GetFinancialDetailsMalformed
+          result.left.getOrElse(GetFinancialDetailsFailureResponse(IM_A_TEAPOT)) shouldBe GetFinancialDetailsMalformed
           logs.exists(_.getMessage.contains("[GetFinancialDetailsService][getDataFromFinancialServiceForVATCVRN] - Failed to parse HTTP response into model for VRN: 123456789")) shouldBe true
         }
       }
@@ -120,7 +120,7 @@ class GetFinancialDetailsServiceSpec extends SpecBase with FeatureSwitching with
         logs => {
           val result: GetFinancialDetailsResponse = await(service.getFinancialDetails("123456789", None))
           result.isLeft shouldBe true
-          result.left.getOrElse(false) shouldBe GetFinancialDetailsFailureResponse(IM_A_TEAPOT)
+          result.left.getOrElse(GetFinancialDetailsFailureResponse(INTERNAL_SERVER_ERROR)) shouldBe GetFinancialDetailsFailureResponse(IM_A_TEAPOT)
           logs.exists(_.getMessage.contains("[GetFinancialDetailsService][getDataFromFinancialServiceForVATCVRN] - Unknown status returned from connector for VRN: 123456789")) shouldBe true
         }
       }

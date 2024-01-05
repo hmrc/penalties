@@ -46,7 +46,7 @@ class AppConfigSpec extends AnyWordSpec with ShouldMatchers with FeatureSwitchin
         s"&dateFrom=${LocalDate.now().minusYears(2)}" +
         s"&dateTo=${LocalDate.now()}"
 
-      val result: String = config.addDateRangeQueryParameters()
+      val result: String = this.config.addDateRangeQueryParameters()
       result shouldBe expectedResult
     }
   }
@@ -56,7 +56,7 @@ class AppConfigSpec extends AnyWordSpec with ShouldMatchers with FeatureSwitchin
       enableFeatureSwitch(CallAPI1812ETMP)
       when(mockServicesConfig.baseUrl(Matchers.any()))
         .thenReturn("localhost:0000")
-      val result: String = config.getPenaltyDetailsUrl
+      val result: String = this.config.getPenaltyDetailsUrl
       result shouldBe "localhost:0000/penalty/details/VATC/VRN/"
     }
 
@@ -64,7 +64,7 @@ class AppConfigSpec extends AnyWordSpec with ShouldMatchers with FeatureSwitchin
       disableFeatureSwitch(CallAPI1812ETMP)
       when(mockServicesConfig.baseUrl(Matchers.any()))
         .thenReturn("localhost:0000")
-      val result: String = config.getPenaltyDetailsUrl
+      val result: String = this.config.getPenaltyDetailsUrl
       result shouldBe "localhost:0000/penalties-stub/penalty/details/VATC/VRN/"
     }
   }
@@ -74,7 +74,7 @@ class AppConfigSpec extends AnyWordSpec with ShouldMatchers with FeatureSwitchin
       enableFeatureSwitch(CallAPI1811ETMP)
       when(mockServicesConfig.baseUrl(Matchers.any()))
         .thenReturn("localhost:0000")
-      val result: String = config.getFinancialDetailsUrl("123456789")
+      val result: String = this.config.getFinancialDetailsUrl("123456789")
       result shouldBe "localhost:0000/penalty/financial-data/VRN/123456789/VATC"
     }
 
@@ -82,7 +82,7 @@ class AppConfigSpec extends AnyWordSpec with ShouldMatchers with FeatureSwitchin
       disableFeatureSwitch(CallAPI1811ETMP)
       when(mockServicesConfig.baseUrl(Matchers.any()))
         .thenReturn("localhost:0000")
-      val result: String = config.getFinancialDetailsUrl("123456789")
+      val result: String = this.config.getFinancialDetailsUrl("123456789")
       result shouldBe "localhost:0000/penalties-stub/penalty/financial-data/VRN/123456789/VATC"
     }
   }
@@ -92,7 +92,7 @@ class AppConfigSpec extends AnyWordSpec with ShouldMatchers with FeatureSwitchin
       enableFeatureSwitch(CallPEGA)
       when(mockServicesConfig.baseUrl(Matchers.any()))
         .thenReturn("localhost:0000")
-      val result: String = config.getAppealSubmissionURL("HMRC-MTD-VAT~VRN~123456789", isLPP = false, penaltyNumber = "0000001")
+      val result: String = this.config.getAppealSubmissionURL("HMRC-MTD-VAT~VRN~123456789", isLPP = false, penaltyNumber = "0000001")
       result shouldBe "localhost:0000/penalty/first-stage-appeal/0000001"
     }
 
@@ -100,7 +100,7 @@ class AppConfigSpec extends AnyWordSpec with ShouldMatchers with FeatureSwitchin
       disableFeatureSwitch(CallPEGA)
       when(mockServicesConfig.baseUrl(Matchers.any()))
         .thenReturn("localhost:0000")
-      val result: String = config.getAppealSubmissionURL("HMRC-MTD-VAT~VRN~123456789", isLPP = false, penaltyNumber = "0000001")
+      val result: String = this.config.getAppealSubmissionURL("HMRC-MTD-VAT~VRN~123456789", isLPP = false, penaltyNumber = "0000001")
       result shouldBe "localhost:0000/penalties-stub/appeals/submit?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=false&penaltyNumber=0000001"
     }
 
@@ -108,7 +108,7 @@ class AppConfigSpec extends AnyWordSpec with ShouldMatchers with FeatureSwitchin
       disableFeatureSwitch(CallPEGA)
       when(mockServicesConfig.baseUrl(Matchers.any()))
         .thenReturn("localhost:0000")
-      val result: String = config.getAppealSubmissionURL("HMRC-MTD-VAT~VRN~123456789", isLPP = true, penaltyNumber = "0000001")
+      val result: String = this.config.getAppealSubmissionURL("HMRC-MTD-VAT~VRN~123456789", isLPP = true, penaltyNumber = "0000001")
       result shouldBe "localhost:0000/penalties-stub/appeals/submit?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=true&penaltyNumber=0000001"
     }
   }
@@ -118,7 +118,7 @@ class AppConfigSpec extends AnyWordSpec with ShouldMatchers with FeatureSwitchin
       disableFeatureSwitch(CallDES)
       when(mockServicesConfig.baseUrl(Matchers.any()))
         .thenReturn("localhost:0000")
-      val result: String = config.getComplianceData("123456789", "2020-01-01", "2020-12-31")
+      val result: String = this.config.getComplianceData("123456789", "2020-01-01", "2020-12-31")
       result shouldBe "localhost:0000/penalties-stub/enterprise/obligation-data/vrn/123456789/VATC?from=2020-01-01&to=2020-12-31"
     }
 
@@ -126,7 +126,7 @@ class AppConfigSpec extends AnyWordSpec with ShouldMatchers with FeatureSwitchin
       enableFeatureSwitch(CallDES)
       when(mockServicesConfig.baseUrl(Matchers.any()))
         .thenReturn("localhost:0000")
-      val result: String = config.getComplianceData("123456789", "2020-01-01", "2020-12-31")
+      val result: String = this.config.getComplianceData("123456789", "2020-01-01", "2020-12-31")
       result shouldBe "localhost:0000/enterprise/obligation-data/vrn/123456789/VATC?from=2020-01-01&to=2020-12-31"
     }
   }
@@ -135,7 +135,7 @@ class AppConfigSpec extends AnyWordSpec with ShouldMatchers with FeatureSwitchin
     "return Some" when {
       "the config entry exists" in new Setup {
         when(mockConfiguration.getOptional[String](Matchers.eq("files.extensions.text.plain"))(any())).thenReturn(Some(".txt"))
-        val result: Option[String] = config.getMimeType("text.plain")
+        val result: Option[String] = this.config.getMimeType("text.plain")
         result.isDefined shouldBe true
         result.get shouldBe ".txt"
       }
@@ -144,7 +144,7 @@ class AppConfigSpec extends AnyWordSpec with ShouldMatchers with FeatureSwitchin
     "return None" when {
       "the config entry does not exist" in new Setup {
         when(mockConfiguration.getOptional[String](Matchers.eq("files.extensions.text.plain"))(any())).thenReturn(None)
-        val result: Option[String] = config.getMimeType("text.plain")
+        val result: Option[String] = this.config.getMimeType("text.plain")
         result.isEmpty shouldBe true
       }
     }
