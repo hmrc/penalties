@@ -101,7 +101,7 @@ class ComplianceParserSpec extends AnyWordSpec with Matchers with LogCapturing {
             val result = ComplianceCompliancePayloadReads.read("GET", "/", HttpResponse(400, ""))
             logs.exists(_.getMessage.contains(PagerDutyKeys.RECEIVED_4XX_FROM_1330_API.toString)) shouldBe true
             result.isLeft shouldBe true
-            result.left.getOrElse(false) shouldBe CompliancePayloadFailureResponse(BAD_REQUEST)
+            result.left.getOrElse(CompliancePayloadFailureResponse(IM_A_TEAPOT)) shouldBe CompliancePayloadFailureResponse(BAD_REQUEST)
           }
         }
       }
@@ -112,7 +112,7 @@ class ComplianceParserSpec extends AnyWordSpec with Matchers with LogCapturing {
             val result = ComplianceCompliancePayloadReads.read("GET", "/", HttpResponse(500, ""))
             logs.exists(_.getMessage.contains(PagerDutyKeys.RECEIVED_5XX_FROM_1330_API.toString)) shouldBe true
             result.isLeft shouldBe true
-            result.left.getOrElse(false) shouldBe CompliancePayloadFailureResponse(INTERNAL_SERVER_ERROR)
+            result.left.getOrElse(CompliancePayloadFailureResponse(IM_A_TEAPOT)) shouldBe CompliancePayloadFailureResponse(INTERNAL_SERVER_ERROR)
           }
         }
       }
@@ -123,7 +123,7 @@ class ComplianceParserSpec extends AnyWordSpec with Matchers with LogCapturing {
             val result = ComplianceCompliancePayloadReads.read("GET", "/", HttpResponse(503, ""))
             logs.exists(_.getMessage.contains(PagerDutyKeys.RECEIVED_5XX_FROM_1330_API.toString)) shouldBe true
             result.isLeft shouldBe true
-            result.left.getOrElse(false) shouldBe CompliancePayloadFailureResponse(SERVICE_UNAVAILABLE)
+            result.left.getOrElse(CompliancePayloadFailureResponse(IM_A_TEAPOT)) shouldBe CompliancePayloadFailureResponse(SERVICE_UNAVAILABLE)
           }
         }
       }
@@ -132,7 +132,7 @@ class ComplianceParserSpec extends AnyWordSpec with Matchers with LogCapturing {
     s"return a $CompliancePayloadNoData when there is no data associated to the VRN" in {
       val result = ComplianceCompliancePayloadReads.read("GET", "/", HttpResponse(404, ""))
       result.isLeft shouldBe true
-      result.left.getOrElse(false) shouldBe CompliancePayloadNoData
+      result.left.getOrElse(CompliancePayloadFailureResponse(IM_A_TEAPOT)) shouldBe CompliancePayloadNoData
     }
 
     s"return a $CompliancePayloadNoData when the body is malformed" in {
@@ -141,7 +141,7 @@ class ComplianceParserSpec extends AnyWordSpec with Matchers with LogCapturing {
           val result = ComplianceCompliancePayloadReads.read("GET", "/", HttpResponse(200, "{}"))
           logs.exists(_.getMessage.contains(PagerDutyKeys.INVALID_JSON_RECEIVED_FROM_1330_API.toString)) shouldBe true
           result.isLeft shouldBe true
-          result.left.getOrElse(false) shouldBe CompliancePayloadMalformed
+          result.left.getOrElse(CompliancePayloadFailureResponse(IM_A_TEAPOT)) shouldBe CompliancePayloadMalformed
         }
       }
     }

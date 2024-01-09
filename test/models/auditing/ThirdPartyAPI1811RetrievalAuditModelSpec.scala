@@ -22,7 +22,7 @@ import play.api.libs.json.{JsString, JsValue, Json}
 
 class ThirdPartyAPI1811RetrievalAuditModelSpec extends SpecBase with LogCapturing {
 
-  val sampledJsonResponse: JsValue = Json.toJson(
+  val sampledJsonResponse: JsValue = Json.obj(
     "foo" -> "bar",
     "bar" -> "foo"
   )

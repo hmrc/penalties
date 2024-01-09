@@ -26,102 +26,102 @@ import java.time.LocalDateTime
 class AppealSubmissionSpec extends AnyWordSpec with Matchers {
   def bereavementAppealJson(withZone: Boolean): JsValue = Json.parse(
     s"""
-      |{
-      |   "sourceSystem": "MDTP",
-      |   "taxRegime": "VAT",
-      |   "customerReferenceNo": "123456789",
-      |   "dateOfAppeal": ${if(withZone) "\"2020-01-01T00:00:00Z\"" else "\"2020-01-01T00:00:00\""},
-      |   "isLPP": true,
-      |   "appealSubmittedBy": "customer",
-      |   "appealInformation": {
-      |             "reasonableExcuse": "bereavement",
-      |             "startDateOfEvent": ${if(withZone) "\"2020-01-01T00:00:00Z\"" else "\"2020-01-01T00:00:00\""},
-      |             "lateAppeal": true,
-      |             "lateAppealReason": "Reason",
-      |             "isClientResponsibleForSubmission": false,
-      |             "isClientResponsibleForLateSubmission": true,
-      |             "honestyDeclaration": true
-      |   }
-      |}
-      |""".stripMargin
+       |{
+       |   "sourceSystem": "MDTP",
+       |   "taxRegime": "VAT",
+       |   "customerReferenceNo": "123456789",
+       |   "dateOfAppeal": ${if (withZone) "\"2020-01-01T00:00:00Z\"" else "\"2020-01-01T00:00:00\""},
+       |   "isLPP": true,
+       |   "appealSubmittedBy": "customer",
+       |   "appealInformation": {
+       |             "reasonableExcuse": "bereavement",
+       |             "startDateOfEvent": ${if (withZone) "\"2020-01-01T00:00:00Z\"" else "\"2020-01-01T00:00:00\""},
+       |             "lateAppeal": true,
+       |             "lateAppealReason": "Reason",
+       |             "isClientResponsibleForSubmission": false,
+       |             "isClientResponsibleForLateSubmission": true,
+       |             "honestyDeclaration": true
+       |   }
+       |}
+       |""".stripMargin
   )
 
   def crimeAppealJson(withZone: Boolean): JsValue = Json.parse(
     s"""
-      |{
-      |    "sourceSystem": "MDTP",
-      |    "taxRegime": "VAT",
-      |    "customerReferenceNo": "123456789",
-      |    "dateOfAppeal": ${if(withZone) "\"2020-01-01T00:00:00Z\"" else "\"2020-01-01T00:00:00\""},
-      |    "isLPP": true,
-      |    "appealSubmittedBy": "agent",
-      |    "agentDetails": {
-      |       "agentReferenceNo": "AGENT1",
-      |       "isExcuseRelatedToAgent": true
-      |    },
-      |    "appealInformation": {
-      |						 "reasonableExcuse": "crime",
-      |            "honestyDeclaration": true,
-      |            "startDateOfEvent": ${if(withZone) "\"2020-01-01T00:00:00Z\"" else "\"2020-01-01T00:00:00\""},
-      |            "reportedIssueToPolice": "yes",
-      |            "lateAppeal": true,
-      |            "lateAppealReason": "Reason",
-      |            "isClientResponsibleForSubmission": false,
-      |            "isClientResponsibleForLateSubmission": true
-      |		}
-      |}
-      |""".stripMargin)
+       |{
+       |    "sourceSystem": "MDTP",
+       |    "taxRegime": "VAT",
+       |    "customerReferenceNo": "123456789",
+       |    "dateOfAppeal": ${if (withZone) "\"2020-01-01T00:00:00Z\"" else "\"2020-01-01T00:00:00\""},
+       |    "isLPP": true,
+       |    "appealSubmittedBy": "agent",
+       |    "agentDetails": {
+       |       "agentReferenceNo": "AGENT1",
+       |       "isExcuseRelatedToAgent": true
+       |    },
+       |    "appealInformation": {
+       |						 "reasonableExcuse": "crime",
+       |            "honestyDeclaration": true,
+       |            "startDateOfEvent": ${if (withZone) "\"2020-01-01T00:00:00Z\"" else "\"2020-01-01T00:00:00\""},
+       |            "reportedIssueToPolice": "yes",
+       |            "lateAppeal": true,
+       |            "lateAppealReason": "Reason",
+       |            "isClientResponsibleForSubmission": false,
+       |            "isClientResponsibleForLateSubmission": true
+       |		}
+       |}
+       |""".stripMargin)
 
   def lossOfStaffAppealJson(withZone: Boolean): JsValue = Json.parse(
     s"""
-      |{
-      |    "sourceSystem": "MDTP",
-      |    "taxRegime": "VAT",
-      |    "customerReferenceNo": "123456789",
-      |    "dateOfAppeal": ${if(withZone) "\"2020-01-01T00:00:00Z\"" else "\"2020-01-01T00:00:00\""},
-      |    "isLPP": true,
-      |    "appealSubmittedBy": "agent",
-      |    "agentDetails": {
-      |       "agentReferenceNo": "AGENT1",
-      |       "isExcuseRelatedToAgent": true
-      |    },
-      |    "appealInformation": {
-      |						 "reasonableExcuse": "lossOfEssentialStaff",
-      |            "honestyDeclaration": true,
-      |            "startDateOfEvent": ${if(withZone) "\"2020-01-01T00:00:00Z\"" else "\"2020-01-01T00:00:00\""},
-      |            "lateAppeal": true,
-      |            "lateAppealReason": "Reason",
-      |            "isClientResponsibleForSubmission": false,
-      |            "isClientResponsibleForLateSubmission": true
-      |		}
-      |}
-      |""".stripMargin)
+       |{
+       |    "sourceSystem": "MDTP",
+       |    "taxRegime": "VAT",
+       |    "customerReferenceNo": "123456789",
+       |    "dateOfAppeal": ${if (withZone) "\"2020-01-01T00:00:00Z\"" else "\"2020-01-01T00:00:00\""},
+       |    "isLPP": true,
+       |    "appealSubmittedBy": "agent",
+       |    "agentDetails": {
+       |       "agentReferenceNo": "AGENT1",
+       |       "isExcuseRelatedToAgent": true
+       |    },
+       |    "appealInformation": {
+       |						 "reasonableExcuse": "lossOfEssentialStaff",
+       |            "honestyDeclaration": true,
+       |            "startDateOfEvent": ${if (withZone) "\"2020-01-01T00:00:00Z\"" else "\"2020-01-01T00:00:00\""},
+       |            "lateAppeal": true,
+       |            "lateAppealReason": "Reason",
+       |            "isClientResponsibleForSubmission": false,
+       |            "isClientResponsibleForLateSubmission": true
+       |		}
+       |}
+       |""".stripMargin)
 
   def technicalIssuesAppealJson(withZone: Boolean): JsValue = Json.parse(
     s"""
-      |{
-      |    "sourceSystem": "MDTP",
-      |    "taxRegime": "VAT",
-      |    "customerReferenceNo": "123456789",
-      |    "dateOfAppeal": ${if(withZone) "\"2020-01-01T00:00:00Z\"" else "\"2020-01-01T00:00:00\""},
-      |    "isLPP": true,
-      |    "appealSubmittedBy": "agent",
-      |    "agentDetails": {
-      |       "agentReferenceNo": "AGENT1",
-      |       "isExcuseRelatedToAgent": true
-      |    },
-      |    "appealInformation": {
-      |						 "reasonableExcuse": "technicalIssue",
-      |            "honestyDeclaration": true,
-      |            "startDateOfEvent": ${if(withZone) "\"2020-01-01T00:00:00Z\"" else "\"2020-01-01T00:00:00\""},
-      |            "endDateOfEvent": ${if(withZone) "\"2020-01-01T00:00:01Z\"" else "\"2020-01-01T00:00:01\""},
-      |            "lateAppeal": true,
-      |            "lateAppealReason": "Reason",
-      |            "isClientResponsibleForSubmission": false,
-      |            "isClientResponsibleForLateSubmission": true
-      |		}
-      |}
-      |""".stripMargin)
+       |{
+       |    "sourceSystem": "MDTP",
+       |    "taxRegime": "VAT",
+       |    "customerReferenceNo": "123456789",
+       |    "dateOfAppeal": ${if (withZone) "\"2020-01-01T00:00:00Z\"" else "\"2020-01-01T00:00:00\""},
+       |    "isLPP": true,
+       |    "appealSubmittedBy": "agent",
+       |    "agentDetails": {
+       |       "agentReferenceNo": "AGENT1",
+       |       "isExcuseRelatedToAgent": true
+       |    },
+       |    "appealInformation": {
+       |						 "reasonableExcuse": "technicalIssue",
+       |            "honestyDeclaration": true,
+       |            "startDateOfEvent": ${if (withZone) "\"2020-01-01T00:00:00Z\"" else "\"2020-01-01T00:00:00\""},
+       |            "endDateOfEvent": ${if (withZone) "\"2020-01-01T00:00:01Z\"" else "\"2020-01-01T00:00:01\""},
+       |            "lateAppeal": true,
+       |            "lateAppealReason": "Reason",
+       |            "isClientResponsibleForSubmission": false,
+       |            "isClientResponsibleForLateSubmission": true
+       |		}
+       |}
+       |""".stripMargin)
 
   val technicalIssuesAppealJsonWithKeyMissing: JsValue = Json.parse(
     """
@@ -137,122 +137,122 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
 
   def technicalIssuesAppealInformationJson(withZone: Boolean): JsValue = Json.parse(
     s"""
-      |{
-      |   "reasonableExcuse": "technicalIssue",
-      |   "startDateOfEvent": ${if(withZone) "\"2020-01-01T00:00:00Z\"" else "\"2020-01-01T00:00:00\""},
-      |   "endDateOfEvent": ${if(withZone) "\"2020-01-01T00:00:01Z\"" else "\"2020-01-01T00:00:01\""},
-      |   "lateAppeal": true,
-      |   "lateAppealReason": "Reason",
-      |   "isClientResponsibleForSubmission": false,
-      |   "isClientResponsibleForLateSubmission": true,
-      |   "honestyDeclaration": true
-      |}
-      |""".stripMargin
+       |{
+       |   "reasonableExcuse": "technicalIssue",
+       |   "startDateOfEvent": ${if (withZone) "\"2020-01-01T00:00:00Z\"" else "\"2020-01-01T00:00:00\""},
+       |   "endDateOfEvent": ${if (withZone) "\"2020-01-01T00:00:01Z\"" else "\"2020-01-01T00:00:01\""},
+       |   "lateAppeal": true,
+       |   "lateAppealReason": "Reason",
+       |   "isClientResponsibleForSubmission": false,
+       |   "isClientResponsibleForLateSubmission": true,
+       |   "honestyDeclaration": true
+       |}
+       |""".stripMargin
   )
 
   def fireOrFloodAppealJson(withZone: Boolean): JsValue = Json.parse(
     s"""
-      |{
-      |    "sourceSystem": "MDTP",
-      |    "taxRegime": "VAT",
-      |    "customerReferenceNo": "123456789",
-      |    "dateOfAppeal": ${if(withZone) "\"2020-01-01T00:00:00Z\"" else "\"2020-01-01T00:00:00\""},
-      |    "isLPP": true,
-      |    "appealSubmittedBy": "agent",
-      |    "agentDetails": {
-      |       "agentReferenceNo": "AGENT1",
-      |       "isExcuseRelatedToAgent": true
-      |    },
-      |    "appealInformation": {
-      |						"reasonableExcuse": "fireandflood",
-      |           "honestyDeclaration": true,
-      |           "startDateOfEvent": ${if(withZone) "\"2020-01-01T00:00:00Z\"" else "\"2020-01-01T00:00:00\""},
-      |           "lateAppeal": true,
-      |           "lateAppealReason": "Reason",
-      |           "isClientResponsibleForSubmission": false,
-      |           "isClientResponsibleForLateSubmission": true
-      |		}
-      |}
-      |""".stripMargin)
+       |{
+       |    "sourceSystem": "MDTP",
+       |    "taxRegime": "VAT",
+       |    "customerReferenceNo": "123456789",
+       |    "dateOfAppeal": ${if (withZone) "\"2020-01-01T00:00:00Z\"" else "\"2020-01-01T00:00:00\""},
+       |    "isLPP": true,
+       |    "appealSubmittedBy": "agent",
+       |    "agentDetails": {
+       |       "agentReferenceNo": "AGENT1",
+       |       "isExcuseRelatedToAgent": true
+       |    },
+       |    "appealInformation": {
+       |						"reasonableExcuse": "fireandflood",
+       |           "honestyDeclaration": true,
+       |           "startDateOfEvent": ${if (withZone) "\"2020-01-01T00:00:00Z\"" else "\"2020-01-01T00:00:00\""},
+       |           "lateAppeal": true,
+       |           "lateAppealReason": "Reason",
+       |           "isClientResponsibleForSubmission": false,
+       |           "isClientResponsibleForLateSubmission": true
+       |		}
+       |}
+       |""".stripMargin)
 
   def healthAppealNoHospitalStayJson(withZone: Boolean): JsValue = Json.parse(
     s"""
-      |{
-      |    "sourceSystem": "MDTP",
-      |    "taxRegime": "VAT",
-      |    "customerReferenceNo": "123456789",
-      |    "dateOfAppeal": ${if(withZone) "\"2020-01-01T00:00:00Z\"" else "\"2020-01-01T00:00:00\""},
-      |    "isLPP": true,
-      |    "appealSubmittedBy": "agent",
-      |    "agentDetails": {
-      |       "agentReferenceNo": "AGENT1",
-      |       "isExcuseRelatedToAgent": true
-      |    },
-      |    "appealInformation": {
-      |           "reasonableExcuse": "health",
-      |           "honestyDeclaration": true,
-      |           "startDateOfEvent": ${if(withZone) "\"2020-01-01T00:00:00Z\"" else "\"2020-01-01T00:00:00\""},
-      |           "hospitalStayInvolved": false,
-      |           "eventOngoing": false,
-      |           "lateAppeal": false,
-      |           "isClientResponsibleForSubmission": false,
-      |           "isClientResponsibleForLateSubmission": true
-      |    }
-      |}
-      |""".stripMargin)
+       |{
+       |    "sourceSystem": "MDTP",
+       |    "taxRegime": "VAT",
+       |    "customerReferenceNo": "123456789",
+       |    "dateOfAppeal": ${if (withZone) "\"2020-01-01T00:00:00Z\"" else "\"2020-01-01T00:00:00\""},
+       |    "isLPP": true,
+       |    "appealSubmittedBy": "agent",
+       |    "agentDetails": {
+       |       "agentReferenceNo": "AGENT1",
+       |       "isExcuseRelatedToAgent": true
+       |    },
+       |    "appealInformation": {
+       |           "reasonableExcuse": "health",
+       |           "honestyDeclaration": true,
+       |           "startDateOfEvent": ${if (withZone) "\"2020-01-01T00:00:00Z\"" else "\"2020-01-01T00:00:00\""},
+       |           "hospitalStayInvolved": false,
+       |           "eventOngoing": false,
+       |           "lateAppeal": false,
+       |           "isClientResponsibleForSubmission": false,
+       |           "isClientResponsibleForLateSubmission": true
+       |    }
+       |}
+       |""".stripMargin)
 
   def healthAppealHospitalStayOngoingJson(withZone: Boolean): JsValue = Json.parse(
     s"""
-      |{
-      |    "sourceSystem": "MDTP",
-      |    "taxRegime": "VAT",
-      |    "customerReferenceNo": "123456789",
-      |    "dateOfAppeal": ${if(withZone) "\"2020-01-01T00:00:00Z\"" else "\"2020-01-01T00:00:00\""},
-      |    "isLPP": true,
-      |    "appealSubmittedBy": "agent",
-      |    "agentDetails": {
-      |       "agentReferenceNo": "AGENT1",
-      |       "isExcuseRelatedToAgent": true
-      |    },
-      |    "appealInformation": {
-      |           "reasonableExcuse": "health",
-      |           "honestyDeclaration": true,
-      |           "startDateOfEvent": ${if(withZone) "\"2020-01-01T00:00:00Z\"" else "\"2020-01-01T00:00:00\""},
-      |           "hospitalStayInvolved": true,
-      |           "eventOngoing": true,
-      |           "lateAppeal": false,
-      |           "isClientResponsibleForSubmission": false,
-      |           "isClientResponsibleForLateSubmission": true
-      |    }
-      |}
-      |""".stripMargin)
+       |{
+       |    "sourceSystem": "MDTP",
+       |    "taxRegime": "VAT",
+       |    "customerReferenceNo": "123456789",
+       |    "dateOfAppeal": ${if (withZone) "\"2020-01-01T00:00:00Z\"" else "\"2020-01-01T00:00:00\""},
+       |    "isLPP": true,
+       |    "appealSubmittedBy": "agent",
+       |    "agentDetails": {
+       |       "agentReferenceNo": "AGENT1",
+       |       "isExcuseRelatedToAgent": true
+       |    },
+       |    "appealInformation": {
+       |           "reasonableExcuse": "health",
+       |           "honestyDeclaration": true,
+       |           "startDateOfEvent": ${if (withZone) "\"2020-01-01T00:00:00Z\"" else "\"2020-01-01T00:00:00\""},
+       |           "hospitalStayInvolved": true,
+       |           "eventOngoing": true,
+       |           "lateAppeal": false,
+       |           "isClientResponsibleForSubmission": false,
+       |           "isClientResponsibleForLateSubmission": true
+       |    }
+       |}
+       |""".stripMargin)
 
   def healthAppealHospitalStayEndedJson(withZone: Boolean): JsValue = Json.parse(
     s"""
-      |{
-      |    "sourceSystem": "MDTP",
-      |    "taxRegime": "VAT",
-      |    "customerReferenceNo": "123456789",
-      |    "dateOfAppeal": ${if(withZone) "\"2020-01-01T00:00:00Z\"" else "\"2020-01-01T00:00:00\""},
-      |    "isLPP": true,
-      |    "appealSubmittedBy": "agent",
-      |    "agentDetails": {
-      |       "agentReferenceNo": "AGENT1",
-      |       "isExcuseRelatedToAgent": true
-      |    },
-      |    "appealInformation": {
-      |           "reasonableExcuse": "health",
-      |           "honestyDeclaration": true,
-      |           "startDateOfEvent": ${if(withZone) "\"2020-01-01T00:00:00Z\"" else "\"2020-01-01T00:00:00\""},
-      |           "endDateOfEvent": ${if(withZone) "\"2020-01-01T00:00:01Z\"" else "\"2020-01-01T00:00:01\""},
-      |           "hospitalStayInvolved": true,
-      |           "eventOngoing": false,
-      |           "lateAppeal": false,
-      |           "isClientResponsibleForSubmission": false,
-      |           "isClientResponsibleForLateSubmission": true
-      |    }
-      |}
-      |""".stripMargin)
+       |{
+       |    "sourceSystem": "MDTP",
+       |    "taxRegime": "VAT",
+       |    "customerReferenceNo": "123456789",
+       |    "dateOfAppeal": ${if (withZone) "\"2020-01-01T00:00:00Z\"" else "\"2020-01-01T00:00:00\""},
+       |    "isLPP": true,
+       |    "appealSubmittedBy": "agent",
+       |    "agentDetails": {
+       |       "agentReferenceNo": "AGENT1",
+       |       "isExcuseRelatedToAgent": true
+       |    },
+       |    "appealInformation": {
+       |           "reasonableExcuse": "health",
+       |           "honestyDeclaration": true,
+       |           "startDateOfEvent": ${if (withZone) "\"2020-01-01T00:00:00Z\"" else "\"2020-01-01T00:00:00\""},
+       |           "endDateOfEvent": ${if (withZone) "\"2020-01-01T00:00:01Z\"" else "\"2020-01-01T00:00:01\""},
+       |           "hospitalStayInvolved": true,
+       |           "eventOngoing": false,
+       |           "lateAppeal": false,
+       |           "isClientResponsibleForSubmission": false,
+       |           "isClientResponsibleForLateSubmission": true
+       |    }
+       |}
+       |""".stripMargin)
 
   val bereavementAppealJsonWithKeyMissing: JsValue = Json.parse(
     """
@@ -294,58 +294,58 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
 
   def otherAppealJson(withZone: Boolean): JsValue = Json.parse(
     s"""
-      |{
-      |    "sourceSystem": "MDTP",
-      |    "taxRegime": "VAT",
-      |    "customerReferenceNo": "123456789",
-      |    "dateOfAppeal": ${if(withZone) "\"2020-01-01T00:00:00Z\"" else "\"2020-01-01T00:00:00\""},
-      |    "isLPP": true,
-      |    "appealSubmittedBy": "agent",
-      |    "agentDetails": {
-      |       "agentReferenceNo": "AGENT1",
-      |       "isExcuseRelatedToAgent": true
-      |    },
-      |    "appealInformation": {
-      |						 "reasonableExcuse": "other",
-      |            "honestyDeclaration": true,
-      |            "startDateOfEvent": ${if(withZone) "\"2020-01-01T00:00:00Z\"" else "\"2020-01-01T00:00:00\""},
-      |            "statement": "This is a reason.",
-      |            "supportingEvidence": {
-      |             "noOfUploadedFiles": 1
-      |            },
-      |            "lateAppeal": true,
-      |            "lateAppealReason": "Reason",
-      |            "isClientResponsibleForSubmission": false,
-      |            "isClientResponsibleForLateSubmission": true
-      |		}
-      |}
-      |""".stripMargin)
+       |{
+       |    "sourceSystem": "MDTP",
+       |    "taxRegime": "VAT",
+       |    "customerReferenceNo": "123456789",
+       |    "dateOfAppeal": ${if (withZone) "\"2020-01-01T00:00:00Z\"" else "\"2020-01-01T00:00:00\""},
+       |    "isLPP": true,
+       |    "appealSubmittedBy": "agent",
+       |    "agentDetails": {
+       |       "agentReferenceNo": "AGENT1",
+       |       "isExcuseRelatedToAgent": true
+       |    },
+       |    "appealInformation": {
+       |						 "reasonableExcuse": "other",
+       |            "honestyDeclaration": true,
+       |            "startDateOfEvent": ${if (withZone) "\"2020-01-01T00:00:00Z\"" else "\"2020-01-01T00:00:00\""},
+       |            "statement": "This is a reason.",
+       |            "supportingEvidence": {
+       |             "noOfUploadedFiles": 1
+       |            },
+       |            "lateAppeal": true,
+       |            "lateAppealReason": "Reason",
+       |            "isClientResponsibleForSubmission": false,
+       |            "isClientResponsibleForLateSubmission": true
+       |		}
+       |}
+       |""".stripMargin)
 
   def otherAppealJsonNoEvidence(withZone: Boolean): JsValue = Json.parse(
     s"""
-      |{
-      |    "sourceSystem": "MDTP",
-      |    "taxRegime": "VAT",
-      |    "customerReferenceNo": "123456789",
-      |    "dateOfAppeal": ${if(withZone) "\"2020-01-01T00:00:00Z\"" else "\"2020-01-01T00:00:00\""},
-      |    "isLPP": true,
-      |    "appealSubmittedBy": "agent",
-      |    "agentDetails": {
-      |       "agentReferenceNo": "AGENT1",
-      |       "isExcuseRelatedToAgent": true
-      |    },
-      |    "appealInformation": {
-      |						 "reasonableExcuse": "other",
-      |            "honestyDeclaration": true,
-      |            "startDateOfEvent": ${if(withZone) "\"2020-01-01T00:00:00Z\"" else "\"2020-01-01T00:00:00\""},
-      |            "statement": "This is a reason.",
-      |            "lateAppeal": true,
-      |            "lateAppealReason": "Reason",
-      |            "isClientResponsibleForSubmission": false,
-      |            "isClientResponsibleForLateSubmission": true
-      |		}
-      |}
-      |""".stripMargin)
+       |{
+       |    "sourceSystem": "MDTP",
+       |    "taxRegime": "VAT",
+       |    "customerReferenceNo": "123456789",
+       |    "dateOfAppeal": ${if (withZone) "\"2020-01-01T00:00:00Z\"" else "\"2020-01-01T00:00:00\""},
+       |    "isLPP": true,
+       |    "appealSubmittedBy": "agent",
+       |    "agentDetails": {
+       |       "agentReferenceNo": "AGENT1",
+       |       "isExcuseRelatedToAgent": true
+       |    },
+       |    "appealInformation": {
+       |						 "reasonableExcuse": "other",
+       |            "honestyDeclaration": true,
+       |            "startDateOfEvent": ${if (withZone) "\"2020-01-01T00:00:00Z\"" else "\"2020-01-01T00:00:00\""},
+       |            "statement": "This is a reason.",
+       |            "lateAppeal": true,
+       |            "lateAppealReason": "Reason",
+       |            "isClientResponsibleForSubmission": false,
+       |            "isClientResponsibleForLateSubmission": true
+       |		}
+       |}
+       |""".stripMargin)
 
   val otherAppealJsonWithKeyMissing: JsValue = Json.parse(
     """
@@ -367,16 +367,16 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
 
   def lossOfStaffAppealInformationJson(withZone: Boolean): JsValue = Json.parse(
     s"""
-      |{
-      |   "reasonableExcuse": "lossOfEssentialStaff",
-      |   "honestyDeclaration": true,
-      |   "startDateOfEvent": ${if(withZone) "\"2020-01-01T00:00:00Z\"" else "\"2020-01-01T00:00:00\""},
-      |   "lateAppeal": true,
-      |   "lateAppealReason": "Reason",
-      |   "isClientResponsibleForSubmission": false,
-      |   "isClientResponsibleForLateSubmission": true
-      |}
-      |""".stripMargin
+       |{
+       |   "reasonableExcuse": "lossOfEssentialStaff",
+       |   "honestyDeclaration": true,
+       |   "startDateOfEvent": ${if (withZone) "\"2020-01-01T00:00:00Z\"" else "\"2020-01-01T00:00:00\""},
+       |   "lateAppeal": true,
+       |   "lateAppealReason": "Reason",
+       |   "isClientResponsibleForSubmission": false,
+       |   "isClientResponsibleForLateSubmission": true
+       |}
+       |""".stripMargin
   )
 
   val fireOrFloodAppealJsonWithKeyMissing: JsValue = Json.parse(
@@ -399,45 +399,45 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
 
   def bereavementAppealInformationJson(withZone: Boolean): JsValue = Json.parse(
     s"""
-      |{
-      |   "reasonableExcuse": "bereavement",
-      |   "honestyDeclaration": true,
-      |   "startDateOfEvent": ${if(withZone) "\"2020-01-01T00:00:00Z\"" else "\"2020-01-01T00:00:00\""},
-      |   "lateAppeal": true,
-      |   "lateAppealReason": "Reason",
-      |   "isClientResponsibleForSubmission": false,
-      |   "isClientResponsibleForLateSubmission": true
-      |}
-      |""".stripMargin
+       |{
+       |   "reasonableExcuse": "bereavement",
+       |   "honestyDeclaration": true,
+       |   "startDateOfEvent": ${if (withZone) "\"2020-01-01T00:00:00Z\"" else "\"2020-01-01T00:00:00\""},
+       |   "lateAppeal": true,
+       |   "lateAppealReason": "Reason",
+       |   "isClientResponsibleForSubmission": false,
+       |   "isClientResponsibleForLateSubmission": true
+       |}
+       |""".stripMargin
   )
 
   def crimeAppealInformationJson(withZone: Boolean): JsValue = Json.parse(
     s"""
-      |{
-      |   "reasonableExcuse": "crime",
-      |   "honestyDeclaration": true,
-      |   "startDateOfEvent": ${if(withZone) "\"2020-01-01T00:00:00Z\"" else "\"2020-01-01T00:00:00\""},
-      |   "reportedIssueToPolice": "yes",
-      |   "lateAppeal": true,
-      |   "lateAppealReason": "Reason",
-      |   "isClientResponsibleForSubmission": false,
-      |   "isClientResponsibleForLateSubmission": true
-      |}
-      |""".stripMargin
+       |{
+       |   "reasonableExcuse": "crime",
+       |   "honestyDeclaration": true,
+       |   "startDateOfEvent": ${if (withZone) "\"2020-01-01T00:00:00Z\"" else "\"2020-01-01T00:00:00\""},
+       |   "reportedIssueToPolice": "yes",
+       |   "lateAppeal": true,
+       |   "lateAppealReason": "Reason",
+       |   "isClientResponsibleForSubmission": false,
+       |   "isClientResponsibleForLateSubmission": true
+       |}
+       |""".stripMargin
   )
 
   def fireOrFloodAppealInformationJson(withZone: Boolean): JsValue = Json.parse(
     s"""
-      |{
-      |   "reasonableExcuse": "fireandflood",
-      |   "honestyDeclaration": true,
-      |   "startDateOfEvent": ${if(withZone) "\"2020-01-01T00:00:00Z\"" else "\"2020-01-01T00:00:00\""},
-      |   "lateAppeal": true,
-      |   "lateAppealReason": "Reason",
-      |   "isClientResponsibleForSubmission": false,
-      |   "isClientResponsibleForLateSubmission": true
-      |}
-      |""".stripMargin
+       |{
+       |   "reasonableExcuse": "fireandflood",
+       |   "honestyDeclaration": true,
+       |   "startDateOfEvent": ${if (withZone) "\"2020-01-01T00:00:00Z\"" else "\"2020-01-01T00:00:00\""},
+       |   "lateAppeal": true,
+       |   "lateAppealReason": "Reason",
+       |   "isClientResponsibleForSubmission": false,
+       |   "isClientResponsibleForLateSubmission": true
+       |}
+       |""".stripMargin
   )
 
   val invalidBereavementAppealInformationJson: JsValue = Json.parse(
@@ -478,79 +478,79 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
 
   def healthAppealInformationHospitalStayNotOngoingJson(withZone: Boolean): JsValue = Json.parse(
     s"""
-      |{
-      |   "reasonableExcuse": "health",
-      |   "honestyDeclaration": true,
-      |   "startDateOfEvent": ${if(withZone) "\"2020-01-01T00:00:00Z\"" else "\"2020-01-01T00:00:00\""},
-      |   "endDateOfEvent": ${if(withZone) "\"2020-01-01T00:00:01Z\"" else "\"2020-01-01T00:00:01\""},
-      |   "eventOngoing": false,
-      |   "hospitalStayInvolved": true,
-      |   "lateAppeal": false,
-      |   "isClientResponsibleForSubmission": false,
-      |   "isClientResponsibleForLateSubmission": true
-      |}
-      |""".stripMargin
+       |{
+       |   "reasonableExcuse": "health",
+       |   "honestyDeclaration": true,
+       |   "startDateOfEvent": ${if (withZone) "\"2020-01-01T00:00:00Z\"" else "\"2020-01-01T00:00:00\""},
+       |   "endDateOfEvent": ${if (withZone) "\"2020-01-01T00:00:01Z\"" else "\"2020-01-01T00:00:01\""},
+       |   "eventOngoing": false,
+       |   "hospitalStayInvolved": true,
+       |   "lateAppeal": false,
+       |   "isClientResponsibleForSubmission": false,
+       |   "isClientResponsibleForLateSubmission": true
+       |}
+       |""".stripMargin
   )
 
   def healthAppealInformationHospitalStayOngoingJson(withZone: Boolean): JsValue = Json.parse(
     s"""
-      |{
-      |   "reasonableExcuse": "health",
-      |   "honestyDeclaration": true,
-      |   "startDateOfEvent": ${if(withZone) "\"2020-01-01T00:00:00Z\"" else "\"2020-01-01T00:00:00\""},
-      |   "eventOngoing": true,
-      |   "hospitalStayInvolved": true,
-      |   "lateAppeal": false,
-      |   "isClientResponsibleForSubmission": false,
-      |   "isClientResponsibleForLateSubmission": true
-      |}
-      |""".stripMargin
+       |{
+       |   "reasonableExcuse": "health",
+       |   "honestyDeclaration": true,
+       |   "startDateOfEvent": ${if (withZone) "\"2020-01-01T00:00:00Z\"" else "\"2020-01-01T00:00:00\""},
+       |   "eventOngoing": true,
+       |   "hospitalStayInvolved": true,
+       |   "lateAppeal": false,
+       |   "isClientResponsibleForSubmission": false,
+       |   "isClientResponsibleForLateSubmission": true
+       |}
+       |""".stripMargin
   )
 
   def healthAppealInformationNoHospitalStayJson(withZone: Boolean): JsValue = Json.parse(
     s"""
-      |{
-      |   "reasonableExcuse": "health",
-      |   "honestyDeclaration": true,
-      |   "startDateOfEvent": ${if(withZone) "\"2020-01-01T00:00:00Z\"" else "\"2020-01-01T00:00:00\""},
-      |   "hospitalStayInvolved": false,
-      |   "eventOngoing": false,
-      |   "lateAppeal": false,
-      |   "isClientResponsibleForSubmission": false,
-      |   "isClientResponsibleForLateSubmission": true
-      |}
-      |""".stripMargin
+       |{
+       |   "reasonableExcuse": "health",
+       |   "honestyDeclaration": true,
+       |   "startDateOfEvent": ${if (withZone) "\"2020-01-01T00:00:00Z\"" else "\"2020-01-01T00:00:00\""},
+       |   "hospitalStayInvolved": false,
+       |   "eventOngoing": false,
+       |   "lateAppeal": false,
+       |   "isClientResponsibleForSubmission": false,
+       |   "isClientResponsibleForLateSubmission": true
+       |}
+       |""".stripMargin
   )
 
   def otherAppealInformationJson(withZone: Boolean): JsValue = Json.parse(
     s"""
-      |{
-      |   "reasonableExcuse": "other",
-      |   "honestyDeclaration": true,
-      |   "startDateOfEvent": ${if(withZone) "\"2020-01-01T00:00:00Z\"" else "\"2020-01-01T00:00:00\""},
-      |   "statement": "This is a statement.",
-      |   "supportingEvidence": {
-      |     "noOfUploadedFiles": 1
-      |   },
-      |   "lateAppeal": false,
-      |   "isClientResponsibleForSubmission": false,
-      |   "isClientResponsibleForLateSubmission": true
-      |}
-      |""".stripMargin
+       |{
+       |   "reasonableExcuse": "other",
+       |   "honestyDeclaration": true,
+       |   "startDateOfEvent": ${if (withZone) "\"2020-01-01T00:00:00Z\"" else "\"2020-01-01T00:00:00\""},
+       |   "statement": "This is a statement.",
+       |   "supportingEvidence": {
+       |     "noOfUploadedFiles": 1
+       |   },
+       |   "lateAppeal": false,
+       |   "isClientResponsibleForSubmission": false,
+       |   "isClientResponsibleForLateSubmission": true
+       |}
+       |""".stripMargin
   )
 
   def otherAppealInformationJsonNoEvidence(withZone: Boolean): JsValue = Json.parse(
     s"""
-      |{
-      |   "reasonableExcuse": "other",
-      |   "honestyDeclaration": true,
-      |   "startDateOfEvent": ${if(withZone) "\"2020-01-01T00:00:00Z\"" else "\"2020-01-01T00:00:00\""},
-      |   "statement": "This is a statement.",
-      |   "lateAppeal": false,
-      |   "isClientResponsibleForSubmission": false,
-      |   "isClientResponsibleForLateSubmission": true
-      |}
-      |""".stripMargin
+       |{
+       |   "reasonableExcuse": "other",
+       |   "honestyDeclaration": true,
+       |   "startDateOfEvent": ${if (withZone) "\"2020-01-01T00:00:00Z\"" else "\"2020-01-01T00:00:00\""},
+       |   "statement": "This is a statement.",
+       |   "lateAppeal": false,
+       |   "isClientResponsibleForSubmission": false,
+       |   "isClientResponsibleForLateSubmission": true
+       |}
+       |""".stripMargin
   )
 
   val invalidOtherAppealInformationJson: JsValue = Json.parse(
@@ -569,93 +569,6 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       |   "lateAppeal": false
       |}
       |""".stripMargin)
-
-  val obligationAppealInformationJson: JsValue = Json.parse(
-    """
-      |{
-      |   "honestyDeclaration": true,
-      |   "reasonableExcuse": "obligation",
-      |   "statement": "A valid statement",
-      |   "lateAppeal": false,
-      |   "supportingEvidence": {
-      |     "noOfUploadedFiles": 1
-      |   }
-      |}
-      |""".stripMargin
-  )
-
-  val obligationAppealInformationJsonNoEvidence: JsValue = Json.parse(
-    """
-      |{
-      |   "statement": "A valid statement",
-      |   "reasonableExcuse": "obligation",
-      |   "honestyDeclaration": true,
-      |   "lateAppeal": false
-      |}
-      |""".stripMargin)
-
-  val invalidObligationAppealInformationJson: JsValue = Json.parse(
-    """
-      |{
-      |   "statement": 1
-      |}
-      |""".stripMargin)
-
-  def obligationAppealJson(withZone: Boolean): JsValue = Json.parse(
-    s"""
-      |{
-      |    "sourceSystem": "MDTP",
-      |    "taxRegime": "VAT",
-      |    "customerReferenceNo": "123456789",
-      |    "dateOfAppeal": ${if(withZone) "\"2020-01-01T00:00:00Z\"" else "\"2020-01-01T00:00:00\""},
-      |    "isLPP": true,
-      |    "appealSubmittedBy": "customer",
-      |    "appealInformation": {
-      |       "reasonableExcuse": "obligation",
-      |       "honestyDeclaration": true,
-      |       "statement": "A valid statement",
-      |       "supportingEvidence": {
-      |         "noOfUploadedFiles": 1
-      |       }
-      |    }
-      |}
-      |""".stripMargin
-  )
-
-  def obligationAppealJsonNoEvidence(withZone: Boolean): JsValue = Json.parse(
-    s"""
-      |{
-      |    "sourceSystem": "MDTP",
-      |    "taxRegime": "VAT",
-      |    "customerReferenceNo": "123456789",
-      |    "dateOfAppeal": ${if(withZone) "\"2020-01-01T00:00:00Z\"" else "\"2020-01-01T00:00:00\""},
-      |    "isLPP": false,
-      |    "appealSubmittedBy": "customer",
-      |    "appealInformation": {
-      |       "reasonableExcuse": "obligation",
-      |       "honestyDeclaration": true,
-      |       "statement": "A valid statement"
-      |    }
-      |}
-      |""".stripMargin
-  )
-
-  val obligationAppealJsonWithKeysMissing: JsValue = Json.parse(
-    """
-      |{
-      |    "sourceSystem": "MDTP",
-      |    "taxRegime": "VAT",
-      |    "customerReferenceNo": "123456789",
-      |    "dateOfAppeal": "2020-01-01T00:00:00",
-      |    "isLPP": true,
-      |    "appealSubmittedBy": "customer",
-      |    "appealInformation": {
-      |           "reasonableExcuse": "obligation",
-      |						"statement": "a statement"
-      |     }
-      |}
-      |""".stripMargin
-  )
 
   "parseAppealInformationFromJson" should {
     "for bereavement" must {
@@ -850,41 +763,6 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
         result.isSuccess shouldBe false
       }
     }
-
-    "for obligation" must {
-      "parse the appeal information object to the appeal information case class" in {
-        val result = AppealSubmission.parseAppealInformationFromJson("obligation", obligationAppealInformationJson)
-        result.isSuccess shouldBe true
-        result.get shouldBe ObligationAppealInformation(
-          statement = Some("A valid statement"),
-          supportingEvidence = Some(Evidence(noOfUploadedFiles = 1)),
-          isClientResponsibleForSubmission = None,
-          isClientResponsibleForLateSubmission = None,
-          honestyDeclaration = true,
-          reasonableExcuse = "obligation",
-          uploadedFiles = None
-        )
-      }
-
-      "parse the appeal information object to the appeal information case class - no evidence" in {
-        val result = AppealSubmission.parseAppealInformationFromJson("obligation", obligationAppealInformationJsonNoEvidence)
-        result.isSuccess shouldBe true
-        result.get shouldBe ObligationAppealInformation(
-          statement = Some("A valid statement"),
-          supportingEvidence = None,
-          isClientResponsibleForSubmission = None,
-          isClientResponsibleForLateSubmission = None,
-          honestyDeclaration = true,
-          reasonableExcuse = "obligation",
-          uploadedFiles = None
-        )
-      }
-
-      "return a JsError when the appeal information payload is incorrect" in {
-        val result = AppealSubmission.parseAppealInformationFromJson("obligation", invalidObligationAppealInformationJson)
-        result.isSuccess shouldBe false
-      }
-    }
   }
 
   "parseAppealInformationToJson" should {
@@ -1068,36 +946,6 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
         )
         val result = AppealSubmission.parseAppealInformationToJson(model)
         result shouldBe otherAppealInformationJsonNoEvidence(true)
-      }
-    }
-
-    "for obligation" must {
-      "parse the appeal information model to a JsObject" in {
-        val model = ObligationAppealInformation(
-          statement = Some("A valid statement"),
-          supportingEvidence = Some(Evidence(noOfUploadedFiles = 1)),
-          isClientResponsibleForSubmission = None,
-          isClientResponsibleForLateSubmission = None,
-          honestyDeclaration = true,
-          reasonableExcuse = "obligation",
-          uploadedFiles = None
-        )
-        val result = AppealSubmission.parseAppealInformationToJson(model)
-        result shouldBe obligationAppealInformationJson
-      }
-
-      "parse the appeal information model to a JsObject - no evidence" in {
-        val model = ObligationAppealInformation(
-          statement = Some("A valid statement"),
-          supportingEvidence = None,
-          isClientResponsibleForSubmission = None,
-          isClientResponsibleForLateSubmission = None,
-          honestyDeclaration = true,
-          reasonableExcuse = "obligation",
-          uploadedFiles = None
-        )
-        val result = AppealSubmission.parseAppealInformationToJson(model)
-        result shouldBe obligationAppealInformationJsonNoEvidence
       }
     }
   }
@@ -1404,59 +1252,6 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
 
       "not parse the JSON into a model when some keys are not present" in {
         val result = Json.fromJson(otherAppealJsonWithKeyMissing)(AppealSubmission.apiReads)
-        result.isSuccess shouldBe false
-      }
-    }
-
-    "for obligation" must {
-      "parse the JSON into a model when all keys are present" in {
-        val expectedResult = AppealSubmission(
-          taxRegime = "VAT",
-          customerReferenceNo = "123456789",
-          dateOfAppeal = LocalDateTime.parse("2020-01-01T00:00:00"),
-          isLPP = true,
-          appealSubmittedBy = "customer",
-          agentDetails = None,
-          appealInformation = ObligationAppealInformation(
-            statement = Some("A valid statement"),
-            supportingEvidence = Some(Evidence(noOfUploadedFiles = 1)),
-            isClientResponsibleForSubmission = None,
-            isClientResponsibleForLateSubmission = None,
-            honestyDeclaration = true,
-            reasonableExcuse = "obligation",
-            uploadedFiles = None
-          )
-        )
-
-        val result = Json.fromJson(obligationAppealJson(false))(AppealSubmission.apiReads)
-        result.isSuccess shouldBe true
-        result.get shouldBe expectedResult
-      }
-
-      "parse the JSON into a model when all keys are present - no evidence" in {
-        val expectedResult = AppealSubmission(
-          taxRegime = "VAT",
-          customerReferenceNo = "123456789",
-          dateOfAppeal = LocalDateTime.parse("2020-01-01T00:00:00"),
-          isLPP = false,
-          appealSubmittedBy = "customer",
-          agentDetails = None,
-          appealInformation = ObligationAppealInformation(
-            statement = Some("A valid statement"),
-            supportingEvidence = None,
-            honestyDeclaration = true,
-            reasonableExcuse = "obligation",
-            uploadedFiles = None
-          )
-        )
-
-        val result = Json.fromJson(obligationAppealJsonNoEvidence(false))(AppealSubmission.apiReads)
-        result.isSuccess shouldBe true
-        result.get shouldBe expectedResult
-      }
-
-      "not parse the JSON into a model when some keys are not present" in {
-        val result = Json.fromJson(obligationAppealJsonWithKeysMissing)(AppealSubmission.apiReads)
         result.isSuccess shouldBe false
       }
     }
@@ -1999,83 +1794,6 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
         result shouldBe jsonRepresentingModel
       }
     }
-
-    "for obligation" must {
-      "write the model to JSON" in {
-        val modelToCovertToJson: AppealSubmission = AppealSubmission(
-          taxRegime = "VAT",
-          customerReferenceNo = "123456789",
-          dateOfAppeal = LocalDateTime.parse("2020-01-01T00:00:00"),
-          isLPP = false,
-          appealSubmittedBy = "customer",
-          agentDetails = None,
-          appealInformation = ObligationAppealInformation(
-            statement = Some("A valid statement"),
-            supportingEvidence = Some(Evidence(noOfUploadedFiles = 1)),
-            honestyDeclaration = true,
-            reasonableExcuse = "obligation",
-            uploadedFiles = None
-          )
-        )
-
-        val jsonModel: JsValue = Json.obj(
-          "appealSubmittedBy" -> "customer",
-          "sourceSystem" -> "MDTP",
-          "taxRegime" -> "VAT",
-          "customerReferenceNo" -> "123456789",
-          "dateOfAppeal" -> "2020-01-01T00:00:00Z",
-          "isLPP" -> false,
-          "appealInformation" -> Json.obj(
-            "statement" -> "A valid statement",
-            "supportingEvidence" -> Json.obj(
-              "noOfUploadedFiles" -> 1
-            ),
-            "honestyDeclaration" -> true,
-            "reasonableExcuse" -> "obligation",
-            "lateAppeal" -> false
-          )
-        )
-
-        val result = Json.toJson(modelToCovertToJson)(AppealSubmission.apiWrites)
-        result shouldBe jsonModel
-      }
-
-      "write the model to JSON - no evidence" in {
-        val modelToCovertToJson: AppealSubmission = AppealSubmission(
-          taxRegime = "VAT",
-          customerReferenceNo = "123456789",
-          dateOfAppeal = LocalDateTime.parse("2020-01-01T00:00:00"),
-          isLPP = false,
-          appealSubmittedBy = "customer",
-          agentDetails = None,
-          appealInformation = ObligationAppealInformation(
-            statement = Some("A valid statement"),
-            supportingEvidence = None,
-            honestyDeclaration = true,
-            reasonableExcuse = "obligation",
-            uploadedFiles = None
-          )
-        )
-
-        val jsonModel: JsValue = Json.obj(
-          "appealSubmittedBy" -> "customer",
-          "sourceSystem" -> "MDTP",
-          "taxRegime" -> "VAT",
-          "customerReferenceNo" -> "123456789",
-          "dateOfAppeal" -> "2020-01-01T00:00:00Z",
-          "isLPP" -> false,
-          "appealInformation" -> Json.obj(
-            "statement" -> "A valid statement",
-            "honestyDeclaration" -> true,
-            "reasonableExcuse" -> "obligation",
-            "lateAppeal" -> false
-          )
-        )
-
-        val result = Json.toJson(modelToCovertToJson)(AppealSubmission.apiWrites)
-        result shouldBe jsonModel
-      }
-    }
   }
 
   "BereavementAppealInformation" should {
@@ -2361,7 +2079,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
               lastUpdated = LocalDateTime.of(2018, 4, 24, 9, 30)
             )
           )
-        ))
+          ))
         val expectedResult = Json.parse(
           """
             |{
@@ -2423,92 +2141,6 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             |}
             |""".stripMargin)
         val result = Json.toJson(modelToConvertToJson)
-        result shouldBe expectedResult
-      }
-    }
-  }
-
-  "ObligationAppealInformation" should {
-    "obligationAppealInformationWrites" should {
-      "write to JSON" in {
-        val model = ObligationAppealInformation(
-          statement = Some("A valid statement"),
-          supportingEvidence = Some(Evidence(noOfUploadedFiles = 1)),
-          isClientResponsibleForSubmission = None,
-          isClientResponsibleForLateSubmission = None,
-          honestyDeclaration = true,
-          reasonableExcuse = "obligation",
-          uploadedFiles = Some(Seq(
-            UploadJourney(
-              reference = "ref",
-              fileStatus = UploadStatusEnum.READY,
-              downloadUrl = Some("download.file"),
-              uploadDetails = Some(UploadDetails(
-                fileName = "file1.txt",
-                fileMimeType = "text/plain",
-                uploadTimestamp = LocalDateTime.of(2018, 4, 24, 9, 30),
-                checksum = "check12345678",
-                size = 987
-              )),
-              lastUpdated = LocalDateTime.of(2018, 4, 24, 9, 30)
-            )
-          )
-        ))
-
-        val expectedResult = Json.parse(
-          """
-            |{
-            |   "statement": "A valid statement",
-            |   "supportingEvidence": {
-            |       "noOfUploadedFiles": 1
-            |   },
-            |   "honestyDeclaration": true,
-            |   "reasonableExcuse": "obligation",
-            |   "uploadedFiles":[
-            |     {
-            |       "reference":"ref",
-            |       "fileStatus":"READY",
-            |       "downloadUrl":"download.file",
-            |       "uploadDetails":
-            |           {
-            |             "fileName":"file1.txt",
-            |             "fileMimeType":"text/plain",
-            |             "uploadTimestamp":"2018-04-24T09:30:00",
-            |             "checksum":"check12345678","size":987
-            |             },
-            |         "lastUpdated":"2018-04-24T09:30:00"
-            |        }
-            |       ]
-            |}
-            |""".stripMargin
-        )
-
-        val result = Json.toJson(model)
-        result shouldBe expectedResult
-      }
-
-      "write to JSON - no evidence" in {
-        val model = ObligationAppealInformation(
-          statement = Some("A valid statement"),
-          supportingEvidence = None,
-          isClientResponsibleForSubmission = None,
-          isClientResponsibleForLateSubmission = None,
-          honestyDeclaration = true,
-          reasonableExcuse = "obligation",
-          uploadedFiles = None
-        )
-
-        val expectedResult = Json.parse(
-          """
-            |{
-            |   "statement": "A valid statement",
-            |   "reasonableExcuse": "obligation",
-            |   "honestyDeclaration": true
-            |}
-            |""".stripMargin
-        )
-
-        val result = Json.toJson(model)
         result shouldBe expectedResult
       }
     }

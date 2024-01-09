@@ -41,14 +41,14 @@ class ComplianceServiceISpec extends IntegrationSpecCommonBase with ComplianceWi
         mockResponseForComplianceDataFromDES(INTERNAL_SERVER_ERROR, "123456789", "2020-01-01", "2020-12-31")
         val result = await(complianceService.getComplianceData("123456789", "2020-01-01", "2020-12-31"))
         result.isLeft shouldBe true
-        result.left.getOrElse(false) shouldBe INTERNAL_SERVER_ERROR
+        result.left.getOrElse(IM_A_TEAPOT) shouldBe INTERNAL_SERVER_ERROR
       }
 
       s"the connector returns $CompliancePayloadMalformed" in new Setup {
         mockResponseForComplianceDataFromDES(OK, "123456789", "2020-01-01", "2020-12-31", invalidBody = true)
         val result = await(complianceService.getComplianceData("123456789", "2020-01-01", "2020-12-31"))
         result.isLeft shouldBe true
-        result.left.getOrElse(false) shouldBe INTERNAL_SERVER_ERROR
+        result.left.getOrElse(IM_A_TEAPOT) shouldBe INTERNAL_SERVER_ERROR
       }
     }
 
@@ -56,7 +56,7 @@ class ComplianceServiceISpec extends IntegrationSpecCommonBase with ComplianceWi
       mockResponseForComplianceDataFromDES(NOT_FOUND, "123456789", "2020-01-01", "2020-12-31")
       val result = await(complianceService.getComplianceData("123456789", "2020-01-01", "2020-12-31"))
       result.isLeft shouldBe true
-      result.left.getOrElse(false) shouldBe NOT_FOUND
+      result.left.getOrElse(IM_A_TEAPOT) shouldBe NOT_FOUND
     }
 
     s"return Right(model) when the connector returns $CompliancePayloadSuccessResponse" in new Setup {

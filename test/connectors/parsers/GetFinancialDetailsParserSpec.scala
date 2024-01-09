@@ -24,6 +24,7 @@ import models.getFinancialDetails.{DocumentDetails, FinancialDetails, GetFinanci
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import play.api.http.Status
+import play.api.http.Status.{IM_A_TEAPOT, INTERNAL_SERVER_ERROR}
 import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.http.HttpResponse
 import utils.Logger.logger
@@ -133,7 +134,7 @@ class GetFinancialDetailsParserSpec extends AnyWordSpec with Matchers with LogCa
           val result = GetFinancialDetailsParser.GetFinancialDetailsReads.read("GET", "/", mockBadRequestHttpResponse)
           logs.exists(_.getMessage.contains(PagerDutyKeys.RECEIVED_4XX_FROM_1811_API.toString)) shouldBe true
           result.isLeft shouldBe true
-          result.left.getOrElse(false).asInstanceOf[GetFinancialDetailsFailureResponse].status shouldBe Status.BAD_REQUEST
+          result.left.getOrElse(GetFinancialDetailsFailureResponse(IM_A_TEAPOT)).asInstanceOf[GetFinancialDetailsFailureResponse].status shouldBe Status.BAD_REQUEST
         }
       }
     }
@@ -144,7 +145,7 @@ class GetFinancialDetailsParserSpec extends AnyWordSpec with Matchers with LogCa
           val result = GetFinancialDetailsParser.GetFinancialDetailsReads.read("GET", "/", mockForbiddenHttpResponse)
           logs.exists(_.getMessage.contains(PagerDutyKeys.RECEIVED_4XX_FROM_1811_API.toString)) shouldBe true
           result.isLeft shouldBe true
-          result.left.getOrElse(false).asInstanceOf[GetFinancialDetailsFailureResponse].status shouldBe Status.FORBIDDEN
+          result.left.getOrElse(GetFinancialDetailsFailureResponse(IM_A_TEAPOT)).asInstanceOf[GetFinancialDetailsFailureResponse].status shouldBe Status.FORBIDDEN
         }
       }
     }
@@ -155,7 +156,7 @@ class GetFinancialDetailsParserSpec extends AnyWordSpec with Matchers with LogCa
           val result = GetFinancialDetailsParser.GetFinancialDetailsReads.read("GET", "/", mockNotFoundHttpResponse)
           logs.exists(_.getMessage.contains(PagerDutyKeys.INVALID_JSON_RECEIVED_FROM_1811_API.toString)) shouldBe true
           result.isLeft shouldBe true
-          result.left.getOrElse(false).asInstanceOf[GetFinancialDetailsFailureResponse].status shouldBe Status.NOT_FOUND
+          result.left.getOrElse(GetFinancialDetailsFailureResponse(IM_A_TEAPOT)).asInstanceOf[GetFinancialDetailsFailureResponse].status shouldBe Status.NOT_FOUND
         }
       }
     }
@@ -166,7 +167,7 @@ class GetFinancialDetailsParserSpec extends AnyWordSpec with Matchers with LogCa
           val result = GetFinancialDetailsParser.GetFinancialDetailsReads.read("GET", "/", mockConflictHttpResponse)
           logs.exists(_.getMessage.contains(PagerDutyKeys.RECEIVED_4XX_FROM_1811_API.toString)) shouldBe true
           result.isLeft shouldBe true
-          result.left.getOrElse(false).asInstanceOf[GetFinancialDetailsFailureResponse].status shouldBe Status.CONFLICT
+          result.left.getOrElse(GetFinancialDetailsFailureResponse(IM_A_TEAPOT)).asInstanceOf[GetFinancialDetailsFailureResponse].status shouldBe Status.CONFLICT
         }
       }
     }
@@ -174,7 +175,7 @@ class GetFinancialDetailsParserSpec extends AnyWordSpec with Matchers with LogCa
     s"parse a NO_CONTENT (${Status.NO_CONTENT}) response" in {
       val result = GetFinancialDetailsParser.GetFinancialDetailsReads.read("GET", "/", mockNoContentHttpResponse)
       result.isLeft shouldBe true
-      result.left.getOrElse(false) shouldBe GetFinancialDetailsNoContent
+      result.left.getOrElse(GetFinancialDetailsFailureResponse(IM_A_TEAPOT)) shouldBe GetFinancialDetailsNoContent
     }
 
     s"parse an UNPROCESSABLE ENTITY (${Status.UNPROCESSABLE_ENTITY}) response - and log a PagerDuty" in {
@@ -183,7 +184,7 @@ class GetFinancialDetailsParserSpec extends AnyWordSpec with Matchers with LogCa
           val result = GetFinancialDetailsParser.GetFinancialDetailsReads.read("GET", "/", mockUnprocessableEnityHttpResponse)
           logs.exists(_.getMessage.contains(PagerDutyKeys.RECEIVED_4XX_FROM_1811_API.toString)) shouldBe true
           result.isLeft shouldBe true
-          result.left.getOrElse(false).asInstanceOf[GetFinancialDetailsFailureResponse].status shouldBe Status.UNPROCESSABLE_ENTITY
+          result.left.getOrElse(GetFinancialDetailsFailureResponse(IM_A_TEAPOT)).asInstanceOf[GetFinancialDetailsFailureResponse].status shouldBe Status.UNPROCESSABLE_ENTITY
         }
       }
     }
@@ -194,7 +195,7 @@ class GetFinancialDetailsParserSpec extends AnyWordSpec with Matchers with LogCa
           val result = GetFinancialDetailsParser.GetFinancialDetailsReads.read("GET", "/", mockISEHttpResponse)
           logs.exists(_.getMessage.contains(PagerDutyKeys.RECEIVED_5XX_FROM_1811_API.toString)) shouldBe true
           result.isLeft shouldBe true
-          result.left.getOrElse(false).asInstanceOf[GetFinancialDetailsFailureResponse].status shouldBe Status.INTERNAL_SERVER_ERROR
+          result.left.getOrElse(GetFinancialDetailsFailureResponse(IM_A_TEAPOT)).asInstanceOf[GetFinancialDetailsFailureResponse].status shouldBe Status.INTERNAL_SERVER_ERROR
         }
       }
     }
@@ -205,7 +206,7 @@ class GetFinancialDetailsParserSpec extends AnyWordSpec with Matchers with LogCa
           val result = GetFinancialDetailsParser.GetFinancialDetailsReads.read("GET", "/", mockServiceUnavailableHttpResponse)
           logs.exists(_.getMessage.contains(PagerDutyKeys.RECEIVED_5XX_FROM_1811_API.toString)) shouldBe true
           result.isLeft shouldBe true
-          result.left.getOrElse(false).asInstanceOf[GetFinancialDetailsFailureResponse].status shouldBe Status.SERVICE_UNAVAILABLE
+          result.left.getOrElse(GetFinancialDetailsFailureResponse(IM_A_TEAPOT)).asInstanceOf[GetFinancialDetailsFailureResponse].status shouldBe Status.SERVICE_UNAVAILABLE
         }
       }
     }
@@ -216,7 +217,7 @@ class GetFinancialDetailsParserSpec extends AnyWordSpec with Matchers with LogCa
           val result = GetFinancialDetailsParser.GetFinancialDetailsReads.read("GET", "/", mockImATeapotHttpResponse)
           logs.exists(_.getMessage.contains(PagerDutyKeys.RECEIVED_4XX_FROM_1811_API.toString)) shouldBe true
           result.isLeft shouldBe true
-          result.left.getOrElse(false).asInstanceOf[GetFinancialDetailsFailureResponse].status shouldBe Status.IM_A_TEAPOT
+          result.left.getOrElse(GetFinancialDetailsFailureResponse(INTERNAL_SERVER_ERROR)).asInstanceOf[GetFinancialDetailsFailureResponse].status shouldBe Status.IM_A_TEAPOT
         }
       }
     }

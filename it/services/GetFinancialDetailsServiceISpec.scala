@@ -20,6 +20,7 @@ import connectors.parsers.getFinancialDetails.GetFinancialDetailsParser._
 import models.getFinancialDetails._
 import models.getFinancialDetails.totalisation._
 import play.api.http.Status
+import play.api.http.Status.{IM_A_TEAPOT, INTERNAL_SERVER_ERROR}
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import utils.{ETMPWiremock, IntegrationSpecCommonBase}
 
@@ -77,7 +78,7 @@ class GetFinancialDetailsServiceISpec extends IntegrationSpecCommonBase with ETM
           """))
       val result = await(service.getFinancialDetails("123456789", None))
       result.isLeft shouldBe true
-      result.left.getOrElse(false) shouldBe GetFinancialDetailsMalformed
+      result.left.getOrElse(GetFinancialDetailsFailureResponse(IM_A_TEAPOT)) shouldBe GetFinancialDetailsMalformed
     }
 
     s"the response body contains NO_DATA_FOUND for 404 response - returning $GetFinancialDetailsNoContent" in {
@@ -95,14 +96,14 @@ class GetFinancialDetailsServiceISpec extends IntegrationSpecCommonBase with ETM
       mockStubResponseForGetFinancialDetails(Status.NOT_FOUND, s"VRN/123456789/VATC?$financialDataQueryParam", Some(noDataFoundBody))
       val result = await(service.getFinancialDetails("123456789", None))
       result.isLeft shouldBe true
-      result.left.getOrElse(false) shouldBe GetFinancialDetailsNoContent
+      result.left.getOrElse(GetFinancialDetailsFailureResponse(IM_A_TEAPOT)) shouldBe GetFinancialDetailsNoContent
     }
 
     s"an unknown response is returned from the connector - $GetFinancialDetailsFailureResponse" in {
       mockStubResponseForGetFinancialDetails(Status.IM_A_TEAPOT, s"VRN/123456789/VATC?$financialDataQueryParam")
       val result = await(service.getFinancialDetails("123456789", None))
       result.isLeft shouldBe true
-      result.left.getOrElse(false) shouldBe GetFinancialDetailsFailureResponse(Status.IM_A_TEAPOT)
+      result.left.getOrElse(GetFinancialDetailsFailureResponse(INTERNAL_SERVER_ERROR)) shouldBe GetFinancialDetailsFailureResponse(Status.IM_A_TEAPOT)
     }
   }
 }

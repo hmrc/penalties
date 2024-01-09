@@ -24,6 +24,7 @@ import models.getPenaltyDetails.latePayment._
 import models.getPenaltyDetails.lateSubmission._
 import models.getPenaltyDetails.{GetPenaltyDetails, Totalisations}
 import play.api.http.Status
+import play.api.http.Status.{IM_A_TEAPOT, INTERNAL_SERVER_ERROR}
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import utils.{ETMPWiremock, IntegrationSpecCommonBase}
 
@@ -156,7 +157,7 @@ class GetPenaltyDetailsServiceISpec extends IntegrationSpecCommonBase with ETMPW
           """))
       val result = await(service.getDataFromPenaltyServiceForVATCVRN("123456789"))
       result.isLeft shouldBe true
-      result.left.getOrElse(false) shouldBe GetPenaltyDetailsMalformed
+      result.left.getOrElse(GetPenaltyDetailsFailureResponse(IM_A_TEAPOT)) shouldBe GetPenaltyDetailsMalformed
     }
 
     s"the response body contains NO_DATA_FOUND for 404 response - returning $GetPenaltyDetailsNoContent" in {
@@ -174,14 +175,14 @@ class GetPenaltyDetailsServiceISpec extends IntegrationSpecCommonBase with ETMPW
       mockStubResponseForGetPenaltyDetails(Status.NOT_FOUND, "123456789", body = Some(noDataFoundBody))
       val result = await(service.getDataFromPenaltyServiceForVATCVRN("123456789"))
       result.isLeft shouldBe true
-      result.left.getOrElse(false) shouldBe GetPenaltyDetailsNoContent
+      result.left.getOrElse(GetPenaltyDetailsFailureResponse(IM_A_TEAPOT)) shouldBe GetPenaltyDetailsNoContent
     }
 
     s"an unknown response is returned from the connector - $GetPenaltyDetailsFailureResponse" in {
       mockStubResponseForGetPenaltyDetails(Status.IM_A_TEAPOT, "123456789")
       val result = await(service.getDataFromPenaltyServiceForVATCVRN("123456789"))
       result.isLeft shouldBe true
-      result.left.getOrElse(false) shouldBe GetPenaltyDetailsFailureResponse(Status.IM_A_TEAPOT)
+      result.left.getOrElse(GetPenaltyDetailsFailureResponse(INTERNAL_SERVER_ERROR)) shouldBe GetPenaltyDetailsFailureResponse(Status.IM_A_TEAPOT)
     }
   }
 }

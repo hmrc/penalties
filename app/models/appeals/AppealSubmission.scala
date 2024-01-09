@@ -405,37 +405,6 @@ object OtherAppealInformation {
   }
 }
 
-case class ObligationAppealInformation(
-                                        statement: Option[String],
-                                        supportingEvidence: Option[Evidence],
-                                        reasonableExcuse: String,
-                                        honestyDeclaration: Boolean,
-                                        isClientResponsibleForSubmission: Option[Boolean] = None,
-                                        isClientResponsibleForLateSubmission: Option[Boolean] = None,
-                                        uploadedFiles: Option[Seq[UploadJourney]]
-                                      ) extends AppealInformation
-
-object ObligationAppealInformation {
-  implicit val evidenceFormatter: OFormat[Evidence] = Evidence.format
-  implicit val obligationAppealInformationFormatter: OFormat[ObligationAppealInformation] = Json.format[ObligationAppealInformation]
-
-
-  implicit val obligationAppealInformationWrites: Writes[ObligationAppealInformation] = (obligationAppealInformation: ObligationAppealInformation) => {
-    Json.obj(
-      "statement" -> obligationAppealInformation.statement.get,
-      "reasonableExcuse" -> obligationAppealInformation.reasonableExcuse,
-      "honestyDeclaration" -> obligationAppealInformation.honestyDeclaration,
-      "lateAppeal" -> false //NOTE: at the time of writing, users are not asked why they appealed 30 days after the penalty was issued - so default to false
-    ).deepMerge(
-      obligationAppealInformation.supportingEvidence.fold(
-        Json.obj()
-      )(
-        supportingEvidence => Json.obj("supportingEvidence" -> supportingEvidence)
-      )
-    )
-  }
-}
-
 case class AppealSubmission(
                              taxRegime: String,
                              appealSubmittedBy: String,
@@ -465,8 +434,6 @@ object AppealSubmission {
         Json.fromJson(payload)(HealthAppealInformation.healthAppealInformationFormatter)
       case "other" =>
         Json.fromJson(payload)(OtherAppealInformation.otherAppealInformationFormatter)
-      case "obligation" =>
-        Json.fromJson(payload)(ObligationAppealInformation.obligationAppealInformationFormatter)
     }
   }
 
@@ -486,8 +453,6 @@ object AppealSubmission {
         Json.toJson(payload.asInstanceOf[HealthAppealInformation])(HealthAppealInformation.healthAppealWrites)
       case "other" =>
         Json.toJson(payload.asInstanceOf[OtherAppealInformation])(OtherAppealInformation.otherAppealInformationWrites)
-      case "obligation" =>
-        Json.toJson(payload.asInstanceOf[ObligationAppealInformation])(ObligationAppealInformation.obligationAppealInformationWrites)
     }
   }
 
