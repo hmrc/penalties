@@ -62,6 +62,11 @@ class AppealsController @Inject()(val appConfig: AppConfig,
           checkAndReturnResponseForPenaltyData(success.asInstanceOf[GetPenaltyDetailsSuccessResponse].penaltyDetails, penaltyId, enrolmentKey, penaltyType)
         }
       )
+    }.recover {
+      case e: Exception =>
+        PagerDutyHelper.log("getAppealDataForPenalty", RETRIEVE_PENALTY_REFORM_500)
+        logger.error(s"[AppealsController][getAppealDataForPenalty] Unexpected error while retrieving appeal data for penalty ID: $penaltyId - ${e.getMessage}")
+        InternalServerError("An unexpected error occurred while retrieving penalty data.")
     }
   }
 
@@ -151,56 +156,62 @@ class AppealsController @Inject()(val appConfig: AppConfig,
   private def submitAppealToPEGA(appealSubmission: AppealSubmission, enrolmentKey: String,
                                  isLPP: Boolean, penaltyNumber: String, correlationId: String, isMultiAppeal: Boolean)
                                 (implicit hc: HeaderCarrier, request: Request[_]): Future[AppealSubmissionResponseModel] = {
+
     appealService.submitAppeal(appealSubmission, enrolmentKey, isLPP, penaltyNumber, correlationId).flatMap {
-      _.fold(
-        error => {
-          logger.error(s"[AppealsController][submitAppeal] Error submiting appeal to PEGA for user with enrolment: $enrolmentKey penalty $penaltyNumber - Received error from PEGA with status ${error.status} and error message: ${error.body} " +
-            s"for correlation ID: $correlationId")
-          logger.debug(s"[AppealsController][submitAppeal] Returning ${error.status} to calling service.")
-          val responseModel = AppealSubmissionResponseModel(error = Some(error.body), status = error.status)
-          Future(responseModel)
-        },
-        responseModel => {
-          logger.info(s"[AppealsController][submitAppeal] - Successfully sent appeal submission to PEGA for user with enrolment: $enrolmentKey and penalty number: $penaltyNumber" +
-            s" (correlation ID: $correlationId)")
-          val appeal = appealSubmission.appealInformation
-          logger.debug(s"[AppealsController][submitAppeal] Received caseID response: ${responseModel.caseID} from downstream.")
-          val seqOfNotifications = appeal match {
-            case otherAppeal: OtherAppealInformation if otherAppeal.uploadedFiles.isDefined =>
-              appealService.createSDESNotifications(otherAppeal.uploadedFiles, responseModel.caseID)
-            case _ => Seq.empty
-          }
-          if (seqOfNotifications.nonEmpty) {
-            val redactedNotification = seqOfNotifications.map(notification => notification.copy(file = notification.file.copy(location = "HIDDEN")))
-            logger.debug(s"[AppealsController][submitAppeal] Posting SDESNotifications: $redactedNotification to Orchestrator")
-            fileNotificationOrchestratorConnector.postFileNotifications(seqOfNotifications).map {
-              response =>
-                response.status match {
-                  case OK =>
-                    logger.info(s"[AppealsController][submitAppeal] - Received OK from file notification orchestrator for correlation ID: $correlationId")
-                    val submissionResponseModel = AppealSubmissionResponseModel(caseId = Some(responseModel.caseID), status = OK)
-                    submissionResponseModel
-                  case status =>
-                    PagerDutyHelper.logStatusCode("submitAppeal", status)(RECEIVED_4XX_FROM_FILE_NOTIFICATION_ORCHESTRATOR, RECEIVED_5XX_FROM_FILE_NOTIFICATION_ORCHESTRATOR)
-                    logger.error(s"[AppealsController][submitAppeal] Unable to store file notification for user with enrolment: $enrolmentKey penalty $penaltyNumber (correlation ID: $correlationId) - Received unknown response ($status) from file notification orchestrator. Response body: ${response.body}")
-                    auditStorageFailureOfFileNotifications(seqOfNotifications)
-                    returnErrorResponseIfMultiAppeal(isMultiAppeal)(s"Appeal submitted (case ID: ${responseModel.caseID}, correlation ID: $correlationId) but received $status response from file notification orchestrator")(responseModel.caseID)
-                }
-            }.recover {
-              case e => {
-                logger.error(s"[AppealsController][submitAppeal] Unable to store file notification for user with enrolment: $enrolmentKey penalty $penaltyNumber (correlation ID: $correlationId) - An unknown exception occurred when attempting to store file notifications, with error: ${e.getMessage}")
-                auditStorageFailureOfFileNotifications(seqOfNotifications)
-                returnErrorResponseIfMultiAppeal(isMultiAppeal)(s"Appeal submitted (case ID: ${responseModel.caseID}, correlation ID: $correlationId) but failed to store file uploads with unknown error")(responseModel.caseID)
-              }
-            }
-          } else {
-            val submissionResponseModel = AppealSubmissionResponseModel(caseId = Some(responseModel.caseID), status = OK)
-            Future(submissionResponseModel)
-          }
+      case Left(error) =>
+        PagerDutyHelper.log("submitAppealToPEGA", RETRIEVE_PENALTY_REFORM_REQUEST_FAILED)
+        logger.error(s"[AppealsController][submitAppealToPEGA] Error submitting appeal for user with enrolment: $enrolmentKey, penalty $penaltyNumber - Received error from PEGA with status ${error.status} and error message: ${error.body} for correlation ID: $correlationId")
+
+        Future.successful(AppealSubmissionResponseModel(error = Some(error.body), status = error.status))
+
+      case Right(responseModel) =>
+        logger.info(s"[AppealsController][submitAppealToPEGA] Successfully sent appeal submission to PEGA for user with enrolment: $enrolmentKey and penalty number: $penaltyNumber (correlation ID: $correlationId)")
+
+        val appeal = appealSubmission.appealInformation
+        val seqOfNotifications = appeal match {
+          case otherAppeal: OtherAppealInformation if otherAppeal.uploadedFiles.isDefined =>
+            appealService.createSDESNotifications(otherAppeal.uploadedFiles, responseModel.caseID)
+          case _ => Seq.empty
         }
-      )
+
+        if (seqOfNotifications.nonEmpty) {
+          val redactedNotification = seqOfNotifications.map(notification => notification.copy(file = notification.file.copy(location = "HIDDEN")))
+          logger.debug(s"[AppealsController][submitAppealToPEGA] Posting SDESNotifications: $redactedNotification to Orchestrator")
+
+          fileNotificationOrchestratorConnector.postFileNotifications(seqOfNotifications).map {
+            response =>
+              response.status match {
+                case OK =>
+                  logger.info(s"[AppealsController][submitAppealToPEGA] - Received OK from file notification orchestrator for correlation ID: $correlationId")
+                  val submissionResponseModel = AppealSubmissionResponseModel(caseId = Some(responseModel.caseID), status = OK)
+                  submissionResponseModel
+                case status =>
+                  PagerDutyHelper.logStatusCode("submitAppealToPEGA", status)(RECEIVED_4XX_FROM_FILE_NOTIFICATION_ORCHESTRATOR, RECEIVED_5XX_FROM_FILE_NOTIFICATION_ORCHESTRATOR)
+                  logger.error(s"[AppealsController][submitAppealToPEGA] Unable to store file notification for user with enrolment: $enrolmentKey penalty $penaltyNumber (correlation ID: $correlationId) - Received unknown response ($status) from file notification orchestrator. Response body: ${response.body}")
+
+                  auditStorageFailureOfFileNotifications(seqOfNotifications)
+                  returnErrorResponseIfMultiAppeal(isMultiAppeal)(s"Appeal submitted (case ID: ${responseModel.caseID}, correlation ID: $correlationId) but received $status response from file notification orchestrator")(responseModel.caseID)
+              }
+          }.recover {
+            case e: Exception =>
+              logger.error(s"[AppealsController][submitAppealToPEGA] Unable to store file notification for user with enrolment: $enrolmentKey penalty $penaltyNumber (correlation ID: $correlationId) - An unknown exception occurred when attempting to store file notifications, with error: ${e.getMessage}")
+              auditStorageFailureOfFileNotifications(seqOfNotifications)
+
+              returnErrorResponseIfMultiAppeal(isMultiAppeal)(s"Appeal submitted (case ID: ${responseModel.caseID}, correlation ID: $correlationId) but failed to store file uploads with unknown error")(responseModel.caseID)
+          }
+        } else {
+          val submissionResponseModel = AppealSubmissionResponseModel(caseId = Some(responseModel.caseID), status = OK)
+          Future.successful(submissionResponseModel)
+        }
+    }.recover {
+      case e: Exception =>
+        PagerDutyHelper.log("submitAppealToPEGA", RETRIEVE_PENALTY_REFORM_500)
+        logger.error(s"[AppealsController][submitAppealToPEGA] Unexpected error while submitting appeal for enrolment: $enrolmentKey penalty $penaltyNumber, correlation ID: $correlationId - ${e.getMessage}")
+
+        AppealSubmissionResponseModel(error = Some("Internal server error"), status = INTERNAL_SERVER_ERROR)
     }
   }
+
 
   private def returnErrorResponseIfMultiAppeal(isMultiAppeal: Boolean)(messageIfReturningError: String)(caseId: String): AppealSubmissionResponseModel = {
     if (isMultiAppeal) {
@@ -230,25 +241,29 @@ class AppealsController @Inject()(val appConfig: AppConfig,
   private def handleFailureResponse(response: GetPenaltyDetailsParser.GetPenaltyDetailsFailure,
                                     vrn: String, enrolmentKey: String)(callingMethod: String): Result = {
     response match {
-      case GetPenaltyDetailsParser.GetPenaltyDetailsFailureResponse(status) if status == NOT_FOUND => {
+      case GetPenaltyDetailsParser.GetPenaltyDetailsFailureResponse(status) if status == NOT_FOUND =>
         logger.info(s"[AppealsController][$callingMethod] - 1812 call returned 404 for enrolment key: $enrolmentKey")
         NotFound(s"A downstream call returned 404 for VRN: $vrn")
-      }
-      case GetPenaltyDetailsParser.GetPenaltyDetailsFailureResponse(status) => {
-        logger.error(s"[AppealsController][$callingMethod] - 1812 call returned an unexpected status: $status for VRN: $vrn")
-        InternalServerError(s"A downstream call returned an unexpected status: $status")
-      }
-      case GetPenaltyDetailsParser.GetPenaltyDetailsMalformed => {
+      case GetPenaltyDetailsParser.GetPenaltyDetailsFailureResponse(status) =>
+        if (status >= 500) {
+          PagerDutyHelper.log(callingMethod, RETRIEVE_PENALTY_REFORM_500)
+          logger.error(s"[AppealsController][$callingMethod] - 1812 call returned an unexpected status: $status for VRN: $vrn")
+          InternalServerError(s"A downstream call returned an unexpected status: $status")
+        } else {
+          PagerDutyHelper.log(callingMethod, RETRIEVE_PENALTY_REFORM_REQUEST_FAILED)
+          logger.error(s"[AppealsController][$callingMethod] - 1812 call failed with status: $status for VRN: $vrn")
+          BadRequest(s"Bad request for VRN: $vrn")
+        }
+      case GetPenaltyDetailsParser.GetPenaltyDetailsMalformed =>
         PagerDutyHelper.log(callingMethod, MALFORMED_RESPONSE_FROM_1812_API)
         logger.error(s"[AppealsController][$callingMethod] - Failed to parse penalty details response for VRN: $vrn")
         InternalServerError("We were unable to parse penalty data.")
-      }
-      case GetPenaltyDetailsParser.GetPenaltyDetailsNoContent => {
-        logger.info(s"s[AppealsController][$callingMethod] - 1812 call returned no content for VRN: $vrn")
+      case GetPenaltyDetailsParser.GetPenaltyDetailsNoContent =>
+        logger.info(s"[AppealsController][$callingMethod] - 1812 call returned no content for VRN: $vrn")
         InternalServerError(s"Returned no content for VRN: $vrn")
-      }
     }
   }
+
 
   private def auditStorageFailureOfFileNotifications(notifications: Seq[SDESNotification])
                                                     (implicit hc: HeaderCarrier, ec: ExecutionContext, request: Request[_]): Unit = {
