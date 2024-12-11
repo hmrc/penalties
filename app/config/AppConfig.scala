@@ -17,10 +17,11 @@
 package config
 
 import config.featureSwitches._
+
 import play.api.Configuration
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
-
 import javax.inject.{Inject, Singleton}
+import models.AgnosticEnrolmentKey
 
 @Singleton
 class AppConfig @Inject()(val config: Configuration, servicesConfig: ServicesConfig) extends FeatureSwitching {
@@ -84,13 +85,30 @@ class AppConfig @Inject()(val config: Configuration, servicesConfig: ServicesCon
     else etmpBase + "/penalty/details/VATC/VRN/"
   }
 
+  def getPenaltyDetailsUrlCorrect: String = {
+    if (!isEnabled(CallAPI1812ETMP)) stubBase + "/penalties-stub/penalty/details/"
+    else etmpBase + "/penalty/details/"
+  }
   def getFinancialDetailsUrl(vrn: String): String = {
     if (!isEnabled(CallAPI1811ETMP)) stubBase + s"/penalties-stub/penalty/financial-data/VRN/$vrn/VATC"
     else etmpBase + s"/penalty/financial-data/VRN/$vrn/VATC"
   }
 
+  def getFinancialDetailsItsaUrl(nino: String): String = {
+    if (!isEnabled(CallAPI1811ETMP)) stubBase + s"/penalties-stub/penalty/financial-data/NINO/$nino/ITSA"
+    else etmpBase + s"/penalty/financial-data/NINO/$nino/ITSA"
+  }
+
   def getAppealSubmissionURL(enrolmentKey: String, isLPP: Boolean, penaltyNumber: String): String = {
     if (!isEnabled(CallPEGA)) stubBase + s"/penalties-stub/appeals/submit?enrolmentKey=$enrolmentKey&isLPP=$isLPP&penaltyNumber=$penaltyNumber"
+    else pegaBase + s"/penalty/first-stage-appeal/$penaltyNumber"
+  }
+
+  def getRegimeAgnosticAppealSubmissionUrl(agnosticEnrolmenKey: AgnosticEnrolmentKey, isLPP: Boolean, penaltyNumber: String): String = {
+    val regime = agnosticEnrolmenKey.regime.value;
+    val idType = agnosticEnrolmenKey.idType.value;
+    val idValue = agnosticEnrolmenKey.id.value;
+    if (!isEnabled(CallPEGA)) stubBase + s"/penalties-stub/appeals/submit?regime=$regime&idType=$idType&id=$idValue&isLPP=$isLPP&penaltyNumber=$penaltyNumber"
     else pegaBase + s"/penalty/first-stage-appeal/$penaltyNumber"
   }
 
@@ -107,4 +125,57 @@ class AppConfig @Inject()(val config: Configuration, servicesConfig: ServicesCon
   }
 
   def getMimeType(mimeType: String): Option[String] = config.getOptional[String](s"files.extensions.$mimeType")
+
+
+  def getRegimeFinancialDetailsUrl(enrolmentKey: AgnosticEnrolmentKey): String = {
+    val taxregime = enrolmentKey.regime.value;
+    val id = enrolmentKey.idType.value;
+    val idValue = enrolmentKey.id.value;
+    if (!isEnabled(CallAPI1811ETMP)) stubBase + s"/penalties-stub/penalty/financial-data/$id/$idValue/$taxregime"
+    else etmpBase + s"/penalty/financial-data/$id/$idValue/$taxregime"
+  }
+
+  def getPenaltyDetailsVatUrl: String = {
+    if (!isEnabled(CallAPI1812ETMP)) stubBase + "/penalties-stub/penalty/details/"
+    else etmpBase + "/penalty/details/"
+  }
+
+  def getRegimeAgnosticPenaltyDetailsUrl(agnosticEnrolmenKey: AgnosticEnrolmentKey): String = {
+    val regime = agnosticEnrolmenKey.regime.value;
+    val idType = agnosticEnrolmenKey.idType.value;
+    val idValue = agnosticEnrolmenKey.id.value;
+    if (!isEnabled(CallAPI1812ETMP)) stubBase + s"/penalties-stub/penalty/details/$regime/$idType/$idValue"
+    else etmpBase + s"/penalty/details/$regime/$idType/$idValue"
+  }
+
+  def getFinancialDetailsVatUrl(vrn: String): String = {
+    if (!isEnabled(CallAPI1811ETMP)) stubBase + s"/penalties-stub/penalty/financial-data/VRN/$vrn/VATC"
+    else etmpBase + s"/penalty/financial-data/VRN/$vrn/VATC"
+  }
+
+  private def getComplianceDataUrl: String = {
+    if (isEnabled(CallDES)) {
+      desBase + s"/enterprise/obligation-data/"
+    } else {
+      stubBase + s"/penalties-stub/enterprise/obligation-data/"
+    }
+  }
+
+  def getRegimeAgnosticComplianceDataUrl(agnosticEnrolmenKey: AgnosticEnrolmentKey, fromDate: String, toDate: String): String = {
+    val regime = agnosticEnrolmenKey.regime.value;
+    val idType = agnosticEnrolmenKey.idType.value;
+    val idValue = agnosticEnrolmenKey.id.value;
+    getComplianceDataUrl + s"${idType}/${idValue}/$regime?from=${fromDate}&to=$toDate" 
+
+    // s"${getComplianceDataUrl}${agnosticEnrolmenKey.idType.value}/${agnosticEnrolmenKey.id.value}/${agnosticEnrolmenKey.regime.value}?from=$fromDate&to=$toDate"
+  // def getComplianceData(vrn: String, fromDate: String, toDate: String): String = {
+  //   if (isEnabled(CallDES)) {
+  //     desBase + s"/enterprise/obligation-data/vrn/$vrn/VATC?from=$fromDate&to=$toDate"
+  //   } else {
+  //     stubBase + s"/penalties-stub/enterprise/obligation-data/vrn/$vrn/VATC?from=$fromDate&to=$toDate"
+  //   }
+  // }
+
+  }
+
 }

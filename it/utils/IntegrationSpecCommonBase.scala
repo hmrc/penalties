@@ -76,7 +76,9 @@ trait IntegrationSpecCommonBase extends AnyWordSpec with Matchers with GuiceOneS
     "auditing.consumer.baseUri.host" -> stubHost,
     "auditing.consumer.baseUri.port" -> stubPort,
     "microservice.services.penalties-file-notification-orchestrator.host" -> stubHost,
-    "microservice.services.penalties-file-notification-orchestrator.port" -> stubPort
+    "microservice.services.penalties-file-notification-orchestrator.port" -> stubPort,
+    "microservice.services.auth.host" -> stubHost,
+    "microservice.services.auth.port" -> stubPort
   )
 
   override lazy val app: Application = new GuiceApplicationBuilder()
@@ -90,6 +92,6 @@ trait IntegrationSpecCommonBase extends AnyWordSpec with Matchers with GuiceOneS
   lazy val ws: WSClient = app.injector.instanceOf[WSClient]
 
   def buildClientForRequestToApp(baseUrl: String = "/penalties", uri: String): WSRequest = {
-    ws.url(s"http://localhost:$port$baseUrl$uri").withFollowRedirects(false)
+    ws.url(s"http://localhost:$port$baseUrl$uri").withHttpHeaders("Authorization" -> "Bearer 123").withFollowRedirects(false)
   }
 }

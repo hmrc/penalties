@@ -23,8 +23,10 @@ import connectors.parsers.getFinancialDetails.GetFinancialDetailsParser._
 import models.getFinancialDetails
 import models.getFinancialDetails.FinancialDetails
 import models.getFinancialDetails.totalisation.{FinancialDetailsTotalisation, InterestTotalisation, RegimeTotalisation}
-import org.mockito.Matchers
-import org.mockito.Matchers.any
+import org.mockito.ArgumentMatchers
+
+import org.mockito.ArgumentMatchers.any
+
 import org.mockito.Mockito.{mock, reset, when}
 import play.api.Configuration
 import play.api.http.Status.IM_A_TEAPOT
@@ -63,9 +65,9 @@ class GetFinancialDetailsServiceSpec extends SpecBase with FeatureSwitching with
     )
 
     s"call the connector and return a $GetFinancialDetailsSuccessResponse when the request is successful" in new Setup {
-      when(config.getOptional[String](Matchers.any())(Matchers.any()))
+      when(config.getOptional[String](ArgumentMatchers.any())(ArgumentMatchers.any()))
         .thenReturn(None)
-      when(mockGetFinancialDetailsConnector.getFinancialDetails(Matchers.eq("123456789"), Matchers.any())(any()))
+      when(mockGetFinancialDetailsConnector.getFinancialDetails(ArgumentMatchers.eq("123456789"), ArgumentMatchers.any())(any()))
         .thenReturn(Future.successful(Right(GetFinancialDetailsSuccessResponse(mockGetFinancialDetailsResponseAsModel))))
       val result: GetFinancialDetailsResponse = await(service.getFinancialDetails("123456789", None))
       result.isRight shouldBe true
@@ -74,7 +76,7 @@ class GetFinancialDetailsServiceSpec extends SpecBase with FeatureSwitching with
 
     s"call the connector and return a $GetFinancialDetailsSuccessResponse when the request is successful (with the time machine date)" in new Setup {
       setTimeMachineDate(Some(LocalDateTime.of(2024, 1, 1, 0, 0, 0)))
-      when(mockGetFinancialDetailsConnector.getFinancialDetails(Matchers.eq("123456789"), Matchers.any())(any()))
+      when(mockGetFinancialDetailsConnector.getFinancialDetails(ArgumentMatchers.eq("123456789"), ArgumentMatchers.any())(any()))
         .thenReturn(Future.successful(Right(GetFinancialDetailsSuccessResponse(mockGetFinancialDetailsResponseAsModel))))
       val result: GetFinancialDetailsResponse = await(service.getFinancialDetails("123456789", None))
       result.isRight shouldBe true
@@ -82,9 +84,9 @@ class GetFinancialDetailsServiceSpec extends SpecBase with FeatureSwitching with
     }
 
     s"call the connector and return $GetFinancialDetailsNoContent when the response body contains NO_DATA_FOUND" in new Setup {
-      when(config.getOptional[String](Matchers.any())(Matchers.any()))
+      when(config.getOptional[String](ArgumentMatchers.any())(ArgumentMatchers.any()))
         .thenReturn(None)
-      when(mockGetFinancialDetailsConnector.getFinancialDetails(Matchers.eq("123456789"), Matchers.any())(any()))
+      when(mockGetFinancialDetailsConnector.getFinancialDetails(ArgumentMatchers.eq("123456789"), ArgumentMatchers.any())(any()))
         .thenReturn(Future.successful(Left(GetFinancialDetailsNoContent)))
       withCaptureOfLoggingFrom(logger) {
         logs => {
@@ -97,9 +99,9 @@ class GetFinancialDetailsServiceSpec extends SpecBase with FeatureSwitching with
     }
 
     s"call the connector and return $GetFinancialDetailsMalformed when the response body is malformed" in new Setup {
-      when(config.getOptional[String](Matchers.any())(Matchers.any()))
+      when(config.getOptional[String](ArgumentMatchers.any())(ArgumentMatchers.any()))
         .thenReturn(None)
-      when(mockGetFinancialDetailsConnector.getFinancialDetails(Matchers.eq("123456789"), Matchers.any())(any()))
+      when(mockGetFinancialDetailsConnector.getFinancialDetails(ArgumentMatchers.eq("123456789"), ArgumentMatchers.any())(any()))
         .thenReturn(Future.successful(Left(GetFinancialDetailsMalformed)))
       withCaptureOfLoggingFrom(logger) {
         logs => {
@@ -112,9 +114,9 @@ class GetFinancialDetailsServiceSpec extends SpecBase with FeatureSwitching with
     }
 
     s"call the connector and return $GetFinancialDetailsFailureResponse when an unknown status is returned" in new Setup {
-      when(config.getOptional[String](Matchers.any())(Matchers.any()))
+      when(config.getOptional[String](ArgumentMatchers.any())(ArgumentMatchers.any()))
         .thenReturn(None)
-      when(mockGetFinancialDetailsConnector.getFinancialDetails(Matchers.eq("123456789"), Matchers.any())(any()))
+      when(mockGetFinancialDetailsConnector.getFinancialDetails(ArgumentMatchers.eq("123456789"), ArgumentMatchers.any())(any()))
         .thenReturn(Future.successful(Left(GetFinancialDetailsFailureResponse(IM_A_TEAPOT))))
       withCaptureOfLoggingFrom(logger) {
         logs => {
@@ -127,9 +129,9 @@ class GetFinancialDetailsServiceSpec extends SpecBase with FeatureSwitching with
     }
 
     s"throw an exception when something unknown has happened" in new Setup {
-      when(config.getOptional[String](Matchers.any())(Matchers.any()))
+      when(config.getOptional[String](ArgumentMatchers.any())(ArgumentMatchers.any()))
         .thenReturn(None)
-      when(mockGetFinancialDetailsConnector.getFinancialDetails(Matchers.eq("123456789"), Matchers.any())(any()))
+      when(mockGetFinancialDetailsConnector.getFinancialDetails(ArgumentMatchers.eq("123456789"), ArgumentMatchers.any())(any()))
         .thenReturn(Future.failed(new Exception("Something has gone wrong.")))
       val result: Exception = intercept[Exception](await(service.getFinancialDetails("123456789", None)))
       result.getMessage shouldBe "Something has gone wrong."

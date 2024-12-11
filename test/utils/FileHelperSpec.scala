@@ -18,7 +18,8 @@ package utils
 
 import base.SpecBase
 import config.AppConfig
-import org.mockito.Matchers
+import org.mockito.ArgumentMatchers
+
 import org.mockito.Mockito.{mock, when}
 
 class FileHelperSpec extends SpecBase {
@@ -27,13 +28,13 @@ class FileHelperSpec extends SpecBase {
   "appendFileExtension" when {
     "the file name does not have an extension" should {
       "add the extension to the file name" in {
-        when(mockAppConfig.getMimeType(Matchers.eq("text.plain"))).thenReturn(Some(".txt"))
+        when(mockAppConfig.getMimeType(ArgumentMatchers.eq("text.plain"))).thenReturn(Some(".txt"))
         val result = FileHelper.appendFileExtension("file1")("text/plain")("ref1")(mockAppConfig)
         result shouldBe "file1.txt"
       }
 
       "throw an exception when there is no config entry for the mime type" in {
-        when(mockAppConfig.getMimeType(Matchers.eq("fake.mime"))).thenReturn(None)
+        when(mockAppConfig.getMimeType(ArgumentMatchers.eq("fake.mime"))).thenReturn(None)
         val result = intercept[Exception](FileHelper.appendFileExtension("file1")("fake/mime")("ref1")(mockAppConfig))
         result.getMessage shouldBe "[FileHelper][appendFileExtension] - Unknown mime type: fake/mime for file reference: ref1"
       }

@@ -29,7 +29,8 @@ import models.getPenaltyDetails.appealInfo.{AppealInformationType, AppealLevelEn
 import models.getPenaltyDetails.latePayment._
 import models.notification._
 import models.upload._
-import org.mockito.Matchers
+import org.mockito.ArgumentMatchers
+
 import org.mockito.Mockito._
 import play.api.Configuration
 import play.api.test.Helpers._
@@ -57,7 +58,7 @@ class AppealServiceSpec extends SpecBase with LogCapturing {
     reset(mockAppealsConnector)
     reset(mockAppConfig)
     reset(mockUUIDGenerator)
-    when(mockAppConfig.isEnabled(Matchers.eq(SanitiseFileName))).thenReturn(false)
+    when(mockAppConfig.isEnabled(ArgumentMatchers.eq(SanitiseFileName))).thenReturn(false)
     when(mockUUIDGenerator.generateUUID).thenReturn(correlationId)
     when(mockAppConfig.SDESNotificationInfoType).thenReturn("S18")
     when(mockAppConfig.SDESNotificationFileRecipient).thenReturn("123456789012")
@@ -86,8 +87,8 @@ class AppealServiceSpec extends SpecBase with LogCapturing {
     )
 
     "return the response from the connector i.e. act as a pass-through function" in new Setup {
-      when(mockAppealsConnector.submitAppeal(Matchers.any(), Matchers.any(), Matchers.any(),
-        Matchers.any(), Matchers.any())).thenReturn(Future.successful(Right(appealResponseModel)))
+      when(mockAppealsConnector.submitAppeal(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(),
+        ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(Right(appealResponseModel)))
 
       val result: Either[AppealsParser.ErrorResponse, AppealResponseModel] = await(
         service.submitAppeal(modelToPassToServer, "HMRC-MTD-VAT~VRN~123456789", isLPP = false, penaltyNumber = "123456789", correlationId = correlationId))
@@ -95,8 +96,8 @@ class AppealServiceSpec extends SpecBase with LogCapturing {
     }
 
     "return the response from the connector on error i.e. act as a pass-through function" in new Setup {
-      when(mockAppealsConnector.submitAppeal(Matchers.any(), Matchers.any(), Matchers.any(),
-        Matchers.any(), Matchers.any())).thenReturn(Future.successful(
+      when(mockAppealsConnector.submitAppeal(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(),
+        ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(
         Left(UnexpectedFailure(BAD_GATEWAY, s"Unexpected response, status $BAD_GATEWAY returned"))))
 
       val result: Either[AppealsParser.ErrorResponse, AppealResponseModel] = await(service.submitAppeal(
@@ -105,8 +106,8 @@ class AppealServiceSpec extends SpecBase with LogCapturing {
     }
 
     "throw an exception when the connector throws an exception" in new Setup {
-      when(mockAppealsConnector.submitAppeal(Matchers.any(), Matchers.any(), Matchers.any(),
-        Matchers.any(), Matchers.any())).thenReturn(Future.failed(new Exception("Something went wrong")))
+      when(mockAppealsConnector.submitAppeal(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(),
+        ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.failed(new Exception("Something went wrong")))
 
       val result: Exception = intercept[Exception](await(service.submitAppeal(
         modelToPassToServer, "HMRC-MTD-VAT~VRN~123456789", isLPP = false, penaltyNumber = "123456789", correlationId = correlationId)))
@@ -267,8 +268,8 @@ class AppealServiceSpec extends SpecBase with LogCapturing {
       }
 
       "notifications are sent and then should sanitise the file names (when feature switch is enabled)" in new Setup {
-        when(mockAppConfig.isEnabled(Matchers.eq(SanitiseFileName))).thenReturn(true)
-        when(mockAppConfig.getMimeType(Matchers.eq("text.plain"))).thenReturn(Some(".txt"))
+        when(mockAppConfig.isEnabled(ArgumentMatchers.eq(SanitiseFileName))).thenReturn(true)
+        when(mockAppConfig.getMimeType(ArgumentMatchers.eq("text.plain"))).thenReturn(Some(".txt"))
         when(mockAppConfig.checksumAlgorithmForFileNotifications).thenReturn("SHA-256")
         val mockDateTime: LocalDateTime = LocalDateTime.of(2020, 1, 1, 0, 0, 0)
         val uploads = Seq(
