@@ -17,6 +17,7 @@
 package config
 
 import config.featureSwitches._
+import models.EnrolmentKey
 import play.api.Configuration
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
@@ -107,4 +108,54 @@ class AppConfig @Inject()(val config: Configuration, servicesConfig: ServicesCon
   }
 
   def getMimeType(mimeType: String): Option[String] = config.getOptional[String](s"files.extensions.$mimeType")
+
+  def getRegimePenaltyDetailsUrl(enrolmentKey: EnrolmentKey): String = {
+    val taxregime = enrolmentKey.regime.toString;
+    val id = enrolmentKey.keyType;
+    val idValue = enrolmentKey.key;
+    if (!isEnabled(CallAPI1812ETMP)) stubBase + s"/penalties-stub/penalty/details/$taxregime/$id/$idValue"
+    else etmpBase + s"/penalty/details/$taxregime/$id/$idValue"
+  }
+
+  def getRegimeFinancialDetailsUrl(taxregime: String , id: String, key: String): String = {
+    if (!isEnabled(CallAPI1811ETMP)) stubBase + s"/penalties-stub/penalty/financial-data/$taxregime/$key/$id"
+    else etmpBase + s"/penalty/financial-data/$taxregime/$key/$id"
+  }
+
+  def getRegimeFinancialDetailsUrl(enrolmentKey: EnrolmentKey): String = {
+    val taxregime = enrolmentKey.regime;
+    val id = enrolmentKey.keyType;
+    val idValue = enrolmentKey.key;
+    if (!isEnabled(CallAPI1811ETMP)) stubBase + s"/penalties-stub/penalty/financial-data/$id/$idValue/$taxregime/"
+    else etmpBase + s"/penalty/financial-data/$id/$idValue/$taxregime"
+  }
+
+  def getPenaltyDetailsVatUrl: String = {
+    if (!isEnabled(CallAPI1812ETMP)) stubBase + "/penalties-stub/penalty/details/"
+    else etmpBase + "/penalty/details/VATC/VRN/"
+  }
+
+  def getFinancialDetailsVatUrl(vrn: String): String = {
+    if (!isEnabled(CallAPI1811ETMP)) stubBase + s"/penalties-stub/penalty/financial-data/VRN/$vrn/VATC"
+    else etmpBase + s"/penalty/financial-data/VRN/$vrn/VATC"
+  }
+  def getVatPenaltyDetailsUrl: String = getPenaltyDetailsVatUrl + "VATC/VRN/"
+  def getItsaPenaltyDetailsUrl: String = getPenaltyDetailsUrl + "ITSA/NINO/"
+  //def getCtPenaltyDetailsUrl: String = getPenaltyDetailsUrl + "CT/UTR/"
+  def getVatFinancialDetailsUrl(vrn: String): String = getFinancialDetailsVatUrl(vrn)
+  def getItsaFinancialDetailsUrl(utr: String): String = getFinancialDetailsUrl(utr)+ s"NINO/$utr/ITSA"
+  //def getCtFinancialDetailsUrl(utr: String): String = getFinancialDetailsUrl(_) + s"UTR/$utr/CT"
+  private def getComplianceDataUrl: String = {
+    if (isEnabled(CallDES)) {
+      desBase + s"/enterprise/obligation-data/"
+    } else {
+      stubBase + s"/penalties-stub/enterprise/obligation-data/"
+    }
+  }
+  def getVatComplianceDataUrl(vrn: String, fromDate: String, toDate: String): String =
+    s"${getComplianceDataUrl}vrn/$vrn/VATC?from=$fromDate&to=$toDate"
+
+  def getItsaComplianceDataUrl(nino: String, fromDate: String, toDate: String): String =
+    s"${getComplianceDataUrl}nino/$nino/ITSA?from=$fromDate&to=$toDate"
+
 }
