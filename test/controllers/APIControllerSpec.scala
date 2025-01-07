@@ -28,7 +28,8 @@ import models.getFinancialDetails.{DocumentDetails, FinancialDetails, LineItemDe
 import models.getPenaltyDetails.GetPenaltyDetails
 import models.getPenaltyDetails.latePayment._
 import models.getPenaltyDetails.lateSubmission.{LSPSummary, LateSubmissionPenalty}
-import org.mockito.Matchers._
+import org.mockito.ArgumentMatchers
+._
 import org.mockito.Mockito._
 import play.api.Configuration
 import play.api.http.Status

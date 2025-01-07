@@ -17,7 +17,7 @@
 package config.featureSwitches
 
 import base.SpecBase
-import org.mockito.Matchers.any
+import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.{mock, reset, when}
 import play.api.Configuration
 import utils.DateHelper

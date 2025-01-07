@@ -26,8 +26,10 @@ import models.getPenaltyDetails.breathingSpace.BreathingSpace
 import models.getPenaltyDetails.latePayment._
 import models.getPenaltyDetails.lateSubmission._
 import models.getPenaltyDetails.{GetPenaltyDetails, Totalisations}
-import org.mockito.Matchers
-import org.mockito.Matchers.any
+import org.mockito.ArgumentMatchers
+
+import org.mockito.ArgumentMatchers.any
+
 import org.mockito.Mockito.{mock, reset, when}
 import play.api.Configuration
 import play.api.test.Helpers.{IM_A_TEAPOT, await, defaultAwaitTimeout}
@@ -171,7 +173,7 @@ class GetPenaltyDetailsServiceSpec extends SpecBase with LogCapturing with LPPDe
     )
 
     s"call the connector and return a $GetPenaltyDetailsSuccessResponse when the request is successful" in new Setup {
-      when(mockGetPenaltyDetailsConnector.getPenaltyDetails(Matchers.eq("123456789"))(any()))
+      when(mockGetPenaltyDetailsConnector.getPenaltyDetails(ArgumentMatchers.eq("123456789"))(any()))
         .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(mockGetPenaltyDetailsResponseAsModel))))
 
       featureSwitching.setEstimatedLPP1FilterEndDate(Some(LocalDate.of(2022, 10, 28)))
@@ -182,7 +184,7 @@ class GetPenaltyDetailsServiceSpec extends SpecBase with LogCapturing with LPPDe
     }
 
     s"return $GetPenaltyDetailsMalformed when the response body is malformed" in new Setup {
-      when(mockGetPenaltyDetailsConnector.getPenaltyDetails(Matchers.eq("123456789"))(any()))
+      when(mockGetPenaltyDetailsConnector.getPenaltyDetails(ArgumentMatchers.eq("123456789"))(any()))
         .thenReturn(Future.successful(Left(GetPenaltyDetailsMalformed)))
       withCaptureOfLoggingFrom(logger) {
         logs => {
@@ -195,7 +197,7 @@ class GetPenaltyDetailsServiceSpec extends SpecBase with LogCapturing with LPPDe
     }
 
     s"return $GetPenaltyDetailsNoContent when the response body contains NO_DATA_FOUND" in new Setup {
-      when(mockGetPenaltyDetailsConnector.getPenaltyDetails(Matchers.eq("123456789"))(any()))
+      when(mockGetPenaltyDetailsConnector.getPenaltyDetails(ArgumentMatchers.eq("123456789"))(any()))
         .thenReturn(Future.successful(Left(GetPenaltyDetailsNoContent)))
       withCaptureOfLoggingFrom(logger) {
         logs => {
@@ -208,7 +210,7 @@ class GetPenaltyDetailsServiceSpec extends SpecBase with LogCapturing with LPPDe
     }
 
     s"return $GetPenaltyDetailsFailureResponse when the connector receives an unmatched status code" in new Setup {
-      when(mockGetPenaltyDetailsConnector.getPenaltyDetails(Matchers.eq("123456789"))(any()))
+      when(mockGetPenaltyDetailsConnector.getPenaltyDetails(ArgumentMatchers.eq("123456789"))(any()))
         .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(IM_A_TEAPOT))))
       withCaptureOfLoggingFrom(logger) {
         logs => {
@@ -221,7 +223,7 @@ class GetPenaltyDetailsServiceSpec extends SpecBase with LogCapturing with LPPDe
     }
 
     s"throw an exception when something unknown has happened" in new Setup {
-      when(mockGetPenaltyDetailsConnector.getPenaltyDetails(Matchers.eq("123456789"))(any()))
+      when(mockGetPenaltyDetailsConnector.getPenaltyDetails(ArgumentMatchers.eq("123456789"))(any()))
         .thenReturn(Future.failed(new Exception("Something has gone wrong.")))
 
       val result: Exception = intercept[Exception](await(service.getDataFromPenaltyServiceForVATCVRN("123456789")))

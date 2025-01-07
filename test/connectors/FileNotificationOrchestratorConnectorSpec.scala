@@ -19,7 +19,7 @@ package connectors
 import base.SpecBase
 import config.AppConfig
 import models.notification._
-import org.mockito.Matchers
+import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
 import play.api.http.Status.OK
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
@@ -55,13 +55,13 @@ class FileNotificationOrchestratorConnectorSpec extends SpecBase {
         )
       )
       when(mockHttpClient.POST[Seq[SDESNotification], HttpResponse](
-        Matchers.any(),
-        Matchers.any(),
-        Matchers.any()
-      )(Matchers.any(),
-        Matchers.any(),
-        Matchers.any(),
-        Matchers.any()))
+        ArgumentMatchers.any(),
+        ArgumentMatchers.any(),
+        ArgumentMatchers.any()
+      )(ArgumentMatchers.any(),
+        ArgumentMatchers.any(),
+        ArgumentMatchers.any(),
+        ArgumentMatchers.any()))
         .thenReturn(Future.successful(HttpResponse(OK, "")))
 
       val result: HttpResponse = await(connector.postFileNotifications(Seq(model))(HeaderCarrier()))

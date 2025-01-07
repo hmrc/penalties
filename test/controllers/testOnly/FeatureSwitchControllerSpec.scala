@@ -18,7 +18,8 @@ package controllers.testOnly
 
 import base.SpecBase
 import config.featureSwitches.FeatureSwitch
-import org.mockito.Matchers.any
+import org.mockito.ArgumentMatchers.any
+
 import org.mockito.Mockito.{mock, reset, when}
 import play.api.Configuration
 import play.api.http.Status
