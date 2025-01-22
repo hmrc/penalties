@@ -17,7 +17,7 @@
 package services
 
 import config.featureSwitches.FeatureSwitching
-import connectors.parsers.getFinancialDetails.GetFinancialDetailsParser._
+import connectors.parsers.getFinancialDetails.FinancialDetailsParser._
 import models.EnrolmentKey
 import models.TaxRegime.{ITSA, VAT}
 import models.getFinancialDetails._

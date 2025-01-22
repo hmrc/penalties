@@ -32,7 +32,7 @@ import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class RegimePEGAConnector @Inject()(httpClient: HttpClient,
-                              appConfig: AppConfig)(implicit ec: ExecutionContext) {
+                                    appConfig: AppConfig)(implicit ec: ExecutionContext) {
 
   def submitAppeal(appealSubmission: AppealSubmission, enrolmentKey: EnrolmentKey, isLPP: Boolean, penaltyNumber: String, correlationId: String): Future[AppealSubmissionResponse] = {
     implicit val hc: HeaderCarrier = headersForEIS(correlationId, appConfig.eiOutboundBearerToken, appConfig.eisEnvironment)

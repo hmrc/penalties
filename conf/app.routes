@@ -19,6 +19,7 @@ GET        /vat/penalties/summary/:vrn                  controllers.APIControlle
 GET        /penalty/financial-data/VRN/:vrn/VATC        controllers.APIController.getFinancialDetails(vrn: String, searchType: Option[String], searchItem: Option[String], dateType: Option[String], dateFrom: Option[String], dateTo: Option[String], includeClearedItems: Option[Boolean], includeStatisticalItems: Option[Boolean], includePaymentOnAccount: Option[Boolean], addRegimeTotalisation: Option[Boolean], addLockInformation: Option[Boolean], addPenaltyDetails: Option[Boolean], addPostedInterestDetails: Option[Boolean], addAccruingInterestDetails: Option[Boolean])
 GET        /penalty-details/VAT/VRN/:vrn               controllers.APIController.getPenaltyDetails(vrn: String, dateLimit: Option[String])
 
+
 # microservice specific routes
 
 GET        /etmp/penalties/:enrolmentKey                controllers.RegimePenaltiesFrontendController.getPenaltiesData(enrolmentKey: models.EnrolmentKey, arn: Option[String] ?= None)
@@ -29,11 +30,13 @@ GET        /appeals-data/late-payments                  controllers.RegimeAppeal
 GET        /appeals-data/reasonable-excuses             controllers.RegimeAppealsController.getReasonableExcuses
 POST       /appeals/submit-appeal                       controllers.RegimeAppealsController.submitAppeal(enrolmentKey: models.EnrolmentKey, isLPP: Boolean, penaltyNumber: String, correlationId: String, isMultiAppeal: Boolean ?= false)
 GET        /appeals-data/multiple-penalties             controllers.RegimeAppealsController.getMultiplePenaltyData(penaltyId: String, enrolmentKey: models.EnrolmentKey)
+
 # Compliance
+GET        /compliance/des/compliance-data              controllers.RegimeComplianceController.redirectLegacyGetComplianceData(vrn: String, fromDate: String, toDate: String)
 GET        /:regime/compliance/data/:idType/:id         controllers.RegimeComplianceController.getComplianceData(regime: String, idType: String, id: String, fromDate: String, toDate: String)
 
 # External API
-GET        /:regime/summary/:id                         controllers.RegimeAPIController.getSummaryData(regime: String, id: String)
+GET        /:regime/penalties/summary/:id               controllers.RegimeAPIController.getSummaryData(regime: String, id: String)
 
 # 3rd Party API Endpoints
 

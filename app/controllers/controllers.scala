@@ -48,7 +48,7 @@ package object controllers {
   def composeEnrolmentKey(regime: String, key: String): Try[EnrolmentKey] = {
     regime.toUpperCase match {
       case "VAT" | "VATC" => Try(EnrolmentKey(VAT, VRN, key))
-      case "IT" | "ITSA" => Try(EnrolmentKey(ITSA, NINO, key))
+      case /*"IT" |*/ "ITSA" => Try(EnrolmentKey(ITSA, NINO, key))
       case other => Failure(new Exception(s"Unsupported regime: $other"))
     }
   }

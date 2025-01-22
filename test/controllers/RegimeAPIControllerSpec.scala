@@ -22,12 +22,12 @@ import connectors.getFinancialDetails.FinancialDetailsConnector
 import connectors.getPenaltyDetails.PenaltyDetailsConnector
 import connectors.parsers.getFinancialDetails.FinancialDetailsParser.{GetFinancialDetailsFailureResponse, GetFinancialDetailsMalformed, GetFinancialDetailsNoContent, GetFinancialDetailsSuccessResponse}
 import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser._
+import controllers.auth.AuthAction
 import models.getFinancialDetails.{DocumentDetails, FinancialDetails, LineItemDetails, MainTransactionEnum}
 import models.getPenaltyDetails.GetPenaltyDetails
 import models.getPenaltyDetails.latePayment._
 import models.getPenaltyDetails.lateSubmission.{LSPSummary, LateSubmissionPenalty}
-import org.mockito.ArgumentMatchers
-._
+import org.mockito.ArgumentMatchers._
 import org.mockito.Mockito._
 import play.api.Configuration
 import play.api.http.Status
@@ -58,6 +58,7 @@ class RegimeAPIControllerSpec extends SpecBase with FeatureSwitching with LogCap
   implicit val config: Configuration = appConfig.config
   implicit val hc: HeaderCarrier = HeaderCarrier()
   val filterService: RegimeFilterService = injector.instanceOf(classOf[RegimeFilterService])
+  val mockAuthAction: AuthAction = injector.instanceOf(classOf[AuthAction])
 
   class Setup(isFSEnabled: Boolean = false) {
     reset(mockAppealsService)
@@ -74,7 +75,8 @@ class RegimeAPIControllerSpec extends SpecBase with FeatureSwitching with LogCap
       mockGetPenaltyDetailsConnector,
       dateHelper,
       controllerComponents,
-      filterService
+      filterService,
+      mockAuthAction
     )
   }
 
@@ -318,7 +320,7 @@ class RegimeAPIControllerSpec extends SpecBase with FeatureSwitching with LogCap
         logs => {
           val result = await(controller.getSummaryData("VAT", "123456789")(fakeRequest))
           result.header.status shouldBe Status.NO_CONTENT
-          logs.exists(_.getMessage == "[APIController][returnResponseForAPI] - User had no penalty data, returning 204 to caller") shouldBe true
+          logs.exists(_.getMessage == "[RegimeAPIController][returnResponseForAPI] - User had no penalty data, returning 204 to caller") shouldBe true
         }
       }
 
@@ -335,7 +337,7 @@ class RegimeAPIControllerSpec extends SpecBase with FeatureSwitching with LogCap
     s"return BAD_REQUEST (${Status.BAD_REQUEST}) when the user supplies an invalid VRN" in new Setup(isFSEnabled = true) {
       val result = controller.getSummaryData("VAT", "1234567891234567890")(fakeRequest)
       status(result) shouldBe Status.BAD_REQUEST
-      contentAsString(result) shouldBe "Invalid VAT VRN: 1234567891234567890"
+      contentAsString(result) shouldBe "Invalid VATC VRN: 1234567891234567890"
     }
 
     s"return ISE (${Status.INTERNAL_SERVER_ERROR}) when the call returns malformed data" in new Setup(isFSEnabled = true) {

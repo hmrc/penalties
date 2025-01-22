@@ -17,19 +17,18 @@
 package controllers
 
 import java.time.LocalDate
-
 import base.{LogCapturing, SpecBase}
 import config.featureSwitches.FeatureSwitching
 import connectors.getFinancialDetails.GetFinancialDetailsConnector
 import connectors.getPenaltyDetails.GetPenaltyDetailsConnector
 import connectors.parsers.getFinancialDetails.GetFinancialDetailsParser.{GetFinancialDetailsFailureResponse, GetFinancialDetailsMalformed, GetFinancialDetailsNoContent, GetFinancialDetailsSuccessResponse}
 import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser._
+import controllers.auth.AuthAction
 import models.getFinancialDetails.{DocumentDetails, FinancialDetails, LineItemDetails, MainTransactionEnum}
 import models.getPenaltyDetails.GetPenaltyDetails
 import models.getPenaltyDetails.latePayment._
 import models.getPenaltyDetails.lateSubmission.{LSPSummary, LateSubmissionPenalty}
-import org.mockito.ArgumentMatchers
-._
+import org.mockito.ArgumentMatchers._
 import org.mockito.Mockito._
 import play.api.Configuration
 import play.api.http.Status
@@ -59,6 +58,8 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
   implicit val config: Configuration = appConfig.config
   implicit val hc: HeaderCarrier = HeaderCarrier()
   val filterService: FilterService = injector.instanceOf(classOf[FilterService])
+  val authAction: AuthAction = mock(classOf[AuthAction])
+
 
   class Setup(isFSEnabled: Boolean = false) {
     reset(mockAppealsService)
@@ -75,7 +76,8 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
       mockGetPenaltyDetailsConnector,
       dateHelper,
       controllerComponents,
-      filterService
+      filterService,
+      authAction
     )
   }
 

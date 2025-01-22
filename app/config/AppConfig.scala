@@ -85,9 +85,18 @@ class AppConfig @Inject()(val config: Configuration, servicesConfig: ServicesCon
     else etmpBase + "/penalty/details/VATC/VRN/"
   }
 
+  def getPenaltyDetailsUrlCorrect: String = {
+    if (!isEnabled(CallAPI1812ETMP)) stubBase + "/penalties-stub/penalty/details/"
+    else etmpBase + "/penalty/details/"
+  }
   def getFinancialDetailsUrl(vrn: String): String = {
     if (!isEnabled(CallAPI1811ETMP)) stubBase + s"/penalties-stub/penalty/financial-data/VRN/$vrn/VATC"
     else etmpBase + s"/penalty/financial-data/VRN/$vrn/VATC"
+  }
+
+  def getFinancialDetailsItsaUrl(nino: String): String = {
+    if (!isEnabled(CallAPI1811ETMP)) stubBase + s"/penalties-stub/penalty/financial-data/NINO/$nino/ITSA"
+    else etmpBase + s"/penalty/financial-data/NINO/$nino/ITSA"
   }
 
   def getAppealSubmissionURL(enrolmentKey: String, isLPP: Boolean, penaltyNumber: String): String = {
@@ -132,7 +141,7 @@ class AppConfig @Inject()(val config: Configuration, servicesConfig: ServicesCon
 
   def getPenaltyDetailsVatUrl: String = {
     if (!isEnabled(CallAPI1812ETMP)) stubBase + "/penalties-stub/penalty/details/"
-    else etmpBase + "/penalty/details/VATC/VRN/"
+    else etmpBase + "/penalty/details/"
   }
 
   def getFinancialDetailsVatUrl(vrn: String): String = {
@@ -140,10 +149,10 @@ class AppConfig @Inject()(val config: Configuration, servicesConfig: ServicesCon
     else etmpBase + s"/penalty/financial-data/VRN/$vrn/VATC"
   }
   def getVatPenaltyDetailsUrl: String = getPenaltyDetailsVatUrl + "VATC/VRN/"
-  def getItsaPenaltyDetailsUrl: String = getPenaltyDetailsUrl + "ITSA/NINO/"
+  def getItsaPenaltyDetailsUrl: String = getPenaltyDetailsVatUrl + "ITSA/NINO/"
   //def getCtPenaltyDetailsUrl: String = getPenaltyDetailsUrl + "CT/UTR/"
   def getVatFinancialDetailsUrl(vrn: String): String = getFinancialDetailsVatUrl(vrn)
-  def getItsaFinancialDetailsUrl(utr: String): String = getFinancialDetailsUrl(utr)+ s"NINO/$utr/ITSA"
+  def getItsaFinancialDetailsUrl(utr: String): String = getFinancialDetailsItsaUrl(utr)
   //def getCtFinancialDetailsUrl(utr: String): String = getFinancialDetailsUrl(_) + s"UTR/$utr/CT"
   private def getComplianceDataUrl: String = {
     if (isEnabled(CallDES)) {

@@ -1317,7 +1317,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
           logs => {
             val result: Result = await(controller.submitAppeal(EnrolmentKey("HMRC-MTD-VAT~VRN~123456789"), isLPP = false, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = true)(fakeRequest.withJsonBody(appealsJson)))
             result.header.status shouldBe MULTI_STATUS
-            logs.exists(_.getMessage == s"[AppealsController][submitAppeal] Unable to store file notification for user with enrolment: HMRC-MTD-VAT~VRN~123456789 penalty 123456789 (correlation ID: $correlationId) - An unknown exception occurred when attempting to store file notifications, with error: failed") shouldBe true
+            logs.exists(_.getMessage == s"[RegimeAppealsController][submitAppeal] Unable to store file notification for user with enrolment: HMRC-MTD-VAT~VRN~123456789 penalty 123456789 (correlation ID: $correlationId) - An unknown exception occurred when attempting to store file notifications, with error: failed") shouldBe true
             contentAsJson(Future(result)) shouldBe expectedJsonResponse
             eventually {
               verify(mockAuditService, times(1)).audit(argumentCaptorForAuditModel.capture())(any(), any(), any())

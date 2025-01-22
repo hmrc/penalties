@@ -50,7 +50,7 @@ class PenaltyDetailsConnector @Inject()(httpClient: HttpClient,
   }
 
   def getPenaltyDetails(enrolmentKey: EnrolmentKey)(implicit hc: HeaderCarrier): Future[GetPenaltyDetailsResponse] = {
-    val url: String = appConfig.getRegimePenaltyDetailsUrl(enrolmentKey);
+    val url: String = getPenaltyDetailsUrl(enrolmentKey);
     logger.debug(s"[PenaltyDetailsConnector][getPenaltyDetails][appConfig.getRegimePenaltyDetailsUrl(enrolmentKey)]- Calling GET $url \nHeaders: $headers")
     httpClient.GET[GetPenaltyDetailsResponse](url, Seq.empty[(String, String)], headers).recover {
       case e: UpstreamErrorResponse => {

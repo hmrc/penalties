@@ -23,6 +23,7 @@ import connectors.parsers.getFinancialDetails.FinancialDetailsParser
 import connectors.parsers.getFinancialDetails.FinancialDetailsParser.GetFinancialDetailsSuccessResponse
 import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser
 import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser.GetPenaltyDetailsSuccessResponse
+import controllers.auth.AuthAction
 import models.EnrolmentKey
 import models.api.APIModel
 import models.auditing.{ThirdParty1812APIRetrievalRegimeAuditModel, ThirdPartyAPI1811RetrievalRegimeAuditModel, UserHasPenaltyRegimeAuditModel}
@@ -50,7 +51,8 @@ class RegimeAPIController @Inject()(auditService: AuditService,
                                     getPenaltyDetailsConnector: PenaltyDetailsConnector,
                                     dateHelper: DateHelper,
                                     cc: ControllerComponents,
-                                    filterService: RegimeFilterService)(implicit ec: ExecutionContext, val config: Configuration) extends BackendController(cc) with FeatureSwitching {
+                                    filterService: RegimeFilterService,
+                                    authAction: AuthAction)(implicit ec: ExecutionContext, val config: Configuration) extends BackendController(cc) with FeatureSwitching {
 
   def getSummaryData(regime: String, id: String): Action[AnyContent] = Action.async {
     implicit request => {

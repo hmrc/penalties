@@ -45,7 +45,7 @@ object EnrolmentKey {
   def apply(key: String): EnrolmentKey = key match {
     case enrolmentKeyRegex("HMRC-MTD-VAT", "VRN", key) => new EnrolmentKey(VAT, VRN, key)
     //case enrolmentKeyRegex("IR-CT", "UTR", key) => new EnrolmentKey(CT, UTR, key)
-    case enrolmentKeyRegex("HMRC-MTD-IT", "MTDITID", key) => new EnrolmentKey(ITSA, NINO, key)
+    case enrolmentKeyRegex("HMRC-PT", "NINO", key) => new EnrolmentKey(ITSA, NINO, key)
     case _ => throw new Exception(s"Invalid enrolment key: $key")
   }
 

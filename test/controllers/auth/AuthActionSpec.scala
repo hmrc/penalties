@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,84 +16,73 @@
 
 package controllers.auth
 
-import org.scalatest.matchers.should
-import org.scalatest.wordspec.AnyWordSpec
+import org.apache.pekko.util.Timeout
+import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito.when
+import org.scalatestplus.mockito.MockitoSugar
+import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
-import play.api.mvc.{Action, AnyContent}
+import play.api.http.Status.{OK, UNAUTHORIZED}
+import play.api.inject.bind
+import play.api.inject.guice.GuiceApplicationBuilder
+import play.api.mvc.{Action, AnyContent, InjectedController}
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
-import uk.gov.hmrc.auth.core.AuthConnector
-import connectors.mock.AuthMock
-import controllers.auth.AuthAction
-import utils.SessionKeys
+import play.api.test.Helpers.status
+import play.api.{Application, Configuration}
+import uk.gov.hmrc.auth.core.authorise.Predicate
+import uk.gov.hmrc.auth.core.retrieve.Retrieval
+import uk.gov.hmrc.auth.core.{AuthConnector, MissingBearerToken}
+import uk.gov.hmrc.http.HeaderCarrier
 
+import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
+import scala.language.postfixOps
 
-class AuthActionSpec extends AnyWordSpec with should.Matchers with GuiceOneAppPerSuite with AuthMock {
+class AuthActionSpec extends PlaySpec with GuiceOneAppPerSuite with MockitoSugar {
 
+  class Harness(authAction: AuthAction) extends InjectedController {
 
-  object TestController extends AuthAction(mockAuthConnector, stubControllerComponents())(ExecutionContext.global) {
-
-    override val authConnector: AuthConnector = mockAuthConnector
-
-    val vrn: String = "123456789"
-    val nino: String = "AB123456C"
-
-    def callAuthenticatedVrn: Action[AnyContent] = authenticate(vrn) {
-      _ =>
-        _ =>
-          Future.successful(Ok("ALL GOOD"))
-    }
-
-    def callAuthenticatedNino: Action[AnyContent] = authenticate(nino) {
-      _ =>
-        _ =>
-          Future.successful(Ok("ALL GOOD"))
-    }
-
-  }
-
-  "isAuthenticated" should {
-    "return 200 if user is Authenticated and has individual affinity" in {
-      mockAuthenticatedIndividual()
-
-      val result = TestController.callAuthenticatedNino(FakeRequest())
-      status(result) shouldBe OK
-      contentAsString(result) shouldBe "ALL GOOD"
-    }
-
-    "return 200 if user is Authenticated and has agent affinity" in {
-      mockAuthenticatedAgent()
-      mockAuthenticatedAgentEnrolment("1234567890")
-
-      val result = TestController.callAuthenticatedNino(FakeRequest().withSession(SessionKeys.agentSessionId("AB123456C") -> "1234567890"))
-      status(result) shouldBe OK
-      contentAsString(result) shouldBe "ALL GOOD"
-    }
-
-    "return 303 to GG login if user is Authenticated and has no affinity group" in {
-      mockAuthenticatedWithNoAffinityGroup()
-
-      val result = TestController.callAuthenticatedNino(FakeRequest())
-      status(result) shouldBe SEE_OTHER
-      redirectLocation(result) shouldBe Some("http://localhost:9949/auth-login-stub/gg-sign-in")
-    }
-
-    "return 303 to GG login if user has No Active Session" in {
-      mockAuthenticatedNoActiveSession()
-
-      val result = TestController.callAuthenticatedNino(FakeRequest())
-      status(result) shouldBe SEE_OTHER
-      redirectLocation(result) shouldBe Some("http://localhost:9949/auth-login-stub/gg-sign-in")
-    }
-
-    "return 303 to GG login if user is Not Authenticated" in {
-      mockAuthenticatedFailure()
-
-      val result = TestController.callAuthenticatedNino(FakeRequest())
-      status(result) shouldBe SEE_OTHER
-      redirectLocation(result) shouldBe Some("http://localhost:9949/auth-login-stub/gg-sign-in")
+    def onPageLoad(): Action[AnyContent] = authAction { _ =>
+      Ok
     }
   }
 
+  val mockAuthConnector: AuthConnector = mock[AuthConnector]
+
+  implicit val timeout: Timeout = 5 seconds
+
+  val application: Application = new GuiceApplicationBuilder()
+    .configure(Configuration("metrics.enabled" -> "false"))
+    .overrides(
+      bind[AuthConnector].toInstance(mockAuthConnector)
+    )
+    .build()
+
+  "Auth Action" when {
+    "the user is not logged in" must {
+      "must return unauthorised" in {
+        when(mockAuthConnector.authorise(any[Predicate](), any[Retrieval[_]]())(any[HeaderCarrier](), any[ExecutionContext]()))
+          .thenReturn(Future.failed(new MissingBearerToken))
+
+        val authAction = application.injector.instanceOf[AuthAction]
+        val controller = new Harness(authAction)
+        val result     = controller.onPageLoad()(FakeRequest("", ""))
+        status(result) mustBe UNAUTHORIZED
+
+      }
+    }
+
+    "the user is logged in" must {
+      "must return the request" in {
+        when(mockAuthConnector.authorise[Unit](any[Predicate](), any[Retrieval[Unit]]())(any[HeaderCarrier](), any[ExecutionContext]()))
+          .thenReturn(Future.successful(()))
+
+        val authAction = application.injector.instanceOf[AuthAction]
+        val controller = new Harness(authAction)
+
+        val result = controller.onPageLoad()(FakeRequest("", ""))
+        status(result) mustBe OK
+      }
+    }
+  }
 }

@@ -16,7 +16,7 @@
 
 package controllers
 
-import com.github.tomakehurst.wiremock.client.WireMock.{postRequestedFor, urlEqualTo}
+import  com.github.tomakehurst.wiremock.client.WireMock.{postRequestedFor, urlEqualTo}
 import config.featureSwitches.{CallAPI1811ETMP, CallAPI1812ETMP, FeatureSwitching}
 import models.EnrolmentKey
 import models.TaxRegime.{ITSA, VAT}

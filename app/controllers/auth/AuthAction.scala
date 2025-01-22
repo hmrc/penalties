@@ -16,69 +16,34 @@
 
 package controllers.auth
 
-import com.google.inject.Inject
-import models.{CurrentUser, EnrolmentKey}
-import utils.SessionKeys._
+import com.google.inject.ImplementedBy
+import play.api.http.Status.UNAUTHORIZED
+import play.api.mvc.Results.Status
 import play.api.mvc._
-import uk.gov.hmrc.auth.core._
-import uk.gov.hmrc.auth.core.retrieve.~
-import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals.{affinityGroup, allEnrolments}
-import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
-import utils.EnrolmentUtil
-import utils.EnrolmentUtil.{AuthReferenceExtractor, MtdVatEnrolmentKey, delegatedAuthRule, itsaEnrolmentKey, itsaRegex, vatRegex}
+import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisedFunctions, NoActiveSession}
+import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.play.http.HeaderCarrierConverter
 import utils.Logger.logger
 
+import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class AuthAction @Inject()(val authConnector: AuthConnector, cc: ControllerComponents)
-                          (implicit ec: ExecutionContext) extends BackendController(cc) with AuthorisedFunctions {
+class AuthActionImpl @Inject() (override val authConnector: AuthConnector, val parser: BodyParsers.Default)(implicit val executionContext: ExecutionContext)
+  extends AuthAction
+    with AuthorisedFunctions {
 
+    override def invokeBlock[A](request: Request[A], block: Request[A] => Future[Result]): Future[Result] = {
 
+    implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequest(request)
 
-  def authenticate(identifier: String)(f: Request[AnyContent] => CurrentUser => Future[Result]): Action[AnyContent] = Action.async{
-    implicit request =>
-      authorised().retrieve(affinityGroup and allEnrolments) {
-        case Some(AffinityGroup.Agent) ~ _ =>
-          logger.debug("Auth check - Authorising user as Agent")
-          request.session.get(agentSessionId(identifier)) match {
-            case Some(id) =>
-              logger.debug("hello")
-              authorised(delegatedAuthRule(identifier)).retrieve(allEnrolments) {
-                enrolments =>
-                  enrolments.agentReferenceNumber match {
-                    case Some(arn) =>
-                      f(request)(CurrentUser(id, Some(arn)))
-                    case _ =>
-                      logger.error("Auth check - Agent does not have HMRC-AS-AGENT enrolment")
-                      throw InsufficientEnrolments("User does not have Agent Enrolment")
-                  }
-              }
-          }
-        case Some(_) ~ enrolments =>
-          logger.debug("Auth check - Authorising user as Individual")
-          enrolments.identifierId(identifier) match {
-            case Some(identifierId) =>
-              f(request)(CurrentUser(identifierId))
-            case _ =>
-              if (vatRegex.matches(identifier)) {
-                logger.error(s"Auth check - User does not have an $MtdVatEnrolmentKey enrolment")
-                throw InsufficientEnrolments(s"User does not have a $MtdVatEnrolmentKey Enrolment")
-
-              } else {
-                logger.error(s"Auth check - User does not have an $itsaEnrolmentKey enrolment")
-                throw InsufficientEnrolments(s"User does not have a $itsaEnrolmentKey Enrolment")
-              }
-          }
-        case _ =>
-          logger.error("Auth check - Invalid affinity group")
-          throw UnsupportedAffinityGroup("Invalid Affinity Group")
-      }.recover {
-        case _: NoActiveSession =>
-          logger.error(s"Auth check - No active session. Redirecting to http://localhost:9949/auth-login-stub/gg-sign-in")
-          Redirect("http://localhost:9949/auth-login-stub/gg-sign-in")
-        case _: AuthorisationException =>
-          logger.error(s"Auth check - User not authorised. Redirecting to http://localhost:9949/auth-login-stub/gg-sign-in")
-          Redirect("http://localhost:9949/auth-login-stub/gg-sign-in")
-      }
+    authorised() {
+      block(request)
+    } recover { case _: NoActiveSession =>
+      Status(UNAUTHORIZED)
+    }
   }
 }
+
+@ImplementedBy(classOf[AuthActionImpl])
+trait AuthAction extends ActionBuilder[Request, AnyContent] with ActionFunction[Request, Request]
+

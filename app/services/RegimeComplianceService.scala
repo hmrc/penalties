@@ -17,7 +17,7 @@
 package services
 
 import config.featureSwitches.FeatureSwitching
-import connectors.{ComplianceConnector, RegimeComplianceConnector}
+import connectors. RegimeComplianceConnector
 import connectors.parsers.ComplianceParser
 import models.EnrolmentKey
 import models.compliance.CompliancePayload

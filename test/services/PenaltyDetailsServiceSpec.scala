@@ -194,7 +194,7 @@ class PenaltyDetailsServiceSpec extends SpecBase with LogCapturing with LPPDetai
           val result: GetPenaltyDetailsResponse = await(service.getDataFromPenaltyService(vrn123456789))
           result.isLeft shouldBe true
           result.left.getOrElse(GetPenaltyDetailsFailureResponse(INTERNAL_SERVER_ERROR)) shouldBe GetPenaltyDetailsMalformed
-          logs.exists(_.getMessage.contains("[GetPenaltyDetailsService][getDataFromPenaltyService][VAT] - Failed to parse HTTP response into model for VRN: 123456789")) shouldBe true
+          logs.exists(_.getMessage.contains("[PenaltyDetailsService][getDataFromPenaltyService][VATC] - Failed to parse HTTP response into model for VRN: 123456789")) shouldBe true
         }
       }
     }
@@ -207,7 +207,7 @@ class PenaltyDetailsServiceSpec extends SpecBase with LogCapturing with LPPDetai
           val result: GetPenaltyDetailsResponse = await(service.getDataFromPenaltyService(vrn123456789))
           result.isLeft shouldBe true
           result.left.getOrElse(GetPenaltyDetailsFailureResponse(INTERNAL_SERVER_ERROR)) shouldBe GetPenaltyDetailsNoContent
-          logs.exists(_.getMessage.contains("[GetPenaltyDetailsService][getDataFromPenaltyService][VAT] - Got a 404 response and no data was found for GetPenaltyDetails call")) shouldBe true
+          logs.exists(_.getMessage.contains("[PenaltyDetailsService][getDataFromPenaltyService][VATC] - Got a 404 response and no data was found for GetPenaltyDetails call")) shouldBe true
         }
       }
     }
@@ -220,7 +220,7 @@ class PenaltyDetailsServiceSpec extends SpecBase with LogCapturing with LPPDetai
           val result: GetPenaltyDetailsResponse = await(service.getDataFromPenaltyService(vrn123456789))
           result.isLeft shouldBe true
           result.left.getOrElse(GetPenaltyDetailsFailureResponse(INTERNAL_SERVER_ERROR)) shouldBe GetPenaltyDetailsFailureResponse(IM_A_TEAPOT)
-          logs.exists(_.getMessage.contains("[GetPenaltyDetailsService][getDataFromPenaltyService][VAT] - Unknown status returned from connector for VRN: 123456789")) shouldBe true
+          logs.exists(_.getMessage.contains("[PenaltyDetailsService][getDataFromPenaltyService][VATC] - Unknown status returned from connector for VRN: 123456789")) shouldBe true
         }
       }
     }

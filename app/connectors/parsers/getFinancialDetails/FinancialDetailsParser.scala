@@ -57,7 +57,7 @@ object FinancialDetailsParser {
         case NOT_FOUND if response.body.nonEmpty => {
           Try(handleNotFoundStatusBody(response.json)).fold(parseError => {
             logger.error(s"[FinancialDetailsParser][GetFinancialDetailsReads][read] Could not parse 404 body with error ${parseError.getMessage}")
-            PagerDutyHelper.log("GetPenaltyDetailsReads", INVALID_JSON_RECEIVED_FROM_1811_API)
+            PagerDutyHelper.log(" GetPenaltyDetailsReads", INVALID_JSON_RECEIVED_FROM_1811_API)
             Left(GetFinancialDetailsFailureResponse(NOT_FOUND))
           }, identity)
         }

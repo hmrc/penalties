@@ -23,6 +23,8 @@ import connectors.parsers.getFinancialDetails.GetFinancialDetailsParser
 import connectors.parsers.getFinancialDetails.GetFinancialDetailsParser.GetFinancialDetailsSuccessResponse
 import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser
 import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser.GetPenaltyDetailsSuccessResponse
+import controllers.auth.AuthAction
+
 import javax.inject.Inject
 import models.api.APIModel
 import models.auditing.{ThirdParty1812APIRetrievalAuditModel, ThirdPartyAPI1811RetrievalAuditModel, UserHasPenaltyAuditModel}
@@ -50,7 +52,8 @@ class APIController @Inject()(auditService: AuditService,
                               getPenaltyDetailsConnector: GetPenaltyDetailsConnector,
                               dateHelper: DateHelper,
                               cc: ControllerComponents,
-                              filterService: FilterService)(implicit ec: ExecutionContext, val config: Configuration) extends BackendController(cc) with FeatureSwitching {
+                              filterService: FilterService,
+                              authAction: AuthAction)(implicit ec: ExecutionContext, val config: Configuration) extends BackendController(cc) with FeatureSwitching {
 
   private val vrnRegex: Regex = "^[0-9]{1,9}$".r
 
