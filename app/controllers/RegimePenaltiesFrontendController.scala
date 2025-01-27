@@ -17,6 +17,7 @@
 package controllers
 
 import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser.{GetPenaltyDetailsSuccessResponse, _}
+import controllers.auth.AuthAction
 import models.EnrolmentKey
 import play.api.mvc._
 import services.{PenaltyDetailsService, RegimePenaltiesFrontendService}
@@ -31,7 +32,8 @@ import scala.concurrent.{ExecutionContext, Future}
 class RegimePenaltiesFrontendController @Inject()(
                                              getPenaltyDetailsService: PenaltyDetailsService,
                                              penaltiesFrontendService: RegimePenaltiesFrontendService,
-                                             cc: ControllerComponents
+                                             cc: ControllerComponents,
+                                             authAction: AuthAction
                                            )(implicit ec: ExecutionContext) extends BackendController(cc) {
 
   def getPenaltiesData(enrolmentKey: EnrolmentKey, arn: Option[String] = None): Action[AnyContent] = Action.async {

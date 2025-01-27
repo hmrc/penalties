@@ -18,6 +18,7 @@ package controllers
 
 import base.{LogCapturing, SpecBase}
 import config.featureSwitches.FeatureSwitching
+import connectors.AuthMock
 import connectors.getFinancialDetails.FinancialDetailsConnector
 import connectors.getPenaltyDetails.PenaltyDetailsConnector
 import connectors.parsers.getFinancialDetails.FinancialDetailsParser.{GetFinancialDetailsFailureResponse, GetFinancialDetailsMalformed, GetFinancialDetailsNoContent, GetFinancialDetailsSuccessResponse}
@@ -37,7 +38,7 @@ import play.api.test.Helpers._
 import services._
 import services.auditing.AuditService
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
-import utils.DateHelper
+import utils.{AuthActionMock, DateHelper}
 import utils.Logger.logger
 import utils.PagerDutyHelper.PagerDutyKeys
 
@@ -45,20 +46,20 @@ import java.time.LocalDate
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class RegimeAPIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing {
-  val mockAppealsService: RegimeAppealService = mock(classOf[RegimeAppealService])
-  val mockAuditService: AuditService = mock(classOf[AuditService])
+class RegimeAPIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing with AuthMock{
+  val mockAppealsService: RegimeAppealService = mock[RegimeAppealService]
+  val mockAuditService: AuditService = mock[AuditService]
   val dateHelper: DateHelper = injector.instanceOf(classOf[DateHelper])
-  val mockAPIService: APIService = mock(classOf[APIService])
-  val mockGetPenaltyDetailsService: PenaltyDetailsService = mock(classOf[PenaltyDetailsService])
-  val mockGetFinancialDetailsService: FinancialDetailsService = mock(classOf[FinancialDetailsService])
-  val mockGetFinancialDetailsConnector: FinancialDetailsConnector = mock(classOf[FinancialDetailsConnector])
-  val mockGetPenaltyDetailsConnector: PenaltyDetailsConnector = mock(classOf[PenaltyDetailsConnector])
-  val controllerComponents: ControllerComponents = injector.instanceOf(classOf[ControllerComponents])
+  val mockAPIService: APIService = mock[APIService]
+  val mockGetPenaltyDetailsService: PenaltyDetailsService = mock[PenaltyDetailsService]
+  val mockGetFinancialDetailsService: FinancialDetailsService = mock[FinancialDetailsService]
+  val mockGetFinancialDetailsConnector: FinancialDetailsConnector = mock[FinancialDetailsConnector]
+  val mockGetPenaltyDetailsConnector: PenaltyDetailsConnector = mock[PenaltyDetailsConnector]
+  val controllerComponents: ControllerComponents = injector.instanceOf[ControllerComponents]
   implicit val config: Configuration = appConfig.config
   implicit val hc: HeaderCarrier = HeaderCarrier()
   val filterService: RegimeFilterService = injector.instanceOf(classOf[RegimeFilterService])
-  val mockAuthAction: AuthAction = injector.instanceOf(classOf[AuthAction])
+  val mockAuthAction: AuthAction = injector.instanceOf(classOf[AuthActionMock])
 
   class Setup(isFSEnabled: Boolean = false) {
     reset(mockAppealsService)
@@ -806,6 +807,7 @@ class RegimeAPIControllerSpec extends SpecBase with FeatureSwitching with LogCap
           |""".stripMargin)
       when(mockGetPenaltyDetailsConnector.getPenaltyDetailsForAPI(any(), any())(any()))
         .thenReturn(Future.successful(HttpResponse.apply(OK, sampleAPI1812Response.toString)))
+
       val result = controller.getPenaltyDetails(regime = "VAT", idType = "VRN", id = "123456789", dateLimit = Some("02"))(fakeRequest)
       status(result) shouldBe Status.OK
       contentAsJson(result) shouldBe sampleAPI1812Response
@@ -813,6 +815,7 @@ class RegimeAPIControllerSpec extends SpecBase with FeatureSwitching with LogCap
     }
 
     s"return NOT_FOUND (${Status.NOT_FOUND}) when the call returns no data (auditing the response)" in new Setup(true) {
+
       when(mockGetPenaltyDetailsConnector.getPenaltyDetailsForAPI(any(), any())(any()))
         .thenReturn(Future.successful(HttpResponse.apply(NOT_FOUND, "NOT_FOUND")))
 

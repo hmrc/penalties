@@ -21,6 +21,7 @@ import config.featureSwitches.FeatureSwitching
 import connectors.FileNotificationOrchestratorConnector
 import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser
 import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser.GetPenaltyDetailsSuccessResponse
+import controllers.auth.AuthAction
 import models.EnrolmentKey
 import models.appeals.AppealTypeEnum._
 import models.appeals._
@@ -34,7 +35,7 @@ import play.api.Configuration
 import play.api.libs.json.Json
 import play.api.mvc._
 import services.auditing.AuditService
-import services.{RegimeAppealService,  PenaltyDetailsService}
+import services.{PenaltyDetailsService, RegimeAppealService}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import utils.Logger.logger
@@ -50,7 +51,8 @@ class RegimeAppealsController @Inject()(val appConfig: AppConfig,
                                   getPenaltyDetailsService: PenaltyDetailsService,
                                   fileNotificationOrchestratorConnector: FileNotificationOrchestratorConnector,
                                   auditService: AuditService,
-                                  cc: ControllerComponents)(implicit ec: ExecutionContext, val config: Configuration)
+                                  cc: ControllerComponents,
+                                  authAction: AuthAction)(implicit ec: ExecutionContext, val config: Configuration)
   extends BackendController(cc) with FeatureSwitching {
 
   private def getAppealDataForPenalty(penaltyId: String, enrolmentKey: EnrolmentKey,

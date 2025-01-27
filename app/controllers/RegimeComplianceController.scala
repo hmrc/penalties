@@ -16,9 +16,10 @@
 
 package controllers
 
+import controllers.auth.AuthAction
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
-import services.{RegimeComplianceService}
+import services.RegimeComplianceService
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import utils.Logger.logger
 
@@ -26,7 +27,8 @@ import javax.inject.Inject
 import scala.concurrent.ExecutionContext
 
 class RegimeComplianceController @Inject()(complianceService: RegimeComplianceService,
-                                     cc: ControllerComponents)(implicit ec: ExecutionContext) extends BackendController(cc) {
+                                     cc: ControllerComponents,
+                                         authAction: AuthAction)(implicit ec: ExecutionContext) extends BackendController(cc) {
 
   def redirectLegacyGetComplianceData(vrn: String, fromDate: String, toDate: String): Action[AnyContent] = Action {
     Redirect(routes.RegimeComplianceController.getComplianceData("VAT", "VRN", vrn, fromDate, toDate))

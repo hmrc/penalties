@@ -17,23 +17,26 @@
 package controllers
 
 import base.SpecBase
+import controllers.auth.AuthAction
 import models.compliance._
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
 import play.api.libs.json.Json
 import play.api.mvc.Result
 import play.api.test.Helpers._
-import services.{ComplianceService, RegimeComplianceService}
+import services.RegimeComplianceService
+import utils.AuthActionMock
 
 import java.time.LocalDate
 import scala.concurrent.{ExecutionContext, Future}
 
 class RegimeComplianceControllerSpec extends SpecBase {
   val mockService: RegimeComplianceService = mock(classOf[RegimeComplianceService])
+  val mockAuthAction: AuthAction = injector.instanceOf(classOf[AuthActionMock])
   implicit val ec: ExecutionContext = ExecutionContext.Implicits.global
 
   class Setup {
-    val controller: RegimeComplianceController = new RegimeComplianceController(mockService, stubControllerComponents())
+    val controller: RegimeComplianceController = new RegimeComplianceController(mockService, stubControllerComponents(), mockAuthAction)
 
     reset(mockService)
   }

@@ -18,19 +18,20 @@ package controllers
 
 import base.{LPPDetailsBase, LSPDetailsBase, LogCapturing, SpecBase}
 import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser.{GetPenaltyDetailsFailureResponse, GetPenaltyDetailsMalformed, GetPenaltyDetailsSuccessResponse}
+import controllers.auth.AuthAction
 import models.EnrolmentKey
 import models.TaxRegime.VAT
 import models.getFinancialDetails.MainTransactionEnum.{VATReturnFirstLPP, VATReturnSecondLPP}
 import models.getPenaltyDetails.latePayment._
 import models.getPenaltyDetails.{GetPenaltyDetails, Totalisations}
 import org.mockito.ArgumentMatchers
-
 import org.mockito.Mockito._
 import play.api.http.Status
 import play.api.libs.json.Json
 import play.api.mvc.Results.{InternalServerError, Ok}
 import play.api.test.Helpers._
-import services.{GetPenaltyDetailsService, PenaltiesFrontendService, PenaltyDetailsService, RegimePenaltiesFrontendService}
+import services.{PenaltyDetailsService, RegimePenaltiesFrontendService}
+import utils.AuthActionMock
 import utils.Logger.logger
 import utils.PagerDutyHelper.PagerDutyKeys
 
@@ -41,6 +42,7 @@ import scala.concurrent.Future
 class RegimePenaltiesFrontendControllerSpec extends SpecBase with LogCapturing with LPPDetailsBase with LSPDetailsBase {
   val mockGetPenaltyDetailsService: PenaltyDetailsService = mock(classOf[PenaltyDetailsService])
   val mockPenaltiesFrontendService: RegimePenaltiesFrontendService = mock(classOf[RegimePenaltiesFrontendService])
+  val mockAuthAction: AuthAction = injector.instanceOf(classOf[AuthActionMock])
 
   val vrn123456789: EnrolmentKey = EnrolmentKey(VAT, "123456789")
 
@@ -50,7 +52,8 @@ class RegimePenaltiesFrontendControllerSpec extends SpecBase with LogCapturing w
     val controller: RegimePenaltiesFrontendController = new RegimePenaltiesFrontendController(
       mockGetPenaltyDetailsService,
       mockPenaltiesFrontendService,
-      stubControllerComponents()
+      stubControllerComponents(),
+      mockAuthAction
     )
   }
 

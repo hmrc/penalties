@@ -22,6 +22,7 @@ import config.featureSwitches.FeatureSwitching
 import connectors.FileNotificationOrchestratorConnector
 import connectors.parsers.AppealsParser.UnexpectedFailure
 import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser.{GetPenaltyDetailsFailureResponse, GetPenaltyDetailsMalformed, GetPenaltyDetailsSuccessResponse}
+import controllers.auth.AuthAction
 import models.EnrolmentKey
 import models.TaxRegime.VAT
 import models.appeals.AppealTypeEnum.{Additional, Late_Payment, Late_Submission}
@@ -33,7 +34,6 @@ import models.getPenaltyDetails.latePayment._
 import models.getPenaltyDetails.lateSubmission._
 import models.notification._
 import org.mockito.ArgumentMatchers.any
-
 import org.mockito.Mockito._
 import org.mockito.{ArgumentCaptor, ArgumentMatchers}
 import org.scalatest.concurrent.Eventually.eventually
@@ -43,8 +43,9 @@ import play.api.libs.json.{JsObject, JsValue, Json}
 import play.api.mvc.Result
 import play.api.test.Helpers._
 import services.auditing.AuditService
-import services.{AppealService, GetPenaltyDetailsService, PenaltyDetailsService, RegimeAppealService}
+import services.{PenaltyDetailsService, RegimeAppealService}
 import uk.gov.hmrc.http.HttpResponse
+import utils.AuthActionMock
 import utils.Logger.logger
 import utils.PagerDutyHelper.PagerDutyKeys
 
@@ -57,6 +58,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
   val mockAppConfig: AppConfig = mock(classOf[AppConfig])
   val mockAuditService: AuditService = mock(classOf[AuditService])
   val mockGetPenaltyDetailsService: PenaltyDetailsService = mock(classOf[PenaltyDetailsService])
+  val mockAuthAction: AuthAction = injector.instanceOf(classOf[AuthActionMock])
   val correlationId = "id-1234567890"
   val mockFileNotificationConnector: FileNotificationOrchestratorConnector = mock(classOf[FileNotificationOrchestratorConnector])
   implicit val config: Configuration = mockAppConfig.config
@@ -81,7 +83,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
     reset(mockFileNotificationConnector)
     reset(mockAuditService)
     val controller = new RegimeAppealsController(if (withRealAppConfig) appConfig
-    else mockAppConfig, mockAppealsService, mockGetPenaltyDetailsService, mockFileNotificationConnector, mockAuditService, stubControllerComponents())
+    else mockAppConfig, mockAppealsService, mockGetPenaltyDetailsService, mockFileNotificationConnector, mockAuditService, stubControllerComponents(), mockAuthAction)
   }
 
   "getAppealsDataForLateSubmissionPenalty" should {
