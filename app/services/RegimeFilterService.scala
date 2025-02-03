@@ -34,20 +34,20 @@ class RegimeFilterService @Inject()()(implicit appConfig: AppConfig) {
     Try(Json.parse(body)).getOrElse(JsString(body))
   }
 
-  def filterEstimatedLPP1DuringPeriodOfFamiliarisation(penaltiesDetails: GetPenaltyDetails, callingClass: String, function: String, enrolmentKey: EnrolmentKey): GetPenaltyDetails = {
+  def filterEstimatedLPP1DuringPeriodOfFamiliarisation(penaltiesDetails: GetPenaltyDetails)(implicit loggingContext: LoggingContext): GetPenaltyDetails = {
     if (penaltiesDetails.latePaymentPenalty.nonEmpty) {
       val filteredLPPs: Option[Seq[LPPDetails]] = findEstimatedLPP1DuringPeriodOfFamiliarisation(penaltiesDetails)
       val numberOfFilteredLPPs = countNumberOfFilteredLPPs(filteredLPPs, penaltiesDetails)
       if (filteredLPPs.nonEmpty && filteredLPPs.get.nonEmpty && numberOfFilteredLPPs >= 0) {
-        logger.info(s"[RegimeFilterService][filterEstimatedLPP1DuringPeriodOfFamiliarisation] Filtering for [$callingClass][$function] -" +
-          s" Filtered ${numberOfFilteredLPPs} LPP1(s) from payload for ${enrolmentKey.keyType}: ${enrolmentKey.key}")
+        logger.info(s"[RegimeFilterService][filterEstimatedLPP1DuringPeriodOfFamiliarisation] Filtering for [${loggingContext.callingClass}][${loggingContext.function}] -" +
+          s" Filtered ${numberOfFilteredLPPs} LPP1(s) from payload for ${loggingContext.enrolmentKey}")
         penaltiesDetails.copy(latePaymentPenalty = Some(LatePaymentPenalty(filteredLPPs, penaltiesDetails.latePaymentPenalty.get.ManualLPPIndicator)))
       } else {
-        logger.info(s"[RegimeFilterService][filterEstimatedLPP1DuringPeriodOfFamiliarisation] Filtering for [$callingClass][$function] - Filtered all LPP1s from payload for ${enrolmentKey.keyType}: ${enrolmentKey.key}")
+        logger.info(s"[RegimeFilterService][filterEstimatedLPP1DuringPeriodOfFamiliarisation] Filtering for [${loggingContext.callingClass}][${loggingContext.function}] - Filtered all LPP1s from payload for ${loggingContext.enrolmentKey}")
         penaltiesDetails.copy(latePaymentPenalty = None)
       }
     } else {
-      logger.info(s"[RegimeFilterService][filterEstimatedLPP1DuringPeriodOfFamiliarisation] Filtering for [$callingClass][$function] - No LPPs to filter for ${enrolmentKey.keyType}: ${enrolmentKey.key}")
+      logger.info(s"[RegimeFilterService][filterEstimatedLPP1DuringPeriodOfFamiliarisation] Filtering for [${loggingContext.callingClass}][${loggingContext.function}] - No LPPs to filter for ${loggingContext.enrolmentKey}")
       penaltiesDetails
     }
   }
@@ -63,45 +63,45 @@ class RegimeFilterService @Inject()()(implicit appConfig: AppConfig) {
     )
   }
 
-  def filterPenaltiesWith9xAppealStatus(penaltiesDetails: GetPenaltyDetails)(implicit callingClass: String, function: String, enrolmentKey: EnrolmentKey): GetPenaltyDetails = {
+  def filterPenaltiesWith9xAppealStatus(penaltiesDetails: GetPenaltyDetails)(implicit logingContext: LoggingContext): GetPenaltyDetails = {
     val filteredLSPs: Option[Seq[LSPDetails]] = filterLSPWith9xAppealStatus(penaltiesDetails)
     val numberOfFilteredLSPs: Int = countNumberOfFilteredLSPs(filteredLSPs, penaltiesDetails)
     val filteredLPPs: Option[Seq[LPPDetails]] = findLPPWith9xAppealStatus(penaltiesDetails)
     val numberOfFilteredLPPs: Int = countNumberOfFilteredLPPs(filteredLPPs, penaltiesDetails)
 
     penaltiesDetails.copy(
-      lateSubmissionPenalty = prepareLateSubmissionPenaltiesAfterFilter(penaltiesDetails, filteredLSPs, numberOfFilteredLSPs, enrolmentKey, callingClass, function),
-      latePaymentPenalty = prepareLatePaymentPenaltiesAfterFilter(penaltiesDetails, filteredLPPs, numberOfFilteredLPPs, enrolmentKey, callingClass, function)
+      lateSubmissionPenalty = prepareLateSubmissionPenaltiesAfterFilter(penaltiesDetails, filteredLSPs, numberOfFilteredLSPs),
+      latePaymentPenalty = prepareLatePaymentPenaltiesAfterFilter(penaltiesDetails, filteredLPPs, numberOfFilteredLPPs)
     )
   }
 
-  private def prepareLateSubmissionPenaltiesAfterFilter(penaltiesDetails: GetPenaltyDetails, filteredLSPs: Option[Seq[LSPDetails]], noOfFilteredLSPs: Int, enrolmentKey: EnrolmentKey, callingClass: String, function: String): Option[LateSubmissionPenalty] = {
+  private def prepareLateSubmissionPenaltiesAfterFilter(penaltiesDetails: GetPenaltyDetails, filteredLSPs: Option[Seq[LSPDetails]], noOfFilteredLSPs: Int)(implicit loggingContext: LoggingContext): Option[LateSubmissionPenalty] = {
     if (filteredLSPs.nonEmpty && filteredLSPs.get.nonEmpty && noOfFilteredLSPs > 0) {
-      logger.info(s"[RegimeFilterService][filterPenaltiesWith9xAppealStatus] Filtering for [$callingClass][$function] -" +
-        s" Filtered $noOfFilteredLSPs LSP(s) from payload for ${enrolmentKey.keyType}: ${enrolmentKey.key}")
+      logger.info(s"[RegimeFilterService][filterPenaltiesWith9xAppealStatus] Filtering for [${loggingContext.callingClass}][${loggingContext.function}] -" +
+        s" Filtered $noOfFilteredLSPs LSP(s) from payload for ${loggingContext.enrolmentKey}")
       val summary = penaltiesDetails.lateSubmissionPenalty.map(lateSubmissionPenalty => lateSubmissionPenalty.summary)
       Some(LateSubmissionPenalty(summary = summary.get, details = filteredLSPs.getOrElse(Seq.empty[LSPDetails])))
     } else if (noOfFilteredLSPs == 0) {
-      logger.info(s"[RegimeFilterService][prepareLateSubmissionPenaltiesAfterFilter] Filtering for [$callingClass][$function] -" +
-        s" No LSPs to filter from payload for ${enrolmentKey.keyType}: ${enrolmentKey.key}")
+      logger.info(s"[RegimeFilterService][prepareLateSubmissionPenaltiesAfterFilter] Filtering for [${loggingContext.callingClass}][${loggingContext.function}] -" +
+        s" No LSPs to filter from payload for ${loggingContext.enrolmentKey}")
       penaltiesDetails.lateSubmissionPenalty
     } else {
-      logger.info(s"[RegimeFilterService][prepareLateSubmissionPenaltiesAfterFilter] Filtering for [$callingClass][$function] - Filtered all LSPs from payload for ${enrolmentKey.keyType}: ${enrolmentKey.key}")
+      logger.info(s"[RegimeFilterService][prepareLateSubmissionPenaltiesAfterFilter] Filtering for [${loggingContext.callingClass}][${loggingContext.function}] - Filtered all LSPs from payload for ${loggingContext.enrolmentKey}")
       None
     }
   }
 
-  private def prepareLatePaymentPenaltiesAfterFilter(penaltiesDetails: GetPenaltyDetails, filteredLPPs: Option[Seq[LPPDetails]], noOfFilteredLPPs: Int, enrolmentKey: EnrolmentKey, callingClass: String, function: String): Option[LatePaymentPenalty] = {
+  private def prepareLatePaymentPenaltiesAfterFilter(penaltiesDetails: GetPenaltyDetails, filteredLPPs: Option[Seq[LPPDetails]], noOfFilteredLPPs: Int)(implicit loggingContext: LoggingContext): Option[LatePaymentPenalty] = {
     if (filteredLPPs.nonEmpty && filteredLPPs.get.nonEmpty && noOfFilteredLPPs > 0) {
-      logger.info(s"[RegimeFilterService][filterPenaltiesWith9xAppealStatus] Filtering for [$callingClass][$function] -" +
-        s" Filtered ${noOfFilteredLPPs} LPP(s) from payload for ${enrolmentKey.keyType}: ${enrolmentKey.key}")
+      logger.info(s"[RegimeFilterService][filterPenaltiesWith9xAppealStatus] Filtering for [${loggingContext.callingClass}][${loggingContext.function}] -" +
+        s" Filtered ${noOfFilteredLPPs} LPP(s) from payload for ${loggingContext.enrolmentKey}")
       Some(LatePaymentPenalty(filteredLPPs))
     } else if (noOfFilteredLPPs == 0) {
-      logger.info(s"[RegimeFilterService][prepareLatePaymentPenaltiesAfterFilter] Filtering for [$callingClass][$function] -" +
-        s" No LPPs to filter from payload for ${enrolmentKey.keyType}: ${enrolmentKey.key}")
+      logger.info(s"[RegimeFilterService][prepareLatePaymentPenaltiesAfterFilter] Filtering for [${loggingContext.callingClass}][${loggingContext.function}] -" +
+        s" No LPPs to filter from payload for ${loggingContext.enrolmentKey}")
       penaltiesDetails.latePaymentPenalty
     } else {
-      logger.info(s"[RegimeFilterService][prepareLatePaymentPenaltiesAfterFilter] Filtering for [$callingClass][$function] - Filtered all LPPs from payload for ${enrolmentKey.keyType}: ${enrolmentKey.key}")
+      logger.info(s"[RegimeFilterService][prepareLatePaymentPenaltiesAfterFilter] Filtering for [${loggingContext.callingClass}][${loggingContext.function}] - Filtered all LPPs from payload for ${loggingContext.enrolmentKey}")
       None
     }
   }

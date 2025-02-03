@@ -19,7 +19,7 @@ package connectors.getPenaltyDetails
 import config.AppConfig
 import config.featureSwitches.FeatureSwitching
 import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser.{GetPenaltyDetailsFailureResponse, GetPenaltyDetailsResponse}
-import models.EnrolmentKey
+import models.{AgnosticEnrolmentKey, EnrolmentKey, Id, IdType, Regime}
 import models.EnrolmentKey._
 import models.TaxRegime.{ITSA, VAT}
 import play.api.Configuration
@@ -49,8 +49,9 @@ class PenaltyDetailsConnector @Inject()(httpClient: HttpClient,
     ).filter(_._1.nonEmpty)
   }
 
-  def getPenaltyDetails(enrolmentKey: EnrolmentKey)(implicit hc: HeaderCarrier): Future[GetPenaltyDetailsResponse] = {
-    val url: String = getPenaltyDetailsUrl(enrolmentKey);
+  def getPenaltyDetails(enrolmentKey: AgnosticEnrolmentKey)(implicit hc: HeaderCarrier): Future[GetPenaltyDetailsResponse] = {
+    val url = appConfig.getRegimeAgnosticPenaltyDetailsUrl(enrolmentKey)
+    
     logger.debug(s"[PenaltyDetailsConnector][getPenaltyDetails][appConfig.getRegimePenaltyDetailsUrl(enrolmentKey)]- Calling GET $url \nHeaders: $headers")
     httpClient.GET[GetPenaltyDetailsResponse](url, Seq.empty[(String, String)], headers).recover {
       case e: UpstreamErrorResponse => {
@@ -68,16 +69,10 @@ class PenaltyDetailsConnector @Inject()(httpClient: HttpClient,
     }
   }
 
-  private def getPenaltyDetailsUrl(enrolmentKey: EnrolmentKey) = enrolmentKey match {
-    case EnrolmentKey(VAT, VRN, vrn) => appConfig.getVatPenaltyDetailsUrl + vrn
-    case EnrolmentKey(ITSA, NINO, nino) => appConfig.getItsaPenaltyDetailsUrl + nino
-    //case EnrolmentKey(CT, UTR, utr) => appConfig.getCtPenaltyDetailsUrl + utr
-    case _ => throw new Exception(s"No getPenaltyDetails URL available for $enrolmentKey")
-  }
-
-  def getPenaltyDetailsForAPI(enrolmentKey: EnrolmentKey, dateLimit: Option[String])(implicit hc: HeaderCarrier): Future[HttpResponse] = {
+  def getPenaltyDetailsForAPI(enrolmentKey: AgnosticEnrolmentKey, dateLimit: Option[String])(implicit hc: HeaderCarrier): Future[HttpResponse] = {
     val queryParam: String = s"${dateLimit.fold("")(dateLimit => s"?dateLimit=$dateLimit")}"
-    httpClient.GET[HttpResponse](getPenaltyDetailsUrl(enrolmentKey) + queryParam, headers = headers).recover {
+    val url = appConfig.getRegimeAgnosticPenaltyDetailsUrl(enrolmentKey) + queryParam 
+    httpClient.GET[HttpResponse](url, headers = headers).recover {
       case e: UpstreamErrorResponse => {
         logger.error(s"[GetPenaltyDetailsConnector][getPenaltyDetailsForAPI] -" +
           s" Received ${e.statusCode} status from API 1812 call - returning status to caller")

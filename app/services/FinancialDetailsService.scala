@@ -25,19 +25,20 @@ import utils.Logger.logger
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
+import models.AgnosticEnrolmentKey
 
 class FinancialDetailsService @Inject()(getFinancialDetailsConnector: FinancialDetailsConnector)
                                           (implicit ec: ExecutionContext, val config: Configuration) {
 
-  def getFinancialDetails(enrolmentKey: EnrolmentKey, optionalParameters: Option[String])(implicit hc: HeaderCarrier): Future[GetFinancialDetailsResponse] = {
-    val startOfLogMsg: String = s"[FinancialDetailsService][getDataFromFinancialService][${enrolmentKey.regime}]"
+  def getFinancialDetails(enrolmentKey: AgnosticEnrolmentKey, optionalParameters: Option[String])(implicit hc: HeaderCarrier): Future[GetFinancialDetailsResponse] = {
+    val startOfLogMsg: String = s"[FinancialDetailsService][getDataFromFinancialService][${enrolmentKey.regime.value}]"
     getFinancialDetailsConnector.getFinancialDetails(enrolmentKey, optionalParameters).map {
       handleConnectorResponse(_)(startOfLogMsg, enrolmentKey)
     }
   }
 
   private def handleConnectorResponse(connectorResponse: GetFinancialDetailsResponse)
-                                     (implicit startOfLogMsg: String, enrolmentKey: EnrolmentKey): GetFinancialDetailsResponse = {
+                                     (implicit startOfLogMsg: String, enrolmentKey: AgnosticEnrolmentKey): GetFinancialDetailsResponse = {
     connectorResponse match {
       case res@Right(_@GetFinancialDetailsSuccessResponse(financialDetails)) =>
         logger.debug(s"$startOfLogMsg - Got a success response from the connector. Parsed model: $financialDetails")
@@ -46,10 +47,10 @@ class FinancialDetailsService @Inject()(getFinancialDetailsConnector: FinancialD
         logger.debug(s"$startOfLogMsg - Got a 404 response and no data was found for GetFinancialDetails call")
         res
       case res@Left(GetFinancialDetailsMalformed) =>
-        logger.info(s"$startOfLogMsg - Failed to parse HTTP response into model for ${enrolmentKey.info}")
+        logger.info(s"$startOfLogMsg - Failed to parse HTTP response into model for ${enrolmentKey}")
         res
       case res@Left(GetFinancialDetailsFailureResponse(_)) =>
-        logger.error(s"$startOfLogMsg - Unknown status returned from connector for ${enrolmentKey.info}")
+        logger.error(s"$startOfLogMsg - Unknown status returned from connector for ${enrolmentKey}")
         res
     }
   }

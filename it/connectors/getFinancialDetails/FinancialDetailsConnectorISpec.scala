@@ -18,19 +18,26 @@ package connectors.getFinancialDetails
 
 import config.featureSwitches.{CallAPI1811ETMP, FeatureSwitching}
 import connectors.parsers.getFinancialDetails.FinancialDetailsParser._
-import models.EnrolmentKey
-import models.TaxRegime.VAT
 import play.api.http.Status
 import play.api.http.Status.IM_A_TEAPOT
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import utils.{ETMPWiremock, IntegrationSpecCommonBase}
-
+import models.{AgnosticEnrolmentKey, Regime, IdType, Id}
 import java.time.LocalDate
 
 class FinancialDetailsConnectorISpec extends IntegrationSpecCommonBase with ETMPWiremock with FeatureSwitching {
 
-  val vrn123456789: EnrolmentKey = EnrolmentKey(VAT, "123456789")
+val regime = Regime("VATC") 
+  val idType = IdType("VRN")
+  val id = Id("123456789")
+
+
+  val vrn123456789: AgnosticEnrolmentKey = AgnosticEnrolmentKey(
+    regime,
+    idType,
+    id
+  )
 
   class Setup {
     val connector: FinancialDetailsConnector = injector.instanceOf[FinancialDetailsConnector]

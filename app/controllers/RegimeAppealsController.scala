@@ -22,7 +22,7 @@ import connectors.FileNotificationOrchestratorConnector
 import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser
 import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser.GetPenaltyDetailsSuccessResponse
 import controllers.auth.AuthAction
-import models.EnrolmentKey
+import models.{AgnosticEnrolmentKey, EnrolmentKey, Id, IdType, Regime}
 import models.appeals.AppealTypeEnum._
 import models.appeals._
 import models.appeals.reasonableExcuses.ReasonableExcuse
@@ -55,34 +55,36 @@ class RegimeAppealsController @Inject()(val appConfig: AppConfig,
                                   authAction: AuthAction)(implicit ec: ExecutionContext, val config: Configuration)
   extends BackendController(cc) with FeatureSwitching {
 
-  private def getAppealDataForPenalty(penaltyId: String, enrolmentKey: EnrolmentKey,
-                                      penaltyType: AppealTypeEnum.Value)(implicit hc: HeaderCarrier): Future[Result] = {
-    //val vrn = RegimeHelper.getIdentifierFromEnrolmentKey(enrolmentKey)
+  private def getAppealDataForPenalty(penaltyId: String, enrolmentKey: AgnosticEnrolmentKey,
+                                    penaltyType: AppealTypeEnum.Value)(implicit hc: HeaderCarrier): Future[Result] = {
+
     getPenaltyDetailsService.getDataFromPenaltyService(enrolmentKey).map {
       _.fold(
-        handleFailureResponse(_, enrolmentKey)("getAppealDataForPenalty"),
+        handleFailureResponse(_, enrolmentKey.toString)("getAppealDataForPenalty"),
         success => {
-          checkAndReturnResponseForPenaltyData(success.asInstanceOf[GetPenaltyDetailsSuccessResponse].penaltyDetails, penaltyId, enrolmentKey, penaltyType)
+          checkAndReturnResponseForPenaltyData(success.asInstanceOf[GetPenaltyDetailsSuccessResponse].penaltyDetails, penaltyId, enrolmentKey.toString, penaltyType)
         }
       )
     }
   }
 
-  def getAppealsDataForLateSubmissionPenalty(penaltyId: String, enrolmentKey: EnrolmentKey): Action[AnyContent] = Action.async {
+  def getAppealsDataForLateSubmissionPenalty(penaltyId: String, regime: Regime, idType: IdType, id: Id): Action[AnyContent] = Action.async {
     implicit request => {
-      getAppealDataForPenalty(penaltyId, enrolmentKey, Late_Submission)
+      val agnosticEnrolmentKey = AgnosticEnrolmentKey(regime, idType, id)
+      getAppealDataForPenalty(penaltyId, agnosticEnrolmentKey, Late_Submission)
     }
   }
 
-  def getAppealsDataForLatePaymentPenalty(penaltyId: String, enrolmentKey: EnrolmentKey, isAdditional: Boolean): Action[AnyContent] = Action.async {
+  def getAppealsDataForLatePaymentPenalty(penaltyId: String, regime: Regime, idType: IdType, id: Id, isAdditional: Boolean): Action[AnyContent] = Action.async {
     implicit request => {
-      getAppealDataForPenalty(penaltyId, enrolmentKey, if (isAdditional) Additional else Late_Payment)
+      val agnosticEnrolmentKey = AgnosticEnrolmentKey(regime, idType, id)
+      getAppealDataForPenalty(penaltyId, agnosticEnrolmentKey, if (isAdditional) Additional else Late_Payment)
     }
   }
 
   private def checkAndReturnResponseForPenaltyData(penaltyDetails: GetPenaltyDetails,
                                                    penaltyIdToCheck: String,
-                                                   enrolmentKey: EnrolmentKey,
+                                                   enrolmentKey: String,
                                                    appealType: AppealTypeEnum.Value): Result = {
     val lspPenaltyIdInPenaltyDetailsPayload: Option[LSPDetails] = penaltyDetails.lateSubmissionPenalty.flatMap {
       _.details.find(_.penaltyNumber == penaltyIdToCheck)
@@ -124,22 +126,23 @@ class RegimeAppealsController @Inject()(val appConfig: AppConfig,
     Ok(ReasonableExcuse.allExcusesToJson(appConfig))
   }
 
-  def submitAppeal(enrolmentKey: EnrolmentKey, isLPP: Boolean, penaltyNumber: String, correlationId: String, isMultiAppeal: Boolean): Action[AnyContent] = Action.async {
+  def submitAppeal(regime: Regime, idType: IdType, id: Id, isLPP: Boolean, penaltyNumber: String, correlationId: String, isMultiAppeal: Boolean): Action[AnyContent] = Action.async {
     implicit request => {
+      val agnosticEnrolmenKey = AgnosticEnrolmentKey(regime, idType, id)
       request.body.asJson.fold({
-        logger.error(s"[RegimeAppealsController][submitAppeal] Unable to submit appeal for user with enrolment: $enrolmentKey penalty $penaltyNumber - Failed to validate request body as JSON")
+        logger.error(s"[RegimeAppealsController][submitAppeal] Unable to submit appeal for user with enrolment: $agnosticEnrolmenKey penalty $penaltyNumber - Failed to validate request body as JSON")
         Future(BadRequest("Invalid body received i.e. could not be parsed to JSON"))
       })(
         jsonBody => {
           val parseResultToModel = Json.fromJson(jsonBody)(AppealSubmission.apiReads)
           parseResultToModel.fold(
             failure => {
-              logger.error(s"[RegimeAppealsController][submitAppeal] Unable to submit appeal for user with enrolment: $enrolmentKey penalty $penaltyNumber - Failed to parse request body to model")
+              logger.error(s"[RegimeAppealsController][submitAppeal] Unable to submit appeal for user with enrolment: $agnosticEnrolmenKey penalty $penaltyNumber - Failed to parse request body to model")
               logger.debug(s"[RegimeAppealsController][submitAppeal] Parse failure(s): $failure")
               Future(BadRequest("Failed to parse to model"))
             },
             appealSubmission => {
-              submitAppealToPEGA(appealSubmission, enrolmentKey, isLPP, penaltyNumber, correlationId, isMultiAppeal).map {
+              submitAppealToPEGA(appealSubmission, agnosticEnrolmenKey, isLPP, penaltyNumber, correlationId, isMultiAppeal).map {
                 responseModel => {
                   Status(responseModel.status)(Json.toJson(responseModel))
                 }
@@ -151,7 +154,7 @@ class RegimeAppealsController @Inject()(val appConfig: AppConfig,
     }
   }
 
-  private def submitAppealToPEGA(appealSubmission: AppealSubmission, enrolmentKey: EnrolmentKey,
+  private def submitAppealToPEGA(appealSubmission: AppealSubmission, enrolmentKey: AgnosticEnrolmentKey,
                                  isLPP: Boolean, penaltyNumber: String, correlationId: String, isMultiAppeal: Boolean)
                                 (implicit hc: HeaderCarrier, request: Request[_]): Future[AppealSubmissionResponseModel] = {
     appealService.submitAppeal(appealSubmission, enrolmentKey, isLPP, penaltyNumber, correlationId).flatMap {
@@ -214,11 +217,12 @@ class RegimeAppealsController @Inject()(val appConfig: AppConfig,
 
   }
 
-  def getMultiplePenaltyData(penaltyId: String, enrolmentKey: EnrolmentKey): Action[AnyContent] = Action.async {
+  def getMultiplePenaltyData(penaltyId: String, regime: Regime, idType: IdType, id: Id): Action[AnyContent] = Action.async {
     implicit request => {
-      getPenaltyDetailsService.getDataFromPenaltyService(enrolmentKey).map {
+      val agnosticEnrolmentKey = AgnosticEnrolmentKey(regime, idType, id)
+      getPenaltyDetailsService.getDataFromPenaltyService(agnosticEnrolmentKey).map {
         _.fold(
-          handleFailureResponse(_, enrolmentKey)("getMultiplePenaltyData"),
+          handleFailureResponse(_, agnosticEnrolmentKey.toString)("getMultiplePenaltyData"),
           success => {
             val penaltyDetails = success.asInstanceOf[GetPenaltyDetailsSuccessResponse].penaltyDetails
             val multiplePenaltiesData: Option[MultiplePenaltiesData] = appealService.findMultiplePenalties(penaltyDetails, penaltyId)
@@ -229,24 +233,24 @@ class RegimeAppealsController @Inject()(val appConfig: AppConfig,
     }
   }
 
-  private def handleFailureResponse(response: PenaltyDetailsParser.GetPenaltyDetailsFailure, enrolmentKey: EnrolmentKey)(callingMethod: String): Result = {
+  private def handleFailureResponse(response: PenaltyDetailsParser.GetPenaltyDetailsFailure, enrolmentKey: String)(callingMethod: String): Result = {
     response match {
       case PenaltyDetailsParser.GetPenaltyDetailsFailureResponse(status) if status == NOT_FOUND => {
         logger.info(s"[RegimeAppealsController][$callingMethod] - 1812 call returned 404 for enrolment key: $enrolmentKey")
-        NotFound(s"A downstream call returned 404 for ${enrolmentKey.info}")
+        NotFound(s"A downstream call returned 404 for ${enrolmentKey}")
       }
       case PenaltyDetailsParser.GetPenaltyDetailsFailureResponse(status) => {
-        logger.error(s"[RegimeAppealsController][$callingMethod] - 1812 call returned an unexpected status: $status for ${enrolmentKey.info}")
+        logger.error(s"[RegimeAppealsController][$callingMethod] - 1812 call returned an unexpected status: $status for ${enrolmentKey}")
         InternalServerError(s"A downstream call returned an unexpected status: $status")
       }
       case PenaltyDetailsParser.GetPenaltyDetailsMalformed => {
         PagerDutyHelper.log(callingMethod, MALFORMED_RESPONSE_FROM_1812_API)
-        logger.error(s"[RegimeAppealsController][$callingMethod] - Failed to parse penalty details response for ${enrolmentKey.info}")
+        logger.error(s"[RegimeAppealsController][$callingMethod] - Failed to parse penalty details response for ${enrolmentKey}")
         InternalServerError("We were unable to parse penalty data.")
       }
       case PenaltyDetailsParser.GetPenaltyDetailsNoContent => {
-        logger.info(s"s[RegimeAppealsController][$callingMethod] - 1812 call returned no content for ${enrolmentKey.info}")
-        InternalServerError(s"Returned no content for ${enrolmentKey.info}")
+        logger.info(s"s[RegimeAppealsController][$callingMethod] - 1812 call returned no content for ${enrolmentKey}")
+        InternalServerError(s"Returned no content for ${enrolmentKey}")
       }
     }
   }

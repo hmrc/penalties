@@ -26,7 +26,7 @@ import play.api.mvc.Result
 import play.api.test.Helpers._
 import services.RegimeComplianceService
 import utils.AuthActionMock
-
+import models.{AgnosticEnrolmentKey, Regime, IdType, Id}
 import java.time.LocalDate
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -46,7 +46,7 @@ class RegimeComplianceControllerSpec extends SpecBase {
       when(mockService.getComplianceData(ArgumentMatchers.any(), ArgumentMatchers.any(),
         ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
         .thenReturn(Future.successful(Left(INTERNAL_SERVER_ERROR)))
-      val result: Future[Result] = controller.getComplianceData("ITSA", "NINO", "AB123456C", "2020-01-01", "2020-12-31")(fakeRequest)
+      val result: Future[Result] = controller.getComplianceData(Regime("ITSA"), IdType("NINO"), Id("AB123456C"), "2020-01-01", "2020-12-31")(fakeRequest)
       status(result) shouldBe INTERNAL_SERVER_ERROR
     }
 
@@ -79,7 +79,7 @@ class RegimeComplianceControllerSpec extends SpecBase {
       when(mockService.getComplianceData(ArgumentMatchers.any(), ArgumentMatchers.any(),
         ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
         .thenReturn(Future.successful(Right(compliancePayloadAsModel)))
-      val result: Future[Result] = controller.getComplianceData("ITSA", "NINO", "AB123456C", "2020-01-01", "2020-12-31")(fakeRequest)
+      val result: Future[Result] = controller.getComplianceData(Regime("ITSA"), IdType("NINO"), Id("AB123456C"), "2020-01-01", "2020-12-31")(fakeRequest)
       status(result) shouldBe OK
       contentAsJson(result) shouldBe Json.toJson(compliancePayloadAsModel)
     }

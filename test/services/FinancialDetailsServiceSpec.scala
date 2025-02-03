@@ -20,10 +20,9 @@ import base.{LogCapturing, SpecBase}
 import config.featureSwitches.FeatureSwitching
 import connectors.getFinancialDetails.{FinancialDetailsConnector, GetFinancialDetailsConnector}
 import connectors.parsers.getFinancialDetails.FinancialDetailsParser._
-import models.TaxRegime.VAT
 import models.getFinancialDetails.FinancialDetails
 import models.getFinancialDetails.totalisation.{FinancialDetailsTotalisation, InterestTotalisation, RegimeTotalisation}
-import models.{EnrolmentKey, getFinancialDetails}
+import models.{AgnosticEnrolmentKey, getFinancialDetails, Regime, IdType, Id}
 import org.mockito.ArgumentMatchers
 
 import org.mockito.ArgumentMatchers.any
@@ -42,7 +41,14 @@ class FinancialDetailsServiceSpec extends SpecBase with FeatureSwitching with Lo
   implicit val ec: ExecutionContext = ExecutionContext.Implicits.global
   implicit val hc: HeaderCarrier = HeaderCarrier()
   implicit val config: Configuration = mock(classOf[Configuration])
-  val vrn123456789: EnrolmentKey = EnrolmentKey(VAT, "123456789")
+
+  val regime = Regime("VATC") 
+  val idType = IdType("VRN")
+  val id = Id("123456789")
+  val vrn123456789: AgnosticEnrolmentKey = AgnosticEnrolmentKey(
+    regime, idType, id
+  )
+
   val mockGetFinancialDetailsConnector: FinancialDetailsConnector = mock(classOf[FinancialDetailsConnector])
   class Setup {
     val service = new FinancialDetailsService(mockGetFinancialDetailsConnector)
@@ -95,7 +101,7 @@ class FinancialDetailsServiceSpec extends SpecBase with FeatureSwitching with Lo
           val result: GetFinancialDetailsResponse = await(service.getFinancialDetails(vrn123456789, None))
           result.isLeft shouldBe true
           result.left.getOrElse(GetFinancialDetailsFailureResponse(IM_A_TEAPOT)) shouldBe GetFinancialDetailsNoContent
-          logs.exists(_.getMessage.contains("[FinancialDetailsService][getDataFromFinancialService][VATC] - Got a 404 response and no data was found for GetFinancialDetails call")) shouldBe true
+          logs.map(_.getMessage) should contain ("[FinancialDetailsService][getDataFromFinancialService][VATC] - Got a 404 response and no data was found for GetFinancialDetails call")
         }
       }
     }
@@ -110,7 +116,7 @@ class FinancialDetailsServiceSpec extends SpecBase with FeatureSwitching with Lo
           val result: GetFinancialDetailsResponse = await(service.getFinancialDetails(vrn123456789, None))
           result.isLeft shouldBe true
           result.left.getOrElse(GetFinancialDetailsFailureResponse(IM_A_TEAPOT)) shouldBe GetFinancialDetailsMalformed
-          logs.exists(_.getMessage.contains("[FinancialDetailsService][getDataFromFinancialService][VATC] - Failed to parse HTTP response into model for VRN: 123456789")) shouldBe true
+          logs.map(_.getMessage) should contain ("[FinancialDetailsService][getDataFromFinancialService][VATC] - Failed to parse HTTP response into model for VATC~VRN~123456789")
         }
       }
     }
@@ -125,7 +131,7 @@ class FinancialDetailsServiceSpec extends SpecBase with FeatureSwitching with Lo
           val result: GetFinancialDetailsResponse = await(service.getFinancialDetails(vrn123456789, None))
           result.isLeft shouldBe true
           result.left.getOrElse(GetFinancialDetailsFailureResponse(INTERNAL_SERVER_ERROR)) shouldBe GetFinancialDetailsFailureResponse(IM_A_TEAPOT)
-          logs.exists(_.getMessage.contains("[FinancialDetailsService][getDataFromFinancialService][VATC] - Unknown status returned from connector for VRN: 123456789")) shouldBe true
+          logs.map(_.getMessage) should contain ("[FinancialDetailsService][getDataFromFinancialService][VATC] - Unknown status returned from connector for VATC~VRN~123456789")
         }
       }
     }

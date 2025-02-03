@@ -25,18 +25,18 @@ import play.api.Configuration
 import play.api.http.Status._
 import uk.gov.hmrc.http.HeaderCarrier
 import utils.Logger.logger
-
+import models.AgnosticEnrolmentKey
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class RegimeComplianceService @Inject()(complianceConnector: RegimeComplianceConnector)(implicit val config: Configuration) extends FeatureSwitching {
 
-  def getComplianceData(enrolmentKey: EnrolmentKey, startDate: String, endDate: String)
+  def getComplianceData(enrolmentKey: AgnosticEnrolmentKey, startDate: String, endDate: String)
                        (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Either[Int, CompliancePayload]] = {
     complianceConnector.getComplianceData(enrolmentKey, startDate, endDate).map {
       _.fold[Either[Int, CompliancePayload]]({
         failureModel =>
-          logger.error(s"[ComplianceService][getComplianceData] - Received error back from DES for compliance data for ${enrolmentKey.info} with error: ${failureModel.message}")
+          logger.error(s"[ComplianceService][getComplianceData] - Received error back from DES for compliance data for ${enrolmentKey} with error: ${failureModel.message}")
           failureModel match {
             case ComplianceParser.CompliancePayloadFailureResponse(status) => Left(status)
             case ComplianceParser.CompliancePayloadNoData => Left(NOT_FOUND)

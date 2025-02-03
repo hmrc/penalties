@@ -23,8 +23,6 @@ import connectors.FileNotificationOrchestratorConnector
 import connectors.parsers.AppealsParser.UnexpectedFailure
 import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser.{GetPenaltyDetailsFailureResponse, GetPenaltyDetailsMalformed, GetPenaltyDetailsSuccessResponse}
 import controllers.auth.AuthAction
-import models.EnrolmentKey
-import models.TaxRegime.VAT
 import models.appeals.AppealTypeEnum.{Additional, Late_Payment, Late_Submission}
 import models.appeals.{AppealData, MultiplePenaltiesData}
 import models.auditing.PenaltyAppealFileNotificationStorageFailureModel
@@ -48,10 +46,12 @@ import uk.gov.hmrc.http.HttpResponse
 import utils.AuthActionMock
 import utils.Logger.logger
 import utils.PagerDutyHelper.PagerDutyKeys
-
+import models.{AgnosticEnrolmentKey, Id, IdType, Regime}
 import java.time.{LocalDate, LocalDateTime}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+import uk.gov.hmrc.http.HeaderCarrier
+import models.{AgnosticEnrolmentKey, getFinancialDetails, Regime, IdType, Id}
 
 class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with LogCapturing {
   val mockAppealsService: RegimeAppealService = mock(classOf[RegimeAppealService])
@@ -76,12 +76,21 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
     ), audit = SDESAudit(correlationId)
   ))
 
+  val regime = Regime("VATC") 
+  val idType = IdType("VRN")
+  val id = Id("123456789")
+  val vrn123456789: AgnosticEnrolmentKey = AgnosticEnrolmentKey(
+    regime, idType, id
+  )
+
+
   class Setup(withRealAppConfig: Boolean = true) {
     reset(mockAppConfig)
     reset(mockAppealsService)
     reset(mockGetPenaltyDetailsService)
     reset(mockFileNotificationConnector)
     reset(mockAuditService)
+
     val controller = new RegimeAppealsController(if (withRealAppConfig) appConfig
     else mockAppConfig, mockAppealsService, mockGetPenaltyDetailsService, mockFileNotificationConnector, mockAuditService, stubControllerComponents(), mockAuthAction)
   }
@@ -245,47 +254,66 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
       breathingSpace = None
     )
 
-    s"return NOT_FOUND (${Status.NOT_FOUND}) when ETMP can not find the data for the given enrolment key" in new Setup {
-      val sampleEnrolmentKey: EnrolmentKey = EnrolmentKey("HMRC-MTD-VAT~VRN~123456789")
-      val vrn: EnrolmentKey = EnrolmentKey(VAT, "123456789")
+    s"return NOT_FOUND (${Status.NOT_FOUND}) when ETMP can not find the data for the given enrolment key" in new Setup(true) {
+
+      val vrn: AgnosticEnrolmentKey = AgnosticEnrolmentKey(
+        Regime("VATC"), 
+        IdType("VRN"),
+        Id("123456789")
+      )
       when(mockGetPenaltyDetailsService.getDataFromPenaltyService(ArgumentMatchers.eq(vrn))(ArgumentMatchers.any()))
         .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(NOT_FOUND))))
 
-      val result: Future[Result] = controller.getAppealsDataForLateSubmissionPenalty("1", sampleEnrolmentKey)(fakeRequest)
+      val result: Future[Result] = controller.getAppealsDataForLateSubmissionPenalty("1", regime, idType, id)(fakeRequest)
       status(result) shouldBe Status.NOT_FOUND
-      contentAsString(result) shouldBe s"A downstream call returned 404 for ${vrn.info}"
+      contentAsString(result) shouldBe s"A downstream call returned 404 for ${vrn}"
     }
 
     s"return NOT_FOUND (${Status.NOT_FOUND}) when ETMP returns data but the given penaltyId is wrong" in new Setup {
       val samplePenaltyId: String = "1234"
-      val sampleEnrolmentKey: EnrolmentKey = EnrolmentKey("HMRC-MTD-VAT~VRN~123456789")
-      val vrn: EnrolmentKey = EnrolmentKey(VAT, "123456789")
+
+        val vrn: AgnosticEnrolmentKey = AgnosticEnrolmentKey(
+          Regime("VATC"), 
+          IdType("VRN"),
+          Id("123456789")
+        )
+      val regime = Regime("VATC") 
+      val idType = IdType("VRN")
+      val id = Id("123456789")
       when(mockGetPenaltyDetailsService.getDataFromPenaltyService(ArgumentMatchers.eq(vrn))(ArgumentMatchers.any()))
         .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetails))))
 
-      val result: Future[Result] = controller.getAppealsDataForLateSubmissionPenalty(samplePenaltyId, sampleEnrolmentKey)(fakeRequest)
+      val result: Future[Result] = controller.getAppealsDataForLateSubmissionPenalty(samplePenaltyId, regime, idType, id)(fakeRequest)
       status(result) shouldBe Status.NOT_FOUND
       contentAsString(result) shouldBe "Penalty ID was not found in users penalties."
     }
 
     s"return ISE (${Status.INTERNAL_SERVER_ERROR}) when the call to ETMP fails for some reason" in new Setup {
-      val sampleEnrolmentKey: EnrolmentKey = EnrolmentKey("HMRC-MTD-VAT~VRN~123456789")
-      val vrn: EnrolmentKey = EnrolmentKey(VAT, "123456789")
+
+        val vrn: AgnosticEnrolmentKey = AgnosticEnrolmentKey(
+          Regime("VATC"), 
+          IdType("VRN"),
+          Id("123456789")
+        )
       when(mockGetPenaltyDetailsService.getDataFromPenaltyService(ArgumentMatchers.eq(vrn))(ArgumentMatchers.any()))
         .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(INTERNAL_SERVER_ERROR))))
 
-      val result: Future[Result] = controller.getAppealsDataForLateSubmissionPenalty("1", sampleEnrolmentKey)(fakeRequest)
+      val result: Future[Result] = controller.getAppealsDataForLateSubmissionPenalty("1", regime, idType, id)(fakeRequest)
       status(result) shouldBe Status.INTERNAL_SERVER_ERROR
     }
 
     s"return ISE (${Status.INTERNAL_SERVER_ERROR}) when API 1812 call returns malformed data" in new Setup {
-      val sampleEnrolmentKey: EnrolmentKey = EnrolmentKey("HMRC-MTD-VAT~VRN~123456789")
-      val vrn: EnrolmentKey = EnrolmentKey(VAT, "123456789")
+
+        val vrn: AgnosticEnrolmentKey = AgnosticEnrolmentKey(
+          Regime("VATC"), 
+          IdType("VRN"),
+          Id("123456789")
+        )
       when(mockGetPenaltyDetailsService.getDataFromPenaltyService(ArgumentMatchers.eq(vrn))(ArgumentMatchers.any()))
         .thenReturn(Future.successful(Left(GetPenaltyDetailsMalformed)))
       withCaptureOfLoggingFrom(logger) {
         logs => {
-          val result: Future[Result] = controller.getAppealsDataForLateSubmissionPenalty("1234567891", sampleEnrolmentKey)(fakeRequest)
+          val result: Future[Result] = controller.getAppealsDataForLateSubmissionPenalty("1234567891", regime, idType, id)(fakeRequest)
           status(result) shouldBe Status.INTERNAL_SERVER_ERROR
           logs.exists(_.getMessage.contains(PagerDutyKeys.MALFORMED_RESPONSE_FROM_1812_API.toString)) shouldBe true
         }
@@ -294,12 +322,15 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
 
     s"return OK (${Status.OK}) when the call to ETMP succeeds and the penalty ID matches (defaulting comms date if not present)" in new Setup {
       val samplePenaltyId: String = "123456789"
-      val sampleEnrolmentKey: EnrolmentKey = EnrolmentKey("HMRC-MTD-VAT~VRN~123456789")
-      val vrn: EnrolmentKey = EnrolmentKey(VAT, "123456789")
-      when(mockGetPenaltyDetailsService.getDataFromPenaltyService(ArgumentMatchers.eq(vrn))(ArgumentMatchers.any()))
+      val sampleEnrolmentKey: AgnosticEnrolmentKey = AgnosticEnrolmentKey(
+        Regime("VATC"), 
+        IdType("VRN"),
+        Id("123456789")
+      )
+      when(mockGetPenaltyDetailsService.getDataFromPenaltyService(ArgumentMatchers.eq(sampleEnrolmentKey))(ArgumentMatchers.any()))
         .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetailsNoCommunicationsDate))))
       when(mockAppConfig.getTimeMachineDateTime).thenReturn(LocalDateTime.now)
-      val result: Future[Result] = controller.getAppealsDataForLateSubmissionPenalty(samplePenaltyId, sampleEnrolmentKey)(fakeRequest)
+      val result: Future[Result] = controller.getAppealsDataForLateSubmissionPenalty(samplePenaltyId, regime, idType, id)(fakeRequest)
       status(result) shouldBe Status.OK
       val appealDataToReturn: AppealData = AppealData(
         Late_Submission,
@@ -313,12 +344,16 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
 
     s"return OK (${Status.OK}) when the call to ETMP succeeds and the penalty ID matches" in new Setup {
       val samplePenaltyId: String = "123456789"
-      val sampleEnrolmentKey: EnrolmentKey = EnrolmentKey("HMRC-MTD-VAT~VRN~123456789")
-      val vrn: EnrolmentKey = EnrolmentKey(VAT, "123456789")
+
+             val vrn: AgnosticEnrolmentKey = AgnosticEnrolmentKey(
+          Regime("VATC"), 
+          IdType("VRN"),
+          Id("123456789")
+        )
       when(mockGetPenaltyDetailsService.getDataFromPenaltyService(ArgumentMatchers.eq(vrn))(ArgumentMatchers.any()))
         .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetails))))
 
-      val result: Future[Result] = controller.getAppealsDataForLateSubmissionPenalty(samplePenaltyId, sampleEnrolmentKey)(fakeRequest)
+      val result: Future[Result] = controller.getAppealsDataForLateSubmissionPenalty(samplePenaltyId, regime, idType, id)(fakeRequest)
       status(result) shouldBe Status.OK
       val appealDataToReturn: AppealData = AppealData(
         Late_Submission,
@@ -477,49 +512,65 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
     )
 
     s"return NOT_FOUND (${Status.NOT_FOUND}) when ETMP can not find the data for the given enrolment key" in new Setup {
-      val sampleEnrolmentKey: EnrolmentKey = EnrolmentKey("HMRC-MTD-VAT~VRN~123456789")
-      val vrn: EnrolmentKey = EnrolmentKey(VAT, "123456789")
+
+      val vrn: AgnosticEnrolmentKey = AgnosticEnrolmentKey(
+        Regime("VATC"), 
+        IdType("VRN"),
+        Id("123456789")
+      )
       when(mockGetPenaltyDetailsService.getDataFromPenaltyService(ArgumentMatchers.eq(vrn))(ArgumentMatchers.any()))
         .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(NOT_FOUND))))
 
-      val result: Future[Result] = controller.getAppealsDataForLatePaymentPenalty("1", sampleEnrolmentKey,
+      val result: Future[Result] = controller.getAppealsDataForLatePaymentPenalty("1", regime, idType, id,
         isAdditional = false)(fakeRequest)
       status(result) shouldBe Status.NOT_FOUND
-      contentAsString(result) shouldBe s"A downstream call returned 404 for ${vrn.info}"
+      contentAsString(result) shouldBe s"A downstream call returned 404 for ${vrn}"
     }
 
     s"return NOT_FOUND (${Status.NOT_FOUND}) when ETMP returns data but the given penaltyId is wrong" in new Setup {
       val samplePenaltyId: String = "1234"
-      val sampleEnrolmentKey: EnrolmentKey = EnrolmentKey("HMRC-MTD-VAT~VRN~123456789")
-      val vrn: EnrolmentKey = EnrolmentKey(VAT, "123456789")
+
+      val vrn: AgnosticEnrolmentKey = AgnosticEnrolmentKey(
+        Regime("VATC"), 
+        IdType("VRN"),
+        Id("123456789")
+      )
       when(mockGetPenaltyDetailsService.getDataFromPenaltyService(ArgumentMatchers.eq(vrn))(ArgumentMatchers.any()))
         .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetails))))
 
-      val result: Future[Result] = controller.getAppealsDataForLatePaymentPenalty(samplePenaltyId, sampleEnrolmentKey,
+      val result: Future[Result] = controller.getAppealsDataForLatePaymentPenalty(samplePenaltyId, regime, idType, id,
         isAdditional = false)(fakeRequest)
       status(result) shouldBe Status.NOT_FOUND
       contentAsString(result) shouldBe "Penalty ID was not found in users penalties."
     }
 
     s"return ISE (${Status.INTERNAL_SERVER_ERROR}) when the call to ETMP fails for some reason" in new Setup {
-      val sampleEnrolmentKey: EnrolmentKey = EnrolmentKey("HMRC-MTD-VAT~VRN~123456789")
-      val vrn: EnrolmentKey = EnrolmentKey(VAT, "123456789")
+
+              val vrn: AgnosticEnrolmentKey = AgnosticEnrolmentKey(
+          Regime("VATC"), 
+          IdType("VRN"),
+          Id("123456789")
+        )
       when(mockGetPenaltyDetailsService.getDataFromPenaltyService(ArgumentMatchers.eq(vrn))(ArgumentMatchers.any()))
         .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(INTERNAL_SERVER_ERROR))))
 
-      val result: Future[Result] = controller.getAppealsDataForLatePaymentPenalty("1", sampleEnrolmentKey,
+      val result: Future[Result] = controller.getAppealsDataForLatePaymentPenalty("1", regime, idType, id,
         isAdditional = false)(fakeRequest)
       status(result) shouldBe Status.INTERNAL_SERVER_ERROR
     }
 
     s"return ISE (${Status.INTERNAL_SERVER_ERROR}) when API 1812 call returns malformed data" in new Setup {
-      val sampleEnrolmentKey: EnrolmentKey = EnrolmentKey("HMRC-MTD-VAT~VRN~123456789")
-      val vrn: EnrolmentKey = EnrolmentKey(VAT, "123456789")
+
+              val vrn: AgnosticEnrolmentKey = AgnosticEnrolmentKey(
+          Regime("VATC"), 
+          IdType("VRN"),
+          Id("123456789")
+        )
       when(mockGetPenaltyDetailsService.getDataFromPenaltyService(ArgumentMatchers.eq(vrn))(ArgumentMatchers.any()))
         .thenReturn(Future.successful(Left(GetPenaltyDetailsMalformed)))
       withCaptureOfLoggingFrom(logger) {
         logs => {
-          val result: Future[Result] = controller.getAppealsDataForLatePaymentPenalty("1234567891", sampleEnrolmentKey, isAdditional = false)(fakeRequest)
+          val result: Future[Result] = controller.getAppealsDataForLatePaymentPenalty("1234567891", regime, idType, id, isAdditional = false)(fakeRequest)
           status(result) shouldBe Status.INTERNAL_SERVER_ERROR
           logs.exists(_.getMessage.contains(PagerDutyKeys.MALFORMED_RESPONSE_FROM_1812_API.toString)) shouldBe true
         }
@@ -528,12 +579,16 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
 
     s"return OK (${Status.OK}) when the call to ETMP succeeds and the penalty ID matches" in new Setup {
       val samplePenaltyId: String = "1234567890"
-      val sampleEnrolmentKey: EnrolmentKey = EnrolmentKey("HMRC-MTD-VAT~VRN~123456789")
-      val vrn: EnrolmentKey = EnrolmentKey(VAT, "123456789")
+
+        val vrn: AgnosticEnrolmentKey = AgnosticEnrolmentKey(
+          Regime("VATC"), 
+          IdType("VRN"),
+          Id("123456789")
+        )
       when(mockGetPenaltyDetailsService.getDataFromPenaltyService(ArgumentMatchers.eq(vrn))(ArgumentMatchers.any()))
         .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetails))))
 
-      val result: Future[Result] = controller.getAppealsDataForLatePaymentPenalty(samplePenaltyId, sampleEnrolmentKey,
+      val result: Future[Result] = controller.getAppealsDataForLatePaymentPenalty(samplePenaltyId, regime, idType, id,
         isAdditional = false)(fakeRequest)
       status(result) shouldBe Status.OK
       val appealDataToReturn: AppealData = AppealData(
@@ -548,12 +603,16 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
 
     s"return OK (${Status.OK}) when the call to ETMP succeeds and the penalty ID matches for Additional penalty" in new Setup {
       val samplePenaltyId: String = "1234567891"
-      val sampleEnrolmentKey: EnrolmentKey = EnrolmentKey("HMRC-MTD-VAT~VRN~123456789")
-      val vrn: EnrolmentKey = EnrolmentKey(VAT, "123456789")
+
+      val vrn: AgnosticEnrolmentKey = AgnosticEnrolmentKey(
+          Regime("VATC"), 
+          IdType("VRN"),
+          Id("123456789")
+        )
       when(mockGetPenaltyDetailsService.getDataFromPenaltyService(ArgumentMatchers.eq(vrn))(ArgumentMatchers.any()))
         .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetails))))
 
-      val result: Future[Result] = controller.getAppealsDataForLatePaymentPenalty(samplePenaltyId, sampleEnrolmentKey,
+      val result: Future[Result] = controller.getAppealsDataForLatePaymentPenalty(samplePenaltyId, regime, idType, id,
         isAdditional = true)(fakeRequest)
       status(result) shouldBe Status.OK
       val appealDataToReturn: AppealData = AppealData(
@@ -568,12 +627,17 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
 
     s"return OK (${Status.OK}) when the call to ETMP succeeds and the penalty ID matches (LPP1 - defaulting comms date if not present)" in new Setup {
       val samplePenaltyId: String = "1234567890"
-      val sampleEnrolmentKey: EnrolmentKey = EnrolmentKey("HMRC-MTD-VAT~VRN~123456789")
-      val vrn: EnrolmentKey = EnrolmentKey(VAT, "123456789")
+
+        val vrn: AgnosticEnrolmentKey = AgnosticEnrolmentKey(
+          Regime("VATC"), 
+          IdType("VRN"),
+          Id("123456789")
+        )
+
       when(mockAppConfig.getTimeMachineDateTime).thenReturn(LocalDateTime.now)
       when(mockGetPenaltyDetailsService.getDataFromPenaltyService(ArgumentMatchers.eq(vrn))(ArgumentMatchers.any()))
         .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetailsNoCommunicationsDate))))
-      val result: Future[Result] = controller.getAppealsDataForLatePaymentPenalty(samplePenaltyId, sampleEnrolmentKey,
+      val result: Future[Result] = controller.getAppealsDataForLatePaymentPenalty(samplePenaltyId, regime, idType, id,
         isAdditional = false)(fakeRequest)
       status(result) shouldBe Status.OK
       val appealDataToReturn: AppealData = AppealData(
@@ -588,12 +652,16 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
 
     s"return OK (${Status.OK}) when the call to ETMP succeeds and the penalty ID matches (LPP2 - defaulting comms date if not present)" in new Setup {
       val samplePenaltyId: String = "1234567891"
-      val sampleEnrolmentKey: EnrolmentKey = EnrolmentKey("HMRC-MTD-VAT~VRN~123456789")
-      val vrn: EnrolmentKey = EnrolmentKey(VAT, "123456789")
+
+        val vrn: AgnosticEnrolmentKey = AgnosticEnrolmentKey(
+          Regime("VATC"), 
+          IdType("VRN"),
+          Id("123456789")
+        )
       when(mockAppConfig.getTimeMachineDateTime).thenReturn(LocalDateTime.now)
       when(mockGetPenaltyDetailsService.getDataFromPenaltyService(ArgumentMatchers.eq(vrn))(ArgumentMatchers.any()))
         .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetailsNoCommunicationsDate))))
-      val result: Future[Result] = controller.getAppealsDataForLatePaymentPenalty(samplePenaltyId, sampleEnrolmentKey,
+      val result: Future[Result] = controller.getAppealsDataForLatePaymentPenalty(samplePenaltyId, regime, idType, id,
         isAdditional = true)(fakeRequest)
       status(result) shouldBe Status.OK
       val appealDataToReturn: AppealData = AppealData(
@@ -697,7 +765,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
   "submitAppeal" should {
     "return BAD_REQUEST (400)" when {
       "the request body is not valid JSON" in new Setup {
-        val result: Future[Result] = controller.submitAppeal(EnrolmentKey("HMRC-MTD-VAT~VRN~123456789"), isLPP = false, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = false)(fakeRequest)
+        val result: Future[Result] = controller.submitAppeal(regime, idType, id, isLPP = false, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = false)(fakeRequest)
         status(result) shouldBe BAD_REQUEST
         contentAsString(result) shouldBe "Invalid body received i.e. could not be parsed to JSON"
       }
@@ -707,7 +775,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
           """
             |{
             |    "sourceSystem": "MDTP",
-            |    "taxRegime": "VAT",
+            |    "taxRegime": "VATC",
             |    "customerReferenceNo": "123456789",
             |    "dateOfAppeal": "2020-01-01T00:00:00",
             |    "isLPP": true,
@@ -715,7 +783,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
             |}
             |""".stripMargin)
 
-        val result: Future[Result] = controller.submitAppeal(EnrolmentKey("HMRC-MTD-VAT~VRN~123456789"), isLPP = false, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = false)(fakeRequest.withJsonBody(appealsJson))
+        val result: Future[Result] = controller.submitAppeal(regime, idType, id, isLPP = false, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = false)(fakeRequest.withJsonBody(appealsJson))
         status(result) shouldBe BAD_REQUEST
         contentAsString(result) shouldBe "Failed to parse to model"
       }
@@ -745,7 +813,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
             |		}
             |}
             |""".stripMargin)
-        val result: Future[Result] = controller.submitAppeal(EnrolmentKey("HMRC-MTD-VAT~VRN~123456789"), isLPP = false, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = false)(fakeRequest.withJsonBody(appealsJson))
+        val result: Future[Result] = controller.submitAppeal(regime, idType, id, isLPP = false, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = false)(fakeRequest.withJsonBody(appealsJson))
         status(result) shouldBe GATEWAY_TIMEOUT
       }
     }
@@ -776,7 +844,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
           "caseId" -> "PR-123456789",
           "status" -> OK
         )
-        val result: Future[Result] = controller.submitAppeal(EnrolmentKey("HMRC-MTD-VAT~VRN~123456789"), isLPP = false, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = false)(fakeRequest.withJsonBody(appealsJson))
+        val result: Future[Result] = controller.submitAppeal(regime, idType, id, isLPP = false, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = false)(fakeRequest.withJsonBody(appealsJson))
         status(result) shouldBe OK
         contentAsJson(result) shouldBe expectedJsonResponse
       }
@@ -801,7 +869,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
             |		}
             |}
             |""".stripMargin)
-        val result: Future[Result] = controller.submitAppeal(EnrolmentKey("HMRC-MTD-VAT~VRN~123456789"), isLPP = false, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = false)(fakeRequest.withJsonBody(appealsJson))
+        val result: Future[Result] = controller.submitAppeal(regime, idType, id, isLPP = false, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = false)(fakeRequest.withJsonBody(appealsJson))
         status(result) shouldBe OK
       }
 
@@ -825,7 +893,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
             |		}
             |}
             |""".stripMargin)
-        val result: Future[Result] = controller.submitAppeal(EnrolmentKey("HMRC-MTD-VAT~VRN~123456789"), isLPP = false, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = false)(fakeRequest.withJsonBody(appealsJson))
+        val result: Future[Result] = controller.submitAppeal(regime, idType, id, isLPP = false, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = false)(fakeRequest.withJsonBody(appealsJson))
         status(result) shouldBe OK
       }
 
@@ -850,7 +918,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
             |		}
             |}
             |""".stripMargin)
-        val result: Future[Result] = controller.submitAppeal(EnrolmentKey("HMRC-MTD-VAT~VRN~123456789"), isLPP = false, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = false)(fakeRequest.withJsonBody(appealsJson))
+        val result: Future[Result] = controller.submitAppeal(regime, idType, id, isLPP = false, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = false)(fakeRequest.withJsonBody(appealsJson))
         status(result) shouldBe OK
       }
 
@@ -877,7 +945,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
               |		}
               |}
               |""".stripMargin)
-          val result: Future[Result] = controller.submitAppeal(EnrolmentKey("HMRC-MTD-VAT~VRN~123456789"), isLPP = false, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = false)(fakeRequest.withJsonBody(appealsJson))
+          val result: Future[Result] = controller.submitAppeal(regime, idType, id, isLPP = false, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = false)(fakeRequest.withJsonBody(appealsJson))
           status(result) shouldBe OK
         }
 
@@ -903,7 +971,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
               |		}
               |}
               |""".stripMargin)
-          val result: Future[Result] = controller.submitAppeal(EnrolmentKey("HMRC-MTD-VAT~VRN~123456789"), isLPP = false, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = false)(fakeRequest.withJsonBody(appealsJson))
+          val result: Future[Result] = controller.submitAppeal(regime, idType, id, isLPP = false, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = false)(fakeRequest.withJsonBody(appealsJson))
           status(result) shouldBe OK
         }
 
@@ -930,7 +998,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
               |		}
               |}
               |""".stripMargin)
-          val result: Future[Result] = controller.submitAppeal(EnrolmentKey("HMRC-MTD-VAT~VRN~123456789"), isLPP = false, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = false)(fakeRequest.withJsonBody(appealsJson))
+          val result: Future[Result] = controller.submitAppeal(regime, idType, id, isLPP = false, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = false)(fakeRequest.withJsonBody(appealsJson))
           status(result) shouldBe OK
         }
 
@@ -955,7 +1023,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
               |		}
               |}
               |""".stripMargin)
-          val result: Future[Result] = controller.submitAppeal(EnrolmentKey("HMRC-MTD-VAT~VRN~123456789"), isLPP = true, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = false)(fakeRequest.withJsonBody(appealsJson))
+          val result: Future[Result] = controller.submitAppeal(regime, idType, id, isLPP = true, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = false)(fakeRequest.withJsonBody(appealsJson))
           status(result) shouldBe OK
         }
       }
@@ -1008,7 +1076,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
             |""".stripMargin)
         withCaptureOfLoggingFrom(logger) {
           logs => {
-            val result: Result = await(controller.submitAppeal(EnrolmentKey("HMRC-MTD-VAT~VRN~123456789"), isLPP = false, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = false)(fakeRequest.withJsonBody(appealsJson)))
+            val result: Result = await(controller.submitAppeal(regime, idType, id, isLPP = false, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = false)(fakeRequest.withJsonBody(appealsJson)))
             result.header.status shouldBe OK
             eventually {
               verify(mockAuditService, times(1)).audit(argumentCaptorForAuditModel.capture())(any(), any(), any())
@@ -1065,7 +1133,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
             |""".stripMargin)
         withCaptureOfLoggingFrom(logger) {
           logs => {
-            val result: Result = await(controller.submitAppeal(EnrolmentKey("HMRC-MTD-VAT~VRN~123456789"), isLPP = false, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = false)(fakeRequest.withJsonBody(appealsJson)))
+            val result: Result = await(controller.submitAppeal(regime, idType, id, isLPP = false, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = false)(fakeRequest.withJsonBody(appealsJson)))
             result.header.status shouldBe OK
             eventually {
               verify(mockAuditService, times(1)).audit(argumentCaptorForAuditModel.capture())(any(), any(), any())
@@ -1124,7 +1192,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
             |""".stripMargin)
         withCaptureOfLoggingFrom(logger) {
           logs => {
-            val result: Result = await(controller.submitAppeal(EnrolmentKey("HMRC-MTD-VAT~VRN~123456789"), isLPP = false, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = false)(fakeRequest.withJsonBody(appealsJson)))
+            val result: Result = await(controller.submitAppeal(regime, idType, id, isLPP = false, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = false)(fakeRequest.withJsonBody(appealsJson)))
             result.header.status shouldBe OK
             eventually {
               verify(mockAuditService, times(1)).audit(argumentCaptorForAuditModel.capture())(any(), any(), any())
@@ -1189,7 +1257,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
         )
         withCaptureOfLoggingFrom(logger) {
           logs => {
-            val result: Result = await(controller.submitAppeal(EnrolmentKey("HMRC-MTD-VAT~VRN~123456789"), isLPP = false, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = true)(fakeRequest.withJsonBody(appealsJson)))
+            val result: Result = await(controller.submitAppeal(regime, idType, id, isLPP = false, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = true)(fakeRequest.withJsonBody(appealsJson)))
             result.header.status shouldBe MULTI_STATUS
             contentAsJson(Future(result)) shouldBe expectedJsonResponse
             eventually {
@@ -1252,7 +1320,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
         )
         withCaptureOfLoggingFrom(logger) {
           logs => {
-            val result: Result = await(controller.submitAppeal(EnrolmentKey("HMRC-MTD-VAT~VRN~123456789"), isLPP = false, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = true)(fakeRequest.withJsonBody(appealsJson)))
+            val result: Result = await(controller.submitAppeal(regime, idType, id, isLPP = false, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = true)(fakeRequest.withJsonBody(appealsJson)))
             result.header.status shouldBe MULTI_STATUS
             contentAsJson(Future(result)) shouldBe expectedJsonResponse
             eventually {
@@ -1317,9 +1385,9 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
         )
         withCaptureOfLoggingFrom(logger) {
           logs => {
-            val result: Result = await(controller.submitAppeal(EnrolmentKey("HMRC-MTD-VAT~VRN~123456789"), isLPP = false, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = true)(fakeRequest.withJsonBody(appealsJson)))
+            val result: Result = await(controller.submitAppeal(regime, idType, id, isLPP = false, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = true)(fakeRequest.withJsonBody(appealsJson)))
             result.header.status shouldBe MULTI_STATUS
-            logs.exists(_.getMessage == s"[RegimeAppealsController][submitAppeal] Unable to store file notification for user with enrolment: HMRC-MTD-VAT~VRN~123456789 penalty 123456789 (correlation ID: $correlationId) - An unknown exception occurred when attempting to store file notifications, with error: failed") shouldBe true
+            logs.map(_.getMessage) should contain (s"[RegimeAppealsController][submitAppeal] Unable to store file notification for user with enrolment: VATC~VRN~123456789 penalty 123456789 (correlation ID: $correlationId) - An unknown exception occurred when attempting to store file notifications, with error: failed") 
             contentAsJson(Future(result)) shouldBe expectedJsonResponse
             eventually {
               verify(mockAuditService, times(1)).audit(argumentCaptorForAuditModel.capture())(any(), any(), any())
@@ -1409,20 +1477,28 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
 
     s"return NO_CONTENT (${Status.NO_CONTENT})" when {
       "the appeal service returns None" in new Setup {
-        val sampleEnrolmentKey: EnrolmentKey = EnrolmentKey("HMRC-MTD-VAT~VRN~123456789")
-        val vrn: EnrolmentKey = EnrolmentKey(VAT, "123456789")
+  
+        val vrn: AgnosticEnrolmentKey = AgnosticEnrolmentKey(
+          Regime("VATC"), 
+          IdType("VRN"),
+          Id("123456789")
+        )
         when(mockGetPenaltyDetailsService.getDataFromPenaltyService(ArgumentMatchers.eq(vrn))(ArgumentMatchers.any()))
           .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetailsOnePenalty))))
         when(mockAppealsService.findMultiplePenalties(any(), any())).thenReturn(None)
-        val result: Future[Result] = controller.getMultiplePenaltyData("1234567891", sampleEnrolmentKey)(fakeRequest)
+        val result: Future[Result] = controller.getMultiplePenaltyData("1234567891", regime, idType, id)(fakeRequest)
         status(result) shouldBe Status.NO_CONTENT
       }
     }
 
     s"return OK (${Status.OK})" when {
       "the appeal service returns Some" in new Setup {
-        val sampleEnrolmentKey: EnrolmentKey = EnrolmentKey("HMRC-MTD-VAT~VRN~123456789")
-        val vrn: EnrolmentKey = EnrolmentKey(VAT, "123456789")
+  
+        val vrn: AgnosticEnrolmentKey = AgnosticEnrolmentKey(
+          Regime("VATC"), 
+          IdType("VRN"),
+          Id("123456789")
+        )
         val expectedReturnModel: MultiplePenaltiesData = MultiplePenaltiesData(
           firstPenaltyChargeReference = "1234567891",
           firstPenaltyAmount = 113.45,
@@ -1435,7 +1511,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
         when(mockGetPenaltyDetailsService.getDataFromPenaltyService(ArgumentMatchers.eq(vrn))(ArgumentMatchers.any()))
           .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetailsTwoPenalties))))
         when(mockAppealsService.findMultiplePenalties(any(), any())).thenReturn(Some(expectedReturnModel))
-        val result: Future[Result] = controller.getMultiplePenaltyData("1234567892", sampleEnrolmentKey)(fakeRequest)
+        val result: Future[Result] = controller.getMultiplePenaltyData("1234567892", regime, idType, id)(fakeRequest)
         status(result) shouldBe Status.OK
         contentAsJson(result) shouldBe Json.toJson(expectedReturnModel)
       }
@@ -1443,13 +1519,17 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
 
     s"return ISE (${Status.INTERNAL_SERVER_ERROR})" when {
       "API 1812 call returns malformed data" in new Setup {
-        val sampleEnrolmentKey: EnrolmentKey = EnrolmentKey("HMRC-MTD-VAT~VRN~123456789")
-        val vrn: EnrolmentKey = EnrolmentKey(VAT, "123456789")
+  
+        val vrn: AgnosticEnrolmentKey = AgnosticEnrolmentKey(
+          Regime("VATC"), 
+          IdType("VRN"),
+          Id("123456789")
+        )
         when(mockGetPenaltyDetailsService.getDataFromPenaltyService(ArgumentMatchers.eq(vrn))(ArgumentMatchers.any()))
           .thenReturn(Future.successful(Left(GetPenaltyDetailsMalformed)))
         withCaptureOfLoggingFrom(logger) {
           logs => {
-            val result: Future[Result] = controller.getMultiplePenaltyData("1234567891", sampleEnrolmentKey)(fakeRequest)
+            val result: Future[Result] = controller.getMultiplePenaltyData("1234567891", regime, idType, id)(fakeRequest)
             status(result) shouldBe Status.INTERNAL_SERVER_ERROR
             logs.exists(_.getMessage.contains(PagerDutyKeys.MALFORMED_RESPONSE_FROM_1812_API.toString)) shouldBe true
           }
@@ -1457,23 +1537,37 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
       }
 
       "the call to ETMP fails for some reason" in new Setup {
-        val sampleEnrolmentKey: EnrolmentKey = EnrolmentKey("HMRC-MTD-VAT~VRN~123456789")
-        val vrn: EnrolmentKey = EnrolmentKey(VAT, "123456789")
+  
+        val vrn: AgnosticEnrolmentKey = AgnosticEnrolmentKey(
+          Regime("VATC"), 
+          IdType("VRN"),
+          Id("123456789")
+        )
+          val regime = Regime("VATC") 
+  val idType = IdType("VRN")
+  val id = Id("123456789")
         when(mockGetPenaltyDetailsService.getDataFromPenaltyService(ArgumentMatchers.eq(vrn))(ArgumentMatchers.any()))
           .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(INTERNAL_SERVER_ERROR))))
-        val result: Future[Result] = controller.getMultiplePenaltyData("1", sampleEnrolmentKey)(fakeRequest)
+        val result: Future[Result] = controller.getMultiplePenaltyData("1", regime, idType, id)(fakeRequest)
         status(result) shouldBe Status.INTERNAL_SERVER_ERROR
       }
     }
 
     s"return NOT_FOUND (${Status.NOT_FOUND}) when ETMP can not find the data for the given enrolment key" in new Setup {
-      val sampleEnrolmentKey: EnrolmentKey = EnrolmentKey("HMRC-MTD-VAT~VRN~123456789")
-      val vrn: EnrolmentKey = EnrolmentKey(VAT, "123456789")
+
+        val vrn: AgnosticEnrolmentKey = AgnosticEnrolmentKey(
+          Regime("VATC"), 
+          IdType("VRN"),
+          Id("123456789")
+        )
+          val regime = Regime("VATC") 
+  val idType = IdType("VRN")
+  val id = Id("123456789")
       when(mockGetPenaltyDetailsService.getDataFromPenaltyService(ArgumentMatchers.eq(vrn))(ArgumentMatchers.any()))
         .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(NOT_FOUND))))
-      val result: Future[Result] = controller.getMultiplePenaltyData("1", sampleEnrolmentKey)(fakeRequest)
+      val result: Future[Result] = controller.getMultiplePenaltyData("1", regime, idType, id)(fakeRequest)
       status(result) shouldBe Status.NOT_FOUND
-      contentAsString(result) shouldBe s"A downstream call returned 404 for VRN: 123456789"
+      contentAsString(result) shouldBe s"A downstream call returned 404 for ${vrn}"
     }
   }
 }

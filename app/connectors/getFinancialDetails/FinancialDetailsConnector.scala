@@ -31,6 +31,7 @@ import utils.PagerDutyHelper.PagerDutyKeys._
 import java.util.UUID.randomUUID
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
+import models.AgnosticEnrolmentKey
 
 class FinancialDetailsConnector @Inject()(httpClient: HttpClient,
                                           appConfig: AppConfig)
@@ -42,7 +43,7 @@ class FinancialDetailsConnector @Inject()(httpClient: HttpClient,
     "Environment" -> appConfig.eisEnvironment
   )
 
-  def getFinancialDetails(enrolmentKey: EnrolmentKey, overridingParameters: Option[String])(implicit hc: HeaderCarrier): Future[GetFinancialDetailsResponse] = {
+  def getFinancialDetails(enrolmentKey: AgnosticEnrolmentKey, overridingParameters: Option[String])(implicit hc: HeaderCarrier): Future[GetFinancialDetailsResponse] = {
     val parameters = overridingParameters.fold(appConfig.queryParametersForGetFinancialDetails + appConfig.addDateRangeQueryParameters())(_ + appConfig.addDateRangeQueryParameters())
     httpClient.GET[GetFinancialDetailsResponse](url =
       getFinancialDetailsUrl(enrolmentKey) + parameters, headers = headers).recover {
@@ -59,14 +60,9 @@ class FinancialDetailsConnector @Inject()(httpClient: HttpClient,
     }
   }
 
-  private def getFinancialDetailsUrl(enrolmentKey: EnrolmentKey) = enrolmentKey match {
-    case EnrolmentKey(VAT, VRN, vrn) => appConfig.getVatFinancialDetailsUrl(vrn)
-    case EnrolmentKey(ITSA, NINO, utr) => appConfig.getItsaFinancialDetailsUrl(utr)
-    //case EnrolmentKey(CT, UTR, utr) => appConfig.getCtFinancialDetailsUrl(utr)
-    case _ => throw new Exception(s"No getFinancialDetails URL available for $enrolmentKey")
-  }
+  private def getFinancialDetailsUrl(enrolmentKey: AgnosticEnrolmentKey) = appConfig.getRegimeAgnosticPenaltyDetailsUrl(enrolmentKey)
 
-  def getFinancialDetailsForAPI(enrolmentKey: EnrolmentKey,
+  def getFinancialDetailsForAPI(enrolmentKey: AgnosticEnrolmentKey,
                                 searchType: Option[String],
                                 searchItem: Option[String],
                                 dateType: Option[String],

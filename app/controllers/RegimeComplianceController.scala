@@ -22,7 +22,7 @@ import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import services.RegimeComplianceService
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import utils.Logger.logger
-
+import models.{AgnosticEnrolmentKey, Regime, IdType, Id}
 import javax.inject.Inject
 import scala.concurrent.ExecutionContext
 
@@ -30,23 +30,22 @@ class RegimeComplianceController @Inject()(complianceService: RegimeComplianceSe
                                      cc: ControllerComponents,
                                          authAction: AuthAction)(implicit ec: ExecutionContext) extends BackendController(cc) {
 
-  def redirectLegacyGetComplianceData(vrn: String, fromDate: String, toDate: String): Action[AnyContent] = Action {
-    Redirect(routes.RegimeComplianceController.getComplianceData("VAT", "VRN", vrn, fromDate, toDate))
+  def redirectLegacyGetComplianceData(regime: Regime, idType: IdType, id: Id, fromDate: String, toDate: String): Action[AnyContent] = Action {
+    Redirect(routes.RegimeComplianceController.getComplianceData(regime, idType, id, fromDate, toDate))
   }
 
-  def getComplianceData(regime: String, idType: String, id: String, fromDate: String, toDate: String): Action[AnyContent] = Action.async {
+  def getComplianceData(regime: Regime, idType: IdType, id: Id, fromDate: String, toDate: String): Action[AnyContent] = Action.async {
     implicit request => {
-      composeEnrolmentKey(regime, idType, id).andThen { enrolmentKey =>
+        val enrolmentKey = AgnosticEnrolmentKey(regime, idType, id)
         complianceService.getComplianceData(enrolmentKey, fromDate, toDate).map {
           _.fold(
             error => Status(error),
             model => {
-              logger.info(s"[RegimeComplianceController][getComplianceData] - 1330 call returned 200 for ${enrolmentKey.info}")
+              logger.info(s"[RegimeComplianceController][getComplianceData] - 1330 call returned 200 for ${enrolmentKey}")
               Ok(Json.toJson(model))
             }
           )
         }
-      }
     }
   }
 }

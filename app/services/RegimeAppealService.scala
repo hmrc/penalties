@@ -32,6 +32,7 @@ import utils.{DateHelper, FileHelper, UUIDGenerator}
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
+import models.{AgnosticEnrolmentKey}
 
 class RegimeAppealService @Inject()(appealsConnector: RegimePEGAConnector,
                               appConfig: AppConfig,
@@ -40,7 +41,7 @@ class RegimeAppealService @Inject()(appealsConnector: RegimePEGAConnector,
   private val regexToSanitiseFileName: String = "[\\\\\\/:*?<>|\"‘’“”]"
 
   def submitAppeal(appealSubmission: AppealSubmission,
-                   enrolmentKey: EnrolmentKey, isLPP: Boolean, penaltyNumber: String, correlationId: String): Future[Either[AppealsParser.ErrorResponse, AppealResponseModel]] = {
+                   enrolmentKey: AgnosticEnrolmentKey, isLPP: Boolean, penaltyNumber: String, correlationId: String): Future[Either[AppealsParser.ErrorResponse, AppealResponseModel]] = {
     appealsConnector.submitAppeal(appealSubmission, enrolmentKey, isLPP, penaltyNumber, correlationId).flatMap {
       _.fold(
         error => {

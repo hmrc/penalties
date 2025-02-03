@@ -20,7 +20,7 @@ import base.{LogCapturing, SpecBase}
 import config.AppConfig
 import config.featureSwitches.FeatureSwitching
 import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser.{GetPenaltyDetailsFailureResponse, GetPenaltyDetailsResponse, GetPenaltyDetailsSuccessResponse}
-import models.EnrolmentKey
+import models.{AgnosticEnrolmentKey, EnrolmentKey}
 import models.TaxRegime.VAT
 import models.getPenaltyDetails.GetPenaltyDetails
 import org.mockito.Mockito.{mock, reset, when}
@@ -33,6 +33,7 @@ import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse, UpstreamErrorR
 import utils.DateHelper
 import utils.Logger.logger
 import utils.PagerDutyHelper.PagerDutyKeys
+import models.{AgnosticEnrolmentKey, Id, IdType, Regime}
 
 import java.time.{LocalDate, LocalDateTime}
 import scala.concurrent.{ExecutionContext, Future}
@@ -46,7 +47,16 @@ class PenaltyDetailsConnectorSpec extends SpecBase with LogCapturing with Featur
   val mockAppConfig: AppConfig = mock(classOf[AppConfig])
   implicit val mockConfiguration: Configuration = mock(classOf[Configuration])
 
-  val vrn123456789: EnrolmentKey = EnrolmentKey(VAT, "123456789")
+  val regime = Regime("VATC") 
+  val idType = IdType("VRN")
+  val id = Id("123456789")
+
+
+  val vrn123456789: AgnosticEnrolmentKey = AgnosticEnrolmentKey(
+    regime,
+    idType,
+    id
+  )
 
   class Setup {
     reset(mockHttpClient)
@@ -54,7 +64,8 @@ class PenaltyDetailsConnectorSpec extends SpecBase with LogCapturing with Featur
     reset(mockConfiguration)
 
     val connector = new PenaltyDetailsConnector(mockHttpClient, mockAppConfig)(implicitly, mockConfiguration)
-    when(mockAppConfig.getVatPenaltyDetailsUrl).thenReturn("/penalty/details/VATC/VRN/")
+    // when(mockAppConfig.getVatPenaltyDetailsUrl).thenReturn("/penalty/details/VATC/VRN/")
+    when(mockAppConfig.getRegimeAgnosticPenaltyDetailsUrl(vrn123456789)).thenReturn("/penalty/details/VATC/VRN/123456789")
     when(mockAppConfig.eisEnvironment).thenReturn("env")
     when(mockAppConfig.eiOutboundBearerToken).thenReturn("token")
     when(mockConfiguration.getOptional[String](ArgumentMatchers.eq("feature.switch.time-machine-now"))(ArgumentMatchers.any()))

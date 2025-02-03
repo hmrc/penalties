@@ -26,25 +26,21 @@ import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, UpstreamErrorResponse}
 import utils.Logger.logger
 import utils.PagerDutyHelper
 import utils.PagerDutyHelper.PagerDutyKeys._
-
+import models.AgnosticEnrolmentKey
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class RegimeComplianceConnector @Inject()(httpClient: HttpClient,
                                     appConfig: AppConfig)
                                    (implicit ec: ExecutionContext){
-  def getComplianceData(enrolmentKey: EnrolmentKey, fromDate: String, toDate: String)(implicit hc: HeaderCarrier): Future[CompliancePayloadResponse] = {
+  def getComplianceData(enrolmentKey: AgnosticEnrolmentKey, fromDate: String, toDate: String)(implicit hc: HeaderCarrier): Future[CompliancePayloadResponse] = {
     val environmentHeader: String = appConfig.eisEnvironment
     val desHeaders: Seq[(String, String)] = Seq(
       "Environment" -> environmentHeader,
       "Authorization" -> s"Bearer ${appConfig.desBearerToken}"
     )
-    val url = enrolmentKey match {
-      case EnrolmentKey(VAT, VRN, vrn) => appConfig.getVatComplianceDataUrl(vrn, fromDate, toDate)
-      case EnrolmentKey(ITSA, NINO, nino) => appConfig.getItsaComplianceDataUrl(nino, fromDate, toDate)
-      //case EnrolmentKey(CT, UTR, utr) => appConfig.getCtComplianceDataUrl(utr, fromDate, toDate)
-      case _ => throw new Exception(s"No getComplianceData URL available for $enrolmentKey")
-    }
+    val url = appConfig.getRegimeAgnosticComplianceDataUrl(enrolmentKey, fromDate, toDate)
+ 
     logger.debug(s"[ComplianceConnector][getComplianceData] - Calling GET $url with headers: $desHeaders")
     httpClient.GET[CompliancePayloadResponse](url, headers = desHeaders).recover {
       case e: UpstreamErrorResponse => {

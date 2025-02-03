@@ -20,8 +20,8 @@ import config.featureSwitches._
 import models.EnrolmentKey
 import play.api.Configuration
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
-
 import javax.inject.{Inject, Singleton}
+import models.AgnosticEnrolmentKey
 
 @Singleton
 class AppConfig @Inject()(val config: Configuration, servicesConfig: ServicesConfig) extends FeatureSwitching {
@@ -144,6 +144,11 @@ class AppConfig @Inject()(val config: Configuration, servicesConfig: ServicesCon
     else etmpBase + "/penalty/details/"
   }
 
+  def getRegimeAgnosticPenaltyDetailsUrl(agnosticEnrolmenKey: AgnosticEnrolmentKey): String = {
+    if (!isEnabled(CallAPI1812ETMP)) stubBase + "/penalties-stub/penalty/details/" + agnosticEnrolmenKey.regime.value + "/" + agnosticEnrolmenKey.idType.value + "/" + agnosticEnrolmenKey.id.value
+    else etmpBase + "/penalty/details/" + agnosticEnrolmenKey.regime.value + "/" + agnosticEnrolmenKey.idType.value + "/" + agnosticEnrolmenKey.id.value
+  }
+
   def getFinancialDetailsVatUrl(vrn: String): String = {
     if (!isEnabled(CallAPI1811ETMP)) stubBase + s"/penalties-stub/penalty/financial-data/VRN/$vrn/VATC"
     else etmpBase + s"/penalty/financial-data/VRN/$vrn/VATC"
@@ -163,6 +168,9 @@ class AppConfig @Inject()(val config: Configuration, servicesConfig: ServicesCon
   }
   def getVatComplianceDataUrl(vrn: String, fromDate: String, toDate: String): String =
     s"${getComplianceDataUrl}vrn/$vrn/VATC?from=$fromDate&to=$toDate"
+
+  def getRegimeAgnosticComplianceDataUrl(agnosticEnrolmenKey: AgnosticEnrolmentKey, fromDate: String, toDate: String): String =  
+    s"${getComplianceDataUrl}${agnosticEnrolmenKey.idType.value}/${agnosticEnrolmenKey.id.value}/${agnosticEnrolmenKey.regime.value}?from=$fromDate&to=$toDate"
 
   def getItsaComplianceDataUrl(nino: String, fromDate: String, toDate: String): String =
     s"${getComplianceDataUrl}nino/$nino/ITSA?from=$fromDate&to=$toDate"

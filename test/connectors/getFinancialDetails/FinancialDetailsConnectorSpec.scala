@@ -32,7 +32,7 @@ import play.api.test.Helpers._
 import uk.gov.hmrc.http._
 import utils.Logger.logger
 import utils.PagerDutyHelper.PagerDutyKeys
-
+import models.{AgnosticEnrolmentKey, Regime, IdType, Id}
 import java.time.LocalDate
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -41,14 +41,24 @@ class FinancialDetailsConnectorSpec extends SpecBase with LogCapturing {
   val mockHttpClient: HttpClient = mock(classOf[HttpClient])
   val mockAppConfig: AppConfig = mock(classOf[AppConfig])
 
-  val vrn123456789: EnrolmentKey = EnrolmentKey(VAT, "123456789")
+  val regime = Regime("VATC") 
+  val idType = IdType("VRN")
+  val id = Id("123456789")
+
+
+  val vrn123456789: AgnosticEnrolmentKey = AgnosticEnrolmentKey(
+    regime,
+    idType,
+    id
+  )
+
 
   class Setup {
     reset(mockHttpClient)
     reset(mockAppConfig)
 
     val connector = new FinancialDetailsConnector(mockHttpClient, mockAppConfig)
-    when(mockAppConfig.getVatFinancialDetailsUrl(ArgumentMatchers.any())).thenReturn("/VRN/123456789/VATC")
+    when(mockAppConfig.getRegimeAgnosticPenaltyDetailsUrl(ArgumentMatchers.any())).thenReturn("/VRN/123456789/VATC")
     when(mockAppConfig.eiOutboundBearerToken).thenReturn("1234")
     when(mockAppConfig.eisEnvironment).thenReturn("asdf")
     when(mockAppConfig.queryParametersForGetFinancialDetails).thenReturn("?foo=bar")

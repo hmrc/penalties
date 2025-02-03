@@ -28,7 +28,7 @@ import play.api.test.Helpers._
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, UpstreamErrorResponse}
 import utils.Logger.logger
 import utils.PagerDutyHelper.PagerDutyKeys
-
+import models.{AgnosticEnrolmentKey, Regime, IdType, Id}
 import java.time.{LocalDate, LocalDateTime}
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -46,7 +46,16 @@ class RegimeComplianceConnectorSpec extends SpecBase with LogCapturing {
   val date2: LocalDateTime = LocalDateTime.of(
     2024, 1, 1, 1, 1, 0)
 
-  val vrn123456789: EnrolmentKey = EnrolmentKey(VAT, "123456789")
+  val regime = Regime("VATC") 
+  val idType = IdType("VRN")
+  val id = Id("123456789")
+
+
+  val vrn123456789: AgnosticEnrolmentKey = AgnosticEnrolmentKey(
+    regime,
+    idType,
+    id
+  )
 
   class Setup {
     reset(mockHttpClient)
@@ -82,8 +91,13 @@ class RegimeComplianceConnectorSpec extends SpecBase with LogCapturing {
           )
         )
       )
-      when(mockAppConfig.getVatComplianceDataUrl(ArgumentMatchers.eq("123456789"), ArgumentMatchers.any(), ArgumentMatchers.any()))
+      
+      // when(mockAppConfig.getVatComplianceDataUrl(ArgumentMatchers.eq("123456789"), ArgumentMatchers.any(), ArgumentMatchers.any()))
+      //   .thenReturn("/123456789")
+      when(mockAppConfig.getRegimeAgnosticComplianceDataUrl(ArgumentMatchers.eq(vrn123456789), ArgumentMatchers.any(), ArgumentMatchers.any()))
         .thenReturn("/123456789")
+            // s"${getComplianceDataUrl}vrn/$vrn/VATC?from=$fromDate&to=$toDate"
+
       when(mockAppConfig.eisEnvironment).thenReturn("env")
       when(mockAppConfig.desBearerToken).thenReturn("12345")
       val headersArgumentCaptor: ArgumentCaptor[Seq[(String, String)]] = ArgumentCaptor.forClass(classOf[Seq[(String, String)]])
@@ -104,8 +118,8 @@ class RegimeComplianceConnectorSpec extends SpecBase with LogCapturing {
 
     "return a Left response" when {
       "the call returns a OK response however the body is not parsable as a model" in new Setup {
-        when(mockAppConfig.getVatComplianceDataUrl(ArgumentMatchers.eq("123456789"), ArgumentMatchers.any(), ArgumentMatchers.any()))
-          .thenReturn("/123456789")
+      when(mockAppConfig.getRegimeAgnosticComplianceDataUrl(ArgumentMatchers.eq(vrn123456789), ArgumentMatchers.any(), ArgumentMatchers.any()))
+        .thenReturn("/123456789")
         when(mockAppConfig.eisEnvironment).thenReturn("env")
         when(mockAppConfig.eiOutboundBearerToken).thenReturn("Bearer 12345")
         when(mockHttpClient.GET[CompliancePayloadResponse](ArgumentMatchers.eq("/123456789"),
@@ -121,8 +135,8 @@ class RegimeComplianceConnectorSpec extends SpecBase with LogCapturing {
       }
 
       "the call returns a Not Found status" in new Setup {
-        when(mockAppConfig.getVatComplianceDataUrl(ArgumentMatchers.eq("123456789"), ArgumentMatchers.any(), ArgumentMatchers.any()))
-          .thenReturn("/123456789")
+      when(mockAppConfig.getRegimeAgnosticComplianceDataUrl(ArgumentMatchers.eq(vrn123456789), ArgumentMatchers.any(), ArgumentMatchers.any()))
+        .thenReturn("/123456789")
         when(mockAppConfig.eisEnvironment).thenReturn("env")
         when(mockAppConfig.eiOutboundBearerToken).thenReturn("Bearer 12345")
         when(mockHttpClient.GET[CompliancePayloadResponse](ArgumentMatchers.eq("/123456789"),
@@ -138,8 +152,8 @@ class RegimeComplianceConnectorSpec extends SpecBase with LogCapturing {
       }
 
       "the call returns a ISE" in new Setup {
-        when(mockAppConfig.getVatComplianceDataUrl(ArgumentMatchers.eq("123456789"), ArgumentMatchers.any(), ArgumentMatchers.any()))
-          .thenReturn("/123456789")
+       when(mockAppConfig.getRegimeAgnosticComplianceDataUrl(ArgumentMatchers.eq(vrn123456789), ArgumentMatchers.any(), ArgumentMatchers.any()))
+        .thenReturn("/123456789")
         when(mockAppConfig.eisEnvironment).thenReturn("env")
         when(mockAppConfig.eiOutboundBearerToken).thenReturn("Bearer 12345")
         when(mockHttpClient.GET[CompliancePayloadResponse](ArgumentMatchers.eq("/123456789"),
@@ -155,8 +169,8 @@ class RegimeComplianceConnectorSpec extends SpecBase with LogCapturing {
       }
 
       "the call returns an unmatched response" in new Setup {
-        when(mockAppConfig.getVatComplianceDataUrl(ArgumentMatchers.eq("123456789"), ArgumentMatchers.any(), ArgumentMatchers.any()))
-          .thenReturn("/123456789")
+      when(mockAppConfig.getRegimeAgnosticComplianceDataUrl(ArgumentMatchers.eq(vrn123456789), ArgumentMatchers.any(), ArgumentMatchers.any()))
+        .thenReturn("/123456789")
         when(mockAppConfig.eisEnvironment).thenReturn("env")
         when(mockAppConfig.eiOutboundBearerToken).thenReturn("Bearer 12345")
         when(mockHttpClient.GET[CompliancePayloadResponse](ArgumentMatchers.eq("/123456789"),
@@ -172,8 +186,8 @@ class RegimeComplianceConnectorSpec extends SpecBase with LogCapturing {
       }
 
       "the call returns a UpstreamErrorResponse(4xx) exception" in new Setup {
-        when(mockAppConfig.getVatComplianceDataUrl(ArgumentMatchers.eq("123456789"), ArgumentMatchers.any(), ArgumentMatchers.any()))
-          .thenReturn("/123456789")
+       when(mockAppConfig.getRegimeAgnosticComplianceDataUrl(ArgumentMatchers.eq(vrn123456789), ArgumentMatchers.any(), ArgumentMatchers.any()))
+        .thenReturn("/123456789")
         when(mockAppConfig.eisEnvironment).thenReturn("env")
         when(mockAppConfig.eiOutboundBearerToken).thenReturn("Bearer 12345")
         when(mockHttpClient.GET[CompliancePayloadResponse](ArgumentMatchers.eq("/123456789"),
@@ -194,8 +208,8 @@ class RegimeComplianceConnectorSpec extends SpecBase with LogCapturing {
       }
 
       "the call returns a UpstreamErrorResponse(5xx) exception" in new Setup {
-        when(mockAppConfig.getVatComplianceDataUrl(ArgumentMatchers.eq("123456789"), ArgumentMatchers.any(), ArgumentMatchers.any()))
-          .thenReturn("/123456789")
+      when(mockAppConfig.getRegimeAgnosticComplianceDataUrl(ArgumentMatchers.eq(vrn123456789), ArgumentMatchers.any(), ArgumentMatchers.any()))
+        .thenReturn("/123456789")
         when(mockAppConfig.eisEnvironment).thenReturn("env")
         when(mockAppConfig.eiOutboundBearerToken).thenReturn("Bearer 12345")
         when(mockHttpClient.GET[CompliancePayloadResponse](ArgumentMatchers.eq("/123456789"),
@@ -216,8 +230,8 @@ class RegimeComplianceConnectorSpec extends SpecBase with LogCapturing {
       }
 
       "the call returns an exception" in new Setup {
-        when(mockAppConfig.getVatComplianceDataUrl(ArgumentMatchers.eq("123456789"), ArgumentMatchers.any(), ArgumentMatchers.any()))
-          .thenReturn("/123456789")
+      when(mockAppConfig.getRegimeAgnosticComplianceDataUrl(ArgumentMatchers.eq(vrn123456789), ArgumentMatchers.any(), ArgumentMatchers.any()))
+        .thenReturn("/123456789")
         when(mockAppConfig.eisEnvironment).thenReturn("env")
         when(mockAppConfig.eiOutboundBearerToken).thenReturn("Bearer 12345")
         when(mockHttpClient.GET[CompliancePayloadResponse](ArgumentMatchers.eq("/123456789"),

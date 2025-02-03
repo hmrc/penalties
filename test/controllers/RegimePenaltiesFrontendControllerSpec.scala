@@ -19,8 +19,6 @@ package controllers
 import base.{LPPDetailsBase, LSPDetailsBase, LogCapturing, SpecBase}
 import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser.{GetPenaltyDetailsFailureResponse, GetPenaltyDetailsMalformed, GetPenaltyDetailsSuccessResponse}
 import controllers.auth.AuthAction
-import models.EnrolmentKey
-import models.TaxRegime.VAT
 import models.getFinancialDetails.MainTransactionEnum.{VATReturnFirstLPP, VATReturnSecondLPP}
 import models.getPenaltyDetails.latePayment._
 import models.getPenaltyDetails.{GetPenaltyDetails, Totalisations}
@@ -38,13 +36,22 @@ import utils.PagerDutyHelper.PagerDutyKeys
 import java.time.LocalDate
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+import models.{AgnosticEnrolmentKey, Id, IdType, Regime}
 
 class RegimePenaltiesFrontendControllerSpec extends SpecBase with LogCapturing with LPPDetailsBase with LSPDetailsBase {
   val mockGetPenaltyDetailsService: PenaltyDetailsService = mock(classOf[PenaltyDetailsService])
   val mockPenaltiesFrontendService: RegimePenaltiesFrontendService = mock(classOf[RegimePenaltiesFrontendService])
   val mockAuthAction: AuthAction = injector.instanceOf(classOf[AuthActionMock])
 
-  val vrn123456789: EnrolmentKey = EnrolmentKey(VAT, "123456789")
+  val regime = Regime("VATC") 
+  val idType = IdType("VRN")
+  val id = Id("123456789")
+
+  val vrn123456789: AgnosticEnrolmentKey = AgnosticEnrolmentKey(
+    regime,
+    idType,
+    id
+  )
 
   class Setup(isFSEnabled: Boolean = true) {
     reset(mockGetPenaltyDetailsService)
@@ -61,7 +68,7 @@ class RegimePenaltiesFrontendControllerSpec extends SpecBase with LogCapturing w
     s"return ISE (${Status.INTERNAL_SERVER_ERROR}) when the 1812 call fails" in new Setup(isFSEnabled = true) {
       when(mockGetPenaltyDetailsService.getDataFromPenaltyService(ArgumentMatchers.any())(ArgumentMatchers.any()))
         .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(Status.INTERNAL_SERVER_ERROR))))
-      val result = controller.getPenaltiesData(vrn123456789, Some(""))(fakeRequest)
+      val result = controller.getPenaltiesData(regime, idType, id, Some(""))(fakeRequest)
       status(result) shouldBe Status.INTERNAL_SERVER_ERROR
     }
 
@@ -70,7 +77,7 @@ class RegimePenaltiesFrontendControllerSpec extends SpecBase with LogCapturing w
         .thenReturn(Future.successful(Left(GetPenaltyDetailsMalformed)))
       withCaptureOfLoggingFrom(logger) {
         logs => {
-          val result = await(controller.getPenaltiesData(vrn123456789, Some(""))(fakeRequest))
+          val result = await(controller.getPenaltiesData(regime, idType, id, Some(""))(fakeRequest))
           result.header.status shouldBe Status.INTERNAL_SERVER_ERROR
           logs.exists(_.getMessage.contains(PagerDutyKeys.MALFORMED_RESPONSE_FROM_1812_API.toString)) shouldBe true
         }
@@ -99,7 +106,8 @@ class RegimePenaltiesFrontendControllerSpec extends SpecBase with LogCapturing w
         .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetails))))
       when(mockPenaltiesFrontendService.handleAndCombineGetFinancialDetailsData(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
         .thenReturn(Future.successful(InternalServerError("")))
-      val result = controller.getPenaltiesData(vrn123456789, Some("123456789"))(fakeRequest)
+      val result = controller.getPenaltiesData(regime, idType, id, Some("123456789"))(fakeRequest)
+      
       status(result) shouldBe Status.INTERNAL_SERVER_ERROR
     }
 
@@ -167,7 +175,7 @@ class RegimePenaltiesFrontendControllerSpec extends SpecBase with LogCapturing w
         .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetails))))
       when(mockPenaltiesFrontendService.handleAndCombineGetFinancialDetailsData(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
         .thenReturn(Future.successful(Ok(Json.toJson(penaltyDetailsAfterCombining))))
-      val result = controller.getPenaltiesData(vrn123456789, Some("123456789"))(fakeRequest)
+      val result = controller.getPenaltiesData(regime, idType, id, Some("123456789"))(fakeRequest)
       status(result) shouldBe Status.OK
       contentAsJson(result) shouldBe Json.toJson(penaltyDetailsAfterCombining)
     }

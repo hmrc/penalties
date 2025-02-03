@@ -16,7 +16,7 @@
 
 package models.auditing
 
-import models.EnrolmentKey
+import models.AgnosticEnrolmentKey
 import models.getPenaltyDetails.GetPenaltyDetails
 import models.getPenaltyDetails.appealInfo.AppealStatusEnum
 import models.getPenaltyDetails.latePayment.{LPPDetails, LPPPenaltyStatusEnum, TimeToPay}
@@ -30,7 +30,7 @@ import java.time.LocalDate
 
 case class UserHasPenaltyRegimeAuditModel(
                                            penaltyDetails: GetPenaltyDetails,
-                                           enrolmentKey: EnrolmentKey,
+                                           enrolmentKey: AgnosticEnrolmentKey,
                                            arn: Option[String],
                                            dateHelper: DateHelper
                                          )(implicit request: Request[_]) extends JsonAuditModel with JsonUtils {
@@ -183,8 +183,8 @@ case class UserHasPenaltyRegimeAuditModel(
   )
 
   override val detail: JsValue = jsonObjNoNulls(
-    "taxIdentifier" -> enrolmentKey.key,
-    "identifierType" -> enrolmentKey.keyType.name,
+    "taxIdentifier" -> enrolmentKey.id.value,
+    "identifierType" -> enrolmentKey.idType.value,
     "agentReferenceNumber" -> arn,
     "userType" -> userType,
     "callingService" -> callingService,

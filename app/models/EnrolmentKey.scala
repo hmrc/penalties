@@ -18,6 +18,7 @@ package models
 
 import models.TaxRegime._
 
+import scala.util.{Failure, Try}
 import scala.util.matching.Regex
 
 /**
@@ -44,6 +45,7 @@ object EnrolmentKey {
   /** parse an enrolment key supplied as a string */
   def apply(key: String): EnrolmentKey = key match {
     case enrolmentKeyRegex("HMRC-MTD-VAT", "VRN", key) => new EnrolmentKey(VAT, VRN, key)
+    case enrolmentKeyRegex("VATC", "VRN", key) => new EnrolmentKey(VAT, VRN, key)
     //case enrolmentKeyRegex("IR-CT", "UTR", key) => new EnrolmentKey(CT, UTR, key)
     case enrolmentKeyRegex("HMRC-PT", "NINO", key) => new EnrolmentKey(ITSA, NINO, key)
     case _ => throw new Exception(s"Invalid enrolment key: $key")
@@ -64,6 +66,18 @@ object EnrolmentKey {
   /** Supports using Enrolment Keys in route paths */
   implicit def pathBinder: play.api.mvc.PathBindable.Parsing[EnrolmentKey] =
     new play.api.mvc.PathBindable.Parsing({ str => EnrolmentKey(str) }, { (ek: EnrolmentKey) => ek.toString }, { case (msg, _) => msg })
+
+  def composeEnrolmentKey(regime: String, keyType: String, key: String): Try[EnrolmentKey] = {
+    (regime.toUpperCase, keyType.toUpperCase) match {
+      case ("VAT", "VRN") | ("VATC", "VRN") => Try(EnrolmentKey(VAT, VRN, key))
+      case ("VAT", _) | ("VATC", _) => Failure(new Exception(s"Unsupported id type: $keyType"))
+      //case ("CT", "UTR") | ("COTAX", "UTR") => Try(EnrolmentKey(CT, UTR, key))
+      //case ("CT", _) | ("COTAX", _)  => Failure(new Exception(s"Unsupported id type: $keyType"))
+      case /*("IT", "NINO") |*/ ("ITSA", "NINO") => Try(EnrolmentKey(ITSA, NINO, key))
+      case /*("IT", _) |*/ ("ITSA", _) => Failure(new Exception(s"Unsupported id type: $keyType"))
+      case (other, _) => Failure(new Exception(s"Unsupported regime: $other"))
+    }
+  }
 }
 
 case class EnrolmentKey(regime: TaxRegime, keyType: EnrolmentKey.KeyType, key: String) {

@@ -43,12 +43,17 @@ import utils.Logger.logger
 
 import java.time.LocalDate
 import scala.concurrent.{ExecutionContext, Future}
+import models.{AgnosticEnrolmentKey, Id, IdType, Regime}
 
 class PenaltyDetailsServiceSpec extends SpecBase with LogCapturing with LPPDetailsBase {
   implicit val ec: ExecutionContext = ExecutionContext.Implicits.global
   implicit val hc: HeaderCarrier = HeaderCarrier()
   val mockGetPenaltyDetailsConnector: PenaltyDetailsConnector = mock(classOf[PenaltyDetailsConnector])
-  val vrn123456789: EnrolmentKey = EnrolmentKey(VAT, "123456789")
+  val vrn123456789: AgnosticEnrolmentKey = AgnosticEnrolmentKey(
+    Regime("VATC"), 
+    IdType("VAT"),
+    Id("123456789")
+  )
 
   class Setup(withRealConfig: Boolean = true) {
     implicit val mockConfig: Configuration = mock(classOf[Configuration])
@@ -182,6 +187,7 @@ class PenaltyDetailsServiceSpec extends SpecBase with LogCapturing with LPPDetai
       featureSwitching.setEstimatedLPP1FilterEndDate(Some(LocalDate.of(2022, 10, 28)))
 
       val result: GetPenaltyDetailsResponse = await(service.getDataFromPenaltyService(vrn123456789))
+
       result.isRight shouldBe true
       result.toOption.get shouldBe GetPenaltyDetailsSuccessResponse(mockGetPenaltyDetailsResponseAsModel)
     }
@@ -194,7 +200,7 @@ class PenaltyDetailsServiceSpec extends SpecBase with LogCapturing with LPPDetai
           val result: GetPenaltyDetailsResponse = await(service.getDataFromPenaltyService(vrn123456789))
           result.isLeft shouldBe true
           result.left.getOrElse(GetPenaltyDetailsFailureResponse(INTERNAL_SERVER_ERROR)) shouldBe GetPenaltyDetailsMalformed
-          logs.exists(_.getMessage.contains("[PenaltyDetailsService][getDataFromPenaltyService][VATC] - Failed to parse HTTP response into model for VRN: 123456789")) shouldBe true
+          logs.map(_.getMessage) should contain ("[PenaltyDetailsService][getDataFromPenaltyService][VATC] - Failed to parse HTTP response into model for VATC~VAT~123456789")
         }
       }
     }
@@ -207,7 +213,7 @@ class PenaltyDetailsServiceSpec extends SpecBase with LogCapturing with LPPDetai
           val result: GetPenaltyDetailsResponse = await(service.getDataFromPenaltyService(vrn123456789))
           result.isLeft shouldBe true
           result.left.getOrElse(GetPenaltyDetailsFailureResponse(INTERNAL_SERVER_ERROR)) shouldBe GetPenaltyDetailsNoContent
-          logs.exists(_.getMessage.contains("[PenaltyDetailsService][getDataFromPenaltyService][VATC] - Got a 404 response and no data was found for GetPenaltyDetails call")) shouldBe true
+          logs.map(_.getMessage) should contain ("[PenaltyDetailsService][getDataFromPenaltyService][VATC] - Got a 404 response and no data was found for GetPenaltyDetails call")
         }
       }
     }
@@ -220,7 +226,7 @@ class PenaltyDetailsServiceSpec extends SpecBase with LogCapturing with LPPDetai
           val result: GetPenaltyDetailsResponse = await(service.getDataFromPenaltyService(vrn123456789))
           result.isLeft shouldBe true
           result.left.getOrElse(GetPenaltyDetailsFailureResponse(INTERNAL_SERVER_ERROR)) shouldBe GetPenaltyDetailsFailureResponse(IM_A_TEAPOT)
-          logs.exists(_.getMessage.contains("[PenaltyDetailsService][getDataFromPenaltyService][VATC] - Unknown status returned from connector for VRN: 123456789")) shouldBe true
+          logs.map(_.getMessage) should contain ("[PenaltyDetailsService][getDataFromPenaltyService][VATC] - Unknown status returned from connector for VATC~VAT~123456789")
         }
       }
     }
