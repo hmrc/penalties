@@ -388,6 +388,7 @@ class RegimeAPIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremo
       s"getPenaltyDetails for $apiRegime" should {
         s"return OK (${Status.OK})" when {
           "the get Penalty Details call succeeds" in {
+
             val sampleAPI1812Response = Json.parse(
               """
                 |{
@@ -481,6 +482,7 @@ class RegimeAPIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremo
             withFeature(CallAPI1812ETMP -> FEATURE_SWITCH_ON) {
               mockResponseForGetPenaltyDetails(Status.OK, apiRegime, enrolmentKey.keyType.name, s"${enrolmentKey.key}?dateLimit=09", Some(sampleAPI1812Response.toString))
               val result = await(buildClientForRequestToApp(uri = s"/penalty-details/${enrolmentKey.regime}/${enrolmentKey.keyType}/${enrolmentKey.key}?dateLimit=09").get())
+              println("INFO******************************************************************" + result.json)
               result.status shouldBe OK
               result.json shouldBe sampleAPI1812Response
               wireMockServer.findAll(postRequestedFor(urlEqualTo("/write/audit"))).asScala.toList.exists(_.getBodyAsString.contains("Penalties3rdPartyPenaltyDetailsDataRetrieval")) shouldBe true
@@ -492,7 +494,6 @@ class RegimeAPIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremo
           "404 response received" in {
             withFeature(CallAPI1812ETMP -> FEATURE_SWITCH_ON) {
               mockResponseForGetPenaltyDetails(Status.NOT_FOUND, apiRegime, enrolmentKey.keyType.name, s"${enrolmentKey.key}?dateLimit=09", Some(""))
-              stubAuthorised()
               val result = await(buildClientForRequestToApp(uri = s"/penalty-details/${enrolmentKey.regime}/${enrolmentKey.keyType}/${enrolmentKey.key}?dateLimit=09").get())
               result.status shouldBe NOT_FOUND
               wireMockServer.findAll(postRequestedFor(urlEqualTo("/write/audit"))).asScala.toList.exists(_.getBodyAsString.contains("Penalties3rdPartyPenaltyDetailsDataRetrieval")) shouldBe true
