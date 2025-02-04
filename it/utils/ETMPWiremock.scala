@@ -18,9 +18,10 @@ package utils
 
 import com.github.tomakehurst.wiremock.client.WireMock._
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
+import helpers.WiremockHelper
 import play.api.libs.json.{JsValue, Json}
 
-trait ETMPWiremock {
+trait ETMPWiremock extends WiremockHelper{
   val getPenaltyDetailsWithLSPAndLPPAsJson: JsValue = Json.parse(
     """
       |{
@@ -327,6 +328,29 @@ trait ETMPWiremock {
       |}
       |""".stripMargin
   )
+
+  def stubAuthorised(): StubMapping =
+    stub(
+      post(urlEqualTo("/auth/authorise"))
+        .withRequestBody(
+          equalToJson(
+            s"""
+               |{
+               |  "authorise": [],
+               |  "retrieve": []
+               |}
+           """.stripMargin,
+            true,
+            true
+          )
+        ),
+      aResponse()
+        .withStatus(200)
+        .withBody(s"""
+                     |  {
+                     |  }
+           """.stripMargin)
+    )
 
   def mockStubResponseForGetPenaltyDetails(status: Int, apiRegime: String, idType: String, id: String, body: Option[String] = None): StubMapping = {
     stubFor(get(urlEqualTo(s"/penalties-stub/penalty/details/$apiRegime/$idType/$id"))

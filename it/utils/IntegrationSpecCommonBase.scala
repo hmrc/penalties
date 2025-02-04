@@ -30,7 +30,7 @@ import play.api.{Application, Configuration}
 import uk.gov.hmrc.http.HeaderCarrier
 
 trait IntegrationSpecCommonBase extends AnyWordSpec with Matchers with GuiceOneServerPerSuite with
-  BeforeAndAfterAll with BeforeAndAfterEach with TestSuite with WiremockHelper with DatastreamWiremock {
+  BeforeAndAfterAll with BeforeAndAfterEach with TestSuite with WiremockHelper with DatastreamWiremock with ETMPWiremock {
 
   implicit val hc: HeaderCarrier = HeaderCarrier()
 
@@ -90,7 +90,7 @@ trait IntegrationSpecCommonBase extends AnyWordSpec with Matchers with GuiceOneS
   lazy val ws: WSClient = app.injector.instanceOf[WSClient]
 
   def buildClientForRequestToApp(baseUrl: String = "/penalties", uri: String): WSRequest = {
-    ws.url(s"http://localhost:$port$baseUrl$uri").withHttpHeaders("Authorization" -> "localtoken").withFollowRedirects(false)
+    ws.url(s"http://localhost:$port$baseUrl$uri").withHttpHeaders("Authorization" -> "bearer123").withFollowRedirects(false)
   }
 
 }

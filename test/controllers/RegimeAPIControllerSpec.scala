@@ -18,7 +18,6 @@ package controllers
 
 import base.{LogCapturing, SpecBase}
 import config.featureSwitches.FeatureSwitching
-import connectors.AuthMock
 import connectors.getFinancialDetails.FinancialDetailsConnector
 import connectors.getPenaltyDetails.PenaltyDetailsConnector
 import connectors.parsers.getFinancialDetails.FinancialDetailsParser.{GetFinancialDetailsFailureResponse, GetFinancialDetailsMalformed, GetFinancialDetailsNoContent, GetFinancialDetailsSuccessResponse}
@@ -46,15 +45,15 @@ import java.time.LocalDate
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class RegimeAPIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing with AuthMock{
-  val mockAppealsService: RegimeAppealService = mock[RegimeAppealService]
-  val mockAuditService: AuditService = mock[AuditService]
+class RegimeAPIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing {
+  val mockAppealsService: RegimeAppealService = mock(classOf[RegimeAppealService])
+  val mockAuditService: AuditService = mock(classOf[AuditService])
   val dateHelper: DateHelper = injector.instanceOf(classOf[DateHelper])
-  val mockAPIService: APIService = mock[APIService]
-  val mockGetPenaltyDetailsService: PenaltyDetailsService = mock[PenaltyDetailsService]
-  val mockGetFinancialDetailsService: FinancialDetailsService = mock[FinancialDetailsService]
-  val mockGetFinancialDetailsConnector: FinancialDetailsConnector = mock[FinancialDetailsConnector]
-  val mockGetPenaltyDetailsConnector: PenaltyDetailsConnector = mock[PenaltyDetailsConnector]
+  val mockAPIService: APIService = mock(classOf[APIService])
+  val mockGetPenaltyDetailsService: PenaltyDetailsService = mock(classOf[PenaltyDetailsService])
+  val mockGetFinancialDetailsService: FinancialDetailsService = mock(classOf[FinancialDetailsService])
+  val mockGetFinancialDetailsConnector: FinancialDetailsConnector = mock(classOf[FinancialDetailsConnector])
+  val mockGetPenaltyDetailsConnector: PenaltyDetailsConnector = mock(classOf[PenaltyDetailsConnector])
   val controllerComponents: ControllerComponents = injector.instanceOf[ControllerComponents]
   implicit val config: Configuration = appConfig.config
   implicit val hc: HeaderCarrier = HeaderCarrier()

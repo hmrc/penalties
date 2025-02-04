@@ -33,8 +33,10 @@
 package helpers
 
 import com.github.tomakehurst.wiremock.WireMockServer
-import com.github.tomakehurst.wiremock.client.WireMock
+import com.github.tomakehurst.wiremock.client.WireMock.stubFor
+import com.github.tomakehurst.wiremock.client.{MappingBuilder, ResponseDefinitionBuilder, WireMock}
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig
+import com.github.tomakehurst.wiremock.stubbing.StubMapping
 
 trait WiremockHelper {
 
@@ -61,4 +63,7 @@ trait WiremockHelper {
     wireMockServer.resetRequests()
     wireMockServer.resetAll()
   }
+
+  def stub(method: MappingBuilder, response: ResponseDefinitionBuilder): StubMapping =
+    stubFor(method.willReturn(response))
 }
