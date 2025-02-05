@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,9 +18,10 @@ package utils
 
 import com.github.tomakehurst.wiremock.client.WireMock._
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
+import helpers.WiremockHelper
 import play.api.libs.json.{JsValue, Json}
 
-trait ETMPWiremock {
+trait ETMPWiremock extends WiremockHelper{
   val getPenaltyDetailsWithLSPAndLPPAsJson: JsValue = Json.parse(
     """
       |{
@@ -328,13 +329,36 @@ trait ETMPWiremock {
       |""".stripMargin
   )
 
+  def stubAuthorised(): StubMapping =
+    stub(
+      post(urlEqualTo("/auth/authorise"))
+        .withRequestBody(
+          equalToJson(
+            s"""
+               |{
+               |  "authorise": [],
+               |  "retrieve": []
+               |}
+           """.stripMargin,
+            true,
+            true
+          )
+        ),
+      aResponse()
+        .withStatus(200)
+        .withBody(s"""
+                     |  {
+                     |  }
+           """.stripMargin)
+    )
+
   def mockStubResponseForGetPenaltyDetails(status: Int, vrn: String, body: Option[String] = None): StubMapping = {
     stubFor(get(urlEqualTo(s"/penalties-stub/penalty/details/VATC/VRN/$vrn"))
-    .willReturn(
-      aResponse()
-        .withBody(body.fold(getPenaltyDetailsWithLSPAndLPPAsJson.toString())(identity))
-        .withStatus(status)
-    ))
+      .willReturn(
+        aResponse()
+          .withBody(body.fold(getPenaltyDetailsWithLSPAndLPPAsJson.toString())(identity))
+          .withStatus(status)
+      ))
   }
 
   def mockResponseForGetPenaltyDetails(status: Int, vatcUrl: String, body: Option[String] = None): StubMapping = {

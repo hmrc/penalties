@@ -90,6 +90,7 @@ trait IntegrationSpecCommonBase extends AnyWordSpec with Matchers with GuiceOneS
   lazy val ws: WSClient = app.injector.instanceOf[WSClient]
 
   def buildClientForRequestToApp(baseUrl: String = "/penalties", uri: String): WSRequest = {
-    ws.url(s"http://localhost:$port$baseUrl$uri").withFollowRedirects(false)
+    ws.url(s"http://localhost:$port$baseUrl$uri").withHttpHeaders("Authorization" -> "bearer123").withFollowRedirects(false)
   }
+
 }
