@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,18 +18,16 @@ package services
 
 import config.featureSwitches.{CallDES, FeatureSwitching}
 import connectors.parsers.ComplianceParser._
-import models.EnrolmentKey
-import models.TaxRegime.{ITSA, VAT}
 import models.compliance.{CompliancePayload, ComplianceStatusEnum, ObligationDetail, ObligationIdentification}
 import org.scalatest.prop.TableDrivenPropertyChecks
 import play.api.libs.json.{JsValue, Json}
 import play.api.test.Helpers._
-import utils.{ComplianceWiremock, IntegrationSpecCommonBase}
-
+import utils.{RegimeComplianceWiremock, IntegrationSpecCommonBase}
+import models.{AgnosticEnrolmentKey, Regime, IdType, Id}
 import java.time.LocalDate
 import scala.concurrent.ExecutionContext
 
-class RegimeComplianceServiceISpec extends IntegrationSpecCommonBase with ComplianceWiremock with FeatureSwitching with TableDrivenPropertyChecks {
+class RegimeComplianceServiceISpec extends IntegrationSpecCommonBase with RegimeComplianceWiremock with FeatureSwitching with TableDrivenPropertyChecks {
   val complianceService: RegimeComplianceService = injector.instanceOf[RegimeComplianceService]
   implicit val ec: ExecutionContext = ExecutionContext.Implicits.global
   implicit val startOfLogMsg: String = ""
@@ -38,23 +36,24 @@ class RegimeComplianceServiceISpec extends IntegrationSpecCommonBase with Compli
     enableFeatureSwitch(CallDES)
   }
 
-  Table(
-    ("API Regime", "ID Type", "Enrolment Key"),
-    ("VATC", "vrn", EnrolmentKey(VAT, "123456789")),
-    ("ITSA", "nino", EnrolmentKey(ITSA, "AB123456C"))
-  ).forEvery { (apiRegime, idType, enrolmentKey) =>
+    Table(
+    ("Regime", "IdType", "Id"),
+    (Regime("VATC"), IdType("VRN"), Id("123456789")),
+    (Regime("ITSA"), IdType("NINO"), Id("AB123456C")),
+  ).forEvery { (regime, idType, id) =>
 
-    s"getComplianceData for $apiRegime" should {
+    val enrolmentKey = AgnosticEnrolmentKey(regime, idType, id) 
+    s"getComplianceData for $regime" should {
       "return Left(ISE)" when {
         s"the connector returns $CompliancePayloadFailureResponse" in new Setup {
-          mockResponseForComplianceDataFromDES(INTERNAL_SERVER_ERROR, apiRegime, idType, enrolmentKey.key, "2020-01-01", "2020-12-31")
+          mockResponseForComplianceDataFromDES(INTERNAL_SERVER_ERROR, regime, idType, id, "2020-01-01", "2020-12-31")
           val result = await(complianceService.getComplianceData(enrolmentKey, "2020-01-01", "2020-12-31"))
           result.isLeft shouldBe true
           result.left.getOrElse(IM_A_TEAPOT) shouldBe INTERNAL_SERVER_ERROR
         }
 
         s"the connector returns $CompliancePayloadMalformed" in new Setup {
-          mockResponseForComplianceDataFromDES(OK, apiRegime, idType, enrolmentKey.key, "2020-01-01", "2020-12-31", invalidBody = true)
+          mockResponseForComplianceDataFromDES(OK, regime, idType, id, "2020-01-01", "2020-12-31", invalidBody = true)
           val result = await(complianceService.getComplianceData(enrolmentKey, "2020-01-01", "2020-12-31"))
           result.isLeft shouldBe true
           result.left.getOrElse(IM_A_TEAPOT) shouldBe INTERNAL_SERVER_ERROR
@@ -62,7 +61,7 @@ class RegimeComplianceServiceISpec extends IntegrationSpecCommonBase with Compli
       }
 
       s"return Left(NOT_FOUND) when the connector returns $CompliancePayloadNoData" in new Setup {
-        mockResponseForComplianceDataFromDES(NOT_FOUND, apiRegime, idType, enrolmentKey.key, "2020-01-01", "2020-12-31")
+        mockResponseForComplianceDataFromDES(NOT_FOUND, regime, idType, id, "2020-01-01", "2020-12-31")
         val result = await(complianceService.getComplianceData(enrolmentKey, "2020-01-01", "2020-12-31"))
         result.isLeft shouldBe true
         result.left.getOrElse(IM_A_TEAPOT) shouldBe NOT_FOUND
@@ -72,8 +71,8 @@ class RegimeComplianceServiceISpec extends IntegrationSpecCommonBase with Compli
         val compliancePayloadAsModel: CompliancePayload = CompliancePayload(
           identification = Some(ObligationIdentification(
             incomeSourceType = None,
-            referenceNumber = enrolmentKey.key,
-            referenceType = enrolmentKey.keyType.name
+            referenceNumber = id.value,
+            referenceType = idType.value
           )),
           obligationDetails = Seq(
             ObligationDetail(
@@ -94,7 +93,7 @@ class RegimeComplianceServiceISpec extends IntegrationSpecCommonBase with Compli
             )
           )
         )
-        mockResponseForComplianceDataFromDES(OK, apiRegime, idType, enrolmentKey.key, "2020-01-01", "2020-12-31", hasBody = true)
+        mockResponseForComplianceDataFromDES(OK, regime, idType, id, "2020-01-01", "2020-12-31", hasBody = true)
         val result = await(complianceService.getComplianceData(enrolmentKey, "2020-01-01", "2020-12-31"))
         result.isRight shouldBe true
         result.toOption.get shouldBe compliancePayloadAsModel
@@ -104,8 +103,8 @@ class RegimeComplianceServiceISpec extends IntegrationSpecCommonBase with Compli
         val expectedOrderedModel: CompliancePayload = CompliancePayload(
           identification = Some(ObligationIdentification(
             incomeSourceType = None,
-            referenceNumber = enrolmentKey.key,
-            referenceType = enrolmentKey.keyType.name
+            referenceNumber = id.value,
+            referenceType = idType.value
           )),
           obligationDetails = Seq(
             ObligationDetail(ComplianceStatusEnum.open, LocalDate.parse("2023-01-01"), LocalDate.parse("2023-01-31"), None, LocalDate.parse("2023-03-07"), "23AA"),
@@ -125,8 +124,8 @@ class RegimeComplianceServiceISpec extends IntegrationSpecCommonBase with Compli
              |        "obligations" : [
              |            {
              |                "identification" : {
-             |                    "referenceNumber" : "${enrolmentKey.key}",
-             |                    "referenceType" : "${enrolmentKey.keyType.name}"
+             |                    "referenceNumber" : "${id.value}",
+             |                    "referenceType" : "${idType.value}"
              |                },
              |                "obligationDetails" : [
              |                    {
@@ -204,7 +203,7 @@ class RegimeComplianceServiceISpec extends IntegrationSpecCommonBase with Compli
              |        ]
              |    }
              |""".stripMargin)
-        mockResponseForComplianceDataFromDES(OK, apiRegime, idType, enrolmentKey.key, "2020-01-01", "2020-12-31", hasBody = true, optBody = Some(compliancePayloadAsJson.toString()))
+        mockResponseForComplianceDataFromDES(OK, regime, idType, id, "2020-01-01", "2020-12-31", hasBody = true, optBody = Some(compliancePayloadAsJson.toString()))
         val result = await(complianceService.getComplianceData(enrolmentKey, "2020-01-01", "2020-12-31"))
         result.isRight shouldBe true
         result.toOption.get shouldBe expectedOrderedModel

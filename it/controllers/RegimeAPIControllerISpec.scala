@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,11 +24,11 @@ import org.scalatest.prop.TableDrivenPropertyChecks
 import play.api.http.Status
 import play.api.libs.json.{JsValue, Json}
 import play.api.test.Helpers._
-import utils.{ETMPWiremock, IntegrationSpecCommonBase}
-
+import utils.{RegimeETMPWiremock, IntegrationSpecCommonBase}
+import models.{AgnosticEnrolmentKey, Regime, IdType, Id}
 import scala.jdk.CollectionConverters._
 
-class RegimeAPIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock with FeatureSwitching with TableDrivenPropertyChecks {
+class RegimeAPIControllerISpec extends IntegrationSpecCommonBase with RegimeETMPWiremock with FeatureSwitching with TableDrivenPropertyChecks {
   val controller: RegimeAPIController = injector.instanceOf[RegimeAPIController]
 
   "getSummaryDataForVRN" should {
@@ -157,17 +157,16 @@ class RegimeAPIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremo
         |}
         |""".stripMargin)
 
-    Table(
-      ("API Regime", "Enrolment Key"),
-      ("VATC", EnrolmentKey(VAT, "123456789")),
-      ("ITSA", EnrolmentKey(ITSA, "AB123456C"))
-    ).forEvery { (apiRegime, enrolmentKey) =>
-      val penaltyApiPath = enrolmentKey.regime.toString.toLowerCase
+   Table(
+    ("Regime", "IdType", "Id"),
+    (Regime("VATC"), IdType("VRN"), Id("123456789")),
+    (Regime("ITSA"), IdType("NINO"), Id("AB123456C")),
+  ).forEvery { (regime, idType, id) =>
 
-      s"return OK (${Status.OK}) for $apiRegime" when {
+      s"return OK (${Status.OK}) for $regime" when {
         "the get penalty details call succeeds" in {
-          mockStubResponseForGetPenaltyDetails(Status.OK, apiRegime, enrolmentKey.keyType.name, enrolmentKey.key, body = Some(getPenaltyDetailsJson.toString()))
-          val result = await(buildClientForRequestToApp(uri = s"/$penaltyApiPath/penalties/summary/${enrolmentKey.key}").get())
+          mockStubResponseForGetPenaltyDetails(Status.OK, regime, idType, id, body = Some(getPenaltyDetailsJson.toString()))
+          val result = await(buildClientForRequestToApp(uri = s"/${regime.value}/summary/${idType.value}/${id.value}").get())
           result.status shouldBe OK
           Json.parse(result.body) shouldBe Json.parse(
             """
@@ -184,30 +183,32 @@ class RegimeAPIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremo
         }
       }
 
-      s"return BAD_REQUEST (${Status.BAD_REQUEST}) for $apiRegime" when {
-        "the user supplies an invalid VRN" in {
-          val result = await(buildClientForRequestToApp(uri = s"/$penaltyApiPath/penalties/summary/123456789123456789").get())
-          result.status shouldBe BAD_REQUEST
-        }
-      }
+      // TODO: this should be deleted as we don't validate vrn
 
-      s"return ISE (${Status.INTERNAL_SERVER_ERROR}) for $apiRegime" when {
+      // s"return BAD_REQUEST (${Status.BAD_REQUEST}) for $regime" when {
+      //   "the user supplies an invalid VRN" in {
+      //     val result = await(buildClientForRequestToApp(baseUrl = "", uri = s"/${regime.value}/summary/123456789123456789").get())
+      //     result.status shouldBe BAD_REQUEST
+      //   }
+      // }
+
+      s"return ISE (${Status.INTERNAL_SERVER_ERROR}) for $regime" when {
         "the get penalty details call fails" in {
-          mockStubResponseForGetPenaltyDetails(Status.INTERNAL_SERVER_ERROR, apiRegime, enrolmentKey.keyType.name, enrolmentKey.key, body = Some(""))
-          val result = await(buildClientForRequestToApp(uri = s"/$penaltyApiPath/penalties/summary/${enrolmentKey.key}").get())
+          mockStubResponseForGetPenaltyDetails(Status.INTERNAL_SERVER_ERROR, regime, idType, id, body = Some(""))
+          val result = await(buildClientForRequestToApp(uri = s"/${regime.value}/summary/${idType.value}/${id.value}").get())
           result.status shouldBe INTERNAL_SERVER_ERROR
         }
       }
 
-      s"return NOT_FOUND (${Status.NOT_FOUND}) for $apiRegime" when {
+      s"return NOT_FOUND (${Status.NOT_FOUND}) for $regime" when {
         "the get penalty details call returns 404" in {
-          mockStubResponseForGetPenaltyDetails(Status.NOT_FOUND, apiRegime, enrolmentKey.keyType.name, enrolmentKey.key, body = Some(""))
-          val result = await(buildClientForRequestToApp(uri = s"/$penaltyApiPath/penalties/summary/${enrolmentKey.key}").get())
+          mockStubResponseForGetPenaltyDetails(Status.NOT_FOUND, regime, idType, id, body = Some(""))
+          val result = await(buildClientForRequestToApp(baseUrl = "", uri = s"/${regime.value}/summary/${idType.value}/${id.value}").get())
           result.status shouldBe NOT_FOUND
         }
       }
 
-      s"return NO_CONTENT (${Status.NO_CONTENT}) for $apiRegime" when {
+      s"return NO_CONTENT (${Status.NO_CONTENT}) for $regime" when {
         "the get penalty details call returns 404 (with NO_DATA_FOUND in body)" in {
           val notFoundResponseBody: String =
             """
@@ -220,20 +221,20 @@ class RegimeAPIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremo
               |  ]
               |}
               |""".stripMargin
-          mockStubResponseForGetPenaltyDetails(Status.NOT_FOUND, apiRegime, enrolmentKey.keyType.name, enrolmentKey.key, body = Some(notFoundResponseBody))
-          val result = await(buildClientForRequestToApp(uri = s"/$penaltyApiPath/penalties/summary/${enrolmentKey.key}").get())
+          mockStubResponseForGetPenaltyDetails(Status.NOT_FOUND, regime, idType, id, body = Some(notFoundResponseBody))
+          val result = await(buildClientForRequestToApp(uri = s"/${regime.value}/summary/${idType.value}/${id.value}").get())
           result.status shouldBe NO_CONTENT
         }
 
         "the get penalty details call returns 200 with an empty body" in {
           val emptyResponse: String = "{}"
-          mockStubResponseForGetPenaltyDetails(Status.OK, apiRegime, enrolmentKey.keyType.name, enrolmentKey.key, body = Some(emptyResponse))
-          val result = await(buildClientForRequestToApp(uri = s"/$penaltyApiPath/penalties/summary/${enrolmentKey.key}").get())
+          mockStubResponseForGetPenaltyDetails(Status.OK, regime, idType, id, body = Some(emptyResponse))
+          val result = await(buildClientForRequestToApp(uri = s"/${regime.value}/summary/${idType.value}/${id.value}").get())
           result.status shouldBe NO_CONTENT
         }
       }
 
-      s"getFinancialDetails for $apiRegime" should {
+      s"getFinancialDetails for $regime" should {
         s"return OK (${Status.OK})" when {
           "the get Financial Details call succeeds" in {
             val sampleAPI1811Response = Json.parse(
@@ -334,14 +335,16 @@ class RegimeAPIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremo
                 |}
                 |}""".stripMargin)
             withFeature(CallAPI1811ETMP -> FEATURE_SWITCH_ON) {
-              mockResponseForGetFinancialDetails(Status.OK, s"${enrolmentKey.keyType}/${enrolmentKey.key}/$apiRegime" +
+              mockResponseForGetFinancialDetails(Status.OK, regime, idType, id,
                 s"?searchType=CHGREF&searchItem=XC00178236592&dateType=BILLING&dateFrom=2020-10-03&dateTo=2021-07-12&includeClearedItems=false" +
                 s"&includeStatisticalItems=true&includePaymentOnAccount=true&addRegimeTotalisation=false&addLockInformation=true&addPenaltyDetails=true" +
                 s"&addPostedInterestDetails=true&addAccruingInterestDetails=true", Some(getFinancialDetailsAsJson.toString()))
-              val result = await(buildClientForRequestToApp(uri = s"/penalty/financial-data/${enrolmentKey.keyType}/${enrolmentKey.key}/$apiRegime" +
+
+              val result = await(buildClientForRequestToApp(uri = s"/${regime.value}/penalty/financial-data/${idType.value}/${id.value}" +
                 s"?searchType=CHGREF&searchItem=XC00178236592&dateType=BILLING&dateFrom=2020-10-03&dateTo=2021-07-12&includeClearedItems=false" +
                 s"&includeStatisticalItems=true&includePaymentOnAccount=true&addRegimeTotalisation=false&addLockInformation=true&addPenaltyDetails=true" +
                 s"&addPostedInterestDetails=true&addAccruingInterestDetails=true").get())
+
               result.status shouldBe OK
               result.json shouldBe sampleAPI1811Response
               wireMockServer.findAll(postRequestedFor(urlEqualTo("/write/audit"))).asScala.toList
@@ -353,11 +356,11 @@ class RegimeAPIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremo
         "return the status from EIS" when {
           "404 response received " in {
             withFeature(CallAPI1811ETMP -> FEATURE_SWITCH_ON) {
-              mockResponseForGetFinancialDetails(Status.NOT_FOUND, s"${enrolmentKey.keyType}/${enrolmentKey.key}/$apiRegime" +
+              mockResponseForGetFinancialDetails(Status.NOT_FOUND, regime, idType, id,
                 s"?searchType=CHGREF&searchItem=XC00178236592&dateType=BILLING&dateFrom=2020-10-03&dateTo=2021-07-12&includeClearedItems=false" +
                 s"&includeStatisticalItems=true&includePaymentOnAccount=true&addRegimeTotalisation=false&addLockInformation=true&addPenaltyDetails=true" +
                 s"&addPostedInterestDetails=true&addAccruingInterestDetails=true")
-              val result = await(buildClientForRequestToApp(uri = s"/penalty/financial-data/${enrolmentKey.keyType}/${enrolmentKey.key}/$apiRegime" +
+              val result = await(buildClientForRequestToApp(uri = s"/${regime.value}/penalty/financial-data/${idType.value}/${id.value}" +
                 s"?searchType=CHGREF&searchItem=XC00178236592&dateType=BILLING&dateFrom=2020-10-03&dateTo=2021-07-12&includeClearedItems=false" +
                 s"&includeStatisticalItems=true&includePaymentOnAccount=true&addRegimeTotalisation=false&addLockInformation=true&addPenaltyDetails=true" +
                 s"&addPostedInterestDetails=true&addAccruingInterestDetails=true").get())
@@ -369,11 +372,13 @@ class RegimeAPIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremo
 
           "Non 200 response received " in {
             withFeature(CallAPI1811ETMP -> FEATURE_SWITCH_ON) {
-              mockResponseForGetFinancialDetails(Status.BAD_REQUEST, s"${enrolmentKey.keyType}/${enrolmentKey.key}/$apiRegime" +
+
+              mockResponseForGetFinancialDetails(Status.BAD_REQUEST, regime, idType, id,
                 s"?searchType=CHGREF&searchItem=XC00178236592&dateType=BILLING&dateFrom=2020-10-03&dateTo=2021-07-12&includeClearedItems=false" +
                 s"&includeStatisticalItems=true&includePaymentOnAccount=true&addRegimeTotalisation=false&addLockInformation=true&addPenaltyDetails=true" +
                 s"&addPostedInterestDetails=true&addAccruingInterestDetails=true", Some(""))
-              val result = await(buildClientForRequestToApp(uri = s"/penalty/financial-data/${enrolmentKey.keyType}/${enrolmentKey.key}/$apiRegime" +
+
+              val result = await(buildClientForRequestToApp(uri = s"/${regime.value}/penalty/financial-data/${idType.value}/${id.value}" +
                 s"?searchType=CHGREF&searchItem=XC00178236592&dateType=BILLING&dateFrom=2020-10-03&dateTo=2021-07-12&includeClearedItems=false" +
                 s"&includeStatisticalItems=true&includePaymentOnAccount=true&addRegimeTotalisation=false&addLockInformation=true&addPenaltyDetails=true" +
                 s"&addPostedInterestDetails=true&addAccruingInterestDetails=true").get())
@@ -385,7 +390,7 @@ class RegimeAPIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremo
         }
       }
 
-      s"getPenaltyDetails for $apiRegime" should {
+      s"getPenaltyDetails for $regime" should {
         s"return OK (${Status.OK})" when {
           "the get Penalty Details call succeeds" in {
             val sampleAPI1812Response = Json.parse(
@@ -479,8 +484,8 @@ class RegimeAPIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremo
                 |}
                 |""".stripMargin)
             withFeature(CallAPI1812ETMP -> FEATURE_SWITCH_ON) {
-              mockResponseForGetPenaltyDetails(Status.OK, apiRegime, enrolmentKey.keyType.name, s"${enrolmentKey.key}?dateLimit=09", Some(sampleAPI1812Response.toString))
-              val result = await(buildClientForRequestToApp(uri = s"/penalty-details/${enrolmentKey.regime}/${enrolmentKey.keyType}/${enrolmentKey.key}?dateLimit=09").get())
+              mockResponseForGetPenaltyDetails(Status.OK, regime, idType, s"${id.value}?dateLimit=09", Some(sampleAPI1812Response.toString))
+              val result = await(buildClientForRequestToApp(uri = s"/${regime.value}/penalty-details/${idType.value}/${id.value}?dateLimit=09").get())
               result.status shouldBe OK
               result.json shouldBe sampleAPI1812Response
               wireMockServer.findAll(postRequestedFor(urlEqualTo("/write/audit"))).asScala.toList.exists(_.getBodyAsString.contains("Penalties3rdPartyPenaltyDetailsDataRetrieval")) shouldBe true
@@ -491,8 +496,8 @@ class RegimeAPIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremo
         "return the status from EIS" when {
           "404 response received" in {
             withFeature(CallAPI1812ETMP -> FEATURE_SWITCH_ON) {
-              mockResponseForGetPenaltyDetails(Status.NOT_FOUND, apiRegime, enrolmentKey.keyType.name, s"${enrolmentKey.key}?dateLimit=09", Some(""))
-              val result = await(buildClientForRequestToApp(uri = s"/penalty-details/${enrolmentKey.regime}/${enrolmentKey.keyType}/${enrolmentKey.key}?dateLimit=09").get())
+              mockResponseForGetPenaltyDetails(Status.NOT_FOUND, regime, idType, s"${id.value}?dateLimit=09", Some(""))
+              val result = await(buildClientForRequestToApp(uri = s"/${regime.value}/penalty-details/${idType.value}/${id.value}?dateLimit=09").get())
               result.status shouldBe NOT_FOUND
               wireMockServer.findAll(postRequestedFor(urlEqualTo("/write/audit"))).asScala.toList.exists(_.getBodyAsString.contains("Penalties3rdPartyPenaltyDetailsDataRetrieval")) shouldBe true
             }
@@ -500,8 +505,8 @@ class RegimeAPIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremo
 
           "Non 200 response received" in {
             withFeature(CallAPI1812ETMP -> FEATURE_SWITCH_ON) {
-              mockResponseForGetPenaltyDetails(Status.BAD_REQUEST, apiRegime, enrolmentKey.keyType.name, s"${enrolmentKey.key}?dateLimit=09", Some(""))
-              val result = await(buildClientForRequestToApp(uri = s"/penalty-details/${enrolmentKey.regime}/${enrolmentKey.keyType}/${enrolmentKey.key}?dateLimit=09").get())
+              mockResponseForGetPenaltyDetails(Status.BAD_REQUEST, regime, idType, s"${id.value}?dateLimit=09", Some(""))
+              val result = await(buildClientForRequestToApp(uri = s"/${regime.value}/penalty-details/${idType.value}/${id.value}?dateLimit=09").get())
               result.status shouldBe BAD_REQUEST
               wireMockServer.findAll(postRequestedFor(urlEqualTo("/write/audit"))).asScala.toList.exists(_.getBodyAsString.contains("Penalties3rdPartyPenaltyDetailsDataRetrieval")) shouldBe true
             }

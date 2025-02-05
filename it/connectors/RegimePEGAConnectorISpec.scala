@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,18 +21,22 @@ import models.EnrolmentKey
 import models.appeals.{AppealSubmission, CrimeAppealInformation}
 import play.api.http.Status
 import play.api.test.Helpers._
-import utils.{AppealWiremock, IntegrationSpecCommonBase}
-
+import utils.{RegimeAppealWiremock, IntegrationSpecCommonBase}
+import models.{AgnosticEnrolmentKey, Regime, IdType, Id}
 import java.time.LocalDateTime
 import scala.concurrent.ExecutionContext
 
-class RegimePEGAConnectorISpec extends IntegrationSpecCommonBase with AppealWiremock with FeatureSwitching {
+class RegimePEGAConnectorISpec extends IntegrationSpecCommonBase with RegimeAppealWiremock with FeatureSwitching {
   implicit val ec: ExecutionContext = ExecutionContext.Implicits.global
 
   class Setup {
     val connector: RegimePEGAConnector = injector.instanceOf[RegimePEGAConnector]
     val correlationId: String = "corId"
   }
+
+  val (regime, idType, id) = (Regime("ITSA"), IdType("NINO"), Id("AB123456C"))
+
+  val aKey = AgnosticEnrolmentKey(regime, idType, id) 
 
   "submitAppeal" should {
     "Jsonify the model and send the request and return the response with Headers- when PEGA feature switch enabled, call PEGA" in new Setup {
@@ -57,13 +61,13 @@ class RegimePEGAConnectorISpec extends IntegrationSpecCommonBase with AppealWire
           isClientResponsibleForLateSubmission = None
         )
       )
-      val result = await(connector.submitAppeal(modelToSend, EnrolmentKey("HMRC-MTD-VAT~VRN~123456789"), isLPP = false, penaltyNumber = "1234567890", correlationId))
+      val result = await(connector.submitAppeal(modelToSend, aKey, isLPP = false, penaltyNumber = "1234567890", correlationId))
       result.isRight shouldBe true
     }
 
     "Jsonify the model and send the request and return the response - when PEGA feature switch disabled, call stub" in new Setup {
       disableFeatureSwitch(CallPEGA)
-      mockResponseForAppealSubmissionStub(Status.OK, "HMRC-MTD-VAT~VRN~123456789", penaltyNumber = "123456789")
+      mockResponseForAppealSubmissionStub(Status.OK, aKey, penaltyNumber = "123456789")
       val modelToSend: AppealSubmission = AppealSubmission(
         taxRegime = "VAT",
         customerReferenceNo = "123456789",
@@ -83,13 +87,13 @@ class RegimePEGAConnectorISpec extends IntegrationSpecCommonBase with AppealWire
           isClientResponsibleForLateSubmission = None
         )
       )
-      val result = await(connector.submitAppeal(modelToSend, EnrolmentKey("HMRC-MTD-VAT~VRN~123456789"), isLPP = false, penaltyNumber = "123456789", correlationId))
+      val result = await(connector.submitAppeal(modelToSend, aKey, isLPP = false, penaltyNumber = "123456789", correlationId))
       result.isRight shouldBe true
     }
 
     "Jsonify the model and send the request and return the response - when PEGA feature switch disabled, call stub - for LPP" in new Setup {
       disableFeatureSwitch(CallPEGA)
-      mockResponseForAppealSubmissionStub(Status.OK, "HMRC-MTD-VAT~VRN~123456789", isLPP = true, penaltyNumber = "123456789")
+      mockResponseForAppealSubmissionStub(Status.OK, aKey, isLPP = true, penaltyNumber = "123456789")
       val modelToSend: AppealSubmission = AppealSubmission  (
         taxRegime = "VAT",
         customerReferenceNo = "123456789",
@@ -109,7 +113,7 @@ class RegimePEGAConnectorISpec extends IntegrationSpecCommonBase with AppealWire
           isClientResponsibleForLateSubmission = None
         )
       )
-      val result = await(connector.submitAppeal(modelToSend, EnrolmentKey("HMRC-MTD-VAT~VRN~123456789"), isLPP = true, penaltyNumber = "123456789", correlationId))
+      val result = await(connector.submitAppeal(modelToSend, aKey, isLPP = true, penaltyNumber = "123456789", correlationId))
       result.isRight shouldBe true
     }
   }

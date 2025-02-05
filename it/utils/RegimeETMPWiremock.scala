@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,9 @@ package utils
 import com.github.tomakehurst.wiremock.client.WireMock._
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
 import play.api.libs.json.{JsValue, Json}
+import models.{AgnosticEnrolmentKey, Regime, IdType, Id}
 
-trait ETMPWiremock {
+trait RegimeETMPWiremock {
   val getPenaltyDetailsWithLSPAndLPPAsJson: JsValue = Json.parse(
     """
       |{
@@ -328,17 +329,17 @@ trait ETMPWiremock {
       |""".stripMargin
   )
 
-  def mockStubResponseForGetPenaltyDetails(status: Int, vrn: String, body: Option[String] = None): StubMapping = {
-    stubFor(get(urlEqualTo(s"/penalties-stub/penalty/details/VATC/VRN/$vrn"))
-    .willReturn(
-      aResponse()
-        .withBody(body.fold(getPenaltyDetailsWithLSPAndLPPAsJson.toString())(identity))
-        .withStatus(status)
-    ))
+  def mockStubResponseForGetPenaltyDetails(status: Int, apiRegime: Regime, idType: IdType, id: Id, body: Option[String] = None): StubMapping = {
+    stubFor(get(urlEqualTo(s"/penalties-stub/penalty/details/${apiRegime.value}/${idType.value}/${id.value}"))
+      .willReturn(
+        aResponse()
+          .withBody(body.fold(getPenaltyDetailsWithLSPAndLPPAsJson.toString())(identity))
+          .withStatus(status)
+      ))
   }
 
-  def mockResponseForGetPenaltyDetails(status: Int, vatcUrl: String, body: Option[String] = None): StubMapping = {
-    stubFor(get(urlEqualTo(s"/penalty/details/VATC/VRN/$vatcUrl"))
+  def mockResponseForGetPenaltyDetails(status: Int, apiRegime: Regime, idType: IdType, vatcUrl: String, body: Option[String] = None): StubMapping = {
+    stubFor(get(urlEqualTo(s"/penalty/details/${apiRegime.value}/${idType.value}/$vatcUrl"))
       .willReturn(
         aResponse()
           .withBody(body.fold(getPenaltyDetailsWithLSPAndLPPAsJson.toString())(identity))
@@ -355,8 +356,8 @@ trait ETMPWiremock {
       ))
   }
 
-  def mockResponseForGetFinancialDetails(status: Int, vatcUrl: String, body: Option[String] = None): StubMapping = {
-    stubFor(get(urlEqualTo(s"/penalty/financial-data/$vatcUrl"))
+  def mockResponseForGetFinancialDetails(status: Int, regime: Regime, idType: IdType, id: Id, params: String, body: Option[String] = None): StubMapping = {
+    stubFor(get(urlEqualTo(s"/penalty/financial-data/${idType.value}/${id.value}/${regime.value}$params"))
       .willReturn(
         aResponse()
           .withBody(body.fold(getFinancialDetailsWithoutTotalisationsAsJson.toString())(identity))

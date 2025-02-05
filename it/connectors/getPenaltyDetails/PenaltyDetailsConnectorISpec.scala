@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,19 +19,23 @@ package connectors.getPenaltyDetails
 import java.time.LocalDate
 import config.featureSwitches.{CallAPI1812ETMP, FeatureSwitching}
 import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser.{GetPenaltyDetailsFailureResponse, GetPenaltyDetailsMalformed, GetPenaltyDetailsNoContent, GetPenaltyDetailsResponse, GetPenaltyDetailsSuccessResponse}
-import models.EnrolmentKey
-import models.TaxRegime.{ITSA, VAT}
+import models.{AgnosticEnrolmentKey, Regime, IdType, Id}
 import models.getPenaltyDetails.GetPenaltyDetails
 import models.getPenaltyDetails.appealInfo.{AppealInformationType, AppealStatusEnum}
-import models.getPenaltyDetails.lateSubmission._
 import org.scalatest.prop.TableDrivenPropertyChecks
 import play.api.http.Status
 import play.api.http.Status.IM_A_TEAPOT
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import utils.{ETMPWiremock, IntegrationSpecCommonBase}
+import utils.RegimeETMPWiremock
+import models.getPenaltyDetails.lateSubmission.LateSubmissionPenalty
+import models.getPenaltyDetails.lateSubmission.LSPDetails
+import models.getPenaltyDetails.lateSubmission.LSPSummary
+import models.getPenaltyDetails.lateSubmission.LateSubmission
+import models.getPenaltyDetails.lateSubmission._
 
-class PenaltyDetailsConnectorISpec extends IntegrationSpecCommonBase with ETMPWiremock with FeatureSwitching with TableDrivenPropertyChecks {
+class PenaltyDetailsConnectorISpec extends IntegrationSpecCommonBase with RegimeETMPWiremock with FeatureSwitching with TableDrivenPropertyChecks {
 
   class Setup {
     val connector: PenaltyDetailsConnector = injector.instanceOf[PenaltyDetailsConnector]
@@ -40,16 +44,17 @@ class PenaltyDetailsConnectorISpec extends IntegrationSpecCommonBase with ETMPWi
   }
 
   Table(
-    ("API Regime", "Enrolment Key"),
-    ("VATC", EnrolmentKey(VAT, "123456789")),
-    ("ITSA", EnrolmentKey(ITSA, "AB123456C"))
-  ).forEvery { (apiRegime, enrolmentKey) =>
+    ("Regime", "IdType", "Id"),
+    (Regime("VATC"), IdType("VRN"), Id("123456789")),
+    (Regime("ITSA"), IdType("NINO"), Id("AB123456C")),
+  ).forEvery { (regime, idType, id) =>
 
-    s"getPenaltyDetails for $apiRegime" should {
+    val aKey = AgnosticEnrolmentKey(regime, idType, id) 
+    s"getPenaltyDetails for $regime" should {
       "return a successful response when called" in new Setup {
         enableFeatureSwitch(CallAPI1812ETMP)
-        mockResponseForGetPenaltyDetails(Status.OK, apiRegime, enrolmentKey.keyType.name, enrolmentKey.key)
-        val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails(enrolmentKey)(hc))
+        mockResponseForGetPenaltyDetails(Status.OK, regime, idType, id.value)
+        val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails(aKey)(hc))
         result.isRight shouldBe true
       }
 
@@ -153,8 +158,8 @@ class PenaltyDetailsConnectorISpec extends IntegrationSpecCommonBase with ETMPWi
           latePaymentPenalty = None,
           breathingSpace = None
         )
-        mockResponseForGetPenaltyDetails(Status.OK, apiRegime, enrolmentKey.keyType.name, enrolmentKey.key, body = Some(bodyWithEmptyCategory))
-        val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails(enrolmentKey)(hc))
+        mockResponseForGetPenaltyDetails(Status.OK, regime, aKey.idType, aKey.id.value, body = Some(bodyWithEmptyCategory))
+        val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails(aKey)(hc))
         result.isRight shouldBe true
 
         result.getOrElse(GetPenaltyDetailsSuccessResponse(model.copy(lateSubmissionPenalty = None))) shouldBe GetPenaltyDetailsSuccessResponse(model)
@@ -170,32 +175,32 @@ class PenaltyDetailsConnectorISpec extends IntegrationSpecCommonBase with ETMPWi
              }
            }
           """
-        mockResponseForGetPenaltyDetails(Status.OK, apiRegime, enrolmentKey.keyType.name, enrolmentKey.key, body = Some(malformedBody))
-        val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails(enrolmentKey))
+        mockResponseForGetPenaltyDetails(Status.OK, regime, aKey.idType, aKey.id.value, body = Some(malformedBody))
+        val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails(aKey))
         result.isLeft shouldBe true
         result.left.getOrElse(GetPenaltyDetailsFailureResponse(IM_A_TEAPOT)) shouldBe GetPenaltyDetailsMalformed
       }
 
       s"return a $GetPenaltyDetailsFailureResponse when the response status is ISE (${Status.INTERNAL_SERVER_ERROR})" in new Setup {
         enableFeatureSwitch(CallAPI1812ETMP)
-        mockResponseForGetPenaltyDetails(Status.INTERNAL_SERVER_ERROR, apiRegime, enrolmentKey.keyType.name, enrolmentKey.key)
-        val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails(enrolmentKey))
+        mockResponseForGetPenaltyDetails(Status.INTERNAL_SERVER_ERROR, regime, aKey.idType, aKey.id.value)
+        val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails(aKey))
         result.isLeft shouldBe true
         result.left.getOrElse(GetPenaltyDetailsFailureResponse(IM_A_TEAPOT)).asInstanceOf[GetPenaltyDetailsFailureResponse].status shouldBe Status.INTERNAL_SERVER_ERROR
       }
 
       s"return a $GetPenaltyDetailsFailureResponse when the response status is ISE (${Status.SERVICE_UNAVAILABLE})" in new Setup {
         enableFeatureSwitch(CallAPI1812ETMP)
-        mockResponseForGetPenaltyDetails(Status.SERVICE_UNAVAILABLE, apiRegime, enrolmentKey.keyType.name, enrolmentKey.key)
-        val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails(enrolmentKey))
+        mockResponseForGetPenaltyDetails(Status.SERVICE_UNAVAILABLE, regime, aKey.idType, aKey.id.value)
+        val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails(aKey))
         result.isLeft shouldBe true
         result.left.getOrElse(GetPenaltyDetailsFailureResponse(IM_A_TEAPOT)).asInstanceOf[GetPenaltyDetailsFailureResponse].status shouldBe Status.SERVICE_UNAVAILABLE
       }
 
       s"return a $GetPenaltyDetailsFailureResponse when the response status is NOT FOUND (${Status.NOT_FOUND})" in new Setup {
         enableFeatureSwitch(CallAPI1812ETMP)
-        mockResponseForGetPenaltyDetails(Status.NOT_FOUND, apiRegime, enrolmentKey.keyType.name, enrolmentKey.key)
-        val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails(enrolmentKey))
+        mockResponseForGetPenaltyDetails(Status.NOT_FOUND, regime, aKey.idType, aKey.id.value)
+        val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails(aKey))
         result.isLeft shouldBe true
         result.left.getOrElse(GetPenaltyDetailsFailureResponse(IM_A_TEAPOT)).asInstanceOf[GetPenaltyDetailsFailureResponse].status shouldBe Status.NOT_FOUND
       }
@@ -213,65 +218,65 @@ class PenaltyDetailsConnectorISpec extends IntegrationSpecCommonBase with ETMPWi
             | ]
             |}
             |""".stripMargin
-        mockResponseForGetPenaltyDetails(Status.NOT_FOUND, apiRegime, enrolmentKey.keyType.name, enrolmentKey.key, body = Some(noDataFoundBody))
-        val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails(enrolmentKey))
+        mockResponseForGetPenaltyDetails(Status.NOT_FOUND, regime, aKey.idType, aKey.id.value, body = Some(noDataFoundBody))
+        val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails(aKey))
         result.isLeft shouldBe true
         result.left.getOrElse(GetPenaltyDetailsFailureResponse(IM_A_TEAPOT)) shouldBe GetPenaltyDetailsNoContent
       }
 
       s"return a $GetPenaltyDetailsFailureResponse when the response status is NO CONTENT (${Status.NO_CONTENT})" in new Setup {
         enableFeatureSwitch(CallAPI1812ETMP)
-        mockResponseForGetPenaltyDetails(Status.NO_CONTENT, apiRegime, enrolmentKey.keyType.name, enrolmentKey.key)
-        val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails(enrolmentKey))
+        mockResponseForGetPenaltyDetails(Status.NO_CONTENT, regime, aKey.idType, aKey.id.value)
+        val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails(aKey))
         result.isLeft shouldBe true
         result.left.getOrElse(GetPenaltyDetailsFailureResponse(IM_A_TEAPOT)).asInstanceOf[GetPenaltyDetailsFailureResponse].status shouldBe Status.NO_CONTENT
       }
 
       s"return a $GetPenaltyDetailsFailureResponse when the response status is CONFLICT (${Status.CONFLICT})" in new Setup {
         enableFeatureSwitch(CallAPI1812ETMP)
-        mockResponseForGetPenaltyDetails(Status.CONFLICT, apiRegime, enrolmentKey.keyType.name, enrolmentKey.key)
-        val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails(enrolmentKey))
+        mockResponseForGetPenaltyDetails(Status.CONFLICT, regime, aKey.idType, aKey.id.value)
+        val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails(aKey))
         result.isLeft shouldBe true
         result.left.getOrElse(GetPenaltyDetailsFailureResponse(IM_A_TEAPOT)).asInstanceOf[GetPenaltyDetailsFailureResponse].status shouldBe Status.CONFLICT
       }
 
       s"return a $GetPenaltyDetailsFailureResponse when the response status is UNPROCESSABLE ENTITY (${Status.UNPROCESSABLE_ENTITY})" in new Setup {
         enableFeatureSwitch(CallAPI1812ETMP)
-        mockResponseForGetPenaltyDetails(Status.UNPROCESSABLE_ENTITY, apiRegime, enrolmentKey.keyType.name, enrolmentKey.key)
-        val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails(enrolmentKey))
+        mockResponseForGetPenaltyDetails(Status.UNPROCESSABLE_ENTITY, regime, aKey.idType, aKey.id.value)
+        val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails(aKey))
         result.isLeft shouldBe true
         result.left.getOrElse(GetPenaltyDetailsFailureResponse(IM_A_TEAPOT)).asInstanceOf[GetPenaltyDetailsFailureResponse].status shouldBe Status.UNPROCESSABLE_ENTITY
       }
 
       s"return a $GetPenaltyDetailsFailureResponse when the response status is ISE (${Status.BAD_REQUEST})" in new Setup {
         enableFeatureSwitch(CallAPI1812ETMP)
-        mockResponseForGetPenaltyDetails(Status.BAD_REQUEST, apiRegime, enrolmentKey.keyType.name, enrolmentKey.key)
-        val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails(enrolmentKey))
+        mockResponseForGetPenaltyDetails(Status.BAD_REQUEST, regime, aKey.idType, aKey.id.value)
+        val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails(aKey))
         result.isLeft shouldBe true
         result.left.getOrElse(GetPenaltyDetailsFailureResponse(IM_A_TEAPOT)).asInstanceOf[GetPenaltyDetailsFailureResponse].status shouldBe Status.BAD_REQUEST
       }
     }
 
-    s"getPenaltyDetailsForAPI for $apiRegime" should {
+    s"getPenaltyDetailsForAPI for $regime" should {
       "return a 200 response" in new Setup {
         enableFeatureSwitch(CallAPI1812ETMP)
-        mockResponseForGetPenaltyDetails(Status.OK, apiRegime, enrolmentKey.keyType.name, s"${enrolmentKey.key}?dateLimit=09")
-        val result: HttpResponse = await(connector.getPenaltyDetailsForAPI(enrolmentKey, dateLimit = Some("09")))
+        mockResponseForGetPenaltyDetails(Status.OK, regime, aKey.idType, s"${aKey.id.value}?dateLimit=09")
+        val result: HttpResponse = await(connector.getPenaltyDetailsForAPI(aKey, dateLimit = Some("09")))
         result.status shouldBe Status.OK
       }
 
       "handle a UpstreamErrorResponse" when {
         "a 4xx error is returned" in new Setup {
           enableFeatureSwitch(CallAPI1812ETMP)
-          mockResponseForGetPenaltyDetails(Status.FORBIDDEN, apiRegime, enrolmentKey.keyType.name, s"${enrolmentKey.key}?dateLimit=09")
-          val result: HttpResponse = await(connector.getPenaltyDetailsForAPI(enrolmentKey, dateLimit = Some("09")))
+          mockResponseForGetPenaltyDetails(Status.FORBIDDEN, regime, aKey.idType, s"${aKey.id.value}?dateLimit=09")
+          val result: HttpResponse = await(connector.getPenaltyDetailsForAPI(aKey, dateLimit = Some("09")))
           result.status shouldBe Status.FORBIDDEN
         }
 
         "a 5xx error is returned" in new Setup {
           enableFeatureSwitch(CallAPI1812ETMP)
-          mockResponseForGetPenaltyDetails(Status.BAD_GATEWAY, apiRegime, enrolmentKey.keyType.name, s"${enrolmentKey.key}?dateLimit=09")
-          val result: HttpResponse = await(connector.getPenaltyDetailsForAPI(enrolmentKey, dateLimit = Some("09")))
+          mockResponseForGetPenaltyDetails(Status.BAD_GATEWAY, regime, aKey.idType, s"${aKey.id.value}?dateLimit=09")
+          val result: HttpResponse = await(connector.getPenaltyDetailsForAPI(aKey, dateLimit = Some("09")))
           result.status shouldBe Status.BAD_GATEWAY
         }
       }

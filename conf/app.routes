@@ -32,7 +32,6 @@ POST       /:regime/appeals/submit-appeal/:idType/:id                       cont
 GET        /:regime/appeals-data/multiple-penalties/:idType/:id             controllers.RegimeAppealsController.getMultiplePenaltyData(penaltyId: String, regime: models.Regime, idType: models.IdType, id: models.Id)
 
 # Compliance
-GET        /compliance/des/compliance-data              controllers.RegimeComplianceController.redirectLegacyGetComplianceData(regime: models.Regime, idType: models.IdType, id: models.Id, fromDate: String, toDate: String)
 GET        /:regime/compliance/data/:idType/:id         controllers.RegimeComplianceController.getComplianceData(regime: models.Regime, idType: models.IdType, id: models.Id, fromDate: String, toDate: String)
 
 # External API
@@ -40,5 +39,5 @@ GET        /:regime/summary/:idType/:id               controllers.RegimeAPIContr
 
 # 3rd Party API Endpoints
 
-GET        /penalty/financial-data/:idType/:id/:regime  controllers.RegimeAPIController.getFinancialDetails(regime: models.Regime, idType: models.IdType, id: models.Id, searchType: Option[String], searchItem: Option[String], dateType: Option[String], dateFrom: Option[String], dateTo: Option[String], includeClearedItems: Option[Boolean], includeStatisticalItems: Option[Boolean], includePaymentOnAccount: Option[Boolean], addRegimeTotalisation: Option[Boolean], addLockInformation: Option[Boolean], addPenaltyDetails: Option[Boolean], addPostedInterestDetails: Option[Boolean], addAccruingInterestDetails: Option[Boolean])
-GET        /penalty-details/:regime/:idType/:id         controllers.RegimeAPIController.getPenaltyDetails(regime: models.Regime, idType: models.IdType, id: models.Id, dateLimit: Option[String])
+GET        /:regime/penalty/financial-data/:idType/:id  controllers.RegimeAPIController.getFinancialDetails(regime: models.Regime, idType: models.IdType, id: models.Id, searchType: Option[String], searchItem: Option[String], dateType: Option[String], dateFrom: Option[String], dateTo: Option[String], includeClearedItems: Option[Boolean], includeStatisticalItems: Option[Boolean], includePaymentOnAccount: Option[Boolean], addRegimeTotalisation: Option[Boolean], addLockInformation: Option[Boolean], addPenaltyDetails: Option[Boolean], addPostedInterestDetails: Option[Boolean], addAccruingInterestDetails: Option[Boolean])
+GET        /:regime/penalty-details/:idType/:id         controllers.RegimeAPIController.getPenaltyDetails(regime: models.Regime, idType: models.IdType, id: models.Id, dateLimit: Option[String])

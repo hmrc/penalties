@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,12 +24,12 @@ import models.compliance.{CompliancePayload, ComplianceStatusEnum, ObligationDet
 import org.scalatest.prop.TableDrivenPropertyChecks
 import play.api.http.Status
 import play.api.test.Helpers._
-import utils.{ComplianceWiremock, IntegrationSpecCommonBase}
-
+import utils.{RegimeComplianceWiremock, IntegrationSpecCommonBase}
+import models.{AgnosticEnrolmentKey, Regime, IdType, Id}
 import java.time.{LocalDate, LocalDateTime}
 import scala.concurrent.ExecutionContext
 
-class RegimeComplianceConnectorISpec extends IntegrationSpecCommonBase with ComplianceWiremock with FeatureSwitching with TableDrivenPropertyChecks{
+class RegimeComplianceConnectorISpec extends IntegrationSpecCommonBase with RegimeComplianceWiremock with FeatureSwitching with TableDrivenPropertyChecks{
 
   implicit val ec: ExecutionContext = ExecutionContext.Implicits.global
   val testStartDate: LocalDateTime = LocalDateTime.of(2021,1,1, 1,0,0)
@@ -41,20 +41,21 @@ class RegimeComplianceConnectorISpec extends IntegrationSpecCommonBase with Comp
   }
 
   Table(
-    ("API Regime", "ID Type", "Enrolment Key"),
-    ("VATC", "vrn", EnrolmentKey(VAT, "123456789")),
-    ("ITSA", "nino", EnrolmentKey(ITSA, "AB123456C"))
-  ).forEvery { (apiRegime, idType, enrolmentKey) =>
-    import enrolmentKey._
+    ("Regime", "IdType", "Id"),
+    (Regime("VATC"), IdType("VRN"), Id("123456789")),
+    (Regime("ITSA"), IdType("NINO"), Id("AB123456C")),
+  ).forEvery { (regime, idType, id) =>
 
-    s"getComplianceData for $apiRegime" should {
+    val aKey = AgnosticEnrolmentKey(regime, idType, id) 
+
+    s"getComplianceData for ${regime.value}" should {
       "call DES and handle a successful response" in new Setup {
         enableFeatureSwitch(CallDES)
         val compliancePayloadAsModel: CompliancePayload = CompliancePayload(
           identification = Some(ObligationIdentification(
             incomeSourceType = None,
-            referenceNumber = enrolmentKey.key,
-            referenceType = keyType.name
+            referenceNumber = id.value,
+            referenceType = idType.value
           )),
           obligationDetails = Seq(
             ObligationDetail(
@@ -75,8 +76,8 @@ class RegimeComplianceConnectorISpec extends IntegrationSpecCommonBase with Comp
             )
           )
         )
-        mockResponseForComplianceDataFromDES(Status.OK, apiRegime, idType, enrolmentKey.key, "2020-01-01", "2020-12-31", hasBody = true)
-        val result: CompliancePayloadResponse = await(connector.getComplianceData(enrolmentKey, "2020-01-01", "2020-12-31"))
+        mockResponseForComplianceDataFromDES(Status.OK, regime, idType, id, "2020-01-01", "2020-12-31", hasBody = true)
+        val result: CompliancePayloadResponse = await(connector.getComplianceData(aKey, "2020-01-01", "2020-12-31"))
         result.isRight shouldBe true
         result.toOption.get.asInstanceOf[CompliancePayloadSuccessResponse].model shouldBe compliancePayloadAsModel
       }
@@ -86,8 +87,8 @@ class RegimeComplianceConnectorISpec extends IntegrationSpecCommonBase with Comp
         val compliancePayloadAsModel: CompliancePayload = CompliancePayload(
           identification = Some(ObligationIdentification(
             incomeSourceType = None,
-            referenceNumber = enrolmentKey.key,
-            referenceType = keyType.name
+            referenceNumber = id.value,
+            referenceType = idType.value
           )),
           obligationDetails = Seq(
             ObligationDetail(
@@ -108,29 +109,29 @@ class RegimeComplianceConnectorISpec extends IntegrationSpecCommonBase with Comp
             )
           )
         )
-        mockResponseForComplianceDataFromStub(Status.OK, apiRegime, idType, enrolmentKey.key, "2020-01-01", "2020-12-31")
-        val result: CompliancePayloadResponse = await(connector.getComplianceData(enrolmentKey, "2020-01-01", "2020-12-31"))
+        mockResponseForComplianceDataFromStub(Status.OK, regime, idType, id, "2020-01-01", "2020-12-31")
+        val result: CompliancePayloadResponse = await(connector.getComplianceData(aKey, "2020-01-01", "2020-12-31"))
         result.isRight shouldBe true
         result.toOption.get.asInstanceOf[CompliancePayloadSuccessResponse].model shouldBe compliancePayloadAsModel
       }
 
       s"return a $CompliancePayloadNoData when the response status is Not Found (${Status.NOT_FOUND})" in new Setup {
-        mockResponseForComplianceDataFromDES(Status.NOT_FOUND, apiRegime, idType, enrolmentKey.key, "2020-01-01", "2020-12-31")
-        val result: CompliancePayloadResponse = await(connector.getComplianceData(enrolmentKey, "2020-01-01", "2020-12-31"))
+        mockResponseForComplianceDataFromDES(Status.NOT_FOUND, regime, idType, id, "2020-01-01", "2020-12-31")
+        val result: CompliancePayloadResponse = await(connector.getComplianceData(aKey, "2020-01-01", "2020-12-31"))
         result.isLeft shouldBe true
         result.left.getOrElse(CompliancePayloadFailureResponse(IM_A_TEAPOT)) shouldBe CompliancePayloadNoData
       }
 
       s"return a $CompliancePayloadFailureResponse when the response status is ISE (${Status.INTERNAL_SERVER_ERROR})" in new Setup {
-        mockResponseForComplianceDataFromDES(Status.INTERNAL_SERVER_ERROR, apiRegime, idType, enrolmentKey.key, "2020-01-01", "2020-12-31")
-        val result: CompliancePayloadResponse = await(connector.getComplianceData(enrolmentKey, "2020-01-01", "2020-12-31"))
+        mockResponseForComplianceDataFromDES(Status.INTERNAL_SERVER_ERROR, regime, idType, id, "2020-01-01", "2020-12-31")
+        val result: CompliancePayloadResponse = await(connector.getComplianceData(aKey, "2020-01-01", "2020-12-31"))
         result.isLeft shouldBe true
         result.left.getOrElse(CompliancePayloadFailureResponse(IM_A_TEAPOT)) shouldBe CompliancePayloadFailureResponse(Status.INTERNAL_SERVER_ERROR)
       }
 
       s"return a $CompliancePayloadFailureResponse when the response status is unmatched i.e. Gateway Timeout (${Status.SERVICE_UNAVAILABLE})" in new Setup {
-        mockResponseForComplianceDataFromDES(Status.SERVICE_UNAVAILABLE, apiRegime, idType, enrolmentKey.key, "2020-01-01", "2020-12-31")
-        val result: CompliancePayloadResponse = await(connector.getComplianceData(enrolmentKey, "2020-01-01", "2020-12-31"))
+        mockResponseForComplianceDataFromDES(Status.SERVICE_UNAVAILABLE, regime, idType, id, "2020-01-01", "2020-12-31")
+        val result: CompliancePayloadResponse = await(connector.getComplianceData(aKey, "2020-01-01", "2020-12-31"))
         result.isLeft shouldBe true
         result.left.getOrElse(CompliancePayloadFailureResponse(IM_A_TEAPOT)) shouldBe CompliancePayloadFailureResponse(Status.SERVICE_UNAVAILABLE)
       }

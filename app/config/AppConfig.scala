@@ -126,16 +126,17 @@ class AppConfig @Inject()(val config: Configuration, servicesConfig: ServicesCon
     else etmpBase + s"/penalty/details/$taxregime/$id/$idValue"
   }
 
-  def getRegimeFinancialDetailsUrl(taxregime: String , id: String, key: String): String = {
-    if (!isEnabled(CallAPI1811ETMP)) stubBase + s"/penalties-stub/penalty/financial-data/$taxregime/$key/$id"
-    else etmpBase + s"/penalty/financial-data/$taxregime/$key/$id"
-  }
+  // def getRegimeFinancialDetailsUrl(taxregime: String , id: String, key: String): String = {
+  //   if (!isEnabled(CallAPI1811ETMP)) stubBase + s"/penalties-stub/penalty/financial-data/$taxregime/$key/$id"
+  //   else etmpBase + s"/penalty/financial-data/$taxregime/$key/$id"
+  // }
+  //  /:regime/penalty/financial-data/:idType/:id 
 
-  def getRegimeFinancialDetailsUrl(enrolmentKey: EnrolmentKey): String = {
-    val taxregime = enrolmentKey.regime;
-    val id = enrolmentKey.keyType;
-    val idValue = enrolmentKey.key;
-    if (!isEnabled(CallAPI1811ETMP)) stubBase + s"/penalties-stub/penalty/financial-data/$id/$idValue/$taxregime/"
+  def getRegimeFinancialDetailsUrl(enrolmentKey: AgnosticEnrolmentKey): String = {
+    val taxregime = enrolmentKey.regime.value;
+    val id = enrolmentKey.idType.value;
+    val idValue = enrolmentKey.id.value;
+    if (!isEnabled(CallAPI1811ETMP)) stubBase + s"/penalties-stub/penalty/financial-data/$id/$idValue/$taxregime"
     else etmpBase + s"/penalty/financial-data/$id/$idValue/$taxregime"
   }
 
@@ -145,8 +146,14 @@ class AppConfig @Inject()(val config: Configuration, servicesConfig: ServicesCon
   }
 
   def getRegimeAgnosticPenaltyDetailsUrl(agnosticEnrolmenKey: AgnosticEnrolmentKey): String = {
-    if (!isEnabled(CallAPI1812ETMP)) stubBase + "/penalties-stub/penalty/details/" + agnosticEnrolmenKey.regime.value + "/" + agnosticEnrolmenKey.idType.value + "/" + agnosticEnrolmenKey.id.value
-    else etmpBase + "/penalty/details/" + agnosticEnrolmenKey.regime.value + "/" + agnosticEnrolmenKey.idType.value + "/" + agnosticEnrolmenKey.id.value
+    val regime = agnosticEnrolmenKey.regime.value;
+    val idType = agnosticEnrolmenKey.idType.value;
+    val idValue = agnosticEnrolmenKey.id.value;
+    if (!isEnabled(CallAPI1812ETMP)) stubBase + s"/penalties-stub/penalty/details/$regime/$idType/$idValue"
+    else etmpBase + s"/penalty/details/$regime/$idType/$idValue"
+    
+    // if (!isEnabled(CallAPI1812ETMP)) stubBase + "/penalties-stub/penalty/details/" + agnosticEnrolmenKey.regime.value + "/" + agnosticEnrolmenKey.idType.value + "/" + agnosticEnrolmenKey.id.value
+    // else etmpBase + "/penalty/details/" + agnosticEnrolmenKey.regime.value + "/" + agnosticEnrolmenKey.idType.value + "/" + agnosticEnrolmenKey.id.value
   }
 
   def getFinancialDetailsVatUrl(vrn: String): String = {

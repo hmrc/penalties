@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,13 +26,13 @@ import org.scalatest.prop.TableDrivenPropertyChecks
 import play.api.http.Status
 import play.api.libs.json.{JsObject, JsValue, Json}
 import play.api.test.Helpers._
-import utils.{AppealWiremock, ETMPWiremock, FileNotificationOrchestratorWiremock, IntegrationSpecCommonBase}
-
+import utils.{RegimeAppealWiremock, RegimeETMPWiremock, FileNotificationOrchestratorWiremock, IntegrationSpecCommonBase}
+import models.{AgnosticEnrolmentKey, Regime, IdType, Id}
 import java.time.LocalDate
 import scala.jdk.CollectionConverters._
 
-class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
-  with AppealWiremock
+class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with RegimeETMPWiremock
+  with RegimeAppealWiremock
   with FileNotificationOrchestratorWiremock
   with FeatureSwitching
   with TableDrivenPropertyChecks {
@@ -296,62 +296,64 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWi
       |}
       |""".stripMargin)
 
-  Table(
-    ("API Regime", "Enrolment Key"),
-    ("VATC", EnrolmentKey(VAT, "123456789")),
-    ("ITSA", EnrolmentKey(ITSA, "AB123456C"))
-  ).forEvery { (apiRegime, enrolmentKey) =>
+    Table(
+    ("Regime", "IdType", "Id"),
+    (Regime("VATC"), IdType("VRN"), Id("123456789")),
+    (Regime("ITSA"), IdType("NINO"), Id("AB123456C")),
+  ).forEvery { (regime, idType, id) =>
 
-    s"getAppealsDataForLateSubmissionPenalty for $apiRegime" should {
+    val enrolmentKey = AgnosticEnrolmentKey(regime, idType, id) 
+
+    s"getAppealsDataForLateSubmissionPenalty for $regime" should {
       "call ETMP and compare the penalty ID provided and the penalty ID in the payload - return OK if there is a match" in {
-        mockStubResponseForGetPenaltyDetails(Status.OK, apiRegime, enrolmentKey.keyType.name, enrolmentKey.key, Some(getPenaltyDetailsJson.toString()))
-        val result = await(buildClientForRequestToApp(uri = s"/appeals-data/late-submissions?penaltyId=123456789&enrolmentKey=$enrolmentKey").get())
+        mockStubResponseForGetPenaltyDetails(Status.OK, regime, idType, id, Some(getPenaltyDetailsJson.toString()))
+        val result = await(buildClientForRequestToApp(uri = s"/${regime.value}/appeals-data/late-submissions/${idType.value}/${id.value}?penaltyId=123456789").get())
         result.status shouldBe Status.OK
         result.body shouldBe appealV2Json.toString()
       }
 
       "return NOT_FOUND when the penalty ID given does not match the penalty ID in the payload" in {
-        mockStubResponseForGetPenaltyDetails(Status.OK, apiRegime, enrolmentKey.keyType.name, enrolmentKey.key, Some(getPenaltyDetailsJson.toString()))
-        val result = await(buildClientForRequestToApp(uri = s"/appeals-data/late-submissions?penaltyId=0001&enrolmentKey=$enrolmentKey").get())
+        mockStubResponseForGetPenaltyDetails(Status.OK, regime, idType, id, Some(getPenaltyDetailsJson.toString()))
+        val result = await(buildClientForRequestToApp(uri = s"/${regime.value}/appeals-data/late-submissions/${idType.value}/${id.value}?penaltyId=0001").get())
         result.status shouldBe Status.NOT_FOUND
       }
 
       "return an ISE when the call to ETMP fails" in {
-        mockStubResponseForGetPenaltyDetails(Status.INTERNAL_SERVER_ERROR, apiRegime, enrolmentKey.keyType.name, enrolmentKey.key, Some(""))
-        val result = await(buildClientForRequestToApp(uri = s"/appeals-data/late-submissions?penaltyId=0001&enrolmentKey=$enrolmentKey").get())
+        mockStubResponseForGetPenaltyDetails(Status.INTERNAL_SERVER_ERROR, regime, idType, id, Some(""))
+        val result = await(buildClientForRequestToApp(uri = s"/${regime.value}/appeals-data/late-submissions/${idType.value}/${id.value}?penaltyId=123456789").get())
         result.status shouldBe Status.INTERNAL_SERVER_ERROR
       }
     }
 
-    s"getAppealsDataForLatePaymentPenalty for $apiRegime" should {
+    s"getAppealsDataForLatePaymentPenalty for $regime" should {
       "call ETMP and compare the penalty ID provided and the penalty ID in the payload - return OK if there is a match" in {
-        mockStubResponseForGetPenaltyDetails(Status.OK, apiRegime, enrolmentKey.keyType.name, enrolmentKey.key, Some(getPenaltyDetailsJson.toString()))
-        val result = await(buildClientForRequestToApp(uri = s"/appeals-data/late-payments?penaltyId=1234567887&enrolmentKey=$enrolmentKey&isAdditional=false").get())
+        mockStubResponseForGetPenaltyDetails(Status.OK, regime, idType, id, Some(getPenaltyDetailsJson.toString()))
+        val result = await(buildClientForRequestToApp(uri = s"/${regime.value}/appeals-data/late-payments/${idType.value}/${id.value}?penaltyId=1234567887&isAdditional=false").get())
         result.status shouldBe Status.OK
         result.body shouldBe appealV2JsonLPP.toString()
       }
 
       "call ETMP and compare the penalty ID provided and the penalty ID in the payload for Additional - return OK if there is a match" in {
-        mockStubResponseForGetPenaltyDetails(Status.OK, apiRegime, enrolmentKey.keyType.name, enrolmentKey.key, Some(getPenaltyDetailsJson.toString()))
-        val result = await(buildClientForRequestToApp(uri = s"/appeals-data/late-payments?penaltyId=1234567889&enrolmentKey=$enrolmentKey&isAdditional=true").get())
+        mockStubResponseForGetPenaltyDetails(Status.OK, regime, idType, id, Some(getPenaltyDetailsJson.toString()))
+        val result = await(buildClientForRequestToApp(uri = s"/${regime.value}/appeals-data/late-payments/${idType.value}/${id.value}?penaltyId=1234567889&isAdditional=true").get())
         result.status shouldBe Status.OK
         result.body shouldBe appealV2JsonLPPAdditional.toString()
       }
 
       "return NOT_FOUND when the penalty ID given does not match the penalty ID in the payload" in {
-        mockStubResponseForGetPenaltyDetails(Status.OK, apiRegime, enrolmentKey.keyType.name, enrolmentKey.key, Some(getPenaltyDetailsJson.toString()))
-        val result = await(buildClientForRequestToApp(uri = s"/appeals-data/late-payments?penaltyId=0001&enrolmentKey=$enrolmentKey&isAdditional=false").get())
+        mockStubResponseForGetPenaltyDetails(Status.OK, regime, idType, id, Some(getPenaltyDetailsJson.toString()))
+        val result = await(buildClientForRequestToApp(uri = s"/${regime.value}/appeals-data/late-payments/${idType.value}/${id.value}?penaltyId=0001&isAdditional=false").get())
         result.status shouldBe Status.NOT_FOUND
       }
 
       "return an ISE when the call to ETMP fails" in {
-        mockStubResponseForGetPenaltyDetails(Status.INTERNAL_SERVER_ERROR, apiRegime, enrolmentKey.keyType.name, enrolmentKey.key, Some(""))
-        val result = await(buildClientForRequestToApp(uri = s"/appeals-data/late-payments?penaltyId=0001&enrolmentKey=$enrolmentKey&isAdditional=false").get())
+        mockStubResponseForGetPenaltyDetails(Status.INTERNAL_SERVER_ERROR, regime, idType, id, Some(""))
+        val result = await(buildClientForRequestToApp(uri = s"/${regime.value}/appeals-data/late-payments/${idType.value}/${id.value}?penaltyId=0001&isAdditional=false").get())
         result.status shouldBe Status.INTERNAL_SERVER_ERROR
       }
     }
 
-    s"getReasonableExcuses for $apiRegime" should {
+    s"getReasonableExcuses for $regime" should {
       "return all active reasonable excuses" in {
         val jsonExpectedToReturn: JsValue = Json.parse(
           """
@@ -394,9 +396,9 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWi
       }
     }
 
-    s"submitAppeal for $apiRegime" should {
+    s"submitAppeal for $regime" should {
       "call the connector and send the appeal data received in the request body - returns OK when successful for bereavement" in {
-        mockResponseForAppealSubmissionStub(OK, s"$enrolmentKey", penaltyNumber = "123456789")
+        mockResponseForAppealSubmissionStub(OK, enrolmentKey, penaltyNumber = "123456789")
         val jsonToSubmit: JsValue = Json.parse(
           """
             |{
@@ -422,7 +424,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWi
         result.status shouldBe OK
       }
       "call the connector and send the appeal data received in the request body - returns OK when successful for crime" in {
-        mockResponseForAppealSubmissionStub(OK, s"$enrolmentKey", penaltyNumber = "123456789")
+        mockResponseForAppealSubmissionStub(OK, enrolmentKey, penaltyNumber = "123456789")
         val jsonToSubmit: JsValue = Json.parse(
           """
             |{
@@ -449,7 +451,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWi
       }
 
       "call the connector and send the appeal data received in the request body - returns OK when successful for fire or flood" in {
-        mockResponseForAppealSubmissionStub(OK, s"$enrolmentKey", penaltyNumber = "123456789")
+        mockResponseForAppealSubmissionStub(OK, enrolmentKey, penaltyNumber = "123456789")
         val jsonToSubmit: JsValue = Json.parse(
           """
             |{
@@ -475,7 +477,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWi
       }
 
       "call the connector and send the appeal data received in the request body - returns OK when successful for loss of staff" in {
-        mockResponseForAppealSubmissionStub(OK, s"$enrolmentKey", penaltyNumber = "123456789")
+        mockResponseForAppealSubmissionStub(OK, enrolmentKey, penaltyNumber = "123456789")
         val jsonToSubmit: JsValue = Json.parse(
           """
             |{
@@ -501,7 +503,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWi
       }
 
       "call the connector and send the appeal data received in the request body - returns OK when successful for technical issues" in {
-        mockResponseForAppealSubmissionStub(OK, s"$enrolmentKey", penaltyNumber = "123456789")
+        mockResponseForAppealSubmissionStub(OK, enrolmentKey, penaltyNumber = "123456789")
         val jsonToSubmit: JsValue = Json.parse(
           """
             |{
@@ -529,7 +531,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWi
 
       "call the connector and send the appeal data received in the request body - returns OK when successful for health" when {
         "there has been no hospital stay" in {
-          mockResponseForAppealSubmissionStub(OK, s"$enrolmentKey", penaltyNumber = "123456789")
+          mockResponseForAppealSubmissionStub(OK, enrolmentKey, penaltyNumber = "123456789")
           val jsonToSubmit: JsValue = Json.parse(
             """
               |{
@@ -557,7 +559,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWi
         }
 
         "there is an ongoing hospital stay" in {
-          mockResponseForAppealSubmissionStub(OK, s"$enrolmentKey", penaltyNumber = "123456789")
+          mockResponseForAppealSubmissionStub(OK, enrolmentKey, penaltyNumber = "123456789")
           val jsonToSubmit: JsValue = Json.parse(
             """
               |{
@@ -585,7 +587,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWi
         }
 
         "there has been a hospital stay" in {
-          mockResponseForAppealSubmissionStub(OK, s"$enrolmentKey", penaltyNumber = "123456789")
+          mockResponseForAppealSubmissionStub(OK, enrolmentKey, penaltyNumber = "123456789")
           val jsonToSubmit: JsValue = Json.parse(
             """
               |{
@@ -614,7 +616,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWi
         }
 
         "call the connector and send the appeal data received in the request body - returns OK when successful for other with file upload" in {
-          mockResponseForAppealSubmissionStub(OK, s"$enrolmentKey", penaltyNumber = "123456789")
+          mockResponseForAppealSubmissionStub(OK, enrolmentKey, penaltyNumber = "123456789")
           mockResponseForFileNotificationOrchestrator(OK)
           val jsonToSubmit: JsValue = Json.parse(
             """
@@ -662,7 +664,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWi
 
         "call the connector and send the appeal data received in the request body - returns OK when successful for other " +
           "with file upload (audit storage failure) - single appeal" in {
-          mockResponseForAppealSubmissionStub(OK, s"$enrolmentKey", penaltyNumber = "123456789")
+          mockResponseForAppealSubmissionStub(OK, enrolmentKey, penaltyNumber = "123456789")
           mockResponseForFileNotificationOrchestrator(INTERNAL_SERVER_ERROR)
           val jsonToSubmit: JsValue = Json.parse(
             """
@@ -712,7 +714,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWi
         }
 
         "call the connector and send the appeal data received in the request body - returns OK when successful for LPP" in {
-          mockResponseForAppealSubmissionStub(OK, s"$enrolmentKey", isLPP = true, penaltyNumber = "123456789")
+          mockResponseForAppealSubmissionStub(OK, enrolmentKey, isLPP = true, penaltyNumber = "123456789")
           val jsonToSubmit: JsValue = Json.parse(
             """
               |{
@@ -740,7 +742,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWi
 
         "call the connector and send the appeal data received in the request body - returns OK when successful for other" +
           " with file upload (audit storage failure) - part of multi appeal" in {
-          mockResponseForAppealSubmissionStub(OK, s"$enrolmentKey", penaltyNumber = "123456789")
+          mockResponseForAppealSubmissionStub(OK, enrolmentKey, penaltyNumber = "123456789")
           mockResponseForFileNotificationOrchestrator(INTERNAL_SERVER_ERROR)
           val jsonToSubmit: JsValue = Json.parse(
             """
@@ -814,7 +816,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWi
 
       "return error status code" when {
         "the call to PEGA/stub fails" in {
-          mockResponseForAppealSubmissionStub(GATEWAY_TIMEOUT, s"$enrolmentKey", penaltyNumber = "123456789")
+          mockResponseForAppealSubmissionStub(GATEWAY_TIMEOUT, enrolmentKey, penaltyNumber = "123456789")
           val jsonToSubmit: JsValue = Json.parse(
             """
               |{
@@ -841,7 +843,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWi
         }
 
         "the call to PEGA/stub has a fault" in {
-          mockResponseForAppealSubmissionStubFault(s"$enrolmentKey", penaltyNumber = "123456789")
+          mockResponseForAppealSubmissionStubFault(enrolmentKey, penaltyNumber = "123456789")
           val jsonToSubmit: JsValue = Json.parse(
             """
               |{
@@ -869,7 +871,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWi
       }
     }
 
-    s"getMultiplePenaltyData for $apiRegime" should {
+    s"getMultiplePenaltyData for $regime" should {
       val getPenaltyDetailsOneLPPJson: JsValue = Json.parse(
         """
           |{
@@ -1191,34 +1193,34 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWi
 
       "call ETMP and return NO_CONTENT" when {
         "there is only one penalty related to the charge" in {
-          mockStubResponseForGetPenaltyDetails(Status.OK, apiRegime, enrolmentKey.keyType.name, enrolmentKey.key, Some(getPenaltyDetailsOneLPPJson.toString()))
-          val result = await(buildClientForRequestToApp(uri = s"/appeals-data/multiple-penalties?penaltyId=1234567887&enrolmentKey=$enrolmentKey").get())
+          mockStubResponseForGetPenaltyDetails(Status.OK, regime, idType, id, Some(getPenaltyDetailsOneLPPJson.toString()))
+          val result = await(buildClientForRequestToApp(uri = s"/${regime.value}/appeals-data/multiple-penalties/${idType.value}/${id.value}?penaltyId=1234567887").get())
           result.status shouldBe Status.NO_CONTENT
         }
 
         "either penalty under the principal charge has appeal in any state" in {
-          mockStubResponseForGetPenaltyDetails(Status.OK, apiRegime, enrolmentKey.keyType.name, enrolmentKey.key, Some(getPenaltyDetailsTwoLPPsWithAppealsJson.toString()))
-          val result = await(buildClientForRequestToApp(uri = s"/appeals-data/multiple-penalties?penaltyId=1234567887&enrolmentKey=$enrolmentKey").get())
+          mockStubResponseForGetPenaltyDetails(Status.OK, regime, idType, id, Some(getPenaltyDetailsTwoLPPsWithAppealsJson.toString()))
+          val result = await(buildClientForRequestToApp(uri = s"/${regime.value}/appeals-data/multiple-penalties/${idType.value}/${id.value}?penaltyId=1234567887").get())
           result.status shouldBe Status.NO_CONTENT
         }
 
         "either penalty is accruing (LPP2)" in {
-          mockStubResponseForGetPenaltyDetails(Status.OK, apiRegime, enrolmentKey.keyType.name, enrolmentKey.key, Some(getPenaltyDetailsTwoLPPsLPP2AccruingJson.toString()))
-          val result = await(buildClientForRequestToApp(uri = s"/appeals-data/multiple-penalties?penaltyId=1234567887&enrolmentKey=$enrolmentKey").get())
+          mockStubResponseForGetPenaltyDetails(Status.OK, regime, idType, id, Some(getPenaltyDetailsTwoLPPsLPP2AccruingJson.toString()))
+          val result = await(buildClientForRequestToApp(uri = s"/${regime.value}/appeals-data/multiple-penalties/${idType.value}/${id.value}?penaltyId=1234567887").get())
           result.status shouldBe Status.NO_CONTENT
         }
 
         "the VAT has not been paid" in {
-          mockStubResponseForGetPenaltyDetails(Status.OK, apiRegime, enrolmentKey.keyType.name, enrolmentKey.key, Some(getPenaltyDetailsTwoLPPsVATNotPaidJson.toString()))
-          val result = await(buildClientForRequestToApp(uri = s"/appeals-data/multiple-penalties?penaltyId=1234567887&enrolmentKey=$enrolmentKey").get())
+          mockStubResponseForGetPenaltyDetails(Status.OK, regime, idType, id, Some(getPenaltyDetailsTwoLPPsVATNotPaidJson.toString()))
+          val result = await(buildClientForRequestToApp(uri = s"/${regime.value}/appeals-data/multiple-penalties/${idType.value}/${id.value}?penaltyId=1234567887").get())
           result.status shouldBe Status.NO_CONTENT
         }
       }
 
       "call ETMP and return OK when there is two penalties related to the charge and they are both posted" +
         " and the VAT has been paid" in {
-        mockStubResponseForGetPenaltyDetails(Status.OK, apiRegime, enrolmentKey.keyType.name, enrolmentKey.key, Some(getPenaltyDetailsTwoLPPsJson.toString()))
-        val result = await(buildClientForRequestToApp(uri = s"/appeals-data/multiple-penalties?penaltyId=1234567887&enrolmentKey=$enrolmentKey").get())
+        mockStubResponseForGetPenaltyDetails(Status.OK, regime, idType, id, Some(getPenaltyDetailsTwoLPPsJson.toString()))
+        val result = await(buildClientForRequestToApp(uri = s"/${regime.value}/appeals-data/multiple-penalties/${idType.value}/${id.value}?penaltyId=1234567887").get())
         val expectedModel = MultiplePenaltiesData(
           firstPenaltyChargeReference = "1234567887",
           firstPenaltyAmount = 144.01,
@@ -1232,8 +1234,8 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWi
       }
 
       "return an ISE when the call to ETMP fails" in {
-        mockStubResponseForGetPenaltyDetails(Status.INTERNAL_SERVER_ERROR, apiRegime, enrolmentKey.keyType.name, enrolmentKey.key, Some(""))
-        val result = await(buildClientForRequestToApp(uri = s"/appeals-data/multiple-penalties?penaltyId=0001&enrolmentKey=$enrolmentKey").get())
+        mockStubResponseForGetPenaltyDetails(Status.INTERNAL_SERVER_ERROR, regime, idType, id, Some(""))
+        val result = await(buildClientForRequestToApp(uri = s"/${regime.value}/appeals-data/multiple-penalties/${idType.value}/${id.value}?penaltyId=1234567887").get())
         result.status shouldBe Status.INTERNAL_SERVER_ERROR
       }
     }

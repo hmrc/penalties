@@ -28,7 +28,7 @@ import java.time.LocalDate
 
 class FinancialDetailsConnectorISpec extends IntegrationSpecCommonBase with ETMPWiremock with FeatureSwitching {
 
-val regime = Regime("VATC") 
+  val regime = Regime("VATC") 
   val idType = IdType("VRN")
   val id = Id("123456789")
 

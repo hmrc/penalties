@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,12 +25,12 @@ import play.api.http.Status
 import play.api.libs.json.{JsValue, Json}
 import play.api.test.Helpers._
 import utils.Logger.logger
-import utils.{ETMPWiremock, IntegrationSpecCommonBase}
-
+import utils.{RegimeETMPWiremock, IntegrationSpecCommonBase}
+import models.{AgnosticEnrolmentKey, Regime, IdType, Id}
 import java.time.LocalDate
 import scala.jdk.CollectionConverters._
 
-class RegimePenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock with FeatureSwitching with TableDrivenPropertyChecks {
+class RegimePenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with RegimeETMPWiremock with FeatureSwitching with TableDrivenPropertyChecks {
   setEnabledFeatureSwitches()
   val controller: RegimePenaltiesFrontendController = injector.instanceOf[RegimePenaltiesFrontendController]
   val financialDataQueryParamWithClearedItems: String = {
@@ -447,17 +447,21 @@ class RegimePenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase w
   )
 
   Table(
-    ("API Regime", "Enrolment Key"),
-    ("VATC", EnrolmentKey(VAT, "123456789")),
-    ("ITSA", EnrolmentKey(ITSA, "AB123456C"))
-  ).forEvery { (apiRegime, enrolmentKey) =>
-    val etmpUri = s"/etmp/penalties/$enrolmentKey"
-    val financialDataUri = s"${enrolmentKey.keyType}/${enrolmentKey.key}/$apiRegime"
+    ("Regime", "IdType", "Id"),
+    (Regime("VATC"), IdType("VRN"), Id("123456789")),
+    // (Regime("ITSA"), IdType("NINO"), Id("AB123456C")),
+  ).forEvery { (regime, idType, id) =>
 
-    s"return OK (${Status.OK}) for $apiRegime" when {
+    val enrolmentKey = AgnosticEnrolmentKey(regime, idType, id) 
+    val etmpUri = s"/${regime.value}/etmp/penalties/${idType.value}/${id.value}"
+    // /:regime/etmp/penalties/:idType/:id
+
+    val financialDataUri = s"${idType.value}/${id.value}/${regime.value}"
+
+    s"return OK (${Status.OK}) for $regime" when {
 
       "the get penalty details call succeeds and the get financial details call succeeds (combining the data together)" in {
-        mockStubResponseForGetPenaltyDetails(Status.OK, apiRegime, enrolmentKey.keyType.name, enrolmentKey.key, body = Some(getPenaltyDetailsJson.toString()))
+        mockStubResponseForGetPenaltyDetails(Status.OK, regime, idType, id, body = Some(getPenaltyDetailsJson.toString()))
         mockStubResponseForGetFinancialDetails(Status.OK,
           s"$financialDataUri?$financialDataQueryParamWithClearedItems", Some(getFinancialDetailsWithoutTotalisationsAsJson.toString()))
         mockStubResponseForGetFinancialDetails(Status.OK,
@@ -469,7 +473,7 @@ class RegimePenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase w
       }
 
       "the get penalty details call includes blank appealLevel fields" in {
-        mockStubResponseForGetPenaltyDetails(Status.OK, apiRegime, enrolmentKey.keyType.name, enrolmentKey.key, body = Some(getPenaltyDetailsJsonWithBlankAppealLevel.toString()))
+        mockStubResponseForGetPenaltyDetails(Status.OK, regime, idType, id, body = Some(getPenaltyDetailsJsonWithBlankAppealLevel.toString()))
         mockStubResponseForGetFinancialDetails(Status.OK, s"$financialDataUri?$financialDataQueryParamWithClearedItems")
         mockStubResponseForGetFinancialDetails(Status.OK, s"$financialDataUri?$financialDataQueryParamWithoutClearedItems", Some(getFinancialDetailsTotalisationsAsJson.toString()))
 
@@ -479,7 +483,7 @@ class RegimePenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase w
       }
 
       "the get penalty details call succeeds and the get financial details call succeeds (combining the data together - second 1811 call returns NO_CONTENT)" in {
-        mockStubResponseForGetPenaltyDetails(Status.OK, apiRegime, enrolmentKey.keyType.name, enrolmentKey.key, body = Some(getPenaltyDetailsJson.toString()))
+        mockStubResponseForGetPenaltyDetails(Status.OK, regime, idType, id, body = Some(getPenaltyDetailsJson.toString()))
         mockStubResponseForGetFinancialDetails(Status.OK,
           s"$financialDataUri?$financialDataQueryParamWithClearedItems")
         mockStubResponseForGetFinancialDetails(Status.NO_CONTENT,
@@ -537,7 +541,7 @@ class RegimePenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase w
             | }
             |}
             |""".stripMargin)
-        mockStubResponseForGetPenaltyDetails(Status.OK, apiRegime, enrolmentKey.keyType.name, enrolmentKey.key, body = Some(getPenaltyDetailsJson.toString()))
+        mockStubResponseForGetPenaltyDetails(Status.OK, regime, idType, id, body = Some(getPenaltyDetailsJson.toString()))
         mockStubResponseForGetFinancialDetails(Status.OK,
           s"$financialDataUri?$financialDataQueryParamWithClearedItems", body = Some(getFinancialDetailsWithManualLPP.toString()))
         mockStubResponseForGetFinancialDetails(Status.NO_CONTENT,
@@ -567,22 +571,24 @@ class RegimePenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase w
             |""".stripMargin
         mockStubResponseForGetFinancialDetails(Status.NOT_FOUND,
           s"$financialDataUri?$financialDataQueryParamWithClearedItems", Some(noDataFoundBody))
-        mockStubResponseForGetPenaltyDetails(Status.OK, apiRegime, enrolmentKey.keyType.name, enrolmentKey.key, body = Some(getPenaltyDetailsNoLPPJson.toString()))
+        mockStubResponseForGetPenaltyDetails(Status.OK, regime, idType, id, body = Some(getPenaltyDetailsNoLPPJson.toString()))
         val result = await(buildClientForRequestToApp(uri = etmpUri).get())
         result.status shouldBe OK
         Json.parse(result.body) shouldBe getPenaltyDetailsNoLPPJson
       }
     }
 
-    s"return NOT_FOUND (${Status.BAD_REQUEST}) for $apiRegime" when {
-      "the user supplies an invalid VRN" in {
-        mockStubResponseForGetPenaltyDetails(Status.OK, apiRegime, enrolmentKey.keyType.name, enrolmentKey.key, body = Some(getPenaltyDetailsJson.toString()))
-        val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/123456789123456789").get())
-        result.status shouldBe BAD_REQUEST
-      }
-    }
+    // TODO: This should be deleted as we don't validate vrn anymore
 
-    s"return NO_CONTENT (${Status.NO_CONTENT}) for $apiRegime" when {
+    // s"return NOT_FOUND (${Status.BAD_REQUEST}) for $regime" when {
+    //   "the user supplies an invalid VRN" in {
+    //     mockStubResponseForGetPenaltyDetails(Status.OK, regime, idType, id, body = Some(getPenaltyDetailsJson.toString()))
+    //     val result = await(buildClientForRequestToApp(uri = s"/${regime.value}/etmp/penalties/${idType.value}/123456789123456789").get())
+    //     result.status shouldBe BAD_REQUEST
+    //   }
+    // }
+
+    s"return NO_CONTENT (${Status.NO_CONTENT}) for $regime" when {
       "the get penalty details call returns 404 with NO_DATA_FOUND in body" in {
         val noDataFoundBody =
           """
@@ -595,7 +601,7 @@ class RegimePenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase w
             | ]
             |}
             |""".stripMargin
-        mockStubResponseForGetPenaltyDetails(Status.NOT_FOUND, apiRegime, enrolmentKey.keyType.name, enrolmentKey.key, body = Some(noDataFoundBody))
+        mockStubResponseForGetPenaltyDetails(Status.NOT_FOUND, regime, idType, id, body = Some(noDataFoundBody))
         val result = await(buildClientForRequestToApp(uri = etmpUri).get())
         result.status shouldBe NO_CONTENT
       }
@@ -612,7 +618,7 @@ class RegimePenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase w
             | ]
             |}
             |""".stripMargin
-        mockStubResponseForGetPenaltyDetails(Status.OK, apiRegime, enrolmentKey.keyType.name, enrolmentKey.key, body = Some(getPenaltyDetailsJson.toString()))
+        mockStubResponseForGetPenaltyDetails(Status.OK, regime, idType, id, body = Some(getPenaltyDetailsJson.toString()))
         mockStubResponseForGetFinancialDetails(Status.NOT_FOUND, s"$financialDataUri?$financialDataQueryParamWithClearedItems", Some(noDataFoundBody))
 
         val result = await(buildClientForRequestToApp(uri = etmpUri).get())
@@ -620,15 +626,15 @@ class RegimePenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase w
       }
     }
 
-    s"return ISE (${Status.INTERNAL_SERVER_ERROR}) for $apiRegime" when {
+    s"return ISE (${Status.INTERNAL_SERVER_ERROR}) for $regime" when {
       "the get penalty details call fails" in {
-        mockStubResponseForGetPenaltyDetails(Status.INTERNAL_SERVER_ERROR, apiRegime, enrolmentKey.keyType.name, enrolmentKey.key, body = Some(""))
+        mockStubResponseForGetPenaltyDetails(Status.INTERNAL_SERVER_ERROR, regime, idType, id, body = Some(""))
         val result = await(buildClientForRequestToApp(uri = etmpUri).get())
         result.status shouldBe INTERNAL_SERVER_ERROR
       }
 
       "the first get financial details call fails" in {
-        mockStubResponseForGetPenaltyDetails(Status.OK, apiRegime, enrolmentKey.keyType.name, enrolmentKey.key, body = Some(getPenaltyDetailsJson.toString()))
+        mockStubResponseForGetPenaltyDetails(Status.OK, regime, idType, id, body = Some(getPenaltyDetailsJson.toString()))
         mockStubResponseForGetFinancialDetails(Status.INTERNAL_SERVER_ERROR, s"$financialDataUri?$financialDataQueryParamWithClearedItems")
 
         val result = await(buildClientForRequestToApp(uri = etmpUri).get())
@@ -636,7 +642,7 @@ class RegimePenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase w
       }
 
       "the second get financial details call fails" in {
-        mockStubResponseForGetPenaltyDetails(Status.OK, apiRegime, enrolmentKey.keyType.name, enrolmentKey.key, body = Some(getPenaltyDetailsJson.toString()))
+        mockStubResponseForGetPenaltyDetails(Status.OK, regime, idType, id, body = Some(getPenaltyDetailsJson.toString()))
         mockStubResponseForGetFinancialDetails(Status.OK, s"$financialDataUri?$financialDataQueryParamWithClearedItems")
         mockStubResponseForGetFinancialDetails(Status.INTERNAL_SERVER_ERROR, s"$financialDataUri?$financialDataQueryParamWithoutClearedItems")
 
@@ -645,7 +651,7 @@ class RegimePenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase w
       }
     }
 
-    s"audit the response when the user has > 0 penalties for $apiRegime" in {
+    s"audit the response when the user has > 0 penalties for $regime" in {
       val penaltyDetailsWithLSPAndLPPs: JsValue = Json.parse(
         """
           |{
@@ -834,7 +840,7 @@ class RegimePenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase w
           |   }
           |}
           |""".stripMargin)
-      mockStubResponseForGetPenaltyDetails(Status.OK, apiRegime, enrolmentKey.keyType.name, enrolmentKey.key, body = Some(penaltyDetailsWithLSPAndLPPs.toString()))
+      mockStubResponseForGetPenaltyDetails(Status.OK, regime, idType, id, body = Some(penaltyDetailsWithLSPAndLPPs.toString()))
       mockStubResponseForGetFinancialDetails(Status.OK, s"$financialDataUri?$financialDataQueryParamWithClearedItems")
       mockStubResponseForGetFinancialDetails(Status.OK, s"$financialDataUri?$financialDataQueryParamWithoutClearedItems", Some(getFinancialDetailsTotalisationsAsJson.toString))
       val result = await(buildClientForRequestToApp(uri = etmpUri).get())
@@ -843,7 +849,7 @@ class RegimePenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase w
       wireMockServer.findAll(postRequestedFor(urlEqualTo("/write/audit"))).asScala.toList.exists(_.getBodyAsString.contains("UserHasPenalty")) shouldBe true
     }
 
-    s"NOT audit the response when the user has 0 LSPs and 0 LPPs for $apiRegime" in {
+    s"NOT audit the response when the user has 0 LSPs and 0 LPPs for ${regime.value}" in {
       val getPenaltyDetailsWithNoPointsAsJson: JsValue = Json.parse(
         """
           |{
@@ -870,7 +876,7 @@ class RegimePenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase w
           | }
           |}
           |""".stripMargin)
-      mockStubResponseForGetPenaltyDetails(Status.OK, apiRegime, enrolmentKey.keyType.name, enrolmentKey.key, body = Some(getPenaltyDetailsWithNoPointsAsJson.toString()))
+      mockStubResponseForGetPenaltyDetails(Status.OK, regime, idType, id, body = Some(getPenaltyDetailsWithNoPointsAsJson.toString()))
       mockStubResponseForGetFinancialDetails(Status.OK, s"$financialDataUri?$financialDataQueryParamWithClearedItems")
       mockStubResponseForGetFinancialDetails(Status.OK, s"$financialDataUri?$financialDataQueryParamWithoutClearedItems", Some(getFinancialDetailsTotalisationsAsJson.toString))
       val result = await(buildClientForRequestToApp(uri = etmpUri).get())

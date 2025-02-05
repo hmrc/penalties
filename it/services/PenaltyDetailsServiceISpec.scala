@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,21 +30,23 @@ import org.scalatest.prop.TableDrivenPropertyChecks
 import play.api.http.Status
 import play.api.http.Status.{IM_A_TEAPOT, INTERNAL_SERVER_ERROR}
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
-import utils.{ETMPWiremock, IntegrationSpecCommonBase}
-
+import utils.{RegimeETMPWiremock, IntegrationSpecCommonBase}
+import models.{AgnosticEnrolmentKey, Regime, IdType, Id}
 import java.time.LocalDate
 
-class PenaltyDetailsServiceISpec extends IntegrationSpecCommonBase with ETMPWiremock with FeatureSwitching with TableDrivenPropertyChecks {
+class PenaltyDetailsServiceISpec extends IntegrationSpecCommonBase with RegimeETMPWiremock with FeatureSwitching with TableDrivenPropertyChecks {
   setEnabledFeatureSwitches()
   val service: PenaltyDetailsService = injector.instanceOf[PenaltyDetailsService]
 
-  Table(
-    ("API Regime", "Enrolment Key"),
-    ("VATC", EnrolmentKey(VAT, "123456789")),
-    ("ITSA", EnrolmentKey(ITSA, "AB123456C"))
-  ).forEvery { (apiRegime, enrolmentKey) =>
+   Table(
+    ("Regime", "IdType", "Id"),
+    (Regime("VATC"), IdType("VRN"), Id("123456789")),
+    (Regime("ITSA"), IdType("NINO"), Id("AB123456C")),
+  ).forEvery { (regime, idType, id) =>
 
-    s"getDataFromPenaltyService for $apiRegime" when {
+    val enrolmentKey = AgnosticEnrolmentKey(regime, idType, id) 
+
+    s"getDataFromPenaltyService for $regime" when {
       val getPenaltyDetailsModel: GetPenaltyDetails = GetPenaltyDetails(
         totalisations = Some(
           Totalisations(
@@ -152,14 +154,14 @@ class PenaltyDetailsServiceISpec extends IntegrationSpecCommonBase with ETMPWire
       )
 
       s"call the connector and return a successful result" in {
-        mockStubResponseForGetPenaltyDetails(Status.OK, apiRegime, enrolmentKey.keyType.name, enrolmentKey.key)
+        mockStubResponseForGetPenaltyDetails(Status.OK, regime, idType, id)
         val result = await(service.getDataFromPenaltyService(enrolmentKey))
         result.isRight shouldBe true
         result.toOption.get shouldBe GetPenaltyDetailsSuccessResponse(getPenaltyDetailsModel)
       }
 
       s"the response body is not well formed: $GetPenaltyDetailsMalformed" in {
-        mockStubResponseForGetPenaltyDetails(Status.OK, apiRegime, enrolmentKey.keyType.name, enrolmentKey.key, body = Some(
+        mockStubResponseForGetPenaltyDetails(Status.OK, regime, idType, id, body = Some(
           """
           {
            "lateSubmissionPenalty": {
@@ -184,14 +186,14 @@ class PenaltyDetailsServiceISpec extends IntegrationSpecCommonBase with ETMPWire
             | ]
             |}
             |""".stripMargin
-        mockStubResponseForGetPenaltyDetails(Status.NOT_FOUND, apiRegime, enrolmentKey.keyType.name, enrolmentKey.key, body = Some(noDataFoundBody))
+        mockStubResponseForGetPenaltyDetails(Status.NOT_FOUND, regime, idType, id, body = Some(noDataFoundBody))
         val result = await(service.getDataFromPenaltyService(enrolmentKey))
         result.isLeft shouldBe true
         result.left.getOrElse(GetPenaltyDetailsFailureResponse(IM_A_TEAPOT)) shouldBe GetPenaltyDetailsNoContent
       }
 
       s"an unknown response is returned from the connector - $GetPenaltyDetailsFailureResponse" in {
-        mockStubResponseForGetPenaltyDetails(Status.IM_A_TEAPOT, apiRegime, enrolmentKey.keyType.name, enrolmentKey.key)
+        mockStubResponseForGetPenaltyDetails(Status.IM_A_TEAPOT, regime, idType, id)
         val result = await(service.getDataFromPenaltyService(enrolmentKey))
         result.isLeft shouldBe true
         result.left.getOrElse(GetPenaltyDetailsFailureResponse(INTERNAL_SERVER_ERROR)) shouldBe GetPenaltyDetailsFailureResponse(Status.IM_A_TEAPOT)

@@ -51,8 +51,9 @@ class PenaltyDetailsConnector @Inject()(httpClient: HttpClient,
 
   def getPenaltyDetails(enrolmentKey: AgnosticEnrolmentKey)(implicit hc: HeaderCarrier): Future[GetPenaltyDetailsResponse] = {
     val url = appConfig.getRegimeAgnosticPenaltyDetailsUrl(enrolmentKey)
-    
-    logger.debug(s"[PenaltyDetailsConnector][getPenaltyDetails][appConfig.getRegimePenaltyDetailsUrl(enrolmentKey)]- Calling GET $url \nHeaders: $headers")
+
+    logger.debug(s"[PenaltyDetailsConnector][getPenaltyDetails][appConfig.getRegimeAgnosticPenaltyDetailsUrl(enrolmentKey)]- Calling GET $url \nHeaders: $headers")
+
     httpClient.GET[GetPenaltyDetailsResponse](url, Seq.empty[(String, String)], headers).recover {
       case e: UpstreamErrorResponse => {
         PagerDutyHelper.logStatusCode("getPenaltyDetails", e.statusCode)(RECEIVED_4XX_FROM_1812_API, RECEIVED_5XX_FROM_1812_API)
