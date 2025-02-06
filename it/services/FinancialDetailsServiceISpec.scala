@@ -68,54 +68,54 @@ class FinancialDetailsServiceISpec extends IntegrationSpecCommonBase with Regime
         result.toOption.get shouldBe GetFinancialDetailsSuccessResponse(getFinancialDetailsModel)
       }
 
-      // "call the connector and return a successful result - passing custom parameters when defined" in {
-      //   mockStubResponseForGetFinancialDetails(Status.OK, s"${aKey.idType.value}/${aKey.id.value}/$regime?foo=bar&dateType=POSTING&dateFrom=${LocalDate.now().minusYears(2).toString}&dateTo=${LocalDate.now().toString}",
-      //     Some(getFinancialDetailsAsJson.toString()))
-      //   val result = await(service.getFinancialDetails(aKey, Some("?foo=bar")))
-      //   result.isRight shouldBe true
-      //   result.toOption.get shouldBe GetFinancialDetailsSuccessResponse(getFinancialDetailsModel)
-      // }
+      "call the connector and return a successful result - passing custom parameters when defined" in {
+        mockStubResponseForGetFinancialDetails(Status.OK, s"${aKey.idType.value}/${aKey.id.value}/${regime.value}?foo=bar&dateType=POSTING&dateFrom=${LocalDate.now().minusYears(2).toString}&dateTo=${LocalDate.now().toString}",
+          Some(getFinancialDetailsAsJson.toString()))
+        val result = await(service.getFinancialDetails(aKey, Some("?foo=bar")))
+        result.isRight shouldBe true
+        result.toOption.get shouldBe GetFinancialDetailsSuccessResponse(getFinancialDetailsModel)
+      }
 
-      // s"the response body is not well formed: $GetFinancialDetailsMalformed" in {
-      //   mockStubResponseForGetFinancialDetails(Status.OK, s"${aKey.idType.value}/${aKey.id.value}/$regime?$financialDataQueryParam", Some(
-      //     """
-      //     {
-      //      "documentDetails": [
-      //       {
-      //         "documentOutstandingAmount": "xyz"
-      //       }
-      //      ]
-      //     }
-      //     """))
-      //   val result = await(service.getFinancialDetails(aKey, None))
-      //   result.isLeft shouldBe true
-      //   result.left.getOrElse(GetFinancialDetailsFailureResponse(IM_A_TEAPOT)) shouldBe GetFinancialDetailsMalformed
-      // }
+      s"the response body is not well formed: $GetFinancialDetailsMalformed" in {
+        mockStubResponseForGetFinancialDetails(Status.OK, s"${aKey.idType.value}/${aKey.id.value}/${regime.value}?$financialDataQueryParam", Some(
+          """
+          {
+           "documentDetails": [
+            {
+              "documentOutstandingAmount": "xyz"
+            }
+           ]
+          }
+          """))
+        val result = await(service.getFinancialDetails(aKey, None))
+        result.isLeft shouldBe true
+        result.left.getOrElse(GetFinancialDetailsFailureResponse(IM_A_TEAPOT)) shouldBe GetFinancialDetailsMalformed
+      }
 
-      // s"the response body contains NO_DATA_FOUND for 404 response - returning $GetFinancialDetailsNoContent" in {
-      //   val noDataFoundBody =
-      //     """
-      //       |{
-      //       | "failures":[
-      //       |   {
-      //       |     "code": "NO_DATA_FOUND",
-      //       |     "reason": "This is a reason"
-      //       |   }
-      //       | ]
-      //       |}
-      //       |""".stripMargin
-      //   mockStubResponseForGetFinancialDetails(Status.NOT_FOUND, s"${aKey.idType.value}/${aKey.id.value}/$regime?$financialDataQueryParam", Some(noDataFoundBody))
-      //   val result = await(service.getFinancialDetails(aKey, None))
-      //   result.isLeft shouldBe true
-      //   result.left.getOrElse(GetFinancialDetailsFailureResponse(IM_A_TEAPOT)) shouldBe GetFinancialDetailsNoContent
-      // }
+      s"the response body contains NO_DATA_FOUND for 404 response - returning $GetFinancialDetailsNoContent" in {
+        val noDataFoundBody =
+          """
+            |{
+            | "failures":[
+            |   {
+            |     "code": "NO_DATA_FOUND",
+            |     "reason": "This is a reason"
+            |   }
+            | ]
+            |}
+            |""".stripMargin
+        mockStubResponseForGetFinancialDetails(Status.NOT_FOUND, s"${aKey.idType.value}/${aKey.id.value}/${regime.value}?$financialDataQueryParam", Some(noDataFoundBody))
+        val result = await(service.getFinancialDetails(aKey, None))
+        result.isLeft shouldBe true
+        result.left.getOrElse(GetFinancialDetailsFailureResponse(IM_A_TEAPOT)) shouldBe GetFinancialDetailsNoContent
+      }
 
-      // s"an unknown response is returned from the connector - $GetFinancialDetailsFailureResponse" in {
-      //   mockStubResponseForGetFinancialDetails(Status.IM_A_TEAPOT, s"${aKey.idType.value}/${aKey.id.value}/$regime?$financialDataQueryParam")
-      //   val result = await(service.getFinancialDetails(aKey, None))
-      //   result.isLeft shouldBe true
-      //   result.left.getOrElse(GetFinancialDetailsFailureResponse(INTERNAL_SERVER_ERROR)) shouldBe GetFinancialDetailsFailureResponse(Status.IM_A_TEAPOT)
-      // }
+      s"an unknown response is returned from the connector - $GetFinancialDetailsFailureResponse" in {
+        mockStubResponseForGetFinancialDetails(Status.IM_A_TEAPOT, s"${aKey.idType.value}/${aKey.id.value}/${regime.value}?$financialDataQueryParam")
+        val result = await(service.getFinancialDetails(aKey, None))
+        result.isLeft shouldBe true
+        result.left.getOrElse(GetFinancialDetailsFailureResponse(INTERNAL_SERVER_ERROR)) shouldBe GetFinancialDetailsFailureResponse(Status.IM_A_TEAPOT)
+      }
     }
   }
 }
