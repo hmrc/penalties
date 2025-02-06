@@ -17,16 +17,14 @@
 package services
 
 import base.SpecBase
-import connectors.{ComplianceConnector, RegimeComplianceConnector}
+import connectors.{RegimeComplianceConnector}
 import connectors.parsers.ComplianceParser._
 import models.compliance.CompliancePayload
 import org.mockito.ArgumentMatchers
-
 import org.mockito.Mockito._
 import play.api.test.Helpers._
 import uk.gov.hmrc.http.HeaderCarrier
 import models.{AgnosticEnrolmentKey, Regime, IdType, Id}
-
 import scala.concurrent.{ExecutionContext, Future}
 
 class RegimeComplianceServiceSpec extends SpecBase {

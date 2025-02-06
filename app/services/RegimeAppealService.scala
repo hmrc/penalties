@@ -20,7 +20,7 @@ import config.AppConfig
 import config.featureSwitches.{FeatureSwitching, SanitiseFileName}
 import connectors.RegimePEGAConnector
 import connectors.parsers.AppealsParser
-import models.EnrolmentKey
+
 import models.appeals.{AppealResponseModel, AppealSubmission, MultiplePenaltiesData}
 import models.getPenaltyDetails.GetPenaltyDetails
 import models.getPenaltyDetails.latePayment.{LPPDetails, LPPPenaltyCategoryEnum, LPPPenaltyStatusEnum}

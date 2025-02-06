@@ -19,7 +19,7 @@ package connectors
 import base.{LogCapturing, SpecBase}
 import config.featureSwitches.{CallPEGA, FeatureSwitching}
 import connectors.parsers.AppealsParser.{AppealSubmissionResponse, UnexpectedFailure}
-import models.EnrolmentKey
+
 import models.appeals.{AgentDetails, AppealSubmission, CrimeAppealInformation}
 import org.mockito.Mockito._
 import org.mockito.{ArgumentCaptor, ArgumentMatchers}

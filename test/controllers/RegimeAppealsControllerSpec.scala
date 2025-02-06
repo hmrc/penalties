@@ -46,12 +46,10 @@ import uk.gov.hmrc.http.HttpResponse
 import utils.AuthActionMock
 import utils.Logger.logger
 import utils.PagerDutyHelper.PagerDutyKeys
-import models.{AgnosticEnrolmentKey, Id, IdType, Regime}
 import java.time.{LocalDate, LocalDateTime}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-import uk.gov.hmrc.http.HeaderCarrier
-import models.{AgnosticEnrolmentKey, getFinancialDetails, Regime, IdType, Id}
+import models.{AgnosticEnrolmentKey, Regime, IdType, Id}
 
 class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with LogCapturing {
   val mockAppealsService: RegimeAppealService = mock(classOf[RegimeAppealService])

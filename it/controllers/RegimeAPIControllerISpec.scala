@@ -18,8 +18,8 @@ package controllers
 
 import  com.github.tomakehurst.wiremock.client.WireMock.{postRequestedFor, urlEqualTo}
 import config.featureSwitches.{CallAPI1811ETMP, CallAPI1812ETMP, FeatureSwitching}
-import models.EnrolmentKey
-import models.TaxRegime.{ITSA, VAT}
+
+
 import org.scalatest.prop.TableDrivenPropertyChecks
 import play.api.http.Status
 import play.api.libs.json.{JsValue, Json}
@@ -182,15 +182,6 @@ class RegimeAPIControllerISpec extends IntegrationSpecCommonBase with RegimeETMP
           )
         }
       }
-
-      // TODO: this should be deleted as we don't validate vrn
-
-      // s"return BAD_REQUEST (${Status.BAD_REQUEST}) for $regime" when {
-      //   "the user supplies an invalid VRN" in {
-      //     val result = await(buildClientForRequestToApp(baseUrl = "", uri = s"/${regime.value}/summary/123456789123456789").get())
-      //     result.status shouldBe BAD_REQUEST
-      //   }
-      // }
 
       s"return ISE (${Status.INTERNAL_SERVER_ERROR}) for $regime" when {
         "the get penalty details call fails" in {

@@ -17,7 +17,7 @@
 package connectors
 
 import config.featureSwitches.{CallPEGA, FeatureSwitching}
-import models.EnrolmentKey
+
 import models.appeals.{AppealSubmission, CrimeAppealInformation}
 import play.api.http.Status
 import play.api.test.Helpers._

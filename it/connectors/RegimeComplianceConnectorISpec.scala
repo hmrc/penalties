@@ -18,8 +18,8 @@ package connectors
 
 import config.featureSwitches.{CallDES, FeatureSwitching}
 import connectors.parsers.ComplianceParser._
-import models.EnrolmentKey
-import models.TaxRegime.{ITSA, VAT}
+
+
 import models.compliance.{CompliancePayload, ComplianceStatusEnum, ObligationDetail, ObligationIdentification}
 import org.scalatest.prop.TableDrivenPropertyChecks
 import play.api.http.Status

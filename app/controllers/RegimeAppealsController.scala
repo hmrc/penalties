@@ -22,7 +22,7 @@ import connectors.FileNotificationOrchestratorConnector
 import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser
 import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser.GetPenaltyDetailsSuccessResponse
 import controllers.auth.AuthAction
-import models.{AgnosticEnrolmentKey, EnrolmentKey, Id, IdType, Regime}
+import models.{AgnosticEnrolmentKey, Id, IdType, Regime}
 import models.appeals.AppealTypeEnum._
 import models.appeals._
 import models.appeals.reasonableExcuses.ReasonableExcuse

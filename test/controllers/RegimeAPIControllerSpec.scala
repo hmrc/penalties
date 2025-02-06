@@ -29,7 +29,6 @@ import models.getPenaltyDetails.latePayment._
 import models.getPenaltyDetails.lateSubmission.{LSPSummary, LateSubmissionPenalty}
 import models.{Regime, IdType, Id}
 import org.mockito.ArgumentMatchers._
-import org.mockito.Mockito._
 import play.api.Configuration
 import play.api.http.Status
 import play.api.libs.json.Json
@@ -335,15 +334,6 @@ class RegimeAPIControllerSpec extends SpecBase with FeatureSwitching with LogCap
       val result = controller.getSummaryData(regime = Regime("VATC"), idType = IdType("VRN"), id = Id("123456789"))(fakeRequest)
       status(result) shouldBe Status.NO_CONTENT
     }
-
-    // TODO is this a relevant test?
-    // s"return BAD_REQUEST (${Status.BAD_REQUEST}) when the user supplies an invalid VRN" in new Setup(isFSEnabled = true) {
-    //   when(mockGetPenaltyDetailsService.getDataFromPenaltyService(any())(any()))
-    //     .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(400))))
-
-    //   val result = controller.getSummaryData(regime = Regime("VATC"), idType = IdType("VRN"), Id("1234567891234567890"))(fakeRequest)
-    //   status(result) shouldBe Status.BAD_REQUEST
-    // }
 
     s"return ISE (${Status.INTERNAL_SERVER_ERROR}) when the call returns malformed data" in new Setup(isFSEnabled = true) {
       when(mockGetPenaltyDetailsService.getDataFromPenaltyService(any())(any()))

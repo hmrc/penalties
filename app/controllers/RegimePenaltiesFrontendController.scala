@@ -18,7 +18,7 @@ package controllers
 
 import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser.{GetPenaltyDetailsSuccessResponse, _}
 import controllers.auth.AuthAction
-import models.{AgnosticEnrolmentKey, EnrolmentKey, Id, IdType, Regime, TaxRegime}
+import models.{AgnosticEnrolmentKey, Id, IdType, Regime}
 import play.api.mvc._
 import services.{PenaltyDetailsService, RegimePenaltiesFrontendService}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController

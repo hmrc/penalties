@@ -20,8 +20,6 @@ import base.{LogCapturing, SpecBase}
 import config.AppConfig
 import config.featureSwitches.FeatureSwitching
 import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser.{GetPenaltyDetailsFailureResponse, GetPenaltyDetailsResponse, GetPenaltyDetailsSuccessResponse}
-import models.{AgnosticEnrolmentKey, EnrolmentKey}
-import models.TaxRegime.VAT
 import models.getPenaltyDetails.GetPenaltyDetails
 import org.mockito.Mockito.{mock, reset, when}
 import org.mockito.{ArgumentCaptor, ArgumentMatchers}

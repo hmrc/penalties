@@ -24,7 +24,7 @@ import connectors.parsers.getFinancialDetails.FinancialDetailsParser.GetFinancia
 import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser
 import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser.GetPenaltyDetailsSuccessResponse
 import controllers.auth.AuthAction
-import models.{AgnosticEnrolmentKey, EnrolmentKey, Id, IdType, Regime}
+import models.{AgnosticEnrolmentKey, Id, IdType, Regime}
 import models.api.APIModel
 import models.auditing.{ThirdParty1812APIRetrievalRegimeAuditModel, ThirdPartyAPI1811RetrievalRegimeAuditModel, UserHasPenaltyRegimeAuditModel}
 import models.getFinancialDetails.FinancialDetails

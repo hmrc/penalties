@@ -19,8 +19,6 @@ package connectors
 import base.{LogCapturing, SpecBase}
 import config.AppConfig
 import connectors.parsers.ComplianceParser._
-import models.EnrolmentKey
-import models.TaxRegime.VAT
 import models.compliance.{CompliancePayload, ComplianceStatusEnum, ObligationDetail, ObligationIdentification}
 import org.mockito.Mockito._
 import org.mockito.{ArgumentCaptor, ArgumentMatchers}

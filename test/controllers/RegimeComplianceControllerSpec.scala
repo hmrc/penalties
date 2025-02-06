@@ -26,7 +26,7 @@ import play.api.mvc.Result
 import play.api.test.Helpers._
 import services.RegimeComplianceService
 import utils.AuthActionMock
-import models.{AgnosticEnrolmentKey, Regime, IdType, Id}
+import models.{Regime, IdType, Id}
 import java.time.LocalDate
 import scala.concurrent.{ExecutionContext, Future}
 

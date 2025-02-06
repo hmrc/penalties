@@ -17,7 +17,7 @@
 package config
 
 import config.featureSwitches._
-import models.EnrolmentKey
+
 import play.api.Configuration
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 import javax.inject.{Inject, Singleton}
@@ -118,19 +118,6 @@ class AppConfig @Inject()(val config: Configuration, servicesConfig: ServicesCon
 
   def getMimeType(mimeType: String): Option[String] = config.getOptional[String](s"files.extensions.$mimeType")
 
-  def getRegimePenaltyDetailsUrl(enrolmentKey: EnrolmentKey): String = {
-    val taxregime = enrolmentKey.regime.toString;
-    val id = enrolmentKey.keyType;
-    val idValue = enrolmentKey.key;
-    if (!isEnabled(CallAPI1812ETMP)) stubBase + s"/penalties-stub/penalty/details/$taxregime/$id/$idValue"
-    else etmpBase + s"/penalty/details/$taxregime/$id/$idValue"
-  }
-
-  // def getRegimeFinancialDetailsUrl(taxregime: String , id: String, key: String): String = {
-  //   if (!isEnabled(CallAPI1811ETMP)) stubBase + s"/penalties-stub/penalty/financial-data/$taxregime/$key/$id"
-  //   else etmpBase + s"/penalty/financial-data/$taxregime/$key/$id"
-  // }
-  //  /:regime/penalty/financial-data/:idType/:id 
 
   def getRegimeFinancialDetailsUrl(enrolmentKey: AgnosticEnrolmentKey): String = {
     val taxregime = enrolmentKey.regime.value;
@@ -151,21 +138,13 @@ class AppConfig @Inject()(val config: Configuration, servicesConfig: ServicesCon
     val idValue = agnosticEnrolmenKey.id.value;
     if (!isEnabled(CallAPI1812ETMP)) stubBase + s"/penalties-stub/penalty/details/$regime/$idType/$idValue"
     else etmpBase + s"/penalty/details/$regime/$idType/$idValue"
-    
-    // if (!isEnabled(CallAPI1812ETMP)) stubBase + "/penalties-stub/penalty/details/" + agnosticEnrolmenKey.regime.value + "/" + agnosticEnrolmenKey.idType.value + "/" + agnosticEnrolmenKey.id.value
-    // else etmpBase + "/penalty/details/" + agnosticEnrolmenKey.regime.value + "/" + agnosticEnrolmenKey.idType.value + "/" + agnosticEnrolmenKey.id.value
   }
 
   def getFinancialDetailsVatUrl(vrn: String): String = {
     if (!isEnabled(CallAPI1811ETMP)) stubBase + s"/penalties-stub/penalty/financial-data/VRN/$vrn/VATC"
     else etmpBase + s"/penalty/financial-data/VRN/$vrn/VATC"
   }
-  def getVatPenaltyDetailsUrl: String = getPenaltyDetailsVatUrl + "VATC/VRN/"
-  def getItsaPenaltyDetailsUrl: String = getPenaltyDetailsVatUrl + "ITSA/NINO/"
-  //def getCtPenaltyDetailsUrl: String = getPenaltyDetailsUrl + "CT/UTR/"
-  def getVatFinancialDetailsUrl(vrn: String): String = getFinancialDetailsVatUrl(vrn)
-  def getItsaFinancialDetailsUrl(utr: String): String = getFinancialDetailsItsaUrl(utr)
-  //def getCtFinancialDetailsUrl(utr: String): String = getFinancialDetailsUrl(_) + s"UTR/$utr/CT"
+
   private def getComplianceDataUrl: String = {
     if (isEnabled(CallDES)) {
       desBase + s"/enterprise/obligation-data/"
@@ -173,13 +152,8 @@ class AppConfig @Inject()(val config: Configuration, servicesConfig: ServicesCon
       stubBase + s"/penalties-stub/enterprise/obligation-data/"
     }
   }
-  def getVatComplianceDataUrl(vrn: String, fromDate: String, toDate: String): String =
-    s"${getComplianceDataUrl}vrn/$vrn/VATC?from=$fromDate&to=$toDate"
 
   def getRegimeAgnosticComplianceDataUrl(agnosticEnrolmenKey: AgnosticEnrolmentKey, fromDate: String, toDate: String): String =  
     s"${getComplianceDataUrl}${agnosticEnrolmenKey.idType.value}/${agnosticEnrolmenKey.id.value}/${agnosticEnrolmenKey.regime.value}?from=$fromDate&to=$toDate"
-
-  def getItsaComplianceDataUrl(nino: String, fromDate: String, toDate: String): String =
-    s"${getComplianceDataUrl}nino/$nino/ITSA?from=$fromDate&to=$toDate"
 
 }

@@ -18,8 +18,8 @@ package controllers
 
 import com.github.tomakehurst.wiremock.client.WireMock.{postRequestedFor, urlEqualTo}
 import config.featureSwitches.{FeatureSwitch, FeatureSwitching}
-import models.EnrolmentKey
-import models.TaxRegime.{ITSA, VAT}
+
+
 import org.scalatest.prop.TableDrivenPropertyChecks
 import play.api.http.Status
 import play.api.libs.json.{JsValue, Json}
@@ -577,16 +577,6 @@ class RegimePenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase w
         Json.parse(result.body) shouldBe getPenaltyDetailsNoLPPJson
       }
     }
-
-    // TODO: This should be deleted as we don't validate vrn anymore
-
-    // s"return NOT_FOUND (${Status.BAD_REQUEST}) for $regime" when {
-    //   "the user supplies an invalid VRN" in {
-    //     mockStubResponseForGetPenaltyDetails(Status.OK, regime, idType, id, body = Some(getPenaltyDetailsJson.toString()))
-    //     val result = await(buildClientForRequestToApp(uri = s"/${regime.value}/etmp/penalties/${idType.value}/123456789123456789").get())
-    //     result.status shouldBe BAD_REQUEST
-    //   }
-    // }
 
     s"return NO_CONTENT (${Status.NO_CONTENT}) for $regime" when {
       "the get penalty details call returns 404 with NO_DATA_FOUND in body" in {

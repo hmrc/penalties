@@ -21,8 +21,6 @@ import config.AppConfig
 import config.featureSwitches.FeatureSwitching
 import connectors.getPenaltyDetails.PenaltyDetailsConnector
 import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser.{GetPenaltyDetailsFailureResponse, GetPenaltyDetailsMalformed, GetPenaltyDetailsNoContent, GetPenaltyDetailsResponse, GetPenaltyDetailsSuccessResponse}
-import models.EnrolmentKey
-import models.TaxRegime.VAT
 import models.getFinancialDetails.MainTransactionEnum
 import models.getPenaltyDetails.appealInfo.{AppealInformationType, AppealLevelEnum, AppealStatusEnum}
 import models.getPenaltyDetails.breathingSpace.BreathingSpace
@@ -30,7 +28,6 @@ import models.getPenaltyDetails.latePayment._
 import models.getPenaltyDetails.lateSubmission._
 import models.getPenaltyDetails.{GetPenaltyDetails, Totalisations}
 import org.mockito.ArgumentMatchers
-
 import org.mockito.ArgumentMatchers.any
 
 import org.mockito.Mockito.{mock, reset, when}

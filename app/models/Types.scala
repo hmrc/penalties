@@ -21,11 +21,6 @@ import play.api.mvc.PathBindable
 case class AgnosticEnrolmentKey(regime: Regime, idType: IdType, id: Id) {
   override def toString: String = s"${regime.value}~${idType.value}~${id.value}"
 }
-object AgnosticEnrolmentKey {
-  def fromEnrolmentKey(enrolmentKey: EnrolmentKey): AgnosticEnrolmentKey = {
-    AgnosticEnrolmentKey(Regime(enrolmentKey.regime.toString), IdType(enrolmentKey.keyType.name), Id(enrolmentKey.key))
-  }
-}
 
 case class Regime(value: String) extends AnyVal
 

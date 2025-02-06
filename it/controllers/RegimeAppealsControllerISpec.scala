@@ -18,8 +18,8 @@ package controllers
 
 import com.github.tomakehurst.wiremock.client.WireMock.{postRequestedFor, urlEqualTo}
 import config.featureSwitches.FeatureSwitching
-import models.EnrolmentKey
-import models.TaxRegime.{ITSA, VAT}
+
+
 import models.appeals.MultiplePenaltiesData
 import org.scalatest.concurrent.Eventually.eventually
 import org.scalatest.prop.TableDrivenPropertyChecks

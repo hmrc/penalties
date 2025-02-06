@@ -19,7 +19,7 @@ package services
 import config.featureSwitches.FeatureSwitching
 import connectors. RegimeComplianceConnector
 import connectors.parsers.ComplianceParser
-import models.EnrolmentKey
+
 import models.compliance.CompliancePayload
 import play.api.Configuration
 import play.api.http.Status._

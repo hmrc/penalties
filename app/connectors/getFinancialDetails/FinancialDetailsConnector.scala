@@ -18,9 +18,6 @@ package connectors.getFinancialDetails
 
 import config.AppConfig
 import connectors.parsers.getFinancialDetails.FinancialDetailsParser.{GetFinancialDetailsFailureResponse, GetFinancialDetailsResponse}
-import models.EnrolmentKey
-import models.EnrolmentKey._
-import models.TaxRegime.{ITSA, VAT}
 import play.api.http.Status.INTERNAL_SERVER_ERROR
 import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse, UpstreamErrorResponse}

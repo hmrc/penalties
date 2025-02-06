@@ -17,7 +17,7 @@
 package services
 
 import config.AppConfig
-import models.EnrolmentKey
+
 import models.getPenaltyDetails.GetPenaltyDetails
 import models.getPenaltyDetails.appealInfo.AppealStatusEnum
 import models.getPenaltyDetails.latePayment.{LPPDetails, LPPPenaltyCategoryEnum, LPPPenaltyStatusEnum, LatePaymentPenalty}

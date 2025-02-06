@@ -18,7 +18,7 @@ package services
 
 import base.{LogCapturing, SpecBase}
 import config.featureSwitches.FeatureSwitching
-import connectors.getFinancialDetails.{FinancialDetailsConnector, GetFinancialDetailsConnector}
+import connectors.getFinancialDetails.{FinancialDetailsConnector}
 import connectors.parsers.getFinancialDetails.FinancialDetailsParser._
 import models.getFinancialDetails.FinancialDetails
 import models.getFinancialDetails.totalisation.{FinancialDetailsTotalisation, InterestTotalisation, RegimeTotalisation}

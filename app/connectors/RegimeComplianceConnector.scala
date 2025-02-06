@@ -18,9 +18,6 @@ package connectors
 
 import config.AppConfig
 import connectors.parsers.ComplianceParser.{CompliancePayloadFailureResponse, CompliancePayloadResponse}
-import models.EnrolmentKey
-import models.EnrolmentKey._
-import models.TaxRegime.{ITSA, VAT}
 import play.api.http.Status.INTERNAL_SERVER_ERROR
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, UpstreamErrorResponse}
 import utils.Logger.logger

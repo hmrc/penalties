@@ -19,12 +19,9 @@ package connectors.getFinancialDetails
 import base.{LogCapturing, SpecBase}
 import config.AppConfig
 import connectors.parsers.getFinancialDetails.FinancialDetailsParser._
-import models.EnrolmentKey
-import models.TaxRegime.VAT
 import models.getFinancialDetails.totalisation.{FinancialDetailsTotalisation, InterestTotalisation, RegimeTotalisation}
 import models.getFinancialDetails.{DocumentDetails, FinancialDetails, LineItemDetails}
 import org.mockito.ArgumentMatchers
-
 import org.mockito.Mockito._
 import play.api.http.Status
 import play.api.libs.json.Json

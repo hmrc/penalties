@@ -18,8 +18,8 @@ package services
 
 import config.featureSwitches.FeatureSwitching
 import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser._
-import models.EnrolmentKey
-import models.TaxRegime.{ITSA, VAT}
+
+
 import models.getFinancialDetails.MainTransactionEnum
 import models.getPenaltyDetails.appealInfo.{AppealInformationType, AppealLevelEnum, AppealStatusEnum}
 import models.getPenaltyDetails.breathingSpace.BreathingSpace
