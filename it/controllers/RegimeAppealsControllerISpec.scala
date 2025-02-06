@@ -18,8 +18,6 @@ package controllers
 
 import com.github.tomakehurst.wiremock.client.WireMock.{postRequestedFor, urlEqualTo}
 import config.featureSwitches.FeatureSwitching
-
-
 import models.appeals.MultiplePenaltiesData
 import org.scalatest.concurrent.Eventually.eventually
 import org.scalatest.prop.TableDrivenPropertyChecks
@@ -303,6 +301,13 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
   ).forEvery { (regime, idType, id) =>
 
     val enrolmentKey = AgnosticEnrolmentKey(regime, idType, id) 
+    val (r, it, i) =  (regime.value, idType.value, id.value)
+
+    // // /:regime/appeals/submit-appeal/:idType/:id 
+    // uri = s"/$r/appeals/submit-appeal/$it/$i?
+    // // uri = s"/$r/appeals/submit-appeal/$it/$i?
+
+
 
     s"getAppealsDataForLateSubmissionPenalty for $regime" should {
       "call ETMP and compare the penalty ID provided and the penalty ID in the payload - return OK if there is a match" in {
@@ -418,7 +423,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
             |}
             |""".stripMargin
         )
-        val result = await(buildClientForRequestToApp(uri = s"/appeals/submit-appeal?enrolmentKey=$enrolmentKey&isLPP=false&penaltyNumber=123456789&correlationId=uuid-1").post(
+        val result = await(buildClientForRequestToApp(uri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=false&penaltyNumber=123456789&correlationId=uuid-1").post(
           jsonToSubmit
         ))
         result.status shouldBe OK
@@ -444,7 +449,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
             |		}
             |}
             |""".stripMargin)
-        val result = await(buildClientForRequestToApp(uri = s"/appeals/submit-appeal?enrolmentKey=$enrolmentKey&isLPP=false&penaltyNumber=123456789&correlationId=uuid-1").post(
+        val result = await(buildClientForRequestToApp(uri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=false&penaltyNumber=123456789&correlationId=uuid-1").post(
           jsonToSubmit
         ))
         result.status shouldBe OK
@@ -470,7 +475,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
             |    }
             |}
             |""".stripMargin)
-        val result = await(buildClientForRequestToApp(uri = s"/appeals/submit-appeal?enrolmentKey=$enrolmentKey&isLPP=false&penaltyNumber=123456789&correlationId=uuid-1").post(
+        val result = await(buildClientForRequestToApp(uri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=false&penaltyNumber=123456789&correlationId=uuid-1").post(
           jsonToSubmit
         ))
         result.status shouldBe OK
@@ -496,7 +501,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
             |		}
             |}
             |""".stripMargin)
-        val result = await(buildClientForRequestToApp(uri = s"/appeals/submit-appeal?enrolmentKey=$enrolmentKey&isLPP=false&penaltyNumber=123456789&correlationId=uuid-1").post(
+        val result = await(buildClientForRequestToApp(uri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=false&penaltyNumber=123456789&correlationId=uuid-1").post(
           jsonToSubmit
         ))
         result.status shouldBe OK
@@ -523,7 +528,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
             |		}
             |}
             |""".stripMargin)
-        val result = await(buildClientForRequestToApp(uri = s"/appeals/submit-appeal?enrolmentKey=$enrolmentKey&isLPP=false&penaltyNumber=123456789&correlationId=uuid-1").post(
+        val result = await(buildClientForRequestToApp(uri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=false&penaltyNumber=123456789&correlationId=uuid-1").post(
           jsonToSubmit
         ))
         result.status shouldBe OK
@@ -552,7 +557,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
               |		}
               |}
               |""".stripMargin)
-          val result = await(buildClientForRequestToApp(uri = s"/appeals/submit-appeal?enrolmentKey=$enrolmentKey&isLPP=false&penaltyNumber=123456789&correlationId=uuid-1").post(
+          val result = await(buildClientForRequestToApp(uri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=false&penaltyNumber=123456789&correlationId=uuid-1").post(
             jsonToSubmit
           ))
           result.status shouldBe OK
@@ -580,7 +585,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
               |		}
               |}
               |""".stripMargin)
-          val result = await(buildClientForRequestToApp(uri = s"/appeals/submit-appeal?enrolmentKey=$enrolmentKey&isLPP=false&penaltyNumber=123456789&correlationId=uuid-1").post(
+          val result = await(buildClientForRequestToApp(uri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=false&penaltyNumber=123456789&correlationId=uuid-1").post(
             jsonToSubmit
           ))
           result.status shouldBe OK
@@ -609,7 +614,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
               |		}
               |}
               |""".stripMargin)
-          val result = await(buildClientForRequestToApp(uri = s"/appeals/submit-appeal?enrolmentKey=$enrolmentKey&isLPP=false&penaltyNumber=123456789&correlationId=uuid-1").post(
+          val result = await(buildClientForRequestToApp(uri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=false&penaltyNumber=123456789&correlationId=uuid-1").post(
             jsonToSubmit
           ))
           result.status shouldBe OK
@@ -656,7 +661,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
               |}
               |""".stripMargin
           )
-          val result = await(buildClientForRequestToApp(uri = s"/appeals/submit-appeal?enrolmentKey=$enrolmentKey&isLPP=false&penaltyNumber=123456789&correlationId=uuid-1").post(
+          val result = await(buildClientForRequestToApp(uri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=false&penaltyNumber=123456789&correlationId=uuid-1").post(
             jsonToSubmit
           ))
           result.status shouldBe OK
@@ -704,7 +709,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
               |}
               |""".stripMargin
           )
-          val result = await(buildClientForRequestToApp(uri = s"/appeals/submit-appeal?enrolmentKey=$enrolmentKey&isLPP=false&penaltyNumber=123456789&correlationId=uuid-1").post(
+          val result = await(buildClientForRequestToApp(uri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=false&penaltyNumber=123456789&correlationId=uuid-1").post(
             jsonToSubmit
           ))
           result.status shouldBe OK
@@ -734,7 +739,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
               |		}
               |}
               |""".stripMargin)
-          val result = await(buildClientForRequestToApp(uri = s"/appeals/submit-appeal?enrolmentKey=$enrolmentKey&isLPP=true&penaltyNumber=123456789&correlationId=uuid-1").post(
+          val result = await(buildClientForRequestToApp(uri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=true&penaltyNumber=123456789&correlationId=uuid-1").post(
             jsonToSubmit
           ))
           result.status shouldBe OK
@@ -787,9 +792,11 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
             "status" -> MULTI_STATUS,
             "error" -> "Appeal submitted (case ID: PR-1234567889, correlation ID: uuid-1) but received 500 response from file notification orchestrator"
           )
-          val result = await(buildClientForRequestToApp(uri = s"/appeals/submit-appeal?enrolmentKey=$enrolmentKey&isLPP=false&penaltyNumber=123456789&correlationId=uuid-1&isMultiAppeal=true").post(
+          
+          val result = await(buildClientForRequestToApp(uri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=false&penaltyNumber=123456789&correlationId=uuid-1&isMultiAppeal=true").post(
             jsonToSubmit
           ))
+
           result.status shouldBe MULTI_STATUS
           Json.parse(result.body) shouldBe expectedJsonResponse
           eventually {
@@ -800,14 +807,14 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
 
       "return BAD_REQUEST (400)" when {
         "no JSON body is in the request" in {
-          val result = await(buildClientForRequestToApp(uri = s"/appeals/submit-appeal?enrolmentKey=$enrolmentKey&isLPP=true&penaltyNumber=123456789&correlationId=uuid-1").post(
+          val result = await(buildClientForRequestToApp(uri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=true&penaltyNumber=123456789&correlationId=uuid-1").post(
             ""
           ))
           result.status shouldBe BAD_REQUEST
         }
 
         "JSON body is present but it can not be parsed to a model" in {
-          val result = await(buildClientForRequestToApp(uri = s"/appeals/submit-appeal?enrolmentKey=$enrolmentKey&isLPP=true&penaltyNumber=123456789&correlationId=uuid-1").post(
+          val result = await(buildClientForRequestToApp(uri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=true&penaltyNumber=123456789&correlationId=uuid-1").post(
             Json.parse("{}")
           ))
           result.status shouldBe BAD_REQUEST
@@ -836,7 +843,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
               |		}
               |}
               |""".stripMargin)
-          val result = await(buildClientForRequestToApp(uri = s"/appeals/submit-appeal?enrolmentKey=$enrolmentKey&isLPP=false&penaltyNumber=123456789&correlationId=uuid-1").post(
+          val result = await(buildClientForRequestToApp(uri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=false&penaltyNumber=123456789&correlationId=uuid-1").post(
             jsonToSubmit
           ))
           result.status shouldBe GATEWAY_TIMEOUT
@@ -863,7 +870,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
               |		}
               |}
               |""".stripMargin)
-          val result = await(buildClientForRequestToApp(uri = s"/appeals/submit-appeal?enrolmentKey=$enrolmentKey&isLPP=false&penaltyNumber=123456789&correlationId=uuid-1").post(
+          val result = await(buildClientForRequestToApp(uri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=false&penaltyNumber=123456789&correlationId=uuid-1").post(
             jsonToSubmit
           ))
           result.status shouldBe INTERNAL_SERVER_ERROR

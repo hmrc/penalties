@@ -449,12 +449,10 @@ class RegimePenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase w
   Table(
     ("Regime", "IdType", "Id"),
     (Regime("VATC"), IdType("VRN"), Id("123456789")),
-    // (Regime("ITSA"), IdType("NINO"), Id("AB123456C")),
+    (Regime("ITSA"), IdType("NINO"), Id("AB123456C")),
   ).forEvery { (regime, idType, id) =>
 
-    val enrolmentKey = AgnosticEnrolmentKey(regime, idType, id) 
     val etmpUri = s"/${regime.value}/etmp/penalties/${idType.value}/${id.value}"
-    // /:regime/etmp/penalties/:idType/:id
 
     val financialDataUri = s"${idType.value}/${id.value}/${regime.value}"
 

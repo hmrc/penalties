@@ -55,19 +55,11 @@ class FinancialDetailsConnectorSpec extends SpecBase with LogCapturing {
     reset(mockAppConfig)
 
     val connector = new FinancialDetailsConnector(mockHttpClient, mockAppConfig)
-    // when(mockAppConfig.getRegimeAgnosticPenaltyDetailsUrl(ArgumentMatchers.any())).thenReturn("/penalty/details/VATC/VRN/123456789")
-    //  if (!isEnabled(CallAPI1811ETMP)) stubBase + s"/penalties-stub/penalty/financial-data/$id/$idValue/$taxregime"
-    // else etmpBase + s"/penalty/financial-data/$id/$idValue/$taxregime"k
+  
     when(mockAppConfig.getRegimeFinancialDetailsUrl(
       ArgumentMatchers.any()
     )).thenReturn("/VATC/penalty/financial-data/VRN/123456789")
-    // when(mockAppConfig.eiOutboundBearerToken).thenReturn("1234")
-    // when(mockAppConfig.eisEnvironment).thenReturn("asdf")
-    // when(mockAppConfig.queryParametersForGetFinancialDetails).thenReturn("?foo=bar")
-    // when(mockAppConfig.addDateRangeQueryParameters()).thenReturn("&bar=wizz")
-    // getRegimeFinancialDetailsUrl
-    
-    // when(mockAppConfig.getFinancialDetailsUrl(ArgumentMatchers.any())).thenReturn("/VATC/penalty/financial-data/VRN/123456789")
+
     when(mockAppConfig.eiOutboundBearerToken).thenReturn("1234")
     when(mockAppConfig.eisEnvironment).thenReturn("asdf")
     when(mockAppConfig.queryParametersForGetFinancialDetails).thenReturn("?foo=bar")

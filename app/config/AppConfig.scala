@@ -104,6 +104,14 @@ class AppConfig @Inject()(val config: Configuration, servicesConfig: ServicesCon
     else pegaBase + s"/penalty/first-stage-appeal/$penaltyNumber"
   }
 
+  def getRegimeAgnosticAppealSubmissionUrl(agnosticEnrolmenKey: AgnosticEnrolmentKey, isLPP: Boolean, penaltyNumber: String): String = {
+    val regime = agnosticEnrolmenKey.regime.value;
+    val idType = agnosticEnrolmenKey.idType.value;
+    val idValue = agnosticEnrolmenKey.id.value;
+    if (!isEnabled(CallPEGA)) stubBase + s"/penalties-stub/appeals/submit?regime=$regime&idType=$idType&id=$idValue&isLPP=$isLPP&penaltyNumber=$penaltyNumber"
+    else pegaBase + s"/penalty/first-stage-appeal/$penaltyNumber"
+  }
+
   def isReasonableExcuseEnabled(excuseName: String): Boolean = {
     config.get[Boolean](s"reasonableExcuses.$excuseName.enabled")
   }
@@ -153,7 +161,21 @@ class AppConfig @Inject()(val config: Configuration, servicesConfig: ServicesCon
     }
   }
 
-  def getRegimeAgnosticComplianceDataUrl(agnosticEnrolmenKey: AgnosticEnrolmentKey, fromDate: String, toDate: String): String =  
-    s"${getComplianceDataUrl}${agnosticEnrolmenKey.idType.value}/${agnosticEnrolmenKey.id.value}/${agnosticEnrolmenKey.regime.value}?from=$fromDate&to=$toDate"
+  def getRegimeAgnosticComplianceDataUrl(agnosticEnrolmenKey: AgnosticEnrolmentKey, fromDate: String, toDate: String): String = {
+    val regime = agnosticEnrolmenKey.regime.value;
+    val idType = agnosticEnrolmenKey.idType.value;
+    val idValue = agnosticEnrolmenKey.id.value;
+    getComplianceDataUrl + s"${idType}/${idValue}/$regime?from=${fromDate}&to=$toDate" 
+
+    // s"${getComplianceDataUrl}${agnosticEnrolmenKey.idType.value}/${agnosticEnrolmenKey.id.value}/${agnosticEnrolmenKey.regime.value}?from=$fromDate&to=$toDate"
+  // def getComplianceData(vrn: String, fromDate: String, toDate: String): String = {
+  //   if (isEnabled(CallDES)) {
+  //     desBase + s"/enterprise/obligation-data/vrn/$vrn/VATC?from=$fromDate&to=$toDate"
+  //   } else {
+  //     stubBase + s"/penalties-stub/enterprise/obligation-data/vrn/$vrn/VATC?from=$fromDate&to=$toDate"
+  //   }
+  // }
+
+  }
 
 }

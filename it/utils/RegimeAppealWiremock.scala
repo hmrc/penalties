@@ -50,7 +50,10 @@ trait RegimeAppealWiremock {
   }
 
   def mockResponseForAppealSubmissionStub(status: Int, agnosticEnrolmenKey: AgnosticEnrolmentKey, penaltyNumber: String, isLPP: Boolean = false): StubMapping = {
-    stubFor(post(urlEqualTo(s"/penalties-stub/appeals/submit?enrolmentKey=$agnosticEnrolmenKey&isLPP=$isLPP&penaltyNumber=$penaltyNumber"))
+    val regime = agnosticEnrolmenKey.regime.value;
+    val idType = agnosticEnrolmenKey.idType.value;
+    val idValue = agnosticEnrolmenKey.id.value;
+    stubFor(post(urlEqualTo(s"/penalties-stub/appeals/submit?regime=$regime&idType=$idType&id=$idValue&isLPP=$isLPP&penaltyNumber=$penaltyNumber"))
       .willReturn(
         aResponse()
           .withBody(if(status == 200) appealResponseModel.toString() else errorResponse.toString())
@@ -59,7 +62,10 @@ trait RegimeAppealWiremock {
   }
 
   def mockResponseForAppealSubmissionStubFault(agnosticEnrolmenKey: AgnosticEnrolmentKey, penaltyNumber: String, isLPP: Boolean = false): StubMapping = {
-    stubFor(post(urlEqualTo(s"/penalties-stub/appeals/submit?enrolmentKey=$agnosticEnrolmenKey&isLPP=$isLPP&penaltyNumber=$penaltyNumber"))
+    val regime = agnosticEnrolmenKey.regime.value;
+    val idType = agnosticEnrolmenKey.idType.value;
+    val idValue = agnosticEnrolmenKey.id.value;
+    stubFor(post(urlEqualTo(s"/penalties-stub/appeals/submit?regime=$regime&idType=$idType&id=$idValue&isLPP=$isLPP&penaltyNumber=$penaltyNumber"))
       .willReturn(
         aResponse()
           .withFault(Fault.CONNECTION_RESET_BY_PEER)

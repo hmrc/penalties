@@ -36,7 +36,7 @@ class RegimePEGAConnector @Inject()(httpClient: HttpClient,
 
   def submitAppeal(appealSubmission: AppealSubmission, enrolmentKey: AgnosticEnrolmentKey, isLPP: Boolean, penaltyNumber: String, correlationId: String): Future[AppealSubmissionResponse] = {
     implicit val hc: HeaderCarrier = headersForEIS(correlationId, appConfig.eiOutboundBearerToken, appConfig.eisEnvironment)
-    httpClient.POST[AppealSubmission, AppealSubmissionResponse](appConfig.getAppealSubmissionURL(enrolmentKey.toString, isLPP, penaltyNumber), appealSubmission, hc.otherHeaders).recover {
+    httpClient.POST[AppealSubmission, AppealSubmissionResponse](appConfig.getRegimeAgnosticAppealSubmissionUrl(enrolmentKey, isLPP, penaltyNumber), appealSubmission, hc.otherHeaders).recover {
       case e: UpstreamErrorResponse => {
         PagerDutyHelper.logStatusCode("submitAppeal", e.statusCode)(RECEIVED_4XX_FROM_1808_API, RECEIVED_5XX_FROM_1808_API)
         logger.error(s"[RegimePEGAConnector][submitAppeal] -" +
