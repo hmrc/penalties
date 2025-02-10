@@ -18,9 +18,10 @@ package utils
 
 import com.github.tomakehurst.wiremock.client.WireMock._
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
+import helpers.WiremockHelper
 import play.api.libs.json.{JsValue, Json}
 
-trait ETMPWiremock {
+trait ETMPWiremock extends WiremockHelper{
   val getPenaltyDetailsWithLSPAndLPPAsJson: JsValue = Json.parse(
     """
       |{

@@ -23,7 +23,8 @@ import models.getPenaltyDetails.GetPenaltyDetails
 import models.getPenaltyDetails.appealInfo.AppealStatusEnum
 import models.getPenaltyDetails.latePayment.LatePaymentPenalty
 import models.getPenaltyDetails.lateSubmission.{LSPSummary, LateSubmissionPenalty}
-import org.mockito.Matchers.any
+import org.mockito.ArgumentMatchers.any
+
 import org.mockito.Mockito.{mock, when}
 import play.api.Configuration
 import play.api.libs.json.{JsString, Json}

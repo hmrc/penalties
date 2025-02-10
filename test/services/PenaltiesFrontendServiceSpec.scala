@@ -25,7 +25,8 @@ import models.getFinancialDetails.{DocumentDetails, FinancialDetails, LineItemDe
 import models.getPenaltyDetails.appealInfo.{AppealInformationType, AppealLevelEnum, AppealStatusEnum}
 import models.getPenaltyDetails.latePayment._
 import models.getPenaltyDetails.{GetPenaltyDetails, Totalisations}
-import org.mockito.Matchers
+import org.mockito.ArgumentMatchers
+
 import org.mockito.Mockito.{mock, reset, when}
 import play.api.http.Status
 import play.api.http.Status.INTERNAL_SERVER_ERROR
@@ -714,13 +715,13 @@ class PenaltiesFrontendServiceSpec extends SpecBase with LogCapturing with LPPDe
   "handleAndCombineGetFinancialDetailsData" should {
 
     s"return ISE (${Status.INTERNAL_SERVER_ERROR}) when the first API 1811 call fails" in new Setup {
-      when(mockGetFinancialDetailsService.getFinancialDetails(Matchers.any(), Matchers.any())(Matchers.any())).thenReturn(Future.successful(Left(GetFinancialDetailsFailureResponse(INTERNAL_SERVER_ERROR))))
+      when(mockGetFinancialDetailsService.getFinancialDetails(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(Left(GetFinancialDetailsFailureResponse(INTERNAL_SERVER_ERROR))))
       val result = penaltiesFrontendService.handleAndCombineGetFinancialDetailsData(getPenaltyDetails, "123456789", None)(fakeRequest, implicitly, implicitly)
       status(result) shouldBe Status.INTERNAL_SERVER_ERROR
     }
 
     s"return ISE (${Status.INTERNAL_SERVER_ERROR}) when the first API 1811 call response body is malformed" in new Setup {
-      when(mockGetFinancialDetailsService.getFinancialDetails(Matchers.any(), Matchers.any())(Matchers.any())).thenReturn(Future.successful(Left(GetFinancialDetailsMalformed)))
+      when(mockGetFinancialDetailsService.getFinancialDetails(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(Left(GetFinancialDetailsMalformed)))
         .thenReturn(Future.successful(Left(GetFinancialDetailsMalformed)))
       withCaptureOfLoggingFrom(logger) {
         logs => {
@@ -732,21 +733,21 @@ class PenaltiesFrontendServiceSpec extends SpecBase with LogCapturing with LPPDe
     }
 
     s"return NOT_FOUND (${Status.NOT_FOUND}) when the first API 1811 call returns no data" in new Setup {
-      when(mockGetFinancialDetailsService.getFinancialDetails(Matchers.any(), Matchers.any())(Matchers.any()))
+      when(mockGetFinancialDetailsService.getFinancialDetails(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any()))
         .thenReturn(Future.successful(Left(GetFinancialDetailsFailureResponse(Status.NOT_FOUND))))
       val result = penaltiesFrontendService.handleAndCombineGetFinancialDetailsData(getPenaltyDetails, "123456789", Some(""))(fakeRequest, implicitly, implicitly)
       status(result) shouldBe Status.NOT_FOUND
     }
 
     s"return NO_CONTENT (${Status.NO_CONTENT}) when the first API 1811 call returns no data (DATA_NOT_FOUND response)" in new Setup {
-      when(mockGetFinancialDetailsService.getFinancialDetails(Matchers.any(), Matchers.any())(Matchers.any()))
+      when(mockGetFinancialDetailsService.getFinancialDetails(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any()))
         .thenReturn(Future.successful(Left(GetFinancialDetailsNoContent)))
       val result = penaltiesFrontendService.handleAndCombineGetFinancialDetailsData(getPenaltyDetails, "123456789", Some(""))(fakeRequest, implicitly, implicitly)
       status(result) shouldBe Status.NO_CONTENT
     }
 
     s"return ISE (${Status.INTERNAL_SERVER_ERROR}) when the second API 1811 call fails" in new Setup {
-      when(mockGetFinancialDetailsService.getFinancialDetails(Matchers.any(), Matchers.any())(Matchers.any())).thenReturn(
+      when(mockGetFinancialDetailsService.getFinancialDetails(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(
         Future.successful(Right(GetFinancialDetailsSuccessResponse(sampleFinancialDetails))),
         Future.successful(Left(GetFinancialDetailsFailureResponse(INTERNAL_SERVER_ERROR)))
       )
@@ -755,7 +756,7 @@ class PenaltiesFrontendServiceSpec extends SpecBase with LogCapturing with LPPDe
     }
 
     s"return ISE (${Status.INTERNAL_SERVER_ERROR}) when the second API 1811 call response body is malformed" in new Setup {
-      when(mockGetFinancialDetailsService.getFinancialDetails(Matchers.any(), Matchers.any())(Matchers.any())).thenReturn(
+      when(mockGetFinancialDetailsService.getFinancialDetails(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(
         Future.successful(Right(GetFinancialDetailsSuccessResponse(sampleFinancialDetails))),
         Future.successful(Left(GetFinancialDetailsMalformed))
       )
@@ -769,7 +770,7 @@ class PenaltiesFrontendServiceSpec extends SpecBase with LogCapturing with LPPDe
     }
 
     s"return NOT_FOUND (${Status.NOT_FOUND}) when the second API 1811 call returns no data" in new Setup {
-      when(mockGetFinancialDetailsService.getFinancialDetails(Matchers.any(), Matchers.any())(Matchers.any())).thenReturn(
+      when(mockGetFinancialDetailsService.getFinancialDetails(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(
         Future.successful(Right(GetFinancialDetailsSuccessResponse(sampleFinancialDetails))),
         Future.successful(Left(GetFinancialDetailsFailureResponse(Status.NOT_FOUND)))
       )
@@ -778,7 +779,7 @@ class PenaltiesFrontendServiceSpec extends SpecBase with LogCapturing with LPPDe
     }
 
     s"return OK (${Status.OK}) when the second API 1811 call returns no data (DATA_NOT_FOUND response) - default totalisations field" in new Setup {
-      when(mockGetFinancialDetailsService.getFinancialDetails(Matchers.any(), Matchers.any())(Matchers.any()))
+      when(mockGetFinancialDetailsService.getFinancialDetails(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any()))
         .thenReturn(
           Future.successful(Right(GetFinancialDetailsSuccessResponse(sampleFinancialDetails))),
           Future.successful(Left(GetFinancialDetailsNoContent))
@@ -789,7 +790,7 @@ class PenaltiesFrontendServiceSpec extends SpecBase with LogCapturing with LPPDe
 
     s"return OK (${Status.OK}) when the first 1811 call returns no data (if penalty data contains no LPPs)" in new Setup {
       val penaltyDetails: GetPenaltyDetails = getPenaltyDetails.copy(latePaymentPenalty = None)
-      when(mockGetFinancialDetailsService.getFinancialDetails(Matchers.any(), Matchers.any())(Matchers.any()))
+      when(mockGetFinancialDetailsService.getFinancialDetails(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any()))
         .thenReturn(Future.successful(Left(GetFinancialDetailsNoContent)))
       val result = penaltiesFrontendService.handleAndCombineGetFinancialDetailsData(penaltyDetails, "123456789", Some(""))(fakeRequest, implicitly, implicitly)
       status(result) shouldBe Status.OK
