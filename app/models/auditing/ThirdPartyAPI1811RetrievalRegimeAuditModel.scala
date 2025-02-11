@@ -31,6 +31,7 @@ case class ThirdPartyAPI1811RetrievalRegimeAuditModel(enrolmentKey: AgnosticEnro
 
   override val detail: JsValue = jsonObjNoNulls(
     enrolmentKey.idType.value.toLowerCase -> enrolmentKey.id.value,
+    "regime" -> enrolmentKey.regime.value.toUpperCase,
     "responseCodeSentAPIService" -> responseCode,
     "etmp-response" -> response
   )

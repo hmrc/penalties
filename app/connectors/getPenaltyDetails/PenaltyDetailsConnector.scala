@@ -73,13 +73,13 @@ class PenaltyDetailsConnector @Inject()(httpClient: HttpClient,
     val url = appConfig.getRegimeAgnosticPenaltyDetailsUrl(enrolmentKey) + queryParam 
     httpClient.GET[HttpResponse](url, headers = headers).recover {
       case e: UpstreamErrorResponse => {
-        logger.error(s"[GetPenaltyDetailsConnector][getPenaltyDetailsForAPI] -" +
+        logger.error(s"[PenaltyDetailsConnector][getPenaltyDetailsForAPI] -" +
           s" Received ${e.statusCode} status from API 1812 call - returning status to caller")
         HttpResponse(e.statusCode, e.message)
       }
       case e: Exception => {
         PagerDutyHelper.log("getPenaltyDetailsForAPI", UNKNOWN_EXCEPTION_CALLING_1812_API)
-        logger.error(s"[GetPenaltyDetailsConnector][getPenaltyDetailsForAPI] -" +
+        logger.error(s"[PenaltyDetailsConnector][getPenaltyDetailsForAPI] -" +
           s" An unknown exception occurred - returning 500 back to caller - message: ${e.getMessage}")
         HttpResponse(INTERNAL_SERVER_ERROR, "An unknown exception occurred. Contact the Penalties team for more information.")
       }

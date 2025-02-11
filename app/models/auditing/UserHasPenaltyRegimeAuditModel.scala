@@ -37,17 +37,27 @@ case class UserHasPenaltyRegimeAuditModel(
 
   override val auditType: String = "PenaltyUserHasPenalty"
   override val transactionName: String = "penalties-user-has-penalty"
+  val regime: String = enrolmentKey.regime.value
 
   // FIXME: add support for ITSA
-  private val callingService: String = request.headers.get("User-Agent") match {
-    case Some(x) if x.contains("penalties-frontend") => "penalties-frontend"
-    case Some(x) if x.contains("business-tax-account") => "BTA"
-    case Some(x) if x.contains("vat-agent-client-lookup-frontend") => "VATVC Agent"
-    case Some(x) if x.contains("vat-summary-frontend") => "VATVC"
-    case Some(service) =>
-      logger.warn(s"[UserHasPenaltyAuditModel] - unknown caller has been identified retrieving summary data: $service")
-      logger.debug(s"[UserHasPenaltyAuditModel] - request headers: \n ${request.headers.headers}")
-      service
+  private val callingService: String =
+    if (regime == "VATC") {
+    request.headers.get("User-Agent") match {
+      case Some(x) if x.contains("penalties-frontend") => "penalties-frontend"
+      case Some(x) if x.contains("business-tax-account") => "BTA"
+      case Some(x) if x.contains("vat-agent-client-lookup-frontend") => "VATVC Agent"
+      case Some(x) if x.contains("vat-summary-frontend") => "VATVC"
+      case Some(service) =>
+        logger.warn(s"[UserHasPenaltyAuditModel] - unknown caller has been identified retrieving summary data: $service")
+        logger.debug(s"[UserHasPenaltyAuditModel] - request headers: \n ${request.headers.headers}")
+        service
+      case None =>
+        logger.error("[UserHasPenaltyAuditModel] - could not distinguish referer for audit - setting value to blank")
+        logger.debug(s"[UserHasPenaltyAuditModel] - request headers: \n ${request.headers.headers}")
+        ""
+    }
+  } else request.headers.get("User-Agent") match {
+    case Some(service) => service
     case None =>
       logger.error("[UserHasPenaltyAuditModel] - could not distinguish referer for audit - setting value to blank")
       logger.debug(s"[UserHasPenaltyAuditModel] - request headers: \n ${request.headers.headers}")
