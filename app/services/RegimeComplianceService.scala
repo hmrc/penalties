@@ -36,7 +36,7 @@ class RegimeComplianceService @Inject()(complianceConnector: RegimeComplianceCon
     complianceConnector.getComplianceData(enrolmentKey, startDate, endDate).map {
       _.fold[Either[Int, CompliancePayload]]({
         failureModel =>
-          logger.error(s"[ComplianceService][getComplianceData] - Received error back from DES for compliance data for ${enrolmentKey} with error: ${failureModel.message}")
+          logger.error(s"[RegimeComplianceService][getComplianceData] - Received error back from DES for compliance data for ${enrolmentKey} with error: ${failureModel.message}")
           failureModel match {
             case ComplianceParser.CompliancePayloadFailureResponse(status) => Left(status)
             case ComplianceParser.CompliancePayloadNoData => Left(NOT_FOUND)
@@ -44,7 +44,7 @@ class RegimeComplianceService @Inject()(complianceConnector: RegimeComplianceCon
           }
       },
         complianceData => {
-          logger.debug(s"[ComplianceService][getComplianceData] - Received model: ${complianceData.model} from connector for compliance data")
+          logger.debug(s"[RegimeComplianceService][getComplianceData] - Received model: ${complianceData.model} from connector for compliance data")
           val orderedModel = complianceData.model.copy(
             obligationDetails = complianceData.model.obligationDetails.sortWith((d1, d2) =>
               d1.inboundCorrespondenceDueDate.isBefore(d2.inboundCorrespondenceDueDate)

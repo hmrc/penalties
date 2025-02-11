@@ -37,7 +37,6 @@ class AuthActionImpl @Inject() (override val authConnector: AuthConnector, val p
     implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequest(request)
 
     authorised() {
-      println("\n\nAUTHING\n\n\n")
       block(request)
     } recover { case _: NoActiveSession =>
       Status(UNAUTHORIZED)
