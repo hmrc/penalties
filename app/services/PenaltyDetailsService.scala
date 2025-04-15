@@ -19,7 +19,7 @@ package services
 import config.featureSwitches.FeatureSwitching
 import connectors.getPenaltyDetails.PenaltyDetailsConnector
 import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser._
-import models.{AgnosticEnrolmentKey, Id, IdType, Regime}
+import models.AgnosticEnrolmentKey
 import play.api.Configuration
 import uk.gov.hmrc.http.HeaderCarrier
 import utils.Logger.logger

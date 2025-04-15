@@ -55,7 +55,8 @@ class AppealService @Inject()(appealsConnector: PEGAConnector,
     response.flatMap {
       _.fold(
         error => {
-          logger.error(s"[AppealService][submitAppeal] - Submit appeal call failed with error: ${error.body} and status: ${error.status} for enrolment: $enrolmentKey")
+          logger.error(s"[AppealService][submitAppeal] - Submit appeal call failed with error: ${error.body} " +
+            s"and status: ${error.status} for enrolment: $enrolmentKey")
           Future(Left(error))
         },
         responseModel => {
@@ -103,7 +104,8 @@ class AppealService @Inject()(appealsConnector: PEGAConnector,
       _.details.flatMap(_.find(_.penaltyChargeReference.contains(penaltyId)))
     }
     val principalChargeReference: String = lppPenaltyIdInPenaltyDetailsPayload.get.principalChargeReference
-    val penaltiesForPrincipalCharge: Seq[LPPDetails] = penaltyDetails.latePaymentPenalty.flatMap(_.details.map(_.filter(_.principalChargeReference.equals(principalChargeReference)))).get
+    val penaltiesForPrincipalCharge: Seq[LPPDetails] =
+      penaltyDetails.latePaymentPenalty.flatMap(_.details.map(_.filter(_.principalChargeReference.equals(principalChargeReference)))).get
     val underAppeal = penaltiesForPrincipalCharge.exists(_.appealInformation.isDefined)
     val areBothPenaltiesPostedAndVATPaid: Boolean = penaltiesForPrincipalCharge.forall(penalty => {
       penalty.penaltyStatus == LPPPenaltyStatusEnum.Posted && penalty.principalChargeLatestClearing.isDefined
@@ -135,21 +137,23 @@ class AppealService @Inject()(appealsConnector: PEGAConnector,
     }
   }
 
-  private def sanitisedAndTruncatedFileName(fileName: String)(fileMimeType: String)(reference: String): String = {
+  def sanitisedAndTruncatedFileName(fileName: String)(fileMimeType: String)(reference: String): String = {
     val sanitisedFileName = sanitiseFileName(fileName)(fileMimeType)(reference)
     if (sanitisedFileName.length > appConfig.maximumFilenameLength) {
-      if (sanitisedFileName.contains(".")) {
-        val fileRegex = "^(.*)(\\.\\w{1,4})$".r
-        val fileRegex(fileNameMain, fileExtension) = sanitisedFileName
-        logger.info(s"[AppealService][sanitisedAndTruncatedFileName] File name length: ${fileNameMain.length} with reference of: $reference, truncating to ${appConfig.maximumFilenameLength}")
-        fileNameMain.substring(0, Math.min(fileNameMain.length(), appConfig.maximumFilenameLength)) ++ fileExtension
-      } else {
-        logger.info(s"[AppealService][sanitisedAndTruncatedFileName] File name length: ${sanitisedFileName.length} with reference of: $reference, truncating to ${appConfig.maximumFilenameLength}")
-        sanitisedFileName.substring(0, Math.min(sanitisedFileName.length(), appConfig.maximumFilenameLength))
+      val fileWithExtensionRegex = "^(.*)(\\.\\w{1,4})$".r
+      sanitisedFileName match {
+        case fileWithExtensionRegex(fileNameMain, fileExtension) =>
+          logger.info(s"[AppealService][sanitisedAndTruncatedFileName] File name length: ${fileNameMain.length} " +
+            s"with reference of: $reference, truncating to ${appConfig.maximumFilenameLength}")
+          fileNameMain.substring(0, Math.min(fileNameMain.length(), appConfig.maximumFilenameLength)) ++ fileExtension
+
+        case _ =>
+          logger.info(s"[AppealService][sanitisedAndTruncatedFileName] File name length: ${sanitisedFileName.length} " +
+            s"with reference of: $reference, truncating to ${appConfig.maximumFilenameLength}")
+          sanitisedFileName.substring(0, Math.min(sanitisedFileName.length(), appConfig.maximumFilenameLength))
       }
     } else {
       sanitisedFileName
     }
-
   }
 }

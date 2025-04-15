@@ -20,8 +20,8 @@ import base.{LogCapturing, SpecBase}
 import config.AppConfig
 import config.featureSwitches.FeatureSwitching
 import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser.{GetPenaltyDetailsFailureResponse, GetPenaltyDetailsResponse, GetPenaltyDetailsSuccessResponse}
-import models.AgnosticEnrolmentKey
 import models.getPenaltyDetails.GetPenaltyDetails
+import models.{AgnosticEnrolmentKey, Id, IdType, Regime}
 import org.mockito.Mockito.{mock, reset, when}
 import org.mockito.{ArgumentCaptor, ArgumentMatchers}
 import play.api.Configuration
@@ -32,7 +32,6 @@ import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse, UpstreamErrorR
 import utils.DateHelper
 import utils.Logger.logger
 import utils.PagerDutyHelper.PagerDutyKeys
-import models.{AgnosticEnrolmentKey, Id, IdType, Regime}
 
 import java.time.{LocalDate, LocalDateTime}
 import scala.concurrent.{ExecutionContext, Future}
