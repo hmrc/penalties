@@ -31,7 +31,6 @@ import models.getPenaltyDetails.latePayment._
 import models.getPenaltyDetails.lateSubmission._
 import models.notification._
 import org.mockito.ArgumentMatchers.any
-
 import org.mockito.Mockito._
 import org.mockito.{ArgumentCaptor, ArgumentMatchers}
 import org.scalatest.concurrent.Eventually.eventually
@@ -42,7 +41,7 @@ import play.api.mvc.Result
 import play.api.test.Helpers._
 import services.auditing.AuditService
 import services.{AppealService, GetPenaltyDetailsService}
-import uk.gov.hmrc.http.HttpResponse
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import utils.Logger.logger
 import utils.PagerDutyHelper.PagerDutyKeys
 import utils.PagerDutyHelper.PagerDutyKeys.{MALFORMED_RESPONSE_FROM_1812_API, RETRIEVE_PENALTY_REFORM_500, RETRIEVE_PENALTY_REFORM_REQUEST_FAILED}
@@ -88,6 +87,9 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
       mockAuditService,
       stubControllerComponents()
     )
+
+    implicit val hc: HeaderCarrier    = HeaderCarrier()
+
 
     "getAppealsDataForLateSubmissionPenalty" should {
       val getPenaltyDetails: GetPenaltyDetails = GetPenaltyDetails(

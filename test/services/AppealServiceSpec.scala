@@ -18,8 +18,8 @@ package services
 
 import base.{LogCapturing, SpecBase}
 import config.AppConfig
-import config.featureSwitches.SanitiseFileName
-import connectors.PEGAConnector
+import config.featureSwitches.{CallAPI1808HIP, FeatureSwitching, SanitiseFileName}
+import connectors.{HIPConnector, PEGAConnector}
 import connectors.parsers.AppealsParser
 import connectors.parsers.AppealsParser.UnexpectedFailure
 import models.appeals._
@@ -30,7 +30,6 @@ import models.getPenaltyDetails.latePayment._
 import models.notification._
 import models.upload._
 import org.mockito.ArgumentMatchers
-
 import org.mockito.Mockito._
 import play.api.Configuration
 import play.api.test.Helpers._
@@ -42,10 +41,11 @@ import java.time.{LocalDate, LocalDateTime}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Random
 
-class AppealServiceSpec extends SpecBase with LogCapturing {
+class AppealServiceSpec extends SpecBase with LogCapturing with FeatureSwitching {
   implicit val ec: ExecutionContext = ExecutionContext.Implicits.global
   implicit val hc: HeaderCarrier = HeaderCarrier(otherHeaders = Seq("CorrelationId" -> "id"))
   val mockAppealsConnector: PEGAConnector = mock(classOf[PEGAConnector])
+  val mockHIPConnector: HIPConnector = mock(classOf[HIPConnector])
   val correlationId: String = "correlationId"
   val mockAppConfig: AppConfig = mock(classOf[AppConfig])
   val mockUUIDGenerator: UUIDGenerator = mock(classOf[UUIDGenerator])
@@ -53,7 +53,7 @@ class AppealServiceSpec extends SpecBase with LogCapturing {
 
   class Setup {
     val service = new AppealService(
-      mockAppealsConnector, mockAppConfig, mockUUIDGenerator
+      mockAppealsConnector, mockHIPConnector, mockAppConfig, mockUUIDGenerator
     )
     reset(mockAppealsConnector)
     reset(mockAppConfig)
@@ -87,6 +87,7 @@ class AppealServiceSpec extends SpecBase with LogCapturing {
     )
 
     "return the response from the connector i.e. act as a pass-through function" in new Setup {
+      disableFeatureSwitch(CallAPI1808HIP)
       when(mockAppealsConnector.submitAppeal(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(),
         ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(Right(appealResponseModel)))
 
@@ -96,6 +97,7 @@ class AppealServiceSpec extends SpecBase with LogCapturing {
     }
 
     "return the response from the connector on error i.e. act as a pass-through function" in new Setup {
+      disableFeatureSwitch(CallAPI1808HIP)
       when(mockAppealsConnector.submitAppeal(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(),
         ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(
         Left(UnexpectedFailure(BAD_GATEWAY, s"Unexpected response, status $BAD_GATEWAY returned"))))
@@ -106,6 +108,7 @@ class AppealServiceSpec extends SpecBase with LogCapturing {
     }
 
     "throw an exception when the connector throws an exception" in new Setup {
+      disableFeatureSwitch(CallAPI1808HIP)
       when(mockAppealsConnector.submitAppeal(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(),
         ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.failed(new Exception("Something went wrong")))
 

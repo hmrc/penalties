@@ -22,9 +22,13 @@ import play.api.Configuration
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 import javax.inject.{Inject, Singleton}
 import models.AgnosticEnrolmentKey
+import java.util.Base64
 
 @Singleton
 class AppConfig @Inject()(val config: Configuration, servicesConfig: ServicesConfig) extends FeatureSwitching {
+
+  import servicesConfig._
+
   val auditingEnabled: Boolean = config.get[Boolean]("auditing.enabled")
   val graphiteHost: String = config.get[String]("microservice.metrics.graphite.host")
 
@@ -177,5 +181,15 @@ class AppConfig @Inject()(val config: Configuration, servicesConfig: ServicesCon
   // }
 
   }
+
+  lazy val hipBase: String = servicesConfig.baseUrl("hip")
+  def hipSubmitUrl: String = hipBase + "/v1/penalty/appeal"
+
+  private val clientIdV1: String = getString("microservice.services.hip.client-id")
+  private val secretV1: String   = getString("microservice.services.hip.client-secret")
+  def hipAuthorisationToken: String = Base64.getEncoder.encodeToString(s"$clientIdV1:$secretV1".getBytes("UTF-8"))
+
+  val hipServiceOriginatorIdKeyV1: String = getString("microservice.services.hip.originator-id-key")
+  val hipServiceOriginatorIdV1: String    = getString("microservice.services.hip.originator-id-value")
 
 }

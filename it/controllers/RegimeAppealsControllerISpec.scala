@@ -17,20 +17,20 @@
 package controllers
 
 import com.github.tomakehurst.wiremock.client.WireMock.{postRequestedFor, urlEqualTo}
-import config.featureSwitches.FeatureSwitching
+import config.featureSwitches.{CallAPI1808HIP, FeatureSwitching}
 import models.appeals.MultiplePenaltiesData
 import org.scalatest.concurrent.Eventually.eventually
 import org.scalatest.prop.TableDrivenPropertyChecks
 import play.api.http.Status
 import play.api.libs.json.{JsObject, JsValue, Json}
 import play.api.test.Helpers._
-import utils.{AuthMock, FileNotificationOrchestratorWiremock, IntegrationSpecCommonBase, RegimeAppealWiremock, RegimeETMPWiremock}
+import utils.{AuthMock, FileNotificationOrchestratorWiremock, HIPWiremock, IntegrationSpecCommonBase, RegimeAppealWiremock, RegimeETMPWiremock}
 import models.{AgnosticEnrolmentKey, Id, IdType, Regime}
 
 import java.time.LocalDate
 import scala.jdk.CollectionConverters._
 
-class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with RegimeETMPWiremock
+class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with RegimeETMPWiremock with HIPWiremock
   with RegimeAppealWiremock
   with FileNotificationOrchestratorWiremock
   with FeatureSwitching
@@ -305,12 +305,6 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
     val enrolmentKey = AgnosticEnrolmentKey(regime, idType, id) 
     val (r, it, i) =  (regime.value, idType.value, id.value)
 
-    // // /:regime/appeals/submit-appeal/:idType/:id 
-    // uri = s"/$r/appeals/submit-appeal/$it/$i?
-    // // uri = s"/$r/appeals/submit-appeal/$it/$i?
-
-
-
     s"getAppealsDataForLateSubmissionPenalty for $regime" should {
       "call ETMP and compare the penalty ID provided and the penalty ID in the payload - return OK if there is a match" in {
 
@@ -426,6 +420,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
 
     s"submitAppeal for $regime" should {
       "call the connector and send the appeal data received in the request body - returns OK when successful for bereavement" in {
+        disableFeatureSwitch(CallAPI1808HIP)
         mockStubResponseForAuthorisedUser
         mockResponseForAppealSubmissionStub(OK, enrolmentKey, penaltyNumber = "123456789")
         val jsonToSubmit: JsValue = Json.parse(
@@ -910,6 +905,528 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
         }
 
         "the call to PEGA/stub has a fault" in {
+          mockStubResponseForAuthorisedUser
+          mockResponseForAppealSubmissionStubFault(enrolmentKey, penaltyNumber = "123456789")
+
+          val jsonToSubmit: JsValue = Json.parse(
+            """
+              |{
+              |    "sourceSystem": "MDTP",
+              |    "taxRegime": "VAT",
+              |    "customerReferenceNo": "123456789",
+              |    "dateOfAppeal": "2020-01-01T00:00:00",
+              |    "isLPP": false,
+              |    "appealSubmittedBy": "customer",
+              |    "appealInformation": {
+              |						 "reasonableExcuse": "crime",
+              |            "honestyDeclaration": true,
+              |            "startDateOfEvent": "2021-04-23T00:00:00",
+              |            "reportedIssueToPolice": "yes",
+              |						 "statement": "This is a statement",
+              |            "lateAppeal": false
+              |		}
+              |}
+              |""".stripMargin)
+          val result = await(buildClientForRequestToApp(uri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=false&penaltyNumber=123456789&correlationId=uuid-1").post(
+            jsonToSubmit
+          ))
+          result.status shouldBe INTERNAL_SERVER_ERROR
+        }
+      }
+    }
+
+    s"submitAppeal for $regime calling HIP" should {
+      "call the connector and send the appeal data received in the request body - returns OK when successful for bereavement" in {
+        setEnabledFeatureSwitches(CallAPI1808HIP)
+        mockStubResponseForAuthorisedUser
+        mockSuccessfulResponse()
+        val jsonToSubmit: JsValue = Json.parse(
+          """
+            |{
+            |    "sourceSystem": "MDTP",
+            |    "taxRegime": "VAT",
+            |    "customerReferenceNo": "123456789",
+            |    "dateOfAppeal": "2020-01-01T00:00:00",
+            |    "isLPP": false,
+            |    "appealSubmittedBy": "customer",
+            |    "appealInformation": {
+            |						"reasonableExcuse": "bereavement",
+            |           "honestyDeclaration": true,
+            |           "startDateOfEvent": "2021-04-23T00:00:00",
+            |						"statement": "This is a statement",
+            |           "lateAppeal": false
+            |		}
+            |}
+            |""".stripMargin
+        )
+        val result = await(buildClientForRequestToApp(uri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=false&penaltyNumber=123456789&correlationId=uuid-1").post(
+          jsonToSubmit
+        ))
+        result.status shouldBe OK
+      }
+      "call the connector and send the appeal data received in the request body - returns OK when successful for crime" in {
+        setEnabledFeatureSwitches(CallAPI1808HIP)
+        mockStubResponseForAuthorisedUser
+        mockSuccessfulResponse()
+
+        val jsonToSubmit: JsValue = Json.parse(
+          """
+            |{
+            |    "sourceSystem": "MDTP",
+            |    "taxRegime": "VAT",
+            |    "customerReferenceNo": "123456789",
+            |    "dateOfAppeal": "2020-01-01T00:00:00",
+            |    "isLPP": false,
+            |    "appealSubmittedBy": "customer",
+            |    "appealInformation": {
+            |						 "reasonableExcuse": "crime",
+            |            "honestyDeclaration": true,
+            |            "startDateOfEvent": "2021-04-23T00:00:00",
+            |            "reportedIssueToPolice": "yes",
+            |						 "statement": "This is a statement",
+            |            "lateAppeal": false
+            |		}
+            |}
+            |""".stripMargin)
+        val result = await(buildClientForRequestToApp(uri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=false&penaltyNumber=123456789&correlationId=uuid-1").post(
+          jsonToSubmit
+        ))
+        result.status shouldBe OK
+      }
+
+      "call the connector and send the appeal data received in the request body - returns OK when successful for fire or flood" in {
+        setEnabledFeatureSwitches(CallAPI1808HIP)
+        mockStubResponseForAuthorisedUser
+        mockSuccessfulResponse()
+
+        val jsonToSubmit: JsValue = Json.parse(
+          """
+            |{
+            |    "sourceSystem": "MDTP",
+            |    "taxRegime": "VAT",
+            |    "customerReferenceNo": "123456789",
+            |    "dateOfAppeal": "2020-01-01T00:00:00",
+            |    "isLPP": false,
+            |    "appealSubmittedBy": "customer",
+            |    "appealInformation": {
+            |          "reasonableExcuse": "fireandflood",
+            |          "honestyDeclaration": true,
+            |          "startDateOfEvent": "2021-04-23T00:00:00",
+            |          "statement": "This is a statement",
+            |          "lateAppeal": false
+            |    }
+            |}
+            |""".stripMargin)
+        val result = await(buildClientForRequestToApp(uri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=false&penaltyNumber=123456789&correlationId=uuid-1").post(
+          jsonToSubmit
+        ))
+        result.status shouldBe OK
+      }
+
+      "call the connector and send the appeal data received in the request body - returns OK when successful for loss of staff" in {
+        setEnabledFeatureSwitches(CallAPI1808HIP)
+        mockStubResponseForAuthorisedUser
+        mockSuccessfulResponse()
+
+        val jsonToSubmit: JsValue = Json.parse(
+          """
+            |{
+            |    "sourceSystem": "MDTP",
+            |    "taxRegime": "VAT",
+            |    "customerReferenceNo": "123456789",
+            |    "dateOfAppeal": "2020-01-01T00:00:00",
+            |    "isLPP": false,
+            |    "appealSubmittedBy": "customer",
+            |    "appealInformation": {
+            |						 "reasonableExcuse": "lossOfEssentialStaff",
+            |            "honestyDeclaration": true,
+            |            "startDateOfEvent": "2021-04-23T00:00:00",
+            |						 "statement": "This is a statement",
+            |            "lateAppeal": false
+            |		}
+            |}
+            |""".stripMargin)
+        val result = await(buildClientForRequestToApp(uri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=false&penaltyNumber=123456789&correlationId=uuid-1").post(
+          jsonToSubmit
+        ))
+        result.status shouldBe OK
+      }
+
+      "call the connector and send the appeal data received in the request body - returns OK when successful for technical issues" in {
+        setEnabledFeatureSwitches(CallAPI1808HIP)
+        mockStubResponseForAuthorisedUser
+        mockSuccessfulResponse()
+
+        val jsonToSubmit: JsValue = Json.parse(
+          """
+            |{
+            |    "sourceSystem": "MDTP",
+            |    "taxRegime": "VAT",
+            |    "customerReferenceNo": "123456789",
+            |    "dateOfAppeal": "2020-01-01T00:00:00",
+            |    "isLPP": false,
+            |    "appealSubmittedBy": "customer",
+            |    "appealInformation": {
+            |					 	 "reasonableExcuse": "technicalIssue",
+            |            "honestyDeclaration": true,
+            |            "startDateOfEvent": "2021-04-23T00:00:00",
+            |            "endDateOfEvent": "2021-04-24T00:00:01",
+            |						 "statement": "This is a statement",
+            |            "lateAppeal": false
+            |		}
+            |}
+            |""".stripMargin)
+        val result = await(buildClientForRequestToApp(uri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=false&penaltyNumber=123456789&correlationId=uuid-1").post(
+          jsonToSubmit
+        ))
+        result.status shouldBe OK
+      }
+
+      "call the connector and send the appeal data received in the request body - returns OK when successful for health" when {
+        "there has been no hospital stay" in {
+          setEnabledFeatureSwitches(CallAPI1808HIP)
+          mockStubResponseForAuthorisedUser
+          mockSuccessfulResponse()
+
+          val jsonToSubmit: JsValue = Json.parse(
+            """
+              |{
+              |    "sourceSystem": "MDTP",
+              |    "taxRegime": "VAT",
+              |    "customerReferenceNo": "123456789",
+              |    "dateOfAppeal": "2020-01-01T00:00:00",
+              |    "isLPP": false,
+              |    "appealSubmittedBy": "customer",
+              |    "appealInformation": {
+              |						 "reasonableExcuse": "health",
+              |            "honestyDeclaration": true,
+              |            "startDateOfEvent": "2021-04-23T00:00:00",
+              |            "hospitalStayInvolved": false,
+              |            "eventOngoing": false,
+              |						 "statement": "This is a statement",
+              |            "lateAppeal": false
+              |		}
+              |}
+              |""".stripMargin)
+          val result = await(buildClientForRequestToApp(uri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=false&penaltyNumber=123456789&correlationId=uuid-1").post(
+            jsonToSubmit
+          ))
+          result.status shouldBe OK
+        }
+
+        "there is an ongoing hospital stay" in {
+          setEnabledFeatureSwitches(CallAPI1808HIP)
+          mockStubResponseForAuthorisedUser
+          mockSuccessfulResponse()
+
+          val jsonToSubmit: JsValue = Json.parse(
+            """
+              |{
+              |    "sourceSystem": "MDTP",
+              |    "taxRegime": "VAT",
+              |    "customerReferenceNo": "123456789",
+              |    "dateOfAppeal": "2020-01-01T00:00:00",
+              |    "isLPP": false,
+              |    "appealSubmittedBy": "customer",
+              |    "appealInformation": {
+              |						 "reasonableExcuse": "health",
+              |            "honestyDeclaration": true,
+              |            "startDateOfEvent": "2021-04-23T00:00:00",
+              |            "hospitalStayInvolved": true,
+              |            "eventOngoing": true,
+              |						 "statement": "This is a statement",
+              |            "lateAppeal": false
+              |		}
+              |}
+              |""".stripMargin)
+          val result = await(buildClientForRequestToApp(uri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=false&penaltyNumber=123456789&correlationId=uuid-1").post(
+            jsonToSubmit
+          ))
+          result.status shouldBe OK
+        }
+
+        "there has been a hospital stay" in {
+          setEnabledFeatureSwitches(CallAPI1808HIP)
+          mockStubResponseForAuthorisedUser
+          mockSuccessfulResponse()
+
+          val jsonToSubmit: JsValue = Json.parse(
+            """
+              |{
+              |    "sourceSystem": "MDTP",
+              |    "taxRegime": "VAT",
+              |    "customerReferenceNo": "123456789",
+              |    "dateOfAppeal": "2020-01-01T00:00:00",
+              |    "isLPP": false,
+              |    "appealSubmittedBy": "customer",
+              |    "appealInformation": {
+              |						 "reasonableExcuse": "health",
+              |            "honestyDeclaration": true,
+              |            "startDateOfEvent": "2021-04-23T00:00:00",
+              |            "endDateOfEvent": "2021-04-23T00:00:01",
+              |            "hospitalStayInvolved": true,
+              |            "eventOngoing": false,
+              |						 "statement": "This is a statement",
+              |            "lateAppeal": false
+              |		}
+              |}
+              |""".stripMargin)
+          val result = await(buildClientForRequestToApp(uri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=false&penaltyNumber=123456789&correlationId=uuid-1").post(
+            jsonToSubmit
+          ))
+          result.status shouldBe OK
+        }
+
+        "call the connector and send the appeal data received in the request body - returns OK when successful for other with file upload" in {
+          setEnabledFeatureSwitches(CallAPI1808HIP)
+          mockStubResponseForAuthorisedUser
+          mockSuccessfulResponse()
+          mockResponseForFileNotificationOrchestrator(OK)
+
+          val jsonToSubmit: JsValue = Json.parse(
+            """
+              |{
+              |    "sourceSystem": "MDTP",
+              |    "taxRegime": "VAT",
+              |    "customerReferenceNo": "123456789",
+              |    "dateOfAppeal": "2020-01-01T00:00:00",
+              |    "isLPP": false,
+              |    "appealSubmittedBy": "customer",
+              |    "appealInformation": {
+              |						 "reasonableExcuse": "other",
+              |            "honestyDeclaration": true,
+              |            "startDateOfEvent": "2021-04-23T00:00:00",
+              |						 "statement": "This is a statement",
+              |            "lateAppeal": false,
+              |            "uploadedFiles": [
+              |               {
+              |                 "reference":"reference-3000",
+              |                 "fileStatus":"READY",
+              |                 "downloadUrl":"download.file",
+              |                 "uploadDetails": {
+              |                     "fileName":"file1.txt",
+              |                     "fileMimeType":"text/plain",
+              |                     "uploadTimestamp":"2018-04-24T09:30:00",
+              |                     "checksum":"check12345678",
+              |                     "size":987
+              |                 },
+              |                 "uploadFields": {
+              |                     "key": "abcxyz",
+              |                     "x-amz-algorithm" : "AWS4-HMAC-SHA256"
+              |                 },
+              |                 "lastUpdated":"2018-04-24T09:30:00"
+              |               }
+              |            ]
+              |		}
+              |}
+              |""".stripMargin
+          )
+          val result = await(buildClientForRequestToApp(uri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=false&penaltyNumber=123456789&correlationId=uuid-1").post(
+            jsonToSubmit
+          ))
+          result.status shouldBe OK
+        }
+
+        "call the connector and send the appeal data received in the request body - returns OK when successful for other " +
+          "with file upload (audit storage failure) - single appeal" in {
+          setEnabledFeatureSwitches(CallAPI1808HIP)
+          mockStubResponseForAuthorisedUser
+          mockSuccessfulResponse()
+          mockResponseForFileNotificationOrchestrator(INTERNAL_SERVER_ERROR)
+
+          val jsonToSubmit: JsValue = Json.parse(
+            """
+              |{
+              |    "sourceSystem": "MDTP",
+              |    "taxRegime": "VAT",
+              |    "customerReferenceNo": "123456789",
+              |    "dateOfAppeal": "2020-01-01T00:00:00",
+              |    "isLPP": false,
+              |    "appealSubmittedBy": "customer",
+              |    "appealInformation": {
+              |						 "reasonableExcuse": "other",
+              |            "honestyDeclaration": true,
+              |            "startDateOfEvent": "2021-04-23T00:00:00",
+              |						 "statement": "This is a statement",
+              |            "lateAppeal": false,
+              |            "uploadedFiles": [
+              |               {
+              |                 "reference":"reference-3000",
+              |                 "fileStatus":"READY",
+              |                 "downloadUrl":"download.file",
+              |                 "uploadDetails": {
+              |                     "fileName":"file1.txt",
+              |                     "fileMimeType":"text/plain",
+              |                     "uploadTimestamp":"2018-04-24T09:30:00",
+              |                     "checksum":"check12345678",
+              |                     "size":987
+              |                 },
+              |                 "uploadFields": {
+              |                     "key": "abcxyz",
+              |                     "x-amz-algorithm" : "AWS4-HMAC-SHA256"
+              |                 },
+              |                 "lastUpdated":"2018-04-24T09:30:00"
+              |               }
+              |            ]
+              |		}
+              |}
+              |""".stripMargin
+          )
+          val result = await(buildClientForRequestToApp(uri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=false&penaltyNumber=123456789&correlationId=uuid-1").post(
+            jsonToSubmit
+          ))
+          result.status shouldBe OK
+          eventually {
+            wireMockServer.findAll(postRequestedFor(urlEqualTo("/write/audit"))).asScala.toList.exists(_.getBodyAsString.contains("PenaltyAppealFileNotificationStorageFailure")) shouldBe true
+          }
+        }
+
+        "call the connector and send the appeal data received in the request body - returns OK when successful for LPP" in {
+          setEnabledFeatureSwitches(CallAPI1808HIP)
+          mockStubResponseForAuthorisedUser
+          mockSuccessfulResponse()
+
+          val jsonToSubmit: JsValue = Json.parse(
+            """
+              |{
+              |    "sourceSystem": "MDTP",
+              |    "taxRegime": "VAT",
+              |    "customerReferenceNo": "123456789",
+              |    "dateOfAppeal": "2020-01-01T00:00:00",
+              |    "isLPP": true,
+              |    "appealSubmittedBy": "customer",
+              |    "appealInformation": {
+              |						 "reasonableExcuse": "crime",
+              |            "honestyDeclaration": true,
+              |            "startDateOfEvent": "2021-04-23T00:00:00",
+              |            "reportedIssueToPolice": "yes",
+              |						 "statement": "This is a statement",
+              |            "lateAppeal": false
+              |		}
+              |}
+              |""".stripMargin)
+          val result = await(buildClientForRequestToApp(uri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=true&penaltyNumber=123456789&correlationId=uuid-1").post(
+            jsonToSubmit
+          ))
+          result.status shouldBe OK
+        }
+
+        "call the connector and send the appeal data received in the request body - returns OK when successful for other" +
+          " with file upload (audit storage failure) - part of multi appeal" in {
+          setEnabledFeatureSwitches(CallAPI1808HIP)
+          mockStubResponseForAuthorisedUser
+          mockSuccessfulResponse()
+          mockResponseForFileNotificationOrchestrator(INTERNAL_SERVER_ERROR)
+
+          val jsonToSubmit: JsValue = Json.parse(
+            """
+              |{
+              |    "sourceSystem": "MDTP",
+              |    "taxRegime": "VAT",
+              |    "customerReferenceNo": "123456789",
+              |    "dateOfAppeal": "2020-01-01T00:00:00",
+              |    "isLPP": false,
+              |    "appealSubmittedBy": "customer",
+              |    "appealInformation": {
+              |						 "reasonableExcuse": "other",
+              |            "honestyDeclaration": true,
+              |            "startDateOfEvent": "2021-04-23T00:00:00",
+              |						 "statement": "This is a statement",
+              |            "lateAppeal": false,
+              |            "uploadedFiles": [
+              |               {
+              |                 "reference":"reference-3000",
+              |                 "fileStatus":"READY",
+              |                 "downloadUrl":"download.file",
+              |                 "uploadDetails": {
+              |                     "fileName":"file1.txt",
+              |                     "fileMimeType":"text/plain",
+              |                     "uploadTimestamp":"2018-04-24T09:30:00",
+              |                     "checksum":"check12345678",
+              |                     "size":987
+              |                 },
+              |                 "uploadFields": {
+              |                     "key": "abcxyz",
+              |                     "x-amz-algorithm" : "AWS4-HMAC-SHA256"
+              |                 },
+              |                 "lastUpdated":"2018-04-24T09:30:00"
+              |               }
+              |            ]
+              |		}
+              |}
+              |""".stripMargin
+          )
+          val expectedJsonResponse: JsObject = Json.obj(
+            "caseId" -> "PR-1234567889",
+            "status" -> MULTI_STATUS,
+            "error" -> "Appeal submitted (case ID: PR-1234567889, correlation ID: uuid-1) but received 500 response from file notification orchestrator"
+          )
+
+          val result = await(buildClientForRequestToApp(uri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=false&penaltyNumber=123456789&correlationId=uuid-1&isMultiAppeal=true").post(
+            jsonToSubmit
+          ))
+
+          result.status shouldBe MULTI_STATUS
+          Json.parse(result.body) shouldBe expectedJsonResponse
+          eventually {
+            wireMockServer.findAll(postRequestedFor(urlEqualTo("/write/audit"))).asScala.toList.exists(_.getBodyAsString.contains("PenaltyAppealFileNotificationStorageFailure")) shouldBe true
+          }
+        }
+      }
+
+      "return BAD_REQUEST (400)" when {
+        "no JSON body is in the request" in {
+          setEnabledFeatureSwitches(CallAPI1808HIP)
+          mockStubResponseForAuthorisedUser
+          val result = await(buildClientForRequestToApp(uri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=true&penaltyNumber=123456789&correlationId=uuid-1").post(
+            ""
+          ))
+          result.status shouldBe BAD_REQUEST
+        }
+
+        "JSON body is present but it can not be parsed to a model" in {
+          setEnabledFeatureSwitches(CallAPI1808HIP)
+          mockStubResponseForAuthorisedUser
+          val result = await(buildClientForRequestToApp(uri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=true&penaltyNumber=123456789&correlationId=uuid-1").post(
+            Json.parse("{}")
+          ))
+          result.status shouldBe BAD_REQUEST
+        }
+      }
+
+      "return error status code" when {
+        "the call to PEGA/stub fails" in {
+          disableFeatureSwitch(CallAPI1808HIP)
+          mockStubResponseForAuthorisedUser
+          mockResponseForAppealSubmissionStub(GATEWAY_TIMEOUT, enrolmentKey, penaltyNumber = "123456789")
+
+          val jsonToSubmit: JsValue = Json.parse(
+            """
+              |{
+              |    "sourceSystem": "MDTP",
+              |    "taxRegime": "VAT",
+              |    "customerReferenceNo": "123456789",
+              |    "dateOfAppeal": "2020-01-01T00:00:00",
+              |    "isLPP": false,
+              |    "appealSubmittedBy": "customer",
+              |    "appealInformation": {
+              |						 "reasonableExcuse": "crime",
+              |            "honestyDeclaration": true,
+              |            "startDateOfEvent": "2021-04-23T00:00:00",
+              |            "reportedIssueToPolice": "yes",
+              |						 "statement": "This is a statement",
+              |            "lateAppeal": false
+              |		}
+              |}
+              |""".stripMargin)
+          val result = await(buildClientForRequestToApp(uri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=false&penaltyNumber=123456789&correlationId=uuid-1").post(
+            jsonToSubmit
+          ))
+          result.status shouldBe GATEWAY_TIMEOUT
+        }
+
+        "the call to PEGA/stub has a fault" in {
+          disableFeatureSwitch(CallAPI1808HIP)
           mockStubResponseForAuthorisedUser
           mockResponseForAppealSubmissionStubFault(enrolmentKey, penaltyNumber = "123456789")
 

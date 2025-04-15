@@ -73,6 +73,8 @@ trait IntegrationSpecCommonBase extends AnyWordSpec with Matchers with GuiceOneS
     "microservice.services.pega.port" -> stubPort,
     "microservice.services.des.host" -> stubHost,
     "microservice.services.des.port" -> stubPort,
+    "microservice.services.hip.host" -> stubHost,
+    "microservice.services.hip.port" -> stubPort,
     "auditing.consumer.baseUri.host" -> stubHost,
     "auditing.consumer.baseUri.port" -> stubPort,
     "microservice.services.penalties-file-notification-orchestrator.host" -> stubHost,
