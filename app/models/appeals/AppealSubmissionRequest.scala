@@ -71,6 +71,7 @@ object AppealSubmissionRequest {
     val dateOfAppealZoned: String = appealSubmission.dateOfAppeal.toInstant(ZoneOffset.UTC).toString
     Json.obj(
       "sourceSystem" -> appealSubmission.sourceSystem,
+      "penaltyId" -> appealSubmission.penaltyId,
       "appealLevel" -> appealSubmission.appealLevel,
       "sourceSystem" -> appealSubmission.sourceSystem,
       "taxRegime" -> appealSubmission.taxRegime,
