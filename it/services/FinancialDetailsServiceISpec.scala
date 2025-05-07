@@ -32,11 +32,6 @@ import java.time.LocalDate
 class FinancialDetailsServiceISpec extends IntegrationSpecCommonBase with RegimeETMPWiremock with FeatureSwitching with TableDrivenPropertyChecks {
   setEnabledFeatureSwitches()
   val service: FinancialDetailsService = injector.instanceOf[FinancialDetailsService]
-  val financialDataQueryParam: String = {
-    s"includeClearedItems=true&includeStatisticalItems=true&includePaymentOnAccount=true" +
-      s"&addRegimeTotalisation=true&addLockInformation=true&addPenaltyDetails=true&addPostedInterestDetails=true&addAccruingInterestDetails=true" +
-      s"&dateType=POSTING&dateFrom=${LocalDate.now().minusYears(2).toString}&dateTo=${LocalDate.now().toString}"
-  }
 
   Table(
     ("Regime", "IdType", "Id"),
@@ -47,7 +42,9 @@ class FinancialDetailsServiceISpec extends IntegrationSpecCommonBase with Regime
     val aKey = AgnosticEnrolmentKey(regime, idType, id) 
 
     s"getFinancialDetails for $regime" when {
-      val getFinancialDetailsModel: FinancialDetails = FinancialDetails(
+      val getFinancialDetailsModel: FinancialDetailsHIP = FinancialDetailsHIP(
+        processingDate = "2025-05-06",
+        financialData = FinancialDetails(
         documentDetails = Some(Seq(DocumentDetails(
           chargeReferenceNumber = Some("XM002610011594"),
           documentOutstandingAmount = Some(543.21),
@@ -59,25 +56,24 @@ class FinancialDetailsServiceISpec extends IntegrationSpecCommonBase with Regime
           regimeTotalisations = Some(RegimeTotalisation(totalAccountOverdue = Some(1000))),
           interestTotalisations = Some(InterestTotalisation(totalAccountPostedInterest = Some(12.34), totalAccountAccruingInterest = Some(43.21)))
         ))
-      )
+      ))
 
       "call the connector and return a successful result" in {
-        mockStubResponseForGetFinancialDetails(Status.OK, s"${aKey.idType.value}/${aKey.id.value}/${regime.value}?$financialDataQueryParam", Some(getFinancialDetailsAsJson.toString()))
-        val result = await(service.getFinancialDetails(aKey, None))
+        mockStubResponseForGetFinancialDetails(Status.OK , Some(getFinancialDetailsAsJson.toString()))
+        val result = await(service.getFinancialDetails(aKey))
         result.isRight shouldBe true
         result.toOption.get shouldBe GetFinancialDetailsSuccessResponse(getFinancialDetailsModel)
       }
 
       "call the connector and return a successful result - passing custom parameters when defined" in {
-        mockStubResponseForGetFinancialDetails(Status.OK, s"${aKey.idType.value}/${aKey.id.value}/${regime.value}?foo=bar&dateType=POSTING&dateFrom=${LocalDate.now().minusYears(2).toString}&dateTo=${LocalDate.now().toString}",
-          Some(getFinancialDetailsAsJson.toString()))
-        val result = await(service.getFinancialDetails(aKey, Some("?foo=bar")))
+        mockStubResponseForGetFinancialDetails(Status.OK, Some(getFinancialDetailsAsJson.toString()))
+        val result = await(service.getFinancialDetails(aKey))
         result.isRight shouldBe true
         result.toOption.get shouldBe GetFinancialDetailsSuccessResponse(getFinancialDetailsModel)
       }
 
       s"the response body is not well formed: $GetFinancialDetailsMalformed" in {
-        mockStubResponseForGetFinancialDetails(Status.OK, s"${aKey.idType.value}/${aKey.id.value}/${regime.value}?$financialDataQueryParam", Some(
+        mockStubResponseForGetFinancialDetails(Status.OK, Some(
           """
           {
            "documentDetails": [
@@ -87,7 +83,7 @@ class FinancialDetailsServiceISpec extends IntegrationSpecCommonBase with Regime
            ]
           }
           """))
-        val result = await(service.getFinancialDetails(aKey, None))
+        val result = await(service.getFinancialDetails(aKey))
         result.isLeft shouldBe true
         result.left.getOrElse(GetFinancialDetailsFailureResponse(IM_A_TEAPOT)) shouldBe GetFinancialDetailsMalformed
       }
@@ -104,15 +100,15 @@ class FinancialDetailsServiceISpec extends IntegrationSpecCommonBase with Regime
             | ]
             |}
             |""".stripMargin
-        mockStubResponseForGetFinancialDetails(Status.NOT_FOUND, s"${aKey.idType.value}/${aKey.id.value}/${regime.value}?$financialDataQueryParam", Some(noDataFoundBody))
-        val result = await(service.getFinancialDetails(aKey, None))
+        mockStubResponseForGetFinancialDetails(Status.NOT_FOUND, Some(noDataFoundBody))
+        val result = await(service.getFinancialDetails(aKey))
         result.isLeft shouldBe true
         result.left.getOrElse(GetFinancialDetailsFailureResponse(IM_A_TEAPOT)) shouldBe GetFinancialDetailsNoContent
       }
 
       s"an unknown response is returned from the connector - $GetFinancialDetailsFailureResponse" in {
-        mockStubResponseForGetFinancialDetails(Status.IM_A_TEAPOT, s"${aKey.idType.value}/${aKey.id.value}/${regime.value}?$financialDataQueryParam")
-        val result = await(service.getFinancialDetails(aKey, None))
+        mockStubResponseForGetFinancialDetails(Status.IM_A_TEAPOT)
+        val result = await(service.getFinancialDetails(aKey))
         result.isLeft shouldBe true
         result.left.getOrElse(GetFinancialDetailsFailureResponse(INTERNAL_SERVER_ERROR)) shouldBe GetFinancialDetailsFailureResponse(Status.IM_A_TEAPOT)
       }

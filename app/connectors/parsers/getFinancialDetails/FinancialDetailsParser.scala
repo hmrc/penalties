@@ -16,10 +16,11 @@
 
 package connectors.parsers.getFinancialDetails
 
-import models.failure.{FailureCodeEnum, FailureResponse}
-import models.getFinancialDetails.{FinancialDetails, GetFinancialData}
+
+import models.failure.{BusinessError, FailureCodeEnum, FailureResponse, TechnicalError}
+import models.getFinancialDetails.FinancialDetailsHIP
 import play.api.http.Status._
-import play.api.libs.json.{JsError, JsSuccess, JsValue}
+import play.api.libs.json.{JsError, JsSuccess, JsValue, Json}
 import uk.gov.hmrc.http.{HttpReads, HttpResponse}
 import utils.Logger.logger
 import utils.PagerDutyHelper
@@ -32,7 +33,7 @@ object FinancialDetailsParser {
 
   sealed trait GetFinancialDetailsSuccess
 
-  case class GetFinancialDetailsSuccessResponse(financialDetails: FinancialDetails) extends GetFinancialDetailsSuccess
+  case class GetFinancialDetailsSuccessResponse(financialData: FinancialDetailsHIP) extends GetFinancialDetailsSuccess
 
   case class GetFinancialDetailsFailureResponse(status: Int) extends GetFinancialDetailsFailure
 
@@ -47,9 +48,9 @@ object FinancialDetailsParser {
       response.status match {
         case OK =>
           logger.debug(s"[FinancialDetailsParser][GetFinancialDetailsReads][read] Json response: ${response.json}")
-          response.json.validate[GetFinancialData] match {
-            case JsSuccess(getFinancialData, _) =>
-              Right(GetFinancialDetailsSuccessResponse(getFinancialData.financialDetails))
+          response.json.validate[FinancialDetailsHIP] match {
+            case JsSuccess(financialDetailsHIP, _) =>
+              Right(GetFinancialDetailsSuccessResponse(financialDetailsHIP))
             case JsError(errors) =>
               logger.debug(s"[FinancialDetailsParser][GetFinancialDetailsReads][read] Json validation errors: $errors")
               Left(GetFinancialDetailsMalformed)
@@ -68,7 +69,7 @@ object FinancialDetailsParser {
         case status@(BAD_REQUEST | FORBIDDEN | NOT_FOUND | CONFLICT | UNPROCESSABLE_ENTITY | INTERNAL_SERVER_ERROR | SERVICE_UNAVAILABLE) => {
           PagerDutyHelper.logStatusCode("GetFinancialDetailsReads", status)(RECEIVED_4XX_FROM_1811_API, RECEIVED_5XX_FROM_1811_API)
           logger.error(s"[FinancialDetailsParser][GetFinancialDetailsReads][read] Received $status when trying to call GetFinancialDetails - with body: ${response.body}")
-          Left(GetFinancialDetailsFailureResponse(status))
+          handleErrorResponse(response)
         }
         case _@status =>
           PagerDutyHelper.logStatusCode("GetFinancialDetailsReads", status)(RECEIVED_4XX_FROM_1811_API, RECEIVED_5XX_FROM_1811_API)
@@ -94,5 +95,26 @@ object FinancialDetailsParser {
         }
       }
     )
+  }
+
+  private def handleErrorResponse(response: HttpResponse): Left[GetFinancialDetailsFailure, Nothing] = {
+    val json = Try(response.json).getOrElse(Json.obj())
+
+    (json \ "error").validate[TechnicalError].asOpt match {
+      case Some(singleError) =>
+        logger.warn(s"[FinancialDetailsParser][handleErrorResponse] HIP Technical error returned: ${singleError.code}")
+        Left(GetFinancialDetailsFailureResponse(response.status))
+
+      case None =>
+        (json \ "errors").validate[Seq[BusinessError]].asOpt match {
+          case Some(multipleErrors) =>
+            logger.warn(s"[FinancialDetailsParser][handleErrorResponse] HIP Business errors returned. First error: $multipleErrors")
+            Left(GetFinancialDetailsFailureResponse(response.status))
+
+          case _ =>
+            logger.error("[FinancialDetailsParser][handleErrorResponse] No recognizable error structure found")
+            Left(GetFinancialDetailsFailureResponse(response.status))
+        }
+    }
   }
 }

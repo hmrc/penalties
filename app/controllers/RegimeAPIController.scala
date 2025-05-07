@@ -111,7 +111,7 @@ class RegimeAPIController @Inject()(auditService: AuditService,
   }
 
   private def callFinancialDetailsForManualLPPs(enrolmentKey: AgnosticEnrolmentKey)(implicit hc: HeaderCarrier): Future[Option[FinancialDetails]] = {
-    getFinancialDetailsService.getFinancialDetails(enrolmentKey, None).map {
+    getFinancialDetailsService.getFinancialDetails(enrolmentKey).map {
       financialDetailsResponseWithoutClearedItems =>
         logger.info(s"[RegimeAPIController][callFinancialDetailsForManualLPPs] - Calling 1811 for response without cleared items")
         financialDetailsResponseWithoutClearedItems.fold({
@@ -130,7 +130,7 @@ class RegimeAPIController @Inject()(auditService: AuditService,
         },
           financialDetailsResponseWithoutClearedItems => {
             logger.info(s"[RegimeAPIController][callFinancialDetailsForManualLPPs] - 1811 call (VATVC/BTA API) returned 200 for ${enrolmentKey}" )
-            Some(financialDetailsResponseWithoutClearedItems.asInstanceOf[GetFinancialDetailsSuccessResponse].financialDetails)
+            Some(financialDetailsResponseWithoutClearedItems.asInstanceOf[GetFinancialDetailsSuccessResponse].financialData.financialData)
           })
     }
   }
