@@ -42,7 +42,7 @@ object HIPAppealParser {
           }
 
         case CONFLICT =>
-          logger.error(s"[HIPAppealSubmissionResponseReads][read]: Conflict status has been returned returned with body: ${response.body}")
+          logger.error(s"[HIPAppealSubmissionResponseReads][read]: Conflict status has been returned with body: ${response.body}")
           Left(DuplicateAppeal)
 
         case status if is4xx(status) =>
@@ -67,14 +67,8 @@ object HIPAppealParser {
       response.json.validate[HIPErrorResponse] match {
         case JsSuccess(model, _) =>
           model.failures.headOption match {
-            case Some(failure) =>
-              if(failure.originatedFrom == ETMP) {
-                (failure.dependentSystemHTTPCode, failure.reason)
-              }
-              else {
-                (response.status, failure.reason)
-              }
-            case None => (response.status, response.body)
+            case Some(failure) if failure.originatedFrom == ETMP => (failure.dependentSystemHTTPCode, failure.reason)
+            case _ => (response.status, response.body)
           }
         case _ => (response.status, response.body)
       }

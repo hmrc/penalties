@@ -52,6 +52,7 @@ class AppealServiceSpec extends SpecBase with LogCapturing with FeatureSwitching
   implicit val config: Configuration = mockAppConfig.config
 
   class Setup {
+    disableFeatureSwitch(CallAPI1808HIP)
     val service = new AppealService(
       mockAppealsConnector, mockHIPConnector, mockAppConfig, mockUUIDGenerator
     )
@@ -87,7 +88,6 @@ class AppealServiceSpec extends SpecBase with LogCapturing with FeatureSwitching
     )
 
     "return the response from the connector i.e. act as a pass-through function" in new Setup {
-      disableFeatureSwitch(CallAPI1808HIP)
       when(mockAppealsConnector.submitAppeal(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(),
         ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(Right(appealResponseModel)))
 
@@ -97,7 +97,6 @@ class AppealServiceSpec extends SpecBase with LogCapturing with FeatureSwitching
     }
 
     "return the response from the connector on error i.e. act as a pass-through function" in new Setup {
-      disableFeatureSwitch(CallAPI1808HIP)
       when(mockAppealsConnector.submitAppeal(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(),
         ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(
         Left(UnexpectedFailure(BAD_GATEWAY, s"Unexpected response, status $BAD_GATEWAY returned"))))
@@ -108,7 +107,6 @@ class AppealServiceSpec extends SpecBase with LogCapturing with FeatureSwitching
     }
 
     "throw an exception when the connector throws an exception" in new Setup {
-      disableFeatureSwitch(CallAPI1808HIP)
       when(mockAppealsConnector.submitAppeal(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(),
         ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.failed(new Exception("Something went wrong")))
 

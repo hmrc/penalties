@@ -94,7 +94,7 @@ trait HIPWiremock {
   def mockInvalidPayloadResponse(): StubMapping = mockResponse(400, appealInvalidPayloadError)
   def mockUnauthorisedResponse(): StubMapping = mockResponse(401, JsObject.empty)
   def mockForbiddenResponse(): StubMapping = mockResponse(403, JsObject.empty)
-  def mockNotFoundResponse(): StubMapping = mockResponse(404, appealInvalidPayloadError)
+  def mockNotFoundResponse(): StubMapping = mockResponse(404, JsObject.empty)
   def mockDuplicateSubmissionResponse(): StubMapping = mockResponse(409, appealDuplicateSubmissionError)
   def mockUnsupportedMediaTypeResponse(): StubMapping = mockResponse(415, JsObject.empty)
   def mockEMTPErrorResponse(): StubMapping = mockResponse(422, appealETMPError)
