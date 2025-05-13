@@ -444,8 +444,6 @@ class RegimePenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase w
 
     val etmpUri = s"/${regime.value}/etmp/penalties/${idType.value}/${id.value}"
 
-    val financialDataUri = s"${idType.value}/${id.value}/${regime.value}"
-
     s"return OK (${Status.OK}) for $regime" when {
 
       "the get penalty details call succeeds and the get financial details call succeeds (combining the data together)" in {

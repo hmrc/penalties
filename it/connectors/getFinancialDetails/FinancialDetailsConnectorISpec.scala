@@ -46,7 +46,7 @@ class FinancialDetailsConnectorISpec extends IntegrationSpecCommonBase with ETMP
   "getFinancialDetails" should {
     "return a successful response when called" in new Setup {
       enableFeatureSwitch(CallAPI1811ETMP)
-      mockResponseForGetFinancialDetails(Status.OK, "123456789")
+      mockResponseForGetFinancialDetailsHIP(Status.OK, "123456789")
       val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails(vrn123456789)(hc))
       result.isRight shouldBe true
     }
@@ -60,7 +60,7 @@ class FinancialDetailsConnectorISpec extends IntegrationSpecCommonBase with ETMP
              }]
            }
           """
-      mockResponseForGetFinancialDetails(Status.OK, "123456789", body = Some(malformedBody))
+      mockResponseForGetFinancialDetailsHIP(Status.OK, "123456789", body = Some(malformedBody))
       val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails(vrn123456789))
       result.isLeft shouldBe true
       result.left.getOrElse(GetFinancialDetailsFailureResponse(IM_A_TEAPOT)) shouldBe GetFinancialDetailsMalformed
@@ -68,7 +68,7 @@ class FinancialDetailsConnectorISpec extends IntegrationSpecCommonBase with ETMP
 
     s"return a $GetFinancialDetailsFailureResponse when the response status is ISE (${Status.INTERNAL_SERVER_ERROR})" in new Setup {
       enableFeatureSwitch(CallAPI1811ETMP)
-      mockResponseForGetFinancialDetails(Status.INTERNAL_SERVER_ERROR, "123456789")
+      mockResponseForGetFinancialDetailsHIP(Status.INTERNAL_SERVER_ERROR, "123456789")
       val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails(vrn123456789)(HeaderCarrier()))
 
       result.isLeft shouldBe true
@@ -77,7 +77,7 @@ class FinancialDetailsConnectorISpec extends IntegrationSpecCommonBase with ETMP
 
     s"return a $GetFinancialDetailsFailureResponse when the response status is ISE (${Status.SERVICE_UNAVAILABLE})" in new Setup {
       enableFeatureSwitch(CallAPI1811ETMP)
-      mockResponseForGetFinancialDetails(Status.SERVICE_UNAVAILABLE, "123456789")
+      mockResponseForGetFinancialDetailsHIP(Status.SERVICE_UNAVAILABLE, "123456789")
       val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails(vrn123456789))
       result.isLeft shouldBe true
       result.left.getOrElse(GetFinancialDetailsFailureResponse(IM_A_TEAPOT)).asInstanceOf[GetFinancialDetailsFailureResponse].status shouldBe Status.SERVICE_UNAVAILABLE
@@ -85,7 +85,7 @@ class FinancialDetailsConnectorISpec extends IntegrationSpecCommonBase with ETMP
 
     s"return a $GetFinancialDetailsFailureResponse when the response status is NOT FOUND (${Status.NOT_FOUND})" in new Setup {
       enableFeatureSwitch(CallAPI1811ETMP)
-      mockResponseForGetFinancialDetails(Status.NOT_FOUND, "123456789")
+      mockResponseForGetFinancialDetailsHIP(Status.NOT_FOUND, "123456789")
       val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails(vrn123456789))
       result.isLeft shouldBe true
       result.left.getOrElse(GetFinancialDetailsFailureResponse(IM_A_TEAPOT)).asInstanceOf[GetFinancialDetailsFailureResponse].status shouldBe Status.NOT_FOUND
@@ -93,7 +93,7 @@ class FinancialDetailsConnectorISpec extends IntegrationSpecCommonBase with ETMP
 
     s"return a $GetFinancialDetailsFailureResponse when the response status is CONFLICT (${Status.CONFLICT})" in new Setup {
       enableFeatureSwitch(CallAPI1811ETMP)
-      mockResponseForGetFinancialDetails(Status.CONFLICT, "123456789")
+      mockResponseForGetFinancialDetailsHIP(Status.CONFLICT, "123456789")
       val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails(vrn123456789))
       result.isLeft shouldBe true
       result.left.getOrElse(GetFinancialDetailsFailureResponse(IM_A_TEAPOT)).asInstanceOf[GetFinancialDetailsFailureResponse].status shouldBe Status.CONFLICT
@@ -101,7 +101,7 @@ class FinancialDetailsConnectorISpec extends IntegrationSpecCommonBase with ETMP
 
     s"return a $GetFinancialDetailsFailureResponse when the response status is UNPROCESSABLE ENTITY (${Status.UNPROCESSABLE_ENTITY})" in new Setup {
       enableFeatureSwitch(CallAPI1811ETMP)
-      mockResponseForGetFinancialDetails(Status.UNPROCESSABLE_ENTITY, "1234567689")
+      mockResponseForGetFinancialDetailsHIP(Status.UNPROCESSABLE_ENTITY, "1234567689")
       val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails(vrn123456789))
       result.isLeft shouldBe true
       result.left.getOrElse(GetFinancialDetailsFailureResponse(IM_A_TEAPOT)).asInstanceOf[GetFinancialDetailsFailureResponse].status shouldBe Status.UNPROCESSABLE_ENTITY
@@ -109,7 +109,7 @@ class FinancialDetailsConnectorISpec extends IntegrationSpecCommonBase with ETMP
 
     s"return a $GetFinancialDetailsFailureResponse when the response status is BAD REQUEST (${Status.BAD_REQUEST})" in new Setup {
       enableFeatureSwitch(CallAPI1811ETMP)
-      mockResponseForGetFinancialDetails(Status.BAD_REQUEST, "123456789")
+      mockResponseForGetFinancialDetailsHIP(Status.BAD_REQUEST, "123456789")
       val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails(vrn123456789))
       result.isLeft shouldBe true
       result.left.getOrElse(GetFinancialDetailsFailureResponse(IM_A_TEAPOT)).asInstanceOf[GetFinancialDetailsFailureResponse].status shouldBe Status.BAD_REQUEST
@@ -117,7 +117,7 @@ class FinancialDetailsConnectorISpec extends IntegrationSpecCommonBase with ETMP
 
     s"return a $GetFinancialDetailsFailureResponse when the response status is FORBIDDEN (${Status.FORBIDDEN})" in new Setup {
       enableFeatureSwitch(CallAPI1811ETMP)
-      mockResponseForGetFinancialDetails(Status.FORBIDDEN, "123456789")
+      mockResponseForGetFinancialDetailsHIP(Status.FORBIDDEN, "123456789")
       val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails(vrn123456789))
       result.isLeft shouldBe true
       result.left.getOrElse(GetFinancialDetailsFailureResponse(IM_A_TEAPOT)).asInstanceOf[GetFinancialDetailsFailureResponse].status shouldBe Status.FORBIDDEN
@@ -127,7 +127,7 @@ class FinancialDetailsConnectorISpec extends IntegrationSpecCommonBase with ETMP
   "getFinancialDetailsForAPI" should {
     "return a 200 response" in new Setup {
       enableFeatureSwitch(CallAPI1811ETMP)
-      mockResponseForGetFinancialDetails(Status.OK, "123456789")
+      mockResponseForGetFinancialDetailsHIP(Status.OK, "123456789")
 
       val result: HttpResponse = await(connector.getFinancialDetailsForAPI(
         enrolmentKey = vrn123456789,
@@ -151,7 +151,7 @@ class FinancialDetailsConnectorISpec extends IntegrationSpecCommonBase with ETMP
     "handle a UpstreamErrorResponse" when {
       "a 4xx error is returned" in new Setup {
         enableFeatureSwitch(CallAPI1811ETMP)
-        mockResponseForGetFinancialDetails(Status.FORBIDDEN, "123456789")
+        mockResponseForGetFinancialDetailsHIP(Status.FORBIDDEN, "123456789")
 
         val result: HttpResponse = await(connector.getFinancialDetailsForAPI(
           enrolmentKey = vrn123456789,
@@ -174,7 +174,7 @@ class FinancialDetailsConnectorISpec extends IntegrationSpecCommonBase with ETMP
 
       "a 5xx error is returned" in new Setup {
         enableFeatureSwitch(CallAPI1811ETMP)
-        mockResponseForGetFinancialDetails(Status.BAD_GATEWAY, "123456789")
+        mockResponseForGetFinancialDetailsHIP(Status.BAD_GATEWAY, "123456789")
 
         val result: HttpResponse = await(connector.getFinancialDetailsForAPI(
           enrolmentKey = vrn123456789,
