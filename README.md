@@ -1,4 +1,3 @@
- 
 # Penalties
 
 The backend for the penalties services such as `penalties-frontend` and `penalties-appeals-frontend`. It handles the following:
@@ -220,7 +219,7 @@ Example URL - `/penalties/penalty/financial-data/VRN/:VRN/VATC?searchType=CHGREF
 The data returned is outlined in v2.3.0 of the GetFinancialDetails API specification.
 
 ### Get Penalty Details (API 1812)
-### `GET        /penalties/penalty-details/VAT/VRN/:VRN`
+#### `GET        /penalties/penalty-details/VAT/VRN/:VRN`
 
 Gets the penalty details for specified VRN.
 
@@ -240,7 +239,62 @@ Example URL - `/penalties/penalty-details/VAT/VRN/:VRN?dateLimit=09`
 | Internal server error                                                                                                                           | 500    |
 | Dependent systems are not available                                                                                                             | 503    |
 
-The data returned is outlined in v1.1.0 of the GetPenaltyDetails API specification.
+**Note:**
+- The data returned is now in the new model structure, wrapped in a `success` object with `processingDate` and `penaltyData` fields. Older test stubs and sample responses should be updated to match this structure. Some controller tests may still use pass-through JSON for legacy compatibility, but all new development should use the new format.
+
+**Example response:**
+```json
+{
+  "success": {
+    "processingDate": "2025-04-24T12:00:00Z",
+    "penaltyData": {
+      "totalisations": {
+        "LSPTotalValue": 200,
+        "penalisedPrincipalTotal": 2000,
+        "LPPPostedTotal": 165.25,
+        "LPPEstimatedTotal": 15.26
+      },
+      "lsp": {
+        "lspSummary": {
+          "activePenaltyPoints": 2,
+          "inactivePenaltyPoints": 0,
+          "regimeThreshold": 5,
+          "penaltyChargeAmount": 200.00,
+          "pocAchievementDate": "2022-01-01"
+        },
+        "lspDetails": []
+      },
+      "lpp": {
+        "lppDetails": [
+          {
+            "penaltyCategory": "LPP2",
+            "penaltyStatus": "A",
+            "penaltyAmountPosted": 0,
+            "LPP1LRCalculationAmount": 123.45,
+            "LPP1LRDays": "15",
+            "LPP1LRPercentage": 2.00,
+            "LPP1HRCalculationAmount": 123.45,
+            "LPP1HRDays": "31",
+            "LPP1HRPercentage": 2.00,
+            "LPP2Days": "31",
+            "LPP2Percentage": 4.00,
+            "penaltyChargeCreationDate": "2022-10-30",
+            "communicationsDate": "2022-10-30",
+            "penaltyAmountAccruing": 246.9,
+            "penaltyChargeDueDate": "2022-10-30",
+            "principalChargeReference": "1234567890",
+            "principalChargeBillingFrom": "2022-10-30",
+            "principalChargeBillingTo": "2022-10-30",
+            "principalChargeMainTransaction": "4700",
+            "principalChargeDueDate": "2022-10-30"
+          }
+        ]
+      },
+      "breathingSpace": null
+    }
+  }
+}
+```
 
 ## Testing
 

@@ -18,26 +18,23 @@ package services
 
 import config.featureSwitches.FeatureSwitching
 import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser._
-
-
 import models.getFinancialDetails.MainTransactionEnum
-import models.getPenaltyDetails.appealInfo.{AppealInformationType, AppealLevelEnum, AppealStatusEnum}
-import models.getPenaltyDetails.breathingSpace.BreathingSpace
-import models.getPenaltyDetails.latePayment._
-import models.getPenaltyDetails.lateSubmission._
-import models.getPenaltyDetails.{GetPenaltyDetails, Totalisations}
+import models.penaltyDetails.appealInfo.{AppealInformationType, AppealLevelEnum, AppealStatusEnum}
+import models.penaltyDetails.breathingSpace.BreathingSpace
+import models.penaltyDetails.latePayment._
+import models.penaltyDetails.lateSubmission._
+import models.penaltyDetails.{PenaltyDetails, Totalisations}
 import org.scalatest.prop.TableDrivenPropertyChecks
 import play.api.http.Status
 import play.api.http.Status.{IM_A_TEAPOT, INTERNAL_SERVER_ERROR}
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import utils.{RegimeETMPWiremock, IntegrationSpecCommonBase}
 import models.{AgnosticEnrolmentKey, Regime, IdType, Id}
-import java.time.LocalDate
+import java.time.{LocalDate, Instant}
 
 class PenaltyDetailsServiceISpec extends IntegrationSpecCommonBase with RegimeETMPWiremock with FeatureSwitching with TableDrivenPropertyChecks {
   setEnabledFeatureSwitches()
   val service: PenaltyDetailsService = injector.instanceOf[PenaltyDetailsService]
-
    Table(
     ("Regime", "IdType", "Id"),
     (Regime("VATC"), IdType("VRN"), Id("123456789")),
@@ -47,7 +44,8 @@ class PenaltyDetailsServiceISpec extends IntegrationSpecCommonBase with RegimeET
     val enrolmentKey = AgnosticEnrolmentKey(regime, idType, id) 
 
     s"getDataFromPenaltyService for $regime" when {
-      val getPenaltyDetailsModel: GetPenaltyDetails = GetPenaltyDetails(
+      val getPenaltyDetailsModel: PenaltyDetails = PenaltyDetails(
+        mockInstant,
         totalisations = Some(
           Totalisations(
             LSPTotalValue = Some(200),
@@ -82,6 +80,7 @@ class PenaltyDetailsServiceISpec extends IntegrationSpecCommonBase with RegimeET
                   Seq(
                     LateSubmission(
                       lateSubmissionID = "001",
+                      incomeSource = None,
                       taxPeriod = Some("23AA"),
                       taxPeriodStartDate = Some(LocalDate.of(2022, 1, 1)),
                       taxPeriodEndDate = Some(LocalDate.of(2022, 12, 31)),
@@ -109,7 +108,7 @@ class PenaltyDetailsServiceISpec extends IntegrationSpecCommonBase with RegimeET
           )
         ),
         latePaymentPenalty = Some(LatePaymentPenalty(
-          details = Some(
+          lppDetails = Some(
             Seq(
               LPPDetails(
                 penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
@@ -135,14 +134,12 @@ class PenaltyDetailsServiceISpec extends IntegrationSpecCommonBase with RegimeET
                 LPP1HRPercentage = Some(BigDecimal(2.00).setScale(2)),
                 penaltyChargeDueDate = Some(LocalDate.of(2022, 10, 30)),
                 principalChargeLatestClearing = None,
-                metadata = LPPDetailsMetadata(
-                  timeToPay = Some(Seq(TimeToPay(
-                    TTPStartDate = Some(LocalDate.of(2022, 1, 1)),
-                    TTPEndDate = Some(LocalDate.of(2022, 12, 31))
-                  ))),
-                  principalChargeDocNumber = Some("DOC1"),
-                  principalChargeSubTransaction = Some("SUB1")
-                ),
+                timeToPay = Some(Seq(TimeToPay(
+                  ttpStartDate = Some(LocalDate.of(2022, 1, 1)),
+                  ttpEndDate = Some(LocalDate.of(2022, 12, 31))
+                ))),
+                principalChargeDocNumber = Some("DOC1"),
+                principalChargeSubTransaction = Some("SUB1"),
                 penaltyAmountAccruing = BigDecimal(99.99),
                 principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
                 vatOutstandingAmount = None
@@ -154,27 +151,31 @@ class PenaltyDetailsServiceISpec extends IntegrationSpecCommonBase with RegimeET
       )
 
       s"call the connector and return a successful result" in {
-        mockStubResponseForGetPenaltyDetails(Status.OK, regime, idType, id)
+        mockStubResponseForPenaltyDetails(Status.OK, regime, idType, id)
         val result = await(service.getDataFromPenaltyService(enrolmentKey))
         result.isRight shouldBe true
-        result.toOption.get shouldBe GetPenaltyDetailsSuccessResponse(getPenaltyDetailsModel)
+        result.toOption.get shouldBe PenaltyDetailsSuccessResponse(getPenaltyDetailsModel)
       }
 
-      s"the response body is not well formed: $GetPenaltyDetailsMalformed" in {
-        mockStubResponseForGetPenaltyDetails(Status.OK, regime, idType, id, body = Some(
+      s"the response body is not well formed: $PenaltyDetailsMalformed" in {
+        mockStubResponseForPenaltyDetails(Status.OK, regime, idType, id, body = Some(
           """
           {
-           "lateSubmissionPenalty": {
-             "summary": {}
+           "success": {
+             "penaltyData": {
+               "lsp": {
+                 "lspSummary": {}
+               }
              }
            }
+          }
           """))
         val result = await(service.getDataFromPenaltyService(enrolmentKey))
         result.isLeft shouldBe true
-        result.left.getOrElse(GetPenaltyDetailsFailureResponse(IM_A_TEAPOT)) shouldBe GetPenaltyDetailsMalformed
+        result.left.getOrElse(PenaltyDetailsFailureResponse(IM_A_TEAPOT)) shouldBe PenaltyDetailsMalformed
       }
 
-      s"the response body contains NO_DATA_FOUND for 404 response - returning $GetPenaltyDetailsNoContent" in {
+      s"the response body contains NO_DATA_FOUND for 404 response - returning $PenaltyDetailsNoContent" in {
         val noDataFoundBody =
           """
             |{
@@ -186,17 +187,17 @@ class PenaltyDetailsServiceISpec extends IntegrationSpecCommonBase with RegimeET
             | ]
             |}
             |""".stripMargin
-        mockStubResponseForGetPenaltyDetails(Status.NOT_FOUND, regime, idType, id, body = Some(noDataFoundBody))
+        mockStubResponseForPenaltyDetails(Status.NOT_FOUND, regime, idType, id, body = Some(noDataFoundBody))
         val result = await(service.getDataFromPenaltyService(enrolmentKey))
         result.isLeft shouldBe true
-        result.left.getOrElse(GetPenaltyDetailsFailureResponse(IM_A_TEAPOT)) shouldBe GetPenaltyDetailsNoContent
+        result.left.getOrElse(PenaltyDetailsFailureResponse(IM_A_TEAPOT)) shouldBe PenaltyDetailsNoContent
       }
 
-      s"an unknown response is returned from the connector - $GetPenaltyDetailsFailureResponse" in {
-        mockStubResponseForGetPenaltyDetails(Status.IM_A_TEAPOT, regime, idType, id)
+      s"an unknown response is returned from the connector - $PenaltyDetailsFailureResponse" in {
+        mockStubResponseForPenaltyDetails(Status.IM_A_TEAPOT, regime, idType, id)
         val result = await(service.getDataFromPenaltyService(enrolmentKey))
         result.isLeft shouldBe true
-        result.left.getOrElse(GetPenaltyDetailsFailureResponse(INTERNAL_SERVER_ERROR)) shouldBe GetPenaltyDetailsFailureResponse(Status.IM_A_TEAPOT)
+        result.left.getOrElse(PenaltyDetailsFailureResponse(INTERNAL_SERVER_ERROR)) shouldBe PenaltyDetailsFailureResponse(Status.IM_A_TEAPOT)
       }
     }
   }

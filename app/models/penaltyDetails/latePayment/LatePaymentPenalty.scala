@@ -14,15 +14,12 @@
  * limitations under the License.
  */
 
-package models.getPenaltyDetails.lateSubmission
+package models.penaltyDetails.latePayment
 
 import play.api.libs.json.{Format, Json}
 
-case class LateSubmissionPenalty(
-                                  summary: LSPSummary,
-                                  details: Seq[LSPDetails]
-                                )
+case class LatePaymentPenalty(lppDetails: Option[Seq[LPPDetails]], ManualLPPIndicator: Option[Boolean] = None)
 
-object LateSubmissionPenalty {
-  implicit val format: Format[LateSubmissionPenalty] = Json.format[LateSubmissionPenalty]
+object LatePaymentPenalty {
+  implicit val format: Format[LatePaymentPenalty] = Json.format[LatePaymentPenalty]
 }

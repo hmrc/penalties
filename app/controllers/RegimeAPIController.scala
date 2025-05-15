@@ -22,15 +22,15 @@ import connectors.getPenaltyDetails.PenaltyDetailsConnector
 import connectors.parsers.getFinancialDetails.FinancialDetailsParser
 import connectors.parsers.getFinancialDetails.FinancialDetailsParser.GetFinancialDetailsSuccessResponse
 import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser
-import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser.GetPenaltyDetailsSuccessResponse
+import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser.PenaltyDetailsSuccessResponse
 import controllers.auth.AuthAction
 import models.{AgnosticEnrolmentKey, Id, IdType, Regime}
 import models.api.APIModel
 import models.auditing.{ThirdParty1812APIRetrievalRegimeAuditModel, ThirdPartyAPI1811RetrievalRegimeAuditModel, UserHasPenaltyRegimeAuditModel}
 import models.getFinancialDetails.FinancialDetails
-import models.getPenaltyDetails.GetPenaltyDetails
+import models.penaltyDetails.PenaltyDetails
 import play.api.Configuration
-import play.api.libs.json.{JsString, JsValue, Json}
+import play.api.libs.json.{JsString, JsValue, Json, JsError, JsSuccess}
 import play.api.mvc._
 import services.auditing.AuditService
 import services.{APIService, FinancialDetailsService, LoggingContext, PenaltyDetailsService, RegimeFilterService}
@@ -42,9 +42,11 @@ import utils.{DateHelper, PagerDutyHelper}
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
+import java.time.Instant
+import services.RegimeAPIService
 
 class RegimeAPIController @Inject()(auditService: AuditService,
-                                    apiService: APIService,
+                                    apiService: RegimeAPIService,
                                     getPenaltyDetailsService: PenaltyDetailsService,
                                     getFinancialDetailsService: FinancialDetailsService,
                                     getFinancialDetailsConnector: FinancialDetailsConnector,
@@ -57,41 +59,39 @@ class RegimeAPIController @Inject()(auditService: AuditService,
   def getSummaryData(regime: Regime, idType: IdType, id: Id): Action[AnyContent] = authAction.async {
     implicit request => {
       val agnosticEnrolmenKey = AgnosticEnrolmentKey(regime, idType, id)
-      // composeEnrolmentKey(regime, id).andThen { enrolmentKey =>
-        // import enrolmentKey._
         getPenaltyDetailsService.getDataFromPenaltyService(agnosticEnrolmenKey).flatMap {
           _.fold({
-            case PenaltyDetailsParser.GetPenaltyDetailsFailureResponse(status) if status == BAD_REQUEST => {
+            case PenaltyDetailsParser.PenaltyDetailsFailureResponse(status, _) if status == BAD_REQUEST => {
               //logger.info(s"[RegimeAPIController][getSummaryDataForVRN] - 1812 call (VATVC/BTA API) returned $status for VRN: $vrn")
               Future(NotFound(s"A downstream call returned 400 for ${agnosticEnrolmenKey.idType.value}: ${agnosticEnrolmenKey.id.value}"))
             }
-            case PenaltyDetailsParser.GetPenaltyDetailsFailureResponse(status) if status == NOT_FOUND => {
+            case PenaltyDetailsParser.PenaltyDetailsFailureResponse(status, _) if status == NOT_FOUND => {
               //logger.info(s"[RegimeAPIController][getSummaryDataForVRN] - 1812 call (VATVC/BTA API) returned $status for VRN: $vrn")
               Future(NotFound(s"A downstream call returned 404 for ${agnosticEnrolmenKey.idType.value}: ${agnosticEnrolmenKey.id.value}"))
             }
-            case PenaltyDetailsParser.GetPenaltyDetailsFailureResponse(status) if status == UNPROCESSABLE_ENTITY => {
+            case PenaltyDetailsParser.PenaltyDetailsFailureResponse(status, _) if status == UNPROCESSABLE_ENTITY => {
               //Temporary measure to avoid 422 causing issues
-              val responsePayload = GetPenaltyDetailsSuccessResponse(GetPenaltyDetails(totalisations = None, lateSubmissionPenalty = None, latePaymentPenalty = None, breathingSpace = None))
+              val responsePayload = PenaltyDetailsSuccessResponse(PenaltyDetails(Instant.now(), totalisations = None, lateSubmissionPenalty = None, latePaymentPenalty = None, breathingSpace = None))
               //logger.info(s"[RegimeAPIController][getSummaryDataForVRN] - 1812 call (VATVC/BTA API) returned $status for VRN: $vrn - Overriding response")
               Future(returnResponseForAPI(responsePayload.penaltyDetails, agnosticEnrolmenKey))
             }
-            case PenaltyDetailsParser.GetPenaltyDetailsFailureResponse(status) => {
+            case PenaltyDetailsParser.PenaltyDetailsFailureResponse(status, _) => {
               //logger.info(s"[RegimeAPIController][getSummaryDataForVRN] - 1812 call (VATVC/BTA API) returned an unexpected status: $status")
               Future(InternalServerError(s"A downstream call returned an unexpected status: $status for $agnosticEnrolmenKey"))
             }
-            case PenaltyDetailsParser.GetPenaltyDetailsMalformed => {
+            case PenaltyDetailsParser.PenaltyDetailsMalformed => {
               PagerDutyHelper.log("getSummaryDataForVRN", MALFORMED_RESPONSE_FROM_1812_API)
               //logger.error(s"[RegimeAPIController][getSummaryDataForVRN] - 1812 call (VATVC/BTA API) returned invalid body - failed to parse penalty details response for VRN: $vrn")
               Future(InternalServerError(s"We were unable to parse penalty data."))
             }
-            case PenaltyDetailsParser.GetPenaltyDetailsNoContent => {
+            case PenaltyDetailsParser.PenaltyDetailsNoContent => {
               logger.info(s"[RegimeAPIController][getSummaryDataForVRN] - 1812 call (VATVC/BTA API) returned no content for $agnosticEnrolmenKey")
               Future(NoContent)
             }
           },
             success => {
               logger.info(s"[RegimeAPIController][getSummaryDataForVRN] - 1812 call (VATVC/BTA API) returned 200 for $agnosticEnrolmenKey")
-              val penaltyDetails = success.asInstanceOf[GetPenaltyDetailsSuccessResponse].penaltyDetails
+              val penaltyDetails = success.asInstanceOf[PenaltyDetailsSuccessResponse].penaltyDetails
               if (penaltyDetails.latePaymentPenalty.exists(LPP =>
                 LPP.ManualLPPIndicator.getOrElse(false))) {
                 logger.info(s"[RegimeAPIController][getSummaryDataForVRN] - 1812 data has ManualLPPIndicator set to true, calling 1811")
@@ -135,7 +135,7 @@ class RegimeAPIController @Inject()(auditService: AuditService,
     }
   }
 
-  private def returnResponseForAPI(penaltyDetails: GetPenaltyDetails, enrolmentKey: AgnosticEnrolmentKey,
+  private def returnResponseForAPI(penaltyDetails: PenaltyDetails, enrolmentKey: AgnosticEnrolmentKey,
                                    financialDetails: Option[FinancialDetails] = None)(implicit request: Request[_]): Result = {
     val pointsTotal = penaltyDetails.lateSubmissionPenalty.map(_.summary.activePenaltyPoints).getOrElse(0)
     val penaltyAmountWithEstimateStatus = apiService.findEstimatedPenaltiesAmount(penaltyDetails)
@@ -256,15 +256,23 @@ class RegimeAPIController @Inject()(auditService: AuditService,
     }
   }
 
-  private def filterResponseBody(resBody: JsValue, enrolmentKey: AgnosticEnrolmentKey, method: String): JsValue = {
-    val penaltiesDetails = GetPenaltyDetails.format.reads(resBody)
-    implicit val loggingContext = LoggingContext(
-     "APIConnector",
-      method,
-      enrolmentKey.toString
-    )
-    GetPenaltyDetails.format.writes(filterService.filterEstimatedLPP1DuringPeriodOfFamiliarisation(
-      filterService.filterPenaltiesWith9xAppealStatus(penaltiesDetails.get)
-    ))
+ private def filterResponseBody(resBody: JsValue, enrolmentKey: AgnosticEnrolmentKey, method: String): JsValue = {
+  implicit val loggingContext: LoggingContext = LoggingContext(
+    "APIConnector",
+    method,
+    enrolmentKey.toString
+  )
+
+  PenaltyDetails.format.reads(resBody) match {
+    case JsSuccess(penaltiesDetails, _) =>
+      val filtered = filterService.filterEstimatedLPP1DuringPeriodOfFamiliarisation(
+        filterService.filterPenaltiesWith9xAppealStatus(penaltiesDetails)
+      )
+      PenaltyDetails.format.writes(filtered)
+
+    case JsError(errors) =>
+      logger.error(s"[filterResponseBody] Failed to parse PenaltyDetails JSON: $errors")
+      resBody // return original unfiltered body if parsing fails
   }
+}
 }

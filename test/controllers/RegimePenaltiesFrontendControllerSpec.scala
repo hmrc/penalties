@@ -16,12 +16,13 @@
 
 package controllers
 
-import base.{LPPDetailsBase, LSPDetailsBase, LogCapturing, SpecBase}
-import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser.{GetPenaltyDetailsFailureResponse, GetPenaltyDetailsMalformed, GetPenaltyDetailsSuccessResponse}
+import base.{RegimeLPPDetailsBase, LSPDetailsBase, LogCapturing, SpecBase}
+import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser.{PenaltyDetailsFailureResponse, PenaltyDetailsMalformed, PenaltyDetailsSuccessResponse}
 import controllers.auth.AuthAction
 import models.getFinancialDetails.MainTransactionEnum.{VATReturnFirstLPP, VATReturnSecondLPP}
-import models.getPenaltyDetails.latePayment._
-import models.getPenaltyDetails.{GetPenaltyDetails, Totalisations}
+import models.penaltyDetails.{PenaltyDetails, Totalisations}
+import models.penaltyDetails.latePayment.{LPPPenaltyStatusEnum, TimeToPay}
+import models.penaltyDetails.latePayment.LatePaymentPenalty
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
 import play.api.http.Status
@@ -32,16 +33,18 @@ import services.{PenaltyDetailsService, RegimePenaltiesFrontendService}
 import utils.AuthActionMock
 import utils.Logger.logger
 import utils.PagerDutyHelper.PagerDutyKeys
-
-import java.time.LocalDate
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import models.{AgnosticEnrolmentKey, Id, IdType, Regime}
+import java.time.LocalDate
+import java.time.Instant
 
-class RegimePenaltiesFrontendControllerSpec extends SpecBase with LogCapturing with LPPDetailsBase with LSPDetailsBase {
-  val mockGetPenaltyDetailsService: PenaltyDetailsService = mock(classOf[PenaltyDetailsService])
+class RegimePenaltiesFrontendControllerSpec extends SpecBase with LogCapturing with RegimeLPPDetailsBase with LSPDetailsBase {
+  val mockPenaltyDetailsService: PenaltyDetailsService = mock(classOf[PenaltyDetailsService])
   val mockPenaltiesFrontendService: RegimePenaltiesFrontendService = mock(classOf[RegimePenaltiesFrontendService])
   val mockAuthAction: AuthAction = injector.instanceOf(classOf[AuthActionMock])
+
+  val instant: Instant = Instant.now()
 
   val regime = Regime("VATC") 
   val idType = IdType("VRN")
@@ -54,10 +57,10 @@ class RegimePenaltiesFrontendControllerSpec extends SpecBase with LogCapturing w
   )
 
   class Setup(isFSEnabled: Boolean = true) {
-    reset(mockGetPenaltyDetailsService)
+    reset(mockPenaltyDetailsService)
     reset(mockPenaltiesFrontendService)
     val controller: RegimePenaltiesFrontendController = new RegimePenaltiesFrontendController(
-      mockGetPenaltyDetailsService,
+      mockPenaltyDetailsService,
       mockPenaltiesFrontendService,
       stubControllerComponents(),
       mockAuthAction
@@ -66,15 +69,15 @@ class RegimePenaltiesFrontendControllerSpec extends SpecBase with LogCapturing w
 
   "use API 1812 data and combine with API 1811 data" must {
     s"return ISE (${Status.INTERNAL_SERVER_ERROR}) when the 1812 call fails" in new Setup(isFSEnabled = true) {
-      when(mockGetPenaltyDetailsService.getDataFromPenaltyService(ArgumentMatchers.any())(ArgumentMatchers.any()))
-        .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(Status.INTERNAL_SERVER_ERROR))))
+      when(mockPenaltyDetailsService.getDataFromPenaltyService(ArgumentMatchers.any())(ArgumentMatchers.any()))
+        .thenReturn(Future.successful(Left(PenaltyDetailsFailureResponse(Status.INTERNAL_SERVER_ERROR))))
       val result = controller.getPenaltiesData(regime, idType, id, Some(""))(fakeRequest)
       status(result) shouldBe Status.INTERNAL_SERVER_ERROR
     }
 
     s"return ISE (${Status.INTERNAL_SERVER_ERROR}) when the 1812 call response body is malformed" in new Setup(isFSEnabled = true) {
-      when(mockGetPenaltyDetailsService.getDataFromPenaltyService(ArgumentMatchers.any())(ArgumentMatchers.any()))
-        .thenReturn(Future.successful(Left(GetPenaltyDetailsMalformed)))
+      when(mockPenaltyDetailsService.getDataFromPenaltyService(ArgumentMatchers.any())(ArgumentMatchers.any()))
+        .thenReturn(Future.successful(Left(PenaltyDetailsMalformed)))
       withCaptureOfLoggingFrom(logger) {
         logs => {
           val result = await(controller.getPenaltiesData(regime, idType, id, Some(""))(fakeRequest))
@@ -85,7 +88,8 @@ class RegimePenaltiesFrontendControllerSpec extends SpecBase with LogCapturing w
     }
 
     s"return the service result for the API 1811 call" in new Setup(isFSEnabled = true) {
-      val getPenaltyDetails: GetPenaltyDetails = GetPenaltyDetails(
+      val getPenaltyDetails: PenaltyDetails = PenaltyDetails(
+        processingDate = instant,
         totalisations = None,
         lateSubmissionPenalty = None,
         latePaymentPenalty = Some(
@@ -102,8 +106,8 @@ class RegimePenaltiesFrontendControllerSpec extends SpecBase with LogCapturing w
         ),
         breathingSpace = None
       )
-      when(mockGetPenaltyDetailsService.getDataFromPenaltyService(ArgumentMatchers.any())(ArgumentMatchers.any()))
-        .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetails))))
+      when(mockPenaltyDetailsService.getDataFromPenaltyService(ArgumentMatchers.any())(ArgumentMatchers.any()))
+        .thenReturn(Future.successful(Right(PenaltyDetailsSuccessResponse(getPenaltyDetails))))
       when(mockPenaltiesFrontendService.handleAndCombineGetFinancialDetailsData(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
         .thenReturn(Future.successful(InternalServerError("")))
       val result = controller.getPenaltiesData(regime, idType, id, Some("123456789"))(fakeRequest)
@@ -112,7 +116,8 @@ class RegimePenaltiesFrontendControllerSpec extends SpecBase with LogCapturing w
     }
 
     s"return OK based on the result of the service call" in new Setup(isFSEnabled = true) {
-      val getPenaltyDetails: GetPenaltyDetails = GetPenaltyDetails(
+      val getPenaltyDetails: PenaltyDetails = PenaltyDetails(
+        processingDate = instant,
         totalisations = None,
         lateSubmissionPenalty = None,
         latePaymentPenalty = Some(
@@ -149,30 +154,33 @@ class RegimePenaltiesFrontendControllerSpec extends SpecBase with LogCapturing w
               Seq(
                 lpp2.copy(penaltyStatus = LPPPenaltyStatusEnum.Posted,
                   penaltyChargeReference = Some("123456790"),
-                  metadata = LPPDetailsMetadata(
-                    mainTransaction = Some(VATReturnSecondLPP),
-                    timeToPay = Some(Seq(TimeToPay(
-                      TTPStartDate = Some(LocalDate.of(2022, 1, 1)),
-                      TTPEndDate = Some(LocalDate.of(2022, 12, 31))
-                    )))
-                  )
+                  principalChargeDocNumber = Some("123456790"),
+                  principalChargeSubTransaction = Some("123456790"),
+                  principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
+                  principalChargeMainTransaction = VATReturnSecondLPP,
+                  timeToPay = Some(Seq(TimeToPay(
+                    ttpStartDate = Some(LocalDate.of(2022, 1, 1)),
+                    ttpEndDate = Some(LocalDate.of(2022, 12, 31))
+                  )))
                 ),
                 lpp1PrincipalChargeDueToday.copy(penaltyStatus = LPPPenaltyStatusEnum.Posted,
                   penaltyChargeReference = Some("123456789"),
-                  metadata = LPPDetailsMetadata(
-                    mainTransaction = Some(VATReturnFirstLPP),
-                    timeToPay = Some(Seq(TimeToPay(
-                      TTPStartDate = Some(LocalDate.of(2022, 1, 1)),
-                      TTPEndDate = Some(LocalDate.of(2022, 12, 31))
-                    )))
-                  ))
+                  principalChargeDocNumber = Some("123456789"),
+                  principalChargeSubTransaction = Some("123456789"),
+                  principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
+                  principalChargeMainTransaction = VATReturnFirstLPP,
+                  timeToPay = Some(Seq(TimeToPay(
+                    ttpStartDate = Some(LocalDate.of(2022, 1, 1)),
+                    ttpEndDate = Some(LocalDate.of(2022, 12, 31))
+                  )))
+                  )
               )
             )
           )
         )
       )
-      when(mockGetPenaltyDetailsService.getDataFromPenaltyService(ArgumentMatchers.any())(ArgumentMatchers.any()))
-        .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetails))))
+      when(mockPenaltyDetailsService.getDataFromPenaltyService(ArgumentMatchers.any())(ArgumentMatchers.any()))
+        .thenReturn(Future.successful(Right(PenaltyDetailsSuccessResponse(getPenaltyDetails))))
       when(mockPenaltiesFrontendService.handleAndCombineGetFinancialDetailsData(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
         .thenReturn(Future.successful(Ok(Json.toJson(penaltyDetailsAfterCombining))))
       val result = controller.getPenaltiesData(regime, idType, id, Some("123456789"))(fakeRequest)

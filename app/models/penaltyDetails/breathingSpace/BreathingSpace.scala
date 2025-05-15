@@ -14,15 +14,14 @@
  * limitations under the License.
  */
 
-package models.getPenaltyDetails.lateSubmission
+package models.penaltyDetails.breathingSpace
 
-import play.api.libs.json.{Format, Json}
+import play.api.libs.json.{Json, OFormat}
 
-case class LateSubmissionPenalty(
-                                  summary: LSPSummary,
-                                  details: Seq[LSPDetails]
-                                )
+import java.time.LocalDate
 
-object LateSubmissionPenalty {
-  implicit val format: Format[LateSubmissionPenalty] = Json.format[LateSubmissionPenalty]
+case class BreathingSpace(BSStartDate: LocalDate, BSEndDate: LocalDate)
+
+object BreathingSpace {
+  implicit val format: OFormat[BreathingSpace] = Json.format[BreathingSpace]
 }

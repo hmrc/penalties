@@ -18,12 +18,15 @@ package connectors.getPenaltyDetails
 
 import config.AppConfig
 import config.featureSwitches.FeatureSwitching
-import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser.{GetPenaltyDetailsFailureResponse, GetPenaltyDetailsResponse}
 import models.{AgnosticEnrolmentKey}
 import play.api.Configuration
 import play.api.http.Status.INTERNAL_SERVER_ERROR
-import uk.gov.hmrc.http.HttpReads.Implicits._
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse, UpstreamErrorResponse}
+import uk.gov.hmrc.http.{
+  HeaderCarrier,
+  HttpClient,
+  HttpResponse,
+  UpstreamErrorResponse
+}
 import utils.Logger.logger
 import utils.PagerDutyHelper.PagerDutyKeys._
 import utils.{DateHelper, PagerDutyHelper}
@@ -32,57 +35,148 @@ import java.time.LocalDateTime
 import java.util.UUID.randomUUID
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
+import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser.PenaltyDetailsResponse
+import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser.PenaltyDetailsFailureResponse
+import java.time.format.DateTimeFormatter
+import java.time.temporal.ChronoUnit
+import java.time.Instant
+import uk.gov.hmrc.http.HttpReads
 
-class PenaltyDetailsConnector @Inject()(httpClient: HttpClient,
-                                        appConfig: AppConfig)
-                                       (implicit ec: ExecutionContext, val config: Configuration) extends FeatureSwitching {
+class PenaltyDetailsConnector @Inject() (
+    httpClient: HttpClient,
+    appConfig: AppConfig
+)(implicit ec: ExecutionContext, val config: Configuration)
+    extends FeatureSwitching {
 
-  private def headers: Seq[(String, String)] = {
-    val timeMachineDateAsDateTime: LocalDateTime = getTimeMachineDateTime
-    Seq(
-      "Authorization" -> s"Bearer ${appConfig.eiOutboundBearerToken}",
-      "CorrelationId" -> randomUUID().toString,
-      "Environment" -> appConfig.eisEnvironment,
-      "ReceiptDate" -> timeMachineDateAsDateTime.format(DateHelper.dateTimeFormatter)
-    ).filter(_._1.nonEmpty)
+implicit val throwingReads: HttpReads[HttpResponse] = new HttpReads[HttpResponse] {
+  override def read(method: String, url: String, response: HttpResponse): HttpResponse = {
+    if (response.status >= 400) throw UpstreamErrorResponse(response.body, response.status)
+    else response
   }
+}
 
-  def getPenaltyDetails(enrolmentKey: AgnosticEnrolmentKey)(implicit hc: HeaderCarrier): Future[GetPenaltyDetailsResponse] = {
+  def getPenaltyDetails(
+      enrolmentKey: AgnosticEnrolmentKey
+  )(implicit hc: HeaderCarrier): Future[PenaltyDetailsResponse] = {
     val url = appConfig.getRegimeAgnosticPenaltyDetailsUrl(enrolmentKey)
+    val headerCarrier = hc.copy(authorization = None)
+    val headers = buildHeadersV1
 
-    logger.debug(s"[PenaltyDetailsConnector][getPenaltyDetails][appConfig.getRegimeAgnosticPenaltyDetailsUrl($enrolmentKey)]- Calling GET $url \nHeaders: $headers")
 
-    httpClient.GET[GetPenaltyDetailsResponse](url, Seq.empty[(String, String)], headers).recover {
-      case e: UpstreamErrorResponse => {
-        PagerDutyHelper.logStatusCode("getPenaltyDetails", e.statusCode)(RECEIVED_4XX_FROM_1812_API, RECEIVED_5XX_FROM_1812_API)
-        logger.error(s"[PenaltyDetailsConnector][getPenaltyDetails] -" +
-          s" Received ${e.statusCode} status from API 1812 call - returning status to caller")
-        Left(GetPenaltyDetailsFailureResponse(e.statusCode))
+    logger.info(s"[getPenaltyDetails] Resolved URL: ${Option(url).getOrElse("null")}")
+    logger.debug(s"[getPenaltyDetails] Headers: $headers")
+    logger.debug(
+      s"[PenaltyDetailsConnector][getPenaltyDetails][appConfig.getRegimeAgnosticPenaltyDetailsUrl($enrolmentKey)]- Calling GET $url \nHeaders: $headers"
+    )
+
+    httpClient
+      .GET[PenaltyDetailsResponse](
+        url,
+        Seq.empty[(String, String)],
+        headers
+      ).map { response =>
+         logger.info(s"[getPenaltyDetails] Successful call to 1812 API")
+         response
       }
-      case e: Exception => {
-        PagerDutyHelper.log("getPenaltyDetails", UNKNOWN_EXCEPTION_CALLING_1812_API)
-        logger.error(s"[PenaltyDetailsConnector][getPenaltyDetails] -" +
-          s" An unknown exception occurred - returning 500 back to caller - message: ${e.getMessage}")
-        Left(GetPenaltyDetailsFailureResponse(INTERNAL_SERVER_ERROR))
+      .recover {
+        case e: UpstreamErrorResponse => {
+          PagerDutyHelper.logStatusCode("getPenaltyDetails", e.statusCode)(
+            RECEIVED_4XX_FROM_1812_API,
+            RECEIVED_5XX_FROM_1812_API
+          )
+          logger.error(
+            s"[PenaltyDetailsConnector][getPenaltyDetails] -" +
+              s" Received ${e.statusCode} status from API 1812 call - returning status to caller"
+          )
+          Left(PenaltyDetailsFailureResponse(e.statusCode))
+        }
+        case e: Exception => {
+          PagerDutyHelper.log(
+            "getPenaltyDetails",
+            UNKNOWN_EXCEPTION_CALLING_1812_API
+          )
+          logger.error(
+            s"[PenaltyDetailsConnector][getPenaltyDetails] -" +
+              s" An unknown exception occurred - returning 500 back to caller - message: ${e.getMessage}"
+          )
+          Left(PenaltyDetailsFailureResponse(INTERNAL_SERVER_ERROR))
+        }
       }
-    }
   }
 
-  def getPenaltyDetailsForAPI(enrolmentKey: AgnosticEnrolmentKey, dateLimit: Option[String])(implicit hc: HeaderCarrier): Future[HttpResponse] = {
-    val queryParam: String = s"${dateLimit.fold("")(dateLimit => s"?dateLimit=$dateLimit")}"
-    val url = appConfig.getRegimeAgnosticPenaltyDetailsUrl(enrolmentKey) + queryParam 
-    httpClient.GET[HttpResponse](url, headers = headers).recover {
+  def getPenaltyDetailsForAPI(
+      enrolmentKey: AgnosticEnrolmentKey,
+      dateLimit: Option[String]
+  )(implicit hc: HeaderCarrier): Future[HttpResponse] = {
+    val headerCarrier = hc.copy(authorization = None)
+
+    val url =
+      appConfig.getRegimeAgnosticPenaltyDetailsUrl(enrolmentKey, dateLimit)
+
+ logger.info(s"[getPenaltyDetailsForAPI] Resolved URL: ${Option(url).getOrElse("null")}")
+  logger.debug(s"[getPenaltyDetailsForAPI] Headers: ${buildHeadersV1}")
+
+    httpClient.GET[HttpResponse](
+      url, Seq.empty[(String, String)], headers = buildHeadersV1
+      )(throwingReads, implicitly, implicitly).recover {
       case e: UpstreamErrorResponse => {
-        logger.error(s"[PenaltyDetailsConnector][getPenaltyDetailsForAPI] -" +
-          s" Received ${e.statusCode} status from API 1812 call - returning status to caller")
+        logger.error(
+          s"[PenaltyDetailsConnector][getPenaltyDetailsForAPI] -" +
+            s" Received ${e.statusCode} status from API 1812 call - returning status to caller"
+        )
         HttpResponse(e.statusCode, e.message)
       }
       case e: Exception => {
-        PagerDutyHelper.log("getPenaltyDetailsForAPI", UNKNOWN_EXCEPTION_CALLING_1812_API)
-        logger.error(s"[PenaltyDetailsConnector][getPenaltyDetailsForAPI] -" +
-          s" An unknown exception occurred - returning 500 back to caller - message: ${e.getMessage}")
-        HttpResponse(INTERNAL_SERVER_ERROR, "An unknown exception occurred. Contact the Penalties team for more information.")
+        PagerDutyHelper
+          .log("getPenaltyDetailsForAPI", UNKNOWN_EXCEPTION_CALLING_1812_API)
+        logger.error(
+          s"[PenaltyDetailsConnector][getPenaltyDetailsForAPI] -" +
+            s" An unknown exception occurred - returning 500 back to caller - message: ${e.getMessage}"
+        )
+        HttpResponse(
+          INTERNAL_SERVER_ERROR,
+          "An unknown exception occurred. Contact the Penalties team for more information."
+        )
       }
     }
   }
+
+  private val requestIdPattern =
+    """.*([A-Za-z0-9]{8}-[A-Za-z0-9]{4}-[A-Za-z0-9]{4}-[A-Za-z0-9]{4}).*""".r
+
+  private val CorrelationIdHeader: String = "CorrelationId"
+  private val AuthorizationHeader: String = "Authorization"
+  private val xOriginatingSystemHeader: String = "X-Originating-System"
+  private val xReceiptDateHeader: String = "X-Receipt-Date"
+  private val xTransmittingSystemHeader: String = "X-Transmitting-System"
+
+  private def buildHeadersV1(implicit
+      hc: HeaderCarrier
+  ): Seq[(String, String)] =
+    Seq(
+      appConfig.hipServiceOriginatorIdKeyV1 -> appConfig.hipServiceOriginatorIdV1,
+      CorrelationIdHeader -> getCorrelationId(hc),
+      AuthorizationHeader -> s"Basic ${appConfig.hipAuthorisationToken}",
+      appConfig.hipEnvironmentHeader,
+      xOriginatingSystemHeader -> "MTDP",
+      xReceiptDateHeader -> DateTimeFormatter.ISO_INSTANT.format(
+        Instant.now().truncatedTo(ChronoUnit.SECONDS)
+      ),
+      xTransmittingSystemHeader -> "HIP"
+    )
+
+  def generateNewUUID: String = randomUUID.toString
+
+  def getCorrelationId(hc: HeaderCarrier): String =
+    hc.requestId match {
+      case Some(requestId) =>
+        requestId.value match {
+          case requestIdPattern(prefix) =>
+            val lastTwelveChars = generateNewUUID.takeRight(12)
+            prefix + "-" + lastTwelveChars
+          case _ => generateNewUUID
+        }
+      case _ => generateNewUUID
+    }
+
 }

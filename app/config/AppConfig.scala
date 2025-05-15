@@ -22,9 +22,12 @@ import play.api.Configuration
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 import javax.inject.{Inject, Singleton}
 import models.AgnosticEnrolmentKey
+import java.util.Base64
 
 @Singleton
 class AppConfig @Inject()(val config: Configuration, servicesConfig: ServicesConfig) extends FeatureSwitching {
+  import servicesConfig._
+
   val auditingEnabled: Boolean = config.get[Boolean]("auditing.enabled")
   val graphiteHost: String = config.get[String]("microservice.metrics.graphite.host")
 
@@ -57,6 +60,7 @@ class AppConfig @Inject()(val config: Configuration, servicesConfig: ServicesCon
   lazy val appName: String = config.get[String]("appName")
 
   lazy val eiOutboundBearerToken: String = config.get[String]("eis.outboundBearerToken")
+
   lazy val eisEnvironment: String = config.get[String]("eis.environment")
 
   lazy val desBearerToken: String = config.get[String]("des.outboundBearerToken")
@@ -140,12 +144,14 @@ class AppConfig @Inject()(val config: Configuration, servicesConfig: ServicesCon
     else etmpBase + "/penalty/details/"
   }
 
-  def getRegimeAgnosticPenaltyDetailsUrl(agnosticEnrolmenKey: AgnosticEnrolmentKey): String = {
+  def getRegimeAgnosticPenaltyDetailsUrl(agnosticEnrolmenKey: AgnosticEnrolmentKey, dateLimit: Option[String] = None): String = {
     val regime = agnosticEnrolmenKey.regime.value;
     val idType = agnosticEnrolmenKey.idType.value;
     val idValue = agnosticEnrolmenKey.id.value;
+    val dateLimitParam: String = dateLimit.map(dateLimit => s"&dateLimit=$dateLimit").getOrElse("")
+  
     if (!isEnabled(CallAPI1812ETMP)) stubBase + s"/penalties-stub/penalty/details/$regime/$idType/$idValue"
-    else etmpBase + s"/penalty/details/$regime/$idType/$idValue"
+    else hipBase + s"/RESTAdapter/cross-regime/taxpayer/penalties?taxRegime=$regime&idType=$idType&idNumber=$idValue$dateLimitParam"
   }
 
   def getFinancialDetailsVatUrl(vrn: String): String = {
@@ -167,15 +173,21 @@ class AppConfig @Inject()(val config: Configuration, servicesConfig: ServicesCon
     val idValue = agnosticEnrolmenKey.id.value;
     getComplianceDataUrl + s"${idType}/${idValue}/$regime?from=${fromDate}&to=$toDate" 
 
-    // s"${getComplianceDataUrl}${agnosticEnrolmenKey.idType.value}/${agnosticEnrolmenKey.id.value}/${agnosticEnrolmenKey.regime.value}?from=$fromDate&to=$toDate"
-  // def getComplianceData(vrn: String, fromDate: String, toDate: String): String = {
-  //   if (isEnabled(CallDES)) {
-  //     desBase + s"/enterprise/obligation-data/vrn/$vrn/VATC?from=$fromDate&to=$toDate"
-  //   } else {
-  //     stubBase + s"/penalties-stub/enterprise/obligation-data/vrn/$vrn/VATC?from=$fromDate&to=$toDate"
-  //   }
-  // }
-
   }
+
+
+
+  lazy val hipBase: String = servicesConfig.baseUrl("hip")
+  def hipSubmitUrl: String = hipBase + "/v1/penalty/appeal"
+
+  private val clientIdV1: String = getString("microservice.services.hip.client-id")
+  private val secretV1: String   = getString("microservice.services.hip.client-secret")
+  def hipAuthorisationToken: String = Base64.getEncoder.encodeToString(s"$clientIdV1:$secretV1".getBytes("UTF-8"))
+
+  val hipServiceOriginatorIdKeyV1: String = getString("microservice.services.hip.originator-id-key")
+  val hipServiceOriginatorIdV1: String    = getString("microservice.services.hip.originator-id-value")
+
+    lazy val hipEnvironmentHeader: (String, String) =
+    "Environment" -> getString("microservice.services.hip.environment")
 
 }

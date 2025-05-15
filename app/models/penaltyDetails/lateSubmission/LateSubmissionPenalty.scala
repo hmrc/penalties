@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-package models.getPenaltyDetails.lateSubmission
+package models.penaltyDetails.lateSubmission
 
-import play.api.libs.json.{Format, Json}
+import play.api.libs.json.{Json, Reads, OWrites, OFormat, JsPath}
+import play.api.libs.functional.syntax._
 
 case class LateSubmissionPenalty(
                                   summary: LSPSummary,
@@ -24,5 +25,17 @@ case class LateSubmissionPenalty(
                                 )
 
 object LateSubmissionPenalty {
-  implicit val format: Format[LateSubmissionPenalty] = Json.format[LateSubmissionPenalty]
+
+  implicit val reads: Reads[LateSubmissionPenalty] = (
+    (JsPath \ "lspSummary").read[LSPSummary] and
+      (JsPath \ "lspDetails").read[Seq[LSPDetails]]
+  )(LateSubmissionPenalty.apply _)
+
+
+  implicit val writes: OWrites[LateSubmissionPenalty] = (
+    (JsPath \ "lspSummary").write[LSPSummary] and
+      (JsPath \ "lspDetails").write[Seq[LSPDetails]]
+  )(unlift(LateSubmissionPenalty.unapply))
+
+  implicit val format: OFormat[LateSubmissionPenalty] = OFormat(reads, writes)
 }

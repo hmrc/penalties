@@ -20,13 +20,13 @@ import base.{LPPDetailsBase, LogCapturing, SpecBase}
 import config.AppConfig
 import config.featureSwitches.FeatureSwitching
 import connectors.getPenaltyDetails.PenaltyDetailsConnector
-import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser.{GetPenaltyDetailsFailureResponse, GetPenaltyDetailsMalformed, GetPenaltyDetailsNoContent, GetPenaltyDetailsResponse, GetPenaltyDetailsSuccessResponse}
+import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser.{PenaltyDetailsFailureResponse, PenaltyDetailsMalformed, PenaltyDetailsNoContent, PenaltyDetailsResponse, PenaltyDetailsSuccessResponse}
 import models.getFinancialDetails.MainTransactionEnum
-import models.getPenaltyDetails.appealInfo.{AppealInformationType, AppealLevelEnum, AppealStatusEnum}
-import models.getPenaltyDetails.breathingSpace.BreathingSpace
-import models.getPenaltyDetails.latePayment._
-import models.getPenaltyDetails.lateSubmission._
-import models.getPenaltyDetails.{GetPenaltyDetails, Totalisations}
+import models.penaltyDetails.appealInfo.{AppealInformationType, AppealLevelEnum, AppealStatusEnum}
+import models.penaltyDetails.breathingSpace.BreathingSpace
+import models.penaltyDetails.latePayment._
+import models.penaltyDetails.lateSubmission._
+import models.penaltyDetails.{PenaltyDetails, Totalisations}
 import org.mockito.ArgumentMatchers
 import org.mockito.ArgumentMatchers.any
 
@@ -41,16 +41,18 @@ import utils.Logger.logger
 import java.time.LocalDate
 import scala.concurrent.{ExecutionContext, Future}
 import models.{AgnosticEnrolmentKey, Id, IdType, Regime}
+import java.time.Instant
 
 class PenaltyDetailsServiceSpec extends SpecBase with LogCapturing with LPPDetailsBase {
   implicit val ec: ExecutionContext = ExecutionContext.Implicits.global
   implicit val hc: HeaderCarrier = HeaderCarrier()
-  val mockGetPenaltyDetailsConnector: PenaltyDetailsConnector = mock(classOf[PenaltyDetailsConnector])
+  val mockPenaltyDetailsConnector: PenaltyDetailsConnector = mock(classOf[PenaltyDetailsConnector])
   val vrn123456789: AgnosticEnrolmentKey = AgnosticEnrolmentKey(
     Regime("VATC"), 
     IdType("VAT"),
     Id("123456789")
   )
+  val instant = Instant.now()
 
   class Setup(withRealConfig: Boolean = true) {
     implicit val mockConfig: Configuration = mock(classOf[Configuration])
@@ -65,15 +67,16 @@ class PenaltyDetailsServiceSpec extends SpecBase with LogCapturing with LPPDetai
     sys.props -= featureSwitching.ESTIMATED_LPP1_FILTER_END_DATE
 
     val mockAppConfig: AppConfig = new AppConfig(mockConfig, mockServicesConfig)
-    val service = new PenaltyDetailsService(mockGetPenaltyDetailsConnector, filterService)
+    val service = new PenaltyDetailsService(mockPenaltyDetailsConnector, filterService)
 
-    reset(mockGetPenaltyDetailsConnector)
+    reset(mockPenaltyDetailsConnector)
     reset(mockConfig)
     reset(mockServicesConfig)
   }
 
   "getDataFromPenaltyServiceForVATCVRN" should {
-    val mockGetPenaltyDetailsResponseAsModel: GetPenaltyDetails = GetPenaltyDetails(
+    val mockPenaltyDetailsResponseAsModel: PenaltyDetails = PenaltyDetails(
+      processingDate = instant,
       totalisations = Some(
         Totalisations(
           LSPTotalValue = Some(200),
@@ -108,6 +111,7 @@ class PenaltyDetailsServiceSpec extends SpecBase with LogCapturing with LPPDetai
                 Seq(
                   LateSubmission(
                     lateSubmissionID = "001",
+                    incomeSource = None,
                     taxPeriod = Some("23AA"),
                     taxPeriodStartDate = Some(LocalDate.of(2022, 1, 1)),
                     taxPeriodEndDate = Some(LocalDate.of(2022, 12, 31)),
@@ -133,7 +137,7 @@ class PenaltyDetailsServiceSpec extends SpecBase with LogCapturing with LPPDetai
         )
       ),
       latePaymentPenalty = Some(LatePaymentPenalty(
-        details = Some(
+        lppDetails = Some(
           Seq(
             LPPDetails(
               penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
@@ -158,13 +162,9 @@ class PenaltyDetailsServiceSpec extends SpecBase with LogCapturing with LPPDetai
               LPP1LRPercentage = Some(BigDecimal(2.00).setScale(2)),
               LPP1HRPercentage = Some(BigDecimal(2.00).setScale(2)),
               penaltyChargeDueDate = Some(LocalDate.of(2022, 10, 30)),
+              principalChargeDocNumber = None,
               principalChargeLatestClearing = None,
-              metadata = LPPDetailsMetadata(
-                timeToPay = Some(Seq(TimeToPay(
-                  TTPStartDate = Some(LocalDate.of(2022, 1, 1)),
-                  TTPEndDate = Some(LocalDate.of(2022, 12, 31))
-                )))
-              ),
+              principalChargeSubTransaction = None,
               penaltyAmountAccruing = BigDecimal(144.21),
               principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
               vatOutstandingAmount = Some(BigDecimal(123.45))
@@ -177,59 +177,59 @@ class PenaltyDetailsServiceSpec extends SpecBase with LogCapturing with LPPDetai
       ))
     )
 
-    s"call the connector and return a $GetPenaltyDetailsSuccessResponse when the request is successful" in new Setup {
-      when(mockGetPenaltyDetailsConnector.getPenaltyDetails(ArgumentMatchers.eq(vrn123456789))(any()))
-        .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(mockGetPenaltyDetailsResponseAsModel))))
+    s"call the connector and return a $PenaltyDetailsSuccessResponse when the request is successful" in new Setup {
+      when(mockPenaltyDetailsConnector.getPenaltyDetails(ArgumentMatchers.eq(vrn123456789))(any()))
+        .thenReturn(Future.successful(Right(PenaltyDetailsSuccessResponse(mockPenaltyDetailsResponseAsModel))))
 
       featureSwitching.setEstimatedLPP1FilterEndDate(Some(LocalDate.of(2022, 10, 28)))
 
-      val result: GetPenaltyDetailsResponse = await(service.getDataFromPenaltyService(vrn123456789))
+      val result: PenaltyDetailsResponse = await(service.getDataFromPenaltyService(vrn123456789))
 
       result.isRight shouldBe true
-      result.toOption.get shouldBe GetPenaltyDetailsSuccessResponse(mockGetPenaltyDetailsResponseAsModel)
+      result.toOption.get shouldBe PenaltyDetailsSuccessResponse(mockPenaltyDetailsResponseAsModel)
     }
 
-    s"return $GetPenaltyDetailsMalformed when the response body is malformed" in new Setup {
-      when(mockGetPenaltyDetailsConnector.getPenaltyDetails(ArgumentMatchers.eq(vrn123456789))(any()))
-        .thenReturn(Future.successful(Left(GetPenaltyDetailsMalformed)))
+    s"return $PenaltyDetailsMalformed when the response body is malformed" in new Setup {
+      when(mockPenaltyDetailsConnector.getPenaltyDetails(ArgumentMatchers.eq(vrn123456789))(any()))
+        .thenReturn(Future.successful(Left(PenaltyDetailsMalformed)))
       withCaptureOfLoggingFrom(logger) {
         logs => {
-          val result: GetPenaltyDetailsResponse = await(service.getDataFromPenaltyService(vrn123456789))
+          val result: PenaltyDetailsResponse = await(service.getDataFromPenaltyService(vrn123456789))
           result.isLeft shouldBe true
-          result.left.getOrElse(GetPenaltyDetailsFailureResponse(INTERNAL_SERVER_ERROR)) shouldBe GetPenaltyDetailsMalformed
+          result.left.getOrElse(PenaltyDetailsFailureResponse(INTERNAL_SERVER_ERROR)) shouldBe PenaltyDetailsMalformed
           logs.map(_.getMessage) should contain ("[PenaltyDetailsService][getDataFromPenaltyService][VATC] - Failed to parse HTTP response into model for VATC~VAT~123456789")
         }
       }
     }
 
-    s"return $GetPenaltyDetailsNoContent when the response body contains NO_DATA_FOUND" in new Setup {
-      when(mockGetPenaltyDetailsConnector.getPenaltyDetails(ArgumentMatchers.eq(vrn123456789))(any()))
-        .thenReturn(Future.successful(Left(GetPenaltyDetailsNoContent)))
+    s"return $PenaltyDetailsNoContent when the response body contains NO_DATA_FOUND" in new Setup {
+      when(mockPenaltyDetailsConnector.getPenaltyDetails(ArgumentMatchers.eq(vrn123456789))(any()))
+        .thenReturn(Future.successful(Left(PenaltyDetailsNoContent)))
       withCaptureOfLoggingFrom(logger) {
         logs => {
-          val result: GetPenaltyDetailsResponse = await(service.getDataFromPenaltyService(vrn123456789))
+          val result: PenaltyDetailsResponse = await(service.getDataFromPenaltyService(vrn123456789))
           result.isLeft shouldBe true
-          result.left.getOrElse(GetPenaltyDetailsFailureResponse(INTERNAL_SERVER_ERROR)) shouldBe GetPenaltyDetailsNoContent
-          logs.map(_.getMessage) should contain ("[PenaltyDetailsService][getDataFromPenaltyService][VATC] - Got a 404 response and no data was found for GetPenaltyDetails call")
+          result.left.getOrElse(PenaltyDetailsFailureResponse(INTERNAL_SERVER_ERROR)) shouldBe PenaltyDetailsNoContent
+          logs.map(_.getMessage) should contain ("[PenaltyDetailsService][getDataFromPenaltyService][VATC] - Got a 404 response and no data was found for PenaltyDetails call")
         }
       }
     }
 
-    s"return $GetPenaltyDetailsFailureResponse when the connector receives an unmatched status code" in new Setup {
-      when(mockGetPenaltyDetailsConnector.getPenaltyDetails(ArgumentMatchers.eq(vrn123456789))(any()))
-        .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(IM_A_TEAPOT))))
+    s"return $PenaltyDetailsFailureResponse when the connector receives an unmatched status code" in new Setup {
+      when(mockPenaltyDetailsConnector.getPenaltyDetails(ArgumentMatchers.eq(vrn123456789))(any()))
+        .thenReturn(Future.successful(Left(PenaltyDetailsFailureResponse(IM_A_TEAPOT))))
       withCaptureOfLoggingFrom(logger) {
         logs => {
-          val result: GetPenaltyDetailsResponse = await(service.getDataFromPenaltyService(vrn123456789))
+          val result: PenaltyDetailsResponse = await(service.getDataFromPenaltyService(vrn123456789))
           result.isLeft shouldBe true
-          result.left.getOrElse(GetPenaltyDetailsFailureResponse(INTERNAL_SERVER_ERROR)) shouldBe GetPenaltyDetailsFailureResponse(IM_A_TEAPOT)
+          result.left.getOrElse(PenaltyDetailsFailureResponse(INTERNAL_SERVER_ERROR)) shouldBe PenaltyDetailsFailureResponse(IM_A_TEAPOT)
           logs.map(_.getMessage) should contain ("[PenaltyDetailsService][getDataFromPenaltyService][VATC] - Unknown status returned from connector for VATC~VAT~123456789")
         }
       }
     }
 
     s"throw an exception when something unknown has happened" in new Setup {
-      when(mockGetPenaltyDetailsConnector.getPenaltyDetails(ArgumentMatchers.eq(vrn123456789))(any()))
+      when(mockPenaltyDetailsConnector.getPenaltyDetails(ArgumentMatchers.eq(vrn123456789))(any()))
         .thenReturn(Future.failed(new Exception("Something has gone wrong.")))
 
       val result: Exception = intercept[Exception](await(service.getDataFromPenaltyService(vrn123456789)))

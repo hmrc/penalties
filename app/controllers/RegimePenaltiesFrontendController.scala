@@ -16,7 +16,7 @@
 
 package controllers
 
-import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser.{GetPenaltyDetailsSuccessResponse, _}
+import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser.{PenaltyDetailsSuccessResponse, _}
 import controllers.auth.AuthAction
 import models.{AgnosticEnrolmentKey, Id, IdType, Regime}
 import play.api.mvc._
@@ -41,28 +41,28 @@ class RegimePenaltiesFrontendController @Inject()(
     val agnosticEnrolmenKey = AgnosticEnrolmentKey(regime, idType, id)
     getPenaltyDetailsService.getDataFromPenaltyService(agnosticEnrolmenKey).flatMap {
       _.fold({
-        case GetPenaltyDetailsNoContent => {
+        case PenaltyDetailsNoContent => {
           logger.info(s"[RegimePenaltiesFrontendController][getPenaltiesData] - 1812 call returned 404 for $agnosticEnrolmenKey with NO_DATA_FOUND in response body")
           Future(NoContent)
         }
-        case GetPenaltyDetailsFailureResponse(status) if status == NOT_FOUND => {
+        case PenaltyDetailsFailureResponse(status, _) if status == NOT_FOUND => {
           logger.info(s"[RegimePenaltiesFrontendController][getPenaltiesData] - 1812 call returned 404 for $agnosticEnrolmenKey")
           Future(NotFound(s"A downstream call returned 404 for $agnosticEnrolmenKey"))
         }
-        case GetPenaltyDetailsFailureResponse(status) => {
+        case PenaltyDetailsFailureResponse(status, _) => {
           logger.error(s"[RegimePenaltiesFrontendController][getPenaltiesData] - 1812 call returned an unexpected status: $status for $agnosticEnrolmenKey")
           Future(InternalServerError(s"A downstream call returned an unexpected status: $status"))
         }
-        case GetPenaltyDetailsMalformed => {
+        case PenaltyDetailsMalformed => {
           PagerDutyHelper.log("getPenaltiesData", MALFORMED_RESPONSE_FROM_1812_API)
           logger.error(s"[RegimePenaltiesFrontendController][getPenaltiesData] - 1812 call returned invalid body - failed to parse penalty details response for $agnosticEnrolmenKey")
           Future(InternalServerError(s"We were unable to parse penalty data."))
         }
       },
         {
-          case GetPenaltyDetailsSuccessResponse(penaltyDetails) => {
+          case PenaltyDetailsSuccessResponse(penaltyDetails) => {
             logger.info(s"[RegimePenaltiesFrontendController][getPenaltiesData] - 1812 call returned 200 for $agnosticEnrolmenKey")
-            //   def handleAndCombineGetFinancialDetailsData(penaltyDetails: GetPenaltyDetails, enrolmentKey: EnrolmentKey, arn: Option[String])
+            //   def handleAndCombineGetFinancialDetailsData(penaltyDetails: PenaltyDetails, enrolmentKey: EnrolmentKey, arn: Option[String])
             penaltiesFrontendService.handleAndCombineGetFinancialDetailsData(
               penaltyDetails,
               agnosticEnrolmenKey,

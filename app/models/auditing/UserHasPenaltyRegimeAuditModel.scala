@@ -17,19 +17,20 @@
 package models.auditing
 
 import models.AgnosticEnrolmentKey
-import models.getPenaltyDetails.GetPenaltyDetails
-import models.getPenaltyDetails.appealInfo.AppealStatusEnum
-import models.getPenaltyDetails.latePayment.{LPPDetails, LPPPenaltyStatusEnum, TimeToPay}
-import models.getPenaltyDetails.lateSubmission.{LSPDetails, LSPPenaltyCategoryEnum, LSPPenaltyStatusEnum}
+import models.penaltyDetails.appealInfo.AppealStatusEnum
+import models.penaltyDetails.latePayment.{LPPDetails, TimeToPay}
+import models.penaltyDetails.lateSubmission.{LSPDetails, LSPPenaltyCategoryEnum, LSPPenaltyStatusEnum}
 import play.api.libs.json.JsValue
 import play.api.mvc.Request
 import utils.Logger.logger
 import utils.{DateHelper, JsonUtils}
 
 import java.time.LocalDate
+import models.penaltyDetails.PenaltyDetails
+import models.penaltyDetails.latePayment.LPPPenaltyStatusEnum
 
 case class UserHasPenaltyRegimeAuditModel(
-                                           penaltyDetails: GetPenaltyDetails,
+                                           penaltyDetails: PenaltyDetails,
                                            enrolmentKey: AgnosticEnrolmentKey,
                                            arn: Option[String],
                                            dateHelper: DateHelper
@@ -76,7 +77,7 @@ case class UserHasPenaltyRegimeAuditModel(
       && !point.penaltyStatus.equals(LSPPenaltyStatusEnum.Inactive)
       && (point.penaltyCategory.contains(LSPPenaltyCategoryEnum.Threshold) || point.penaltyCategory.contains(LSPPenaltyCategoryEnum.Charge)))).getOrElse(Seq.empty)
 
-  private val lppsUnpaidAndUnappealed: Option[Seq[LPPDetails]] = penaltyDetails.latePaymentPenalty.flatMap(_.details.map(_.filter(penalty =>
+  private val lppsUnpaidAndUnappealed: Option[Seq[LPPDetails]] = penaltyDetails.latePaymentPenalty.flatMap(_.lppDetails.map(_.filter(penalty =>
     !penalty.penaltyAmountOutstanding.contains(BigDecimal(0)) && !penalty.penaltyStatus.equals(LSPPenaltyStatusEnum.Inactive))))
 
   private val totalTaxDue: BigDecimal = penaltyDetails.totalisations.flatMap(_.penalisedPrincipalTotal).getOrElse(0)
@@ -122,39 +123,39 @@ case class UserHasPenaltyRegimeAuditModel(
     "numberOfUnpaidPenalties" -> amountOfLspChargesUnpaid
   )
 
-  private val numberOfPaidLPPs: Int = penaltyDetails.latePaymentPenalty.flatMap(_.details.map(_.count(penalty =>
+  private val numberOfPaidLPPs: Int = penaltyDetails.latePaymentPenalty.flatMap(_.lppDetails.map(_.count(penalty =>
     penalty.penaltyAmountPaid.isDefined &&
       penalty.penaltyAmountPosted.equals(penalty.penaltyAmountPaid.get) &&
       !penalty.appealInformation.exists(_.exists(_.appealStatus.contains(AppealStatusEnum.Upheld)))
   ))).getOrElse(0)
 
-  private val numberOfUnpaidLPPs: Int = penaltyDetails.latePaymentPenalty.flatMap(_.details.map(_.count(penalty =>
+  private val numberOfUnpaidLPPs: Int = penaltyDetails.latePaymentPenalty.flatMap(_.lppDetails.map(_.count(penalty =>
     penalty.penaltyAmountOutstanding.isDefined &&
       penalty.penaltyAmountPosted.equals(penalty.penaltyAmountOutstanding.get) &&
       !penalty.appealInformation.exists(_.exists(_.appealStatus.contains(AppealStatusEnum.Upheld)))
   ))).getOrElse(0)
 
-  private val numberOfPartiallyPaidLPPs: Int = penaltyDetails.latePaymentPenalty.flatMap(_.details.map(_.count(penalty =>
+  private val numberOfPartiallyPaidLPPs: Int = penaltyDetails.latePaymentPenalty.flatMap(_.lppDetails.map(_.count(penalty =>
     penalty.penaltyAmountOutstanding.exists(_ > BigDecimal(0)) &&
       penalty.penaltyAmountPaid.exists(_ > BigDecimal(0)) &&
       !penalty.penaltyStatus.equals(LPPPenaltyStatusEnum.Accruing) &&
       !penalty.appealInformation.exists(_.exists(_.appealStatus.contains(AppealStatusEnum.Upheld)))
   ))).getOrElse(0)
 
-  private val totalNumberOfLPPs: Int = penaltyDetails.latePaymentPenalty.flatMap(_.details.map(
+  private val totalNumberOfLPPs: Int = penaltyDetails.latePaymentPenalty.flatMap(_.lppDetails.map(
     _.count(penalty => !penalty.appealInformation.exists(_.exists(_.appealStatus.contains(AppealStatusEnum.Upheld)))))).getOrElse(0)
 
-  private val amountOfLPPsUnderAppeal: Int = penaltyDetails.latePaymentPenalty.flatMap(_.details.map(_.count(penalty =>
+  private val amountOfLPPsUnderAppeal: Int = penaltyDetails.latePaymentPenalty.flatMap(_.lppDetails.map(_.count(penalty =>
     penalty.appealInformation.exists(_.exists(_.appealStatus.contains(AppealStatusEnum.Under_Appeal)))))).getOrElse(0)
 
   def getOptActiveTimeToPay: Option[TimeToPay] = {
     val dateNow = dateHelper.dateNow()
     for {
       lpp <- penaltyDetails.latePaymentPenalty
-      lppDetails <- lpp.details
-      optSeqTimeToPay <- lppDetails.find(_.metadata.timeToPay.isDefined).map(_.metadata.timeToPay.get)
+      lppDetails <- lpp.lppDetails
+      optSeqTimeToPay <- lppDetails.find(_.timeToPay.isDefined).map(_.timeToPay.get)
       optActiveTimeToPay <- optSeqTimeToPay.find(
-        penalty => (penalty.TTPEndDate, penalty.TTPStartDate) match {
+        penalty => (penalty.ttpEndDate, penalty.ttpStartDate) match {
           case (Some(endDate), Some(startDate)) => DateHelper.isDateAfterOrEqual(dateNow, startDate) && DateHelper.isDateBeforeOrEqual(dateNow, endDate)
           case (None, Some(startDate)) => DateHelper.isDateAfterOrEqual(dateNow, startDate)
           case (_,_) => false
@@ -165,9 +166,9 @@ case class UserHasPenaltyRegimeAuditModel(
 
   private val isTTPActive: Boolean = getOptActiveTimeToPay.isDefined
 
-  private val ttpStartDate: Option[LocalDate] = getOptActiveTimeToPay.flatMap(_.TTPStartDate)
+  private val ttpStartDate: Option[LocalDate] = getOptActiveTimeToPay.flatMap(_.ttpStartDate)
 
-  private val ttpEndDate: Option[LocalDate] = getOptActiveTimeToPay.flatMap(_.TTPEndDate)
+  private val ttpEndDate: Option[LocalDate] = getOptActiveTimeToPay.flatMap(_.ttpEndDate)
 
   private val lppDetail: JsValue = jsonObjNoNulls(
     "numberOfPaidPenalties" -> numberOfPaidLPPs,

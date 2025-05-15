@@ -22,8 +22,7 @@ import connectors.RegimePEGAConnector
 import connectors.parsers.AppealsParser
 
 import models.appeals.{AppealResponseModel, AppealSubmission, MultiplePenaltiesData}
-import models.getPenaltyDetails.GetPenaltyDetails
-import models.getPenaltyDetails.latePayment.{LPPDetails, LPPPenaltyCategoryEnum, LPPPenaltyStatusEnum}
+import models.penaltyDetails.latePayment.{LPPDetails, LPPPenaltyCategoryEnum, LPPPenaltyStatusEnum}
 import models.notification._
 import models.upload.UploadJourney
 import play.api.Configuration
@@ -33,6 +32,7 @@ import utils.{DateHelper, FileHelper, UUIDGenerator}
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 import models.{AgnosticEnrolmentKey}
+import models.penaltyDetails.PenaltyDetails
 
 class RegimeAppealService @Inject()(appealsConnector: RegimePEGAConnector,
                               appConfig: AppConfig,
@@ -88,12 +88,12 @@ class RegimeAppealService @Inject()(appealsConnector: RegimePEGAConnector,
     }
   }
 
-  def findMultiplePenalties(penaltyDetails: GetPenaltyDetails, penaltyId: String): Option[MultiplePenaltiesData] = {
+  def findMultiplePenalties(penaltyDetails: PenaltyDetails, penaltyId: String): Option[MultiplePenaltiesData] = {
     val lppPenaltyIdInPenaltyDetailsPayload: Option[LPPDetails] = penaltyDetails.latePaymentPenalty.flatMap {
-      _.details.flatMap(_.find(_.penaltyChargeReference.contains(penaltyId)))
+      _.lppDetails.flatMap(_.find(_.penaltyChargeReference.contains(penaltyId)))
     }
     val principalChargeReference: String = lppPenaltyIdInPenaltyDetailsPayload.get.principalChargeReference
-    val penaltiesForPrincipalCharge: Seq[LPPDetails] = penaltyDetails.latePaymentPenalty.flatMap(_.details.map(_.filter(_.principalChargeReference.equals(principalChargeReference)))).get
+    val penaltiesForPrincipalCharge: Seq[LPPDetails] = penaltyDetails.latePaymentPenalty.flatMap(_.lppDetails.map(_.filter(_.principalChargeReference.equals(principalChargeReference)))).get
     val underAppeal = penaltiesForPrincipalCharge.exists(_.appealInformation.isDefined)
     val areBothPenaltiesPostedAndVATPaid: Boolean = penaltiesForPrincipalCharge.forall(penalty => {
       penalty.penaltyStatus == LPPPenaltyStatusEnum.Posted && penalty.principalChargeLatestClearing.isDefined
