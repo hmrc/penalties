@@ -123,8 +123,9 @@ trait RegimeETMPWiremock {
   val getFinancialDetailsWithoutTotalisationsAsJson: JsValue = Json.parse(
     """
       |{
-      | "getFinancialData": {
-      |   "financialDetails":{
+      | "success": {
+      | "processingDate": "2025-05-06",
+      |   "financialData":{
       |     "documentDetails": [
       |     {
       |      "documentNumber": "187346702498",
@@ -203,8 +204,9 @@ trait RegimeETMPWiremock {
   val getFinancialDetailsTotalisationsAsJson: JsValue = Json.parse(
     """
       |{
-      | "getFinancialData": {
-      |   "financialDetails":{
+      | "success": {
+      | "processingDate": "2025-05-06",
+      |   "financialData":{
       |     "totalisation": {
       |       "regimeTotalisation": {
       |         "totalAccountOverdue": 1000.0,
@@ -233,8 +235,9 @@ trait RegimeETMPWiremock {
   val getFinancialDetailsAsJson: JsValue = Json.parse(
     """
       |{
-      | "getFinancialData": {
-      |   "financialDetails":{
+      | "success": {
+      | "processingDate": "2025-05-06",
+      |   "financialData":{
       |     "totalisation": {
       |       "regimeTotalisation": {
       |         "totalAccountOverdue": 1000.0,
@@ -347,8 +350,8 @@ trait RegimeETMPWiremock {
       ))
   }
 
-  def mockStubResponseForGetFinancialDetails(status: Int, vatcUrl: String, body: Option[String] = None): StubMapping = {
-    stubFor(get(urlEqualTo(s"/penalties-stub/penalty/financial-data/$vatcUrl"))
+  def mockStubResponseForGetFinancialDetails(status: Int, body: Option[String] = None): StubMapping = {
+    stubFor(post(urlEqualTo(s"/penalties-stub/RESTAdapter/cross-regime/taxpayer/financial-data/query"))
       .willReturn(
         aResponse()
           .withBody(body.fold(getFinancialDetailsWithoutTotalisationsAsJson.toString())(identity))
@@ -357,7 +360,7 @@ trait RegimeETMPWiremock {
   }
 
   def mockResponseForGetFinancialDetails(status: Int, regime: Regime, idType: IdType, id: Id, params: String, body: Option[String] = None): StubMapping = {
-    stubFor(get(urlEqualTo(s"/penalty/financial-data/${idType.value}/${id.value}/${regime.value}$params"))
+    stubFor(post(urlEqualTo(s"/RESTAdapter/cross-regime/taxpayer/financial-data/query"))
       .willReturn(
         aResponse()
           .withBody(body.fold(getFinancialDetailsWithoutTotalisationsAsJson.toString())(identity))

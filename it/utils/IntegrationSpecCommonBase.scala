@@ -78,7 +78,9 @@ trait IntegrationSpecCommonBase extends AnyWordSpec with Matchers with GuiceOneS
     "microservice.services.penalties-file-notification-orchestrator.host" -> stubHost,
     "microservice.services.penalties-file-notification-orchestrator.port" -> stubPort,
     "microservice.services.auth.host" -> stubHost,
-    "microservice.services.auth.port" -> stubPort
+    "microservice.services.auth.port" -> stubPort,
+    "microservice.services.hip.host" -> stubHost,
+    "microservice.services.hip.port" -> stubPort
   )
 
   override lazy val app: Application = new GuiceApplicationBuilder()

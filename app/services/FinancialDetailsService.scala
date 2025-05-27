@@ -30,9 +30,9 @@ import models.AgnosticEnrolmentKey
 class FinancialDetailsService @Inject()(getFinancialDetailsConnector: FinancialDetailsConnector)
                                           (implicit ec: ExecutionContext, val config: Configuration) {
 
-  def getFinancialDetails(enrolmentKey: AgnosticEnrolmentKey, optionalParameters: Option[String])(implicit hc: HeaderCarrier): Future[GetFinancialDetailsResponse] = {
+  def getFinancialDetails(enrolmentKey: AgnosticEnrolmentKey)(implicit hc: HeaderCarrier): Future[GetFinancialDetailsResponse] = {
     val startOfLogMsg: String = s"[FinancialDetailsService][getDataFromFinancialService][${enrolmentKey.regime.value}]"
-    getFinancialDetailsConnector.getFinancialDetails(enrolmentKey, optionalParameters).map {
+    getFinancialDetailsConnector.getFinancialDetails(enrolmentKey).map {
       handleConnectorResponse(_)(startOfLogMsg, enrolmentKey)
     }
   }
@@ -40,8 +40,8 @@ class FinancialDetailsService @Inject()(getFinancialDetailsConnector: FinancialD
   private def handleConnectorResponse(connectorResponse: GetFinancialDetailsResponse)
                                      (implicit startOfLogMsg: String, enrolmentKey: AgnosticEnrolmentKey): GetFinancialDetailsResponse = {
     connectorResponse match {
-      case res@Right(_@GetFinancialDetailsSuccessResponse(financialDetails)) =>
-        logger.debug(s"$startOfLogMsg - Got a success response from the connector. Parsed model: $financialDetails")
+      case res@Right(_@GetFinancialDetailsSuccessResponse(financialData)) =>
+        logger.debug(s"$startOfLogMsg - Got a success response from the connector. Parsed model: $financialData")
         res
       case res@Left(GetFinancialDetailsNoContent) =>
         logger.debug(s"$startOfLogMsg - Got a 404 response and no data was found for GetFinancialDetails call")

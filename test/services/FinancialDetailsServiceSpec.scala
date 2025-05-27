@@ -18,15 +18,13 @@ package services
 
 import base.{LogCapturing, SpecBase}
 import config.featureSwitches.FeatureSwitching
-import connectors.getFinancialDetails.{FinancialDetailsConnector}
+import connectors.getFinancialDetails.FinancialDetailsConnector
 import connectors.parsers.getFinancialDetails.FinancialDetailsParser._
-import models.getFinancialDetails.FinancialDetails
+import models.getFinancialDetails.{FinancialDetails, FinancialDetailsHIP}
 import models.getFinancialDetails.totalisation.{FinancialDetailsTotalisation, InterestTotalisation, RegimeTotalisation}
-import models.{AgnosticEnrolmentKey, getFinancialDetails, Regime, IdType, Id}
+import models.{AgnosticEnrolmentKey, Id, IdType, Regime, getFinancialDetails}
 import org.mockito.ArgumentMatchers
-
 import org.mockito.ArgumentMatchers.any
-
 import org.mockito.Mockito.{mock, reset, when}
 import play.api.Configuration
 import play.api.http.Status.IM_A_TEAPOT
@@ -58,7 +56,9 @@ class FinancialDetailsServiceSpec extends SpecBase with FeatureSwitching with Lo
   }
 
   "getFinancialDetails" should {
-    val mockGetFinancialDetailsResponseAsModel: FinancialDetails = FinancialDetails(
+    val mockGetFinancialDetailsResponseAsModel: FinancialDetailsHIP = FinancialDetailsHIP(
+      processingDate = "2025-05-06",
+      financialData = FinancialDetails(
       documentDetails = Some(Seq(getFinancialDetails.DocumentDetails(
         chargeReferenceNumber = None,
         documentOutstandingAmount = Some(0.00),
@@ -70,23 +70,23 @@ class FinancialDetailsServiceSpec extends SpecBase with FeatureSwitching with Lo
         regimeTotalisations = Some(RegimeTotalisation(totalAccountOverdue = Some(1000))),
         interestTotalisations = Some(InterestTotalisation(totalAccountPostedInterest = Some(123.45), totalAccountAccruingInterest = Some(23.45)))
       ))
-    )
+    ))
 
     s"call the connector and return a $GetFinancialDetailsSuccessResponse when the request is successful" in new Setup {
       when(config.getOptional[String](ArgumentMatchers.any())(ArgumentMatchers.any()))
         .thenReturn(None)
-      when(mockGetFinancialDetailsConnector.getFinancialDetails(ArgumentMatchers.eq(vrn123456789), ArgumentMatchers.any())(any()))
+      when(mockGetFinancialDetailsConnector.getFinancialDetails(any())(any()))
         .thenReturn(Future.successful(Right(GetFinancialDetailsSuccessResponse(mockGetFinancialDetailsResponseAsModel))))
-      val result: GetFinancialDetailsResponse = await(service.getFinancialDetails(vrn123456789, None))
+      val result: GetFinancialDetailsResponse = await(service.getFinancialDetails(vrn123456789))
       result.isRight shouldBe true
       result.toOption.get shouldBe GetFinancialDetailsSuccessResponse(mockGetFinancialDetailsResponseAsModel)
     }
 
     s"call the connector and return a $GetFinancialDetailsSuccessResponse when the request is successful (with the time machine date)" in new Setup {
       setTimeMachineDate(Some(LocalDateTime.of(2024, 1, 1, 0, 0, 0)))
-      when(mockGetFinancialDetailsConnector.getFinancialDetails(ArgumentMatchers.eq(vrn123456789), ArgumentMatchers.any())(any()))
+      when(mockGetFinancialDetailsConnector.getFinancialDetails(any())(any()))
         .thenReturn(Future.successful(Right(GetFinancialDetailsSuccessResponse(mockGetFinancialDetailsResponseAsModel))))
-      val result: GetFinancialDetailsResponse = await(service.getFinancialDetails(vrn123456789, None))
+      val result: GetFinancialDetailsResponse = await(service.getFinancialDetails(vrn123456789))
       result.isRight shouldBe true
       result.toOption.get shouldBe GetFinancialDetailsSuccessResponse(mockGetFinancialDetailsResponseAsModel)
     }
@@ -94,11 +94,11 @@ class FinancialDetailsServiceSpec extends SpecBase with FeatureSwitching with Lo
     s"call the connector and return $GetFinancialDetailsNoContent when the response body contains NO_DATA_FOUND" in new Setup {
       when(config.getOptional[String](ArgumentMatchers.any())(ArgumentMatchers.any()))
         .thenReturn(None)
-      when(mockGetFinancialDetailsConnector.getFinancialDetails(ArgumentMatchers.eq(vrn123456789), ArgumentMatchers.any())(any()))
+      when(mockGetFinancialDetailsConnector.getFinancialDetails(any())(any()))
         .thenReturn(Future.successful(Left(GetFinancialDetailsNoContent)))
       withCaptureOfLoggingFrom(logger) {
         logs => {
-          val result: GetFinancialDetailsResponse = await(service.getFinancialDetails(vrn123456789, None))
+          val result: GetFinancialDetailsResponse = await(service.getFinancialDetails(vrn123456789))
           result.isLeft shouldBe true
           result.left.getOrElse(GetFinancialDetailsFailureResponse(IM_A_TEAPOT)) shouldBe GetFinancialDetailsNoContent
           logs.map(_.getMessage) should contain ("[FinancialDetailsService][getDataFromFinancialService][VATC] - Got a 404 response and no data was found for GetFinancialDetails call")
@@ -109,11 +109,11 @@ class FinancialDetailsServiceSpec extends SpecBase with FeatureSwitching with Lo
     s"call the connector and return $GetFinancialDetailsMalformed when the response body is malformed" in new Setup {
       when(config.getOptional[String](ArgumentMatchers.any())(ArgumentMatchers.any()))
         .thenReturn(None)
-      when(mockGetFinancialDetailsConnector.getFinancialDetails(ArgumentMatchers.eq(vrn123456789), ArgumentMatchers.any())(any()))
+      when(mockGetFinancialDetailsConnector.getFinancialDetails(any())(any()))
         .thenReturn(Future.successful(Left(GetFinancialDetailsMalformed)))
       withCaptureOfLoggingFrom(logger) {
         logs => {
-          val result: GetFinancialDetailsResponse = await(service.getFinancialDetails(vrn123456789, None))
+          val result: GetFinancialDetailsResponse = await(service.getFinancialDetails(vrn123456789))
           result.isLeft shouldBe true
           result.left.getOrElse(GetFinancialDetailsFailureResponse(IM_A_TEAPOT)) shouldBe GetFinancialDetailsMalformed
           logs.map(_.getMessage) should contain ("[FinancialDetailsService][getDataFromFinancialService][VATC] - Failed to parse HTTP response into model for VATC~VRN~123456789")
@@ -124,11 +124,11 @@ class FinancialDetailsServiceSpec extends SpecBase with FeatureSwitching with Lo
     s"call the connector and return $GetFinancialDetailsFailureResponse when an unknown status is returned" in new Setup {
       when(config.getOptional[String](ArgumentMatchers.any())(ArgumentMatchers.any()))
         .thenReturn(None)
-      when(mockGetFinancialDetailsConnector.getFinancialDetails(ArgumentMatchers.eq(vrn123456789), ArgumentMatchers.any())(any()))
+      when(mockGetFinancialDetailsConnector.getFinancialDetails(any())(any()))
         .thenReturn(Future.successful(Left(GetFinancialDetailsFailureResponse(IM_A_TEAPOT))))
       withCaptureOfLoggingFrom(logger) {
         logs => {
-          val result: GetFinancialDetailsResponse = await(service.getFinancialDetails(vrn123456789, None))
+          val result: GetFinancialDetailsResponse = await(service.getFinancialDetails(vrn123456789))
           result.isLeft shouldBe true
           result.left.getOrElse(GetFinancialDetailsFailureResponse(INTERNAL_SERVER_ERROR)) shouldBe GetFinancialDetailsFailureResponse(IM_A_TEAPOT)
           logs.map(_.getMessage) should contain ("[FinancialDetailsService][getDataFromFinancialService][VATC] - Unknown status returned from connector for VATC~VRN~123456789")
@@ -139,9 +139,9 @@ class FinancialDetailsServiceSpec extends SpecBase with FeatureSwitching with Lo
     s"throw an exception when something unknown has happened" in new Setup {
       when(config.getOptional[String](ArgumentMatchers.any())(ArgumentMatchers.any()))
         .thenReturn(None)
-      when(mockGetFinancialDetailsConnector.getFinancialDetails(ArgumentMatchers.eq(vrn123456789), ArgumentMatchers.any())(any()))
+      when(mockGetFinancialDetailsConnector.getFinancialDetails(any())(any()))
         .thenReturn(Future.failed(new Exception("Something has gone wrong.")))
-      val result: Exception = intercept[Exception](await(service.getFinancialDetails(vrn123456789, None)))
+      val result: Exception = intercept[Exception](await(service.getFinancialDetails(vrn123456789)))
       result.getMessage shouldBe "Something has gone wrong."
     }
   }
