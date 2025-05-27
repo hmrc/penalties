@@ -27,13 +27,13 @@ import controllers.auth.AuthAction
 import models.{AgnosticEnrolmentKey, Id, IdType, Regime}
 import models.api.APIModel
 import models.auditing.{ThirdParty1812APIRetrievalRegimeAuditModel, ThirdPartyAPI1811RetrievalRegimeAuditModel, UserHasPenaltyRegimeAuditModel}
-import models.getFinancialDetails.FinancialDetails
+import models.getFinancialDetails.FinancialDetailsHIP
 import models.getPenaltyDetails.GetPenaltyDetails
 import play.api.Configuration
 import play.api.libs.json.{JsString, JsValue, Json}
 import play.api.mvc._
 import services.auditing.AuditService
-import services.{APIService, FinancialDetailsService, LoggingContext, PenaltyDetailsService, RegimeFilterService}
+import services.{FinancialDetailsService, LoggingContext, PenaltyDetailsService, RegimeAPIService, RegimeFilterService}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import utils.Logger.logger
@@ -44,7 +44,7 @@ import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class RegimeAPIController @Inject()(auditService: AuditService,
-                                    apiService: APIService,
+                                    apiService: RegimeAPIService,
                                     getPenaltyDetailsService: PenaltyDetailsService,
                                     getFinancialDetailsService: FinancialDetailsService,
                                     getFinancialDetailsConnector: FinancialDetailsConnector,
@@ -110,7 +110,7 @@ class RegimeAPIController @Inject()(auditService: AuditService,
     }
   }
 
-  private def callFinancialDetailsForManualLPPs(enrolmentKey: AgnosticEnrolmentKey)(implicit hc: HeaderCarrier): Future[Option[FinancialDetails]] = {
+  private def callFinancialDetailsForManualLPPs(enrolmentKey: AgnosticEnrolmentKey)(implicit hc: HeaderCarrier): Future[Option[FinancialDetailsHIP]] = {
     getFinancialDetailsService.getFinancialDetails(enrolmentKey).map {
       financialDetailsResponseWithoutClearedItems =>
         logger.info(s"[RegimeAPIController][callFinancialDetailsForManualLPPs] - Calling 1811 for response without cleared items")
@@ -130,13 +130,13 @@ class RegimeAPIController @Inject()(auditService: AuditService,
         },
           financialDetailsResponseWithoutClearedItems => {
             logger.info(s"[RegimeAPIController][callFinancialDetailsForManualLPPs] - 1811 call (VATVC/BTA API) returned 200 for ${enrolmentKey}" )
-            Some(financialDetailsResponseWithoutClearedItems.asInstanceOf[GetFinancialDetailsSuccessResponse].financialData.financialData)
+            Some(financialDetailsResponseWithoutClearedItems.asInstanceOf[GetFinancialDetailsSuccessResponse].financialData)
           })
     }
   }
 
   private def returnResponseForAPI(penaltyDetails: GetPenaltyDetails, enrolmentKey: AgnosticEnrolmentKey,
-                                   financialDetails: Option[FinancialDetails] = None)(implicit request: Request[_]): Result = {
+                                   financialDetails: Option[FinancialDetailsHIP] = None)(implicit request: Request[_]): Result = {
     val pointsTotal = penaltyDetails.lateSubmissionPenalty.map(_.summary.activePenaltyPoints).getOrElse(0)
     val penaltyAmountWithEstimateStatus = apiService.findEstimatedPenaltiesAmount(penaltyDetails)
     val noOfEstimatedPenalties = apiService.getNumberOfEstimatedPenalties(penaltyDetails)
