@@ -140,8 +140,8 @@ class AppConfig @Inject()(val config: Configuration, servicesConfig: ServicesCon
   }
 
   def getPenaltyDetailsVatUrl: String = {
-    if (!isEnabled(CallAPI1812ETMP)) stubBase + "/penalties-stub/penalty/details/"
-    else etmpBase + "/penalty/details/"
+    if (isEnabled(CallAPI1812ETMP)) etmpBase + "/penalty/details/"
+    else stubBase + "/penalties-stub/penalty/details/"
   }
 
   def getRegimeAgnosticPenaltyDetailsUrl(agnosticEnrolmenKey: AgnosticEnrolmentKey, dateLimit: Option[String] = None): String = {
@@ -150,8 +150,8 @@ class AppConfig @Inject()(val config: Configuration, servicesConfig: ServicesCon
     val idValue = agnosticEnrolmenKey.id.value;
     val dateLimitParam: String = dateLimit.map(dateLimit => s"&dateLimit=$dateLimit").getOrElse("")
   
-    if (!isEnabled(CallAPI1812ETMP)) stubBase + s"/penalties-stub/penalty/details/$regime/$idType/$idValue"
-    else hipBase + s"/RESTAdapter/cross-regime/taxpayer/penalties?taxRegime=$regime&idType=$idType&idNumber=$idValue$dateLimitParam"
+    if (isEnabled(CallAPI1812ETMP)) hipBase + s"/RESTAdapter/cross-regime/taxpayer/penalties?taxRegime=$regime&idType=$idType&idNumber=$idValue$dateLimitParam"
+    else stubBase + s"/penalties-stub/penalty/details/$regime/$idType/$idValue"
   }
 
   def getFinancialDetailsVatUrl(vrn: String): String = {
@@ -187,7 +187,7 @@ class AppConfig @Inject()(val config: Configuration, servicesConfig: ServicesCon
   val hipServiceOriginatorIdKeyV1: String = getString("microservice.services.hip.originator-id-key")
   val hipServiceOriginatorIdV1: String    = getString("microservice.services.hip.originator-id-value")
 
-    lazy val hipEnvironmentHeader: (String, String) =
+  lazy val hipEnvironmentHeader: (String, String) =
     "Environment" -> getString("microservice.services.hip.environment")
 
 }

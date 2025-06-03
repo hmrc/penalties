@@ -62,7 +62,6 @@ class RegimePenaltiesFrontendController @Inject()(
         {
           case PenaltyDetailsSuccessResponse(penaltyDetails) => {
             logger.info(s"[RegimePenaltiesFrontendController][getPenaltiesData] - 1812 call returned 200 for $agnosticEnrolmenKey")
-            //   def handleAndCombineGetFinancialDetailsData(penaltyDetails: PenaltyDetails, enrolmentKey: EnrolmentKey, arn: Option[String])
             penaltiesFrontendService.handleAndCombineGetFinancialDetailsData(
               penaltyDetails,
               agnosticEnrolmenKey,
