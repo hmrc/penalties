@@ -17,7 +17,7 @@
 package controllers
 
 import com.github.tomakehurst.wiremock.client.WireMock.{postRequestedFor, urlEqualTo}
-import config.featureSwitches.FeatureSwitching
+import config.featureSwitches.{CallAPI1808HIP, FeatureSwitching}
 import models.appeals.MultiplePenaltiesData
 import org.scalatest.concurrent.Eventually.eventually
 import play.api.http.Status
@@ -383,6 +383,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
  }
 
  "submitAppeal" should {
+   disableFeatureSwitch(CallAPI1808HIP)
    "call the connector and send the appeal data received in the request body - returns OK when successful for bereavement" in {
      mockResponseForAppealSubmissionStub(OK, "HMRC-MTD-VAT~VRN~123456789", penaltyNumber = "123456789")
      val jsonToSubmit: JsValue = Json.parse(
