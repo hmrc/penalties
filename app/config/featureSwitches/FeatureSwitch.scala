@@ -44,3 +44,7 @@ case object CallAPI1811ETMP extends FeatureSwitch {
 case object SanitiseFileName extends FeatureSwitch {
   override val name: String = s"${FeatureSwitch.prefix}.sanitise-file-name"
 }
+
+case object CallAPI1808HIP extends FeatureSwitch {
+  override val name: String = s"${FeatureSwitch.prefix}.call-api-1808-hip"
+}

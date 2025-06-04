@@ -42,14 +42,15 @@ import play.api.mvc.Result
 import play.api.test.Helpers._
 import services.auditing.AuditService
 import services.{PenaltyDetailsService, RegimeAppealService}
-import uk.gov.hmrc.http.HttpResponse
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import utils.AuthActionMock
 import utils.Logger.logger
 import utils.PagerDutyHelper.PagerDutyKeys
+
 import java.time.{LocalDate, LocalDateTime}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-import models.{AgnosticEnrolmentKey, Regime, IdType, Id}
+import models.{AgnosticEnrolmentKey, Id, IdType, Regime}
 
 class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with LogCapturing {
   val mockAppealsService: RegimeAppealService = mock(classOf[RegimeAppealService])
@@ -91,6 +92,8 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
 
     val controller = new RegimeAppealsController(if (withRealAppConfig) appConfig
     else mockAppConfig, mockAppealsService, mockGetPenaltyDetailsService, mockFileNotificationConnector, mockAuditService, stubControllerComponents(), mockAuthAction)
+
+    implicit val hc: HeaderCarrier = HeaderCarrier()
   }
 
   "getAppealsDataForLateSubmissionPenalty" should {
@@ -802,7 +805,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
     "return the error status code" when {
       "the connector calls fails" in new Setup {
 
-        when(mockAppealsService.submitAppeal(any(), any(), any(), any(), any()))
+        when(mockAppealsService.submitAppeal(any(), any(), any(), any(), any())(any()))
           .thenReturn(Future.successful(Left(UnexpectedFailure(GATEWAY_TIMEOUT, s"Unexpected response, status $GATEWAY_TIMEOUT returned"))))
         val appealsJson: JsValue = Json.parse(
           """
@@ -830,7 +833,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
 
     "return OK (200)" when {
       "the JSON request body can be parsed and the connector returns a successful response for crime" in new Setup {
-        when(mockAppealsService.submitAppeal(any(), any(), any(), any(), any()))
+        when(mockAppealsService.submitAppeal(any(), any(), any(), any(), any())(any()))
           .thenReturn(Future.successful(Right(appealResponseModel)))
         val appealsJson: JsValue = Json.parse(
           """
@@ -860,7 +863,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
       }
 
       "the JSON request body can be parsed and the connector returns a successful response for loss of staff" in new Setup {
-        when(mockAppealsService.submitAppeal(any(), any(), any(), any(), any()))
+        when(mockAppealsService.submitAppeal(any(), any(), any(), any(), any())(any()))
           .thenReturn(Future.successful(Right(appealResponseModel)))
         val appealsJson: JsValue = Json.parse(
           """
@@ -884,7 +887,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
       }
 
       "the Json request body can be parsed and the connector returns a successful response for fire or flood" in new Setup {
-        when(mockAppealsService.submitAppeal(any(), any(), any(), any(), any()))
+        when(mockAppealsService.submitAppeal(any(), any(), any(), any(), any())(any()))
           .thenReturn(Future.successful(Right(appealResponseModel)))
         val appealsJson: JsValue = Json.parse(
           """
@@ -908,7 +911,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
       }
 
       "the Json request body can be parsed and the connector returns a successful response for technical issues" in new Setup {
-        when(mockAppealsService.submitAppeal(any(), any(), any(), any(), any()))
+        when(mockAppealsService.submitAppeal(any(), any(), any(), any(), any())(any()))
           .thenReturn(Future.successful(Right(appealResponseModel)))
         val appealsJson: JsValue = Json.parse(
           """
@@ -934,7 +937,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
 
       "the Json request body can be parsed and the connector returns a successful response for health" when {
         "there was no hospital stay" in new Setup {
-          when(mockAppealsService.submitAppeal(any(), any(), any(), any(), any()))
+          when(mockAppealsService.submitAppeal(any(), any(), any(), any(), any())(any()))
             .thenReturn(Future.successful(Right(appealResponseModel)))
           val appealsJson: JsValue = Json.parse(
             """
@@ -960,7 +963,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
         }
 
         "there is an ongoing hospital stay" in new Setup {
-          when(mockAppealsService.submitAppeal(any(), any(), any(), any(), any()))
+          when(mockAppealsService.submitAppeal(any(), any(), any(), any(), any())(any()))
             .thenReturn(Future.successful(Right(appealResponseModel)))
           val appealsJson: JsValue = Json.parse(
             """
@@ -986,7 +989,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
         }
 
         "there was a hospital stay that has ended" in new Setup {
-          when(mockAppealsService.submitAppeal(any(), any(), any(), any(), any()))
+          when(mockAppealsService.submitAppeal(any(), any(), any(), any(), any())(any()))
             .thenReturn(Future.successful(Right(appealResponseModel)))
           val appealsJson: JsValue = Json.parse(
             """
@@ -1013,7 +1016,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
         }
 
         "the JSON request body can be parsed and the appeal is a LPP" in new Setup {
-          when(mockAppealsService.submitAppeal(any(), any(), any(), any(), any()))
+          when(mockAppealsService.submitAppeal(any(), any(), any(), any(), any())(any()))
             .thenReturn(Future.successful(Right(appealResponseModel)))
           val appealsJson: JsValue = Json.parse(
             """
@@ -1041,7 +1044,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
 
     "when the appeal is not part of a multi appeal" should {
       "return 200 (OK) even if the file notification call fails (5xx response)" in new Setup {
-        when(mockAppealsService.submitAppeal(any(), any(), any(), any(), any()))
+        when(mockAppealsService.submitAppeal(any(), any(), any(), any(), any())(any()))
           .thenReturn(Future.successful(Right(appealResponseModel)))
         when(mockFileNotificationConnector.postFileNotifications(any())(any()))
           .thenReturn(Future.successful(HttpResponse.apply(INTERNAL_SERVER_ERROR, "")))
@@ -1097,7 +1100,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
       }
 
       "return 200 (OK) even if the file notification call fails (4xx response) and audit the storage failure" in new Setup {
-        when(mockAppealsService.submitAppeal(any(), any(), any(), any(), any()))
+        when(mockAppealsService.submitAppeal(any(), any(), any(), any(), any())(any()))
           .thenReturn(Future.successful(Right(appealResponseModel)))
         when(mockFileNotificationConnector.postFileNotifications(any())(any()))
           .thenReturn(Future.successful(HttpResponse.apply(BAD_REQUEST, "")))
@@ -1156,7 +1159,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
       }
 
       "return 200 (OK) even if the file notification call fails (with exception) and audit the storage failure" in new Setup {
-        when(mockAppealsService.submitAppeal(any(), any(), any(), any(), any()))
+        when(mockAppealsService.submitAppeal(any(), any(), any(), any(), any())(any()))
           .thenReturn(Future.successful(Right(appealResponseModel)))
         when(mockFileNotificationConnector.postFileNotifications(any())(any()))
           .thenReturn(Future.failed(new Exception("failed")))
@@ -1216,7 +1219,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
 
     "when the appeal is part of a multi appeal" should {
       "return a partial success response (207) if the file notification call fails (5xx response)" in new Setup {
-        when(mockAppealsService.submitAppeal(any(), any(), any(), any(), any()))
+        when(mockAppealsService.submitAppeal(any(), any(), any(), any(), any())(any()))
           .thenReturn(Future.successful(Right(appealResponseModel)))
         when(mockFileNotificationConnector.postFileNotifications(any())(any()))
           .thenReturn(Future.successful(HttpResponse.apply(INTERNAL_SERVER_ERROR, "")))
@@ -1279,7 +1282,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
       }
 
       "return a 207 (MULTI_STATUS) if the file notification call fails (4xx response) and audit the storage failure" in new Setup {
-        when(mockAppealsService.submitAppeal(any(), any(), any(), any(), any()))
+        when(mockAppealsService.submitAppeal(any(), any(), any(), any(), any())(any()))
           .thenReturn(Future.successful(Right(appealResponseModel)))
         when(mockFileNotificationConnector.postFileNotifications(any())(any()))
           .thenReturn(Future.successful(HttpResponse.apply(BAD_REQUEST, "")))
@@ -1344,7 +1347,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
       }
 
       "return 207 (MULTI_STATUS) if the file notification call fails (with exception) and audit the storage failure" in new Setup {
-        when(mockAppealsService.submitAppeal(any(), any(), any(), any(), any()))
+        when(mockAppealsService.submitAppeal(any(), any(), any(), any(), any())(any()))
           .thenReturn(Future.successful(Right(appealResponseModel)))
         when(mockFileNotificationConnector.postFileNotifications(any())(any()))
           .thenReturn(Future.failed(new Exception("failed")))
