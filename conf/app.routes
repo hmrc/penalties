@@ -5,7 +5,7 @@ GET        /etmp/penalties/:enrolmentKey                controllers.PenaltiesFro
 # Appeals
 GET        /appeals-data/late-submissions               controllers.AppealsController.getAppealsDataForLateSubmissionPenalty(penaltyId: String, enrolmentKey: String)
 GET        /appeals-data/late-payments                  controllers.AppealsController.getAppealsDataForLatePaymentPenalty(penaltyId: String, enrolmentKey: String, isAdditional: Boolean)
-GET        /appeals-data/reasonable-excuses             controllers.AppealsController.getReasonableExcuses
+GET        /appeals-data/reasonable-excuses             controllers.AppealsController.getReasonableExcuses()
 POST       /appeals/submit-appeal                       controllers.AppealsController.submitAppeal(enrolmentKey: String, isLPP: Boolean, penaltyNumber: String, correlationId: String, isMultiAppeal: Boolean ?= false)
 GET        /appeals-data/multiple-penalties             controllers.AppealsController.getMultiplePenaltyData(penaltyId: String, enrolmentKey: String)
 
@@ -27,7 +27,7 @@ GET        /:regime/etmp/penalties/:idType/:id          controllers.RegimePenalt
 # Appeals
 GET        /:regime/appeals-data/late-submissions/:idType/:id               controllers.RegimeAppealsController.getAppealsDataForLateSubmissionPenalty(penaltyId: String,regime: models.Regime, idType: models.IdType, id: models.Id)
 GET        /:regime/appeals-data/late-payments/:idType/:id                  controllers.RegimeAppealsController.getAppealsDataForLatePaymentPenalty(penaltyId: String, regime: models.Regime, idType: models.IdType, id: models.Id, isAdditional: Boolean)
-GET        /regime/appeals-data/reasonable-excuses                                 controllers.RegimeAppealsController.getReasonableExcuses
+GET        /:regime/appeals-data/reasonable-excuses                         controllers.RegimeAppealsController.getReasonableExcuses(regime: models.Regime)
 POST       /:regime/appeals/submit-appeal/:idType/:id                       controllers.RegimeAppealsController.submitAppeal(regime: models.Regime, idType: models.IdType, id: models.Id, isLPP: Boolean, penaltyNumber: String, correlationId: String, isMultiAppeal: Boolean ?= false)
 GET        /:regime/appeals-data/multiple-penalties/:idType/:id             controllers.RegimeAppealsController.getMultiplePenaltyData(penaltyId: String, regime: models.Regime, idType: models.IdType, id: models.Id)
 

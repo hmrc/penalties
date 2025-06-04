@@ -17,6 +17,7 @@
 package models.appeals.reasonableExcuses
 
 import config.AppConfig
+import models.Regime
 import play.api.libs.json.{JsValue, Json}
 
 sealed trait ReasonableExcuse {
@@ -48,6 +49,14 @@ object ReasonableExcuse {
     override val descriptionMessageKey: String = "reasonableExcuses.healthReason"
   }
 
+  case object UnexpectedHospitalStay extends WithName("unexpectedHospitalStay") with ReasonableExcuse {
+    override val descriptionMessageKey: String = "reasonableExcuses.unexpectedHospitalStay"
+  }
+
+  case object SeriousOrLifeThreateningIllHealth extends WithName("seriousOrLifeThreateningIllHealth") with ReasonableExcuse {
+    override val descriptionMessageKey: String = "reasonableExcuses.seriousOrLifeThreateningIllHealth"
+  }
+
   case object LossOfStaff extends WithName("lossOfStaff") with ReasonableExcuse {
     override val descriptionMessageKey: String = "reasonableExcuses.lossOfStaffReason"
   }
@@ -60,20 +69,19 @@ object ReasonableExcuse {
     override val descriptionMessageKey: String = "reasonableExcuses.otherReason"
   }
 
-  val allReasonableExcuses: Seq[ReasonableExcuse] = {
-    Seq(
-      Bereavement,
-      Crime,
-      FireOrFlood,
-      Health,
-      LossOfStaff,
-      TechnicalIssues,
-      Other
-    )
+  case object Obligations extends WithName("obligations") with ReasonableExcuse {
+    override val descriptionMessageKey: String = "reasonableExcuses.obligations"
   }
 
-  def allExcusesToJson(appConfig: AppConfig): JsValue = {
-    val filteredActiveReasonableExcuses: Seq[ReasonableExcuse] = allReasonableExcuses.filter(_.isEnabled(appConfig))
+  def allExcusesToJson(appConfig: AppConfig, regime: Option[Regime] = None): JsValue = {
+    val reasonableExcuses: Seq[ReasonableExcuse] = regime match {
+      case Some(Regime("VATC")) => allReasonableExcusesForVATC
+      case Some(Regime("ITSA")) => allReasonableExcusesForITSA
+      case _ => allReasonableExcusesForVATC
+    }
+
+    val filteredActiveReasonableExcuses = reasonableExcuses.filter(_.isEnabled(appConfig))
+
     Json.obj(
       "excuses" -> filteredActiveReasonableExcuses.map {
         excuse => {
@@ -85,4 +93,28 @@ object ReasonableExcuse {
       }
     )
   }
+
+  val allReasonableExcusesForVATC: Seq[ReasonableExcuse] = Seq(
+    Bereavement,
+    Crime,
+    FireOrFlood,
+    Health,
+    UnexpectedHospitalStay,
+    SeriousOrLifeThreateningIllHealth,
+    LossOfStaff,
+    TechnicalIssues,
+    Other,
+    Obligations
+  )
+
+  val allReasonableExcusesForITSA: Seq[ReasonableExcuse] = Seq(
+    Bereavement,
+    Crime,
+    FireOrFlood,
+    Health,
+    UnexpectedHospitalStay,
+    SeriousOrLifeThreateningIllHealth,
+    TechnicalIssues,
+    Other
+  )
 }
