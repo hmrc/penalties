@@ -62,26 +62,26 @@ class RegimeAPIController @Inject()(auditService: AuditService,
         getPenaltyDetailsService.getDataFromPenaltyService(agnosticEnrolmenKey).flatMap {
           _.fold({
             case PenaltyDetailsParser.PenaltyDetailsFailureResponse(status, _) if status == BAD_REQUEST => {
-              //logger.info(s"[RegimeAPIController][getSummaryDataForVRN] - 1812 call (VATVC/BTA API) returned $status for VRN: $vrn")
+              logger.info(s"[RegimeAPIController][getSummaryDataForVRN] - 1812 call (VATVC/BTA API) returned $status for VRN: $id")
               Future(NotFound(s"A downstream call returned 400 for ${agnosticEnrolmenKey.idType.value}: ${agnosticEnrolmenKey.id.value}"))
             }
             case PenaltyDetailsParser.PenaltyDetailsFailureResponse(status, _) if status == NOT_FOUND => {
-              //logger.info(s"[RegimeAPIController][getSummaryDataForVRN] - 1812 call (VATVC/BTA API) returned $status for VRN: $vrn")
+              logger.info(s"[RegimeAPIController][getSummaryDataForVRN] - 1812 call (VATVC/BTA API) returned $status for VRN: $id")
               Future(NotFound(s"A downstream call returned 404 for ${agnosticEnrolmenKey.idType.value}: ${agnosticEnrolmenKey.id.value}"))
             }
             case PenaltyDetailsParser.PenaltyDetailsFailureResponse(status, _) if status == UNPROCESSABLE_ENTITY => {
               //Temporary measure to avoid 422 causing issues
               val responsePayload = PenaltyDetailsSuccessResponse(PenaltyDetails(Instant.now(), totalisations = None, lateSubmissionPenalty = None, latePaymentPenalty = None, breathingSpace = None))
-              //logger.info(s"[RegimeAPIController][getSummaryDataForVRN] - 1812 call (VATVC/BTA API) returned $status for VRN: $vrn - Overriding response")
+              logger.info(s"[RegimeAPIController][getSummaryDataForVRN] - 1812 call (VATVC/BTA API) returned $status for VRN: $id - Overriding response")
               Future(returnResponseForAPI(responsePayload.penaltyDetails, agnosticEnrolmenKey))
             }
             case PenaltyDetailsParser.PenaltyDetailsFailureResponse(status, _) => {
-              //logger.info(s"[RegimeAPIController][getSummaryDataForVRN] - 1812 call (VATVC/BTA API) returned an unexpected status: $status")
+              logger.info(s"[RegimeAPIController][getSummaryDataForVRN] - 1812 call (VATVC/BTA API) returned an unexpected status: $status")
               Future(InternalServerError(s"A downstream call returned an unexpected status: $status for $agnosticEnrolmenKey"))
             }
             case PenaltyDetailsParser.PenaltyDetailsMalformed => {
               PagerDutyHelper.log("getSummaryDataForVRN", MALFORMED_RESPONSE_FROM_1812_API)
-              //logger.error(s"[RegimeAPIController][getSummaryDataForVRN] - 1812 call (VATVC/BTA API) returned invalid body - failed to parse penalty details response for VRN: $vrn")
+              logger.error(s"[RegimeAPIController][getSummaryDataForVRN] - 1812 call (VATVC/BTA API) returned invalid body - failed to parse penalty details response for VRN: $id")
               Future(InternalServerError(s"We were unable to parse penalty data."))
             }
             case PenaltyDetailsParser.PenaltyDetailsNoContent => {
@@ -106,7 +106,6 @@ class RegimeAPIController @Inject()(auditService: AuditService,
             }
           )
         }
-      // }
     }
   }
 
@@ -180,7 +179,6 @@ class RegimeAPIController @Inject()(auditService: AuditService,
                           addPostedInterestDetails: Option[Boolean],
                           addAccruingInterestDetails: Option[Boolean]): Action[AnyContent] = authAction.async {
     implicit request => {
-      // composeEnrolmentKey(regime, idType, id).andThen { enrolmentKey =>
         val enrolmentKey = AgnosticEnrolmentKey(regime, idType, id)
         val response = getFinancialDetailsConnector.getFinancialDetailsForAPI(enrolmentKey,
           searchType,
@@ -216,14 +214,11 @@ class RegimeAPIController @Inject()(auditService: AuditService,
                 Status(res.status)(Json.toJson(res.body))
             }
           })
-          // })
-      // }
     }
   }
 
   def getPenaltyDetails(regime: Regime, idType: IdType, id: Id, dateLimit: Option[String]): Action[AnyContent] = authAction.async {
     implicit request => {
-      // composeEnrolmentKey(regime, idType, id).andThen { enrolmentKey =>
         val enrolmentKey = AgnosticEnrolmentKey(regime, idType, id)
         val response = getPenaltyDetailsConnector.getPenaltyDetailsForAPI(enrolmentKey, dateLimit)
         response.map(
@@ -252,7 +247,6 @@ class RegimeAPIController @Inject()(auditService: AuditService,
             }
           }
         )
-      // }
     }
   }
 
