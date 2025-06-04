@@ -26,6 +26,7 @@ import java.util.Base64
 
 @Singleton
 class AppConfig @Inject()(val config: Configuration, servicesConfig: ServicesConfig) extends FeatureSwitching {
+
   import servicesConfig._
 
   val auditingEnabled: Boolean = config.get[Boolean]("auditing.enabled")
