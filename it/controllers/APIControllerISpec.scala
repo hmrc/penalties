@@ -26,11 +26,10 @@ import utils.{ETMPWiremock, IntegrationSpecCommonBase}
 import scala.jdk.CollectionConverters._
 
 class APIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock with FeatureSwitching {
- val controller: APIController = injector.instanceOf[APIController]
+  val controller: APIController = injector.instanceOf[APIController]
 
- "getSummaryDataForVRN" should {
-   val getPenaltyDetailsJson: JsValue = Json.parse(
-     """
+  "getSummaryDataForVRN" should {
+    val getPenaltyDetailsJson: JsValue = Json.parse("""
        |{
        | "totalisations": {
        |   "LSPTotalValue": 200,
@@ -154,13 +153,13 @@ class APIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock wit
        |}
        |""".stripMargin)
 
-   s"return OK (${Status.OK})" when {
-     "the get penalty details call succeeds" in {
-       mockStubResponseForGetPenaltyDetails(Status.OK, "123456789", body = Some(getPenaltyDetailsJson.toString()))
-       val result = await(buildClientForRequestToApp(uri = "/vat/penalties/summary/123456789").get())
-       result.status shouldBe OK
-       Json.parse(result.body) shouldBe Json.parse(
-         """
+    s"return OK (${Status.OK})" when {
+      "the get penalty details call succeeds" in {
+        mockStubResponseForGetPenaltyDetails(Status.OK, "123456789", body = Some(getPenaltyDetailsJson.toString()))
+        val result = await(buildClientForRequestToApp(uri = "/vat/penalties/summary/123456789").get())
+        result.status shouldBe OK
+        Json.parse(result.body) shouldBe Json.parse(
+          """
            |{
            |  "noOfPoints": 2,
            |  "noOfEstimatedPenalties": 2,
@@ -170,37 +169,37 @@ class APIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock wit
            |  "hasAnyPenaltyData": true
            |}
            |""".stripMargin
-       )
-     }
-   }
+        )
+      }
+    }
 
-   s"return BAD_REQUEST (${Status.BAD_REQUEST})" when {
-     "the user supplies an invalid VRN" in {
-       val result = await(buildClientForRequestToApp(uri = "/vat/penalties/summary/123456789123456789").get())
-       result.status shouldBe BAD_REQUEST
-     }
-   }
+    s"return BAD_REQUEST (${Status.BAD_REQUEST})" when {
+      "the user supplies an invalid VRN" in {
+        val result = await(buildClientForRequestToApp(uri = "/vat/penalties/summary/123456789123456789").get())
+        result.status shouldBe BAD_REQUEST
+      }
+    }
 
-   s"return ISE (${Status.INTERNAL_SERVER_ERROR})" when {
-     "the get penalty details call fails" in {
-       mockStubResponseForGetPenaltyDetails(Status.INTERNAL_SERVER_ERROR, "123456789", body = Some(""))
-       val result = await(buildClientForRequestToApp(uri = "/vat/penalties/summary/123456789").get())
-       result.status shouldBe INTERNAL_SERVER_ERROR
-     }
-   }
+    s"return ISE (${Status.INTERNAL_SERVER_ERROR})" when {
+      "the get penalty details call fails" in {
+        mockStubResponseForGetPenaltyDetails(Status.INTERNAL_SERVER_ERROR, "123456789", body = Some(""))
+        val result = await(buildClientForRequestToApp(uri = "/vat/penalties/summary/123456789").get())
+        result.status shouldBe INTERNAL_SERVER_ERROR
+      }
+    }
 
-   s"return NOT_FOUND (${Status.NOT_FOUND})" when {
-     "the get penalty details call returns 404" in {
-       mockStubResponseForGetPenaltyDetails(Status.NOT_FOUND, "123456789", body = Some(""))
-       val result = await(buildClientForRequestToApp(uri = "/vat/penalties/summary/123456789").get())
-       result.status shouldBe NOT_FOUND
-     }
-   }
+    s"return NOT_FOUND (${Status.NOT_FOUND})" when {
+      "the get penalty details call returns 404" in {
+        mockStubResponseForGetPenaltyDetails(Status.NOT_FOUND, "123456789", body = Some(""))
+        val result = await(buildClientForRequestToApp(uri = "/vat/penalties/summary/123456789").get())
+        result.status shouldBe NOT_FOUND
+      }
+    }
 
-   s"return NO_CONTENT (${Status.NO_CONTENT})" when {
-     "the get penalty details call returns 404 (with NO_DATA_FOUND in body)" in {
-       val notFoundResponseBody: String =
-         """
+    s"return NO_CONTENT (${Status.NO_CONTENT})" when {
+      "the get penalty details call returns 404 (with NO_DATA_FOUND in body)" in {
+        val notFoundResponseBody: String =
+          """
            |{
            |  "failures": [
            |    {
@@ -210,25 +209,24 @@ class APIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock wit
            |  ]
            |}
            |""".stripMargin
-       mockStubResponseForGetPenaltyDetails(Status.NOT_FOUND, "123456789", body = Some(notFoundResponseBody))
-       val result = await(buildClientForRequestToApp(uri = "/vat/penalties/summary/123456789").get())
-       result.status shouldBe NO_CONTENT
-     }
+        mockStubResponseForGetPenaltyDetails(Status.NOT_FOUND, "123456789", body = Some(notFoundResponseBody))
+        val result = await(buildClientForRequestToApp(uri = "/vat/penalties/summary/123456789").get())
+        result.status shouldBe NO_CONTENT
+      }
 
-     "the get penalty details call returns 200 with an empty body" in {
-       val emptyResponse: String = "{}"
-       mockStubResponseForGetPenaltyDetails(Status.OK, "123456789", body = Some(emptyResponse))
-       val result = await(buildClientForRequestToApp(uri = "/vat/penalties/summary/123456789").get())
-       result.status shouldBe NO_CONTENT
-     }
-   }
- }
+      "the get penalty details call returns 200 with an empty body" in {
+        val emptyResponse: String = "{}"
+        mockStubResponseForGetPenaltyDetails(Status.OK, "123456789", body = Some(emptyResponse))
+        val result = await(buildClientForRequestToApp(uri = "/vat/penalties/summary/123456789").get())
+        result.status shouldBe NO_CONTENT
+      }
+    }
+  }
 
- "getFinancialDetails" should {
-   s"return OK (${Status.OK})" when {
-     "the get Financial Details call succeeds" in {
-       val sampleAPI1811Response = Json.parse(
-         """
+  "getFinancialDetails" should {
+    s"return OK (${Status.OK})" when {
+      "the get Financial Details call succeeds" in {
+        val sampleAPI1811Response = Json.parse("""
            |{
            | "getFinancialData" : {
            | "financialDetails": {
@@ -324,54 +322,76 @@ class APIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock wit
            |}
            |}
            |}""".stripMargin)
-       enableFeatureSwitch(CallAPI1811ETMP)
-       mockResponseForGetFinancialDetails(Status.OK, s"VRN/123456789/VATC?searchType=CHGREF&searchItem=XC00178236592&dateType=BILLING&dateFrom=2020-10-03&dateTo=2021-07-12&includeClearedItems=false" +
-         s"&includeStatisticalItems=true&includePaymentOnAccount=true&addRegimeTotalisation=false&addLockInformation=true&addPenaltyDetails=true" +
-         s"&addPostedInterestDetails=true&addAccruingInterestDetails=true", Some(getFinancialDetailsAsJson.toString()))
-       val result = await(buildClientForRequestToApp(uri = s"/penalty/financial-data/VRN/123456789/VATC?searchType=CHGREF&searchItem=XC00178236592&dateType=BILLING&dateFrom=2020-10-03&dateTo=2021-07-12&includeClearedItems=false" +
-         s"&includeStatisticalItems=true&includePaymentOnAccount=true&addRegimeTotalisation=false&addLockInformation=true&addPenaltyDetails=true" +
-         s"&addPostedInterestDetails=true&addAccruingInterestDetails=true").get())
-       result.status shouldBe OK
-       result.json shouldBe sampleAPI1811Response
-       wireMockServer.findAll(postRequestedFor(urlEqualTo("/write/audit"))).asScala.toList
-         .exists(_.getBodyAsString.contains("Penalties3rdPartyFinancialPenaltyDetailsDataRetrieval")) shouldBe true
-     }
-   }
+        enableFeatureSwitch(CallAPI1811ETMP)
+        mockResponseForGetFinancialDetails(
+          Status.OK,
+          s"VRN/123456789/VATC?searchType=CHGREF&searchItem=XC00178236592&dateType=BILLING&dateFrom=2020-10-03&dateTo=2021-07-12&includeClearedItems=false" +
+            s"&includeStatisticalItems=true&includePaymentOnAccount=true&addRegimeTotalisation=false&addLockInformation=true&addPenaltyDetails=true" +
+            s"&addPostedInterestDetails=true&addAccruingInterestDetails=true",
+          Some(getFinancialDetailsAsJson.toString())
+        )
+        val result = await(buildClientForRequestToApp(uri =
+          s"/penalty/financial-data/VRN/123456789/VATC?searchType=CHGREF&searchItem=XC00178236592&dateType=BILLING&dateFrom=2020-10-03&dateTo=2021-07-12&includeClearedItems=false" +
+            s"&includeStatisticalItems=true&includePaymentOnAccount=true&addRegimeTotalisation=false&addLockInformation=true&addPenaltyDetails=true" +
+            s"&addPostedInterestDetails=true&addAccruingInterestDetails=true").get())
+        result.status shouldBe OK
+        result.json shouldBe sampleAPI1811Response
+        wireMockServer
+          .findAll(postRequestedFor(urlEqualTo("/write/audit")))
+          .asScala
+          .toList
+          .exists(_.getBodyAsString.contains("Penalties3rdPartyFinancialPenaltyDetailsDataRetrieval")) shouldBe true
+      }
+    }
 
-   "return the status from EIS" when {
-     "404 response received " in {
-       enableFeatureSwitch(CallAPI1811ETMP)
-       mockResponseForGetFinancialDetails(Status.NOT_FOUND, s"VRN/123456789/VATC?searchType=CHGREF&searchItem=XC00178236592&dateType=BILLING&dateFrom=2020-10-03&dateTo=2021-07-12&includeClearedItems=false" +
-         s"&includeStatisticalItems=true&includePaymentOnAccount=true&addRegimeTotalisation=false&addLockInformation=true&addPenaltyDetails=true" +
-         s"&addPostedInterestDetails=true&addAccruingInterestDetails=true")
-       val result = await(buildClientForRequestToApp(uri = s"/penalty/financial-data/VRN/123456789/VATC?searchType=CHGREF&searchItem=XC00178236592&dateType=BILLING&dateFrom=2020-10-03&dateTo=2021-07-12&includeClearedItems=false" +
-         s"&includeStatisticalItems=true&includePaymentOnAccount=true&addRegimeTotalisation=false&addLockInformation=true&addPenaltyDetails=true" +
-         s"&addPostedInterestDetails=true&addAccruingInterestDetails=true").get())
-       result.status shouldBe NOT_FOUND
-       wireMockServer.findAll(postRequestedFor(urlEqualTo("/write/audit"))).asScala.toList
-         .exists(_.getBodyAsString.contains("Penalties3rdPartyFinancialPenaltyDetailsDataRetrieval")) shouldBe true
-     }
+    "return the status from EIS" when {
+      "404 response received " in {
+        enableFeatureSwitch(CallAPI1811ETMP)
+        mockResponseForGetFinancialDetails(
+          Status.NOT_FOUND,
+          s"VRN/123456789/VATC?searchType=CHGREF&searchItem=XC00178236592&dateType=BILLING&dateFrom=2020-10-03&dateTo=2021-07-12&includeClearedItems=false" +
+            s"&includeStatisticalItems=true&includePaymentOnAccount=true&addRegimeTotalisation=false&addLockInformation=true&addPenaltyDetails=true" +
+            s"&addPostedInterestDetails=true&addAccruingInterestDetails=true"
+        )
+        val result = await(buildClientForRequestToApp(uri =
+          s"/penalty/financial-data/VRN/123456789/VATC?searchType=CHGREF&searchItem=XC00178236592&dateType=BILLING&dateFrom=2020-10-03&dateTo=2021-07-12&includeClearedItems=false" +
+            s"&includeStatisticalItems=true&includePaymentOnAccount=true&addRegimeTotalisation=false&addLockInformation=true&addPenaltyDetails=true" +
+            s"&addPostedInterestDetails=true&addAccruingInterestDetails=true").get())
+        result.status shouldBe NOT_FOUND
+        wireMockServer
+          .findAll(postRequestedFor(urlEqualTo("/write/audit")))
+          .asScala
+          .toList
+          .exists(_.getBodyAsString.contains("Penalties3rdPartyFinancialPenaltyDetailsDataRetrieval")) shouldBe true
+      }
 
-     "Non 200 response received " in {
-       enableFeatureSwitch(CallAPI1811ETMP)
-       mockResponseForGetFinancialDetails(Status.BAD_REQUEST, s"VRN/123456789/VATC?searchType=CHGREF&searchItem=XC00178236592&dateType=BILLING&dateFrom=2020-10-03&dateTo=2021-07-12&includeClearedItems=false" +
-         s"&includeStatisticalItems=true&includePaymentOnAccount=true&addRegimeTotalisation=false&addLockInformation=true&addPenaltyDetails=true" +
-         s"&addPostedInterestDetails=true&addAccruingInterestDetails=true", Some(""))
-       val result = await(buildClientForRequestToApp(uri = s"/penalty/financial-data/VRN/123456789/VATC?searchType=CHGREF&searchItem=XC00178236592&dateType=BILLING&dateFrom=2020-10-03&dateTo=2021-07-12&includeClearedItems=false" +
-         s"&includeStatisticalItems=true&includePaymentOnAccount=true&addRegimeTotalisation=false&addLockInformation=true&addPenaltyDetails=true" +
-         s"&addPostedInterestDetails=true&addAccruingInterestDetails=true").get())
-       result.status shouldBe BAD_REQUEST
-       wireMockServer.findAll(postRequestedFor(urlEqualTo("/write/audit"))).asScala.toList
-         .exists(_.getBodyAsString.contains("Penalties3rdPartyFinancialPenaltyDetailsDataRetrieval")) shouldBe true
-     }
-   }
- }
+      "Non 200 response received " in {
+        enableFeatureSwitch(CallAPI1811ETMP)
+        mockResponseForGetFinancialDetails(
+          Status.BAD_REQUEST,
+          s"VRN/123456789/VATC?searchType=CHGREF&searchItem=XC00178236592&dateType=BILLING&dateFrom=2020-10-03&dateTo=2021-07-12&includeClearedItems=false" +
+            s"&includeStatisticalItems=true&includePaymentOnAccount=true&addRegimeTotalisation=false&addLockInformation=true&addPenaltyDetails=true" +
+            s"&addPostedInterestDetails=true&addAccruingInterestDetails=true",
+          Some("")
+        )
+        val result = await(buildClientForRequestToApp(uri =
+          s"/penalty/financial-data/VRN/123456789/VATC?searchType=CHGREF&searchItem=XC00178236592&dateType=BILLING&dateFrom=2020-10-03&dateTo=2021-07-12&includeClearedItems=false" +
+            s"&includeStatisticalItems=true&includePaymentOnAccount=true&addRegimeTotalisation=false&addLockInformation=true&addPenaltyDetails=true" +
+            s"&addPostedInterestDetails=true&addAccruingInterestDetails=true").get())
+        result.status shouldBe BAD_REQUEST
+        wireMockServer
+          .findAll(postRequestedFor(urlEqualTo("/write/audit")))
+          .asScala
+          .toList
+          .exists(_.getBodyAsString.contains("Penalties3rdPartyFinancialPenaltyDetailsDataRetrieval")) shouldBe true
+      }
+    }
+  }
 
- "getPenaltyDetails" should {
-   s"return OK (${Status.OK})" when {
-     "the get Penalty Details call succeeds" in {
-       val sampleAPI1812Response = Json.parse(
-         """
+  "getPenaltyDetails" should {
+    s"return OK (${Status.OK})" when {
+      "the get Penalty Details call succeeds" in {
+        val sampleAPI1812Response = Json.parse("""
            |{
            | "totalisations": {
            |   "LSPTotalValue": 200,
@@ -460,31 +480,43 @@ class APIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock wit
            | }
            |}
            |""".stripMargin)
-       enableFeatureSwitch(CallAPI1812ETMP)
-       mockResponseForGetPenaltyDetails(Status.OK, s"123456789?dateLimit=09", Some(sampleAPI1812Response.toString))
-       val result = await(buildClientForRequestToApp(uri = s"/penalty-details/VAT/VRN/123456789?dateLimit=09").get())
-       result.status shouldBe OK
-       result.json shouldBe sampleAPI1812Response
-       wireMockServer.findAll(postRequestedFor(urlEqualTo("/write/audit"))).asScala.toList.exists(_.getBodyAsString.contains("Penalties3rdPartyPenaltyDetailsDataRetrieval")) shouldBe true
-     }
-   }
+        enableFeatureSwitch(CallAPI1812ETMP)
+        mockResponseForGetPenaltyDetails(Status.OK, s"123456789?dateLimit=09", Some(sampleAPI1812Response.toString))
+        val result = await(buildClientForRequestToApp(uri = s"/penalty-details/VAT/VRN/123456789?dateLimit=09").get())
+        result.status shouldBe OK
+        result.json shouldBe sampleAPI1812Response
+        wireMockServer
+          .findAll(postRequestedFor(urlEqualTo("/write/audit")))
+          .asScala
+          .toList
+          .exists(_.getBodyAsString.contains("Penalties3rdPartyPenaltyDetailsDataRetrieval")) shouldBe true
+      }
+    }
 
-   "return the status from EIS" when {
-     "404 response received" in {
-       enableFeatureSwitch(CallAPI1812ETMP)
-       mockResponseForGetPenaltyDetails(Status.NOT_FOUND, s"123456789?dateLimit=09", Some(""))
-       val result = await(buildClientForRequestToApp(uri = s"/penalty-details/VAT/VRN/123456789?dateLimit=09").get())
-       result.status shouldBe NOT_FOUND
-       wireMockServer.findAll(postRequestedFor(urlEqualTo("/write/audit"))).asScala.toList.exists(_.getBodyAsString.contains("Penalties3rdPartyPenaltyDetailsDataRetrieval")) shouldBe true
-     }
+    "return the status from EIS" when {
+      "404 response received" in {
+        enableFeatureSwitch(CallAPI1812ETMP)
+        mockResponseForGetPenaltyDetails(Status.NOT_FOUND, s"123456789?dateLimit=09", Some(""))
+        val result = await(buildClientForRequestToApp(uri = s"/penalty-details/VAT/VRN/123456789?dateLimit=09").get())
+        result.status shouldBe NOT_FOUND
+        wireMockServer
+          .findAll(postRequestedFor(urlEqualTo("/write/audit")))
+          .asScala
+          .toList
+          .exists(_.getBodyAsString.contains("Penalties3rdPartyPenaltyDetailsDataRetrieval")) shouldBe true
+      }
 
-     "Non 200 response received" in {
-       enableFeatureSwitch(CallAPI1812ETMP)
-       mockResponseForGetPenaltyDetails(Status.BAD_REQUEST, s"123456789?dateLimit=09", Some(""))
-       val result = await(buildClientForRequestToApp(uri = s"/penalty-details/VAT/VRN/123456789?dateLimit=09").get())
-       result.status shouldBe BAD_REQUEST
-       wireMockServer.findAll(postRequestedFor(urlEqualTo("/write/audit"))).asScala.toList.exists(_.getBodyAsString.contains("Penalties3rdPartyPenaltyDetailsDataRetrieval")) shouldBe true
-     }
-   }
- }
+      "Non 200 response received" in {
+        enableFeatureSwitch(CallAPI1812ETMP)
+        mockResponseForGetPenaltyDetails(Status.BAD_REQUEST, s"123456789?dateLimit=09", Some(""))
+        val result = await(buildClientForRequestToApp(uri = s"/penalty-details/VAT/VRN/123456789?dateLimit=09").get())
+        result.status shouldBe BAD_REQUEST
+        wireMockServer
+          .findAll(postRequestedFor(urlEqualTo("/write/audit")))
+          .asScala
+          .toList
+          .exists(_.getBodyAsString.contains("Penalties3rdPartyPenaltyDetailsDataRetrieval")) shouldBe true
+      }
+    }
+  }
 }

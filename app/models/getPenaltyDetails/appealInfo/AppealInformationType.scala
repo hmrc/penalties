@@ -19,10 +19,10 @@ package models.getPenaltyDetails.appealInfo
 import play.api.libs.json.{JsValue, Json, Reads, Writes}
 
 case class AppealInformationType(
-                                  appealStatus: Option[AppealStatusEnum.Value],
-                                  appealLevel: Option[AppealLevelEnum.Value],
-                                  appealDescription: Option[String] //NOTE: this field is required in 1812 spec but has been set to optional as it is only used by 3rd party APIs
-                                )
+    appealStatus: Option[AppealStatusEnum.Value],
+    appealLevel: Option[AppealLevelEnum.Value],
+    appealDescription: Option[String] // NOTE: this field is required in 1812 spec but has been set to optional as it is only used by 3rd party APIs
+)
 
 object AppealInformationType {
   implicit val reads: Reads[AppealInformationType] = Json.reads[AppealInformationType]
@@ -31,19 +31,18 @@ object AppealInformationType {
     override def writes(appealInformation: AppealInformationType): JsValue = {
       val newAppealLevel: Option[AppealLevelEnum.Value] = parseAppealLevel(appealInformation)
       Json.obj(
-        "appealStatus" -> appealInformation.appealStatus,
-        "appealLevel" -> newAppealLevel,
+        "appealStatus"      -> appealInformation.appealStatus,
+        "appealLevel"       -> newAppealLevel,
         "appealDescription" -> appealInformation.appealDescription
       )
     }
   }
 
-  private def parseAppealLevel(appealInformation: AppealInformationType): Option[AppealLevelEnum.Value] = {
+  private def parseAppealLevel(appealInformation: AppealInformationType): Option[AppealLevelEnum.Value] =
     if (appealInformation.appealLevel.isEmpty
       && appealInformation.appealStatus.contains(AppealStatusEnum.Unappealable)) {
       Some(AppealLevelEnum.HMRC)
     } else {
       appealInformation.appealLevel
     }
-  }
 }

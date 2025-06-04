@@ -34,10 +34,11 @@ import models.AgnosticEnrolmentKey
 import uk.gov.hmrc.http.HeaderCarrier
 import models.penaltyDetails.PenaltyDetails
 
-class RegimeAppealService @Inject()(appealsConnector: RegimePEGAConnector,
-                                    hipAppealsConnector: HIPConnector,
-                                    appConfig: AppConfig,
-                                    idGenerator: UUIDGenerator)(implicit ec: ExecutionContext, val config: Configuration) extends FeatureSwitching {
+class RegimeAppealService @Inject() (appealsConnector: RegimePEGAConnector,
+                                     hipAppealsConnector: HIPConnector,
+                                     appConfig: AppConfig,
+                                     idGenerator: UUIDGenerator)(implicit ec: ExecutionContext, val config: Configuration)
+    extends FeatureSwitching {
 
   private val regexToSanitiseFileName: String = "[\\\\\\/:*?<>|\"‘’“”]"
 
@@ -45,8 +46,7 @@ class RegimeAppealService @Inject()(appealsConnector: RegimePEGAConnector,
                    enrolmentKey: AgnosticEnrolmentKey,
                    isLPP: Boolean,
                    penaltyNumber: String,
-                   correlationId: String)
-                  (implicit headerCarrier:HeaderCarrier): Future[Either[AppealsParser.ErrorResponse, AppealResponseModel]] = {
+                   correlationId: String)(implicit headerCarrier: HeaderCarrier): Future[Either[AppealsParser.ErrorResponse, AppealResponseModel]] = {
     val response: Future[AppealsParser.AppealSubmissionResponse] = if (isEnabled(CallAPI1808HIP)) {
       hipAppealsConnector.submitAppeal(appealSubmission, penaltyNumber, correlationId)
     } else {
@@ -55,7 +55,8 @@ class RegimeAppealService @Inject()(appealsConnector: RegimePEGAConnector,
     response.flatMap {
       _.fold(
         error => {
-          logger.error(s"[RegimeAppealService][submitAppeal] - Submit appeal call failed with error: ${error.body} and status: ${error.status} for enrolment: $enrolmentKey")
+          logger.error(
+            s"[RegimeAppealService][submitAppeal] - Submit appeal call failed with error: ${error.body} and status: ${error.status} for enrolment: $enrolmentKey")
           Future(Left(error))
         },
         responseModel => {
@@ -66,13 +67,14 @@ class RegimeAppealService @Inject()(appealsConnector: RegimePEGAConnector,
     }
   }
 
-  def createSDESNotifications(optUploadJourney: Option[Seq[UploadJourney]], caseID: String): Seq[SDESNotification] = {
+  def createSDESNotifications(optUploadJourney: Option[Seq[UploadJourney]], caseID: String): Seq[SDESNotification] =
     optUploadJourney match {
       case Some(uploads) =>
         val countOfUploadsWithUploadDetailsDefined = uploads.count(_.uploadDetails.isDefined)
         if (countOfUploadsWithUploadDetailsDefined != uploads.size) {
-          logger.warn(s"[RegimeAppealService][createSDESNotifications] - There are ${uploads.size} uploads but" +
-            s" only $countOfUploadsWithUploadDetailsDefined uploads have upload details defined (possible missing files for case ID: $caseID)")
+          logger.warn(
+            s"[RegimeAppealService][createSDESNotifications] - There are ${uploads.size} uploads but" +
+              s" only $countOfUploadsWithUploadDetailsDefined uploads have upload details defined (possible missing files for case ID: $caseID)")
         }
         uploads.flatMap { upload =>
           upload.uploadDetails.map { details =>
@@ -96,27 +98,28 @@ class RegimeAppealService @Inject()(appealsConnector: RegimePEGAConnector,
         }
       case None => Seq.empty
     }
-  }
 
   def findMultiplePenalties(penaltyDetails: PenaltyDetails, penaltyId: String): Option[MultiplePenaltiesData] = {
     val lppPenaltyIdInPenaltyDetailsPayload: Option[LPPDetails] = penaltyDetails.latePaymentPenalty.flatMap {
       _.lppDetails.flatMap(_.find(_.penaltyChargeReference.contains(penaltyId)))
     }
     val principalChargeReference: String = lppPenaltyIdInPenaltyDetailsPayload.get.principalChargeReference
-    val penaltiesForPrincipalCharge: Seq[LPPDetails] = penaltyDetails.latePaymentPenalty.flatMap(_.lppDetails.map(_.filter(_.principalChargeReference.equals(principalChargeReference)))).get
+    val penaltiesForPrincipalCharge: Seq[LPPDetails] =
+      penaltyDetails.latePaymentPenalty.flatMap(_.lppDetails.map(_.filter(_.principalChargeReference.equals(principalChargeReference)))).get
     val underAppeal = penaltiesForPrincipalCharge.exists(_.appealInformation.isDefined)
-    val areBothPenaltiesPostedAndVATPaid: Boolean = penaltiesForPrincipalCharge.forall(penalty => {
+    val areBothPenaltiesPostedAndVATPaid: Boolean = penaltiesForPrincipalCharge.forall { penalty =>
       penalty.penaltyStatus == LPPPenaltyStatusEnum.Posted && penalty.principalChargeLatestClearing.isDefined
-    })
+    }
 
     if (penaltiesForPrincipalCharge.size == 2 && !underAppeal && areBothPenaltiesPostedAndVATPaid) {
       val secondPenalty = penaltiesForPrincipalCharge.find(_.penaltyCategory.equals(LPPPenaltyCategoryEnum.SecondPenalty)).get
-      val firstPenalty = penaltiesForPrincipalCharge.find(_.penaltyCategory.equals(LPPPenaltyCategoryEnum.FirstPenalty)).get
+      val firstPenalty  = penaltiesForPrincipalCharge.find(_.penaltyCategory.equals(LPPPenaltyCategoryEnum.FirstPenalty)).get
       val returnModel = MultiplePenaltiesData(
         firstPenaltyChargeReference = firstPenalty.penaltyChargeReference.get,
         firstPenaltyAmount = firstPenalty.penaltyAmountOutstanding.getOrElse(BigDecimal(0)) + firstPenalty.penaltyAmountPaid.getOrElse(BigDecimal(0)),
         secondPenaltyChargeReference = secondPenalty.penaltyChargeReference.get,
-        secondPenaltyAmount = secondPenalty.penaltyAmountOutstanding.getOrElse(BigDecimal(0)) + secondPenalty.penaltyAmountPaid.getOrElse(BigDecimal(0)),
+        secondPenaltyAmount =
+          secondPenalty.penaltyAmountOutstanding.getOrElse(BigDecimal(0)) + secondPenalty.penaltyAmountPaid.getOrElse(BigDecimal(0)),
         firstPenaltyCommunicationDate = firstPenalty.communicationsDate.getOrElse(appConfig.getTimeMachineDateTime.toLocalDate),
         secondPenaltyCommunicationDate = secondPenalty.communicationsDate.getOrElse(appConfig.getTimeMachineDateTime.toLocalDate)
       )
@@ -126,14 +129,13 @@ class RegimeAppealService @Inject()(appealsConnector: RegimePEGAConnector,
     }
   }
 
-  private def sanitiseFileName(fileName: String)(fileMimeType: String)(fileReference: String): String = {
+  private def sanitiseFileName(fileName: String)(fileMimeType: String)(fileReference: String): String =
     if (appConfig.isEnabled(SanitiseFileName)) {
       val fileNameWithoutSpecialCharacters = fileName.replaceAll(regexToSanitiseFileName, "_")
       FileHelper.appendFileExtension(fileNameWithoutSpecialCharacters)(fileMimeType)(fileReference)(appConfig)
     } else {
       fileName
     }
-  }
 
   private def sanitisedAndTruncatedFileName(fileName: String)(fileMimeType: String)(reference: String): String = {
     val sanitisedFileName = sanitiseFileName(fileName)(fileMimeType)(reference)
@@ -142,12 +144,14 @@ class RegimeAppealService @Inject()(appealsConnector: RegimePEGAConnector,
         val fileRegex = "^(.*)(\\.\\w{1,4})$".r
         sanitisedFileName match {
           case fileRegex(fileNameMain, fileExtension) =>
-            logger.info(s"[RegimeAppealService][sanitisedAndTruncatedFileName] File name length: ${fileNameMain.length} with reference of: $reference, truncating to ${appConfig.maximumFilenameLength}")
+            logger.info(
+              s"[RegimeAppealService][sanitisedAndTruncatedFileName] File name length: ${fileNameMain.length} with reference of: $reference, truncating to ${appConfig.maximumFilenameLength}")
             fileNameMain.substring(0, Math.min(fileNameMain.length(), appConfig.maximumFilenameLength)) ++ fileExtension
           case _ => throw new Exception(s"Bad filename: $sanitisedFileName")
         }
       } else {
-        logger.info(s"[RegimeAppealService][sanitisedAndTruncatedFileName] File name length: ${sanitisedFileName.length} with reference of: $reference, truncating to ${appConfig.maximumFilenameLength}")
+        logger.info(
+          s"[RegimeAppealService][sanitisedAndTruncatedFileName] File name length: ${sanitisedFileName.length} with reference of: $reference, truncating to ${appConfig.maximumFilenameLength}")
         sanitisedFileName.substring(0, Math.min(sanitisedFileName.length(), appConfig.maximumFilenameLength))
       }
     } else {

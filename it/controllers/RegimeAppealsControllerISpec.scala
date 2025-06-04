@@ -31,19 +31,21 @@ import play.api.libs.ws.WSResponse
 import java.time.LocalDate
 import scala.jdk.CollectionConverters._
 
-class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with RegimeETMPWiremock with HIPWiremock
-  with RegimeAppealWiremock
-  with FileNotificationOrchestratorWiremock
-  with FeatureSwitching
-  with TableDrivenPropertyChecks
-  with AuthMock {
+class RegimeAppealsControllerISpec
+    extends IntegrationSpecCommonBase
+    with RegimeETMPWiremock
+    with HIPWiremock
+    with RegimeAppealWiremock
+    with FileNotificationOrchestratorWiremock
+    with FeatureSwitching
+    with TableDrivenPropertyChecks
+    with AuthMock {
 
   setEnabledFeatureSwitches()
 
   val controller: RegimeAppealsController = injector.instanceOf[RegimeAppealsController]
 
-  val appealJson: JsValue = Json.parse(
-    """
+  val appealJson: JsValue = Json.parse("""
       |{
       |  "type": "LATE_SUBMISSION",
       |  "startDate": "2021-04-23T18:25:43.511",
@@ -53,8 +55,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
       |}
       |""".stripMargin)
 
-  val appealJsonLPP: JsValue = Json.parse(
-    """
+  val appealJsonLPP: JsValue = Json.parse("""
       |{
       |  "type": "LATE_PAYMENT",
       |	 "startDate": "2023-01-01T18:25:43.511",
@@ -64,8 +65,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
       |}
       |""".stripMargin)
 
-  val appealJsonLPPAdditional: JsValue = Json.parse(
-    """
+  val appealJsonLPPAdditional: JsValue = Json.parse("""
       |{
       |  "type": "ADDITIONAL",
       |	 "startDate": "2023-01-01T18:25:43.511",
@@ -75,8 +75,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
       |}
       |""".stripMargin)
 
-  val appealV2Json: JsValue = Json.parse(
-    """
+  val appealV2Json: JsValue = Json.parse("""
       |{
       |  "type": "LATE_SUBMISSION",
       |  "startDate": "2023-01-01",
@@ -86,8 +85,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
       |}
       |""".stripMargin)
 
-  val appealV2JsonLPP: JsValue = Json.parse(
-    """
+  val appealV2JsonLPP: JsValue = Json.parse("""
       |{
       |  "type": "LATE_PAYMENT",
       |	 "startDate": "2022-01-01",
@@ -97,8 +95,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
       |}
       |""".stripMargin)
 
-  val appealV2JsonLPPAdditional: JsValue = Json.parse(
-    """
+  val appealV2JsonLPPAdditional: JsValue = Json.parse("""
       |{
       |  "type": "ADDITIONAL",
       |	 "startDate": "2024-01-01",
@@ -108,8 +105,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
       |}
       |""".stripMargin)
 
-  val penaltyDetailsJson: JsValue = Json.parse(
-  s"""
+  val penaltyDetailsJson: JsValue = Json.parse(s"""
      |{
      |  "success": {
      |    "processingDate": "$mockInstant",
@@ -252,8 +248,8 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
      |}
      |""".stripMargin)
 
-  class SetUp(hipFeatureSwitch:Boolean = false) {
-    if(hipFeatureSwitch) {
+  class SetUp(hipFeatureSwitch: Boolean = false) {
+    if (hipFeatureSwitch) {
       setEnabledFeatureSwitches(CallAPI1808HIP)
     } else {
       disableFeatureSwitch(CallAPI1808HIP)
@@ -262,48 +258,49 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
     mockSuccessfulResponse()
   }
 
-    Table(
+  Table(
     ("Regime", "IdType", "Id"),
     (Regime("VATC"), IdType("VRN"), Id("123456789")),
-    (Regime("ITSA"), IdType("NINO"), Id("AB123456C")),
+    (Regime("ITSA"), IdType("NINO"), Id("AB123456C"))
   ).forEvery { (regime, idType, id) =>
-
-    val enrolmentKey = AgnosticEnrolmentKey(regime, idType, id)
-    val (r, it, i) =  (regime.value, idType.value, id.value)
+    val enrolmentKey    = AgnosticEnrolmentKey(regime, idType, id)
+    val (r, it, i)      = (regime.value, idType.value, id.value)
     val submitAppealUri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=false&penaltyNumber=123456789&correlationId=uuid-1"
 
-
     s"getAppealsDataForLateSubmissionPenalty for $regime" should {
-    "call ETMP and compare the penalty ID provided and the penalty ID in the payload - return OK if there is a match" in {
+      "call ETMP and compare the penalty ID provided and the penalty ID in the payload - return OK if there is a match" in {
 
-      mockStubResponseForAuthorisedUser
-      mockStubResponseForPenaltyDetails(Status.OK, regime, idType, id, Some(penaltyDetailsJson.toString()))
+        mockStubResponseForAuthorisedUser
+        mockStubResponseForPenaltyDetails(Status.OK, regime, idType, id, Some(penaltyDetailsJson.toString()))
 
-      val result = await(buildClientForRequestToApp(uri = s"/${regime.value}/appeals-data/late-submissions/${idType.value}/${id.value}?penaltyId=123456789").get())
-      result.status shouldBe Status.OK
-      result.body shouldBe appealV2Json.toString()
+        val result = await(
+          buildClientForRequestToApp(uri = s"/${regime.value}/appeals-data/late-submissions/${idType.value}/${id.value}?penaltyId=123456789").get())
+        result.status shouldBe Status.OK
+        result.body shouldBe appealV2Json.toString()
+      }
+
+      "return NOT_FOUND when the penalty ID given does not match the penalty ID in the payload" in {
+
+        mockStubResponseForAuthorisedUser
+        mockStubResponseForPenaltyDetails(Status.OK, regime, idType, id, Some(penaltyDetailsJson.toString()))
+
+        val result =
+          await(buildClientForRequestToApp(uri = s"/${regime.value}/appeals-data/late-submissions/${idType.value}/${id.value}?penaltyId=0001").get())
+        result.status shouldBe Status.NOT_FOUND
+      }
+
+      "return an ISE when the call to ETMP fails" in {
+
+        mockStubResponseForAuthorisedUser
+        mockStubResponseForPenaltyDetails(Status.INTERNAL_SERVER_ERROR, regime, idType, id, Some(""))
+
+        val result = await(
+          buildClientForRequestToApp(
+            uri = s"/${regime.value}/appeals-data/late-submissions/${idType.value}/${id.value}?penaltyId=123456789"
+          ).get())
+        result.status shouldBe Status.INTERNAL_SERVER_ERROR
+      }
     }
-
-    "return NOT_FOUND when the penalty ID given does not match the penalty ID in the payload" in {
-
-      mockStubResponseForAuthorisedUser
-      mockStubResponseForPenaltyDetails(Status.OK, regime, idType, id, Some(penaltyDetailsJson.toString()))
-
-      val result = await(buildClientForRequestToApp(uri = s"/${regime.value}/appeals-data/late-submissions/${idType.value}/${id.value}?penaltyId=0001").get())
-      result.status shouldBe Status.NOT_FOUND
-    }
-
-    "return an ISE when the call to ETMP fails" in {
-
-      mockStubResponseForAuthorisedUser
-      mockStubResponseForPenaltyDetails(Status.INTERNAL_SERVER_ERROR, regime, idType, id, Some(""))
-
-      val result = await(buildClientForRequestToApp(
-        uri = s"/${regime.value}/appeals-data/late-submissions/${idType.value}/${id.value}?penaltyId=123456789"
-      ).get())
-      result.status shouldBe Status.INTERNAL_SERVER_ERROR
-    }
-  }
 
     s"getAppealsDataForLatePaymentPenalty for $regime" should {
       "call ETMP and compare the penalty ID provided and the penalty ID in the payload - return OK if there is a match" in {
@@ -311,7 +308,9 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
         mockStubResponseForAuthorisedUser
         mockStubResponseForPenaltyDetails(Status.OK, regime, idType, id, Some(penaltyDetailsJson.toString()))
 
-        val result = await(buildClientForRequestToApp(uri = s"/${regime.value}/appeals-data/late-payments/${idType.value}/${id.value}?penaltyId=1234567887&isAdditional=false").get())
+        val result = await(
+          buildClientForRequestToApp(uri =
+            s"/${regime.value}/appeals-data/late-payments/${idType.value}/${id.value}?penaltyId=1234567887&isAdditional=false").get())
         result.status shouldBe Status.OK
         result.body shouldBe appealV2JsonLPP.toString()
       }
@@ -321,7 +320,9 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
         mockStubResponseForAuthorisedUser
         mockStubResponseForPenaltyDetails(Status.OK, regime, idType, id, Some(penaltyDetailsJson.toString()))
 
-        val result = await(buildClientForRequestToApp(uri = s"/${regime.value}/appeals-data/late-payments/${idType.value}/${id.value}?penaltyId=1234567889&isAdditional=true").get())
+        val result = await(
+          buildClientForRequestToApp(uri =
+            s"/${regime.value}/appeals-data/late-payments/${idType.value}/${id.value}?penaltyId=1234567889&isAdditional=true").get())
         result.status shouldBe Status.OK
         result.body shouldBe appealV2JsonLPPAdditional.toString()
       }
@@ -331,7 +332,9 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
         mockStubResponseForAuthorisedUser
         mockStubResponseForPenaltyDetails(Status.OK, regime, idType, id, Some(penaltyDetailsJson.toString()))
 
-        val result = await(buildClientForRequestToApp(uri = s"/${regime.value}/appeals-data/late-payments/${idType.value}/${id.value}?penaltyId=0001&isAdditional=false").get())
+        val result = await(
+          buildClientForRequestToApp(uri =
+            s"/${regime.value}/appeals-data/late-payments/${idType.value}/${id.value}?penaltyId=0001&isAdditional=false").get())
         result.status shouldBe Status.NOT_FOUND
       }
 
@@ -340,15 +343,16 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
         mockStubResponseForAuthorisedUser
         mockStubResponseForPenaltyDetails(Status.INTERNAL_SERVER_ERROR, regime, idType, id, Some(""))
 
-        val result = await(buildClientForRequestToApp(uri = s"/${regime.value}/appeals-data/late-payments/${idType.value}/${id.value}?penaltyId=0001&isAdditional=false").get())
+        val result = await(
+          buildClientForRequestToApp(uri =
+            s"/${regime.value}/appeals-data/late-payments/${idType.value}/${id.value}?penaltyId=0001&isAdditional=false").get())
         result.status shouldBe Status.INTERNAL_SERVER_ERROR
       }
     }
 
     s"getReasonableExcuses for $regime" should {
       "return all active reasonable excuses" in {
-        val jsonExpectedToReturn: JsValue = Json.parse(
-          """
+        val jsonExpectedToReturn: JsValue = Json.parse("""
             |{
             |  "excuses": [
             |    {
@@ -411,17 +415,17 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
               |}
               |""".stripMargin
           )
-          val result: WSResponse = await(buildClientForRequestToApp(uri = submitAppealUri).post(
-            jsonToSubmit
-          ))
+          val result: WSResponse = await(
+            buildClientForRequestToApp(uri = submitAppealUri).post(
+              jsonToSubmit
+            ))
           result.status shouldBe OK
         }
 
         "returns OK when successful for crime" in new SetUp {
           mockResponseForAppealSubmissionStub(OK, enrolmentKey, penaltyNumber = "123456789")
 
-          val jsonToSubmit: JsValue = Json.parse(
-            """
+          val jsonToSubmit: JsValue = Json.parse("""
               |{
               |    "sourceSystem": "MDTP",
               |    "taxRegime": "VAT",
@@ -439,17 +443,17 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
               |		}
               |}
               |""".stripMargin)
-          val result: WSResponse = await(buildClientForRequestToApp(uri = submitAppealUri).post(
-            jsonToSubmit
-          ))
+          val result: WSResponse = await(
+            buildClientForRequestToApp(uri = submitAppealUri).post(
+              jsonToSubmit
+            ))
           result.status shouldBe OK
         }
 
         "returns OK when successful for fire or flood" in new SetUp {
           mockResponseForAppealSubmissionStub(OK, enrolmentKey, penaltyNumber = "123456789")
 
-          val jsonToSubmit: JsValue = Json.parse(
-            """
+          val jsonToSubmit: JsValue = Json.parse("""
               |{
               |    "sourceSystem": "MDTP",
               |    "taxRegime": "VAT",
@@ -466,17 +470,17 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
               |    }
               |}
               |""".stripMargin)
-          val result: WSResponse = await(buildClientForRequestToApp(uri = submitAppealUri).post(
-            jsonToSubmit
-          ))
+          val result: WSResponse = await(
+            buildClientForRequestToApp(uri = submitAppealUri).post(
+              jsonToSubmit
+            ))
           result.status shouldBe OK
         }
 
-        "returns OK when successful for loss of staff" in new SetUp{
+        "returns OK when successful for loss of staff" in new SetUp {
           mockResponseForAppealSubmissionStub(OK, enrolmentKey, penaltyNumber = "123456789")
 
-          val jsonToSubmit: JsValue = Json.parse(
-            """
+          val jsonToSubmit: JsValue = Json.parse("""
               |{
               |    "sourceSystem": "MDTP",
               |    "taxRegime": "VAT",
@@ -493,17 +497,17 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
               |		}
               |}
               |""".stripMargin)
-          val result: WSResponse = await(buildClientForRequestToApp(uri = submitAppealUri).post(
-            jsonToSubmit
-          ))
+          val result: WSResponse = await(
+            buildClientForRequestToApp(uri = submitAppealUri).post(
+              jsonToSubmit
+            ))
           result.status shouldBe OK
         }
 
         "returns OK when successful for technical issues" in new SetUp {
           mockResponseForAppealSubmissionStub(OK, enrolmentKey, penaltyNumber = "123456789")
 
-          val jsonToSubmit: JsValue = Json.parse(
-            """
+          val jsonToSubmit: JsValue = Json.parse("""
               |{
               |    "sourceSystem": "MDTP",
               |    "taxRegime": "VAT",
@@ -521,9 +525,10 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
               |		}
               |}
               |""".stripMargin)
-          val result: WSResponse = await(buildClientForRequestToApp(uri = submitAppealUri).post(
-            jsonToSubmit
-          ))
+          val result: WSResponse = await(
+            buildClientForRequestToApp(uri = submitAppealUri).post(
+              jsonToSubmit
+            ))
           result.status shouldBe OK
         }
 
@@ -531,8 +536,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
           "there has been no hospital stay" in new SetUp {
             mockResponseForAppealSubmissionStub(OK, enrolmentKey, penaltyNumber = "123456789")
 
-            val jsonToSubmit: JsValue = Json.parse(
-              """
+            val jsonToSubmit: JsValue = Json.parse("""
                 |{
                 |    "sourceSystem": "MDTP",
                 |    "taxRegime": "VAT",
@@ -551,17 +555,17 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
                 |		}
                 |}
                 |""".stripMargin)
-            val result: WSResponse = await(buildClientForRequestToApp(uri = submitAppealUri).post(
-              jsonToSubmit
-            ))
+            val result: WSResponse = await(
+              buildClientForRequestToApp(uri = submitAppealUri).post(
+                jsonToSubmit
+              ))
             result.status shouldBe OK
           }
 
           "there is an ongoing hospital stay" in new SetUp {
             mockResponseForAppealSubmissionStub(OK, enrolmentKey, penaltyNumber = "123456789")
 
-            val jsonToSubmit: JsValue = Json.parse(
-              """
+            val jsonToSubmit: JsValue = Json.parse("""
                 |{
                 |    "sourceSystem": "MDTP",
                 |    "taxRegime": "VAT",
@@ -580,17 +584,17 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
                 |		}
                 |}
                 |""".stripMargin)
-            val result: WSResponse = await(buildClientForRequestToApp(uri = submitAppealUri).post(
-              jsonToSubmit
-            ))
+            val result: WSResponse = await(
+              buildClientForRequestToApp(uri = submitAppealUri).post(
+                jsonToSubmit
+              ))
             result.status shouldBe OK
           }
 
           "there has been a hospital stay" in new SetUp {
             mockResponseForAppealSubmissionStub(OK, enrolmentKey, penaltyNumber = "123456789")
 
-            val jsonToSubmit: JsValue = Json.parse(
-              """
+            val jsonToSubmit: JsValue = Json.parse("""
                 |{
                 |    "sourceSystem": "MDTP",
                 |    "taxRegime": "VAT",
@@ -610,9 +614,10 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
                 |		}
                 |}
                 |""".stripMargin)
-            val result: WSResponse = await(buildClientForRequestToApp(uri = submitAppealUri).post(
-              jsonToSubmit
-            ))
+            val result: WSResponse = await(
+              buildClientForRequestToApp(uri = submitAppealUri).post(
+                jsonToSubmit
+              ))
             result.status shouldBe OK
           }
         }
@@ -661,9 +666,10 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
               |}
               |""".stripMargin
           )
-          val result: WSResponse = await(buildClientForRequestToApp(uri = submitAppealUri).post(
-            jsonToSubmit
-          ))
+          val result: WSResponse = await(
+            buildClientForRequestToApp(uri = submitAppealUri).post(
+              jsonToSubmit
+            ))
           result.status shouldBe OK
         }
 
@@ -709,14 +715,16 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
               |}
               |""".stripMargin
           )
-          val result: WSResponse = await(buildClientForRequestToApp(uri = submitAppealUri).post(
-            jsonToSubmit
-          ))
+          val result: WSResponse = await(
+            buildClientForRequestToApp(uri = submitAppealUri).post(
+              jsonToSubmit
+            ))
           result.status shouldBe OK
           eventually {
             wireMockServer
               .findAll(postRequestedFor(urlEqualTo("/write/audit")))
-              .asScala.toList
+              .asScala
+              .toList
               .exists(_.getBodyAsString.contains("PenaltyAppealFileNotificationStorageFailure")) shouldBe true
           }
         }
@@ -726,8 +734,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
           mockStubResponseForAuthorisedUser
           mockResponseForAppealSubmissionStub(OK, enrolmentKey, isLPP = true, penaltyNumber = "123456789")
 
-          val jsonToSubmit: JsValue = Json.parse(
-            """
+          val jsonToSubmit: JsValue = Json.parse("""
               |{
               |    "sourceSystem": "MDTP",
               |    "taxRegime": "VAT",
@@ -746,8 +753,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
               |}
               |""".stripMargin)
           val result: WSResponse = await(
-            buildClientForRequestToApp(
-              uri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=true&penaltyNumber=123456789&correlationId=uuid-1")
+            buildClientForRequestToApp(uri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=true&penaltyNumber=123456789&correlationId=uuid-1")
               .post(
                 jsonToSubmit
               ))
@@ -803,34 +809,39 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
             "error" -> "Appeal submitted (case ID: PR-1234567889, correlation ID: uuid-1) but received 500 response from file notification orchestrator"
           )
 
-          val result: WSResponse = await(buildClientForRequestToApp(
-            uri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=false&penaltyNumber=123456789&correlationId=uuid-1&isMultiAppeal=true"
-          ).post(
-            jsonToSubmit
-          ))
+          val result: WSResponse = await(
+            buildClientForRequestToApp(
+              uri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=false&penaltyNumber=123456789&correlationId=uuid-1&isMultiAppeal=true"
+            ).post(
+              jsonToSubmit
+            ))
 
           result.status shouldBe MULTI_STATUS
           Json.parse(result.body) shouldBe expectedJsonResponse
           eventually {
             wireMockServer
               .findAll(postRequestedFor(urlEqualTo("/write/audit")))
-              .asScala.toList.exists(_.getBodyAsString.contains("PenaltyAppealFileNotificationStorageFailure")) shouldBe true
+              .asScala
+              .toList
+              .exists(_.getBodyAsString.contains("PenaltyAppealFileNotificationStorageFailure")) shouldBe true
           }
         }
       }
 
       "return BAD_REQUEST (400)" when {
         "no JSON body is in the request" in new SetUp {
-          val result: WSResponse = await(buildClientForRequestToApp(
-            uri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=true&penaltyNumber=123456789&correlationId=uuid-1"
-          ).post(""))
+          val result: WSResponse = await(
+            buildClientForRequestToApp(
+              uri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=true&penaltyNumber=123456789&correlationId=uuid-1"
+            ).post(""))
           result.status shouldBe BAD_REQUEST
         }
 
         "JSON body is present but it can not be parsed to a model" in new SetUp {
-          val result: WSResponse = await(buildClientForRequestToApp(
-            uri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=true&penaltyNumber=123456789&correlationId=uuid-1"
-          ).post(Json.parse("{}")))
+          val result: WSResponse = await(
+            buildClientForRequestToApp(
+              uri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=true&penaltyNumber=123456789&correlationId=uuid-1"
+            ).post(Json.parse("{}")))
           result.status shouldBe BAD_REQUEST
         }
       }
@@ -839,8 +850,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
         "the call to PEGA/stub fails" in new SetUp {
           mockResponseForAppealSubmissionStub(GATEWAY_TIMEOUT, enrolmentKey, penaltyNumber = "123456789")
 
-          val jsonToSubmit: JsValue = Json.parse(
-            """
+          val jsonToSubmit: JsValue = Json.parse("""
               |{
               |    "sourceSystem": "MDTP",
               |    "taxRegime": "VAT",
@@ -858,17 +868,17 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
               |		}
               |}
               |""".stripMargin)
-          val result: WSResponse = await(buildClientForRequestToApp(uri = submitAppealUri).post(
-            jsonToSubmit
-          ))
+          val result: WSResponse = await(
+            buildClientForRequestToApp(uri = submitAppealUri).post(
+              jsonToSubmit
+            ))
           result.status shouldBe GATEWAY_TIMEOUT
         }
 
         "the call to PEGA/stub has a fault" in new SetUp {
           mockResponseForAppealSubmissionStubFault(enrolmentKey, penaltyNumber = "123456789")
 
-          val jsonToSubmit: JsValue = Json.parse(
-            """
+          val jsonToSubmit: JsValue = Json.parse("""
               |{
               |    "sourceSystem": "MDTP",
               |    "taxRegime": "VAT",
@@ -886,9 +896,10 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
               |		}
               |}
               |""".stripMargin)
-          val result: WSResponse = await(buildClientForRequestToApp(uri = submitAppealUri).post(
-            jsonToSubmit
-          ))
+          val result: WSResponse = await(
+            buildClientForRequestToApp(uri = submitAppealUri).post(
+              jsonToSubmit
+            ))
           result.status shouldBe INTERNAL_SERVER_ERROR
         }
       }
@@ -916,14 +927,14 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
               |}
               |""".stripMargin
           )
-          val result: WSResponse = await(buildClientForRequestToApp(uri = submitAppealUri).post(
-            jsonToSubmit
-          ))
+          val result: WSResponse = await(
+            buildClientForRequestToApp(uri = submitAppealUri).post(
+              jsonToSubmit
+            ))
           result.status shouldBe OK
         }
         "returns OK when successful for crime" in new SetUp(hipFeatureSwitch = true) {
-          val jsonToSubmit: JsValue = Json.parse(
-            """
+          val jsonToSubmit: JsValue = Json.parse("""
               |{
               |    "sourceSystem": "MDTP",
               |    "taxRegime": "VAT",
@@ -941,14 +952,14 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
               |		}
               |}
               |""".stripMargin)
-          val result: WSResponse = await(buildClientForRequestToApp(uri = submitAppealUri).post(
-            jsonToSubmit
-          ))
+          val result: WSResponse = await(
+            buildClientForRequestToApp(uri = submitAppealUri).post(
+              jsonToSubmit
+            ))
           result.status shouldBe OK
         }
         "returns OK when successful for fire or flood" in new SetUp(hipFeatureSwitch = true) {
-          val jsonToSubmit: JsValue = Json.parse(
-            """
+          val jsonToSubmit: JsValue = Json.parse("""
               |{
               |    "sourceSystem": "MDTP",
               |    "taxRegime": "VAT",
@@ -965,14 +976,14 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
               |    }
               |}
               |""".stripMargin)
-          val result: WSResponse = await(buildClientForRequestToApp(uri = submitAppealUri).post(
-            jsonToSubmit
-          ))
+          val result: WSResponse = await(
+            buildClientForRequestToApp(uri = submitAppealUri).post(
+              jsonToSubmit
+            ))
           result.status shouldBe OK
         }
         "returns OK when successful for loss of staff" in new SetUp(hipFeatureSwitch = true) {
-          val jsonToSubmit: JsValue = Json.parse(
-            """
+          val jsonToSubmit: JsValue = Json.parse("""
               |{
               |    "sourceSystem": "MDTP",
               |    "taxRegime": "VAT",
@@ -989,14 +1000,14 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
               |		}
               |}
               |""".stripMargin)
-          val result: WSResponse = await(buildClientForRequestToApp(uri = submitAppealUri).post(
-            jsonToSubmit
-          ))
+          val result: WSResponse = await(
+            buildClientForRequestToApp(uri = submitAppealUri).post(
+              jsonToSubmit
+            ))
           result.status shouldBe OK
         }
         "returns OK when successful for technical issues" in new SetUp(hipFeatureSwitch = true) {
-          val jsonToSubmit: JsValue = Json.parse(
-            """
+          val jsonToSubmit: JsValue = Json.parse("""
               |{
               |    "sourceSystem": "MDTP",
               |    "taxRegime": "VAT",
@@ -1014,16 +1025,16 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
               |		}
               |}
               |""".stripMargin)
-          val result: WSResponse = await(buildClientForRequestToApp(uri = submitAppealUri).post(
-            jsonToSubmit
-          ))
+          val result: WSResponse = await(
+            buildClientForRequestToApp(uri = submitAppealUri).post(
+              jsonToSubmit
+            ))
           result.status shouldBe OK
         }
         "returns OK when successful for health" when {
 
           "there has been no hospital stay" in new SetUp(hipFeatureSwitch = true) {
-            val jsonToSubmit: JsValue = Json.parse(
-              """
+            val jsonToSubmit: JsValue = Json.parse("""
                 |{
                 |    "sourceSystem": "MDTP",
                 |    "taxRegime": "VAT",
@@ -1042,15 +1053,15 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
                 |		}
                 |}
                 |""".stripMargin)
-            val result: WSResponse = await(buildClientForRequestToApp(uri = submitAppealUri).post(
-              jsonToSubmit
-            ))
+            val result: WSResponse = await(
+              buildClientForRequestToApp(uri = submitAppealUri).post(
+                jsonToSubmit
+              ))
             result.status shouldBe OK
           }
 
           "there is an ongoing hospital stay" in new SetUp(hipFeatureSwitch = true) {
-            val jsonToSubmit: JsValue = Json.parse(
-              """
+            val jsonToSubmit: JsValue = Json.parse("""
                 |{
                 |    "sourceSystem": "MDTP",
                 |    "taxRegime": "VAT",
@@ -1069,15 +1080,15 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
                 |		}
                 |}
                 |""".stripMargin)
-            val result: WSResponse = await(buildClientForRequestToApp(uri = submitAppealUri).post(
-              jsonToSubmit
-            ))
+            val result: WSResponse = await(
+              buildClientForRequestToApp(uri = submitAppealUri).post(
+                jsonToSubmit
+              ))
             result.status shouldBe OK
           }
 
           "there has been a hospital stay" in new SetUp(hipFeatureSwitch = true) {
-            val jsonToSubmit: JsValue = Json.parse(
-              """
+            val jsonToSubmit: JsValue = Json.parse("""
                 |{
                 |    "sourceSystem": "MDTP",
                 |    "taxRegime": "VAT",
@@ -1097,17 +1108,18 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
                 |		}
                 |}
                 |""".stripMargin)
-            val result: WSResponse = await(buildClientForRequestToApp(uri = submitAppealUri).post(
-              jsonToSubmit
-            ))
+            val result: WSResponse = await(
+              buildClientForRequestToApp(uri = submitAppealUri).post(
+                jsonToSubmit
+              ))
             result.status shouldBe OK
           }
         }
         "returns OK when successful for other with file upload" in new SetUp(hipFeatureSwitch = true) {
-            mockResponseForFileNotificationOrchestrator(OK)
+          mockResponseForFileNotificationOrchestrator(OK)
 
-            val jsonToSubmit: JsValue = Json.parse(
-              """
+          val jsonToSubmit: JsValue = Json.parse(
+            """
                 |{
                 |    "sourceSystem": "MDTP",
                 |    "taxRegime": "VAT",
@@ -1143,12 +1155,13 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
                 |		}
                 |}
                 |""".stripMargin
-            )
-            val result: WSResponse = await(buildClientForRequestToApp(uri = submitAppealUri).post(
+          )
+          val result: WSResponse = await(
+            buildClientForRequestToApp(uri = submitAppealUri).post(
               jsonToSubmit
             ))
-            result.status shouldBe OK
-          }
+          result.status shouldBe OK
+        }
 
         "returns OK when successful for other with file upload (audit storage failure) - single appeal" in new SetUp(hipFeatureSwitch = true) {
           mockResponseForFileNotificationOrchestrator(INTERNAL_SERVER_ERROR)
@@ -1191,18 +1204,22 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
               |}
               |""".stripMargin
           )
-          val result: WSResponse = await(buildClientForRequestToApp(uri = submitAppealUri).post(
-            jsonToSubmit
-          ))
+          val result: WSResponse = await(
+            buildClientForRequestToApp(uri = submitAppealUri).post(
+              jsonToSubmit
+            ))
           result.status shouldBe OK
           eventually {
-            wireMockServer.findAll(postRequestedFor(urlEqualTo("/write/audit"))).asScala.toList.exists(_.getBodyAsString.contains("PenaltyAppealFileNotificationStorageFailure")) shouldBe true
+            wireMockServer
+              .findAll(postRequestedFor(urlEqualTo("/write/audit")))
+              .asScala
+              .toList
+              .exists(_.getBodyAsString.contains("PenaltyAppealFileNotificationStorageFailure")) shouldBe true
           }
         }
 
         "returns OK when successful for LPP" in new SetUp(hipFeatureSwitch = true) {
-          val jsonToSubmit: JsValue = Json.parse(
-            """
+          val jsonToSubmit: JsValue = Json.parse("""
               |{
               |    "sourceSystem": "MDTP",
               |    "taxRegime": "VAT",
@@ -1220,9 +1237,10 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
               |		}
               |}
               |""".stripMargin)
-          val result: WSResponse = await(buildClientForRequestToApp(uri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=true&penaltyNumber=123456789&correlationId=uuid-1").post(
-            jsonToSubmit
-          ))
+          val result: WSResponse = await(
+            buildClientForRequestToApp(uri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=true&penaltyNumber=123456789&correlationId=uuid-1").post(
+              jsonToSubmit
+            ))
           result.status shouldBe OK
         }
 
@@ -1273,17 +1291,20 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
             "error" -> "Appeal submitted (case ID: PR-1234567889, correlation ID: uuid-1) but received 500 response from file notification orchestrator"
           )
 
-          val result: WSResponse = await(buildClientForRequestToApp(
-            uri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=false&penaltyNumber=123456789&correlationId=uuid-1&isMultiAppeal=true"
-          ).post(
-            jsonToSubmit
-          ))
+          val result: WSResponse = await(
+            buildClientForRequestToApp(
+              uri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=false&penaltyNumber=123456789&correlationId=uuid-1&isMultiAppeal=true"
+            ).post(
+              jsonToSubmit
+            ))
 
           result.status shouldBe MULTI_STATUS
           Json.parse(result.body) shouldBe expectedJsonResponse
           eventually {
             wireMockServer
-              .findAll(postRequestedFor(urlEqualTo("/write/audit"))).asScala.toList
+              .findAll(postRequestedFor(urlEqualTo("/write/audit")))
+              .asScala
+              .toList
               .exists(_.getBodyAsString.contains("PenaltyAppealFileNotificationStorageFailure")) shouldBe true
           }
         }
@@ -1291,16 +1312,18 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
 
       "return BAD_REQUEST (400)" when {
         "no JSON body is in the request" in new SetUp(hipFeatureSwitch = true) {
-          val result: WSResponse = await(buildClientForRequestToApp(
-            uri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=true&penaltyNumber=123456789&correlationId=uuid-1"
-          ).post(""))
+          val result: WSResponse = await(
+            buildClientForRequestToApp(
+              uri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=true&penaltyNumber=123456789&correlationId=uuid-1"
+            ).post(""))
           result.status shouldBe BAD_REQUEST
         }
 
         "JSON body is present but it can not be parsed to a model" in new SetUp(hipFeatureSwitch = true) {
-          val result: WSResponse = await(buildClientForRequestToApp(
-            uri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=true&penaltyNumber=123456789&correlationId=uuid-1"
-          ).post(Json.parse("{}")))
+          val result: WSResponse = await(
+            buildClientForRequestToApp(
+              uri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=true&penaltyNumber=123456789&correlationId=uuid-1"
+            ).post(Json.parse("{}")))
           result.status shouldBe BAD_REQUEST
         }
       }
@@ -1309,8 +1332,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
         "the call to PEGA/stub fails" in new SetUp {
           mockResponseForAppealSubmissionStub(GATEWAY_TIMEOUT, enrolmentKey, penaltyNumber = "123456789")
 
-          val jsonToSubmit: JsValue = Json.parse(
-            """
+          val jsonToSubmit: JsValue = Json.parse("""
               |{
               |    "sourceSystem": "MDTP",
               |    "taxRegime": "VAT",
@@ -1328,17 +1350,17 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
               |		}
               |}
               |""".stripMargin)
-          val result: WSResponse = await(buildClientForRequestToApp(uri = submitAppealUri).post(
-            jsonToSubmit
-          ))
+          val result: WSResponse = await(
+            buildClientForRequestToApp(uri = submitAppealUri).post(
+              jsonToSubmit
+            ))
           result.status shouldBe GATEWAY_TIMEOUT
         }
 
         "the call to PEGA/stub has a fault" in new SetUp {
           mockResponseForAppealSubmissionStubFault(enrolmentKey, penaltyNumber = "123456789")
 
-          val jsonToSubmit: JsValue = Json.parse(
-            """
+          val jsonToSubmit: JsValue = Json.parse("""
               |{
               |    "sourceSystem": "MDTP",
               |    "taxRegime": "VAT",
@@ -1356,17 +1378,17 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
               |		}
               |}
               |""".stripMargin)
-          val result: WSResponse = await(buildClientForRequestToApp(uri = submitAppealUri).post(
-            jsonToSubmit
-          ))
+          val result: WSResponse = await(
+            buildClientForRequestToApp(uri = submitAppealUri).post(
+              jsonToSubmit
+            ))
           result.status shouldBe INTERNAL_SERVER_ERROR
         }
       }
     }
 
     s"getMultiplePenaltyData for $regime" should {
-            val penaltyDetailsOneLPPJson: JsValue = Json.parse(
-        s"""
+      val penaltyDetailsOneLPPJson: JsValue = Json.parse(s"""
           |{
           |  "success": {
           |    "processingDate": "$mockInstant",
@@ -1420,8 +1442,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
           |}
           |""".stripMargin)
 
-      val penaltyDetailsTwoLPPsJson: JsValue = Json.parse(
-  s"""
+      val penaltyDetailsTwoLPPsJson: JsValue = Json.parse(s"""
      |{
      |  "success": {
      |    "processingDate": "$mockInstant",
@@ -1510,8 +1531,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
      |  }
      |}
      |""".stripMargin)
-   val penaltyDetailsTwoLPPsWithAppealsJson: JsValue = Json.parse(
-        s"""
+      val penaltyDetailsTwoLPPsWithAppealsJson: JsValue = Json.parse(s"""
           |{
           |  "success": {
           |    "processingDate": "$mockInstant",
@@ -1607,8 +1627,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
           |}
           |""".stripMargin)
 
-   val penaltyDetailsTwoLPPsLPP2AccruingJson: JsValue = Json.parse(
-  s"""
+      val penaltyDetailsTwoLPPsLPP2AccruingJson: JsValue = Json.parse(s"""
      |{
      |  "success": {
      |    "processingDate": "$mockInstant",
@@ -1713,8 +1732,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
      |}
      |""".stripMargin)
 
-      val penaltyDetailsTwoLPPsVATNotPaidJson: JsValue = Json.parse(
-        s"""
+      val penaltyDetailsTwoLPPsVATNotPaidJson: JsValue = Json.parse(s"""
           |{
           |  "success": {
           |    "processingDate": "$mockInstant",
@@ -1789,7 +1807,8 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
           mockStubResponseForAuthorisedUser
           mockStubResponseForPenaltyDetails(Status.OK, regime, idType, id, Some(penaltyDetailsOneLPPJson.toString()))
 
-          val result = await(buildClientForRequestToApp(uri = s"/${regime.value}/appeals-data/multiple-penalties/${idType.value}/${id.value}?penaltyId=1234567887").get())
+          val result = await(buildClientForRequestToApp(uri =
+            s"/${regime.value}/appeals-data/multiple-penalties/${idType.value}/${id.value}?penaltyId=1234567887").get())
           result.status shouldBe Status.NO_CONTENT
         }
 
@@ -1797,7 +1816,8 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
           mockStubResponseForAuthorisedUser
           mockStubResponseForPenaltyDetails(Status.OK, regime, idType, id, Some(penaltyDetailsTwoLPPsWithAppealsJson.toString()))
 
-          val result = await(buildClientForRequestToApp(uri = s"/${regime.value}/appeals-data/multiple-penalties/${idType.value}/${id.value}?penaltyId=1234567887").get())
+          val result = await(buildClientForRequestToApp(uri =
+            s"/${regime.value}/appeals-data/multiple-penalties/${idType.value}/${id.value}?penaltyId=1234567887").get())
           result.status shouldBe Status.NO_CONTENT
         }
 
@@ -1805,7 +1825,8 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
           mockStubResponseForAuthorisedUser
           mockStubResponseForPenaltyDetails(Status.OK, regime, idType, id, Some(penaltyDetailsTwoLPPsLPP2AccruingJson.toString()))
 
-          val result = await(buildClientForRequestToApp(uri = s"/${regime.value}/appeals-data/multiple-penalties/${idType.value}/${id.value}?penaltyId=1234567887").get())
+          val result = await(buildClientForRequestToApp(uri =
+            s"/${regime.value}/appeals-data/multiple-penalties/${idType.value}/${id.value}?penaltyId=1234567887").get())
           result.status shouldBe Status.NO_CONTENT
         }
 
@@ -1813,34 +1834,37 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
           mockStubResponseForAuthorisedUser
           mockStubResponseForPenaltyDetails(Status.OK, regime, idType, id, Some(penaltyDetailsTwoLPPsVATNotPaidJson.toString()))
 
-          val result = await(buildClientForRequestToApp(uri = s"/${regime.value}/appeals-data/multiple-penalties/${idType.value}/${id.value}?penaltyId=1234567887").get())
+          val result = await(buildClientForRequestToApp(uri =
+            s"/${regime.value}/appeals-data/multiple-penalties/${idType.value}/${id.value}?penaltyId=1234567887").get())
           result.status shouldBe Status.NO_CONTENT
         }
       }
 
       "call ETMP and return OK when there is two penalties related to the charge and they are both posted" +
         " and the VAT has been paid" in {
-        mockStubResponseForAuthorisedUser
-        mockStubResponseForPenaltyDetails(Status.OK, regime, idType, id, Some(penaltyDetailsTwoLPPsJson.toString()))
+          mockStubResponseForAuthorisedUser
+          mockStubResponseForPenaltyDetails(Status.OK, regime, idType, id, Some(penaltyDetailsTwoLPPsJson.toString()))
 
-        val result = await(buildClientForRequestToApp(uri = s"/${regime.value}/appeals-data/multiple-penalties/${idType.value}/${id.value}?penaltyId=1234567887").get())
-        val expectedModel = MultiplePenaltiesData(
-          firstPenaltyChargeReference = "1234567887",
-          firstPenaltyAmount = 144.01,
-          secondPenaltyChargeReference = "1234567888",
-          secondPenaltyAmount = 144.00,
-          firstPenaltyCommunicationDate = LocalDate.of(2023, 1, 8),
-          secondPenaltyCommunicationDate = LocalDate.of(2023, 2, 8)
-        )
-        result.status shouldBe Status.OK
-        Json.parse(result.body) shouldBe Json.toJson(expectedModel)
-      }
+          val result = await(buildClientForRequestToApp(uri =
+            s"/${regime.value}/appeals-data/multiple-penalties/${idType.value}/${id.value}?penaltyId=1234567887").get())
+          val expectedModel = MultiplePenaltiesData(
+            firstPenaltyChargeReference = "1234567887",
+            firstPenaltyAmount = 144.01,
+            secondPenaltyChargeReference = "1234567888",
+            secondPenaltyAmount = 144.00,
+            firstPenaltyCommunicationDate = LocalDate.of(2023, 1, 8),
+            secondPenaltyCommunicationDate = LocalDate.of(2023, 2, 8)
+          )
+          result.status shouldBe Status.OK
+          Json.parse(result.body) shouldBe Json.toJson(expectedModel)
+        }
 
       "return an ISE when the call to ETMP fails" in {
         mockStubResponseForAuthorisedUser
         mockStubResponseForPenaltyDetails(Status.INTERNAL_SERVER_ERROR, regime, idType, id, Some(""))
 
-        val result = await(buildClientForRequestToApp(uri = s"/${regime.value}/appeals-data/multiple-penalties/${idType.value}/${id.value}?penaltyId=1234567887").get())
+        val result = await(buildClientForRequestToApp(uri =
+          s"/${regime.value}/appeals-data/multiple-penalties/${idType.value}/${id.value}?penaltyId=1234567887").get())
         result.status shouldBe Status.INTERNAL_SERVER_ERROR
       }
     }

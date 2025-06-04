@@ -43,23 +43,26 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Random
 
 class RegimeAppealServiceSpec extends SpecBase with LogCapturing with FeatureSwitching {
-  implicit val ec: ExecutionContext = ExecutionContext.Implicits.global
-  implicit val hc: HeaderCarrier = HeaderCarrier(otherHeaders = Seq("CorrelationId" -> "id"))
+  implicit val ec: ExecutionContext             = ExecutionContext.Implicits.global
+  implicit val hc: HeaderCarrier                = HeaderCarrier(otherHeaders = Seq("CorrelationId" -> "id"))
   val mockAppealsConnector: RegimePEGAConnector = mock(classOf[RegimePEGAConnector])
-  val mockHIPConnector: HIPConnector = mock(classOf[HIPConnector])
-  val correlationId: String = "correlationId"
-  val mockAppConfig: AppConfig = mock(classOf[AppConfig])
-  val mockUUIDGenerator: UUIDGenerator = mock(classOf[UUIDGenerator])
-  implicit val config: Configuration = mockAppConfig.config
+  val mockHIPConnector: HIPConnector            = mock(classOf[HIPConnector])
+  val correlationId: String                     = "correlationId"
+  val mockAppConfig: AppConfig                  = mock(classOf[AppConfig])
+  val mockUUIDGenerator: UUIDGenerator          = mock(classOf[UUIDGenerator])
+  implicit val config: Configuration            = mockAppConfig.config
 
   class Setup(enableHIP: Boolean = false) {
-    if(enableHIP){
+    if (enableHIP) {
       enableFeatureSwitch(CallAPI1808HIP)
     } else {
       disableFeatureSwitch(CallAPI1808HIP)
     }
     val service = new RegimeAppealService(
-      mockAppealsConnector, mockHIPConnector, mockAppConfig, mockUUIDGenerator
+      mockAppealsConnector,
+      mockHIPConnector,
+      mockAppConfig,
+      mockUUIDGenerator
     )
     reset(mockAppealsConnector)
     reset(mockHIPConnector)
@@ -97,30 +100,35 @@ class RegimeAppealServiceSpec extends SpecBase with LogCapturing with FeatureSwi
     "calling PEGA" should {
 
       "return the response from the connector i.e. act as a pass-through function" in new Setup {
-        when(mockAppealsConnector.submitAppeal(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(),
-          ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(Right(appealResponseModel)))
+        when(
+          mockAppealsConnector
+            .submitAppeal(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
+          .thenReturn(Future.successful(Right(appealResponseModel)))
 
-        val result: Either[AppealsParser.ErrorResponse, AppealResponseModel] = await(
-          service.submitAppeal(modelToPassToServer, enrolmentKey, isLPP = false, penaltyNumber = "123456789", correlationId = correlationId))
+        val result: Either[AppealsParser.ErrorResponse, AppealResponseModel] =
+          await(service.submitAppeal(modelToPassToServer, enrolmentKey, isLPP = false, penaltyNumber = "123456789", correlationId = correlationId))
         result shouldBe Right(appealResponseModel)
       }
 
       "return the response from the connector on error i.e. act as a pass-through function" in new Setup {
-        when(mockAppealsConnector.submitAppeal(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(),
-          ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(
-          Left(UnexpectedFailure(BAD_GATEWAY, s"Unexpected response, status $BAD_GATEWAY returned"))))
+        when(
+          mockAppealsConnector
+            .submitAppeal(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
+          .thenReturn(Future.successful(Left(UnexpectedFailure(BAD_GATEWAY, s"Unexpected response, status $BAD_GATEWAY returned"))))
 
-        val result: Either[AppealsParser.ErrorResponse, AppealResponseModel] = await(service.submitAppeal(
-          modelToPassToServer, enrolmentKey, isLPP = false, penaltyNumber = "123456789", correlationId = correlationId))
+        val result: Either[AppealsParser.ErrorResponse, AppealResponseModel] =
+          await(service.submitAppeal(modelToPassToServer, enrolmentKey, isLPP = false, penaltyNumber = "123456789", correlationId = correlationId))
         result shouldBe Left(UnexpectedFailure(BAD_GATEWAY, s"Unexpected response, status $BAD_GATEWAY returned"))
       }
 
       "throw an exception when the connector throws an exception" in new Setup {
-        when(mockAppealsConnector.submitAppeal(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(),
-          ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.failed(new Exception("Something went wrong")))
+        when(
+          mockAppealsConnector
+            .submitAppeal(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
+          .thenReturn(Future.failed(new Exception("Something went wrong")))
 
-        val result: Exception = intercept[Exception](await(service.submitAppeal(
-          modelToPassToServer, enrolmentKey, isLPP = false, penaltyNumber = "123456789", correlationId = correlationId)))
+        val result: Exception = intercept[Exception](
+          await(service.submitAppeal(modelToPassToServer, enrolmentKey, isLPP = false, penaltyNumber = "123456789", correlationId = correlationId)))
         result.getMessage shouldBe "Something went wrong"
       }
     }
@@ -130,8 +138,8 @@ class RegimeAppealServiceSpec extends SpecBase with LogCapturing with FeatureSwi
         when(mockHIPConnector.submitAppeal(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any()))
           .thenReturn(Future.successful(Right(appealResponseModel)))
 
-        val result: Either[AppealsParser.ErrorResponse, AppealResponseModel] = await(
-          service.submitAppeal(modelToPassToServer, enrolmentKey, isLPP = false, penaltyNumber = "123456789", correlationId = correlationId))
+        val result: Either[AppealsParser.ErrorResponse, AppealResponseModel] =
+          await(service.submitAppeal(modelToPassToServer, enrolmentKey, isLPP = false, penaltyNumber = "123456789", correlationId = correlationId))
         result shouldBe Right(appealResponseModel)
       }
 
@@ -139,8 +147,8 @@ class RegimeAppealServiceSpec extends SpecBase with LogCapturing with FeatureSwi
         when(mockHIPConnector.submitAppeal(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any()))
           .thenReturn(Future.successful(Left(UnexpectedFailure(BAD_GATEWAY, s"Unexpected response, status $BAD_GATEWAY returned"))))
 
-        val result: Either[AppealsParser.ErrorResponse, AppealResponseModel] = await(service.submitAppeal(
-          modelToPassToServer, enrolmentKey, isLPP = false, penaltyNumber = "123456789", correlationId = correlationId))
+        val result: Either[AppealsParser.ErrorResponse, AppealResponseModel] =
+          await(service.submitAppeal(modelToPassToServer, enrolmentKey, isLPP = false, penaltyNumber = "123456789", correlationId = correlationId))
         result shouldBe Left(UnexpectedFailure(BAD_GATEWAY, s"Unexpected response, status $BAD_GATEWAY returned"))
       }
 
@@ -148,12 +156,11 @@ class RegimeAppealServiceSpec extends SpecBase with LogCapturing with FeatureSwi
         when(mockHIPConnector.submitAppeal(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any()))
           .thenReturn(Future.failed(new Exception("Something went wrong")))
 
-        val result: Exception = intercept[Exception](await(service.submitAppeal(
-          modelToPassToServer, enrolmentKey, isLPP = false, penaltyNumber = "123456789", correlationId = correlationId)))
+        val result: Exception = intercept[Exception](
+          await(service.submitAppeal(modelToPassToServer, enrolmentKey, isLPP = false, penaltyNumber = "123456789", correlationId = correlationId)))
         result.getMessage shouldBe "Something went wrong"
       }
     }
-
 
   }
 
@@ -170,21 +177,24 @@ class RegimeAppealServiceSpec extends SpecBase with LogCapturing with FeatureSwi
         when(mockAppConfig.checksumAlgorithmForFileNotifications).thenReturn("SHA-256")
         val mockDateTime: LocalDateTime = LocalDateTime.of(2020, 1, 1, 0, 0, 0)
         val uploads = Seq(
-          UploadJourney(reference = "ref-123",
+          UploadJourney(
+            reference = "ref-123",
             fileStatus = UploadStatusEnum.READY,
             downloadUrl = Some("/"),
-            uploadDetails = Some(UploadDetails(
-              fileName = "file1",
-              fileMimeType = "text/plain",
-              uploadTimestamp = LocalDateTime.of(2018, 4, 24, 9, 30, 0),
-              checksum = "check123456789",
-              size = 1
-            )),
+            uploadDetails = Some(
+              UploadDetails(
+                fileName = "file1",
+                fileMimeType = "text/plain",
+                uploadTimestamp = LocalDateTime.of(2018, 4, 24, 9, 30, 0),
+                checksum = "check123456789",
+                size = 1
+              )),
             lastUpdated = mockDateTime,
-            uploadFields = Some(Map(
-              "key" -> "abcxyz",
-              "x-amz-algorithm" -> "AWS4-HMAC-SHA256"
-            ))
+            uploadFields = Some(
+              Map(
+                "key"             -> "abcxyz",
+                "x-amz-algorithm" -> "AWS4-HMAC-SHA256"
+              ))
           )
         )
 
@@ -217,47 +227,55 @@ class RegimeAppealServiceSpec extends SpecBase with LogCapturing with FeatureSwi
         when(mockAppConfig.checksumAlgorithmForFileNotifications).thenReturn("SHA-256")
         val mockDateTime: LocalDateTime = LocalDateTime.of(2020, 1, 1, 0, 0, 0)
         val uploads = Seq(
-          UploadJourney(reference = "ref-123",
+          UploadJourney(
+            reference = "ref-123",
             fileStatus = UploadStatusEnum.READY,
             downloadUrl = Some("/"),
-            uploadDetails = Some(UploadDetails(
-              fileName = "file1",
-              fileMimeType = "text/plain",
-              uploadTimestamp = LocalDateTime.of(2018, 4, 24, 9, 30, 0),
-              checksum = "check123456789",
-              size = 1
-            )),
+            uploadDetails = Some(
+              UploadDetails(
+                fileName = "file1",
+                fileMimeType = "text/plain",
+                uploadTimestamp = LocalDateTime.of(2018, 4, 24, 9, 30, 0),
+                checksum = "check123456789",
+                size = 1
+              )),
             lastUpdated = mockDateTime,
-            uploadFields = Some(Map(
-              "key" -> "abcxyz",
-              "x-amz-algorithm" -> "AWS4-HMAC-SHA256"
-            ))
+            uploadFields = Some(
+              Map(
+                "key"             -> "abcxyz",
+                "x-amz-algorithm" -> "AWS4-HMAC-SHA256"
+              ))
           ),
-          UploadJourney(reference = "ref-123",
+          UploadJourney(
+            reference = "ref-123",
             fileStatus = UploadStatusEnum.READY,
             downloadUrl = Some("/"),
             uploadDetails = None,
             lastUpdated = mockDateTime,
-            uploadFields = Some(Map(
-              "key" -> "abcxyz",
-              "x-amz-algorithm" -> "AWS4-HMAC-SHA256"
-            ))
+            uploadFields = Some(
+              Map(
+                "key"             -> "abcxyz",
+                "x-amz-algorithm" -> "AWS4-HMAC-SHA256"
+              ))
           ),
-          UploadJourney(reference = "ref-123",
+          UploadJourney(
+            reference = "ref-123",
             fileStatus = UploadStatusEnum.READY,
             downloadUrl = Some("/"),
-            uploadDetails = Some(UploadDetails(
-              fileName = "file3",
-              fileMimeType = "text/plain",
-              uploadTimestamp = LocalDateTime.of(2018, 4, 24, 9, 30, 0),
-              checksum = "check123456789",
-              size = 1
-            )),
+            uploadDetails = Some(
+              UploadDetails(
+                fileName = "file3",
+                fileMimeType = "text/plain",
+                uploadTimestamp = LocalDateTime.of(2018, 4, 24, 9, 30, 0),
+                checksum = "check123456789",
+                size = 1
+              )),
             lastUpdated = mockDateTime,
-            uploadFields = Some(Map(
-              "key" -> "abcxyz",
-              "x-amz-algorithm" -> "AWS4-HMAC-SHA256"
-            ))
+            uploadFields = Some(
+              Map(
+                "key"             -> "abcxyz",
+                "x-amz-algorithm" -> "AWS4-HMAC-SHA256"
+              ))
           )
         )
 
@@ -298,13 +316,11 @@ class RegimeAppealServiceSpec extends SpecBase with LogCapturing with FeatureSwi
           )
         )
         when(mockUUIDGenerator.generateUUID).thenReturn(correlationId)
-        withCaptureOfLoggingFrom(logger) {
-          logs => {
-            val result = service.createSDESNotifications(Some(uploads), caseID = "PR-1234")
-            result shouldBe expectedResult
-            logs.exists(_.getMessage == "[RegimeAppealService][createSDESNotifications] - There are 3 uploads but" +
-              s" only 2 uploads have upload details defined (possible missing files for case ID: PR-1234)") shouldBe true
-          }
+        withCaptureOfLoggingFrom(logger) { logs =>
+          val result = service.createSDESNotifications(Some(uploads), caseID = "PR-1234")
+          result shouldBe expectedResult
+          logs.exists(_.getMessage == "[RegimeAppealService][createSDESNotifications] - There are 3 uploads but" +
+            s" only 2 uploads have upload details defined (possible missing files for case ID: PR-1234)") shouldBe true
         }
 
       }
@@ -315,21 +331,24 @@ class RegimeAppealServiceSpec extends SpecBase with LogCapturing with FeatureSwi
         when(mockAppConfig.checksumAlgorithmForFileNotifications).thenReturn("SHA-256")
         val mockDateTime: LocalDateTime = LocalDateTime.of(2020, 1, 1, 0, 0, 0)
         val uploads = Seq(
-          UploadJourney(reference = "ref-123",
+          UploadJourney(
+            reference = "ref-123",
             fileStatus = UploadStatusEnum.READY,
             downloadUrl = Some("/"),
-            uploadDetails = Some(UploadDetails(
-              fileName = "file 1 / * 3  something‘ ’ “ ” <4 x>y_z |\" \\",
-              fileMimeType = "text/plain",
-              uploadTimestamp = LocalDateTime.of(2018, 4, 24, 9, 30, 0),
-              checksum = "check123456789",
-              size = 1
-            )),
+            uploadDetails = Some(
+              UploadDetails(
+                fileName = "file 1 / * 3  something‘ ’ “ ” <4 x>y_z |\" \\",
+                fileMimeType = "text/plain",
+                uploadTimestamp = LocalDateTime.of(2018, 4, 24, 9, 30, 0),
+                checksum = "check123456789",
+                size = 1
+              )),
             lastUpdated = mockDateTime,
-            uploadFields = Some(Map(
-              "key" -> "abcxyz",
-              "x-amz-algorithm" -> "AWS4-HMAC-SHA256"
-            ))
+            uploadFields = Some(
+              Map(
+                "key"             -> "abcxyz",
+                "x-amz-algorithm" -> "AWS4-HMAC-SHA256"
+              ))
           )
         )
 
@@ -361,81 +380,90 @@ class RegimeAppealServiceSpec extends SpecBase with LogCapturing with FeatureSwi
 
     s"truncate file name" when {
       val mockDateTime: LocalDateTime = LocalDateTime.of(2020, 1, 1, 0, 0, 0)
-      val longFilename = Random.alphanumeric.take(160).mkString
+      val longFilename                = Random.alphanumeric.take(160).mkString
       "filename is above maximumFilenameLength and includes file extension" in new Setup {
         val uploads = Seq(
-          UploadJourney(reference = "ref-123",
+          UploadJourney(
+            reference = "ref-123",
             fileStatus = UploadStatusEnum.READY,
             downloadUrl = Some("/"),
-            uploadDetails = Some(UploadDetails(
-              fileName = longFilename + ".txt",
-              fileMimeType = "text/plain",
-              uploadTimestamp = LocalDateTime.of(2018, 4, 24, 9, 30, 0),
-              checksum = "check123456789",
-              size = 1
-            )),
+            uploadDetails = Some(
+              UploadDetails(
+                fileName = longFilename + ".txt",
+                fileMimeType = "text/plain",
+                uploadTimestamp = LocalDateTime.of(2018, 4, 24, 9, 30, 0),
+                checksum = "check123456789",
+                size = 1
+              )),
             lastUpdated = mockDateTime,
-            uploadFields = Some(Map(
-              "key" -> "abcxyz",
-              "x-amz-algorithm" -> "AWS4-HMAC-SHA256"
-            ))
+            uploadFields = Some(
+              Map(
+                "key"             -> "abcxyz",
+                "x-amz-algorithm" -> "AWS4-HMAC-SHA256"
+              ))
           )
         )
         when(mockUUIDGenerator.generateUUID).thenReturn(correlationId)
         val result: Seq[SDESNotification] = service.createSDESNotifications(Some(uploads), caseID = "PR-5678")
-        val resultFileName: String = result.head.file.name
+        val resultFileName: String        = result.head.file.name
         resultFileName.length shouldBe mockAppConfig.maximumFilenameLength + 4
         resultFileName.contains(".txt") shouldBe true
       }
 
       "reduce a filename to maximum character length based on maximumFilenameLength when there is no file extension" in new Setup {
         val uploads = Seq(
-          UploadJourney(reference = "ref-123",
+          UploadJourney(
+            reference = "ref-123",
             fileStatus = UploadStatusEnum.READY,
             downloadUrl = Some("/"),
-            uploadDetails = Some(UploadDetails(
-              fileName = longFilename,
-              fileMimeType = "text/plain",
-              uploadTimestamp = LocalDateTime.of(2018, 4, 24, 9, 30, 0),
-              checksum = "check123456789",
-              size = 1
-            )),
+            uploadDetails = Some(
+              UploadDetails(
+                fileName = longFilename,
+                fileMimeType = "text/plain",
+                uploadTimestamp = LocalDateTime.of(2018, 4, 24, 9, 30, 0),
+                checksum = "check123456789",
+                size = 1
+              )),
             lastUpdated = mockDateTime,
-            uploadFields = Some(Map(
-              "key" -> "abcxyz",
-              "x-amz-algorithm" -> "AWS4-HMAC-SHA256"
-            ))
+            uploadFields = Some(
+              Map(
+                "key"             -> "abcxyz",
+                "x-amz-algorithm" -> "AWS4-HMAC-SHA256"
+              ))
           )
         )
         when(mockUUIDGenerator.generateUUID).thenReturn(correlationId)
         val result: Seq[SDESNotification] = service.createSDESNotifications(Some(uploads), caseID = "PR-5678")
-        val resultFileName: String = result.head.file.name
+        val resultFileName: String        = result.head.file.name
         resultFileName.length shouldBe mockAppConfig.maximumFilenameLength
       }
 
       "correctly remove file extension when filename includes periods" in new Setup {
         val longFilename: String = Random.alphanumeric.take(60).mkString
         val uploads = Seq(
-          UploadJourney(reference = "ref-123",
+          UploadJourney(
+            reference = "ref-123",
             fileStatus = UploadStatusEnum.READY,
             downloadUrl = Some("/"),
-            uploadDetails = Some(UploadDetails(
-              fileName = longFilename + "." + longFilename + ".." + longFilename + ".txt",
-              fileMimeType = "text/plain",
-              uploadTimestamp = LocalDateTime.of(2018, 4, 24, 9, 30, 0),
-              checksum = "check123456789",
-              size = 1
-            )),
+            uploadDetails = Some(
+              UploadDetails(
+                fileName = longFilename + "." + longFilename + ".." + longFilename + ".txt",
+                fileMimeType = "text/plain",
+                uploadTimestamp = LocalDateTime.of(2018, 4, 24, 9, 30, 0),
+                checksum = "check123456789",
+                size = 1
+              )),
             lastUpdated = mockDateTime,
-            uploadFields = Some(Map(
-              "key" -> "abcxyz",
-              "x-amz-algorithm" -> "AWS4-HMAC-SHA256"
-            ))
+            uploadFields = Some(
+              Map(
+                "key"             -> "abcxyz",
+                "x-amz-algorithm" -> "AWS4-HMAC-SHA256"
+              ))
           )
         )
         when(mockUUIDGenerator.generateUUID).thenReturn(correlationId)
         val result: Seq[SDESNotification] = service.createSDESNotifications(Some(uploads), caseID = "PR-5678")
-        val resultFileName: String = result.head.file.name
+        val resultFileName: String        = result.head.file.name
         resultFileName.length shouldBe mockAppConfig.maximumFilenameLength + 4
         resultFileName.contains(".txt") shouldBe true
         resultFileName.count(_ == '.') shouldBe 4
@@ -528,10 +556,12 @@ class RegimeAppealServiceSpec extends SpecBase with LogCapturing with FeatureSwi
       processingDate = Instant.now(),
       totalisations = None,
       lateSubmissionPenalty = None,
-      latePaymentPenalty = Some(LatePaymentPenalty(lppDetails = Some(Seq(
-        sampleLPP2.copy(communicationsDate = None),
-        sampleLPP1.copy(communicationsDate = None)
-      )))),
+      latePaymentPenalty = Some(
+        LatePaymentPenalty(lppDetails = Some(
+          Seq(
+            sampleLPP2.copy(communicationsDate = None),
+            sampleLPP1.copy(communicationsDate = None)
+          )))),
       breathingSpace = None
     )
 
@@ -633,18 +663,18 @@ class RegimeAppealServiceSpec extends SpecBase with LogCapturing with FeatureSwi
 
       s"there is two penalties under this principal charge and they are both POSTED and VAT has been paid" +
         s" (defaulting the comms date if not present)" in new Setup {
-        when(mockAppConfig.getTimeMachineDateTime).thenReturn(LocalDateTime.now)
-        val result: Option[MultiplePenaltiesData] = service.findMultiplePenalties(getPenaltyDetailsTwoPenaltiesNoCommunicationsDate, "1234567891")
-        val expectedReturnModel: MultiplePenaltiesData = MultiplePenaltiesData(
-          firstPenaltyChargeReference = "1234567891",
-          firstPenaltyAmount = 113.45,
-          secondPenaltyChargeReference = "1234567892",
-          secondPenaltyAmount = 113.44,
-          firstPenaltyCommunicationDate = LocalDate.now,
-          secondPenaltyCommunicationDate = LocalDate.now
-        )
-        result shouldBe Some(expectedReturnModel)
-      }
+          when(mockAppConfig.getTimeMachineDateTime).thenReturn(LocalDateTime.now)
+          val result: Option[MultiplePenaltiesData] = service.findMultiplePenalties(getPenaltyDetailsTwoPenaltiesNoCommunicationsDate, "1234567891")
+          val expectedReturnModel: MultiplePenaltiesData = MultiplePenaltiesData(
+            firstPenaltyChargeReference = "1234567891",
+            firstPenaltyAmount = 113.45,
+            secondPenaltyChargeReference = "1234567892",
+            secondPenaltyAmount = 113.44,
+            firstPenaltyCommunicationDate = LocalDate.now,
+            secondPenaltyCommunicationDate = LocalDate.now
+          )
+          result shouldBe Some(expectedReturnModel)
+        }
     }
   }
 

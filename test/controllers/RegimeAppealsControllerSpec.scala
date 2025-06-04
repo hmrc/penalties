@@ -31,7 +31,7 @@ import models.appeals.AppealTypeEnum.{Additional, Late_Payment, Late_Submission}
 import models.appeals.{AppealData, MultiplePenaltiesData}
 import models.auditing.PenaltyAppealFileNotificationStorageFailureModel
 import models.getFinancialDetails.MainTransactionEnum
-import models.penaltyDetails.{PenaltyDetails}
+import models.penaltyDetails.PenaltyDetails
 import models.penaltyDetails.latePayment._
 import models.penaltyDetails.lateSubmission._
 import models.notification._
@@ -57,23 +57,20 @@ import scala.concurrent.Future
 import models.{AgnosticEnrolmentKey, Id, IdType, Regime}
 import java.time.Instant
 
-class RegimeAppealsControllerSpec
-    extends SpecBase
-    with FeatureSwitching
-    with LogCapturing {
+class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with LogCapturing {
   val mockAppealsService: RegimeAppealService = mock(
     classOf[RegimeAppealService]
   )
-  val mockAppConfig: AppConfig = mock(classOf[AppConfig])
+  val mockAppConfig: AppConfig       = mock(classOf[AppConfig])
   val mockAuditService: AuditService = mock(classOf[AuditService])
   val mockPenaltyDetailsService: PenaltyDetailsService = mock(
     classOf[PenaltyDetailsService]
   )
   val mockAuthAction: AuthAction = injector.instanceOf(classOf[AuthActionMock])
-  val correlationId = "id-1234567890"
+  val correlationId              = "id-1234567890"
   val mockFileNotificationConnector: FileNotificationOrchestratorConnector =
     mock(classOf[FileNotificationOrchestratorConnector])
-  val instant = Instant.now()
+  val instant                        = Instant.now()
   implicit val config: Configuration = mockAppConfig.config
   val sampleSDESNotifications: Seq[SDESNotification] = Seq(
     SDESNotification(
@@ -101,7 +98,7 @@ class RegimeAppealsControllerSpec
 
   val regime = Regime("VATC")
   val idType = IdType("VRN")
-  val id = Id("123456789")
+  val id     = Id("123456789")
   val vrn123456789: AgnosticEnrolmentKey = AgnosticEnrolmentKey(
     regime,
     idType,
@@ -115,8 +112,16 @@ class RegimeAppealsControllerSpec
     reset(mockFileNotificationConnector)
     reset(mockAuditService)
 
-    val controller = new RegimeAppealsController(if (withRealAppConfig) appConfig
-    else mockAppConfig, mockAppealsService, mockPenaltyDetailsService, mockFileNotificationConnector, mockAuditService, stubControllerComponents(), mockAuthAction)
+    val controller = new RegimeAppealsController(
+      if (withRealAppConfig) appConfig
+      else mockAppConfig,
+      mockAppealsService,
+      mockPenaltyDetailsService,
+      mockFileNotificationConnector,
+      mockAuditService,
+      stubControllerComponents(),
+      mockAuthAction
+    )
 
     implicit val hc: HeaderCarrier = HeaderCarrier()
   }
@@ -327,7 +332,7 @@ class RegimeAppealsControllerSpec
       )
       val regime = Regime("VATC")
       val idType = IdType("VRN")
-      val id = Id("123456789")
+      val id     = Id("123456789")
       when(
         mockPenaltyDetailsService.getDataFromPenaltyService(
           ArgumentMatchers.eq(vrn)
@@ -394,21 +399,19 @@ class RegimeAppealsControllerSpec
       )
         .thenReturn(Future.successful(Left(PenaltyDetailsMalformed)))
       withCaptureOfLoggingFrom(logger) { logs =>
-        {
-          val result: Future[Result] =
-            controller.getAppealsDataForLateSubmissionPenalty(
-              "1234567891",
-              regime,
-              idType,
-              id
-            )(fakeRequest)
-          status(result) shouldBe Status.INTERNAL_SERVER_ERROR
-          logs.exists(
-            _.getMessage.contains(
-              PagerDutyKeys.MALFORMED_RESPONSE_FROM_1812_API.toString
-            )
-          ) shouldBe true
-        }
+        val result: Future[Result] =
+          controller.getAppealsDataForLateSubmissionPenalty(
+            "1234567891",
+            regime,
+            idType,
+            id
+          )(fakeRequest)
+        status(result) shouldBe Status.INTERNAL_SERVER_ERROR
+        logs.exists(
+          _.getMessage.contains(
+            PagerDutyKeys.MALFORMED_RESPONSE_FROM_1812_API.toString
+          )
+        ) shouldBe true
       }
     }
 
@@ -530,8 +533,7 @@ class RegimeAppealsControllerSpec
                 principalChargeSubTransaction = None,
                 principalChargeDocNumber = None,
                 penaltyAmountAccruing = BigDecimal(100),
-                principalChargeMainTransaction =
-                  MainTransactionEnum.VATReturnCharge,
+                principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
                 vatOutstandingAmount = Some(BigDecimal(123.45))
               ),
               LPPDetails(
@@ -559,8 +561,7 @@ class RegimeAppealsControllerSpec
                 penaltyChargeDueDate = Some(LocalDate.of(2022, 8, 7)),
                 principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
                 penaltyAmountAccruing = BigDecimal(0),
-                principalChargeMainTransaction =
-                  MainTransactionEnum.VATReturnCharge,
+                principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
                 principalChargeDocNumber = None,
                 principalChargeSubTransaction = None,
                 vatOutstandingAmount = Some(BigDecimal(123.45))
@@ -607,8 +608,7 @@ class RegimeAppealsControllerSpec
                 principalChargeDocNumber = None,
                 principalChargeSubTransaction = None,
                 penaltyAmountAccruing = BigDecimal(100),
-                principalChargeMainTransaction =
-                  MainTransactionEnum.VATReturnCharge,
+                principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
                 vatOutstandingAmount = Some(BigDecimal(123.45))
               ),
               LPPDetails(
@@ -638,8 +638,7 @@ class RegimeAppealsControllerSpec
                 principalChargeDocNumber = None,
                 principalChargeSubTransaction = None,
                 penaltyAmountAccruing = BigDecimal(0),
-                principalChargeMainTransaction =
-                  MainTransactionEnum.VATReturnCharge,
+                principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
                 vatOutstandingAmount = Some(BigDecimal(123.45))
               )
             )
@@ -755,22 +754,20 @@ class RegimeAppealsControllerSpec
       )
         .thenReturn(Future.successful(Left(PenaltyDetailsMalformed)))
       withCaptureOfLoggingFrom(logger) { logs =>
-        {
-          val result: Future[Result] =
-            controller.getAppealsDataForLatePaymentPenalty(
-              "1234567891",
-              regime,
-              idType,
-              id,
-              isAdditional = false
-            )(fakeRequest)
-          status(result) shouldBe Status.INTERNAL_SERVER_ERROR
-          logs.exists(
-            _.getMessage.contains(
-              PagerDutyKeys.MALFORMED_RESPONSE_FROM_1812_API.toString
-            )
-          ) shouldBe true
-        }
+        val result: Future[Result] =
+          controller.getAppealsDataForLatePaymentPenalty(
+            "1234567891",
+            regime,
+            idType,
+            id,
+            isAdditional = false
+          )(fakeRequest)
+        status(result) shouldBe Status.INTERNAL_SERVER_ERROR
+        logs.exists(
+          _.getMessage.contains(
+            PagerDutyKeys.MALFORMED_RESPONSE_FROM_1812_API.toString
+          )
+        ) shouldBe true
       }
     }
 
@@ -1086,8 +1083,7 @@ class RegimeAppealsControllerSpec
 
         when(mockAppealsService.submitAppeal(any(), any(), any(), any(), any())(any()))
           .thenReturn(Future.successful(Left(UnexpectedFailure(GATEWAY_TIMEOUT, s"Unexpected response, status $GATEWAY_TIMEOUT returned"))))
-        val appealsJson: JsValue = Json.parse(
-          """
+        val appealsJson: JsValue = Json.parse("""
             |{
             |    "sourceSystem": "MDTP",
             |    "taxRegime": "VAT",
@@ -1435,29 +1431,27 @@ class RegimeAppealsControllerSpec
             |}
             |""".stripMargin)
         withCaptureOfLoggingFrom(logger) { logs =>
-          {
-            val result: Result = await(
-              controller.submitAppeal(
-                regime,
-                idType,
-                id,
-                isLPP = false,
-                penaltyNumber = "123456789",
-                correlationId = correlationId,
-                isMultiAppeal = false
-              )(fakeRequest.withJsonBody(appealsJson))
-            )
-            result.header.status shouldBe OK
-            eventually {
-              verify(mockAuditService, times(1)).audit(
-                argumentCaptorForAuditModel.capture()
-              )(any(), any(), any())
-              logs.exists(
-                _.getMessage.contains(
-                  PagerDutyKeys.RECEIVED_5XX_FROM_FILE_NOTIFICATION_ORCHESTRATOR.toString
-                )
-              ) shouldBe true
-            }
+          val result: Result = await(
+            controller.submitAppeal(
+              regime,
+              idType,
+              id,
+              isLPP = false,
+              penaltyNumber = "123456789",
+              correlationId = correlationId,
+              isMultiAppeal = false
+            )(fakeRequest.withJsonBody(appealsJson))
+          )
+          result.header.status shouldBe OK
+          eventually {
+            verify(mockAuditService, times(1)).audit(
+              argumentCaptorForAuditModel.capture()
+            )(any(), any(), any())
+            logs.exists(
+              _.getMessage.contains(
+                PagerDutyKeys.RECEIVED_5XX_FROM_FILE_NOTIFICATION_ORCHESTRATOR.toString
+              )
+            ) shouldBe true
           }
         }
       }
@@ -1510,29 +1504,27 @@ class RegimeAppealsControllerSpec
             |}
             |""".stripMargin)
         withCaptureOfLoggingFrom(logger) { logs =>
-          {
-            val result: Result = await(
-              controller.submitAppeal(
-                regime,
-                idType,
-                id,
-                isLPP = false,
-                penaltyNumber = "123456789",
-                correlationId = correlationId,
-                isMultiAppeal = false
-              )(fakeRequest.withJsonBody(appealsJson))
-            )
-            result.header.status shouldBe OK
-            eventually {
-              verify(mockAuditService, times(1)).audit(
-                argumentCaptorForAuditModel.capture()
-              )(any(), any(), any())
-              logs.exists(
-                _.getMessage.contains(
-                  PagerDutyKeys.RECEIVED_4XX_FROM_FILE_NOTIFICATION_ORCHESTRATOR.toString
-                )
-              ) shouldBe true
-            }
+          val result: Result = await(
+            controller.submitAppeal(
+              regime,
+              idType,
+              id,
+              isLPP = false,
+              penaltyNumber = "123456789",
+              correlationId = correlationId,
+              isMultiAppeal = false
+            )(fakeRequest.withJsonBody(appealsJson))
+          )
+          result.header.status shouldBe OK
+          eventually {
+            verify(mockAuditService, times(1)).audit(
+              argumentCaptorForAuditModel.capture()
+            )(any(), any(), any())
+            logs.exists(
+              _.getMessage.contains(
+                PagerDutyKeys.RECEIVED_4XX_FROM_FILE_NOTIFICATION_ORCHESTRATOR.toString
+              )
+            ) shouldBe true
           }
         }
 
@@ -1589,24 +1581,22 @@ class RegimeAppealsControllerSpec
             |}
             |""".stripMargin)
         withCaptureOfLoggingFrom(logger) { logs =>
-          {
-            val result: Result = await(
-              controller.submitAppeal(
-                regime,
-                idType,
-                id,
-                isLPP = false,
-                penaltyNumber = "123456789",
-                correlationId = correlationId,
-                isMultiAppeal = false
-              )(fakeRequest.withJsonBody(appealsJson))
-            )
-            result.header.status shouldBe OK
-            eventually {
-              verify(mockAuditService, times(1)).audit(
-                argumentCaptorForAuditModel.capture()
-              )(any(), any(), any())
-            }
+          val result: Result = await(
+            controller.submitAppeal(
+              regime,
+              idType,
+              id,
+              isLPP = false,
+              penaltyNumber = "123456789",
+              correlationId = correlationId,
+              isMultiAppeal = false
+            )(fakeRequest.withJsonBody(appealsJson))
+          )
+          result.header.status shouldBe OK
+          eventually {
+            verify(mockAuditService, times(1)).audit(
+              argumentCaptorForAuditModel.capture()
+            )(any(), any(), any())
           }
         }
 
@@ -1672,30 +1662,28 @@ class RegimeAppealsControllerSpec
           "error" -> s"Appeal submitted (case ID: PR-123456789, correlation ID: $correlationId) but received 500 response from file notification orchestrator"
         )
         withCaptureOfLoggingFrom(logger) { logs =>
-          {
-            val result: Result = await(
-              controller.submitAppeal(
-                regime,
-                idType,
-                id,
-                isLPP = false,
-                penaltyNumber = "123456789",
-                correlationId = correlationId,
-                isMultiAppeal = true
-              )(fakeRequest.withJsonBody(appealsJson))
-            )
-            result.header.status shouldBe MULTI_STATUS
-            contentAsJson(Future(result)) shouldBe expectedJsonResponse
-            eventually {
-              verify(mockAuditService, times(1)).audit(
-                argumentCaptorForAuditModel.capture()
-              )(any(), any(), any())
-              logs.exists(
-                _.getMessage.contains(
-                  PagerDutyKeys.RECEIVED_5XX_FROM_FILE_NOTIFICATION_ORCHESTRATOR.toString
-                )
-              ) shouldBe true
-            }
+          val result: Result = await(
+            controller.submitAppeal(
+              regime,
+              idType,
+              id,
+              isLPP = false,
+              penaltyNumber = "123456789",
+              correlationId = correlationId,
+              isMultiAppeal = true
+            )(fakeRequest.withJsonBody(appealsJson))
+          )
+          result.header.status shouldBe MULTI_STATUS
+          contentAsJson(Future(result)) shouldBe expectedJsonResponse
+          eventually {
+            verify(mockAuditService, times(1)).audit(
+              argumentCaptorForAuditModel.capture()
+            )(any(), any(), any())
+            logs.exists(
+              _.getMessage.contains(
+                PagerDutyKeys.RECEIVED_5XX_FROM_FILE_NOTIFICATION_ORCHESTRATOR.toString
+              )
+            ) shouldBe true
           }
         }
       }
@@ -1753,30 +1741,28 @@ class RegimeAppealsControllerSpec
           "error" -> s"Appeal submitted (case ID: PR-123456789, correlation ID: $correlationId) but received 400 response from file notification orchestrator"
         )
         withCaptureOfLoggingFrom(logger) { logs =>
-          {
-            val result: Result = await(
-              controller.submitAppeal(
-                regime,
-                idType,
-                id,
-                isLPP = false,
-                penaltyNumber = "123456789",
-                correlationId = correlationId,
-                isMultiAppeal = true
-              )(fakeRequest.withJsonBody(appealsJson))
-            )
-            result.header.status shouldBe MULTI_STATUS
-            contentAsJson(Future(result)) shouldBe expectedJsonResponse
-            eventually {
-              verify(mockAuditService, times(1)).audit(
-                argumentCaptorForAuditModel.capture()
-              )(any(), any(), any())
-              logs.exists(
-                _.getMessage.contains(
-                  PagerDutyKeys.RECEIVED_4XX_FROM_FILE_NOTIFICATION_ORCHESTRATOR.toString
-                )
-              ) shouldBe true
-            }
+          val result: Result = await(
+            controller.submitAppeal(
+              regime,
+              idType,
+              id,
+              isLPP = false,
+              penaltyNumber = "123456789",
+              correlationId = correlationId,
+              isMultiAppeal = true
+            )(fakeRequest.withJsonBody(appealsJson))
+          )
+          result.header.status shouldBe MULTI_STATUS
+          contentAsJson(Future(result)) shouldBe expectedJsonResponse
+          eventually {
+            verify(mockAuditService, times(1)).audit(
+              argumentCaptorForAuditModel.capture()
+            )(any(), any(), any())
+            logs.exists(
+              _.getMessage.contains(
+                PagerDutyKeys.RECEIVED_4XX_FROM_FILE_NOTIFICATION_ORCHESTRATOR.toString
+              )
+            ) shouldBe true
           }
         }
 
@@ -1835,31 +1821,29 @@ class RegimeAppealsControllerSpec
         val expectedJsonResponse: JsObject = Json.obj(
           "caseId" -> "PR-123456789",
           "status" -> MULTI_STATUS,
-          "error" -> s"Appeal submitted (case ID: PR-123456789, correlation ID: $correlationId) but failed to store file uploads with unknown error"
+          "error"  -> s"Appeal submitted (case ID: PR-123456789, correlation ID: $correlationId) but failed to store file uploads with unknown error"
         )
         withCaptureOfLoggingFrom(logger) { logs =>
-          {
-            val result: Result = await(
-              controller.submitAppeal(
-                regime,
-                idType,
-                id,
-                isLPP = false,
-                penaltyNumber = "123456789",
-                correlationId = correlationId,
-                isMultiAppeal = true
-              )(fakeRequest.withJsonBody(appealsJson))
-            )
-            result.header.status shouldBe MULTI_STATUS
-            logs.map(_.getMessage) should contain(
-              s"[RegimeAppealsController][submitAppeal] Unable to store file notification for user with enrolment: VATC~VRN~123456789 penalty 123456789 (correlation ID: $correlationId) - An unknown exception occurred when attempting to store file notifications, with error: failed"
-            )
-            contentAsJson(Future(result)) shouldBe expectedJsonResponse
-            eventually {
-              verify(mockAuditService, times(1)).audit(
-                argumentCaptorForAuditModel.capture()
-              )(any(), any(), any())
-            }
+          val result: Result = await(
+            controller.submitAppeal(
+              regime,
+              idType,
+              id,
+              isLPP = false,
+              penaltyNumber = "123456789",
+              correlationId = correlationId,
+              isMultiAppeal = true
+            )(fakeRequest.withJsonBody(appealsJson))
+          )
+          result.header.status shouldBe MULTI_STATUS
+          logs.map(_.getMessage) should contain(
+            s"[RegimeAppealsController][submitAppeal] Unable to store file notification for user with enrolment: VATC~VRN~123456789 penalty 123456789 (correlation ID: $correlationId) - An unknown exception occurred when attempting to store file notifications, with error: failed"
+          )
+          contentAsJson(Future(result)) shouldBe expectedJsonResponse
+          eventually {
+            verify(mockAuditService, times(1)).audit(
+              argumentCaptorForAuditModel.capture()
+            )(any(), any(), any())
           }
         }
 
@@ -1945,8 +1929,7 @@ class RegimeAppealsControllerSpec
       processingDate = instant,
       totalisations = None,
       lateSubmissionPenalty = None,
-      latePaymentPenalty =
-        Some(LatePaymentPenalty(Some(Seq(sampleLPP2, sampleLPP1)))),
+      latePaymentPenalty = Some(LatePaymentPenalty(Some(Seq(sampleLPP2, sampleLPP1)))),
       breathingSpace = None
     )
 
@@ -2033,20 +2016,18 @@ class RegimeAppealsControllerSpec
         )
           .thenReturn(Future.successful(Left(PenaltyDetailsMalformed)))
         withCaptureOfLoggingFrom(logger) { logs =>
-          {
-            val result: Future[Result] = controller.getMultiplePenaltyData(
-              "1234567891",
-              regime,
-              idType,
-              id
-            )(fakeRequest)
-            status(result) shouldBe Status.INTERNAL_SERVER_ERROR
-            logs.exists(
-              _.getMessage.contains(
-                PagerDutyKeys.MALFORMED_RESPONSE_FROM_1812_API.toString
-              )
-            ) shouldBe true
-          }
+          val result: Future[Result] = controller.getMultiplePenaltyData(
+            "1234567891",
+            regime,
+            idType,
+            id
+          )(fakeRequest)
+          status(result) shouldBe Status.INTERNAL_SERVER_ERROR
+          logs.exists(
+            _.getMessage.contains(
+              PagerDutyKeys.MALFORMED_RESPONSE_FROM_1812_API.toString
+            )
+          ) shouldBe true
         }
       }
 
@@ -2059,7 +2040,7 @@ class RegimeAppealsControllerSpec
         )
         val regime = Regime("VATC")
         val idType = IdType("VRN")
-        val id = Id("123456789")
+        val id     = Id("123456789")
         when(
           mockPenaltyDetailsService.getDataFromPenaltyService(
             ArgumentMatchers.eq(vrn)
@@ -2087,7 +2068,7 @@ class RegimeAppealsControllerSpec
       )
       val regime = Regime("VATC")
       val idType = IdType("VRN")
-      val id = Id("123456789")
+      val id     = Id("123456789")
       when(
         mockPenaltyDetailsService.getDataFromPenaltyService(
           ArgumentMatchers.eq(vrn)
