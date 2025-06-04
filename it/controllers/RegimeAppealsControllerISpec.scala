@@ -31,19 +31,21 @@ import play.api.libs.ws.WSResponse
 import java.time.LocalDate
 import scala.jdk.CollectionConverters._
 
-class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with RegimeETMPWiremock with HIPWiremock
-  with RegimeAppealWiremock
-  with FileNotificationOrchestratorWiremock
-  with FeatureSwitching
-  with TableDrivenPropertyChecks
-  with AuthMock {
+class RegimeAppealsControllerISpec
+    extends IntegrationSpecCommonBase
+    with RegimeETMPWiremock
+    with HIPWiremock
+    with RegimeAppealWiremock
+    with FileNotificationOrchestratorWiremock
+    with FeatureSwitching
+    with TableDrivenPropertyChecks
+    with AuthMock {
 
   setEnabledFeatureSwitches()
 
   val controller: RegimeAppealsController = injector.instanceOf[RegimeAppealsController]
 
-  val appealJson: JsValue = Json.parse(
-    """
+  val appealJson: JsValue = Json.parse("""
       |{
       |  "type": "LATE_SUBMISSION",
       |  "startDate": "2021-04-23T18:25:43.511",
@@ -53,8 +55,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
       |}
       |""".stripMargin)
 
-  val appealJsonLPP: JsValue = Json.parse(
-    """
+  val appealJsonLPP: JsValue = Json.parse("""
       |{
       |  "type": "LATE_PAYMENT",
       |	 "startDate": "2023-01-01T18:25:43.511",
@@ -64,8 +65,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
       |}
       |""".stripMargin)
 
-  val appealJsonLPPAdditional: JsValue = Json.parse(
-    """
+  val appealJsonLPPAdditional: JsValue = Json.parse("""
       |{
       |  "type": "ADDITIONAL",
       |	 "startDate": "2023-01-01T18:25:43.511",
@@ -75,8 +75,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
       |}
       |""".stripMargin)
 
-  val appealV2Json: JsValue = Json.parse(
-    """
+  val appealV2Json: JsValue = Json.parse("""
       |{
       |  "type": "LATE_SUBMISSION",
       |  "startDate": "2023-01-01",
@@ -86,8 +85,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
       |}
       |""".stripMargin)
 
-  val appealV2JsonLPP: JsValue = Json.parse(
-    """
+  val appealV2JsonLPP: JsValue = Json.parse("""
       |{
       |  "type": "LATE_PAYMENT",
       |	 "startDate": "2022-01-01",
@@ -97,8 +95,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
       |}
       |""".stripMargin)
 
-  val appealV2JsonLPPAdditional: JsValue = Json.parse(
-    """
+  val appealV2JsonLPPAdditional: JsValue = Json.parse("""
       |{
       |  "type": "ADDITIONAL",
       |	 "startDate": "2024-01-01",
@@ -108,197 +105,151 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
       |}
       |""".stripMargin)
 
-  val getPenaltyDetailsJson: JsValue = Json.parse(
-    """
-      |{
-      | "totalisations": {
-      |   "LSPTotalValue": 200,
-      |   "penalisedPrincipalTotal": 2000,
-      |   "LPPPostedTotal": 165.25,
-      |   "LPPEstimatedTotal": 15.26
-      | },
-      | "lateSubmissionPenalty": {
-      |   "summary": {
-      |     "activePenaltyPoints": 2,
-      |     "inactivePenaltyPoints": 0,
-      |     "regimeThreshold": 5,
-      |     "penaltyChargeAmount": 200.00,
-      |     "PoCAchievementDate": "2022-01-01"
-      |   },
-      |   "details": [
-      |     {
-      |       "penaltyNumber": "123456789",
-      |       "penaltyOrder": "01",
-      |       "penaltyCategory": "P",
-      |       "penaltyStatus": "ACTIVE",
-      |       "FAPIndicator": "X",
-      |       "penaltyCreationDate": "2022-10-30",
-      |       "penaltyExpiryDate": "2022-10-30",
-      |       "triggeringProcess": "XYZ",
-      |       "expiryReason": "FAP",
-      |       "chargeReference": "CHARGE123",
-      |       "communicationsDate": "2024-02-08",
-      |       "lateSubmissions": [
-      |         {
-      |           "lateSubmissionID": "001",
-      |           "taxPeriod":  "23AA",
-      |           "taxPeriodStartDate": "2023-01-01",
-      |           "taxPeriodEndDate": "2023-12-31",
-      |           "taxPeriodDueDate": "2024-02-07",
-      |           "returnReceiptDate": "2024-02-01",
-      |           "taxReturnStatus": "Fulfilled"
-      |         }
-      |       ],
-      |       "appealInformation": [
-      |         {
-      |         "appealStatus": "99",
-      |         "appealLevel": "01"
-      |         }
-      |       ],
-      |       "chargeDueDate": "2022-10-30",
-      |       "chargeOutstandingAmount": 200,
-      |       "chargeAmount": 200
-      |     },
-      |     {
-      |       "penaltyNumber": "123456788",
-      |       "penaltyOrder": "01",
-      |       "penaltyCategory": "P",
-      |       "penaltyStatus": "ACTIVE",
-      |       "FAPIndicator": "X",
-      |       "penaltyCreationDate": "2022-10-30",
-      |       "penaltyExpiryDate": "2022-10-30",
-      |       "triggeringProcess": "XYZ",
-      |       "expiryReason": "FAP",
-      |       "chargeReference": "CHARGE123",
-      |       "communicationsDate": "2022-10-30",
-      |       "lateSubmissions": [
-      |         {
-      |           "lateSubmissionID": "001",
-      |           "taxPeriod":  "23AA",
-      |           "taxPeriodStartDate": "2022-01-01",
-      |           "taxPeriodEndDate": "2022-12-31",
-      |           "taxPeriodDueDate": "2023-02-07",
-      |           "returnReceiptDate": "2023-02-01",
-      |           "taxReturnStatus": "Fulfilled"
-      |         }
-      |       ],
-      |       "appealInformation": [
-      |         {
-      |         "appealStatus": "99",
-      |         "appealLevel": "01"
-      |         }
-      |       ],
-      |       "chargeDueDate": "2022-10-30",
-      |       "chargeOutstandingAmount": 200,
-      |       "chargeAmount": 200
-      |     }
-      |   ]
-      | },
-      | "latePaymentPenalty": {
-      |     "details": [
-      |       {
-      |          "penaltyChargeReference": "1234567890",
-      |          "penaltyCategory": "LPP2",
-      |          "penaltyStatus": "A",
-      |          "penaltyAmountPosted": 0,
-      |          "penaltyAmountAccruing": 99.99,
-      |          "LPP1LRCalculationAmount": 99.99,
-      |          "LPP1LRDays": "15",
-      |          "LPP1LRPercentage": 2.00,
-      |          "LPP1HRCalculationAmount": 99.99,
-      |          "LPP1HRDays": "31",
-      |          "LPP1HRPercentage": 2.00,
-      |          "LPP2Days": "31",
-      |          "LPP2Percentage": 4.00,
-      |          "penaltyChargeCreationDate": "2022-10-30",
-      |          "communicationsDate": "2026-02-08",
-      |          "penaltyChargeDueDate": "2022-10-30",
-      |          "principalChargeReference": "1234567893",
-      |          "principalChargeBillingFrom": "2025-01-01",
-      |          "principalChargeBillingTo": "2025-12-31",
-      |          "principalChargeDueDate": "2026-02-07",
-      |          "principalChargeMainTransaction": "4700"
-      |       },
-      |       {
-      |          "penaltyChargeReference": "1234567889",
-      |          "penaltyCategory": "LPP2",
-      |          "penaltyStatus": "A",
-      |          "penaltyAmountPosted": 0,
-      |          "penaltyAmountAccruing": 99.99,
-      |          "LPP1LRCalculationAmount": 99.99,
-      |          "LPP1LRDays": "15",
-      |          "LPP1LRPercentage": 2.00,
-      |          "LPP1HRCalculationAmount": 99.99,
-      |          "LPP1HRDays": "31",
-      |          "LPP1HRPercentage": 2.00,
-      |          "LPP2Days": "31",
-      |          "LPP2Percentage": 4.00,
-      |          "penaltyChargeCreationDate": "2022-10-30",
-      |          "communicationsDate": "2025-02-08",
-      |          "penaltyChargeDueDate": "2022-10-30",
-      |          "principalChargeReference": "1234567892",
-      |          "principalChargeBillingFrom": "2024-01-01",
-      |          "principalChargeBillingTo": "2024-12-31",
-      |          "principalChargeDueDate": "2025-02-07",
-      |          "principalChargeMainTransaction": "4700"
-      |       },
-      |       {
-      |          "penaltyChargeReference": "1234567888",
-      |          "penaltyCategory": "LPP1",
-      |          "penaltyStatus": "P",
-      |          "penaltyAmountPaid": 0,
-      |          "penaltyAmountPosted": 144.00,
-      |          "penaltyAmountAccruing": 0,
-      |          "penaltyAmountOutstanding": 144.00,
-      |          "LPP1LRCalculationAmount": 99.99,
-      |          "LPP1LRDays": "15",
-      |          "LPP1LRPercentage": 2.00,
-      |          "LPP1HRCalculationAmount": 99.99,
-      |          "LPP1HRDays": "31",
-      |          "LPP1HRPercentage": 2.00,
-      |          "LPP2Days": "31",
-      |          "LPP2Percentage": 4.00,
-      |          "penaltyChargeCreationDate": "2022-10-30",
-      |          "communicationsDate": "2022-10-30",
-      |          "penaltyChargeDueDate": "2022-10-30",
-      |          "principalChargeReference": "1234567891",
-      |          "principalChargeBillingFrom": "2023-01-01",
-      |          "principalChargeBillingTo": "2023-12-31",
-      |          "principalChargeMainTransaction": "4700",
-      |          "principalChargeDueDate": "2024-02-07"
-      |       },
-      |       {
-      |          "penaltyChargeReference": "1234567887",
-      |          "penaltyCategory": "LPP1",
-      |          "penaltyStatus": "P",
-      |          "penaltyAmountPaid": 0,
-      |          "penaltyAmountPosted": 144.00,
-      |          "penaltyAmountOutstanding": 144.00,
-      |          "penaltyAmountAccruing": 0,
-      |          "LPP1LRCalculationAmount": 99.99,
-      |          "LPP1LRDays": "15",
-      |          "LPP1LRPercentage": 2.00,
-      |          "LPP1HRCalculationAmount": 99.99,
-      |          "LPP1HRDays": "31",
-      |          "LPP1HRPercentage": 2.00,
-      |          "LPP2Days": "31",
-      |          "LPP2Percentage": 4.00,
-      |          "penaltyChargeCreationDate": "2022-10-30",
-      |          "communicationsDate": "2023-02-08",
-      |          "penaltyChargeDueDate": "2022-10-30",
-      |          "principalChargeReference": "1234567890",
-      |          "principalChargeBillingFrom": "2022-01-01",
-      |          "principalChargeBillingTo": "2022-12-31",
-      |          "principalChargeMainTransaction": "4700",
-      |          "principalChargeDueDate": "2023-02-07"
-      |       }
-      |   ]
-      | }
-      |}
-      |""".stripMargin)
+  val penaltyDetailsJson: JsValue = Json.parse(s"""
+     |{
+     |  "success": {
+     |    "processingDate": "$mockInstant",
+     |    "penaltyData": {
+     |      "totalisations": {
+     |        "LSPTotalValue": 200,
+     |        "penalisedPrincipalTotal": 2000,
+     |        "LPPPostedTotal": 165.25,
+     |        "LPPEstimatedTotal": 15.26
+     |      },
+     |      "lsp": {
+     |        "lspSummary": {
+     |          "activePenaltyPoints": 10,
+     |          "inactivePenaltyPoints": 12,
+     |          "regimeThreshold": 10,
+     |          "penaltyChargeAmount": 684.25,
+     |          "pocAchievementDate": "2022-01-01"
+     |        },
+     |        "lspDetails": [
+     |          {
+     |            "penaltyNumber": "123456789",
+     |            "penaltyOrder": "01",
+     |            "penaltyCategory": "P",
+     |            "penaltyStatus": "ACTIVE",
+     |            "penaltyCreationDate": "2023-01-01",
+     |            "penaltyExpiryDate": "2023-12-31",
+     |            "communicationsDate": "2024-02-08",
+     |            "lateSubmissions": [
+     |              {
+     |                "lateSubmissionID": "001",
+     |                "taxPeriod": "23AA",
+     |                "taxPeriodStartDate": "2023-01-01",
+     |                "taxPeriodEndDate": "2023-12-31",
+     |                "taxPeriodDueDate": "2024-02-07",
+     |                "returnReceiptDate": "2024-02-01",
+     |                "taxReturnStatus": "Fulfilled"
+     |              }
+     |            ],
+     |            "appealInformation": [
+     |              {
+     |                "appealStatus": "99",
+     |                "appealDescription": "Some value"
+     |              }
+     |            ],
+     |            "chargeDueDate": "2024-02-07",
+     |            "chargeOutstandingAmount": 200,
+     |            "chargeAmount": 200,
+     |            "triggeringProcess": "P123",
+     |            "chargeReference": "CHARGEREF1"
+     |          }
+     |        ]
+     |      },
+     |      "lpp": {
+     |        "lppDetails": [
+     |          {
+     |            "penaltyCategory": "LPP1",
+     |            "penaltyChargeReference": "1234567887",
+     |            "principalChargeReference": "1234567890",
+     |            "penaltyChargeCreationDate": "2022-01-01",
+     |            "penaltyStatus": "A",
+     |            "penaltyChargeAmount": 99.99,
+     |            "penaltyAmountPosted": 0,
+     |            "penaltyAmountOutstanding": null,
+     |            "penaltyAmountPaid": null,
+     |            "penaltyAmountAccruing": 99.99,
+     |            "principalChargeMainTransaction": "4700",
+     |            "principalChargeBillingFrom": "2022-01-01",
+     |            "principalChargeBillingTo": "2022-12-31",
+     |            "principalChargeDueDate": "2023-02-07",
+     |            "lpp1LRDays": "15",
+     |            "lpp1HRDays": "31",
+     |            "lpp2Days": "31",
+     |            "lpp1HRCalculationAmount": 99.99,
+     |            "lpp1LRCalculationAmount": 99.99,
+     |            "lpp2Percentage": 4.00,
+     |            "lpp1LRPercentage": 2.00,
+     |            "lpp1HRPercentage": 2.00,
+     |            "communicationsDate": "2023-02-08",
+     |            "penaltyChargeDueDate": "2023-02-07",
+     |            "appealInformation": [
+     |              {
+     |                "appealStatus": "99",
+     |                "appealLevel": "01",
+     |                "appealDescription": "Some value"
+     |              }
+     |            ],
+     |            "principalChargeLatestClearing": null,
+     |            "vatOutstandingAmount": null,
+     |            "timeToPay": [
+     |              {
+     |                "ttpStartDate": "2022-01-01",
+     |                "ttpEndDate": "2022-12-31"
+     |              }
+     |            ],
+     |            "principalChargeDocNumber": "DOC1",
+     |            "principalChargeSubTransaction": "SUB1"
+     |          },
+     |          {
+     |            "penaltyCategory": "LPP2",
+     |            "penaltyChargeReference": "1234567889",
+     |            "principalChargeReference": "1234567890",
+     |            "penaltyChargeCreationDate": "2024-01-01",
+     |            "penaltyStatus": "A",
+     |            "penaltyChargeAmount": 0,
+     |            "penaltyAmountPosted": 0,
+     |            "penaltyAmountOutstanding": null,
+     |            "penaltyAmountPaid": null,
+     |            "penaltyAmountAccruing": 0,
+     |            "principalChargeMainTransaction": "4700",
+     |            "principalChargeBillingFrom": "2024-01-01",
+     |            "principalChargeBillingTo": "2024-12-31",
+     |            "principalChargeDueDate": "2025-02-07",
+     |            "lpp1LRDays": "15",
+     |            "lpp1HRDays": "31",
+     |            "lpp2Days": "31",
+     |            "lpp1HRCalculationAmount": 0,
+     |            "lpp1LRCalculationAmount": 0,
+     |            "lpp2Percentage": 0,
+     |            "lpp1LRPercentage": 0,
+     |            "lpp1HRPercentage": 0,
+     |            "communicationsDate": "2025-02-08",
+     |            "penaltyChargeDueDate": "2025-02-07",
+     |            "appealInformation": [],
+     |            "principalChargeLatestClearing": null,
+     |            "vatOutstandingAmount": null,
+     |            "timeToPay": [],
+     |            "principalChargeDocNumber": "DOC3",
+     |            "principalChargeSubTransaction": "SUB3"
+     |          }
+     |        ]
+     |      },
+     |      "breathingSpace": [
+     |        {
+     |          "BSStartDate": "2023-01-01",
+     |          "BSEndDate": "2023-12-31"
+     |        }
+     |      ]
+     |    }
+     |  }
+     |}
+     |""".stripMargin)
 
-  class SetUp(hipFeatureSwitch:Boolean = false) {
-    if(hipFeatureSwitch) {
+  class SetUp(hipFeatureSwitch: Boolean = false) {
+    if (hipFeatureSwitch) {
       setEnabledFeatureSwitches(CallAPI1808HIP)
     } else {
       disableFeatureSwitch(CallAPI1808HIP)
@@ -307,56 +258,59 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
     mockSuccessfulResponse()
   }
 
-    Table(
+  Table(
     ("Regime", "IdType", "Id"),
     (Regime("VATC"), IdType("VRN"), Id("123456789")),
-    (Regime("ITSA"), IdType("NINO"), Id("AB123456C")),
+    (Regime("ITSA"), IdType("NINO"), Id("AB123456C"))
   ).forEvery { (regime, idType, id) =>
-
-    val enrolmentKey = AgnosticEnrolmentKey(regime, idType, id)
-    val (r, it, i) =  (regime.value, idType.value, id.value)
+    val enrolmentKey    = AgnosticEnrolmentKey(regime, idType, id)
+    val (r, it, i)      = (regime.value, idType.value, id.value)
     val submitAppealUri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=false&penaltyNumber=123456789&correlationId=uuid-1"
 
-
     s"getAppealsDataForLateSubmissionPenalty for $regime" should {
-    "call ETMP and compare the penalty ID provided and the penalty ID in the payload - return OK if there is a match" in {
+      "call ETMP and compare the penalty ID provided and the penalty ID in the payload - return OK if there is a match" in {
 
-      mockStubResponseForAuthorisedUser
-      mockStubResponseForGetPenaltyDetails(Status.OK, regime, idType, id, Some(getPenaltyDetailsJson.toString()))
+        mockStubResponseForAuthorisedUser
+        mockStubResponseForPenaltyDetails(Status.OK, regime, idType, id, Some(penaltyDetailsJson.toString()))
 
-      val result = await(buildClientForRequestToApp(uri = s"/${regime.value}/appeals-data/late-submissions/${idType.value}/${id.value}?penaltyId=123456789").get())
-      result.status shouldBe Status.OK
-      result.body shouldBe appealV2Json.toString()
+        val result = await(
+          buildClientForRequestToApp(uri = s"/${regime.value}/appeals-data/late-submissions/${idType.value}/${id.value}?penaltyId=123456789").get())
+        result.status shouldBe Status.OK
+        result.body shouldBe appealV2Json.toString()
+      }
+
+      "return NOT_FOUND when the penalty ID given does not match the penalty ID in the payload" in {
+
+        mockStubResponseForAuthorisedUser
+        mockStubResponseForPenaltyDetails(Status.OK, regime, idType, id, Some(penaltyDetailsJson.toString()))
+
+        val result =
+          await(buildClientForRequestToApp(uri = s"/${regime.value}/appeals-data/late-submissions/${idType.value}/${id.value}?penaltyId=0001").get())
+        result.status shouldBe Status.NOT_FOUND
+      }
+
+      "return an ISE when the call to ETMP fails" in {
+
+        mockStubResponseForAuthorisedUser
+        mockStubResponseForPenaltyDetails(Status.INTERNAL_SERVER_ERROR, regime, idType, id, Some(""))
+
+        val result = await(
+          buildClientForRequestToApp(
+            uri = s"/${regime.value}/appeals-data/late-submissions/${idType.value}/${id.value}?penaltyId=123456789"
+          ).get())
+        result.status shouldBe Status.INTERNAL_SERVER_ERROR
+      }
     }
-
-    "return NOT_FOUND when the penalty ID given does not match the penalty ID in the payload" in {
-
-      mockStubResponseForAuthorisedUser
-      mockStubResponseForGetPenaltyDetails(Status.OK, regime, idType, id, Some(getPenaltyDetailsJson.toString()))
-
-      val result = await(buildClientForRequestToApp(uri = s"/${regime.value}/appeals-data/late-submissions/${idType.value}/${id.value}?penaltyId=0001").get())
-      result.status shouldBe Status.NOT_FOUND
-    }
-
-    "return an ISE when the call to ETMP fails" in {
-
-      mockStubResponseForAuthorisedUser
-      mockStubResponseForGetPenaltyDetails(Status.INTERNAL_SERVER_ERROR, regime, idType, id, Some(""))
-
-      val result = await(buildClientForRequestToApp(
-        uri = s"/${regime.value}/appeals-data/late-submissions/${idType.value}/${id.value}?penaltyId=123456789"
-      ).get())
-      result.status shouldBe Status.INTERNAL_SERVER_ERROR
-    }
-  }
 
     s"getAppealsDataForLatePaymentPenalty for $regime" should {
       "call ETMP and compare the penalty ID provided and the penalty ID in the payload - return OK if there is a match" in {
 
         mockStubResponseForAuthorisedUser
-        mockStubResponseForGetPenaltyDetails(Status.OK, regime, idType, id, Some(getPenaltyDetailsJson.toString()))
+        mockStubResponseForPenaltyDetails(Status.OK, regime, idType, id, Some(penaltyDetailsJson.toString()))
 
-        val result = await(buildClientForRequestToApp(uri = s"/${regime.value}/appeals-data/late-payments/${idType.value}/${id.value}?penaltyId=1234567887&isAdditional=false").get())
+        val result = await(
+          buildClientForRequestToApp(uri =
+            s"/${regime.value}/appeals-data/late-payments/${idType.value}/${id.value}?penaltyId=1234567887&isAdditional=false").get())
         result.status shouldBe Status.OK
         result.body shouldBe appealV2JsonLPP.toString()
       }
@@ -364,9 +318,11 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
       "call ETMP and compare the penalty ID provided and the penalty ID in the payload for Additional - return OK if there is a match" in {
 
         mockStubResponseForAuthorisedUser
-        mockStubResponseForGetPenaltyDetails(Status.OK, regime, idType, id, Some(getPenaltyDetailsJson.toString()))
+        mockStubResponseForPenaltyDetails(Status.OK, regime, idType, id, Some(penaltyDetailsJson.toString()))
 
-        val result = await(buildClientForRequestToApp(uri = s"/${regime.value}/appeals-data/late-payments/${idType.value}/${id.value}?penaltyId=1234567889&isAdditional=true").get())
+        val result = await(
+          buildClientForRequestToApp(uri =
+            s"/${regime.value}/appeals-data/late-payments/${idType.value}/${id.value}?penaltyId=1234567889&isAdditional=true").get())
         result.status shouldBe Status.OK
         result.body shouldBe appealV2JsonLPPAdditional.toString()
       }
@@ -374,26 +330,29 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
       "return NOT_FOUND when the penalty ID given does not match the penalty ID in the payload" in {
 
         mockStubResponseForAuthorisedUser
-        mockStubResponseForGetPenaltyDetails(Status.OK, regime, idType, id, Some(getPenaltyDetailsJson.toString()))
+        mockStubResponseForPenaltyDetails(Status.OK, regime, idType, id, Some(penaltyDetailsJson.toString()))
 
-        val result = await(buildClientForRequestToApp(uri = s"/${regime.value}/appeals-data/late-payments/${idType.value}/${id.value}?penaltyId=0001&isAdditional=false").get())
+        val result = await(
+          buildClientForRequestToApp(uri =
+            s"/${regime.value}/appeals-data/late-payments/${idType.value}/${id.value}?penaltyId=0001&isAdditional=false").get())
         result.status shouldBe Status.NOT_FOUND
       }
 
       "return an ISE when the call to ETMP fails" in {
 
         mockStubResponseForAuthorisedUser
-        mockStubResponseForGetPenaltyDetails(Status.INTERNAL_SERVER_ERROR, regime, idType, id, Some(""))
+        mockStubResponseForPenaltyDetails(Status.INTERNAL_SERVER_ERROR, regime, idType, id, Some(""))
 
-        val result = await(buildClientForRequestToApp(uri = s"/${regime.value}/appeals-data/late-payments/${idType.value}/${id.value}?penaltyId=0001&isAdditional=false").get())
+        val result = await(
+          buildClientForRequestToApp(uri =
+            s"/${regime.value}/appeals-data/late-payments/${idType.value}/${id.value}?penaltyId=0001&isAdditional=false").get())
         result.status shouldBe Status.INTERNAL_SERVER_ERROR
       }
     }
 
     s"getReasonableExcuses for $regime" should {
       "return all active reasonable excuses" in {
-        val jsonExpectedToReturn: JsValue = Json.parse(
-          """
+        val jsonExpectedToReturn: JsValue = Json.parse("""
             |{
             |  "excuses": [
             |    {
@@ -456,17 +415,17 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
               |}
               |""".stripMargin
           )
-          val result: WSResponse = await(buildClientForRequestToApp(uri = submitAppealUri).post(
-            jsonToSubmit
-          ))
+          val result: WSResponse = await(
+            buildClientForRequestToApp(uri = submitAppealUri).post(
+              jsonToSubmit
+            ))
           result.status shouldBe OK
         }
 
         "returns OK when successful for crime" in new SetUp {
           mockResponseForAppealSubmissionStub(OK, enrolmentKey, penaltyNumber = "123456789")
 
-          val jsonToSubmit: JsValue = Json.parse(
-            """
+          val jsonToSubmit: JsValue = Json.parse("""
               |{
               |    "sourceSystem": "MDTP",
               |    "taxRegime": "VAT",
@@ -484,17 +443,17 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
               |		}
               |}
               |""".stripMargin)
-          val result: WSResponse = await(buildClientForRequestToApp(uri = submitAppealUri).post(
-            jsonToSubmit
-          ))
+          val result: WSResponse = await(
+            buildClientForRequestToApp(uri = submitAppealUri).post(
+              jsonToSubmit
+            ))
           result.status shouldBe OK
         }
 
         "returns OK when successful for fire or flood" in new SetUp {
           mockResponseForAppealSubmissionStub(OK, enrolmentKey, penaltyNumber = "123456789")
 
-          val jsonToSubmit: JsValue = Json.parse(
-            """
+          val jsonToSubmit: JsValue = Json.parse("""
               |{
               |    "sourceSystem": "MDTP",
               |    "taxRegime": "VAT",
@@ -511,17 +470,17 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
               |    }
               |}
               |""".stripMargin)
-          val result: WSResponse = await(buildClientForRequestToApp(uri = submitAppealUri).post(
-            jsonToSubmit
-          ))
+          val result: WSResponse = await(
+            buildClientForRequestToApp(uri = submitAppealUri).post(
+              jsonToSubmit
+            ))
           result.status shouldBe OK
         }
 
-        "returns OK when successful for loss of staff" in new SetUp{
+        "returns OK when successful for loss of staff" in new SetUp {
           mockResponseForAppealSubmissionStub(OK, enrolmentKey, penaltyNumber = "123456789")
 
-          val jsonToSubmit: JsValue = Json.parse(
-            """
+          val jsonToSubmit: JsValue = Json.parse("""
               |{
               |    "sourceSystem": "MDTP",
               |    "taxRegime": "VAT",
@@ -538,17 +497,17 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
               |		}
               |}
               |""".stripMargin)
-          val result: WSResponse = await(buildClientForRequestToApp(uri = submitAppealUri).post(
-            jsonToSubmit
-          ))
+          val result: WSResponse = await(
+            buildClientForRequestToApp(uri = submitAppealUri).post(
+              jsonToSubmit
+            ))
           result.status shouldBe OK
         }
 
         "returns OK when successful for technical issues" in new SetUp {
           mockResponseForAppealSubmissionStub(OK, enrolmentKey, penaltyNumber = "123456789")
 
-          val jsonToSubmit: JsValue = Json.parse(
-            """
+          val jsonToSubmit: JsValue = Json.parse("""
               |{
               |    "sourceSystem": "MDTP",
               |    "taxRegime": "VAT",
@@ -566,9 +525,10 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
               |		}
               |}
               |""".stripMargin)
-          val result: WSResponse = await(buildClientForRequestToApp(uri = submitAppealUri).post(
-            jsonToSubmit
-          ))
+          val result: WSResponse = await(
+            buildClientForRequestToApp(uri = submitAppealUri).post(
+              jsonToSubmit
+            ))
           result.status shouldBe OK
         }
 
@@ -576,8 +536,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
           "there has been no hospital stay" in new SetUp {
             mockResponseForAppealSubmissionStub(OK, enrolmentKey, penaltyNumber = "123456789")
 
-            val jsonToSubmit: JsValue = Json.parse(
-              """
+            val jsonToSubmit: JsValue = Json.parse("""
                 |{
                 |    "sourceSystem": "MDTP",
                 |    "taxRegime": "VAT",
@@ -596,17 +555,17 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
                 |		}
                 |}
                 |""".stripMargin)
-            val result: WSResponse = await(buildClientForRequestToApp(uri = submitAppealUri).post(
-              jsonToSubmit
-            ))
+            val result: WSResponse = await(
+              buildClientForRequestToApp(uri = submitAppealUri).post(
+                jsonToSubmit
+              ))
             result.status shouldBe OK
           }
 
           "there is an ongoing hospital stay" in new SetUp {
             mockResponseForAppealSubmissionStub(OK, enrolmentKey, penaltyNumber = "123456789")
 
-            val jsonToSubmit: JsValue = Json.parse(
-              """
+            val jsonToSubmit: JsValue = Json.parse("""
                 |{
                 |    "sourceSystem": "MDTP",
                 |    "taxRegime": "VAT",
@@ -625,17 +584,17 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
                 |		}
                 |}
                 |""".stripMargin)
-            val result: WSResponse = await(buildClientForRequestToApp(uri = submitAppealUri).post(
-              jsonToSubmit
-            ))
+            val result: WSResponse = await(
+              buildClientForRequestToApp(uri = submitAppealUri).post(
+                jsonToSubmit
+              ))
             result.status shouldBe OK
           }
 
           "there has been a hospital stay" in new SetUp {
             mockResponseForAppealSubmissionStub(OK, enrolmentKey, penaltyNumber = "123456789")
 
-            val jsonToSubmit: JsValue = Json.parse(
-              """
+            val jsonToSubmit: JsValue = Json.parse("""
                 |{
                 |    "sourceSystem": "MDTP",
                 |    "taxRegime": "VAT",
@@ -655,9 +614,10 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
                 |		}
                 |}
                 |""".stripMargin)
-            val result: WSResponse = await(buildClientForRequestToApp(uri = submitAppealUri).post(
-              jsonToSubmit
-            ))
+            val result: WSResponse = await(
+              buildClientForRequestToApp(uri = submitAppealUri).post(
+                jsonToSubmit
+              ))
             result.status shouldBe OK
           }
         }
@@ -706,9 +666,10 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
               |}
               |""".stripMargin
           )
-          val result: WSResponse = await(buildClientForRequestToApp(uri = submitAppealUri).post(
-            jsonToSubmit
-          ))
+          val result: WSResponse = await(
+            buildClientForRequestToApp(uri = submitAppealUri).post(
+              jsonToSubmit
+            ))
           result.status shouldBe OK
         }
 
@@ -754,14 +715,16 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
               |}
               |""".stripMargin
           )
-          val result: WSResponse = await(buildClientForRequestToApp(uri = submitAppealUri).post(
-            jsonToSubmit
-          ))
+          val result: WSResponse = await(
+            buildClientForRequestToApp(uri = submitAppealUri).post(
+              jsonToSubmit
+            ))
           result.status shouldBe OK
           eventually {
             wireMockServer
               .findAll(postRequestedFor(urlEqualTo("/write/audit")))
-              .asScala.toList
+              .asScala
+              .toList
               .exists(_.getBodyAsString.contains("PenaltyAppealFileNotificationStorageFailure")) shouldBe true
           }
         }
@@ -771,8 +734,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
           mockStubResponseForAuthorisedUser
           mockResponseForAppealSubmissionStub(OK, enrolmentKey, isLPP = true, penaltyNumber = "123456789")
 
-          val jsonToSubmit: JsValue = Json.parse(
-            """
+          val jsonToSubmit: JsValue = Json.parse("""
               |{
               |    "sourceSystem": "MDTP",
               |    "taxRegime": "VAT",
@@ -791,8 +753,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
               |}
               |""".stripMargin)
           val result: WSResponse = await(
-            buildClientForRequestToApp(
-              uri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=true&penaltyNumber=123456789&correlationId=uuid-1")
+            buildClientForRequestToApp(uri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=true&penaltyNumber=123456789&correlationId=uuid-1")
               .post(
                 jsonToSubmit
               ))
@@ -848,34 +809,39 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
             "error" -> "Appeal submitted (case ID: PR-1234567889, correlation ID: uuid-1) but received 500 response from file notification orchestrator"
           )
 
-          val result: WSResponse = await(buildClientForRequestToApp(
-            uri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=false&penaltyNumber=123456789&correlationId=uuid-1&isMultiAppeal=true"
-          ).post(
-            jsonToSubmit
-          ))
+          val result: WSResponse = await(
+            buildClientForRequestToApp(
+              uri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=false&penaltyNumber=123456789&correlationId=uuid-1&isMultiAppeal=true"
+            ).post(
+              jsonToSubmit
+            ))
 
           result.status shouldBe MULTI_STATUS
           Json.parse(result.body) shouldBe expectedJsonResponse
           eventually {
             wireMockServer
               .findAll(postRequestedFor(urlEqualTo("/write/audit")))
-              .asScala.toList.exists(_.getBodyAsString.contains("PenaltyAppealFileNotificationStorageFailure")) shouldBe true
+              .asScala
+              .toList
+              .exists(_.getBodyAsString.contains("PenaltyAppealFileNotificationStorageFailure")) shouldBe true
           }
         }
       }
 
       "return BAD_REQUEST (400)" when {
         "no JSON body is in the request" in new SetUp {
-          val result: WSResponse = await(buildClientForRequestToApp(
-            uri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=true&penaltyNumber=123456789&correlationId=uuid-1"
-          ).post(""))
+          val result: WSResponse = await(
+            buildClientForRequestToApp(
+              uri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=true&penaltyNumber=123456789&correlationId=uuid-1"
+            ).post(""))
           result.status shouldBe BAD_REQUEST
         }
 
         "JSON body is present but it can not be parsed to a model" in new SetUp {
-          val result: WSResponse = await(buildClientForRequestToApp(
-            uri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=true&penaltyNumber=123456789&correlationId=uuid-1"
-          ).post(Json.parse("{}")))
+          val result: WSResponse = await(
+            buildClientForRequestToApp(
+              uri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=true&penaltyNumber=123456789&correlationId=uuid-1"
+            ).post(Json.parse("{}")))
           result.status shouldBe BAD_REQUEST
         }
       }
@@ -884,8 +850,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
         "the call to PEGA/stub fails" in new SetUp {
           mockResponseForAppealSubmissionStub(GATEWAY_TIMEOUT, enrolmentKey, penaltyNumber = "123456789")
 
-          val jsonToSubmit: JsValue = Json.parse(
-            """
+          val jsonToSubmit: JsValue = Json.parse("""
               |{
               |    "sourceSystem": "MDTP",
               |    "taxRegime": "VAT",
@@ -903,17 +868,17 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
               |		}
               |}
               |""".stripMargin)
-          val result: WSResponse = await(buildClientForRequestToApp(uri = submitAppealUri).post(
-            jsonToSubmit
-          ))
+          val result: WSResponse = await(
+            buildClientForRequestToApp(uri = submitAppealUri).post(
+              jsonToSubmit
+            ))
           result.status shouldBe GATEWAY_TIMEOUT
         }
 
         "the call to PEGA/stub has a fault" in new SetUp {
           mockResponseForAppealSubmissionStubFault(enrolmentKey, penaltyNumber = "123456789")
 
-          val jsonToSubmit: JsValue = Json.parse(
-            """
+          val jsonToSubmit: JsValue = Json.parse("""
               |{
               |    "sourceSystem": "MDTP",
               |    "taxRegime": "VAT",
@@ -931,9 +896,10 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
               |		}
               |}
               |""".stripMargin)
-          val result: WSResponse = await(buildClientForRequestToApp(uri = submitAppealUri).post(
-            jsonToSubmit
-          ))
+          val result: WSResponse = await(
+            buildClientForRequestToApp(uri = submitAppealUri).post(
+              jsonToSubmit
+            ))
           result.status shouldBe INTERNAL_SERVER_ERROR
         }
       }
@@ -961,14 +927,14 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
               |}
               |""".stripMargin
           )
-          val result: WSResponse = await(buildClientForRequestToApp(uri = submitAppealUri).post(
-            jsonToSubmit
-          ))
+          val result: WSResponse = await(
+            buildClientForRequestToApp(uri = submitAppealUri).post(
+              jsonToSubmit
+            ))
           result.status shouldBe OK
         }
         "returns OK when successful for crime" in new SetUp(hipFeatureSwitch = true) {
-          val jsonToSubmit: JsValue = Json.parse(
-            """
+          val jsonToSubmit: JsValue = Json.parse("""
               |{
               |    "sourceSystem": "MDTP",
               |    "taxRegime": "VAT",
@@ -986,14 +952,14 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
               |		}
               |}
               |""".stripMargin)
-          val result: WSResponse = await(buildClientForRequestToApp(uri = submitAppealUri).post(
-            jsonToSubmit
-          ))
+          val result: WSResponse = await(
+            buildClientForRequestToApp(uri = submitAppealUri).post(
+              jsonToSubmit
+            ))
           result.status shouldBe OK
         }
         "returns OK when successful for fire or flood" in new SetUp(hipFeatureSwitch = true) {
-          val jsonToSubmit: JsValue = Json.parse(
-            """
+          val jsonToSubmit: JsValue = Json.parse("""
               |{
               |    "sourceSystem": "MDTP",
               |    "taxRegime": "VAT",
@@ -1010,14 +976,14 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
               |    }
               |}
               |""".stripMargin)
-          val result: WSResponse = await(buildClientForRequestToApp(uri = submitAppealUri).post(
-            jsonToSubmit
-          ))
+          val result: WSResponse = await(
+            buildClientForRequestToApp(uri = submitAppealUri).post(
+              jsonToSubmit
+            ))
           result.status shouldBe OK
         }
         "returns OK when successful for loss of staff" in new SetUp(hipFeatureSwitch = true) {
-          val jsonToSubmit: JsValue = Json.parse(
-            """
+          val jsonToSubmit: JsValue = Json.parse("""
               |{
               |    "sourceSystem": "MDTP",
               |    "taxRegime": "VAT",
@@ -1034,14 +1000,14 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
               |		}
               |}
               |""".stripMargin)
-          val result: WSResponse = await(buildClientForRequestToApp(uri = submitAppealUri).post(
-            jsonToSubmit
-          ))
+          val result: WSResponse = await(
+            buildClientForRequestToApp(uri = submitAppealUri).post(
+              jsonToSubmit
+            ))
           result.status shouldBe OK
         }
         "returns OK when successful for technical issues" in new SetUp(hipFeatureSwitch = true) {
-          val jsonToSubmit: JsValue = Json.parse(
-            """
+          val jsonToSubmit: JsValue = Json.parse("""
               |{
               |    "sourceSystem": "MDTP",
               |    "taxRegime": "VAT",
@@ -1059,16 +1025,16 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
               |		}
               |}
               |""".stripMargin)
-          val result: WSResponse = await(buildClientForRequestToApp(uri = submitAppealUri).post(
-            jsonToSubmit
-          ))
+          val result: WSResponse = await(
+            buildClientForRequestToApp(uri = submitAppealUri).post(
+              jsonToSubmit
+            ))
           result.status shouldBe OK
         }
         "returns OK when successful for health" when {
 
           "there has been no hospital stay" in new SetUp(hipFeatureSwitch = true) {
-            val jsonToSubmit: JsValue = Json.parse(
-              """
+            val jsonToSubmit: JsValue = Json.parse("""
                 |{
                 |    "sourceSystem": "MDTP",
                 |    "taxRegime": "VAT",
@@ -1087,15 +1053,15 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
                 |		}
                 |}
                 |""".stripMargin)
-            val result: WSResponse = await(buildClientForRequestToApp(uri = submitAppealUri).post(
-              jsonToSubmit
-            ))
+            val result: WSResponse = await(
+              buildClientForRequestToApp(uri = submitAppealUri).post(
+                jsonToSubmit
+              ))
             result.status shouldBe OK
           }
 
           "there is an ongoing hospital stay" in new SetUp(hipFeatureSwitch = true) {
-            val jsonToSubmit: JsValue = Json.parse(
-              """
+            val jsonToSubmit: JsValue = Json.parse("""
                 |{
                 |    "sourceSystem": "MDTP",
                 |    "taxRegime": "VAT",
@@ -1114,15 +1080,15 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
                 |		}
                 |}
                 |""".stripMargin)
-            val result: WSResponse = await(buildClientForRequestToApp(uri = submitAppealUri).post(
-              jsonToSubmit
-            ))
+            val result: WSResponse = await(
+              buildClientForRequestToApp(uri = submitAppealUri).post(
+                jsonToSubmit
+              ))
             result.status shouldBe OK
           }
 
           "there has been a hospital stay" in new SetUp(hipFeatureSwitch = true) {
-            val jsonToSubmit: JsValue = Json.parse(
-              """
+            val jsonToSubmit: JsValue = Json.parse("""
                 |{
                 |    "sourceSystem": "MDTP",
                 |    "taxRegime": "VAT",
@@ -1142,17 +1108,18 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
                 |		}
                 |}
                 |""".stripMargin)
-            val result: WSResponse = await(buildClientForRequestToApp(uri = submitAppealUri).post(
-              jsonToSubmit
-            ))
+            val result: WSResponse = await(
+              buildClientForRequestToApp(uri = submitAppealUri).post(
+                jsonToSubmit
+              ))
             result.status shouldBe OK
           }
         }
         "returns OK when successful for other with file upload" in new SetUp(hipFeatureSwitch = true) {
-            mockResponseForFileNotificationOrchestrator(OK)
+          mockResponseForFileNotificationOrchestrator(OK)
 
-            val jsonToSubmit: JsValue = Json.parse(
-              """
+          val jsonToSubmit: JsValue = Json.parse(
+            """
                 |{
                 |    "sourceSystem": "MDTP",
                 |    "taxRegime": "VAT",
@@ -1188,12 +1155,13 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
                 |		}
                 |}
                 |""".stripMargin
-            )
-            val result: WSResponse = await(buildClientForRequestToApp(uri = submitAppealUri).post(
+          )
+          val result: WSResponse = await(
+            buildClientForRequestToApp(uri = submitAppealUri).post(
               jsonToSubmit
             ))
-            result.status shouldBe OK
-          }
+          result.status shouldBe OK
+        }
 
         "returns OK when successful for other with file upload (audit storage failure) - single appeal" in new SetUp(hipFeatureSwitch = true) {
           mockResponseForFileNotificationOrchestrator(INTERNAL_SERVER_ERROR)
@@ -1236,18 +1204,22 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
               |}
               |""".stripMargin
           )
-          val result: WSResponse = await(buildClientForRequestToApp(uri = submitAppealUri).post(
-            jsonToSubmit
-          ))
+          val result: WSResponse = await(
+            buildClientForRequestToApp(uri = submitAppealUri).post(
+              jsonToSubmit
+            ))
           result.status shouldBe OK
           eventually {
-            wireMockServer.findAll(postRequestedFor(urlEqualTo("/write/audit"))).asScala.toList.exists(_.getBodyAsString.contains("PenaltyAppealFileNotificationStorageFailure")) shouldBe true
+            wireMockServer
+              .findAll(postRequestedFor(urlEqualTo("/write/audit")))
+              .asScala
+              .toList
+              .exists(_.getBodyAsString.contains("PenaltyAppealFileNotificationStorageFailure")) shouldBe true
           }
         }
 
         "returns OK when successful for LPP" in new SetUp(hipFeatureSwitch = true) {
-          val jsonToSubmit: JsValue = Json.parse(
-            """
+          val jsonToSubmit: JsValue = Json.parse("""
               |{
               |    "sourceSystem": "MDTP",
               |    "taxRegime": "VAT",
@@ -1265,9 +1237,10 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
               |		}
               |}
               |""".stripMargin)
-          val result: WSResponse = await(buildClientForRequestToApp(uri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=true&penaltyNumber=123456789&correlationId=uuid-1").post(
-            jsonToSubmit
-          ))
+          val result: WSResponse = await(
+            buildClientForRequestToApp(uri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=true&penaltyNumber=123456789&correlationId=uuid-1").post(
+              jsonToSubmit
+            ))
           result.status shouldBe OK
         }
 
@@ -1318,17 +1291,20 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
             "error" -> "Appeal submitted (case ID: PR-1234567889, correlation ID: uuid-1) but received 500 response from file notification orchestrator"
           )
 
-          val result: WSResponse = await(buildClientForRequestToApp(
-            uri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=false&penaltyNumber=123456789&correlationId=uuid-1&isMultiAppeal=true"
-          ).post(
-            jsonToSubmit
-          ))
+          val result: WSResponse = await(
+            buildClientForRequestToApp(
+              uri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=false&penaltyNumber=123456789&correlationId=uuid-1&isMultiAppeal=true"
+            ).post(
+              jsonToSubmit
+            ))
 
           result.status shouldBe MULTI_STATUS
           Json.parse(result.body) shouldBe expectedJsonResponse
           eventually {
             wireMockServer
-              .findAll(postRequestedFor(urlEqualTo("/write/audit"))).asScala.toList
+              .findAll(postRequestedFor(urlEqualTo("/write/audit")))
+              .asScala
+              .toList
               .exists(_.getBodyAsString.contains("PenaltyAppealFileNotificationStorageFailure")) shouldBe true
           }
         }
@@ -1336,16 +1312,18 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
 
       "return BAD_REQUEST (400)" when {
         "no JSON body is in the request" in new SetUp(hipFeatureSwitch = true) {
-          val result: WSResponse = await(buildClientForRequestToApp(
-            uri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=true&penaltyNumber=123456789&correlationId=uuid-1"
-          ).post(""))
+          val result: WSResponse = await(
+            buildClientForRequestToApp(
+              uri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=true&penaltyNumber=123456789&correlationId=uuid-1"
+            ).post(""))
           result.status shouldBe BAD_REQUEST
         }
 
         "JSON body is present but it can not be parsed to a model" in new SetUp(hipFeatureSwitch = true) {
-          val result: WSResponse = await(buildClientForRequestToApp(
-            uri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=true&penaltyNumber=123456789&correlationId=uuid-1"
-          ).post(Json.parse("{}")))
+          val result: WSResponse = await(
+            buildClientForRequestToApp(
+              uri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=true&penaltyNumber=123456789&correlationId=uuid-1"
+            ).post(Json.parse("{}")))
           result.status shouldBe BAD_REQUEST
         }
       }
@@ -1354,8 +1332,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
         "the call to PEGA/stub fails" in new SetUp {
           mockResponseForAppealSubmissionStub(GATEWAY_TIMEOUT, enrolmentKey, penaltyNumber = "123456789")
 
-          val jsonToSubmit: JsValue = Json.parse(
-            """
+          val jsonToSubmit: JsValue = Json.parse("""
               |{
               |    "sourceSystem": "MDTP",
               |    "taxRegime": "VAT",
@@ -1373,17 +1350,17 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
               |		}
               |}
               |""".stripMargin)
-          val result: WSResponse = await(buildClientForRequestToApp(uri = submitAppealUri).post(
-            jsonToSubmit
-          ))
+          val result: WSResponse = await(
+            buildClientForRequestToApp(uri = submitAppealUri).post(
+              jsonToSubmit
+            ))
           result.status shouldBe GATEWAY_TIMEOUT
         }
 
         "the call to PEGA/stub has a fault" in new SetUp {
           mockResponseForAppealSubmissionStubFault(enrolmentKey, penaltyNumber = "123456789")
 
-          val jsonToSubmit: JsValue = Json.parse(
-            """
+          val jsonToSubmit: JsValue = Json.parse("""
               |{
               |    "sourceSystem": "MDTP",
               |    "taxRegime": "VAT",
@@ -1401,391 +1378,493 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
               |		}
               |}
               |""".stripMargin)
-          val result: WSResponse = await(buildClientForRequestToApp(uri = submitAppealUri).post(
-            jsonToSubmit
-          ))
+          val result: WSResponse = await(
+            buildClientForRequestToApp(uri = submitAppealUri).post(
+              jsonToSubmit
+            ))
           result.status shouldBe INTERNAL_SERVER_ERROR
         }
       }
     }
 
     s"getMultiplePenaltyData for $regime" should {
-      val getPenaltyDetailsOneLPPJson: JsValue = Json.parse(
-        """
+      val penaltyDetailsOneLPPJson: JsValue = Json.parse(s"""
           |{
-          | "totalisations": {
-          |   "LSPTotalValue": 200,
-          |   "penalisedPrincipalTotal": 2000,
-          |   "LPPPostedTotal": 165.25,
-          |   "LPPEstimatedTotal": 15.26
-          | },
-          | "latePaymentPenalty": {
-          |     "details": [
-          |       {
-          |          "penaltyChargeReference": "1234567887",
-          |          "penaltyCategory": "LPP1",
-          |          "penaltyStatus": "P",
-          |          "penaltyAmountPaid": 0,
-          |          "penaltyAmountPosted": 144.00,
-          |          "penaltyAmountOutstanding": 144.00,
-          |          "penaltyAmountAccruing": 0,
-          |          "LPP1LRCalculationAmount": 99.99,
-          |          "LPP1LRDays": "15",
-          |          "LPP1LRPercentage": 2.00,
-          |          "LPP1HRCalculationAmount": 99.99,
-          |          "LPP1HRDays": "31",
-          |          "LPP1HRPercentage": 2.00,
-          |          "LPP2Days": "31",
-          |          "LPP2Percentage": 4.00,
-          |          "penaltyChargeCreationDate": "2022-10-30",
-          |          "communicationsDate": "2023-02-08",
-          |          "penaltyChargeDueDate": "2022-10-30",
-          |          "principalChargeReference": "1234567890",
-          |          "principalChargeBillingFrom": "2022-01-01",
-          |          "principalChargeBillingTo": "2022-12-31",
-          |          "principalChargeDueDate": "2023-02-07",
-          |          "principalChargeMainTransaction": "4700",
-          |          "principalChargeLatestClearing": "2023-04-01"
-          |       }
-          |   ]
-          | }
+          |  "success": {
+          |    "processingDate": "$mockInstant",
+          |    "penaltyData": {
+          |      "totalisations": {
+          |        "LSPTotalValue": 200,
+          |        "penalisedPrincipalTotal": 2000,
+          |        "LPPPostedTotal": 165.25,
+          |        "LPPEstimatedTotal": 15.26
+          |      },
+          |      "lpp": {
+          |        "lppDetails": [
+          |          {
+          |            "penaltyChargeReference": "1234567887",
+          |            "penaltyCategory": "LPP1",
+          |            "penaltyStatus": "P",
+          |            "penaltyAmountPosted": 144.00,
+          |            "penaltyAmountAccruing": 0,
+          |            "penaltyAmountOutstanding": 144.00,
+          |            "penaltyAmountPaid": 0,
+          |            "principalChargeMainTransaction": "4700",
+          |            "principalChargeBillingFrom": "2022-01-01",
+          |            "principalChargeBillingTo": "2022-12-31",
+          |            "principalChargeDueDate": "2023-02-07",
+          |            "lpp1LRDays": "15",
+          |            "lpp1HRDays": "31",
+          |            "lpp2Days": "31",
+          |            "lpp1LRCalculationAmount": 99.99,
+          |            "lpp1HRCalculationAmount": 99.99,
+          |            "lpp2Percentage": 4.00,
+          |            "lpp1LRPercentage": 2.00,
+          |            "lpp1HRPercentage": 2.00,
+          |            "communicationsDate": "2023-02-08",
+          |            "penaltyChargeDueDate": "2022-10-30",
+          |            "principalChargeLatestClearing": "2023-04-01",
+          |            "vatOutstandingAmount": null,
+          |            "timeToPay": [
+          |              {
+          |                "ttpStartDate": "2022-01-01",
+          |                "ttpEndDate": "2022-12-31"
+          |              }
+          |            ],
+          |            "principalChargeReference": "1234567890",
+          |            "principalChargeDocNumber": "DOC1",
+          |            "principalChargeSubTransaction": "SUB1"
+          |          }
+          |        ]
+          |      }
+          |    }
+          |  }
           |}
-          |""".stripMargin
-      )
+          |""".stripMargin)
 
-      val getPenaltyDetailsTwoLPPsJson: JsValue = Json.parse(
-        """
+      val penaltyDetailsTwoLPPsJson: JsValue = Json.parse(s"""
+     |{
+     |  "success": {
+     |    "processingDate": "$mockInstant",
+     |    "penaltyData": {
+     |      "totalisations": {
+     |        "LSPTotalValue": 200,
+     |        "penalisedPrincipalTotal": 2000,
+     |        "LPPPostedTotal": 165.25,
+     |        "LPPEstimatedTotal": 15.26
+     |      },
+     |      "lpp": {
+     |        "lppDetails": [
+     |          {
+     |            "penaltyCategory": "LPP2",
+     |            "penaltyChargeReference": "1234567888",
+     |            "principalChargeReference": "1234567890",
+     |            "penaltyChargeCreationDate": "2022-10-30",
+     |            "penaltyStatus": "P",
+     |            "penaltyAmountPosted": 144.00,
+     |            "penaltyAmountAccruing": 0,
+     |            "penaltyAmountOutstanding": 144.00,
+     |            "penaltyAmountPaid": 0,
+     |            "principalChargeMainTransaction": "4700",
+     |            "principalChargeBillingFrom": "2022-01-01",
+     |            "principalChargeBillingTo": "2022-12-31",
+     |            "principalChargeDueDate": "2023-02-07",
+     |            "lpp1LRDays": "15",
+     |            "lpp1HRDays": "31",
+     |            "lpp2Days": "31",
+     |            "lpp1LRCalculationAmount": 99.99,
+     |            "lpp1HRCalculationAmount": 99.99,
+     |            "lpp2Percentage": 4.00,
+     |            "lpp1LRPercentage": 2.00,
+     |            "lpp1HRPercentage": 2.00,
+     |            "communicationsDate": "2023-02-08",
+     |            "penaltyChargeDueDate": "2022-10-30",
+     |            "principalChargeLatestClearing": "2023-04-01",
+     |            "vatOutstandingAmount": null,
+     |            "timeToPay": [
+     |              {
+     |                "ttpStartDate": "2022-01-01",
+     |                "ttpEndDate": "2022-12-31"
+     |              }
+     |            ],
+     |            "principalChargeDocNumber": "DOC1",
+     |            "principalChargeSubTransaction": "SUB1"
+     |          },
+     |          {
+     |            "penaltyCategory": "LPP1",
+     |            "penaltyChargeReference": "1234567887",
+     |            "principalChargeReference": "1234567890",
+     |            "penaltyChargeCreationDate": "2022-10-30",
+     |            "penaltyStatus": "P",
+     |            "penaltyAmountPosted": 144.01,
+     |            "penaltyAmountAccruing": 0,
+     |            "penaltyAmountOutstanding": 144.01,
+     |            "penaltyAmountPaid": 0,
+     |            "principalChargeMainTransaction": "4700",
+     |            "principalChargeBillingFrom": "2022-01-01",
+     |            "principalChargeBillingTo": "2022-12-31",
+     |            "principalChargeDueDate": "2023-02-07",
+     |            "lpp1LRDays": "15",
+     |            "lpp1HRDays": "31",
+     |            "lpp2Days": "31",
+     |            "lpp1LRCalculationAmount": 99.99,
+     |            "lpp1HRCalculationAmount": 99.99,
+     |            "lpp2Percentage": 4.00,
+     |            "lpp1LRPercentage": 2.00,
+     |            "lpp1HRPercentage": 2.00,
+     |            "communicationsDate": "2023-01-08",
+     |            "penaltyChargeDueDate": "2022-10-30",
+     |            "principalChargeLatestClearing": "2023-04-01",
+     |            "vatOutstandingAmount": null,
+     |            "timeToPay": [
+     |              {
+     |                "ttpStartDate": "2022-01-01",
+     |                "ttpEndDate": "2022-12-31"
+     |              }
+     |            ],
+     |            "principalChargeDocNumber": "DOC2",
+     |            "principalChargeSubTransaction": "SUB2"
+     |          }
+     |        ]
+     |      }
+     |    }
+     |  }
+     |}
+     |""".stripMargin)
+      val penaltyDetailsTwoLPPsWithAppealsJson: JsValue = Json.parse(s"""
           |{
-          | "totalisations": {
-          |   "LSPTotalValue": 200,
-          |   "penalisedPrincipalTotal": 2000,
-          |   "LPPPostedTotal": 165.25,
-          |   "LPPEstimatedTotal": 15.26
-          | },
-          | "latePaymentPenalty": {
-          |     "details": [
-          |       {
-          |          "penaltyChargeReference": "1234567888",
-          |          "penaltyCategory": "LPP2",
-          |          "penaltyStatus": "P",
-          |          "penaltyAmountPaid": 0,
-          |          "penaltyAmountPosted": 144.00,
-          |          "penaltyAmountOutstanding": 144.00,
-          |          "penaltyAmountAccruing": 0,
-          |          "LPP1LRCalculationAmount": 99.99,
-          |          "LPP1LRDays": "15",
-          |          "LPP1LRPercentage": 2.00,
-          |          "LPP1HRCalculationAmount": 99.99,
-          |          "LPP1HRDays": "31",
-          |          "LPP1HRPercentage": 2.00,
-          |          "LPP2Days": "31",
-          |          "LPP2Percentage": 4.00,
-          |          "penaltyChargeCreationDate": "2022-10-30",
-          |          "communicationsDate": "2023-02-08",
-          |          "penaltyChargeDueDate": "2022-10-30",
-          |          "principalChargeReference": "1234567890",
-          |          "principalChargeMainTransaction": "4700",
-          |          "principalChargeBillingFrom": "2022-01-01",
-          |          "principalChargeBillingTo": "2022-12-31",
-          |          "principalChargeDueDate": "2023-02-07",
-          |          "principalChargeLatestClearing": "2023-04-01"
-          |       },
-          |       {
-          |          "penaltyChargeReference": "1234567887",
-          |          "penaltyCategory": "LPP1",
-          |          "penaltyStatus": "P",
-          |          "penaltyAmountPaid": 0,
-          |          "penaltyAmountPosted": 144.01,
-          |          "penaltyAmountOutstanding": 144.01,
-          |          "penaltyAmountAccruing": 0,
-          |          "LPP1LRCalculationAmount": 99.99,
-          |          "LPP1LRDays": "15",
-          |          "LPP1LRPercentage": 2.00,
-          |          "LPP1HRCalculationAmount": 99.99,
-          |          "LPP1HRDays": "31",
-          |          "LPP1HRPercentage": 2.00,
-          |          "LPP2Days": "31",
-          |          "LPP2Percentage": 4.00,
-          |          "penaltyChargeCreationDate": "2022-10-30",
-          |          "communicationsDate": "2023-01-08",
-          |          "penaltyChargeDueDate": "2022-10-30",
-          |          "principalChargeReference": "1234567890",
-          |          "principalChargeMainTransaction": "4700",
-          |          "principalChargeBillingFrom": "2022-01-01",
-          |          "principalChargeBillingTo": "2022-12-31",
-          |          "principalChargeDueDate": "2023-02-07",
-          |          "principalChargeLatestClearing": "2023-04-01"
-          |       }
-          |   ]
-          | }
+          |  "success": {
+          |    "processingDate": "$mockInstant",
+          |    "penaltyData": {
+          |      "totalisations": {
+          |        "LSPTotalValue": 200,
+          |        "penalisedPrincipalTotal": 2000,
+          |        "LPPPostedTotal": 165.25,
+          |        "LPPEstimatedTotal": 15.26
+          |      },
+          |      "lpp": {
+          |        "lppDetails": [
+          |          {
+          |            "penaltyChargeReference": "1234567888",
+          |            "penaltyCategory": "LPP2",
+          |            "penaltyStatus": "P",
+          |            "penaltyAmountPaid": 0,
+          |            "penaltyAmountPosted": 144.00,
+          |            "penaltyAmountAccruing": 0,
+          |            "penaltyAmountOutstanding": 144.00,
+          |            "penaltyAmountPaid": 0,
+          |            "principalChargeMainTransaction": "4700",
+          |            "principalChargeBillingFrom": "2022-01-01",
+          |            "principalChargeBillingTo": "2022-12-31",
+          |            "principalChargeDueDate": "2023-02-07",
+          |            "lpp1LRDays": "15",
+          |            "lpp1HRDays": "31",
+          |            "lpp2Days": "31",
+          |            "lpp1LRCalculationAmount": 99.99,
+          |            "lpp1HRCalculationAmount": 99.99,
+          |            "lpp2Percentage": 4.00,
+          |            "lpp1LRPercentage": 2.00,
+          |            "lpp1HRPercentage": 2.00,
+          |            "communicationsDate": "2023-02-08",
+          |            "penaltyChargeDueDate": "2022-10-30",
+          |            "principalChargeLatestClearing": "2023-04-01",
+          |            "vatOutstandingAmount": null,
+          |            "timeToPay": [
+          |              {
+          |                "ttpStartDate": "2022-01-01",
+          |                "ttpEndDate": "2022-12-31"
+          |              }
+          |            ],
+          |            "principalChargeDocNumber": "DOC1",
+          |            "principalChargeSubTransaction": "SUB1",
+          |            "principalChargeReference": "1234567890"
+          |          },
+          |          {
+          |            "penaltyChargeReference": "1234567887",
+          |            "penaltyCategory": "LPP1",
+          |            "penaltyStatus": "P",
+          |            "penaltyAmountPaid": 0,
+          |            "penaltyAmountPosted": 144.01,
+          |            "penaltyAmountAccruing": 0,
+          |            "penaltyAmountOutstanding": 144.01,
+          |            "penaltyAmountPaid": 0,
+          |            "principalChargeMainTransaction": "4700",
+          |            "principalChargeBillingFrom": "2022-01-01",
+          |            "principalChargeBillingTo": "2022-12-31",
+          |            "principalChargeDueDate": "2023-02-07",
+          |            "lpp1LRDays": "15",
+          |            "lpp1HRDays": "31",
+          |            "lpp2Days": "31",
+          |            "lpp1LRCalculationAmount": 99.99,
+          |            "lpp1HRCalculationAmount": 99.99,
+          |            "lpp2Percentage": 4.00,
+          |            "lpp1LRPercentage": 2.00,
+          |            "lpp1HRPercentage": 2.00,
+          |            "communicationsDate": "2023-01-08",
+          |            "penaltyChargeDueDate": "2022-10-30",
+          |            "principalChargeLatestClearing": "2023-04-01",
+          |            "vatOutstandingAmount": null,
+          |            "timeToPay": [
+          |              {
+          |                "ttpStartDate": "2022-01-01",
+          |                "ttpEndDate": "2022-12-31"
+          |              }
+          |            ],
+          |            "principalChargeDocNumber": "DOC2",
+          |            "principalChargeSubTransaction": "SUB2",
+          |            "principalChargeReference": "1234567890",
+          |            "appealInformation": [
+          |              {
+          |                "appealStatus": "99",
+          |                "appealDescription": "Some value"
+          |              }
+          |            ]
+          |          }
+          |        ]
+          |      }
+          |    }
+          |  }
           |}
-          |""".stripMargin
-      )
+          |""".stripMargin)
 
-      val getPenaltyDetailsTwoLPPsWithAppealsJson: JsValue = Json.parse(
-        """
-          |{
-          | "totalisations": {
-          |   "LSPTotalValue": 200,
-          |   "penalisedPrincipalTotal": 2000,
-          |   "LPPPostedTotal": 165.25,
-          |   "LPPEstimatedTotal": 15.26
-          | },
-          | "latePaymentPenalty": {
-          |     "details": [
-          |       {
-          |          "penaltyChargeReference": "1234567888",
-          |          "penaltyCategory": "LPP2",
-          |          "penaltyStatus": "P",
-          |          "penaltyAmountPaid": 0,
-          |          "penaltyAmountPosted": 144.00,
-          |          "penaltyAmountAccruing": 0,
-          |          "penaltyAmountOutstanding": 144.00,
-          |          "LPP1LRCalculationAmount": 99.99,
-          |          "LPP1LRDays": "15",
-          |          "LPP1LRPercentage": 2.00,
-          |          "LPP1HRCalculationAmount": 99.99,
-          |          "LPP1HRDays": "31",
-          |          "LPP1HRPercentage": 2.00,
-          |          "LPP2Days": "31",
-          |          "LPP2Percentage": 4.00,
-          |          "penaltyChargeCreationDate": "2022-10-30",
-          |          "communicationsDate": "2023-02-08",
-          |          "penaltyChargeDueDate": "2022-10-30",
-          |          "principalChargeReference": "1234567890",
-          |          "principalChargeBillingFrom": "2022-01-01",
-          |          "principalChargeBillingTo": "2022-12-31",
-          |          "principalChargeMainTransaction": "4700",
-          |          "principalChargeDueDate": "2023-02-07",
-          |          "appealInformation": [
-          |           {
-          |             "appealStatus": "A",
-          |             "appealLevel": "01"
-          |           }
-          |           ],
-          |          "principalChargeLatestClearing": "2023-04-01"
-          |       },
-          |       {
-          |          "penaltyChargeReference": "1234567887",
-          |          "penaltyCategory": "LPP1",
-          |          "penaltyStatus": "P",
-          |          "penaltyAmountPaid": 0,
-          |          "penaltyAmountPosted": 144.01,
-          |          "penaltyAmountOutstanding": 144.01,
-          |          "penaltyAmountAccruing": 0,
-          |          "LPP1LRCalculationAmount": 99.99,
-          |          "LPP1LRDays": "15",
-          |          "LPP1LRPercentage": 2.00,
-          |          "LPP1HRCalculationAmount": 99.99,
-          |          "LPP1HRDays": "31",
-          |          "LPP1HRPercentage": 2.00,
-          |          "LPP2Days": "31",
-          |          "LPP2Percentage": 4.00,
-          |          "penaltyChargeCreationDate": "2022-10-30",
-          |          "communicationsDate": "2023-02-08",
-          |          "penaltyChargeDueDate": "2022-10-30",
-          |          "principalChargeReference": "1234567890",
-          |          "principalChargeBillingFrom": "2022-01-01",
-          |          "principalChargeBillingTo": "2022-12-31",
-          |          "principalChargeMainTransaction": "4700",
-          |          "principalChargeDueDate": "2023-02-07",
-          |          "principalChargeLatestClearing": "2023-04-01"
-          |       }
-          |   ]
-          | }
-          |}
-          |""".stripMargin
-      )
+      val penaltyDetailsTwoLPPsLPP2AccruingJson: JsValue = Json.parse(s"""
+     |{
+     |  "success": {
+     |    "processingDate": "$mockInstant",
+     |    "penaltyData": {
+     |      "totalisations": {
+     |        "LSPTotalValue": 200,
+     |        "penalisedPrincipalTotal": 2000,
+     |        "LPPPostedTotal": 165.25,
+     |        "LPPEstimatedTotal": 15.26
+     |      },
+     |      "lpp": {
+     |        "lppDetails": [
+     |          {
+     |            "penaltyCategory": "LPP2",
+     |            "penaltyChargeReference": "1234567890",
+     |            "principalChargeReference": "1234567890",
+     |            "penaltyChargeCreationDate": "2022-10-30",
+     |            "penaltyStatus": "A",
+     |            "penaltyChargeAmount": 99.99,
+     |            "penaltyAmountPosted": 0,
+     |            "penaltyAmountOutstanding": null,
+     |            "penaltyAmountPaid": null,
+     |            "penaltyAmountAccruing": 99.99,
+     |            "principalChargeMainTransaction": "4700",
+     |            "principalChargeBillingFrom": "2022-01-01",
+     |            "principalChargeBillingTo": "2022-12-31",
+     |            "principalChargeDueDate": "2023-02-07",
+     |            "lpp1LRDays": "15",
+     |            "lpp1HRDays": "31",
+     |            "lpp2Days": "31",
+     |            "lpp1HRCalculationAmount": 99.99,
+     |            "lpp1LRCalculationAmount": 99.99,
+     |            "lpp2Percentage": 4.00,
+     |            "lpp1LRPercentage": 2.00,
+     |            "lpp1HRPercentage": 2.00,
+     |            "communicationsDate": "2023-02-08",
+     |            "penaltyChargeDueDate": "2022-10-30",
+     |            "appealInformation": [
+     |              {
+     |                "appealStatus": "99",
+     |                "appealDescription": "Some value"
+     |              }
+     |            ],
+     |            "principalChargeLatestClearing": null,
+     |            "vatOutstandingAmount": null,
+     |            "timeToPay": [
+     |              {
+     |                "ttpStartDate": "2022-01-01",
+     |                "ttpEndDate": "2022-12-31"
+     |              }
+     |            ],
+     |            "principalChargeDocNumber": "DOC1",
+     |            "principalChargeSubTransaction": "SUB1"
+     |          },
+     |          {
+     |            "penaltyCategory": "LPP1",
+     |            "penaltyChargeReference": "1234567887",
+     |            "principalChargeReference": "1234567890",
+     |            "penaltyChargeCreationDate": "2022-01-01",
+     |            "penaltyStatus": "P",
+     |            "penaltyChargeAmount": 99.99,
+     |            "penaltyAmountPosted": 0,
+     |            "penaltyAmountOutstanding": null,
+     |            "penaltyAmountPaid": null,
+     |            "penaltyAmountAccruing": 99.99,
+     |            "principalChargeMainTransaction": "4700",
+     |            "principalChargeBillingFrom": "2022-01-01",
+     |            "principalChargeBillingTo": "2022-12-31",
+     |            "principalChargeDueDate": "2023-02-07",
+     |            "lpp1LRDays": "15",
+     |            "lpp1HRDays": "31",
+     |            "lpp2Days": "31",
+     |            "lpp1HRCalculationAmount": 99.99,
+     |            "lpp1LRCalculationAmount": 99.99,
+     |            "lpp2Percentage": 4.00,
+     |            "lpp1LRPercentage": 2.00,
+     |            "lpp1HRPercentage": 2.00,
+     |            "communicationsDate": "2023-02-08",
+     |            "penaltyChargeDueDate": "2023-02-07",
+     |            "appealInformation": [
+     |              {
+     |                "appealStatus": "99",
+     |                "appealLevel": "01",
+     |                "appealDescription": "Some value"
+     |              }
+     |            ],
+     |            "principalChargeLatestClearing": null,
+     |            "vatOutstandingAmount": null,
+     |            "timeToPay": [
+     |              {
+     |                "ttpStartDate": "2022-01-01",
+     |                "ttpEndDate": "2022-12-31"
+     |              }
+     |            ],
+     |            "principalChargeDocNumber": "DOC2",
+     |            "principalChargeSubTransaction": "SUB2"
+     |          }
+     |        ]
+     |      }
+     |    }
+     |  }
+     |}
+     |""".stripMargin)
 
-      val getPenaltyDetailsTwoLPPsLPP2AccruingJson: JsValue = Json.parse(
-        """
+      val penaltyDetailsTwoLPPsVATNotPaidJson: JsValue = Json.parse(s"""
           |{
-          | "totalisations": {
-          |   "LSPTotalValue": 200,
-          |   "penalisedPrincipalTotal": 2000,
-          |   "LPPPostedTotal": 165.25,
-          |   "LPPEstimatedTotal": 15.26
-          | },
-          | "latePaymentPenalty": {
-          |     "details": [
-          |       {
-          |          "penaltyCategory": "LPP2",
-          |          "penaltyStatus": "A",
-          |          "penaltyAmountPosted": 0,
-          |          "penaltyAmountAccruing": 99.99,
-          |          "LPP1LRCalculationAmount": 99.99,
-          |          "LPP1LRDays": "15",
-          |          "LPP1LRPercentage": 2.00,
-          |          "LPP1HRCalculationAmount": 99.99,
-          |          "LPP1HRDays": "31",
-          |          "LPP1HRPercentage": 2.00,
-          |          "LPP2Days": "31",
-          |          "LPP2Percentage": 4.00,
-          |          "penaltyChargeCreationDate": "2022-10-30",
-          |          "communicationsDate": "2023-02-08",
-          |          "penaltyChargeDueDate": "2022-10-30",
-          |          "principalChargeReference": "1234567890",
-          |          "principalChargeBillingFrom": "2022-01-01",
-          |          "principalChargeBillingTo": "2022-12-31",
-          |          "principalChargeMainTransaction": "4700",
-          |          "principalChargeDueDate": "2023-02-07"
-          |       },
-          |       {
-          |          "penaltyChargeReference": "1234567887",
-          |          "penaltyCategory": "LPP1",
-          |          "penaltyStatus": "P",
-          |          "penaltyAmountPaid": 0,
-          |          "penaltyAmountPosted": 144.01,
-          |          "penaltyAmountOutstanding": 144.01,
-          |          "penaltyAmountAccruing": 0,
-          |          "LPP1LRCalculationAmount": 99.99,
-          |          "LPP1LRDays": "15",
-          |          "LPP1LRPercentage": 2.00,
-          |          "LPP1HRCalculationAmount": 99.99,
-          |          "LPP1HRDays": "31",
-          |          "LPP1HRPercentage": 2.00,
-          |          "LPP2Days": "31",
-          |          "LPP2Percentage": 4.00,
-          |          "penaltyChargeCreationDate": "2022-10-30",
-          |          "communicationsDate": "2023-02-08",
-          |          "penaltyChargeDueDate": "2022-10-30",
-          |          "principalChargeReference": "1234567890",
-          |          "principalChargeBillingFrom": "2022-01-01",
-          |          "principalChargeBillingTo": "2022-12-31",
-          |          "principalChargeMainTransaction": "4700",
-          |          "principalChargeDueDate": "2023-02-07",
-          |          "principalChargeLatestClearing": "2023-04-01"
-          |       }
-          |   ]
-          | }
+          |  "success": {
+          |    "processingDate": "$mockInstant",
+          |    "penaltyData": {
+          |      "totalisations": {
+          |        "LSPTotalValue": 200,
+          |        "penalisedPrincipalTotal": 2000,
+          |        "LPPPostedTotal": 165.25,
+          |        "LPPEstimatedTotal": 15.26
+          |      },
+          |      "lpp": {
+          |        "lppDetails": [
+          |          {
+          |            "penaltyChargeReference": "1234567888",
+          |            "penaltyCategory": "LPP2",
+          |            "penaltyStatus": "P",
+          |            "penaltyAmountPaid": 0,
+          |            "penaltyAmountPosted": 144.00,
+          |            "penaltyAmountAccruing": 0,
+          |            "penaltyAmountOutstanding": 144.00,
+          |            "LPP1LRCalculationAmount": 99.99,
+          |            "LPP1LRDays": "15",
+          |            "LPP1LRPercentage": 2.00,
+          |            "LPP1HRCalculationAmount": 99.99,
+          |            "LPP1HRDays": "31",
+          |            "LPP1HRPercentage": 2.00,
+          |            "LPP2Days": "31",
+          |            "LPP2Percentage": 4.00,
+          |            "penaltyChargeCreationDate": "2022-10-30",
+          |            "communicationsDate": "2023-02-08",
+          |            "penaltyChargeDueDate": "2022-10-30",
+          |            "principalChargeReference": "1234567890",
+          |            "principalChargeBillingFrom": "2022-01-01",
+          |            "principalChargeBillingTo": "2022-12-31",
+          |            "principalChargeMainTransaction": "4700",
+          |            "principalChargeDueDate": "2023-02-07"
+          |          },
+          |          {
+          |            "penaltyChargeReference": "1234567887",
+          |            "penaltyCategory": "LPP1",
+          |            "penaltyStatus": "P",
+          |            "penaltyAmountPaid": 0,
+          |            "penaltyAmountPosted": 144.01,
+          |            "penaltyAmountOutstanding": 144.01,
+          |            "penaltyAmountAccruing": 0,
+          |            "LPP1LRCalculationAmount": 99.99,
+          |            "LPP1LRDays": "15",
+          |            "LPP1LRPercentage": 2.00,
+          |            "LPP1HRCalculationAmount": 99.99,
+          |            "LPP1HRDays": "31",
+          |            "LPP1HRPercentage": 2.00,
+          |            "LPP2Days": "31",
+          |            "LPP2Percentage": 4.00,
+          |            "penaltyChargeCreationDate": "2022-10-30",
+          |            "communicationsDate": "2023-02-08",
+          |            "penaltyChargeDueDate": "2022-10-30",
+          |            "principalChargeReference": "1234567890",
+          |            "principalChargeBillingFrom": "2022-01-01",
+          |            "principalChargeBillingTo": "2022-12-31",
+          |            "principalChargeMainTransaction": "4700",
+          |            "principalChargeDueDate": "2023-02-07"
+          |          }
+          |        ]
+          |      }
+          |    }
+          |  }
           |}
-          |""".stripMargin
-      )
-
-      val getPenaltyDetailsTwoLPPsVATNotPaidJson: JsValue = Json.parse(
-        """
-          |{
-          | "totalisations": {
-          |   "LSPTotalValue": 200,
-          |   "penalisedPrincipalTotal": 2000,
-          |   "LPPPostedTotal": 165.25,
-          |   "LPPEstimatedTotal": 15.26
-          | },
-          | "latePaymentPenalty": {
-          |     "details": [
-          |       {
-          |          "penaltyChargeReference": "1234567888",
-          |          "penaltyCategory": "LPP2",
-          |          "penaltyStatus": "P",
-          |          "penaltyAmountPaid": 0,
-          |          "penaltyAmountPosted": 144.00,
-          |          "penaltyAmountAccruing": 0,
-          |          "penaltyAmountOutstanding": 144.00,
-          |          "LPP1LRCalculationAmount": 99.99,
-          |          "LPP1LRDays": "15",
-          |          "LPP1LRPercentage": 2.00,
-          |          "LPP1HRCalculationAmount": 99.99,
-          |          "LPP1HRDays": "31",
-          |          "LPP1HRPercentage": 2.00,
-          |          "LPP2Days": "31",
-          |          "LPP2Percentage": 4.00,
-          |          "penaltyChargeCreationDate": "2022-10-30",
-          |          "communicationsDate": "2023-02-08",
-          |          "penaltyChargeDueDate": "2022-10-30",
-          |          "principalChargeReference": "1234567890",
-          |          "principalChargeBillingFrom": "2022-01-01",
-          |          "principalChargeBillingTo": "2022-12-31",
-          |          "principalChargeMainTransaction": "4700",
-          |          "principalChargeDueDate": "2023-02-07"
-          |       },
-          |       {
-          |          "penaltyChargeReference": "1234567887",
-          |          "penaltyCategory": "LPP1",
-          |          "penaltyStatus": "P",
-          |          "penaltyAmountPaid": 0,
-          |          "penaltyAmountPosted": 144.01,
-          |          "penaltyAmountOutstanding": 144.01,
-          |          "penaltyAmountAccruing": 0,
-          |          "LPP1LRCalculationAmount": 99.99,
-          |          "LPP1LRDays": "15",
-          |          "LPP1LRPercentage": 2.00,
-          |          "LPP1HRCalculationAmount": 99.99,
-          |          "LPP1HRDays": "31",
-          |          "LPP1HRPercentage": 2.00,
-          |          "LPP2Days": "31",
-          |          "LPP2Percentage": 4.00,
-          |          "penaltyChargeCreationDate": "2022-10-30",
-          |          "communicationsDate": "2023-02-08",
-          |          "penaltyChargeDueDate": "2022-10-30",
-          |          "principalChargeReference": "1234567890",
-          |          "principalChargeBillingFrom": "2022-01-01",
-          |          "principalChargeBillingTo": "2022-12-31",
-          |          "principalChargeMainTransaction": "4700",
-          |          "principalChargeDueDate": "2023-02-07"
-          |       }
-          |   ]
-          | }
-          |}
-          |""".stripMargin
-      )
+          |""".stripMargin)
 
       "call ETMP and return NO_CONTENT" when {
         "there is only one penalty related to the charge" in {
           mockStubResponseForAuthorisedUser
-          mockStubResponseForGetPenaltyDetails(Status.OK, regime, idType, id, Some(getPenaltyDetailsOneLPPJson.toString()))
+          mockStubResponseForPenaltyDetails(Status.OK, regime, idType, id, Some(penaltyDetailsOneLPPJson.toString()))
 
-          val result = await(buildClientForRequestToApp(uri = s"/${regime.value}/appeals-data/multiple-penalties/${idType.value}/${id.value}?penaltyId=1234567887").get())
+          val result = await(buildClientForRequestToApp(uri =
+            s"/${regime.value}/appeals-data/multiple-penalties/${idType.value}/${id.value}?penaltyId=1234567887").get())
           result.status shouldBe Status.NO_CONTENT
         }
 
         "either penalty under the principal charge has appeal in any state" in {
           mockStubResponseForAuthorisedUser
-          mockStubResponseForGetPenaltyDetails(Status.OK, regime, idType, id, Some(getPenaltyDetailsTwoLPPsWithAppealsJson.toString()))
+          mockStubResponseForPenaltyDetails(Status.OK, regime, idType, id, Some(penaltyDetailsTwoLPPsWithAppealsJson.toString()))
 
-          val result = await(buildClientForRequestToApp(uri = s"/${regime.value}/appeals-data/multiple-penalties/${idType.value}/${id.value}?penaltyId=1234567887").get())
+          val result = await(buildClientForRequestToApp(uri =
+            s"/${regime.value}/appeals-data/multiple-penalties/${idType.value}/${id.value}?penaltyId=1234567887").get())
           result.status shouldBe Status.NO_CONTENT
         }
 
         "either penalty is accruing (LPP2)" in {
           mockStubResponseForAuthorisedUser
-          mockStubResponseForGetPenaltyDetails(Status.OK, regime, idType, id, Some(getPenaltyDetailsTwoLPPsLPP2AccruingJson.toString()))
+          mockStubResponseForPenaltyDetails(Status.OK, regime, idType, id, Some(penaltyDetailsTwoLPPsLPP2AccruingJson.toString()))
 
-          val result = await(buildClientForRequestToApp(uri = s"/${regime.value}/appeals-data/multiple-penalties/${idType.value}/${id.value}?penaltyId=1234567887").get())
+          val result = await(buildClientForRequestToApp(uri =
+            s"/${regime.value}/appeals-data/multiple-penalties/${idType.value}/${id.value}?penaltyId=1234567887").get())
           result.status shouldBe Status.NO_CONTENT
         }
 
         "the VAT has not been paid" in {
           mockStubResponseForAuthorisedUser
-          mockStubResponseForGetPenaltyDetails(Status.OK, regime, idType, id, Some(getPenaltyDetailsTwoLPPsVATNotPaidJson.toString()))
+          mockStubResponseForPenaltyDetails(Status.OK, regime, idType, id, Some(penaltyDetailsTwoLPPsVATNotPaidJson.toString()))
 
-          val result = await(buildClientForRequestToApp(uri = s"/${regime.value}/appeals-data/multiple-penalties/${idType.value}/${id.value}?penaltyId=1234567887").get())
+          val result = await(buildClientForRequestToApp(uri =
+            s"/${regime.value}/appeals-data/multiple-penalties/${idType.value}/${id.value}?penaltyId=1234567887").get())
           result.status shouldBe Status.NO_CONTENT
         }
       }
 
       "call ETMP and return OK when there is two penalties related to the charge and they are both posted" +
         " and the VAT has been paid" in {
-        mockStubResponseForAuthorisedUser
-        mockStubResponseForGetPenaltyDetails(Status.OK, regime, idType, id, Some(getPenaltyDetailsTwoLPPsJson.toString()))
+          mockStubResponseForAuthorisedUser
+          mockStubResponseForPenaltyDetails(Status.OK, regime, idType, id, Some(penaltyDetailsTwoLPPsJson.toString()))
 
-        val result = await(buildClientForRequestToApp(uri = s"/${regime.value}/appeals-data/multiple-penalties/${idType.value}/${id.value}?penaltyId=1234567887").get())
-        val expectedModel = MultiplePenaltiesData(
-          firstPenaltyChargeReference = "1234567887",
-          firstPenaltyAmount = 144.01,
-          secondPenaltyChargeReference = "1234567888",
-          secondPenaltyAmount = 144.00,
-          firstPenaltyCommunicationDate = LocalDate.of(2023, 1, 8),
-          secondPenaltyCommunicationDate = LocalDate.of(2023, 2, 8)
-        )
-        result.status shouldBe Status.OK
-        Json.parse(result.body) shouldBe Json.toJson(expectedModel)
-      }
+          val result = await(buildClientForRequestToApp(uri =
+            s"/${regime.value}/appeals-data/multiple-penalties/${idType.value}/${id.value}?penaltyId=1234567887").get())
+          val expectedModel = MultiplePenaltiesData(
+            firstPenaltyChargeReference = "1234567887",
+            firstPenaltyAmount = 144.01,
+            secondPenaltyChargeReference = "1234567888",
+            secondPenaltyAmount = 144.00,
+            firstPenaltyCommunicationDate = LocalDate.of(2023, 1, 8),
+            secondPenaltyCommunicationDate = LocalDate.of(2023, 2, 8)
+          )
+          result.status shouldBe Status.OK
+          Json.parse(result.body) shouldBe Json.toJson(expectedModel)
+        }
 
       "return an ISE when the call to ETMP fails" in {
         mockStubResponseForAuthorisedUser
-        mockStubResponseForGetPenaltyDetails(Status.INTERNAL_SERVER_ERROR, regime, idType, id, Some(""))
+        mockStubResponseForPenaltyDetails(Status.INTERNAL_SERVER_ERROR, regime, idType, id, Some(""))
 
-        val result = await(buildClientForRequestToApp(uri = s"/${regime.value}/appeals-data/multiple-penalties/${idType.value}/${id.value}?penaltyId=1234567887").get())
+        val result = await(buildClientForRequestToApp(uri =
+          s"/${regime.value}/appeals-data/multiple-penalties/${idType.value}/${id.value}?penaltyId=1234567887").get())
         result.status shouldBe Status.INTERNAL_SERVER_ERROR
       }
     }

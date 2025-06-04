@@ -17,8 +17,7 @@
 package connectors.parsers.getPenaltyDetails
 
 import models.failure.{FailureCodeEnum, FailureResponse}
-import models.getPenaltyDetails.GetPenaltyDetails
-import models.getPenaltyDetails.latePayment.{LPPPenaltyCategoryEnum, LPPPenaltyStatusEnum, LatePaymentPenalty}
+import models.penaltyDetails.latePayment.{LPPPenaltyCategoryEnum, LPPPenaltyStatusEnum, LatePaymentPenalty}
 import play.api.http.Status._
 import play.api.libs.json.{JsError, JsSuccess, JsValue}
 import uk.gov.hmrc.http.{HttpReads, HttpResponse}
@@ -28,85 +27,122 @@ import utils.PagerDutyHelper.PagerDutyKeys._
 
 import java.time.LocalDate
 import scala.util.Try
+import models.penaltyDetails.PenaltyDetails
+import play.api.libs.json.Reads
+import play.api.libs.json.Json
 
 object PenaltyDetailsParser {
-  sealed trait GetPenaltyDetailsFailure
+  sealed trait PenaltyDetailsFailure
 
-  sealed trait GetPenaltyDetailsSuccess
+  sealed trait PenaltyDetailsSuccess
 
-  case class GetPenaltyDetailsSuccessResponse(penaltyDetails: GetPenaltyDetails) extends GetPenaltyDetailsSuccess
+  sealed trait PenaltyApiError
 
-  case class GetPenaltyDetailsFailureResponse(status: Int) extends GetPenaltyDetailsFailure
+  case class PenaltyDetailsSuccessResponse(penaltyDetails: PenaltyDetails) extends PenaltyDetailsSuccess
 
-  case object GetPenaltyDetailsMalformed extends GetPenaltyDetailsFailure
+  case class PenaltyDetailsFailureResponse(
+      status: Int,
+      errorBody: Option[PenaltyApiError] = None
+  ) extends PenaltyDetailsFailure
 
-  case object GetPenaltyDetailsNoContent extends GetPenaltyDetailsFailure
+  case class TechnicalError(code: String, message: String, logID: String)
+      extends PenaltyApiError
 
-  type GetPenaltyDetailsResponse = Either[GetPenaltyDetailsFailure, GetPenaltyDetailsSuccess]
+  object TechnicalError {
+    implicit val reads: Reads[TechnicalError] = Json.reads[TechnicalError]
+  }
+  case class BusinessError(code: String, text: String, processingDate: String)
+      extends PenaltyApiError
 
-  implicit object GetPenaltyDetailsReads extends HttpReads[GetPenaltyDetailsResponse] {
-    override def read(method: String, url: String, response: HttpResponse): GetPenaltyDetailsResponse = {
+  object BusinessError {
+    implicit val reads: Reads[BusinessError] = Json.reads[BusinessError]
+  }
+
+  case object PenaltyDetailsMalformed extends PenaltyDetailsFailure
+
+  case object PenaltyDetailsNoContent extends PenaltyDetailsFailure
+
+  type PenaltyDetailsResponse = Either[PenaltyDetailsFailure, PenaltyDetailsSuccess]
+
+  implicit object PenaltyDetailsReads extends HttpReads[PenaltyDetailsResponse] {
+    override def read(method: String, url: String, response: HttpResponse): PenaltyDetailsResponse = {
       response.status match {
         case OK =>
-          logger.debug(s"[GetPenaltyDetailsReads][read] Json response: ${response.json}")
-          response.json.validate[GetPenaltyDetails] match {
+          logger.debug(s"[PenaltyDetailsReads][read] Json response: ${response.json}")
+          response.json.validate[PenaltyDetails] match {
             case JsSuccess(getPenaltyDetails, _) =>
-              logger.debug(s"[GetPenaltyDetailsReads][read] Model: $getPenaltyDetails")
-              Right(GetPenaltyDetailsSuccessResponse(addMissingLPP1PrincipalChargeLatestClearing(getPenaltyDetails)))
+              logger.debug(s"[PenaltyDetailsReads][read] Model: $getPenaltyDetails")
+              Right(PenaltyDetailsSuccessResponse(addMissingLPP1PrincipalChargeLatestClearing(getPenaltyDetails)))
             case JsError(errors) =>
-              logger.debug(s"[GetPenaltyDetailsReads][read] Json validation errors: $errors")
-              Left(GetPenaltyDetailsMalformed)
+              logger.debug(s"[PenaltyDetailsReads][read] Json validation errors: $errors")
+              Left(PenaltyDetailsMalformed)
           }
         case NOT_FOUND if response.body.nonEmpty => {
           Try(handleNotFoundStatusBody(response.json)).fold(parseError => {
-            logger.error(s"[GetPenaltyDetailsReads][read] Could not parse 404 body with error ${parseError.getMessage}")
-            PagerDutyHelper.log("GetPenaltyDetailsReads", INVALID_JSON_RECEIVED_FROM_1812_API)
-            Left(GetPenaltyDetailsFailureResponse(NOT_FOUND))
+            logger.error(s"[PenaltyDetailsReads][read] Could not parse 404 body with error ${parseError.getMessage}")
+            PagerDutyHelper.log("PenaltyDetailsReads", INVALID_JSON_RECEIVED_FROM_1812_API)
+            Left(PenaltyDetailsFailureResponse(NOT_FOUND))
           }, identity)
         }
-        case status@(NOT_FOUND | BAD_REQUEST | CONFLICT | INTERNAL_SERVER_ERROR | SERVICE_UNAVAILABLE) => {
-          PagerDutyHelper.logStatusCode("GetPenaltyDetailsReads", status)(RECEIVED_4XX_FROM_1812_API, RECEIVED_5XX_FROM_1812_API)
-          logger.error(s"[GetPenaltyDetailsReads][read] Received $status when trying to call GetPenaltyDetails - with body: ${response.body}")
-          Left(GetPenaltyDetailsFailureResponse(status))
+          case status @ (BAD_REQUEST | CONFLICT | INTERNAL_SERVER_ERROR |
+            SERVICE_UNAVAILABLE | UNPROCESSABLE_ENTITY) => {
+
+          val json = response.json
+
+          val maybeError: Option[PenaltyApiError] =
+            (json \ "error")
+              .validate[TechnicalError]
+              .asOpt
+              .orElse(
+                (json \ "errors").validate[BusinessError].asOpt
+              )
+
+          maybeError.foreach {
+            case te: TechnicalError =>
+              logger.warn(
+                s"[PenaltyDetailsReads] Technical error: ${te.code} / ${te.logID}"
+              )
+            case be: BusinessError =>
+              logger.warn(
+                s"[PenaltyDetailsReads] Business error: ${be.code} / ${be.text}"
+              )
+          }
+
+          Left(PenaltyDetailsFailureResponse(status, maybeError))
         }
         case status@NO_CONTENT => {
-          logger.debug(s"[GetPenaltyDetailsReads][read] Received 204 when calling ETMP")
-          Left(GetPenaltyDetailsFailureResponse(status))
-        }
-        case status@UNPROCESSABLE_ENTITY => {
-          PagerDutyHelper.log("GetPenaltyDetailsReads", RECEIVED_4XX_FROM_1812_API)
-          logger.error(s"[GetPenaltyDetailsReads][read] Received 422 when trying to call GetPenaltyDetails - with body: ${response.body}")
-          Left(GetPenaltyDetailsFailureResponse(status))
+          logger.debug(s"[PenaltyDetailsReads][read] Received 204 when calling ETMP")
+          Left(PenaltyDetailsFailureResponse(status))
         }
         case _@status =>
-          PagerDutyHelper.logStatusCode("GetPenaltyDetailsReads", status)(RECEIVED_4XX_FROM_1812_API, RECEIVED_5XX_FROM_1812_API)
-          logger.error(s"[GetPenaltyDetailsReads][read] Received unexpected response from GetPenaltyDetails, status code: $status and body: ${response.body}")
-          Left(GetPenaltyDetailsFailureResponse(status))
+          PagerDutyHelper.logStatusCode("PenaltyDetailsReads", status)(RECEIVED_4XX_FROM_1812_API, RECEIVED_5XX_FROM_1812_API)
+          logger.error(s"[PenaltyDetailsReads][read] Received unexpected response from GetPenaltyDetails, status code: $status and body: ${response.body}")
+          Left(PenaltyDetailsFailureResponse(status))
       }
     }
   }
 
-  private def handleNotFoundStatusBody(responseBody: JsValue): GetPenaltyDetailsResponse = {
+  private def handleNotFoundStatusBody(responseBody: JsValue): PenaltyDetailsResponse = {
     (responseBody \ "failures").validate[Seq[FailureResponse]].fold(
       errors => {
-        logger.debug(s"[GetPenaltyDetailsReads][read] - Parsing errors: $errors")
-        logger.error(s"[GetPenaltyDetailsReads][read] - Could not parse 404 body returned from GetPenaltyDetails call")
-        Left(GetPenaltyDetailsFailureResponse(NOT_FOUND))
+        logger.debug(s"[PenaltyDetailsReads][read] - Parsing errors: $errors")
+        logger.error(s"[PenaltyDetailsReads][read] - Could not parse 404 body returned fromPenaltyDetailscall")
+        Left(PenaltyDetailsFailureResponse(NOT_FOUND))
       },
       failures => {
         if (failures.exists(_.code.equals(FailureCodeEnum.NoDataFound))) {
-          Left(GetPenaltyDetailsNoContent)
+          Left(PenaltyDetailsNoContent)
         } else {
-          logger.error(s"[GetPenaltyDetailsReads][read] - Received following errors from GetPenaltyDetails 404 call: $failures")
-          Left(GetPenaltyDetailsFailureResponse(NOT_FOUND))
+          logger.error(s"[PenaltyDetailsReads][read] - Received following errors fromPenaltyDetails404 call: $failures")
+          Left(PenaltyDetailsFailureResponse(NOT_FOUND))
         }
       }
     )
   }
 
-  private def addMissingLPP1PrincipalChargeLatestClearing(penaltyDetails: GetPenaltyDetails): GetPenaltyDetails = {
+  private def addMissingLPP1PrincipalChargeLatestClearing(penaltyDetails: PenaltyDetails): PenaltyDetails = {
     val newDetails = penaltyDetails.latePaymentPenalty.flatMap(
-      _.details.map(latePaymentPenalties => latePaymentPenalties.map(
+      _.lppDetails.map(latePaymentPenalties => latePaymentPenalties.map(
         oldLPPDetails => {
           (oldLPPDetails.penaltyCategory, oldLPPDetails.penaltyStatus, oldLPPDetails.principalChargeLatestClearing.isEmpty) match {
             case (LPPPenaltyCategoryEnum.FirstPenalty, LPPPenaltyStatusEnum.Posted, true) =>

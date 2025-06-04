@@ -90,11 +90,8 @@ class RegimeComplianceConnectorSpec extends SpecBase with LogCapturing {
         )
       )
       
-      // when(mockAppConfig.getVatComplianceDataUrl(ArgumentMatchers.eq("123456789"), ArgumentMatchers.any(), ArgumentMatchers.any()))
-      //   .thenReturn("/123456789")
       when(mockAppConfig.getRegimeAgnosticComplianceDataUrl(ArgumentMatchers.eq(vrn123456789), ArgumentMatchers.any(), ArgumentMatchers.any()))
         .thenReturn("/123456789")
-            // s"${getComplianceDataUrl}vrn/$vrn/VATC?from=$fromDate&to=$toDate"
 
       when(mockAppConfig.eisEnvironment).thenReturn("env")
       when(mockAppConfig.desBearerToken).thenReturn("12345")

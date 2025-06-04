@@ -18,10 +18,10 @@ package services
 
 import config.AppConfig
 
-import models.getPenaltyDetails.GetPenaltyDetails
-import models.getPenaltyDetails.appealInfo.AppealStatusEnum
-import models.getPenaltyDetails.latePayment.{LPPDetails, LPPPenaltyCategoryEnum, LPPPenaltyStatusEnum, LatePaymentPenalty}
-import models.getPenaltyDetails.lateSubmission.{LSPDetails, LateSubmissionPenalty}
+import models.penaltyDetails.PenaltyDetails
+import models.penaltyDetails.appealInfo.AppealStatusEnum
+import models.penaltyDetails.latePayment.{LPPDetails, LPPPenaltyCategoryEnum, LPPPenaltyStatusEnum, LatePaymentPenalty}
+import models.penaltyDetails.lateSubmission.{LSPDetails, LateSubmissionPenalty}
 import play.api.libs.json.{JsString, JsValue, Json}
 import utils.Logger.logger
 
@@ -34,7 +34,7 @@ class RegimeFilterService @Inject()()(implicit appConfig: AppConfig) {
     Try(Json.parse(body)).getOrElse(JsString(body))
   }
 
-  def filterEstimatedLPP1DuringPeriodOfFamiliarisation(penaltiesDetails: GetPenaltyDetails)(implicit loggingContext: LoggingContext): GetPenaltyDetails = {
+  def filterEstimatedLPP1DuringPeriodOfFamiliarisation(penaltiesDetails: PenaltyDetails)(implicit loggingContext: LoggingContext): PenaltyDetails = {
     if (penaltiesDetails.latePaymentPenalty.nonEmpty) {
       val filteredLPPs: Option[Seq[LPPDetails]] = findEstimatedLPP1DuringPeriodOfFamiliarisation(penaltiesDetails)
       val numberOfFilteredLPPs = countNumberOfFilteredLPPs(filteredLPPs, penaltiesDetails)
@@ -52,9 +52,9 @@ class RegimeFilterService @Inject()()(implicit appConfig: AppConfig) {
     }
   }
 
-  private def findEstimatedLPP1DuringPeriodOfFamiliarisation(penaltiesDetails: GetPenaltyDetails): Option[Seq[LPPDetails]] = {
+  private def findEstimatedLPP1DuringPeriodOfFamiliarisation(penaltiesDetails: PenaltyDetails): Option[Seq[LPPDetails]] = {
     penaltiesDetails.latePaymentPenalty.flatMap(
-      _.details.map(latePaymentPenalties => latePaymentPenalties.filterNot(lpp => {
+      _.lppDetails.map(latePaymentPenalties => latePaymentPenalties.filterNot(lpp => {
         lpp.penaltyCategory.equals(LPPPenaltyCategoryEnum.FirstPenalty) &&
           lpp.penaltyStatus.equals(LPPPenaltyStatusEnum.Accruing) &&
           appConfig.withinLPP1FilterWindow(lpp.principalChargeDueDate)
@@ -63,7 +63,7 @@ class RegimeFilterService @Inject()()(implicit appConfig: AppConfig) {
     )
   }
 
-  def filterPenaltiesWith9xAppealStatus(penaltiesDetails: GetPenaltyDetails)(implicit logingContext: LoggingContext): GetPenaltyDetails = {
+  def filterPenaltiesWith9xAppealStatus(penaltiesDetails: PenaltyDetails)(implicit logingContext: LoggingContext): PenaltyDetails = {
     val filteredLSPs: Option[Seq[LSPDetails]] = filterLSPWith9xAppealStatus(penaltiesDetails)
     val numberOfFilteredLSPs: Int = countNumberOfFilteredLSPs(filteredLSPs, penaltiesDetails)
     val filteredLPPs: Option[Seq[LPPDetails]] = findLPPWith9xAppealStatus(penaltiesDetails)
@@ -75,7 +75,7 @@ class RegimeFilterService @Inject()()(implicit appConfig: AppConfig) {
     )
   }
 
-  private def prepareLateSubmissionPenaltiesAfterFilter(penaltiesDetails: GetPenaltyDetails, filteredLSPs: Option[Seq[LSPDetails]], noOfFilteredLSPs: Int)(implicit loggingContext: LoggingContext): Option[LateSubmissionPenalty] = {
+  private def prepareLateSubmissionPenaltiesAfterFilter(penaltiesDetails: PenaltyDetails, filteredLSPs: Option[Seq[LSPDetails]], noOfFilteredLSPs: Int)(implicit loggingContext: LoggingContext): Option[LateSubmissionPenalty] = {
     if (filteredLSPs.nonEmpty && filteredLSPs.get.nonEmpty && noOfFilteredLSPs > 0) {
       logger.info(s"[RegimeFilterService][filterPenaltiesWith9xAppealStatus] Filtering for [${loggingContext.callingClass}][${loggingContext.function}] -" +
         s" Filtered $noOfFilteredLSPs LSP(s) from payload for ${loggingContext.enrolmentKey}")
@@ -91,7 +91,7 @@ class RegimeFilterService @Inject()()(implicit appConfig: AppConfig) {
     }
   }
 
-  private def prepareLatePaymentPenaltiesAfterFilter(penaltiesDetails: GetPenaltyDetails, filteredLPPs: Option[Seq[LPPDetails]], noOfFilteredLPPs: Int)(implicit loggingContext: LoggingContext): Option[LatePaymentPenalty] = {
+  private def prepareLatePaymentPenaltiesAfterFilter(penaltiesDetails: PenaltyDetails, filteredLPPs: Option[Seq[LPPDetails]], noOfFilteredLPPs: Int)(implicit loggingContext: LoggingContext): Option[LatePaymentPenalty] = {
     if (filteredLPPs.nonEmpty && filteredLPPs.get.nonEmpty && noOfFilteredLPPs > 0) {
       logger.info(s"[RegimeFilterService][filterPenaltiesWith9xAppealStatus] Filtering for [${loggingContext.callingClass}][${loggingContext.function}] -" +
         s" Filtered ${noOfFilteredLPPs} LPP(s) from payload for ${loggingContext.enrolmentKey}")
@@ -106,30 +106,30 @@ class RegimeFilterService @Inject()()(implicit appConfig: AppConfig) {
     }
   }
 
-  private def findLPPWith9xAppealStatus(penaltiesDetails: GetPenaltyDetails): Option[Seq[LPPDetails]] = {
+  private def findLPPWith9xAppealStatus(penaltiesDetails: PenaltyDetails): Option[Seq[LPPDetails]] = {
     penaltiesDetails.latePaymentPenalty.flatMap(
-      _.details.map(latePaymentPenalties => latePaymentPenalties.filterNot(lpp => {
+      _.lppDetails.map(latePaymentPenalties => latePaymentPenalties.filterNot(lpp => {
         lpp.appealInformation.nonEmpty && lpp.appealInformation.get.exists(appealInfo => appealInfo.appealStatus.nonEmpty && (appealInfo.appealStatus.get.equals(AppealStatusEnum.AppealRejectedChargeAlreadyReversed) || appealInfo.appealStatus.get.equals(AppealStatusEnum.AppealUpheldChargeAlreadyReversed) || appealInfo.appealStatus.get.equals(AppealStatusEnum.AppealRejectedPointAlreadyRemoved) || appealInfo.appealStatus.get.equals(AppealStatusEnum.AppealUpheldPointAlreadyRemoved)))
       })
       )
     )
   }
 
-  private def filterLSPWith9xAppealStatus(penaltiesDetails: GetPenaltyDetails): Option[Seq[LSPDetails]] = {
+  private def filterLSPWith9xAppealStatus(penaltiesDetails: PenaltyDetails): Option[Seq[LSPDetails]] = {
     penaltiesDetails.lateSubmissionPenalty.map(_.details.filterNot(lsp =>
       lsp.appealInformation.nonEmpty && lsp.appealInformation.get.exists(appealInfo => appealInfo.appealStatus.nonEmpty && (appealInfo.appealStatus.get.equals(AppealStatusEnum.AppealRejectedChargeAlreadyReversed) || appealInfo.appealStatus.get.equals(AppealStatusEnum.AppealUpheldChargeAlreadyReversed) || appealInfo.appealStatus.get.equals(AppealStatusEnum.AppealRejectedPointAlreadyRemoved) || appealInfo.appealStatus.get.equals(AppealStatusEnum.AppealUpheldPointAlreadyRemoved)))))
   }
 
 
-  private def countNumberOfFilteredLPPs(filteredLPPs: Option[Seq[LPPDetails]], penaltiesDetails: GetPenaltyDetails): Int = {
+  private def countNumberOfFilteredLPPs(filteredLPPs: Option[Seq[LPPDetails]], penaltiesDetails: PenaltyDetails): Int = {
     if (penaltiesDetails.latePaymentPenalty.nonEmpty) {
-      penaltiesDetails.latePaymentPenalty.get.details.get.size - filteredLPPs.get.size
+      penaltiesDetails.latePaymentPenalty.get.lppDetails.get.size - filteredLPPs.get.size
     } else {
       0
     }
   }
 
-  private def countNumberOfFilteredLSPs(filteredLSPs: Option[Seq[LSPDetails]], penaltiesDetails: GetPenaltyDetails): Int = {
+  private def countNumberOfFilteredLSPs(filteredLSPs: Option[Seq[LSPDetails]], penaltiesDetails: PenaltyDetails): Int = {
     if (penaltiesDetails.lateSubmissionPenalty.nonEmpty) {
       penaltiesDetails.lateSubmissionPenalty.get.details.size - filteredLSPs.get.size
     } else {

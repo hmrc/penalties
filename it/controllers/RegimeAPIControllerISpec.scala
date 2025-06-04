@@ -31,130 +31,132 @@ class RegimeAPIControllerISpec extends IntegrationSpecCommonBase with RegimeETMP
   val controller: RegimeAPIController = injector.instanceOf[RegimeAPIController]
 
   "getSummaryDataForVRN" should {
-    val getPenaltyDetailsJson: JsValue = Json.parse(
-      """
-        |{
-        | "totalisations": {
-        |   "LSPTotalValue": 200,
-        |   "penalisedPrincipalTotal": 2000,
-        |   "LPPPostedTotal": 165.25,
-        |   "LPPEstimatedTotal": 15.26
-        | },
-        | "lateSubmissionPenalty": {
-        |   "summary": {
-        |     "activePenaltyPoints": 2,
-        |     "inactivePenaltyPoints": 0,
-        |     "regimeThreshold": 5,
-        |     "penaltyChargeAmount": 200.00,
-        |     "PoCAchievementDate": "2022-01-01"
-        |   },
-        |   "details": []
-        | },
-        | "latePaymentPenalty": {
-        |     "details": [
-        |       {
-        |          "penaltyCategory": "LPP2",
-        |          "penaltyStatus": "A",
-        |          "penaltyAmountPosted": 0,
-        |          "LPP1LRCalculationAmount": 123.45,
-        |          "LPP1LRDays": "15",
-        |          "LPP1LRPercentage": 2.00,
-        |          "LPP1HRCalculationAmount": 123.45,
-        |          "LPP1HRDays": "31",
-        |          "LPP1HRPercentage": 2.00,
-        |          "LPP2Days": "31",
-        |          "LPP2Percentage": 4.00,
-        |          "penaltyChargeCreationDate": "2022-10-30",
-        |          "communicationsDate": "2022-10-30",
-        |          "penaltyAmountAccruing": 246.9,
-        |          "principalChargeMainTransaction" : "4700",
-        |          "penaltyChargeDueDate": "2022-10-30",
-        |          "principalChargeReference": "1234567890",
-        |          "principalChargeBillingFrom": "2022-10-30",
-        |          "principalChargeBillingTo": "2022-10-30",
-        |          "principalChargeMainTransaction": "4700",
-        |          "principalChargeDueDate": "2022-10-30"
-        |       },
-        |       {
-        |          "penaltyCategory": "LPP2",
-        |          "penaltyStatus": "A",
-        |          "penaltyAmountPosted": 0,
-        |          "penaltyAmountAccruing": 123.45,
-        |          "LPP1LRCalculationAmount": 123.45,
-        |          "LPP1LRDays": "15",
-        |          "LPP1LRPercentage": 2.00,
-        |          "LPP1HRCalculationAmount": 123.45,
-        |          "LPP1HRDays": "31",
-        |          "LPP1HRPercentage": 2.00,
-        |          "LPP2Days": "31",
-        |          "LPP2Percentage": 4.00,
-        |          "penaltyChargeCreationDate": "2022-10-30",
-        |          "communicationsDate": "2022-10-30",
-        |          "penaltyAmountAccruing": 0.00,
-        |          "principalChargeMainTransaction" : "4700",
-        |          "penaltyChargeDueDate": "2022-10-30",
-        |          "principalChargeReference": "1234567890",
-        |          "principalChargeBillingFrom": "2022-10-30",
-        |          "principalChargeBillingTo": "2022-10-30",
-        |          "principalChargeMainTransaction": "4700",
-        |          "principalChargeDueDate": "2022-10-30"
-        |       },
-        |       {
-        |          "penaltyCategory": "LPP1",
-        |          "penaltyStatus": "P",
-        |          "penaltyAmountPaid": 0,
-        |          "penaltyAmountPosted": 144.0,
-        |          "penaltyAmountOutstanding": 144.00,
-        |          "penaltyAmountAccruing": 0,
-        |          "LPP1LRCalculationAmount": 99.99,
-        |          "LPP1LRDays": "15",
-        |          "LPP1LRPercentage": 2.00,
-        |          "LPP1HRCalculationAmount": 99.99,
-        |          "LPP1HRDays": "31",
-        |          "LPP1HRPercentage": 2.00,
-        |          "LPP2Days": "31",
-        |          "LPP2Percentage": 4.00,
-        |          "penaltyChargeCreationDate": "2022-10-30",
-        |          "communicationsDate": "2022-10-30",
-        |          "penaltyAmountAccruing": 0.00,
-        |          "principalChargeMainTransaction" : "4700",
-        |          "penaltyChargeDueDate": "2022-10-30",
-        |          "principalChargeReference": "1234567890",
-        |          "principalChargeBillingFrom": "2022-10-30",
-        |          "principalChargeBillingTo": "2022-10-30",
-        |          "principalChargeMainTransaction": "4700",
-        |          "principalChargeDueDate": "2022-10-30"
-        |       },
-        |       {
-        |          "penaltyCategory": "LPP1",
-        |          "penaltyStatus": "P",
-        |          "penaltyAmountPaid": 0,
-        |          "penaltyAmountPosted": 144.00,
-        |          "penaltyAmountOutstanding": 144.00,
-        |          "penaltyAmountAccruing": 0,
-        |          "LPP1LRCalculationAmount": 99.99,
-        |          "LPP1LRDays": "15",
-        |          "LPP1LRPercentage": 2.00,
-        |          "LPP1HRCalculationAmount": 99.99,
-        |          "LPP1HRDays": "31",
-        |          "LPP1HRPercentage": 2.00,
-        |          "LPP2Days": "31",
-        |          "LPP2Percentage": 4.00,
-        |          "penaltyChargeCreationDate": "2022-10-30",
-        |          "communicationsDate": "2022-10-30",
-        |          "penaltyAmountAccruing": 0,
-        |          "principalChargeMainTransaction" : "4700",
-        |          "penaltyChargeDueDate": "2022-10-30",
-        |          "principalChargeReference": "1234567890",
-        |          "principalChargeBillingFrom": "2022-10-30",
-        |          "principalChargeBillingTo": "2022-10-30",
-        |          "principalChargeMainTransaction": "4700",
-        |          "principalChargeDueDate": "2022-10-30"
-        |       }
-        |   ]
-        | }
-        |}
-        |""".stripMargin)
+   val penaltyDetailsJson: JsValue = Json.parse(
+  s"""
+    |{
+    |  "success": {
+    |    "processingDate": "$mockInstant",
+    |    "penaltyData": {
+    |      "totalisations": {
+    |        "LSPTotalValue": 200,
+    |        "penalisedPrincipalTotal": 2000,
+    |        "LPPPostedTotal": 165.25,
+    |        "LPPEstimatedTotal": 15.26
+    |      },
+    |      "lsp": {
+    |        "lspSummary": {
+    |          "activePenaltyPoints": 2,
+    |          "inactivePenaltyPoints": 0,
+    |          "regimeThreshold": 5,
+    |          "penaltyChargeAmount": 200.00,
+    |          "pocAchievementDate": "2022-01-01"
+    |        },
+    |        "lspDetails": []
+    |      },
+    |      "lpp": {
+    |        "lppDetails": [
+    |          {
+    |            "penaltyCategory": "LPP2",
+    |            "penaltyStatus": "A",
+    |            "penaltyAmountPosted": 0,
+    |            "LPP1LRCalculationAmount": 123.45,
+    |            "LPP1LRDays": "15",
+    |            "LPP1LRPercentage": 2.00,
+    |            "LPP1HRCalculationAmount": 123.45,
+    |            "LPP1HRDays": "31",
+    |            "LPP1HRPercentage": 2.00,
+    |            "LPP2Days": "31",
+    |            "LPP2Percentage": 4.00,
+    |            "penaltyChargeCreationDate": "2022-10-30",
+    |            "communicationsDate": "2022-10-30",
+    |            "penaltyAmountAccruing": 246.9,
+    |            "penaltyChargeDueDate": "2022-10-30",
+    |            "principalChargeReference": "1234567890",
+    |            "principalChargeBillingFrom": "2022-10-30",
+    |            "principalChargeBillingTo": "2022-10-30",
+    |            "principalChargeMainTransaction": "4700",
+    |            "principalChargeDueDate": "2022-10-30"
+    |          },
+    |          {
+    |            "penaltyCategory": "LPP2",
+    |            "penaltyStatus": "A",
+    |            "penaltyAmountPosted": 0,
+    |            "penaltyAmountAccruing": 123.45,
+    |            "LPP1LRCalculationAmount": 123.45,
+    |            "LPP1LRDays": "15",
+    |            "LPP1LRPercentage": 2.00,
+    |            "LPP1HRCalculationAmount": 123.45,
+    |            "LPP1HRDays": "31",
+    |            "LPP1HRPercentage": 2.00,
+    |            "LPP2Days": "31",
+    |            "LPP2Percentage": 4.00,
+    |            "penaltyChargeCreationDate": "2022-10-30",
+    |            "communicationsDate": "2022-10-30",
+    |            "penaltyAmountAccruing": 0.00,
+    |            "penaltyChargeDueDate": "2022-10-30",
+    |            "principalChargeReference": "1234567890",
+    |            "principalChargeBillingFrom": "2022-10-30",
+    |            "principalChargeBillingTo": "2022-10-30",
+    |            "principalChargeMainTransaction": "4700",
+    |            "principalChargeDueDate": "2022-10-30"
+    |          },
+    |          {
+    |            "penaltyCategory": "LPP1",
+    |            "penaltyStatus": "P",
+    |            "penaltyAmountPaid": 0,
+    |            "penaltyAmountPosted": 144.0,
+    |            "penaltyAmountOutstanding": 144.00,
+    |            "penaltyAmountAccruing": 0,
+    |            "LPP1LRCalculationAmount": 99.99,
+    |            "LPP1LRDays": "15",
+    |            "LPP1LRPercentage": 2.00,
+    |            "LPP1HRCalculationAmount": 99.99,
+    |            "LPP1HRDays": "31",
+    |            "LPP1HRPercentage": 2.00,
+    |            "LPP2Days": "31",
+    |            "LPP2Percentage": 4.00,
+    |            "penaltyChargeCreationDate": "2022-10-30",
+    |            "communicationsDate": "2022-10-30",
+    |            "penaltyAmountAccruing": 0.00,
+    |            "penaltyChargeDueDate": "2022-10-30",
+    |            "principalChargeReference": "1234567890",
+    |            "principalChargeBillingFrom": "2022-10-30",
+    |            "principalChargeBillingTo": "2022-10-30",
+    |            "principalChargeMainTransaction": "4700",
+    |            "principalChargeDueDate": "2022-10-30"
+    |          },
+    |          {
+    |            "penaltyCategory": "LPP1",
+    |            "penaltyStatus": "P",
+    |            "penaltyAmountPaid": 0,
+    |            "penaltyAmountPosted": 144.00,
+    |            "penaltyAmountOutstanding": 144.00,
+    |            "penaltyAmountAccruing": 0,
+    |            "LPP1LRCalculationAmount": 99.99,
+    |            "LPP1LRDays": "15",
+    |            "LPP1LRPercentage": 2.00,
+    |            "LPP1HRCalculationAmount": 99.99,
+    |            "LPP1HRDays": "31",
+    |            "LPP1HRPercentage": 2.00,
+    |            "LPP2Days": "31",
+    |            "LPP2Percentage": 4.00,
+    |            "penaltyChargeCreationDate": "2022-10-30",
+    |            "communicationsDate": "2022-10-30",
+    |            "penaltyAmountAccruing": 0,
+    |            "penaltyChargeDueDate": "2022-10-30",
+    |            "principalChargeReference": "1234567890",
+    |            "principalChargeBillingFrom": "2022-10-30",
+    |            "principalChargeBillingTo": "2022-10-30",
+    |            "principalChargeMainTransaction": "4700",
+    |            "principalChargeDueDate": "2022-10-30"
+    |          }
+    |        ]
+    |      },
+    |      "breathingSpace": null
+    |    }
+    |  }
+    |}
+    |""".stripMargin)
 
    Table(
     ("Regime", "IdType", "Id"),
@@ -166,7 +168,7 @@ class RegimeAPIControllerISpec extends IntegrationSpecCommonBase with RegimeETMP
         "the get penalty details call succeeds" in {
 
           mockStubResponseForAuthorisedUser
-          mockStubResponseForGetPenaltyDetails(Status.OK, regime, idType, id, body = Some(getPenaltyDetailsJson.toString()))
+          mockStubResponseForPenaltyDetails(Status.OK, regime, idType, id, body = Some(penaltyDetailsJson.toString()))
 
           val result = await(buildClientForRequestToApp(uri = s"/${regime.value}/summary/${idType.value}/${id.value}").get())
           result.status shouldBe OK
@@ -189,7 +191,7 @@ class RegimeAPIControllerISpec extends IntegrationSpecCommonBase with RegimeETMP
         "the get penalty details call fails" in {
 
           mockStubResponseForAuthorisedUser
-          mockStubResponseForGetPenaltyDetails(Status.INTERNAL_SERVER_ERROR, regime, idType, id, body = Some(""))
+          mockStubResponseForPenaltyDetails(Status.INTERNAL_SERVER_ERROR, regime, idType, id, body = Some(""))
 
           val result = await(buildClientForRequestToApp(uri = s"/${regime.value}/summary/${idType.value}/${id.value}").get())
           result.status shouldBe INTERNAL_SERVER_ERROR
@@ -200,7 +202,7 @@ class RegimeAPIControllerISpec extends IntegrationSpecCommonBase with RegimeETMP
         "the get penalty details call returns 404" in {
 
           mockStubResponseForAuthorisedUser
-          mockStubResponseForGetPenaltyDetails(Status.NOT_FOUND, regime, idType, id, body = Some(""))
+          mockStubResponseForPenaltyDetails(Status.NOT_FOUND, regime, idType, id, body = Some(""))
 
           val result = await(buildClientForRequestToApp(baseUrl = "", uri = s"/${regime.value}/summary/${idType.value}/${id.value}").get())
           result.status shouldBe NOT_FOUND
@@ -222,17 +224,30 @@ class RegimeAPIControllerISpec extends IntegrationSpecCommonBase with RegimeETMP
               |""".stripMargin
 
           mockStubResponseForAuthorisedUser
-          mockStubResponseForGetPenaltyDetails(Status.NOT_FOUND, regime, idType, id, body = Some(notFoundResponseBody))
+          mockStubResponseForPenaltyDetails(Status.NOT_FOUND, regime, idType, id, body = Some(notFoundResponseBody))
 
           val result = await(buildClientForRequestToApp(uri = s"/${regime.value}/summary/${idType.value}/${id.value}").get())
           result.status shouldBe NO_CONTENT
         }
 
         "the get penalty details call returns 200 with an empty body" in {
-          val emptyResponse: String = "{}"
+          val emptyResponse: String =
+            s"""
+              |{
+              |  "success": {
+              |    "processingDate": "$mockInstant",
+              |    "penaltyData": {
+              |      "totalisations": null,
+              |      "lateSubmissionPenalty": null,
+              |      "latePaymentPenalty": null,
+              |      "breathingSpace": null
+              |    }
+              |  }
+              |}
+              |""".stripMargin
 
           mockStubResponseForAuthorisedUser
-          mockStubResponseForGetPenaltyDetails(Status.OK, regime, idType, id, body = Some(emptyResponse))
+          mockStubResponseForPenaltyDetails(Status.OK, regime, idType, id, body = Some(emptyResponse))
 
           val result = await(buildClientForRequestToApp(uri = s"/${regime.value}/summary/${idType.value}/${id.value}").get())
           result.status shouldBe NO_CONTENT
@@ -496,7 +511,7 @@ class RegimeAPIControllerISpec extends IntegrationSpecCommonBase with RegimeETMP
                 |""".stripMargin)
             withFeature(CallAPI1812ETMP -> FEATURE_SWITCH_ON) {
               mockStubResponseForAuthorisedUser
-              mockResponseForGetPenaltyDetails(Status.OK, regime, idType, s"${id.value}?dateLimit=09", Some(sampleAPI1812Response.toString))
+              mockResponseForPenaltyDetails(Status.OK, regime, idType, id, Some("09"), Some(sampleAPI1812Response.toString))
               val result = await(buildClientForRequestToApp(uri = s"/${regime.value}/penalty-details/${idType.value}/${id.value}?dateLimit=09").get())
               result.status shouldBe OK
               result.json shouldBe sampleAPI1812Response
@@ -509,7 +524,7 @@ class RegimeAPIControllerISpec extends IntegrationSpecCommonBase with RegimeETMP
           "404 response received" in {
             withFeature(CallAPI1812ETMP -> FEATURE_SWITCH_ON) {
               mockStubResponseForAuthorisedUser
-              mockResponseForGetPenaltyDetails(Status.NOT_FOUND, regime, idType, s"${id.value}?dateLimit=09", Some(""))
+              mockResponseForPenaltyDetails(Status.NOT_FOUND, regime, idType, id, Some("09"), Some(""))
               val result = await(buildClientForRequestToApp(uri = s"/${regime.value}/penalty-details/${idType.value}/${id.value}?dateLimit=09").get())
               result.status shouldBe NOT_FOUND
               wireMockServer.findAll(postRequestedFor(urlEqualTo("/write/audit"))).asScala.toList.exists(_.getBodyAsString.contains("Penalties3rdPartyPenaltyDetailsDataRetrieval")) shouldBe true
@@ -519,7 +534,7 @@ class RegimeAPIControllerISpec extends IntegrationSpecCommonBase with RegimeETMP
           "Non 200 response received" in {
             withFeature(CallAPI1812ETMP -> FEATURE_SWITCH_ON) {
               mockStubResponseForAuthorisedUser
-              mockResponseForGetPenaltyDetails(Status.BAD_REQUEST, regime, idType, s"${id.value}?dateLimit=09", Some(""))
+              mockResponseForPenaltyDetails(Status.BAD_REQUEST, regime, idType, id, Some("09"), Some(""))
               val result = await(buildClientForRequestToApp(uri = s"/${regime.value}/penalty-details/${idType.value}/${id.value}?dateLimit=09").get())
               result.status shouldBe BAD_REQUEST
               wireMockServer.findAll(postRequestedFor(urlEqualTo("/write/audit"))).asScala.toList.exists(_.getBodyAsString.contains("Penalties3rdPartyPenaltyDetailsDataRetrieval")) shouldBe true
