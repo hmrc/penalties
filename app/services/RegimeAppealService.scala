@@ -32,6 +32,7 @@ import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 import models.AgnosticEnrolmentKey
 import uk.gov.hmrc.http.HeaderCarrier
+import models.penaltyDetails.PenaltyDetails
 
 class RegimeAppealService @Inject()(appealsConnector: RegimePEGAConnector,
                                     hipAppealsConnector: HIPConnector,

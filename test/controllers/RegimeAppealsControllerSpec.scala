@@ -55,6 +55,7 @@ import java.time.{LocalDate, LocalDateTime}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import models.{AgnosticEnrolmentKey, Id, IdType, Regime}
+import java.time.Instant
 
 class RegimeAppealsControllerSpec
     extends SpecBase
@@ -115,7 +116,7 @@ class RegimeAppealsControllerSpec
     reset(mockAuditService)
 
     val controller = new RegimeAppealsController(if (withRealAppConfig) appConfig
-    else mockAppConfig, mockAppealsService, mockGetPenaltyDetailsService, mockFileNotificationConnector, mockAuditService, stubControllerComponents(), mockAuthAction)
+    else mockAppConfig, mockAppealsService, mockPenaltyDetailsService, mockFileNotificationConnector, mockAuditService, stubControllerComponents(), mockAuthAction)
 
     implicit val hc: HeaderCarrier = HeaderCarrier()
   }

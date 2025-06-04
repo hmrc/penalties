@@ -25,9 +25,9 @@ import connectors.{HIPConnector, RegimePEGAConnector}
 import models.{AgnosticEnrolmentKey, Id, IdType, Regime}
 import models.appeals.{AppealResponseModel, AppealSubmission, CrimeAppealInformation, MultiplePenaltiesData}
 import models.getFinancialDetails.MainTransactionEnum
-import models.getPenaltyDetails.GetPenaltyDetails
-import models.getPenaltyDetails.appealInfo.{AppealInformationType, AppealLevelEnum, AppealStatusEnum}
-import models.getPenaltyDetails.latePayment.{LPPDetails, LPPDetailsMetadata, LPPPenaltyCategoryEnum, LPPPenaltyStatusEnum, LatePaymentPenalty}
+import models.penaltyDetails.PenaltyDetails
+import models.penaltyDetails.appealInfo.{AppealInformationType, AppealLevelEnum, AppealStatusEnum}
+import models.penaltyDetails.latePayment.{LatePaymentPenalty, LPPDetails, LPPPenaltyCategoryEnum, LPPPenaltyStatusEnum, TimeToPay}
 import models.notification.{SDESAudit, SDESChecksum, SDESNotification, SDESNotificationFile, SDESProperties}
 import models.upload.{UploadDetails, UploadJourney, UploadStatusEnum}
 import org.mockito.ArgumentMatchers
@@ -38,7 +38,7 @@ import uk.gov.hmrc.http.HeaderCarrier
 import utils.Logger.logger
 import utils.UUIDGenerator
 
-import java.time.{LocalDate, LocalDateTime}
+import java.time.{LocalDate, LocalDateTime, Instant}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Random
 
@@ -468,10 +468,12 @@ class RegimeAppealServiceSpec extends SpecBase with LogCapturing with FeatureSwi
       LPP1HRPercentage = None,
       penaltyChargeDueDate = Some(LocalDate.of(2022, 8, 7)),
       principalChargeLatestClearing = Some(LocalDate.of(2022, 10, 1)),
-      metadata = LPPDetailsMetadata(),
       penaltyAmountAccruing = BigDecimal(0),
       principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
-      vatOutstandingAmount = Some(BigDecimal(123.45))
+      vatOutstandingAmount = Some(BigDecimal(123.45)),
+      principalChargeDocNumber = None,
+      principalChargeSubTransaction = None,
+      timeToPay = None
     )
 
     val sampleLPP2 = LPPDetails(
@@ -498,41 +500,47 @@ class RegimeAppealServiceSpec extends SpecBase with LogCapturing with FeatureSwi
       LPP1HRPercentage = None,
       penaltyChargeDueDate = Some(LocalDate.of(2022, 8, 7)),
       principalChargeLatestClearing = Some(LocalDate.of(2022, 10, 1)),
-      metadata = LPPDetailsMetadata(),
       penaltyAmountAccruing = BigDecimal(0),
       principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
-      vatOutstandingAmount = Some(BigDecimal(123.45))
+      vatOutstandingAmount = Some(BigDecimal(123.45)),
+      principalChargeDocNumber = None,
+      principalChargeSubTransaction = None,
+      timeToPay = None
     )
 
-    val getPenaltyDetailsOnePenalty: GetPenaltyDetails = GetPenaltyDetails(
+    val getPenaltyDetailsOnePenalty: PenaltyDetails = PenaltyDetails(
+      processingDate = Instant.now(),
       totalisations = None,
       lateSubmissionPenalty = None,
-      latePaymentPenalty = Some(LatePaymentPenalty(Some(Seq(sampleLPP1)))),
+      latePaymentPenalty = Some(LatePaymentPenalty(lppDetails = Some(Seq(sampleLPP1)))),
       breathingSpace = None
     )
 
-    val getPenaltyDetailsTwoPenalties: GetPenaltyDetails = GetPenaltyDetails(
+    val getPenaltyDetailsTwoPenalties: PenaltyDetails = PenaltyDetails(
+      processingDate = Instant.now(),
       totalisations = None,
       lateSubmissionPenalty = None,
-      latePaymentPenalty = Some(LatePaymentPenalty(Some(Seq(sampleLPP2, sampleLPP1)))),
+      latePaymentPenalty = Some(LatePaymentPenalty(lppDetails = Some(Seq(sampleLPP2, sampleLPP1)))),
       breathingSpace = None
     )
 
-    val getPenaltyDetailsTwoPenaltiesNoCommunicationsDate: GetPenaltyDetails = GetPenaltyDetails(
+    val getPenaltyDetailsTwoPenaltiesNoCommunicationsDate: PenaltyDetails = PenaltyDetails(
+      processingDate = Instant.now(),
       totalisations = None,
       lateSubmissionPenalty = None,
-      latePaymentPenalty = Some(LatePaymentPenalty(Some(Seq(
+      latePaymentPenalty = Some(LatePaymentPenalty(lppDetails = Some(Seq(
         sampleLPP2.copy(communicationsDate = None),
         sampleLPP1.copy(communicationsDate = None)
       )))),
       breathingSpace = None
     )
 
-    val getPenaltyDetailsTwoPenaltiesWithAppeal: GetPenaltyDetails = GetPenaltyDetails(
+    val getPenaltyDetailsTwoPenaltiesWithAppeal: PenaltyDetails = PenaltyDetails(
+      processingDate = Instant.now(),
       totalisations = None,
       lateSubmissionPenalty = None,
       latePaymentPenalty = Some(
-        LatePaymentPenalty(Some(Seq(
+        LatePaymentPenalty(lppDetails = Some(Seq(
           sampleLPP2.copy(appealInformation = Some(Seq(AppealInformationType(
             appealStatus = Some(AppealStatusEnum.Under_Appeal),
             appealLevel = Some(AppealLevelEnum.HMRC),
@@ -543,11 +551,12 @@ class RegimeAppealServiceSpec extends SpecBase with LogCapturing with FeatureSwi
       breathingSpace = None
     )
 
-    val getPenaltyDetailsTwoPenaltiesLPP2Accruing: GetPenaltyDetails = GetPenaltyDetails(
+    val getPenaltyDetailsTwoPenaltiesLPP2Accruing: PenaltyDetails = PenaltyDetails(
+      processingDate = Instant.now(),
       totalisations = None,
       lateSubmissionPenalty = None,
       latePaymentPenalty = Some(
-        LatePaymentPenalty(Some(Seq(
+        LatePaymentPenalty(lppDetails = Some(Seq(
           sampleLPP2.copy(
             penaltyStatus = LPPPenaltyStatusEnum.Accruing,
             penaltyChargeReference = None,
@@ -563,11 +572,12 @@ class RegimeAppealServiceSpec extends SpecBase with LogCapturing with FeatureSwi
       breathingSpace = None
     )
 
-    val getPenaltyDetailsTwoPenaltiesVATNotPaid: GetPenaltyDetails = GetPenaltyDetails(
+    val getPenaltyDetailsTwoPenaltiesVATNotPaid: PenaltyDetails = PenaltyDetails(
+      processingDate = Instant.now(),
       totalisations = None,
       lateSubmissionPenalty = None,
       latePaymentPenalty = Some(
-        LatePaymentPenalty(Some(Seq(
+        LatePaymentPenalty(lppDetails = Some(Seq(
           sampleLPP2.copy(
             penaltyStatus = LPPPenaltyStatusEnum.Accruing,
             penaltyChargeReference = None,
