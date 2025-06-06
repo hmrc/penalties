@@ -743,11 +743,11 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
           |    },
           |    {
           |      "type": "unexpectedHospitalStay",
-          |      "descriptionKey":"reasonableExcuses.unexpectedHospitalStay"
+          |      "descriptionKey":"reasonableExcuses.unexpectedHospitalStayReason"
           |    },
           |    {
           |      "type": "seriousOrLifeThreateningIllHealth",
-          |      "descriptionKey": "reasonableExcuses.seriousOrLifeThreateningIllHealth"
+          |      "descriptionKey": "reasonableExcuses.seriousOrLifeThreateningIllHealthReason"
           |    },
           |    {
           |      "type": "lossOfStaff",
@@ -759,7 +759,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
           |    },
           |    {
           |      "type": "obligations",
-          |      "descriptionKey": "reasonableExcuses.obligations"
+          |      "descriptionKey": "reasonableExcuses.obligationsReason"
           |    }
           |  ]
           |}

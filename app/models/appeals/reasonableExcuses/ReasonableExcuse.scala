@@ -50,11 +50,11 @@ object ReasonableExcuse {
   }
 
   case object UnexpectedHospitalStay extends WithName("unexpectedHospitalStay") with ReasonableExcuse {
-    override val descriptionMessageKey: String = "reasonableExcuses.unexpectedHospitalStay"
+    override val descriptionMessageKey: String = "reasonableExcuses.unexpectedHospitalStayReason"
   }
 
   case object SeriousOrLifeThreateningIllHealth extends WithName("seriousOrLifeThreateningIllHealth") with ReasonableExcuse {
-    override val descriptionMessageKey: String = "reasonableExcuses.seriousOrLifeThreateningIllHealth"
+    override val descriptionMessageKey: String = "reasonableExcuses.seriousOrLifeThreateningIllHealthReason"
   }
 
   case object LossOfStaff extends WithName("lossOfStaff") with ReasonableExcuse {
@@ -70,7 +70,7 @@ object ReasonableExcuse {
   }
 
   case object Obligations extends WithName("obligations") with ReasonableExcuse {
-    override val descriptionMessageKey: String = "reasonableExcuses.obligations"
+    override val descriptionMessageKey: String = "reasonableExcuses.obligationsReason"
   }
 
   def allExcusesToJson(appConfig: AppConfig, regime: Option[Regime] = None): JsValue = {
