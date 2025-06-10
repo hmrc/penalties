@@ -58,62 +58,62 @@ class HIPConnectorISpec extends IntegrationSpecCommonBase with HIPWiremock with 
   "submitAppeal" should {
     "Jsonify the model and send the request and return the response with Headers" in new Setup {
       mockSuccessfulResponse()
-      val result = await(connector.submitAppeal(submission, penaltyNumber, correlationId))
+      val result = await(connector.submitAppeal(submission, penaltyNumber, correlationId, "01"))
       result.isRight shouldBe true
     }
 
     "return duplicated error response" in new Setup {
       mockDuplicateSubmissionResponse()
-      val result = await(connector.submitAppeal(submission, penaltyNumber, correlationId))
+      val result = await(connector.submitAppeal(submission, penaltyNumber, correlationId, "01"))
       result shouldBe Left(DuplicateAppeal)
     }
 
     "return Bad request if a 400 bad request error is received" in new Setup {
       mockInvalidPayloadResponse()
-      val result = await(connector.submitAppeal(submission, penaltyNumber, correlationId))
+      val result = await(connector.submitAppeal(submission, penaltyNumber, correlationId, "01"))
       result shouldBe Left(BadRequest)
     }
 
     "return Bad request if a 401 Unauthorized error is received" in new Setup {
       mockUnauthorisedResponse()
-      val result = await(connector.submitAppeal(submission, penaltyNumber, correlationId))
+      val result = await(connector.submitAppeal(submission, penaltyNumber, correlationId, "01"))
       result shouldBe Left(BadRequest)
     }
 
     "return Bad request if a 404 Not Found error is received" in new Setup {
       mockNotFoundResponse()
-      val result = await(connector.submitAppeal(submission, penaltyNumber, correlationId))
+      val result = await(connector.submitAppeal(submission, penaltyNumber, correlationId, "01"))
       result shouldBe Left(BadRequest)
     }
 
     "return Bad request if a 415 Unsupported media-type error is received" in new Setup {
       mockUnsupportedMediaTypeResponse()
-      val result = await(connector.submitAppeal(submission, penaltyNumber, correlationId))
+      val result = await(connector.submitAppeal(submission, penaltyNumber, correlationId, "01"))
       result shouldBe Left(BadRequest)
     }
 
     "return Bad request if a 422 Unprocessable Content error is received" in new Setup {
       mockEMTPErrorResponse()
-      val result = await(connector.submitAppeal(submission, penaltyNumber, correlationId))
+      val result = await(connector.submitAppeal(submission, penaltyNumber, correlationId, "01"))
       result shouldBe Left(BadRequest)
     }
 
 
     "return Unexpected Failure if a 500 Internal Server Error is received" in new Setup {
       mockInternalServerErrorResponse()
-      val result = await(connector.submitAppeal(submission, penaltyNumber, correlationId))
+      val result = await(connector.submitAppeal(submission, penaltyNumber, correlationId, "01"))
       result shouldBe Left(UnexpectedFailure(500, "Unexpected response, status 500 returned on submission to HIP with reason:{}"))
     }
 
     "return Unexpected Failure if a 502 Bad Gateway error is received" in new Setup {
       mockBadGatewayResponse()
-      val result = await(connector.submitAppeal(submission, penaltyNumber, correlationId))
+      val result = await(connector.submitAppeal(submission, penaltyNumber, correlationId, "01"))
       result shouldBe Left(UnexpectedFailure(502, "Unexpected response, status 502 returned on submission to HIP with reason:{\"failures\":[{\"dependentSystemHTTPCode\":\"500\",\"originatedFrom\":\"etmp\",\"code\":\"\",\"reason\":\"\"}]}"))
     }
 
     "return Unexpected Failure if a 503 Service Unavailable error is received" in new Setup {
       mockServiceUnavailableResponse()
-      val result = await(connector.submitAppeal(submission, penaltyNumber, correlationId))
+      val result = await(connector.submitAppeal(submission, penaltyNumber, correlationId, "01"))
       result shouldBe Left(UnexpectedFailure(503, "Unexpected response, status 503 returned on submission to HIP with reason:{}"))
     }
   }

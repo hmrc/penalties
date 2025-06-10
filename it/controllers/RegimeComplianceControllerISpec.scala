@@ -17,11 +17,11 @@
 package controllers
 
 import config.featureSwitches.{CallDES, FeatureSwitching}
+import models.{AgnosticEnrolmentKey, Id, IdType, Regime}
 import org.scalatest.prop.TableDrivenPropertyChecks
 import play.api.libs.json.Json
 import play.api.test.Helpers._
 import utils.{AuthMock, IntegrationSpecCommonBase, RegimeComplianceWiremock}
-import models.{AgnosticEnrolmentKey, Id, IdType, Regime}
 
 class RegimeComplianceControllerISpec extends IntegrationSpecCommonBase with RegimeComplianceWiremock with FeatureSwitching with TableDrivenPropertyChecks with AuthMock{
   val enrolmentKey: String = "HMRC-MTD-VAT~VRN~123456789"

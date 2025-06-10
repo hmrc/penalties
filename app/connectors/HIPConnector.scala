@@ -35,11 +35,12 @@ class HIPConnector @Inject()(httpClient: HttpClient,
 
   def submitAppeal(appealSubmission: AppealSubmission,
                    penaltyNumber: String,
-                   correlationId: String)
+                   correlationId: String,
+                   appealLevel: String)
                   (implicit headerCarrier: HeaderCarrier): Future[AppealSubmissionResponse] = {
 
     val hc: HeaderCarrier = headersForHIP(correlationId)
-    val appealSubmissionRequest = AppealSubmissionRequest(appealSubmission, penaltyNumber)
+    val appealSubmissionRequest = AppealSubmissionRequest(appealSubmission, penaltyNumber, appealLevel)
 
     httpClient.POST[AppealSubmissionRequest, AppealSubmissionResponse](
         appConfig.hipSubmitUrl,

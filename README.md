@@ -115,22 +115,33 @@ Get list of reasonable excuses used to make an appeal.
 | Successful retrieval | 200    |
 
 
-#### `POST       /penalties/appeals/submit-appeal`
+#### `POST       /:regime/penalties/appeals/submit-appeal/:idType/:id`
 
 Submit an appeal for a penalty.
 
+Accepted Regime and IdTypes:
+
+| TaxRegime | IdType    | Example ID        |
+|-----------|-----------|-------------------|
+| `VATC`    | `VRN`     | `711224466`       |
+| `ITSA`    | `nino`    | `AA803080A`       |
+| `ITSA`    | `mtditid` | `012345678912345` |
+
 The following query parameters should be specified:
 
-| Parameter       | Type    | Mandatory |
-|-----------------|---------|-----------|
-| `enrolmentKey`  | String  | Yes       |
-| `isLPP`         | Boolean | Yes       |       
-| `penaltyNumber` | String  | Yes       |     
-| `correlationId` | String  | Yes       |     
+| Parameter       | Type     | Mandatory | Notes                                  |
+|-----------------|----------|-----------|----------------------------------------|
+| `isLPP`         | Boolean  | Yes       |                                        |
+| `penaltyNumber` | String   | Yes       |                                        |
+| `correlationId` | String   | Yes       |                                        |
+| `appealLevel`   | String   | Yes       | `01` or `02` are accepted by upstream  |
+| `isMultiAppeal` | Boolean  | No        | default = `false`                      |
 
-URL format - `/penalties/appeals/submit-appeal?{enrolmentKey}=[keyValue]&{isLPP}=[boolValue]&{penaltyNumber}=[penaltyId]&{correlationId}=[value]`
+URL format - `/penalties/{regime}appeals/submit-appeal/{idType}/{id}?{isLPP}=[boolValue]&{penaltyNumber}=[penaltyId]&{correlationId}=[value]&{appealLevel}=[appealStage]&{isMultiAppeal}=[boolValue]`
 
-Example URL - `/penalties/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~224060020&isLPP=false&penaltyNumber=123456786&correlationId=a8010aef-9253-45a8-b8ac-c843dc2d3318`
+Example VATC URL - `/penalties/vatc/appeals/submit-appeal/vrn/711224466/?isLPP=false&penaltyNumber=123456786&correlationId=a8010aef-9253-45a8-b8ac-c843dc2d3318&isMultiAppeal=true&appealLevel=01`
+
+Example ITSA URL - `/penalties/itsa/appeals/submit-appeal/nino/AA803080A/?isLPP=false&penaltyNumber=123456786&correlationId=a8010aef-9253-45a8-b8ac-c843dc2d3318&appealLevel=02`
 
 Example payload:
 ```

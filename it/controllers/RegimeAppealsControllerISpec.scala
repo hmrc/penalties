@@ -315,7 +315,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
 
     val enrolmentKey = AgnosticEnrolmentKey(regime, idType, id)
     val (r, it, i) =  (regime.value, idType.value, id.value)
-    val submitAppealUri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=false&penaltyNumber=123456789&correlationId=uuid-1"
+    val submitAppealUri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=false&penaltyNumber=123456789&correlationId=uuid-1&appealLevel=01"
 
 
     s"getAppealsDataForLateSubmissionPenalty for $regime" should {
@@ -792,7 +792,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
               |""".stripMargin)
           val result: WSResponse = await(
             buildClientForRequestToApp(
-              uri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=true&penaltyNumber=123456789&correlationId=uuid-1")
+              uri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=true&penaltyNumber=123456789&correlationId=uuid-1&appealLevel=01")
               .post(
                 jsonToSubmit
               ))
@@ -849,7 +849,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
           )
 
           val result: WSResponse = await(buildClientForRequestToApp(
-            uri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=false&penaltyNumber=123456789&correlationId=uuid-1&isMultiAppeal=true"
+            uri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=false&penaltyNumber=123456789&correlationId=uuid-1&isMultiAppeal=true&appealLevel=01"
           ).post(
             jsonToSubmit
           ))
@@ -867,14 +867,14 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
       "return BAD_REQUEST (400)" when {
         "no JSON body is in the request" in new SetUp {
           val result: WSResponse = await(buildClientForRequestToApp(
-            uri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=true&penaltyNumber=123456789&correlationId=uuid-1"
+            uri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=true&penaltyNumber=123456789&correlationId=uuid-1&appealLevel=01"
           ).post(""))
           result.status shouldBe BAD_REQUEST
         }
 
         "JSON body is present but it can not be parsed to a model" in new SetUp {
           val result: WSResponse = await(buildClientForRequestToApp(
-            uri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=true&penaltyNumber=123456789&correlationId=uuid-1"
+            uri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=true&penaltyNumber=123456789&correlationId=uuid-1&appealLevel=01"
           ).post(Json.parse("{}")))
           result.status shouldBe BAD_REQUEST
         }
@@ -1265,7 +1265,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
               |		}
               |}
               |""".stripMargin)
-          val result: WSResponse = await(buildClientForRequestToApp(uri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=true&penaltyNumber=123456789&correlationId=uuid-1").post(
+          val result: WSResponse = await(buildClientForRequestToApp(uri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=true&penaltyNumber=123456789&correlationId=uuid-1&appealLevel=01").post(
             jsonToSubmit
           ))
           result.status shouldBe OK
@@ -1319,7 +1319,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
           )
 
           val result: WSResponse = await(buildClientForRequestToApp(
-            uri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=false&penaltyNumber=123456789&correlationId=uuid-1&isMultiAppeal=true"
+            uri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=false&penaltyNumber=123456789&correlationId=uuid-1&isMultiAppeal=true&appealLevel=01"
           ).post(
             jsonToSubmit
           ))
@@ -1337,14 +1337,14 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
       "return BAD_REQUEST (400)" when {
         "no JSON body is in the request" in new SetUp(hipFeatureSwitch = true) {
           val result: WSResponse = await(buildClientForRequestToApp(
-            uri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=true&penaltyNumber=123456789&correlationId=uuid-1"
+            uri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=true&penaltyNumber=123456789&correlationId=uuid-1&appealLevel=01"
           ).post(""))
           result.status shouldBe BAD_REQUEST
         }
 
         "JSON body is present but it can not be parsed to a model" in new SetUp(hipFeatureSwitch = true) {
           val result: WSResponse = await(buildClientForRequestToApp(
-            uri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=true&penaltyNumber=123456789&correlationId=uuid-1"
+            uri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=true&penaltyNumber=123456789&correlationId=uuid-1&appealLevel=01"
           ).post(Json.parse("{}")))
           result.status shouldBe BAD_REQUEST
         }

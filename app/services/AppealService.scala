@@ -48,7 +48,9 @@ class AppealService @Inject()(appealsConnector: PEGAConnector,
                   (implicit headerCarrier:HeaderCarrier): Future[Either[AppealsParser.ErrorResponse, AppealResponseModel]] = {
 
     val response: Future[AppealsParser.AppealSubmissionResponse] = if (isEnabled(CallAPI1808HIP)) {
-      hipAppealsConnector.submitAppeal(appealSubmission, penaltyNumber, correlationId)
+      // ITSA will never use this endpoint, VATC only uses appealLevel = "01"...
+      // ...so this can be hardcoded below until endpoint is deprecated by DL-15219 & DL-16549
+      hipAppealsConnector.submitAppeal(appealSubmission, penaltyNumber, correlationId, appealLevel = "01")
     } else {
       appealsConnector.submitAppeal(appealSubmission, enrolmentKey, isLPP, penaltyNumber, correlationId)
     }
