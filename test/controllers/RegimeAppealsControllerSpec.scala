@@ -23,6 +23,7 @@ import connectors.FileNotificationOrchestratorConnector
 import connectors.parsers.AppealsParser.UnexpectedFailure
 import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser.{GetPenaltyDetailsFailureResponse, GetPenaltyDetailsMalformed, GetPenaltyDetailsSuccessResponse}
 import controllers.auth.AuthAction
+import models.appeals.AppealLevel.FirstStageAppeal
 import models.appeals.AppealTypeEnum.{Additional, Late_Payment, Late_Submission}
 import models.appeals.{AppealData, MultiplePenaltiesData}
 import models.auditing.PenaltyAppealFileNotificationStorageFailureModel
@@ -766,7 +767,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
   "submitAppeal" should {
     "return BAD_REQUEST (400)" when {
       "the request body is not valid JSON" in new Setup {
-        val result: Future[Result] = controller.submitAppeal(regime, idType, id, isLPP = false, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = false, appealLevel = "01")(fakeRequest)
+        val result: Future[Result] = controller.submitAppeal(regime, idType, id, isLPP = false, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = false, appealLevel = FirstStageAppeal)(fakeRequest)
         status(result) shouldBe BAD_REQUEST
         contentAsString(result) shouldBe "Invalid body received i.e. could not be parsed to JSON"
       }
@@ -784,7 +785,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
             |}
             |""".stripMargin)
 
-        val result: Future[Result] = controller.submitAppeal(regime, idType, id, isLPP = false, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = false, appealLevel = "01")(fakeRequest.withJsonBody(appealsJson))
+        val result: Future[Result] = controller.submitAppeal(regime, idType, id, isLPP = false, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = false, appealLevel = FirstStageAppeal)(fakeRequest.withJsonBody(appealsJson))
         status(result) shouldBe BAD_REQUEST
         contentAsString(result) shouldBe "Failed to parse to model"
       }
@@ -814,7 +815,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
             |		}
             |}
             |""".stripMargin)
-        val result: Future[Result] = controller.submitAppeal(regime, idType, id, isLPP = false, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = false, appealLevel = "01")(fakeRequest.withJsonBody(appealsJson))
+        val result: Future[Result] = controller.submitAppeal(regime, idType, id, isLPP = false, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = false, appealLevel = FirstStageAppeal)(fakeRequest.withJsonBody(appealsJson))
         status(result) shouldBe GATEWAY_TIMEOUT
       }
     }
@@ -845,7 +846,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
           "caseId" -> "PR-123456789",
           "status" -> OK
         )
-        val result: Future[Result] = controller.submitAppeal(regime, idType, id, isLPP = false, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = false, appealLevel = "01")(fakeRequest.withJsonBody(appealsJson))
+        val result: Future[Result] = controller.submitAppeal(regime, idType, id, isLPP = false, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = false, appealLevel = FirstStageAppeal)(fakeRequest.withJsonBody(appealsJson))
         status(result) shouldBe OK
         contentAsJson(result) shouldBe expectedJsonResponse
       }
@@ -870,7 +871,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
             |		}
             |}
             |""".stripMargin)
-        val result: Future[Result] = controller.submitAppeal(regime, idType, id, isLPP = false, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = false, appealLevel = "01")(fakeRequest.withJsonBody(appealsJson))
+        val result: Future[Result] = controller.submitAppeal(regime, idType, id, isLPP = false, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = false, appealLevel = FirstStageAppeal)(fakeRequest.withJsonBody(appealsJson))
         status(result) shouldBe OK
       }
 
@@ -894,7 +895,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
             |		}
             |}
             |""".stripMargin)
-        val result: Future[Result] = controller.submitAppeal(regime, idType, id, isLPP = false, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = false, appealLevel = "01")(fakeRequest.withJsonBody(appealsJson))
+        val result: Future[Result] = controller.submitAppeal(regime, idType, id, isLPP = false, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = false, appealLevel = FirstStageAppeal)(fakeRequest.withJsonBody(appealsJson))
         status(result) shouldBe OK
       }
 
@@ -919,7 +920,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
             |		}
             |}
             |""".stripMargin)
-        val result: Future[Result] = controller.submitAppeal(regime, idType, id, isLPP = false, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = false, appealLevel = "01")(fakeRequest.withJsonBody(appealsJson))
+        val result: Future[Result] = controller.submitAppeal(regime, idType, id, isLPP = false, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = false, appealLevel = FirstStageAppeal)(fakeRequest.withJsonBody(appealsJson))
         status(result) shouldBe OK
       }
 
@@ -946,7 +947,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
               |		}
               |}
               |""".stripMargin)
-          val result: Future[Result] = controller.submitAppeal(regime, idType, id, isLPP = false, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = false, appealLevel = "01")(fakeRequest.withJsonBody(appealsJson))
+          val result: Future[Result] = controller.submitAppeal(regime, idType, id, isLPP = false, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = false, appealLevel = FirstStageAppeal)(fakeRequest.withJsonBody(appealsJson))
           status(result) shouldBe OK
         }
 
@@ -972,7 +973,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
               |		}
               |}
               |""".stripMargin)
-          val result: Future[Result] = controller.submitAppeal(regime, idType, id, isLPP = false, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = false, appealLevel = "01")(fakeRequest.withJsonBody(appealsJson))
+          val result: Future[Result] = controller.submitAppeal(regime, idType, id, isLPP = false, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = false, appealLevel = FirstStageAppeal)(fakeRequest.withJsonBody(appealsJson))
           status(result) shouldBe OK
         }
 
@@ -999,7 +1000,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
               |		}
               |}
               |""".stripMargin)
-          val result: Future[Result] = controller.submitAppeal(regime, idType, id, isLPP = false, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = false, appealLevel = "01")(fakeRequest.withJsonBody(appealsJson))
+          val result: Future[Result] = controller.submitAppeal(regime, idType, id, isLPP = false, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = false, appealLevel = FirstStageAppeal)(fakeRequest.withJsonBody(appealsJson))
           status(result) shouldBe OK
         }
 
@@ -1024,7 +1025,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
               |		}
               |}
               |""".stripMargin)
-          val result: Future[Result] = controller.submitAppeal(regime, idType, id, isLPP = true, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = false, appealLevel = "01")(fakeRequest.withJsonBody(appealsJson))
+          val result: Future[Result] = controller.submitAppeal(regime, idType, id, isLPP = true, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = false, appealLevel = FirstStageAppeal)(fakeRequest.withJsonBody(appealsJson))
           status(result) shouldBe OK
         }
       }
@@ -1077,7 +1078,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
             |""".stripMargin)
         withCaptureOfLoggingFrom(logger) {
           logs => {
-            val result: Result = await(controller.submitAppeal(regime, idType, id, isLPP = false, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = false, appealLevel = "01")(fakeRequest.withJsonBody(appealsJson)))
+            val result: Result = await(controller.submitAppeal(regime, idType, id, isLPP = false, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = false, appealLevel = FirstStageAppeal)(fakeRequest.withJsonBody(appealsJson)))
             result.header.status shouldBe OK
             eventually {
               verify(mockAuditService, times(1)).audit(argumentCaptorForAuditModel.capture())(any(), any(), any())
@@ -1134,7 +1135,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
             |""".stripMargin)
         withCaptureOfLoggingFrom(logger) {
           logs => {
-            val result: Result = await(controller.submitAppeal(regime, idType, id, isLPP = false, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = false, appealLevel = "01")(fakeRequest.withJsonBody(appealsJson)))
+            val result: Result = await(controller.submitAppeal(regime, idType, id, isLPP = false, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = false, appealLevel = FirstStageAppeal)(fakeRequest.withJsonBody(appealsJson)))
             result.header.status shouldBe OK
             eventually {
               verify(mockAuditService, times(1)).audit(argumentCaptorForAuditModel.capture())(any(), any(), any())
@@ -1193,7 +1194,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
             |""".stripMargin)
         withCaptureOfLoggingFrom(logger) {
           logs => {
-            val result: Result = await(controller.submitAppeal(regime, idType, id, isLPP = false, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = false, appealLevel = "01")(fakeRequest.withJsonBody(appealsJson)))
+            val result: Result = await(controller.submitAppeal(regime, idType, id, isLPP = false, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = false, appealLevel = FirstStageAppeal)(fakeRequest.withJsonBody(appealsJson)))
             result.header.status shouldBe OK
             eventually {
               verify(mockAuditService, times(1)).audit(argumentCaptorForAuditModel.capture())(any(), any(), any())
@@ -1258,7 +1259,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
         )
         withCaptureOfLoggingFrom(logger) {
           logs => {
-            val result: Result = await(controller.submitAppeal(regime, idType, id, isLPP = false, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = true, appealLevel = "01")(fakeRequest.withJsonBody(appealsJson)))
+            val result: Result = await(controller.submitAppeal(regime, idType, id, isLPP = false, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = true, appealLevel = FirstStageAppeal)(fakeRequest.withJsonBody(appealsJson)))
             result.header.status shouldBe MULTI_STATUS
             contentAsJson(Future(result)) shouldBe expectedJsonResponse
             eventually {
@@ -1321,7 +1322,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
         )
         withCaptureOfLoggingFrom(logger) {
           logs => {
-            val result: Result = await(controller.submitAppeal(regime, idType, id, isLPP = false, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = true, appealLevel = "01")(fakeRequest.withJsonBody(appealsJson)))
+            val result: Result = await(controller.submitAppeal(regime, idType, id, isLPP = false, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = true, appealLevel = FirstStageAppeal)(fakeRequest.withJsonBody(appealsJson)))
             result.header.status shouldBe MULTI_STATUS
             contentAsJson(Future(result)) shouldBe expectedJsonResponse
             eventually {
@@ -1386,7 +1387,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
         )
         withCaptureOfLoggingFrom(logger) {
           logs => {
-            val result: Result = await(controller.submitAppeal(regime, idType, id, isLPP = false, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = true, appealLevel = "01")(fakeRequest.withJsonBody(appealsJson)))
+            val result: Result = await(controller.submitAppeal(regime, idType, id, isLPP = false, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = true, appealLevel = FirstStageAppeal)(fakeRequest.withJsonBody(appealsJson)))
             result.header.status shouldBe MULTI_STATUS
             logs.map(_.getMessage) should contain (s"[RegimeAppealsController][submitAppeal] Unable to store file notification for user with enrolment: VATC~VRN~123456789 penalty 123456789 (correlation ID: $correlationId) - An unknown exception occurred when attempting to store file notifications, with error: failed") 
             contentAsJson(Future(result)) shouldBe expectedJsonResponse

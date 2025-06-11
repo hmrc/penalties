@@ -19,7 +19,7 @@ package connectors
 import config.AppConfig
 import connectors.parsers.AppealsParser.{AppealSubmissionResponse, UnexpectedFailure}
 import connectors.parsers.HIPAppealParser.HIPAppealSubmissionResponseReads
-import models.appeals.{AppealSubmission, AppealSubmissionRequest}
+import models.appeals.{AppealLevel, AppealSubmission, AppealSubmissionRequest}
 import play.api.http.Status.INTERNAL_SERVER_ERROR
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, UpstreamErrorResponse}
 import utils.Logger.logger
@@ -36,7 +36,7 @@ class HIPConnector @Inject()(httpClient: HttpClient,
   def submitAppeal(appealSubmission: AppealSubmission,
                    penaltyNumber: String,
                    correlationId: String,
-                   appealLevel: String)
+                   appealLevel: AppealLevel)
                   (implicit headerCarrier: HeaderCarrier): Future[AppealSubmissionResponse] = {
 
     val hc: HeaderCarrier = headersForHIP(correlationId)

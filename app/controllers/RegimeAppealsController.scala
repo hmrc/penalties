@@ -126,7 +126,7 @@ class RegimeAppealsController @Inject()(val appConfig: AppConfig,
     Ok(ReasonableExcuse.allExcusesToJson(appConfig))
   }
 
-  def submitAppeal(regime: Regime, idType: IdType, id: Id, isLPP: Boolean, penaltyNumber: String, correlationId: String, appealLevel: String, isMultiAppeal: Boolean): Action[AnyContent] = authAction.async {
+  def submitAppeal(regime: Regime, idType: IdType, id: Id, isLPP: Boolean, penaltyNumber: String, correlationId: String, appealLevel: AppealLevel, isMultiAppeal: Boolean): Action[AnyContent] = authAction.async {
     implicit request => {
       val agnosticEnrolmenKey = AgnosticEnrolmentKey(regime, idType, id)
       request.body.asJson.fold({
@@ -156,7 +156,7 @@ class RegimeAppealsController @Inject()(val appConfig: AppConfig,
 
   private def submitAppealToPEGA(appealSubmission: AppealSubmission, enrolmentKey: AgnosticEnrolmentKey,
                                  isLPP: Boolean, penaltyNumber: String, correlationId: String,
-                                 appealLevel: String, isMultiAppeal: Boolean)
+                                 appealLevel: AppealLevel, isMultiAppeal: Boolean)
                                 (implicit hc: HeaderCarrier, request: Request[_]): Future[AppealSubmissionResponseModel] = {
     appealService.submitAppeal(appealSubmission, enrolmentKey, isLPP, penaltyNumber, correlationId, appealLevel).flatMap {
       _.fold(

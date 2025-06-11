@@ -20,7 +20,7 @@ import config.AppConfig
 import config.featureSwitches.{CallAPI1808HIP, FeatureSwitching, SanitiseFileName}
 import connectors.{HIPConnector, RegimePEGAConnector}
 import connectors.parsers.AppealsParser
-import models.appeals.{AppealResponseModel, AppealSubmission, MultiplePenaltiesData}
+import models.appeals.{AppealLevel, AppealResponseModel, AppealSubmission, MultiplePenaltiesData}
 import models.getPenaltyDetails.GetPenaltyDetails
 import models.getPenaltyDetails.latePayment.{LPPDetails, LPPPenaltyCategoryEnum, LPPPenaltyStatusEnum}
 import models.notification._
@@ -46,7 +46,7 @@ class RegimeAppealService @Inject()(appealsConnector: RegimePEGAConnector,
                    isLPP: Boolean,
                    penaltyNumber: String,
                    correlationId: String,
-                   appealLevel: String)
+                   appealLevel: AppealLevel)
                   (implicit headerCarrier:HeaderCarrier): Future[Either[AppealsParser.ErrorResponse, AppealResponseModel]] = {
     val response: Future[AppealsParser.AppealSubmissionResponse] = if (isEnabled(CallAPI1808HIP)) {
       hipAppealsConnector.submitAppeal(appealSubmission, penaltyNumber, correlationId, appealLevel)

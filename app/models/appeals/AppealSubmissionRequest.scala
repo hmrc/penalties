@@ -21,7 +21,7 @@ import play.api.libs.json.{JsObject, JsValue, Json, Writes}
 import java.time.{LocalDateTime, ZoneOffset}
 
 case class AppealSubmissionRequest(taxRegime: String,
-                                   appealLevel: String,
+                                   appealLevel: AppealLevel,
                                    penaltyId: String,
                                    dateOfAppeal: LocalDateTime,
                                    isLPP: Boolean,
@@ -34,7 +34,7 @@ case class AppealSubmissionRequest(taxRegime: String,
 
 object AppealSubmissionRequest {
 
-  def apply(appealSubmission: AppealSubmission, penaltyId: String, appealLevel: String): AppealSubmissionRequest =
+  def apply(appealSubmission: AppealSubmission, penaltyId: String, appealLevel: AppealLevel): AppealSubmissionRequest =
     AppealSubmissionRequest(
       taxRegime = appealSubmission.taxRegime,
       appealLevel = appealLevel,

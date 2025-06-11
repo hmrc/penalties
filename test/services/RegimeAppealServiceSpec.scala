@@ -22,6 +22,7 @@ import config.featureSwitches.{CallAPI1808HIP, FeatureSwitching, SanitiseFileNam
 import connectors.parsers.AppealsParser
 import connectors.parsers.AppealsParser.UnexpectedFailure
 import connectors.{HIPConnector, RegimePEGAConnector}
+import models.appeals.AppealLevel.FirstStageAppeal
 import models.{AgnosticEnrolmentKey, Id, IdType, Regime}
 import models.appeals.{AppealResponseModel, AppealSubmission, CrimeAppealInformation, MultiplePenaltiesData}
 import models.getFinancialDetails.MainTransactionEnum
@@ -101,7 +102,7 @@ class RegimeAppealServiceSpec extends SpecBase with LogCapturing with FeatureSwi
           ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(Right(appealResponseModel)))
 
         val result: Either[AppealsParser.ErrorResponse, AppealResponseModel] = await(
-          service.submitAppeal(modelToPassToServer, enrolmentKey, isLPP = false, penaltyNumber = "123456789", correlationId = correlationId, appealLevel = "01"))
+          service.submitAppeal(modelToPassToServer, enrolmentKey, isLPP = false, penaltyNumber = "123456789", correlationId = correlationId, appealLevel = FirstStageAppeal))
         result shouldBe Right(appealResponseModel)
       }
 
@@ -111,7 +112,7 @@ class RegimeAppealServiceSpec extends SpecBase with LogCapturing with FeatureSwi
           Left(UnexpectedFailure(BAD_GATEWAY, s"Unexpected response, status $BAD_GATEWAY returned"))))
 
         val result: Either[AppealsParser.ErrorResponse, AppealResponseModel] = await(service.submitAppeal(
-          modelToPassToServer, enrolmentKey, isLPP = false, penaltyNumber = "123456789", correlationId = correlationId, appealLevel = "01"))
+          modelToPassToServer, enrolmentKey, isLPP = false, penaltyNumber = "123456789", correlationId = correlationId, appealLevel = FirstStageAppeal))
         result shouldBe Left(UnexpectedFailure(BAD_GATEWAY, s"Unexpected response, status $BAD_GATEWAY returned"))
       }
 
@@ -120,7 +121,7 @@ class RegimeAppealServiceSpec extends SpecBase with LogCapturing with FeatureSwi
           ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.failed(new Exception("Something went wrong")))
 
         val result: Exception = intercept[Exception](await(service.submitAppeal(
-          modelToPassToServer, enrolmentKey, isLPP = false, penaltyNumber = "123456789", correlationId = correlationId, appealLevel = "01")))
+          modelToPassToServer, enrolmentKey, isLPP = false, penaltyNumber = "123456789", correlationId = correlationId, appealLevel = FirstStageAppeal)))
         result.getMessage shouldBe "Something went wrong"
       }
     }
@@ -131,7 +132,7 @@ class RegimeAppealServiceSpec extends SpecBase with LogCapturing with FeatureSwi
           .thenReturn(Future.successful(Right(appealResponseModel)))
 
         val result: Either[AppealsParser.ErrorResponse, AppealResponseModel] = await(
-          service.submitAppeal(modelToPassToServer, enrolmentKey, isLPP = false, penaltyNumber = "123456789", correlationId = correlationId, appealLevel = "01"))
+          service.submitAppeal(modelToPassToServer, enrolmentKey, isLPP = false, penaltyNumber = "123456789", correlationId = correlationId, appealLevel = FirstStageAppeal))
         result shouldBe Right(appealResponseModel)
       }
 
@@ -140,7 +141,7 @@ class RegimeAppealServiceSpec extends SpecBase with LogCapturing with FeatureSwi
           .thenReturn(Future.successful(Left(UnexpectedFailure(BAD_GATEWAY, s"Unexpected response, status $BAD_GATEWAY returned"))))
 
         val result: Either[AppealsParser.ErrorResponse, AppealResponseModel] = await(service.submitAppeal(
-          modelToPassToServer, enrolmentKey, isLPP = false, penaltyNumber = "123456789", correlationId = correlationId, appealLevel = "01"))
+          modelToPassToServer, enrolmentKey, isLPP = false, penaltyNumber = "123456789", correlationId = correlationId, appealLevel = FirstStageAppeal))
         result shouldBe Left(UnexpectedFailure(BAD_GATEWAY, s"Unexpected response, status $BAD_GATEWAY returned"))
       }
 
@@ -149,7 +150,7 @@ class RegimeAppealServiceSpec extends SpecBase with LogCapturing with FeatureSwi
           .thenReturn(Future.failed(new Exception("Something went wrong")))
 
         val result: Exception = intercept[Exception](await(service.submitAppeal(
-          modelToPassToServer, enrolmentKey, isLPP = false, penaltyNumber = "123456789", correlationId = correlationId, appealLevel = "01")))
+          modelToPassToServer, enrolmentKey, isLPP = false, penaltyNumber = "123456789", correlationId = correlationId, appealLevel = FirstStageAppeal)))
         result.getMessage shouldBe "Something went wrong"
       }
     }
