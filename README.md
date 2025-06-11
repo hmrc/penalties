@@ -129,13 +129,13 @@ Accepted Regime and IdTypes:
 
 The following query parameters should be specified:
 
-| Parameter       | Type     | Mandatory | Notes                                  |
-|-----------------|----------|-----------|----------------------------------------|
-| `isLPP`         | Boolean  | Yes       |                                        |
-| `penaltyNumber` | String   | Yes       |                                        |
-| `correlationId` | String   | Yes       |                                        |
-| `appealLevel`   | String   | Yes       | `01` or `02` are accepted by upstream  |
-| `isMultiAppeal` | Boolean  | No        | default = `false`                      |
+| Parameter       | Type    | Mandatory | Notes                                  |
+|-----------------|---------|-----------|----------------------------------------|
+| `isLPP`         | Boolean | Yes       |                                        |
+| `penaltyNumber` | String  | Yes       |                                        |
+| `correlationId` | String  | Yes       |                                        |
+| `appealLevel`   | Enum    | Yes       | `01` or `02` are accepted by upstream  |
+| `isMultiAppeal` | Boolean | No        | default = `false`                      |
 
 URL format - `/penalties/{regime}appeals/submit-appeal/{idType}/{id}?{isLPP}=[boolValue]&{penaltyNumber}=[penaltyId]&{correlationId}=[value]&{appealLevel}=[appealStage]&{isMultiAppeal}=[boolValue]`
 

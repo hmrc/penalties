@@ -15,7 +15,6 @@ lazy val microservice = Project(appName, file("."))
     libraryDependencies ++= AppDependencies.compile ++ AppDependencies.test)
   .configs(IntegrationTest)
   .settings(integrationTestSettings(): _*)
-  .settings(resolvers += Resolver.jcenterRepo)
   .settings(
     ScoverageKeys.coverageExcludedPackages := "controllers.testOnly.*",
     ScoverageKeys.coverageExcludedFiles := "<empty>;Reverse.*;..*components.*;" +
@@ -24,7 +23,7 @@ lazy val microservice = Project(appName, file("."))
     ScoverageKeys.coverageFailOnMinimum    := false,
     ScoverageKeys.coverageHighlighting     := true
   )
-  .settings(RoutesKeys.routesImport ++= Seq("models.appeals.AppealLevel", "models.appeals.AppealLevel._"))
+  .settings(RoutesKeys.routesImport ++= Seq("models.appeals.AppealLevel"))
 
 scalacOptions += "-Wconf:cat=unused-imports&src=routes/.*:s"
 scalacOptions += "-Wconf:cat=unused&src=routes/.*:s"
