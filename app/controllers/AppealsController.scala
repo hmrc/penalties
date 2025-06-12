@@ -124,7 +124,7 @@ class AppealsController @Inject()(val appConfig: AppConfig,
   }
 
   def getReasonableExcuses: Action[AnyContent] = Action {
-    Ok(ReasonableExcuse.allExcusesToJson(appConfig, Regime("VATC")))
+    Ok(ReasonableExcuse.allExcusesToJson(appConfig, Regime("VATC"))) // The value is hardcoded to support the legacy endpoint /appeals-data/reasonable-excuses
   }
 
   def submitAppeal(enrolmentKey: String, isLPP: Boolean, penaltyNumber: String, correlationId: String, isMultiAppeal: Boolean): Action[AnyContent] = Action.async {
