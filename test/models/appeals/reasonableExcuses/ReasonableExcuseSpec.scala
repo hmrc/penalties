@@ -53,43 +53,14 @@ class ReasonableExcuseSpec extends SpecBase {
   }
 
   "allExcusesToJson" should {
-    "return the JSON equivalent of all active excuses without Regime" in {
+    "return the JSON equivalent of an empty list with an invalid regime" in {
       val jsonExpectedToReturn: JsValue = Json.parse(
         """
           |{
-          |  "excuses": [
-          |    {
-          |      "type": "bereavement",
-          |      "descriptionKey": "reasonableExcuses.bereavementReason"
-          |    },
-          |    {
-          |      "type": "crime",
-          |      "descriptionKey": "reasonableExcuses.crimeReason"
-          |    },
-          |    {
-          |      "type": "fireOrFlood",
-          |      "descriptionKey": "reasonableExcuses.fireOrFloodReason"
-          |    },
-          |    {
-          |      "type": "health",
-          |      "descriptionKey": "reasonableExcuses.healthReason"
-          |    },
-          |    {
-          |      "type": "lossOfStaff",
-          |      "descriptionKey": "reasonableExcuses.lossOfStaffReason"
-          |    },
-          |    {
-          |      "type": "technicalIssues",
-          |      "descriptionKey": "reasonableExcuses.technicalIssuesReason"
-          |    },
-          |    {
-          |      "type": "other",
-          |      "descriptionKey": "reasonableExcuses.otherReason"
-          |    }
-          |  ]
+          |  "excuses": []
           |}
           |""".stripMargin)
-        val result = ReasonableExcuse.allExcusesToJson(appConfig)
+        val result = ReasonableExcuse.allExcusesToJson(appConfig, Regime("invalid"))
         result shouldBe jsonExpectedToReturn
     }
 
@@ -129,7 +100,7 @@ class ReasonableExcuseSpec extends SpecBase {
           |  ]
           |}
           |""".stripMargin)
-      val result = ReasonableExcuse.allExcusesToJson(appConfig, Some(Regime("VATC")))
+      val result = ReasonableExcuse.allExcusesToJson(appConfig, Regime("VATC"))
       result shouldBe jsonExpectedToReturn
     }
 
@@ -165,7 +136,7 @@ class ReasonableExcuseSpec extends SpecBase {
           |  ]
           |}
           |""".stripMargin)
-      val result = ReasonableExcuse.allExcusesToJson(appConfig, Some(Regime("ITSA")))
+      val result = ReasonableExcuse.allExcusesToJson(appConfig, Regime("ITSA"))
       result shouldBe jsonExpectedToReturn
     }
   }

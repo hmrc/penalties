@@ -21,6 +21,7 @@ import config.featureSwitches.FeatureSwitching
 import connectors.FileNotificationOrchestratorConnector
 import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser
 import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser.GetPenaltyDetailsSuccessResponse
+import models.Regime
 import models.appeals.AppealTypeEnum._
 import models.appeals._
 import models.appeals.reasonableExcuses.ReasonableExcuse
@@ -123,7 +124,7 @@ class AppealsController @Inject()(val appConfig: AppConfig,
   }
 
   def getReasonableExcuses: Action[AnyContent] = Action {
-    Ok(ReasonableExcuse.allExcusesToJson(appConfig))
+    Ok(ReasonableExcuse.allExcusesToJson(appConfig, Regime("VATC")))
   }
 
   def submitAppeal(enrolmentKey: String, isLPP: Boolean, penaltyNumber: String, correlationId: String, isMultiAppeal: Boolean): Action[AnyContent] = Action.async {

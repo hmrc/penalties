@@ -61,11 +61,11 @@ object ReasonableExcuse {
     override val descriptionMessageKey: String = "reasonableExcuses.otherReason"
   }
 
-  def allExcusesToJson(appConfig: AppConfig, regime: Option[Regime] = None): JsValue = {
+  def allExcusesToJson(appConfig: AppConfig, regime: Regime): JsValue = {
     val reasonableExcuses: Seq[ReasonableExcuse] = regime match {
-      case Some(Regime("VATC")) => allReasonableExcusesForVATC
-      case Some(Regime("ITSA")) => allReasonableExcusesForITSA
-      case _ => allReasonableExcusesForVATC
+      case Regime("VATC") => allReasonableExcusesForVATC
+      case Regime("ITSA") => allReasonableExcusesForITSA
+      case _ => Seq.empty[ReasonableExcuse]
     }
 
     val filteredActiveReasonableExcuses = reasonableExcuses.filter(_.isEnabled(appConfig))

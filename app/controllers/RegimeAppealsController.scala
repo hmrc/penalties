@@ -123,7 +123,7 @@ class RegimeAppealsController @Inject()(val appConfig: AppConfig,
   }
 
   def getReasonableExcuses(regime: Regime): Action[AnyContent] = Action {
-    Ok(ReasonableExcuse.allExcusesToJson(appConfig, Some(regime)))
+    Ok(ReasonableExcuse.allExcusesToJson(appConfig, regime))
   }
 
   def submitAppeal(regime: Regime, idType: IdType, id: Id, isLPP: Boolean, penaltyNumber: String, correlationId: String, isMultiAppeal: Boolean): Action[AnyContent] = authAction.async {
