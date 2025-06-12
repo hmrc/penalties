@@ -17,12 +17,13 @@
 package connectors
 
 import config.featureSwitches.{CallPEGA, FeatureSwitching}
-
+import models.appeals.AppealLevel.FirstStageAppeal
 import models.appeals.{AppealSubmission, CrimeAppealInformation}
 import play.api.http.Status
 import play.api.test.Helpers._
-import utils.{RegimeAppealWiremock, IntegrationSpecCommonBase}
-import models.{AgnosticEnrolmentKey, Regime, IdType, Id}
+import utils.{IntegrationSpecCommonBase, RegimeAppealWiremock}
+import models.{AgnosticEnrolmentKey, Id, IdType, Regime}
+
 import java.time.LocalDateTime
 import scala.concurrent.ExecutionContext
 
@@ -44,6 +45,7 @@ class RegimePEGAConnectorISpec extends IntegrationSpecCommonBase with RegimeAppe
       mockResponseForAppealSubmissionPEGA(Status.OK, "1234567890")
       val modelToSend: AppealSubmission = AppealSubmission(
         taxRegime = "VAT",
+        appealLevel = FirstStageAppeal,
         customerReferenceNo = "123456789",
         dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
         isLPP = false,
@@ -70,6 +72,7 @@ class RegimePEGAConnectorISpec extends IntegrationSpecCommonBase with RegimeAppe
       mockResponseForAppealSubmissionStub(Status.OK, aKey, penaltyNumber = "123456789")
       val modelToSend: AppealSubmission = AppealSubmission(
         taxRegime = "VAT",
+        appealLevel = FirstStageAppeal,
         customerReferenceNo = "123456789",
         dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
         isLPP = false,
@@ -96,6 +99,7 @@ class RegimePEGAConnectorISpec extends IntegrationSpecCommonBase with RegimeAppe
       mockResponseForAppealSubmissionStub(Status.OK, aKey, isLPP = true, penaltyNumber = "123456789")
       val modelToSend: AppealSubmission = AppealSubmission  (
         taxRegime = "VAT",
+        appealLevel = FirstStageAppeal,
         customerReferenceNo = "123456789",
         dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
         isLPP = true,

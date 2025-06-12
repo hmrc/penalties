@@ -17,25 +17,27 @@
 package models.appeals
 
 import play.api.libs.json.{JsObject, JsValue, Json, Writes}
+
 import java.time.{LocalDateTime, ZoneOffset}
 
-case class AppealSubmissionRequest (
-  taxRegime: String,
-  penaltyId: String,
-  dateOfAppeal: LocalDateTime,
-  isLPP: Boolean,
-  appealSubmittedBy: String,
-  appealInformation: AppealInformation,
-  agentDetails: Option[AgentDetails]
-){
+case class AppealSubmissionRequest(taxRegime: String,
+                                   appealLevel: AppealLevel,
+                                   penaltyId: String,
+                                   dateOfAppeal: LocalDateTime,
+                                   isLPP: Boolean,
+                                   appealSubmittedBy: String,
+                                   appealInformation: AppealInformation,
+                                   agentDetails: Option[AgentDetails]) {
+
   val sourceSystem: String = "MDTP"
-  val appealLevel: String = "01"
 }
 
 object AppealSubmissionRequest {
-  def apply(appealSubmission: AppealSubmission, penaltyId:String): AppealSubmissionRequest = {
+
+  def apply(appealSubmission: AppealSubmission, penaltyId: String): AppealSubmissionRequest =
     AppealSubmissionRequest(
       taxRegime = appealSubmission.taxRegime,
+      appealLevel = appealSubmission.appealLevel,
       penaltyId = penaltyId,
       dateOfAppeal = appealSubmission.dateOfAppeal,
       isLPP = appealSubmission.isLPP,
@@ -43,7 +45,6 @@ object AppealSubmissionRequest {
       appealInformation = appealSubmission.appealInformation,
       agentDetails = appealSubmission.agentDetails
     )
-  }
 
   def parseAppealInformationToJson(payload: AppealInformation): JsValue = {
     val value = payload.reasonableExcuse match {
@@ -62,25 +63,27 @@ object AppealSubmissionRequest {
       case "other" =>
         Json.toJson(payload.asInstanceOf[OtherAppealInformation])(OtherAppealInformation.otherAppealInformationWrites)
     }
-    value.asOpt[JsObject] match { //TODO: remove once the HIP migration is done
+    value.asOpt[JsObject] match { // TODO: remove once the HIP migration is done
       case Some(appealInformation) => appealInformation - "honestyDeclaration"
     }
   }
 
   implicit val apiWrites: Writes[AppealSubmissionRequest] = (appealSubmission: AppealSubmissionRequest) => {
     val dateOfAppealZoned: String = appealSubmission.dateOfAppeal.toInstant(ZoneOffset.UTC).toString
-    Json.obj(
-      "sourceSystem" -> appealSubmission.sourceSystem,
-      "penaltyId" -> appealSubmission.penaltyId,
-      "appealLevel" -> appealSubmission.appealLevel,
-      "sourceSystem" -> appealSubmission.sourceSystem,
-      "taxRegime" -> appealSubmission.taxRegime,
-      "dateOfAppeal" -> dateOfAppealZoned,
-      "isLPP" -> appealSubmission.isLPP,
-      "appealSubmittedBy" -> appealSubmission.appealSubmittedBy,
-      "appealInformation" -> parseAppealInformationToJson(appealSubmission.appealInformation)
-    ).deepMerge(
-      appealSubmission.agentDetails.fold(Json.obj())(agentDetails => Json.obj("agentDetails" -> agentDetails))
-    )
+    Json
+      .obj(
+        "sourceSystem"      -> appealSubmission.sourceSystem,
+        "penaltyId"         -> appealSubmission.penaltyId,
+        "appealLevel"       -> appealSubmission.appealLevel,
+        "sourceSystem"      -> appealSubmission.sourceSystem,
+        "taxRegime"         -> appealSubmission.taxRegime,
+        "dateOfAppeal"      -> dateOfAppealZoned,
+        "isLPP"             -> appealSubmission.isLPP,
+        "appealSubmittedBy" -> appealSubmission.appealSubmittedBy,
+        "appealInformation" -> parseAppealInformationToJson(appealSubmission.appealInformation)
+      )
+      .deepMerge(
+        appealSubmission.agentDetails.fold(Json.obj())(agentDetails => Json.obj("agentDetails" -> agentDetails))
+      )
   }
 }

@@ -17,15 +17,13 @@
 package controllers
 
 import com.github.tomakehurst.wiremock.client.WireMock.{postRequestedFor, urlEqualTo}
-import config.featureSwitches.{FeatureSwitch, FeatureSwitching}
-
-
+import config.featureSwitches.FeatureSwitching
+import models.{Id, IdType, Regime}
 import org.scalatest.prop.TableDrivenPropertyChecks
 import play.api.http.Status
 import play.api.libs.json.{JsValue, Json}
 import play.api.test.Helpers._
 import utils.{AuthMock, IntegrationSpecCommonBase, RegimeETMPWiremock}
-import models.{AgnosticEnrolmentKey, Id, IdType, Regime}
 
 import java.time.LocalDate
 import scala.jdk.CollectionConverters._

@@ -21,7 +21,11 @@ import config.AppConfig
 import config.featureSwitches.FeatureSwitching
 import connectors.FileNotificationOrchestratorConnector
 import connectors.parsers.AppealsParser.UnexpectedFailure
-import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser.{GetPenaltyDetailsFailureResponse, GetPenaltyDetailsMalformed, GetPenaltyDetailsSuccessResponse}
+import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser.{
+  GetPenaltyDetailsFailureResponse,
+  GetPenaltyDetailsMalformed,
+  GetPenaltyDetailsSuccessResponse
+}
 import controllers.auth.AuthAction
 import models.appeals.AppealTypeEnum.{Additional, Late_Payment, Late_Submission}
 import models.appeals.{AppealData, MultiplePenaltiesData}
@@ -31,6 +35,7 @@ import models.getPenaltyDetails.GetPenaltyDetails
 import models.getPenaltyDetails.latePayment._
 import models.getPenaltyDetails.lateSubmission._
 import models.notification._
+import models.{AgnosticEnrolmentKey, Id, IdType, Regime}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
 import org.mockito.{ArgumentCaptor, ArgumentMatchers}
@@ -50,7 +55,6 @@ import utils.PagerDutyHelper.PagerDutyKeys
 import java.time.{LocalDate, LocalDateTime}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-import models.{AgnosticEnrolmentKey, Id, IdType, Regime}
 
 class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with LogCapturing {
   val mockAppealsService: RegimeAppealService = mock(classOf[RegimeAppealService])
@@ -800,6 +804,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
             |{
             |    "sourceSystem": "MDTP",
             |    "taxRegime": "VAT",
+            |    "appealLevel": "01",
             |    "customerReferenceNo": "123456789",
             |    "dateOfAppeal": "2020-01-01T00:00:00",
             |    "isLPP": true,
@@ -828,6 +833,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
             |{
             |    "sourceSystem": "MDTP",
             |    "taxRegime": "VAT",
+            |    "appealLevel": "01",
             |    "customerReferenceNo": "123456789",
             |    "dateOfAppeal": "2020-01-01T00:00:00",
             |    "isLPP": true,
@@ -858,6 +864,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
             |{
             |    "sourceSystem": "MDTP",
             |    "taxRegime": "VAT",
+            |    "appealLevel": "01",
             |    "customerReferenceNo": "123456789",
             |    "dateOfAppeal": "2020-01-01T00:00:00",
             |    "isLPP": true,
@@ -882,6 +889,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
             |{
             |    "sourceSystem": "MDTP",
             |    "taxRegime": "VAT",
+            |    "appealLevel": "01",
             |    "customerReferenceNo": "123456789",
             |    "dateOfAppeal": "2020-01-01T00:00:00",
             |    "isLPP": true,
@@ -906,6 +914,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
             |{
             |    "sourceSystem": "MDTP",
             |    "taxRegime": "VAT",
+            |    "appealLevel": "01",
             |    "customerReferenceNo": "123456789",
             |    "dateOfAppeal": "2020-01-01T00:00:00",
             |    "isLPP": true,
@@ -932,6 +941,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
               |{
               |    "sourceSystem": "MDTP",
               |    "taxRegime": "VAT",
+            |    "appealLevel": "01",
               |    "customerReferenceNo": "123456789",
               |    "dateOfAppeal": "2020-01-01T00:00:00",
               |    "isLPP": true,
@@ -958,6 +968,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
               |{
               |    "sourceSystem": "MDTP",
               |    "taxRegime": "VAT",
+            |    "appealLevel": "01",
               |    "customerReferenceNo": "123456789",
               |    "dateOfAppeal": "2020-01-01T00:00:00",
               |    "isLPP": true,
@@ -984,6 +995,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
               |{
               |    "sourceSystem": "MDTP",
               |    "taxRegime": "VAT",
+            |    "appealLevel": "01",
               |    "customerReferenceNo": "123456789",
               |    "dateOfAppeal": "2020-01-01T00:00:00",
               |    "isLPP": true,
@@ -1011,6 +1023,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
               |{
               |    "sourceSystem": "MDTP",
               |    "taxRegime": "VAT",
+            |    "appealLevel": "01",
               |    "customerReferenceNo": "123456789",
               |    "dateOfAppeal": "2020-01-01T00:00:00",
               |    "isLPP": true,
@@ -1043,6 +1056,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
             |{
             |    "sourceSystem": "MDTP",
             |    "taxRegime": "VAT",
+            |    "appealLevel": "01",
             |    "customerReferenceNo": "123456789",
             |    "dateOfAppeal": "2020-01-01T00:00:00",
             |    "isLPP": true,
@@ -1100,6 +1114,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
             |{
             |    "sourceSystem": "MDTP",
             |    "taxRegime": "VAT",
+            |    "appealLevel": "01",
             |    "customerReferenceNo": "123456789",
             |    "dateOfAppeal": "2020-01-01T00:00:00",
             |    "isLPP": true,
@@ -1159,6 +1174,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
             |{
             |    "sourceSystem": "MDTP",
             |    "taxRegime": "VAT",
+            |    "appealLevel": "01",
             |    "customerReferenceNo": "123456789",
             |    "dateOfAppeal": "2020-01-01T00:00:00",
             |    "isLPP": true,
@@ -1219,6 +1235,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
             |{
             |    "sourceSystem": "MDTP",
             |    "taxRegime": "VAT",
+            |    "appealLevel": "01",
             |    "customerReferenceNo": "123456789",
             |    "dateOfAppeal": "2020-01-01T00:00:00",
             |    "isLPP": true,
@@ -1282,6 +1299,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
             |{
             |    "sourceSystem": "MDTP",
             |    "taxRegime": "VAT",
+            |    "appealLevel": "01",
             |    "customerReferenceNo": "123456789",
             |    "dateOfAppeal": "2020-01-01T00:00:00",
             |    "isLPP": true,
@@ -1347,6 +1365,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
             |{
             |    "sourceSystem": "MDTP",
             |    "taxRegime": "VAT",
+            |    "appealLevel": "01",
             |    "customerReferenceNo": "123456789",
             |    "dateOfAppeal": "2020-01-01T00:00:00",
             |    "isLPP": true,

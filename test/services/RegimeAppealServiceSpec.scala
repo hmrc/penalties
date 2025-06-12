@@ -22,14 +22,15 @@ import config.featureSwitches.{CallAPI1808HIP, FeatureSwitching, SanitiseFileNam
 import connectors.parsers.AppealsParser
 import connectors.parsers.AppealsParser.UnexpectedFailure
 import connectors.{HIPConnector, RegimePEGAConnector}
-import models.{AgnosticEnrolmentKey, Id, IdType, Regime}
+import models.appeals.AppealLevel.FirstStageAppeal
 import models.appeals.{AppealResponseModel, AppealSubmission, CrimeAppealInformation, MultiplePenaltiesData}
 import models.getFinancialDetails.MainTransactionEnum
 import models.getPenaltyDetails.GetPenaltyDetails
 import models.getPenaltyDetails.appealInfo.{AppealInformationType, AppealLevelEnum, AppealStatusEnum}
-import models.getPenaltyDetails.latePayment.{LPPDetails, LPPDetailsMetadata, LPPPenaltyCategoryEnum, LPPPenaltyStatusEnum, LatePaymentPenalty}
-import models.notification.{SDESAudit, SDESChecksum, SDESNotification, SDESNotificationFile, SDESProperties}
+import models.getPenaltyDetails.latePayment._
+import models.notification._
 import models.upload.{UploadDetails, UploadJourney, UploadStatusEnum}
+import models.{AgnosticEnrolmentKey, Id, IdType, Regime}
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito.{mock, reset, when}
 import play.api.Configuration
@@ -76,6 +77,7 @@ class RegimeAppealServiceSpec extends SpecBase with LogCapturing with FeatureSwi
     val enrolmentKey: AgnosticEnrolmentKey = AgnosticEnrolmentKey(Regime("HMRC-MTD-VAT"), IdType("VRN"), Id("123456789"))
     val modelToPassToServer: AppealSubmission = AppealSubmission(
       taxRegime = "VAT",
+      appealLevel = FirstStageAppeal,
       customerReferenceNo = "123456789",
       dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
       isLPP = false,

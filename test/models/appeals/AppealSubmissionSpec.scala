@@ -16,6 +16,7 @@
 
 package models.appeals
 
+import models.appeals.AppealLevel.FirstStageAppeal
 import models.upload.{UploadDetails, UploadJourney, UploadStatusEnum}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
@@ -29,6 +30,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
        |{
        |   "sourceSystem": "MDTP",
        |   "taxRegime": "VAT",
+       |   "appealLevel": "01",
        |   "customerReferenceNo": "123456789",
        |   "dateOfAppeal": ${if (withZone) "\"2020-01-01T00:00:00Z\"" else "\"2020-01-01T00:00:00\""},
        |   "isLPP": true,
@@ -51,6 +53,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
        |{
        |    "sourceSystem": "MDTP",
        |    "taxRegime": "VAT",
+       |   "appealLevel": "01",
        |    "customerReferenceNo": "123456789",
        |    "dateOfAppeal": ${if (withZone) "\"2020-01-01T00:00:00Z\"" else "\"2020-01-01T00:00:00\""},
        |    "isLPP": true,
@@ -77,6 +80,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
        |{
        |    "sourceSystem": "MDTP",
        |    "taxRegime": "VAT",
+       |   "appealLevel": "01",
        |    "customerReferenceNo": "123456789",
        |    "dateOfAppeal": ${if (withZone) "\"2020-01-01T00:00:00Z\"" else "\"2020-01-01T00:00:00\""},
        |    "isLPP": true,
@@ -102,6 +106,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
        |{
        |    "sourceSystem": "MDTP",
        |    "taxRegime": "VAT",
+       |   "appealLevel": "01",
        |    "customerReferenceNo": "123456789",
        |    "dateOfAppeal": ${if (withZone) "\"2020-01-01T00:00:00Z\"" else "\"2020-01-01T00:00:00\""},
        |    "isLPP": true,
@@ -155,6 +160,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
        |{
        |    "sourceSystem": "MDTP",
        |    "taxRegime": "VAT",
+       |   "appealLevel": "01",
        |    "customerReferenceNo": "123456789",
        |    "dateOfAppeal": ${if (withZone) "\"2020-01-01T00:00:00Z\"" else "\"2020-01-01T00:00:00\""},
        |    "isLPP": true,
@@ -180,6 +186,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
        |{
        |    "sourceSystem": "MDTP",
        |    "taxRegime": "VAT",
+       |   "appealLevel": "01",
        |    "customerReferenceNo": "123456789",
        |    "dateOfAppeal": ${if (withZone) "\"2020-01-01T00:00:00Z\"" else "\"2020-01-01T00:00:00\""},
        |    "isLPP": true,
@@ -206,6 +213,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
        |{
        |    "sourceSystem": "MDTP",
        |    "taxRegime": "VAT",
+       |   "appealLevel": "01",
        |    "customerReferenceNo": "123456789",
        |    "dateOfAppeal": ${if (withZone) "\"2020-01-01T00:00:00Z\"" else "\"2020-01-01T00:00:00\""},
        |    "isLPP": true,
@@ -232,6 +240,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
        |{
        |    "sourceSystem": "MDTP",
        |    "taxRegime": "VAT",
+       |   "appealLevel": "01",
        |    "customerReferenceNo": "123456789",
        |    "dateOfAppeal": ${if (withZone) "\"2020-01-01T00:00:00Z\"" else "\"2020-01-01T00:00:00\""},
        |    "isLPP": true,
@@ -297,6 +306,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
        |{
        |    "sourceSystem": "MDTP",
        |    "taxRegime": "VAT",
+       |   "appealLevel": "01",
        |    "customerReferenceNo": "123456789",
        |    "dateOfAppeal": ${if (withZone) "\"2020-01-01T00:00:00Z\"" else "\"2020-01-01T00:00:00\""},
        |    "isLPP": true,
@@ -326,6 +336,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
        |{
        |    "sourceSystem": "MDTP",
        |    "taxRegime": "VAT",
+       |   "appealLevel": "01",
        |    "customerReferenceNo": "123456789",
        |    "dateOfAppeal": ${if (withZone) "\"2020-01-01T00:00:00Z\"" else "\"2020-01-01T00:00:00\""},
        |    "isLPP": true,
@@ -347,11 +358,38 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
        |}
        |""".stripMargin)
 
+  val otherAppealJsonWithNoAppealLevel: JsValue = Json.parse(
+    s"""
+       |{
+       |    "sourceSystem": "MDTP",
+       |    "taxRegime": "VAT",
+       |    "customerReferenceNo": "123456789",
+       |    "dateOfAppeal": "2020-01-01T00:00:00Z",
+       |    "isLPP": true,
+       |    "appealSubmittedBy": "agent",
+       |    "agentDetails": {
+       |       "agentReferenceNo": "AGENT1",
+       |       "isExcuseRelatedToAgent": true
+       |    },
+       |    "appealInformation": {
+       |						 "reasonableExcuse": "other",
+       |            "honestyDeclaration": true,
+       |            "startDateOfEvent": "2020-01-01T00:00:00Z",
+       |            "statement": "This is a reason.",
+       |            "lateAppeal": true,
+       |            "lateAppealReason": "Reason",
+       |            "isClientResponsibleForSubmission": false,
+       |            "isClientResponsibleForLateSubmission": true
+       |		}
+       |}
+       |""".stripMargin)
+
   val otherAppealJsonWithKeyMissing: JsValue = Json.parse(
     """
       |{
       |    "sourceSystem": "MDTP",
       |    "taxRegime": "VAT",
+       |   "appealLevel": "01",
       |    "customerReferenceNo": "123456789",
       |    "dateOfAppeal": "2020-01-01T00:00:00",
       |    "isLPP": true,
@@ -384,6 +422,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       |{
       |    "sourceSystem": "MDTP",
       |    "taxRegime": "VAT",
+       |   "appealLevel": "01",
       |    "customerReferenceNo": "123456789",
       |    "dateOfAppeal": "2020-01-01T00:00:00",
       |    "isLPP": true,
@@ -951,10 +990,40 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
   }
 
   "apiReads" should {
+
+    "add default 'appealLevel = FirstStageAppeal('01')' to the model if not present from downstream" in {
+      val expectedResult = AppealSubmission(
+        taxRegime = "VAT",
+        appealLevel = FirstStageAppeal,
+        customerReferenceNo = "123456789",
+        dateOfAppeal = LocalDateTime.parse("2020-01-01T00:00:00"),
+        isLPP = true,
+        appealSubmittedBy = "agent",
+        agentDetails = Some(AgentDetails(agentReferenceNo = "AGENT1", isExcuseRelatedToAgent = true)),
+        appealInformation = OtherAppealInformation(
+          startDateOfEvent = "2020-01-01T00:00:00Z",
+          statement = Some("This is a reason."),
+          supportingEvidence = None,
+          lateAppeal = true,
+          lateAppealReason = Some("Reason"),
+          isClientResponsibleForSubmission = Some(false),
+          isClientResponsibleForLateSubmission = Some(true),
+          honestyDeclaration = true,
+          reasonableExcuse = "other",
+          uploadedFiles = None
+        )
+      )
+
+      val result = Json.fromJson(otherAppealJsonWithNoAppealLevel)(AppealSubmission.apiReads)
+      result.isSuccess shouldBe true
+      result.get shouldBe expectedResult
+    }
+
     "for bereavement" must {
       "parse the JSON into a model when all keys are present" in {
         val expectedResult = AppealSubmission(
           taxRegime = "VAT",
+          appealLevel = FirstStageAppeal,
           customerReferenceNo = "123456789",
           dateOfAppeal = LocalDateTime.parse("2020-01-01T00:00:00"),
           isLPP = true,
@@ -982,10 +1051,12 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
         result.isSuccess shouldBe false
       }
     }
+
     "for crime" must {
       "parse the JSON into a model when all keys are present" in {
         val expectedResult = AppealSubmission(
           taxRegime = "VAT",
+          appealLevel = FirstStageAppeal,
           customerReferenceNo = "123456789",
           dateOfAppeal = LocalDateTime.parse("2020-01-01T00:00:00"),
           isLPP = true,
@@ -1019,6 +1090,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       "parse the JSON into a model when all keys are present" in {
         val expectedResult = AppealSubmission(
           taxRegime = "VAT",
+          appealLevel = FirstStageAppeal,
           customerReferenceNo = "123456789",
           dateOfAppeal = LocalDateTime.parse("2020-01-01T00:00:00"),
           isLPP = true,
@@ -1051,6 +1123,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       "parse the JSON into a model when all keys are present" in {
         val expectedResult = AppealSubmission(
           taxRegime = "VAT",
+          appealLevel = FirstStageAppeal,
           customerReferenceNo = "123456789",
           dateOfAppeal = LocalDateTime.parse("2020-01-01T00:00:00"),
           isLPP = true,
@@ -1083,6 +1156,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       "parse the JSON into a model when all keys are present" in {
         val expectedResult = AppealSubmission(
           taxRegime = "VAT",
+          appealLevel = FirstStageAppeal,
           customerReferenceNo = "123456789",
           dateOfAppeal = LocalDateTime.parse("2020-01-01T00:00:00"),
           isLPP = true,
@@ -1116,6 +1190,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       "read the JSON when there was no hospital stay" in {
         val expectedResult = AppealSubmission(
           taxRegime = "VAT",
+          appealLevel = FirstStageAppeal,
           customerReferenceNo = "123456789",
           dateOfAppeal = LocalDateTime.parse("2020-01-01T00:00:00"),
           isLPP = true,
@@ -1143,6 +1218,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       "read the JSON when there is an ongoing hospital stay" in {
         val expectedResult = AppealSubmission(
           taxRegime = "VAT",
+          appealLevel = FirstStageAppeal,
           customerReferenceNo = "123456789",
           dateOfAppeal = LocalDateTime.parse("2020-01-01T00:00:00"),
           isLPP = true,
@@ -1170,6 +1246,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       "read the JSON when there has been a hospital stay" in {
         val expectedResult = AppealSubmission(
           taxRegime = "VAT",
+          appealLevel = FirstStageAppeal,
           customerReferenceNo = "123456789",
           dateOfAppeal = LocalDateTime.parse("2020-01-01T00:00:00"),
           isLPP = true,
@@ -1199,6 +1276,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       "parse the JSON into a model when all keys are present" in {
         val expectedResult = AppealSubmission(
           taxRegime = "VAT",
+          appealLevel = FirstStageAppeal,
           customerReferenceNo = "123456789",
           dateOfAppeal = LocalDateTime.parse("2020-01-01T00:00:00"),
           isLPP = true,
@@ -1226,6 +1304,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       "parse the JSON into a model when all keys are present - no evidence" in {
         val expectedResult = AppealSubmission(
           taxRegime = "VAT",
+          appealLevel = FirstStageAppeal,
           customerReferenceNo = "123456789",
           dateOfAppeal = LocalDateTime.parse("2020-01-01T00:00:00"),
           isLPP = true,
@@ -1262,6 +1341,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       "write the model to JSON" in {
         val modelToCovertToJson: AppealSubmission = AppealSubmission(
           taxRegime = "VAT",
+          appealLevel = FirstStageAppeal,
           customerReferenceNo = "123456789",
           dateOfAppeal = LocalDateTime.parse("2020-01-01T00:00:00"),
           isLPP = false,
@@ -1282,6 +1362,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           "appealSubmittedBy" -> "agent",
           "sourceSystem" -> "MDTP",
           "taxRegime" -> "VAT",
+          "appealLevel" -> "01",
           "customerReferenceNo" -> "123456789",
           "dateOfAppeal" -> "2020-01-01T00:00:00Z",
           "isLPP" -> false,
@@ -1308,6 +1389,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       "write the model to JSON" in {
         val modelToConvertToJson: AppealSubmission = AppealSubmission(
           taxRegime = "VAT",
+          appealLevel = FirstStageAppeal,
           customerReferenceNo = "123456789",
           dateOfAppeal = LocalDateTime.parse("2020-01-01T00:00:00"),
           isLPP = false,
@@ -1329,6 +1411,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           "appealSubmittedBy" -> "agent",
           "sourceSystem" -> "MDTP",
           "taxRegime" -> "VAT",
+          "appealLevel" -> "01",
           "customerReferenceNo" -> "123456789",
           "dateOfAppeal" -> "2020-01-01T00:00:00Z",
           "isLPP" -> false,
@@ -1357,6 +1440,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       "write the model to Json" in {
         val modelToConvertToJson: AppealSubmission = AppealSubmission(
           taxRegime = "VAT",
+          appealLevel = FirstStageAppeal,
           customerReferenceNo = "123456789",
           dateOfAppeal = LocalDateTime.parse("2020-01-01T00:00:00"),
           isLPP = false,
@@ -1378,6 +1462,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           "appealSubmittedBy" -> "agent",
           "sourceSystem" -> "MDTP",
           "taxRegime" -> "VAT",
+          "appealLevel" -> "01",
           "customerReferenceNo" -> "123456789",
           "dateOfAppeal" -> "2020-01-01T00:00:00Z",
           "isLPP" -> false,
@@ -1405,6 +1490,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       "write the model to JSON" in {
         val modelToConvertToJson: AppealSubmission = AppealSubmission(
           taxRegime = "VAT",
+          appealLevel = FirstStageAppeal,
           customerReferenceNo = "123456789",
           dateOfAppeal = LocalDateTime.parse("2020-01-01T00:00:00"),
           isLPP = false,
@@ -1425,6 +1511,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           "appealSubmittedBy" -> "agent",
           "sourceSystem" -> "MDTP",
           "taxRegime" -> "VAT",
+          "appealLevel" -> "01",
           "customerReferenceNo" -> "123456789",
           "dateOfAppeal" -> "2020-01-01T00:00:00Z",
           "isLPP" -> false,
@@ -1453,6 +1540,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
         "there has been a hospital stay - and is no longer ongoing (both start and end date) - write the appeal model to JSON" in {
           val modelToConvertToJson = AppealSubmission(
             taxRegime = "VAT",
+          appealLevel = FirstStageAppeal,
             customerReferenceNo = "123456789",
             dateOfAppeal = LocalDateTime.parse("2020-01-01T00:00:00"),
             isLPP = false,
@@ -1476,6 +1564,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             "appealSubmittedBy" -> "agent",
             "sourceSystem" -> "MDTP",
             "taxRegime" -> "VAT",
+          "appealLevel" -> "01",
             "customerReferenceNo" -> "123456789",
             "dateOfAppeal" -> "2020-01-01T00:00:00Z",
             "isLPP" -> false,
@@ -1502,6 +1591,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
         "there has been a hospital stay AND it is ongoing (no end date) - write the appeal model to JSON" in {
           val modelToConvertToJson = AppealSubmission(
             taxRegime = "VAT",
+          appealLevel = FirstStageAppeal,
             customerReferenceNo = "123456789",
             dateOfAppeal = LocalDateTime.parse("2020-01-01T00:00:00"),
             isLPP = false,
@@ -1525,6 +1615,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             "appealSubmittedBy" -> "agent",
             "sourceSystem" -> "MDTP",
             "taxRegime" -> "VAT",
+          "appealLevel" -> "01",
             "customerReferenceNo" -> "123456789",
             "dateOfAppeal" -> "2020-01-01T00:00:00Z",
             "isLPP" -> false,
@@ -1551,6 +1642,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           "write the appeal model to JSON" in {
           val modelToConvertToJson = AppealSubmission(
             taxRegime = "VAT",
+          appealLevel = FirstStageAppeal,
             customerReferenceNo = "123456789",
             dateOfAppeal = LocalDateTime.parse("2020-01-01T00:00:00"),
             isLPP = false,
@@ -1574,6 +1666,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             "appealSubmittedBy" -> "agent",
             "sourceSystem" -> "MDTP",
             "taxRegime" -> "VAT",
+          "appealLevel" -> "01",
             "customerReferenceNo" -> "123456789",
             "dateOfAppeal" -> "2020-01-01T00:00:00Z",
             "isLPP" -> false,
@@ -1601,6 +1694,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       "write the model to JSON" in {
         val modelToConvertToJson: AppealSubmission = AppealSubmission(
           taxRegime = "VAT",
+          appealLevel = FirstStageAppeal,
           customerReferenceNo = "123456789",
           dateOfAppeal = LocalDateTime.parse("2020-01-01T00:00:00"),
           isLPP = false,
@@ -1623,6 +1717,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           "appealSubmittedBy" -> "agent",
           "sourceSystem" -> "MDTP",
           "taxRegime" -> "VAT",
+          "appealLevel" -> "01",
           "customerReferenceNo" -> "123456789",
           "dateOfAppeal" -> "2020-01-01T00:00:00Z",
           "isLPP" -> false,
@@ -1650,6 +1745,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       "write the model to JSON" in {
         val modelToConvertToJson: AppealSubmission = AppealSubmission(
           taxRegime = "VAT",
+          appealLevel = FirstStageAppeal,
           customerReferenceNo = "123456789",
           dateOfAppeal = LocalDateTime.parse("2020-01-01T00:00:00"),
           isLPP = false,
@@ -1673,6 +1769,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           "appealSubmittedBy" -> "agent",
           "sourceSystem" -> "MDTP",
           "taxRegime" -> "VAT",
+          "appealLevel" -> "01",
           "customerReferenceNo" -> "123456789",
           "dateOfAppeal" -> "2020-01-01T00:00:00Z",
           "isLPP" -> false,
@@ -1699,6 +1796,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       "write the model to JSON - no evidence" in {
         val modelToConvertToJson: AppealSubmission = AppealSubmission(
           taxRegime = "VAT",
+          appealLevel = FirstStageAppeal,
           customerReferenceNo = "123456789",
           dateOfAppeal = LocalDateTime.parse("2020-01-01T00:00:00"),
           isLPP = false,
@@ -1722,6 +1820,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           "appealSubmittedBy" -> "agent",
           "sourceSystem" -> "MDTP",
           "taxRegime" -> "VAT",
+          "appealLevel" -> "01",
           "customerReferenceNo" -> "123456789",
           "dateOfAppeal" -> "2020-01-01T00:00:00Z",
           "isLPP" -> false,
@@ -1747,6 +1846,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       "write the model to JSON - for late appeal" in {
         val modelToConvertToJson: AppealSubmission = AppealSubmission(
           taxRegime = "VAT",
+          appealLevel = FirstStageAppeal,
           customerReferenceNo = "123456789",
           dateOfAppeal = LocalDateTime.parse("2020-01-01T00:00:00"),
           isLPP = false,
@@ -1770,6 +1870,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           "appealSubmittedBy" -> "agent",
           "sourceSystem" -> "MDTP",
           "taxRegime" -> "VAT",
+          "appealLevel" -> "01",
           "customerReferenceNo" -> "123456789",
           "dateOfAppeal" -> "2020-01-01T00:00:00Z",
           "isLPP" -> false,

@@ -18,6 +18,7 @@ package connectors
 
 import config.featureSwitches.FeatureSwitching
 import connectors.parsers.AppealsParser.{BadRequest, DuplicateAppeal, UnexpectedFailure}
+import models.appeals.AppealLevel.FirstStageAppeal
 import models.appeals.{AppealSubmission, CrimeAppealInformation}
 import play.api.test.Helpers._
 import utils.{HIPWiremock, IntegrationSpecCommonBase}
@@ -37,6 +38,7 @@ class HIPConnectorISpec extends IntegrationSpecCommonBase with HIPWiremock with 
 
   val submission:AppealSubmission = AppealSubmission(
     taxRegime = "VAT",
+    appealLevel = FirstStageAppeal,
     customerReferenceNo = "123456789",
     dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
     isLPP = false,
