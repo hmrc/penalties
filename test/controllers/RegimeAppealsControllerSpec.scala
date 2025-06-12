@@ -681,7 +681,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
   }
 
   "getReasonableExcuses" should {
-    "return all the excuses that are stored in the ReasonableExcuse model" in new Setup {
+    "return all the excuses that are stored in the ReasonableExcuse model for VAT" in new Setup {
       val jsonExpectedToReturn: JsValue = Json.parse(
         """
           |{
@@ -719,7 +719,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
           |""".stripMargin
       )
 
-      val result: Future[Result] = controller.getReasonableExcuses()(fakeRequest)
+      val result: Future[Result] = controller.getReasonableExcuses(regime)(fakeRequest)
       status(result) shouldBe OK
       contentAsJson(result) shouldBe jsonExpectedToReturn
     }
@@ -761,7 +761,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
         .thenReturn(true)
       when(mockAppConfig.isReasonableExcuseEnabled(ArgumentMatchers.eq("other")))
         .thenReturn(false)
-      val result: Future[Result] = controller.getReasonableExcuses()(fakeRequest)
+      val result: Future[Result] = controller.getReasonableExcuses(Regime("VATC"))(fakeRequest)
       status(result) shouldBe OK
       contentAsJson(result) shouldBe jsonExpectedToReturn
     }
