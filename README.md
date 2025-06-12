@@ -115,7 +115,7 @@ Get list of reasonable excuses used to make an appeal.
 | Successful retrieval | 200    |
 
 
-#### `POST       /:regime/penalties/appeals/submit-appeal/:idType/:id`
+#### `POST       /penalties/:regime/appeals/submit-appeal/:idType/:id`
 
 Submit an appeal for a penalty.
 
@@ -136,7 +136,7 @@ The following query parameters should be specified:
 | `correlationId` | String  | Yes       |                                        |
 | `isMultiAppeal` | Boolean | No        | default = `false`                      |
 
-URL format - `/penalties/{regime}appeals/submit-appeal/{idType}/{id}?{isLPP}=[boolValue]&{penaltyNumber}=[penaltyId]&{correlationId}=[value]&{isMultiAppeal}=[boolValue]`
+URL format - `/penalties/{regime}/appeals/submit-appeal/{idType}/{id}?{isLPP}=[boolValue]&{penaltyNumber}=[penaltyId]&{correlationId}=[value]&{isMultiAppeal}=[boolValue]`
 
 Example VATC URL - `/penalties/vatc/appeals/submit-appeal/vrn/711224466/?isLPP=false&penaltyNumber=123456786&correlationId=a8010aef-9253-45a8-b8ac-c843dc2d3318&isMultiAppeal=true`
 
