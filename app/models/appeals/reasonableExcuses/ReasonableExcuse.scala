@@ -49,14 +49,6 @@ object ReasonableExcuse {
     override val descriptionMessageKey: String = "reasonableExcuses.healthReason"
   }
 
-  case object UnexpectedHospitalStay extends WithName("unexpectedHospitalStay") with ReasonableExcuse {
-    override val descriptionMessageKey: String = "reasonableExcuses.unexpectedHospitalStayReason"
-  }
-
-  case object SeriousOrLifeThreateningIllHealth extends WithName("seriousOrLifeThreateningIllHealth") with ReasonableExcuse {
-    override val descriptionMessageKey: String = "reasonableExcuses.seriousOrLifeThreateningIllHealthReason"
-  }
-
   case object LossOfStaff extends WithName("lossOfStaff") with ReasonableExcuse {
     override val descriptionMessageKey: String = "reasonableExcuses.lossOfStaffReason"
   }
@@ -67,10 +59,6 @@ object ReasonableExcuse {
 
   case object Other extends WithName("other") with ReasonableExcuse {
     override val descriptionMessageKey: String = "reasonableExcuses.otherReason"
-  }
-
-  case object Obligations extends WithName("obligations") with ReasonableExcuse {
-    override val descriptionMessageKey: String = "reasonableExcuses.obligationsReason"
   }
 
   def allExcusesToJson(appConfig: AppConfig, regime: Option[Regime] = None): JsValue = {
@@ -99,12 +87,9 @@ object ReasonableExcuse {
     Crime,
     FireOrFlood,
     Health,
-    UnexpectedHospitalStay,
-    SeriousOrLifeThreateningIllHealth,
     LossOfStaff,
     TechnicalIssues,
-    Other,
-    Obligations
+    Other
   )
 
   val allReasonableExcusesForITSA: Seq[ReasonableExcuse] = Seq(
@@ -112,8 +97,6 @@ object ReasonableExcuse {
     Crime,
     FireOrFlood,
     Health,
-    UnexpectedHospitalStay,
-    SeriousOrLifeThreateningIllHealth,
     TechnicalIssues,
     Other
   )

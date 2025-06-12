@@ -30,12 +30,9 @@ class ReasonableExcuseSpec extends SpecBase {
         Crime,
         FireOrFlood,
         Health,
-        UnexpectedHospitalStay,
-        SeriousOrLifeThreateningIllHealth,
         LossOfStaff,
         TechnicalIssues,
-        Other,
-        Obligations
+        Other
       )
       val result = ReasonableExcuse.allReasonableExcusesForVATC
       result shouldBe expectedResult
@@ -47,8 +44,6 @@ class ReasonableExcuseSpec extends SpecBase {
         Crime,
         FireOrFlood,
         Health,
-        UnexpectedHospitalStay,
-        SeriousOrLifeThreateningIllHealth,
         TechnicalIssues,
         Other
       )
