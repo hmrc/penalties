@@ -476,6 +476,8 @@ object AppealSubmission {
       AppealSubmission(
         taxRegime,
         optAppealLevel.getOrElse(defaultAppealLevel),
+        // This optionality is a temporary,
+        // will be made mandatory in DL-16530 clean-up ticket
         appealSubmittedBy,
         customerReferenceNo,
         dateOfAppeal,

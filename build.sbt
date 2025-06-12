@@ -23,7 +23,6 @@ lazy val microservice = Project(appName, file("."))
     ScoverageKeys.coverageFailOnMinimum    := false,
     ScoverageKeys.coverageHighlighting     := true
   )
-  .settings(RoutesKeys.routesImport ++= Seq("models.appeals.AppealLevel"))
 
 scalacOptions += "-Wconf:cat=unused-imports&src=routes/.*:s"
 scalacOptions += "-Wconf:cat=unused&src=routes/.*:s"
