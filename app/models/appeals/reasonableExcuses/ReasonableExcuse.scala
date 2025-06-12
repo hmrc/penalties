@@ -62,9 +62,9 @@ object ReasonableExcuse {
   }
 
   def allExcusesToJson(appConfig: AppConfig, regime: Regime): JsValue = {
-    val reasonableExcuses: Seq[ReasonableExcuse] = regime match {
-      case Regime("VATC") => allReasonableExcusesForVATC
-      case Regime("ITSA") => allReasonableExcusesForITSA
+    val reasonableExcuses: Seq[ReasonableExcuse] = regime.value.toUpperCase match {
+      case "VATC" => allReasonableExcusesForVATC
+      case "ITSA" => allReasonableExcusesForITSA
       case _ => Seq.empty[ReasonableExcuse]
     }
 
