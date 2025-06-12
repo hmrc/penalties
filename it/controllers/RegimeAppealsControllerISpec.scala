@@ -18,7 +18,6 @@ package controllers
 
 import com.github.tomakehurst.wiremock.client.WireMock.{postRequestedFor, urlEqualTo}
 import config.featureSwitches.{CallAPI1808HIP, FeatureSwitching}
-import models.appeals.AppealLevel.{FirstStageAppeal, SecondStageAppeal}
 import models.appeals.MultiplePenaltiesData
 import models.{AgnosticEnrolmentKey, Id, IdType, Regime}
 import org.scalatest.concurrent.Eventually.eventually
@@ -317,8 +316,8 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
 
     val enrolmentKey = AgnosticEnrolmentKey(regime, idType, id)
     val (r, it, i) = (regime.value, idType.value, id.value)
-    val appealLevel = if (r == "ITSA" && it == "MTDITID") SecondStageAppeal.value else FirstStageAppeal.value
-    val submitAppealUri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=false&penaltyNumber=123456789&correlationId=uuid-1&appealLevel=$appealLevel"
+
+    val submitAppealUri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=false&penaltyNumber=123456789&correlationId=uuid-1"
 
 
     s"getAppealsDataForLateSubmissionPenalty for $regime with $idType" should {
@@ -445,6 +444,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
               |{
               |    "sourceSystem": "MDTP",
               |    "taxRegime": "VAT",
+       |   "appealLevel": "01",
               |    "customerReferenceNo": "123456789",
               |    "dateOfAppeal": "2020-01-01T00:00:00",
               |    "isLPP": false,
@@ -473,6 +473,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
               |{
               |    "sourceSystem": "MDTP",
               |    "taxRegime": "VAT",
+       |   "appealLevel": "01",
               |    "customerReferenceNo": "123456789",
               |    "dateOfAppeal": "2020-01-01T00:00:00",
               |    "isLPP": false,
@@ -501,6 +502,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
               |{
               |    "sourceSystem": "MDTP",
               |    "taxRegime": "VAT",
+       |   "appealLevel": "01",
               |    "customerReferenceNo": "123456789",
               |    "dateOfAppeal": "2020-01-01T00:00:00",
               |    "isLPP": false,
@@ -528,6 +530,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
               |{
               |    "sourceSystem": "MDTP",
               |    "taxRegime": "VAT",
+       |   "appealLevel": "01",
               |    "customerReferenceNo": "123456789",
               |    "dateOfAppeal": "2020-01-01T00:00:00",
               |    "isLPP": false,
@@ -555,6 +558,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
               |{
               |    "sourceSystem": "MDTP",
               |    "taxRegime": "VAT",
+       |   "appealLevel": "01",
               |    "customerReferenceNo": "123456789",
               |    "dateOfAppeal": "2020-01-01T00:00:00",
               |    "isLPP": false,
@@ -584,6 +588,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
                 |{
                 |    "sourceSystem": "MDTP",
                 |    "taxRegime": "VAT",
+       |   "appealLevel": "01",
                 |    "customerReferenceNo": "123456789",
                 |    "dateOfAppeal": "2020-01-01T00:00:00",
                 |    "isLPP": false,
@@ -613,6 +618,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
                 |{
                 |    "sourceSystem": "MDTP",
                 |    "taxRegime": "VAT",
+       |   "appealLevel": "01",
                 |    "customerReferenceNo": "123456789",
                 |    "dateOfAppeal": "2020-01-01T00:00:00",
                 |    "isLPP": false,
@@ -642,6 +648,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
                 |{
                 |    "sourceSystem": "MDTP",
                 |    "taxRegime": "VAT",
+       |   "appealLevel": "01",
                 |    "customerReferenceNo": "123456789",
                 |    "dateOfAppeal": "2020-01-01T00:00:00",
                 |    "isLPP": false,
@@ -676,6 +683,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
               |{
               |    "sourceSystem": "MDTP",
               |    "taxRegime": "VAT",
+       |   "appealLevel": "01",
               |    "customerReferenceNo": "123456789",
               |    "dateOfAppeal": "2020-01-01T00:00:00",
               |    "isLPP": false,
@@ -724,6 +732,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
               |{
               |    "sourceSystem": "MDTP",
               |    "taxRegime": "VAT",
+       |   "appealLevel": "01",
               |    "customerReferenceNo": "123456789",
               |    "dateOfAppeal": "2020-01-01T00:00:00",
               |    "isLPP": false,
@@ -779,6 +788,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
               |{
               |    "sourceSystem": "MDTP",
               |    "taxRegime": "VAT",
+       |   "appealLevel": "01",
               |    "customerReferenceNo": "123456789",
               |    "dateOfAppeal": "2020-01-01T00:00:00",
               |    "isLPP": true,
@@ -795,7 +805,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
               |""".stripMargin)
           val result: WSResponse = await(
             buildClientForRequestToApp(
-              uri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=true&penaltyNumber=123456789&correlationId=uuid-1&appealLevel=01")
+              uri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=true&penaltyNumber=123456789&correlationId=uuid-1")
               .post(
                 jsonToSubmit
               ))
@@ -812,6 +822,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
               |{
               |    "sourceSystem": "MDTP",
               |    "taxRegime": "VAT",
+       |   "appealLevel": "01",
               |    "customerReferenceNo": "123456789",
               |    "dateOfAppeal": "2020-01-01T00:00:00",
               |    "isLPP": false,
@@ -852,7 +863,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
           )
 
           val result: WSResponse = await(buildClientForRequestToApp(
-            uri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=false&penaltyNumber=123456789&correlationId=uuid-1&isMultiAppeal=true&appealLevel=01"
+            uri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=false&penaltyNumber=123456789&correlationId=uuid-1&isMultiAppeal=true"
           ).post(
             jsonToSubmit
           ))
@@ -870,14 +881,14 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
       "return BAD_REQUEST (400)" when {
         "no JSON body is in the request" in new SetUp {
           val result: WSResponse = await(buildClientForRequestToApp(
-            uri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=true&penaltyNumber=123456789&correlationId=uuid-1&appealLevel=01"
+            uri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=true&penaltyNumber=123456789&correlationId=uuid-1"
           ).post(""))
           result.status shouldBe BAD_REQUEST
         }
 
         "JSON body is present but it can not be parsed to a model" in new SetUp {
           val result: WSResponse = await(buildClientForRequestToApp(
-            uri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=true&penaltyNumber=123456789&correlationId=uuid-1&appealLevel=01"
+            uri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=true&penaltyNumber=123456789&correlationId=uuid-1"
           ).post(Json.parse("{}")))
           result.status shouldBe BAD_REQUEST
         }
@@ -892,6 +903,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
               |{
               |    "sourceSystem": "MDTP",
               |    "taxRegime": "VAT",
+       |   "appealLevel": "01",
               |    "customerReferenceNo": "123456789",
               |    "dateOfAppeal": "2020-01-01T00:00:00",
               |    "isLPP": false,
@@ -920,6 +932,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
               |{
               |    "sourceSystem": "MDTP",
               |    "taxRegime": "VAT",
+       |   "appealLevel": "01",
               |    "customerReferenceNo": "123456789",
               |    "dateOfAppeal": "2020-01-01T00:00:00",
               |    "isLPP": false,
@@ -950,6 +963,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
               |{
               |    "sourceSystem": "MDTP",
               |    "taxRegime": "VAT",
+       |   "appealLevel": "01",
               |    "customerReferenceNo": "123456789",
               |    "dateOfAppeal": "2020-01-01T00:00:00",
               |    "isLPP": false,
@@ -975,6 +989,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
               |{
               |    "sourceSystem": "MDTP",
               |    "taxRegime": "VAT",
+       |   "appealLevel": "01",
               |    "customerReferenceNo": "123456789",
               |    "dateOfAppeal": "2020-01-01T00:00:00",
               |    "isLPP": false,
@@ -1000,6 +1015,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
               |{
               |    "sourceSystem": "MDTP",
               |    "taxRegime": "VAT",
+       |   "appealLevel": "01",
               |    "customerReferenceNo": "123456789",
               |    "dateOfAppeal": "2020-01-01T00:00:00",
               |    "isLPP": false,
@@ -1024,6 +1040,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
               |{
               |    "sourceSystem": "MDTP",
               |    "taxRegime": "VAT",
+       |   "appealLevel": "01",
               |    "customerReferenceNo": "123456789",
               |    "dateOfAppeal": "2020-01-01T00:00:00",
               |    "isLPP": false,
@@ -1048,6 +1065,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
               |{
               |    "sourceSystem": "MDTP",
               |    "taxRegime": "VAT",
+       |   "appealLevel": "01",
               |    "customerReferenceNo": "123456789",
               |    "dateOfAppeal": "2020-01-01T00:00:00",
               |    "isLPP": false,
@@ -1075,6 +1093,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
                 |{
                 |    "sourceSystem": "MDTP",
                 |    "taxRegime": "VAT",
+       |   "appealLevel": "01",
                 |    "customerReferenceNo": "123456789",
                 |    "dateOfAppeal": "2020-01-01T00:00:00",
                 |    "isLPP": false,
@@ -1102,6 +1121,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
                 |{
                 |    "sourceSystem": "MDTP",
                 |    "taxRegime": "VAT",
+       |   "appealLevel": "01",
                 |    "customerReferenceNo": "123456789",
                 |    "dateOfAppeal": "2020-01-01T00:00:00",
                 |    "isLPP": false,
@@ -1129,6 +1149,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
                 |{
                 |    "sourceSystem": "MDTP",
                 |    "taxRegime": "VAT",
+       |   "appealLevel": "01",
                 |    "customerReferenceNo": "123456789",
                 |    "dateOfAppeal": "2020-01-01T00:00:00",
                 |    "isLPP": false,
@@ -1159,6 +1180,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
                 |{
                 |    "sourceSystem": "MDTP",
                 |    "taxRegime": "VAT",
+       |   "appealLevel": "01",
                 |    "customerReferenceNo": "123456789",
                 |    "dateOfAppeal": "2020-01-01T00:00:00",
                 |    "isLPP": false,
@@ -1206,6 +1228,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
               |{
               |    "sourceSystem": "MDTP",
               |    "taxRegime": "VAT",
+       |   "appealLevel": "01",
               |    "customerReferenceNo": "123456789",
               |    "dateOfAppeal": "2020-01-01T00:00:00",
               |    "isLPP": false,
@@ -1254,6 +1277,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
               |{
               |    "sourceSystem": "MDTP",
               |    "taxRegime": "VAT",
+       |   "appealLevel": "01",
               |    "customerReferenceNo": "123456789",
               |    "dateOfAppeal": "2020-01-01T00:00:00",
               |    "isLPP": true,
@@ -1268,7 +1292,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
               |		}
               |}
               |""".stripMargin)
-          val result: WSResponse = await(buildClientForRequestToApp(uri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=true&penaltyNumber=123456789&correlationId=uuid-1&appealLevel=01").post(
+          val result: WSResponse = await(buildClientForRequestToApp(uri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=true&penaltyNumber=123456789&correlationId=uuid-1").post(
             jsonToSubmit
           ))
           result.status shouldBe OK
@@ -1282,6 +1306,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
               |{
               |    "sourceSystem": "MDTP",
               |    "taxRegime": "VAT",
+       |   "appealLevel": "01",
               |    "customerReferenceNo": "123456789",
               |    "dateOfAppeal": "2020-01-01T00:00:00",
               |    "isLPP": false,
@@ -1322,7 +1347,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
           )
 
           val result: WSResponse = await(buildClientForRequestToApp(
-            uri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=false&penaltyNumber=123456789&correlationId=uuid-1&isMultiAppeal=true&appealLevel=01"
+            uri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=false&penaltyNumber=123456789&correlationId=uuid-1&isMultiAppeal=true"
           ).post(
             jsonToSubmit
           ))
@@ -1340,58 +1365,15 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
       "return BAD_REQUEST (400)" when {
         "no JSON body is in the request" in new SetUp(hipFeatureSwitch = true) {
           val result: WSResponse = await(buildClientForRequestToApp(
-            uri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=true&penaltyNumber=123456789&correlationId=uuid-1&appealLevel=01"
+            uri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=true&penaltyNumber=123456789&correlationId=uuid-1"
           ).post(""))
           result.status shouldBe BAD_REQUEST
         }
 
         "JSON body is present but it can not be parsed to a model" in new SetUp(hipFeatureSwitch = true) {
           val result: WSResponse = await(buildClientForRequestToApp(
-            uri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=true&penaltyNumber=123456789&correlationId=uuid-1&appealLevel=01"
+            uri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=true&penaltyNumber=123456789&correlationId=uuid-1"
           ).post(Json.parse("{}")))
-          result.status shouldBe BAD_REQUEST
-        }
-
-        "appealLevel query parameter is missing" in new SetUp {
-          mockResponseForAppealSubmissionStubFault(enrolmentKey, penaltyNumber = "123456789")
-
-          val jsonToSubmit: JsValue = Json.parse(
-            """
-              |{
-              |    "sourceSystem": "MDTP",
-              |    "taxRegime": "VAT",
-              |    "customerReferenceNo": "123456789",
-              |    "dateOfAppeal": "2020-01-01T00:00:00"
-              |}
-              |""".stripMargin)
-          val submitAppealUriWithoutAppealLevel =
-            s"/$r/appeals/submit-appeal/$it/$i?isLPP=false&penaltyNumber=123456789&correlationId=uuid-1"
-
-          val result: WSResponse =
-            await(buildClientForRequestToApp(uri = submitAppealUriWithoutAppealLevel).post(jsonToSubmit))
-
-          result.status shouldBe BAD_REQUEST
-        }
-
-        "appealLevel query parameter is an invalid value" in new SetUp {
-          mockResponseForAppealSubmissionStubFault(enrolmentKey, penaltyNumber = "123456789")
-
-          val jsonToSubmit: JsValue = Json.parse(
-            """
-              |{
-              |    "sourceSystem": "MDTP",
-              |    "taxRegime": "VAT",
-              |    "customerReferenceNo": "123456789",
-              |    "dateOfAppeal": "2020-01-01T00:00:00"
-              |}
-              |""".stripMargin)
-          val submitAppealUriWithoutAppealLevel =
-            s"/$r/appeals/submit-appeal/$it/$i?isLPP=false&penaltyNumber=123456789&correlationId=uuid-1&appealLevel=03"
-
-          val result: WSResponse = await(buildClientForRequestToApp(uri = submitAppealUriWithoutAppealLevel).post(
-            jsonToSubmit
-          ))
-
           result.status shouldBe BAD_REQUEST
         }
       }
@@ -1405,6 +1387,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
               |{
               |    "sourceSystem": "MDTP",
               |    "taxRegime": "VAT",
+       |   "appealLevel": "01",
               |    "customerReferenceNo": "123456789",
               |    "dateOfAppeal": "2020-01-01T00:00:00",
               |    "isLPP": false,
@@ -1433,6 +1416,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
               |{
               |    "sourceSystem": "MDTP",
               |    "taxRegime": "VAT",
+       |   "appealLevel": "01",
               |    "customerReferenceNo": "123456789",
               |    "dateOfAppeal": "2020-01-01T00:00:00",
               |    "isLPP": false,

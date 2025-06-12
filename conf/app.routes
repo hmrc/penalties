@@ -28,7 +28,7 @@ GET         /:regime/etmp/penalties/:idType/:id                         controll
 GET         /:regime/appeals-data/late-submissions/:idType/:id          controllers.RegimeAppealsController.getAppealsDataForLateSubmissionPenalty(penaltyId: String,regime: models.Regime, idType: models.IdType, id: models.Id)
 GET         /:regime/appeals-data/late-payments/:idType/:id             controllers.RegimeAppealsController.getAppealsDataForLatePaymentPenalty(penaltyId: String, regime: models.Regime, idType: models.IdType, id: models.Id, isAdditional: Boolean)
 GET         /regime/appeals-data/reasonable-excuses                     controllers.RegimeAppealsController.getReasonableExcuses
-POST        /:regime/appeals/submit-appeal/:idType/:id                  controllers.RegimeAppealsController.submitAppeal(regime: models.Regime, idType: models.IdType, id: models.Id, isLPP: Boolean, penaltyNumber: String, correlationId: String, appealLevel: AppealLevel, isMultiAppeal: Boolean ?= false)
+POST        /:regime/appeals/submit-appeal/:idType/:id                  controllers.RegimeAppealsController.submitAppeal(regime: models.Regime, idType: models.IdType, id: models.Id, isLPP: Boolean, penaltyNumber: String, correlationId: String, isMultiAppeal: Boolean ?= false)
 GET         /:regime/appeals-data/multiple-penalties/:idType/:id        controllers.RegimeAppealsController.getMultiplePenaltyData(penaltyId: String, regime: models.Regime, idType: models.IdType, id: models.Id)
 
 # Compliance

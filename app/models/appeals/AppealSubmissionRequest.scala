@@ -34,10 +34,10 @@ case class AppealSubmissionRequest(taxRegime: String,
 
 object AppealSubmissionRequest {
 
-  def apply(appealSubmission: AppealSubmission, penaltyId: String, appealLevel: AppealLevel): AppealSubmissionRequest =
+  def apply(appealSubmission: AppealSubmission, penaltyId: String): AppealSubmissionRequest =
     AppealSubmissionRequest(
       taxRegime = appealSubmission.taxRegime,
-      appealLevel = appealLevel,
+      appealLevel = appealSubmission.appealLevel,
       penaltyId = penaltyId,
       dateOfAppeal = appealSubmission.dateOfAppeal,
       isLPP = appealSubmission.isLPP,

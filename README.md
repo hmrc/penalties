@@ -134,20 +134,20 @@ The following query parameters should be specified:
 | `isLPP`         | Boolean | Yes       |                                        |
 | `penaltyNumber` | String  | Yes       |                                        |
 | `correlationId` | String  | Yes       |                                        |
-| `appealLevel`   | Enum    | Yes       | `01` or `02` are accepted by upstream  |
 | `isMultiAppeal` | Boolean | No        | default = `false`                      |
 
-URL format - `/penalties/{regime}appeals/submit-appeal/{idType}/{id}?{isLPP}=[boolValue]&{penaltyNumber}=[penaltyId]&{correlationId}=[value]&{appealLevel}=[appealStage]&{isMultiAppeal}=[boolValue]`
+URL format - `/penalties/{regime}appeals/submit-appeal/{idType}/{id}?{isLPP}=[boolValue]&{penaltyNumber}=[penaltyId]&{correlationId}=[value]&{isMultiAppeal}=[boolValue]`
 
-Example VATC URL - `/penalties/vatc/appeals/submit-appeal/vrn/711224466/?isLPP=false&penaltyNumber=123456786&correlationId=a8010aef-9253-45a8-b8ac-c843dc2d3318&isMultiAppeal=true&appealLevel=01`
+Example VATC URL - `/penalties/vatc/appeals/submit-appeal/vrn/711224466/?isLPP=false&penaltyNumber=123456786&correlationId=a8010aef-9253-45a8-b8ac-c843dc2d3318&isMultiAppeal=true`
 
-Example ITSA URL - `/penalties/itsa/appeals/submit-appeal/nino/AA803080A/?isLPP=false&penaltyNumber=123456786&correlationId=a8010aef-9253-45a8-b8ac-c843dc2d3318&appealLevel=02`
+Example ITSA URL - `/penalties/itsa/appeals/submit-appeal/nino/AA803080A/?isLPP=false&penaltyNumber=123456786&correlationId=a8010aef-9253-45a8-b8ac-c843dc2d3318`
 
 Example payload:
 ```
 {
     "sourceSystem": "MDTP",
     "taxRegime": "VAT",
+    "appealLevel": "01",
     "customerReferenceNo": "123456789",
     "dateOfAppeal": "2020-01-01T00:00:00",
     "isLPP": true,
@@ -165,6 +165,9 @@ Example payload:
     }
 }
 ```
+Note:
+    Valid _appealLevel_ values are "01" or "02", but is not mandatory from downstream service.
+    If not present in downstream model it will be defaulted to "01" before model is processed by this service. 
 
 | Scenario                                         | Status |
 |--------------------------------------------------|--------|

@@ -17,6 +17,7 @@
 package connectors
 
 import config.featureSwitches.{CallPEGA, FeatureSwitching}
+import models.appeals.AppealLevel.FirstStageAppeal
 import models.appeals.{AppealSubmission, CrimeAppealInformation}
 import play.api.http.Status
 import play.api.test.Helpers._
@@ -39,6 +40,7 @@ class PEGAConnectorISpec extends IntegrationSpecCommonBase with AppealWiremock w
      mockResponseForAppealSubmissionPEGA(Status.OK, "1234567890")
      val modelToSend: AppealSubmission = AppealSubmission(
        taxRegime = "VAT",
+       appealLevel = FirstStageAppeal,
        customerReferenceNo = "123456789",
        dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
        isLPP = false,
@@ -65,6 +67,7 @@ class PEGAConnectorISpec extends IntegrationSpecCommonBase with AppealWiremock w
      mockResponseForAppealSubmissionStub(Status.OK, "HMRC-MTD-VAT~VRN~123456789", penaltyNumber = "123456789")
      val modelToSend: AppealSubmission = AppealSubmission(
        taxRegime = "VAT",
+       appealLevel = FirstStageAppeal,
        customerReferenceNo = "123456789",
        dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
        isLPP = false,
@@ -91,6 +94,7 @@ class PEGAConnectorISpec extends IntegrationSpecCommonBase with AppealWiremock w
      mockResponseForAppealSubmissionStub(Status.OK, "HMRC-MTD-VAT~VRN~123456789", isLPP = true, penaltyNumber = "123456789")
      val modelToSend: AppealSubmission = AppealSubmission  (
        taxRegime = "VAT",
+       appealLevel = FirstStageAppeal,
        customerReferenceNo = "123456789",
        dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
        isLPP = true,

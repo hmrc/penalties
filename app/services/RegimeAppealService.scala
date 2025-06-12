@@ -18,21 +18,21 @@ package services
 
 import config.AppConfig
 import config.featureSwitches.{CallAPI1808HIP, FeatureSwitching, SanitiseFileName}
-import connectors.{HIPConnector, RegimePEGAConnector}
 import connectors.parsers.AppealsParser
-import models.appeals.{AppealLevel, AppealResponseModel, AppealSubmission, MultiplePenaltiesData}
+import connectors.{HIPConnector, RegimePEGAConnector}
+import models.AgnosticEnrolmentKey
+import models.appeals.{AppealResponseModel, AppealSubmission, MultiplePenaltiesData}
 import models.getPenaltyDetails.GetPenaltyDetails
 import models.getPenaltyDetails.latePayment.{LPPDetails, LPPPenaltyCategoryEnum, LPPPenaltyStatusEnum}
 import models.notification._
 import models.upload.UploadJourney
 import play.api.Configuration
+import uk.gov.hmrc.http.HeaderCarrier
 import utils.Logger.logger
 import utils.{DateHelper, FileHelper, UUIDGenerator}
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
-import models.AgnosticEnrolmentKey
-import uk.gov.hmrc.http.HeaderCarrier
 
 class RegimeAppealService @Inject()(appealsConnector: RegimePEGAConnector,
                                     hipAppealsConnector: HIPConnector,
@@ -45,11 +45,10 @@ class RegimeAppealService @Inject()(appealsConnector: RegimePEGAConnector,
                    enrolmentKey: AgnosticEnrolmentKey,
                    isLPP: Boolean,
                    penaltyNumber: String,
-                   correlationId: String,
-                   appealLevel: AppealLevel)
+                   correlationId: String)
                   (implicit headerCarrier:HeaderCarrier): Future[Either[AppealsParser.ErrorResponse, AppealResponseModel]] = {
     val response: Future[AppealsParser.AppealSubmissionResponse] = if (isEnabled(CallAPI1808HIP)) {
-      hipAppealsConnector.submitAppeal(appealSubmission, penaltyNumber, correlationId, appealLevel)
+      hipAppealsConnector.submitAppeal(appealSubmission, penaltyNumber, correlationId)
     } else {
       appealsConnector.submitAppeal(appealSubmission, enrolmentKey, isLPP, penaltyNumber, correlationId)
     }

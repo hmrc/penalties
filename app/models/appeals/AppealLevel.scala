@@ -17,7 +17,6 @@
 package models.appeals
 
 import play.api.libs.json._
-import play.api.mvc.QueryStringBindable
 
 sealed abstract class AppealLevel(val value: String) {
   override val toString: String = value
@@ -46,14 +45,4 @@ object AppealLevel {
     }
   }
 
-  implicit val queryStringBindable: QueryStringBindable[AppealLevel] =
-    new QueryStringBindable[AppealLevel] {
-      def bind(key: String, params: Map[String, Seq[String]]): Option[Either[String, AppealLevel]] =
-        params.get(key).flatMap(_.headOption).map { value =>
-          AppealLevel.fromString(value).toRight(s"Invalid appealLevel: '$value'")
-        }
-
-      def unbind(key: String, level: AppealLevel): String =
-        s"$key=${level.value}"
-    }
 }

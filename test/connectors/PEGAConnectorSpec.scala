@@ -19,6 +19,7 @@ package connectors
 import base.{LogCapturing, SpecBase}
 import config.featureSwitches.{CallPEGA, FeatureSwitching}
 import connectors.parsers.AppealsParser.{AppealSubmissionResponse, UnexpectedFailure}
+import models.appeals.AppealLevel.FirstStageAppeal
 import models.appeals.{AgentDetails, AppealSubmission, CrimeAppealInformation}
 import org.mockito.Mockito._
 import org.mockito.{ArgumentCaptor, ArgumentMatchers}
@@ -60,6 +61,7 @@ class PEGAConnectorSpec extends SpecBase with FeatureSwitching with LogCapturing
         .thenReturn(Future.successful(Right(appealResponseModel)))
       val modelToSend: AppealSubmission = AppealSubmission(
         taxRegime = "VAT",
+        appealLevel = FirstStageAppeal,
         customerReferenceNo = "123456789",
         dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
         isLPP = false,
@@ -98,6 +100,7 @@ class PEGAConnectorSpec extends SpecBase with FeatureSwitching with LogCapturing
         .thenReturn(Future.successful(Right(appealResponseModel)))
       val modelToSend: AppealSubmission = AppealSubmission(
         taxRegime = "VAT",
+        appealLevel = FirstStageAppeal,
         customerReferenceNo = "123456789",
         dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
         isLPP = false,
@@ -132,6 +135,7 @@ class PEGAConnectorSpec extends SpecBase with FeatureSwitching with LogCapturing
         .thenReturn(Future.failed(UpstreamErrorResponse.apply("", BAD_REQUEST)))
       val modelToSend: AppealSubmission = AppealSubmission(
         taxRegime = "VAT",
+        appealLevel = FirstStageAppeal,
         customerReferenceNo = "123456789",
         dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
         isLPP = false,
@@ -171,6 +175,7 @@ class PEGAConnectorSpec extends SpecBase with FeatureSwitching with LogCapturing
         .thenReturn(Future.failed(UpstreamErrorResponse.apply("", INTERNAL_SERVER_ERROR)))
       val modelToSend: AppealSubmission = AppealSubmission(
         taxRegime = "VAT",
+        appealLevel = FirstStageAppeal,
         customerReferenceNo = "123456789",
         dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
         isLPP = false,
@@ -210,6 +215,7 @@ class PEGAConnectorSpec extends SpecBase with FeatureSwitching with LogCapturing
         .thenReturn(Future.failed(new Exception("failed")))
       val modelToSend: AppealSubmission = AppealSubmission(
         taxRegime = "VAT",
+        appealLevel = FirstStageAppeal,
         customerReferenceNo = "123456789",
         dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
         isLPP = false,

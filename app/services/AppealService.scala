@@ -18,9 +18,8 @@ package services
 
 import config.AppConfig
 import config.featureSwitches.{CallAPI1808HIP, FeatureSwitching, SanitiseFileName}
-import connectors.{HIPConnector, PEGAConnector}
 import connectors.parsers.AppealsParser
-import models.appeals.AppealLevel.FirstStageAppeal
+import connectors.{HIPConnector, PEGAConnector}
 import models.appeals.{AppealResponseModel, AppealSubmission, MultiplePenaltiesData}
 import models.getPenaltyDetails.GetPenaltyDetails
 import models.getPenaltyDetails.latePayment.{LPPDetails, LPPPenaltyCategoryEnum, LPPPenaltyStatusEnum}
@@ -49,9 +48,7 @@ class AppealService @Inject()(appealsConnector: PEGAConnector,
                   (implicit headerCarrier:HeaderCarrier): Future[Either[AppealsParser.ErrorResponse, AppealResponseModel]] = {
 
     val response: Future[AppealsParser.AppealSubmissionResponse] = if (isEnabled(CallAPI1808HIP)) {
-      // ITSA will never use this endpoint, VATC only uses appealLevel = FirstStageAppeal...
-      // ...so this can be hardcoded below until endpoint is deprecated by DL-15219 & DL-16549
-      hipAppealsConnector.submitAppeal(appealSubmission, penaltyNumber, correlationId, appealLevel = FirstStageAppeal)
+      hipAppealsConnector.submitAppeal(appealSubmission, penaltyNumber, correlationId)
     } else {
       appealsConnector.submitAppeal(appealSubmission, enrolmentKey, isLPP, penaltyNumber, correlationId)
     }

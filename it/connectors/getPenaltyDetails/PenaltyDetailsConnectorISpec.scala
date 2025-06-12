@@ -16,24 +16,26 @@
 
 package connectors.getPenaltyDetails
 
-import java.time.LocalDate
 import config.featureSwitches.{CallAPI1812ETMP, FeatureSwitching}
-import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser.{GetPenaltyDetailsFailureResponse, GetPenaltyDetailsMalformed, GetPenaltyDetailsNoContent, GetPenaltyDetailsResponse, GetPenaltyDetailsSuccessResponse}
-import models.{AgnosticEnrolmentKey, Regime, IdType, Id}
+import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser.{
+  GetPenaltyDetailsFailureResponse,
+  GetPenaltyDetailsMalformed,
+  GetPenaltyDetailsNoContent,
+  GetPenaltyDetailsResponse,
+  GetPenaltyDetailsSuccessResponse
+}
 import models.getPenaltyDetails.GetPenaltyDetails
 import models.getPenaltyDetails.appealInfo.{AppealInformationType, AppealStatusEnum}
+import models.getPenaltyDetails.lateSubmission._
+import models.{AgnosticEnrolmentKey, Id, IdType, Regime}
 import org.scalatest.prop.TableDrivenPropertyChecks
 import play.api.http.Status
 import play.api.http.Status.IM_A_TEAPOT
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
-import utils.{ETMPWiremock, IntegrationSpecCommonBase}
-import utils.RegimeETMPWiremock
-import models.getPenaltyDetails.lateSubmission.LateSubmissionPenalty
-import models.getPenaltyDetails.lateSubmission.LSPDetails
-import models.getPenaltyDetails.lateSubmission.LSPSummary
-import models.getPenaltyDetails.lateSubmission.LateSubmission
-import models.getPenaltyDetails.lateSubmission._
+import utils.{IntegrationSpecCommonBase, RegimeETMPWiremock}
+
+import java.time.LocalDate
 
 class PenaltyDetailsConnectorISpec extends IntegrationSpecCommonBase with RegimeETMPWiremock with FeatureSwitching with TableDrivenPropertyChecks {
 

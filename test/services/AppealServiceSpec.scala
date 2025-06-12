@@ -22,6 +22,7 @@ import config.featureSwitches.{CallAPI1808HIP, FeatureSwitching, SanitiseFileNam
 import connectors.{HIPConnector, PEGAConnector}
 import connectors.parsers.AppealsParser
 import connectors.parsers.AppealsParser.UnexpectedFailure
+import models.appeals.AppealLevel.FirstStageAppeal
 import models.appeals._
 import models.getFinancialDetails.MainTransactionEnum
 import models.getPenaltyDetails.GetPenaltyDetails
@@ -69,6 +70,7 @@ class AppealServiceSpec extends SpecBase with LogCapturing with FeatureSwitching
   "submitAppeal" should {
     val modelToPassToServer: AppealSubmission = AppealSubmission(
       taxRegime = "VAT",
+      appealLevel = FirstStageAppeal,
       customerReferenceNo = "123456789",
       dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
       isLPP = false,
