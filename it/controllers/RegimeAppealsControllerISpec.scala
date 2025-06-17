@@ -19,7 +19,7 @@ package controllers
 import com.github.tomakehurst.wiremock.client.WireMock.{postRequestedFor, urlEqualTo}
 import config.featureSwitches.{CallAPI1808HIP, FeatureSwitching}
 import models.appeals.MultiplePenaltiesData
-import models.{AgnosticEnrolmentKey, Id, IdType, Regime}
+import models.{Id, IdType, Regime}
 import org.scalatest.concurrent.Eventually.eventually
 import org.scalatest.prop.TableDrivenPropertyChecks
 import play.api.http.Status
@@ -314,10 +314,9 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
     (Regime("ITSA"), IdType("MTDITID"), Id("012345678912345")),
   ).forEvery { (regime, idType, id) =>
 
-    val enrolmentKey = AgnosticEnrolmentKey(regime, idType, id)
     val (r, it, i) = (regime.value, idType.value, id.value)
 
-    val submitAppealUri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=false&penaltyNumber=123456789&correlationId=uuid-1"
+    val submitAppealUri = s"/$r/appeals/submit-appeal/$it/$i?penaltyNumber=123456789&correlationId=uuid-1"
 
 
     s"getAppealsDataForLateSubmissionPenalty for $regime with $idType" should {
@@ -438,7 +437,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
     s"submitAppeal for $regime with $idType" should {
       "call the connector and send the appeal data received in the request body" when {
         "returns OK when successful for bereavement" in new SetUp {
-          mockResponseForAppealSubmissionStub(OK, enrolmentKey, penaltyNumber = "123456789")
+          mockResponseForAppealSubmissionStub(OK, penaltyNumber = "123456789")
           val jsonToSubmit: JsValue = Json.parse(
             """
               |{
@@ -466,7 +465,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
         }
 
         "returns OK when successful for crime" in new SetUp {
-          mockResponseForAppealSubmissionStub(OK, enrolmentKey, penaltyNumber = "123456789")
+          mockResponseForAppealSubmissionStub(OK, penaltyNumber = "123456789")
 
           val jsonToSubmit: JsValue = Json.parse(
             """
@@ -495,7 +494,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
         }
 
         "returns OK when successful for fire or flood" in new SetUp {
-          mockResponseForAppealSubmissionStub(OK, enrolmentKey, penaltyNumber = "123456789")
+          mockResponseForAppealSubmissionStub(OK, penaltyNumber = "123456789")
 
           val jsonToSubmit: JsValue = Json.parse(
             """
@@ -523,7 +522,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
         }
 
         "returns OK when successful for loss of staff" in new SetUp{
-          mockResponseForAppealSubmissionStub(OK, enrolmentKey, penaltyNumber = "123456789")
+          mockResponseForAppealSubmissionStub(OK, penaltyNumber = "123456789")
 
           val jsonToSubmit: JsValue = Json.parse(
             """
@@ -551,7 +550,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
         }
 
         "returns OK when successful for technical issues" in new SetUp {
-          mockResponseForAppealSubmissionStub(OK, enrolmentKey, penaltyNumber = "123456789")
+          mockResponseForAppealSubmissionStub(OK, penaltyNumber = "123456789")
 
           val jsonToSubmit: JsValue = Json.parse(
             """
@@ -581,7 +580,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
 
         "returns OK when successful for health" when {
           "there has been no hospital stay" in new SetUp {
-            mockResponseForAppealSubmissionStub(OK, enrolmentKey, penaltyNumber = "123456789")
+            mockResponseForAppealSubmissionStub(OK, penaltyNumber = "123456789")
 
             val jsonToSubmit: JsValue = Json.parse(
               """
@@ -611,7 +610,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
           }
 
           "there is an ongoing hospital stay" in new SetUp {
-            mockResponseForAppealSubmissionStub(OK, enrolmentKey, penaltyNumber = "123456789")
+            mockResponseForAppealSubmissionStub(OK, penaltyNumber = "123456789")
 
             val jsonToSubmit: JsValue = Json.parse(
               """
@@ -641,7 +640,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
           }
 
           "there has been a hospital stay" in new SetUp {
-            mockResponseForAppealSubmissionStub(OK, enrolmentKey, penaltyNumber = "123456789")
+            mockResponseForAppealSubmissionStub(OK, penaltyNumber = "123456789")
 
             val jsonToSubmit: JsValue = Json.parse(
               """
@@ -675,7 +674,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
         "returns OK when successful for other with file upload" in new SetUp {
 
           mockStubResponseForAuthorisedUser
-          mockResponseForAppealSubmissionStub(OK, enrolmentKey, penaltyNumber = "123456789")
+          mockResponseForAppealSubmissionStub(OK, penaltyNumber = "123456789")
           mockResponseForFileNotificationOrchestrator(OK)
 
           val jsonToSubmit: JsValue = Json.parse(
@@ -724,7 +723,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
         }
 
         "returns OK when successful for other with file upload (audit storage failure) - single appeal" in new SetUp {
-          mockResponseForAppealSubmissionStub(OK, enrolmentKey, penaltyNumber = "123456789")
+          mockResponseForAppealSubmissionStub(OK, penaltyNumber = "123456789")
           mockResponseForFileNotificationOrchestrator(INTERNAL_SERVER_ERROR)
 
           val jsonToSubmit: JsValue = Json.parse(
@@ -781,7 +780,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
         "returns OK when successful for LPP" in new SetUp {
 
           mockStubResponseForAuthorisedUser
-          mockResponseForAppealSubmissionStub(OK, enrolmentKey, isLPP = true, penaltyNumber = "123456789")
+          mockResponseForAppealSubmissionStub(OK, penaltyNumber = "123456789")
 
           val jsonToSubmit: JsValue = Json.parse(
             """
@@ -805,7 +804,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
               |""".stripMargin)
           val result: WSResponse = await(
             buildClientForRequestToApp(
-              uri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=true&penaltyNumber=123456789&correlationId=uuid-1")
+              uri = s"/$r/appeals/submit-appeal/$it/$i?penaltyNumber=123456789&correlationId=uuid-1")
               .post(
                 jsonToSubmit
               ))
@@ -814,7 +813,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
 
         "returns OK when successful for other with file upload (audit storage failure) - part of multi appeal" in new SetUp {
           mockStubResponseForAuthorisedUser
-          mockResponseForAppealSubmissionStub(OK, enrolmentKey, penaltyNumber = "123456789")
+          mockResponseForAppealSubmissionStub(OK, penaltyNumber = "123456789")
           mockResponseForFileNotificationOrchestrator(INTERNAL_SERVER_ERROR)
 
           val jsonToSubmit: JsValue = Json.parse(
@@ -863,7 +862,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
           )
 
           val result: WSResponse = await(buildClientForRequestToApp(
-            uri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=false&penaltyNumber=123456789&correlationId=uuid-1&isMultiAppeal=true"
+            uri = s"/$r/appeals/submit-appeal/$it/$i?penaltyNumber=123456789&correlationId=uuid-1&isMultiAppeal=true"
           ).post(
             jsonToSubmit
           ))
@@ -881,14 +880,14 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
       "return BAD_REQUEST (400)" when {
         "no JSON body is in the request" in new SetUp {
           val result: WSResponse = await(buildClientForRequestToApp(
-            uri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=true&penaltyNumber=123456789&correlationId=uuid-1"
+            uri = s"/$r/appeals/submit-appeal/$it/$i?penaltyNumber=123456789&correlationId=uuid-1"
           ).post(""))
           result.status shouldBe BAD_REQUEST
         }
 
         "JSON body is present but it can not be parsed to a model" in new SetUp {
           val result: WSResponse = await(buildClientForRequestToApp(
-            uri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=true&penaltyNumber=123456789&correlationId=uuid-1"
+            uri = s"/$r/appeals/submit-appeal/$it/$i?penaltyNumber=123456789&correlationId=uuid-1"
           ).post(Json.parse("{}")))
           result.status shouldBe BAD_REQUEST
         }
@@ -896,7 +895,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
 
       "return error status code" when {
         "the call to PEGA/stub fails" in new SetUp {
-          mockResponseForAppealSubmissionStub(GATEWAY_TIMEOUT, enrolmentKey, penaltyNumber = "123456789")
+          mockResponseForAppealSubmissionStub(GATEWAY_TIMEOUT, penaltyNumber = "123456789")
 
           val jsonToSubmit: JsValue = Json.parse(
             """
@@ -925,7 +924,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
         }
 
         "the call to PEGA/stub has a fault" in new SetUp {
-          mockResponseForAppealSubmissionStubFault(enrolmentKey, penaltyNumber = "123456789")
+          mockResponseForAppealSubmissionStubFault(penaltyNumber = "123456789")
 
           val jsonToSubmit: JsValue = Json.parse(
             """
@@ -1292,7 +1291,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
               |		}
               |}
               |""".stripMargin)
-          val result: WSResponse = await(buildClientForRequestToApp(uri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=true&penaltyNumber=123456789&correlationId=uuid-1").post(
+          val result: WSResponse = await(buildClientForRequestToApp(uri = s"/$r/appeals/submit-appeal/$it/$i?penaltyNumber=123456789&correlationId=uuid-1").post(
             jsonToSubmit
           ))
           result.status shouldBe OK
@@ -1347,7 +1346,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
           )
 
           val result: WSResponse = await(buildClientForRequestToApp(
-            uri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=false&penaltyNumber=123456789&correlationId=uuid-1&isMultiAppeal=true"
+            uri = s"/$r/appeals/submit-appeal/$it/$i?penaltyNumber=123456789&correlationId=uuid-1&isMultiAppeal=true"
           ).post(
             jsonToSubmit
           ))
@@ -1365,14 +1364,14 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
       "return BAD_REQUEST (400)" when {
         "no JSON body is in the request" in new SetUp(hipFeatureSwitch = true) {
           val result: WSResponse = await(buildClientForRequestToApp(
-            uri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=true&penaltyNumber=123456789&correlationId=uuid-1"
+            uri = s"/$r/appeals/submit-appeal/$it/$i?penaltyNumber=123456789&correlationId=uuid-1"
           ).post(""))
           result.status shouldBe BAD_REQUEST
         }
 
         "JSON body is present but it can not be parsed to a model" in new SetUp(hipFeatureSwitch = true) {
           val result: WSResponse = await(buildClientForRequestToApp(
-            uri = s"/$r/appeals/submit-appeal/$it/$i?isLPP=true&penaltyNumber=123456789&correlationId=uuid-1"
+            uri = s"/$r/appeals/submit-appeal/$it/$i?penaltyNumber=123456789&correlationId=uuid-1"
           ).post(Json.parse("{}")))
           result.status shouldBe BAD_REQUEST
         }
@@ -1380,7 +1379,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
 
       "return error status code" when {
         "the call to PEGA/stub fails" in new SetUp {
-          mockResponseForAppealSubmissionStub(GATEWAY_TIMEOUT, enrolmentKey, penaltyNumber = "123456789")
+          mockResponseForAppealSubmissionStub(GATEWAY_TIMEOUT, penaltyNumber = "123456789")
 
           val jsonToSubmit: JsValue = Json.parse(
             """
@@ -1409,7 +1408,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
         }
 
         "the call to PEGA/stub has a fault" in new SetUp {
-          mockResponseForAppealSubmissionStubFault(enrolmentKey, penaltyNumber = "123456789")
+          mockResponseForAppealSubmissionStubFault(penaltyNumber = "123456789")
 
           val jsonToSubmit: JsValue = Json.parse(
             """

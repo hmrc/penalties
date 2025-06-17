@@ -93,7 +93,7 @@ class RegimePEGAConnectorSpec extends SpecBase with FeatureSwitching with LogCap
         )
       )
       val result: AppealSubmissionResponse = await(connector.submitAppeal(modelToSend,
-        vrn123456789, isLPP = false, penaltyNumber = "1234567890", correlationId = "id"))
+        vrn123456789, penaltyNumber = "1234567890", correlationId = "id"))
       result shouldBe Right(appealResponseModel)
 
       argumentCaptorOtherHeaders.getValue.find(_._1 == "Authorization").get._2 shouldBe "Bearer placeholder"
@@ -116,7 +116,7 @@ class RegimePEGAConnectorSpec extends SpecBase with FeatureSwitching with LogCap
         appealLevel = FirstStageAppeal,
         customerReferenceNo = "123456789",
         dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
-        isLPP = false,
+        isLPP = true,
         appealSubmittedBy = "client",
         agentDetails = Some(AgentDetails(agentReferenceNo = "AGENT1", isExcuseRelatedToAgent = true)),
         appealInformation = CrimeAppealInformation(
@@ -132,7 +132,7 @@ class RegimePEGAConnectorSpec extends SpecBase with FeatureSwitching with LogCap
         )
       )
       val result: AppealSubmissionResponse = await(connector.submitAppeal(modelToSend,
-        vrn123456789, isLPP = true, penaltyNumber = "1234567890", correlationId = "id"))
+        vrn123456789, penaltyNumber = "1234567890", correlationId = "id"))
       result shouldBe Right(appealResponseModel)
     }
 
@@ -151,7 +151,7 @@ class RegimePEGAConnectorSpec extends SpecBase with FeatureSwitching with LogCap
         appealLevel = FirstStageAppeal,
         customerReferenceNo = "123456789",
         dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
-        isLPP = false,
+        isLPP = true,
         appealSubmittedBy = "client",
         agentDetails = Some(AgentDetails(agentReferenceNo = "AGENT1", isExcuseRelatedToAgent = true)),
         appealInformation = CrimeAppealInformation(
@@ -169,7 +169,7 @@ class RegimePEGAConnectorSpec extends SpecBase with FeatureSwitching with LogCap
       withCaptureOfLoggingFrom(logger) {
         logs => {
           val result: AppealSubmissionResponse = await(connector.submitAppeal(modelToSend,
-            vrn123456789, isLPP = true, penaltyNumber = "1234567890", correlationId = "id"))
+            vrn123456789, penaltyNumber = "1234567890", correlationId = "id"))
           logs.exists(_.getMessage.contains(PagerDutyKeys.RECEIVED_4XX_FROM_1808_API.toString)) shouldBe true
           result shouldBe Left(UnexpectedFailure(BAD_REQUEST, ""))
         }
@@ -191,7 +191,7 @@ class RegimePEGAConnectorSpec extends SpecBase with FeatureSwitching with LogCap
         appealLevel = FirstStageAppeal,
         customerReferenceNo = "123456789",
         dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
-        isLPP = false,
+        isLPP = true,
         appealSubmittedBy = "client",
         agentDetails = Some(AgentDetails(agentReferenceNo = "AGENT1", isExcuseRelatedToAgent = true)),
         appealInformation = CrimeAppealInformation(
@@ -209,7 +209,7 @@ class RegimePEGAConnectorSpec extends SpecBase with FeatureSwitching with LogCap
       withCaptureOfLoggingFrom(logger) {
         logs => {
           val result: AppealSubmissionResponse = await(connector.submitAppeal(modelToSend,
-            vrn123456789, isLPP = true, penaltyNumber = "1234567890", correlationId = "id"))
+            vrn123456789, penaltyNumber = "1234567890", correlationId = "id"))
           logs.exists(_.getMessage.contains(PagerDutyKeys.RECEIVED_5XX_FROM_1808_API.toString)) shouldBe true
           result shouldBe Left(UnexpectedFailure(INTERNAL_SERVER_ERROR, ""))
         }
@@ -231,7 +231,7 @@ class RegimePEGAConnectorSpec extends SpecBase with FeatureSwitching with LogCap
         appealLevel = FirstStageAppeal,
         customerReferenceNo = "123456789",
         dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
-        isLPP = false,
+        isLPP = true,
         appealSubmittedBy = "client",
         agentDetails = Some(AgentDetails(agentReferenceNo = "AGENT1", isExcuseRelatedToAgent = true)),
         appealInformation = CrimeAppealInformation(
@@ -249,7 +249,7 @@ class RegimePEGAConnectorSpec extends SpecBase with FeatureSwitching with LogCap
       withCaptureOfLoggingFrom(logger) {
         logs => {
           val result: AppealSubmissionResponse = await(connector.submitAppeal(modelToSend,
-            vrn123456789, isLPP = true, penaltyNumber = "1234567890", correlationId = "id"))
+            vrn123456789, penaltyNumber = "1234567890", correlationId = "id"))
           logs.exists(_.getMessage.contains(PagerDutyKeys.UNKNOWN_EXCEPTION_CALLING_1808_API.toString)) shouldBe true
           result shouldBe Left(UnexpectedFailure(INTERNAL_SERVER_ERROR, "An unknown exception occurred. Contact the Penalties team for more information."))
         }

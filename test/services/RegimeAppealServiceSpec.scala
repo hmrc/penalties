@@ -100,29 +100,29 @@ class RegimeAppealServiceSpec extends SpecBase with LogCapturing with FeatureSwi
 
       "return the response from the connector i.e. act as a pass-through function" in new Setup {
         when(mockAppealsConnector.submitAppeal(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(),
-          ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(Right(appealResponseModel)))
+          ArgumentMatchers.any())).thenReturn(Future.successful(Right(appealResponseModel)))
 
         val result: Either[AppealsParser.ErrorResponse, AppealResponseModel] = await(
-          service.submitAppeal(modelToPassToServer, enrolmentKey, isLPP = false, penaltyNumber = "123456789", correlationId = correlationId))
+          service.submitAppeal(modelToPassToServer, enrolmentKey, penaltyNumber = "123456789", correlationId = correlationId))
         result shouldBe Right(appealResponseModel)
       }
 
       "return the response from the connector on error i.e. act as a pass-through function" in new Setup {
         when(mockAppealsConnector.submitAppeal(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(),
-          ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(
+          ArgumentMatchers.any())).thenReturn(Future.successful(
           Left(UnexpectedFailure(BAD_GATEWAY, s"Unexpected response, status $BAD_GATEWAY returned"))))
 
         val result: Either[AppealsParser.ErrorResponse, AppealResponseModel] = await(service.submitAppeal(
-          modelToPassToServer, enrolmentKey, isLPP = false, penaltyNumber = "123456789", correlationId = correlationId))
+          modelToPassToServer, enrolmentKey, penaltyNumber = "123456789", correlationId = correlationId))
         result shouldBe Left(UnexpectedFailure(BAD_GATEWAY, s"Unexpected response, status $BAD_GATEWAY returned"))
       }
 
       "throw an exception when the connector throws an exception" in new Setup {
         when(mockAppealsConnector.submitAppeal(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(),
-          ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.failed(new Exception("Something went wrong")))
+          ArgumentMatchers.any())).thenReturn(Future.failed(new Exception("Something went wrong")))
 
         val result: Exception = intercept[Exception](await(service.submitAppeal(
-          modelToPassToServer, enrolmentKey, isLPP = false, penaltyNumber = "123456789", correlationId = correlationId)))
+          modelToPassToServer, enrolmentKey, penaltyNumber = "123456789", correlationId = correlationId)))
         result.getMessage shouldBe "Something went wrong"
       }
     }
@@ -133,7 +133,7 @@ class RegimeAppealServiceSpec extends SpecBase with LogCapturing with FeatureSwi
           .thenReturn(Future.successful(Right(appealResponseModel)))
 
         val result: Either[AppealsParser.ErrorResponse, AppealResponseModel] = await(
-          service.submitAppeal(modelToPassToServer, enrolmentKey, isLPP = false, penaltyNumber = "123456789", correlationId = correlationId))
+          service.submitAppeal(modelToPassToServer, enrolmentKey, penaltyNumber = "123456789", correlationId = correlationId))
         result shouldBe Right(appealResponseModel)
       }
 
@@ -142,7 +142,7 @@ class RegimeAppealServiceSpec extends SpecBase with LogCapturing with FeatureSwi
           .thenReturn(Future.successful(Left(UnexpectedFailure(BAD_GATEWAY, s"Unexpected response, status $BAD_GATEWAY returned"))))
 
         val result: Either[AppealsParser.ErrorResponse, AppealResponseModel] = await(service.submitAppeal(
-          modelToPassToServer, enrolmentKey, isLPP = false, penaltyNumber = "123456789", correlationId = correlationId))
+          modelToPassToServer, enrolmentKey, penaltyNumber = "123456789", correlationId = correlationId))
         result shouldBe Left(UnexpectedFailure(BAD_GATEWAY, s"Unexpected response, status $BAD_GATEWAY returned"))
       }
 
@@ -151,7 +151,7 @@ class RegimeAppealServiceSpec extends SpecBase with LogCapturing with FeatureSwi
           .thenReturn(Future.failed(new Exception("Something went wrong")))
 
         val result: Exception = intercept[Exception](await(service.submitAppeal(
-          modelToPassToServer, enrolmentKey, isLPP = false, penaltyNumber = "123456789", correlationId = correlationId)))
+          modelToPassToServer, enrolmentKey, penaltyNumber = "123456789", correlationId = correlationId)))
         result.getMessage shouldBe "Something went wrong"
       }
     }
