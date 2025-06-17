@@ -43,14 +43,13 @@ class RegimeAppealService @Inject()(appealsConnector: RegimePEGAConnector,
 
   def submitAppeal(appealSubmission: AppealSubmission,
                    enrolmentKey: AgnosticEnrolmentKey,
-                   isLPP: Boolean,
                    penaltyNumber: String,
                    correlationId: String)
                   (implicit headerCarrier:HeaderCarrier): Future[Either[AppealsParser.ErrorResponse, AppealResponseModel]] = {
     val response: Future[AppealsParser.AppealSubmissionResponse] = if (isEnabled(CallAPI1808HIP)) {
       hipAppealsConnector.submitAppeal(appealSubmission, penaltyNumber, correlationId)
     } else {
-      appealsConnector.submitAppeal(appealSubmission, enrolmentKey, isLPP, penaltyNumber, correlationId)
+      appealsConnector.submitAppeal(appealSubmission, enrolmentKey, penaltyNumber, correlationId)
     }
     response.flatMap {
       _.fold(

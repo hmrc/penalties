@@ -63,7 +63,7 @@ class RegimePEGAConnectorISpec extends IntegrationSpecCommonBase with RegimeAppe
           isClientResponsibleForLateSubmission = None
         )
       )
-      val result = await(connector.submitAppeal(modelToSend, aKey, isLPP = false, penaltyNumber = "1234567890", correlationId))
+      val result = await(connector.submitAppeal(modelToSend, aKey, penaltyNumber = "1234567890", correlationId))
       result.isRight shouldBe true
     }
 
@@ -117,7 +117,7 @@ class RegimePEGAConnectorISpec extends IntegrationSpecCommonBase with RegimeAppe
           isClientResponsibleForLateSubmission = None
         )
       )
-      val result = await(connector.submitAppeal(modelToSend, aKey, isLPP = true, penaltyNumber = "123456789", correlationId))
+      val result = await(connector.submitAppeal(modelToSend, aKey, penaltyNumber = "123456789", correlationId))
       result.isRight shouldBe true
     }
   }
