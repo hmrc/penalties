@@ -131,16 +131,15 @@ The following query parameters should be specified:
 
 | Parameter       | Type    | Mandatory | Notes                                  |
 |-----------------|---------|-----------|----------------------------------------|
-| `isLPP`         | Boolean | Yes       |                                        |
 | `penaltyNumber` | String  | Yes       |                                        |
 | `correlationId` | String  | Yes       |                                        |
 | `isMultiAppeal` | Boolean | No        | default = `false`                      |
 
-URL format - `/penalties/{regime}/appeals/submit-appeal/{idType}/{id}?{isLPP}=[boolValue]&{penaltyNumber}=[penaltyId]&{correlationId}=[value]&{isMultiAppeal}=[boolValue]`
+URL format - `/penalties/{regime}/appeals/submit-appeal/{idType}/{id}?{penaltyNumber}=[penaltyId]&{correlationId}=[value]&{isMultiAppeal}=[boolValue]`
 
-Example VATC URL - `/penalties/vatc/appeals/submit-appeal/vrn/711224466/?isLPP=false&penaltyNumber=123456786&correlationId=a8010aef-9253-45a8-b8ac-c843dc2d3318&isMultiAppeal=true`
+Example VATC URL - `/penalties/vatc/appeals/submit-appeal/vrn/711224466/?penaltyNumber=123456786&correlationId=a8010aef-9253-45a8-b8ac-c843dc2d3318&isMultiAppeal=true`
 
-Example ITSA URL - `/penalties/itsa/appeals/submit-appeal/nino/AA803080A/?isLPP=false&penaltyNumber=123456786&correlationId=a8010aef-9253-45a8-b8ac-c843dc2d3318`
+Example ITSA URL - `/penalties/itsa/appeals/submit-appeal/nino/AA803080A/?penaltyNumber=123456786&correlationId=a8010aef-9253-45a8-b8ac-c843dc2d3318`
 
 Example payload:
 ```
@@ -166,8 +165,9 @@ Example payload:
 }
 ```
 Note:
-    Valid _appealLevel_ values are "01" or "02", but is not mandatory from downstream service.
-    If not present in downstream model it will be defaulted to "01" before model is processed by this service. 
+- _appealLevel_ is only present in the API submission when submitting to HIP. Submissions to IF will exclude _appealLevel_ from the request body. 
+- Valid _appealLevel_ values are "01" or "02", but is not mandatory from downstream service.
+- If not present in downstream model it will be defaulted to "01" before model is processed by this service. 
 
 | Scenario                                         | Status |
 |--------------------------------------------------|--------|
