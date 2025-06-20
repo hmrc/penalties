@@ -488,7 +488,22 @@ object AppealSubmission {
     }
   }
 
-  implicit val apiWrites: Writes[AppealSubmission] = (appealSubmission: AppealSubmission) => {
+  val apiWrites: Writes[AppealSubmission] = (appealSubmission: AppealSubmission) => {
+    val dateOfAppealZoned: String = appealSubmission.dateOfAppeal.toInstant(ZoneOffset.UTC).toString
+    Json.obj(
+      "sourceSystem" -> appealSubmission.sourceSystem,
+      "taxRegime" -> appealSubmission.taxRegime,
+      "customerReferenceNo" -> appealSubmission.customerReferenceNo,
+      "dateOfAppeal" -> dateOfAppealZoned,
+      "isLPP" -> appealSubmission.isLPP,
+      "appealSubmittedBy" -> appealSubmission.appealSubmittedBy,
+      "appealInformation" -> parseAppealInformationToJson(appealSubmission.appealInformation)
+    ).deepMerge(
+      appealSubmission.agentDetails.fold(Json.obj())(agentDetails => Json.obj("agentDetails" -> agentDetails))
+    )
+  }
+
+  val apiWritesHIP: Writes[AppealSubmission] = (appealSubmission: AppealSubmission) => {
     val dateOfAppealZoned: String = appealSubmission.dateOfAppeal.toInstant(ZoneOffset.UTC).toString
     Json.obj(
       "sourceSystem" -> appealSubmission.sourceSystem,
