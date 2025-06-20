@@ -108,11 +108,8 @@ class AppConfig @Inject()(val config: Configuration, servicesConfig: ServicesCon
     else pegaBase + s"/penalty/first-stage-appeal/$penaltyNumber"
   }
 
-  def getRegimeAgnosticAppealSubmissionUrl(agnosticEnrolmenKey: AgnosticEnrolmentKey, isLPP: Boolean, penaltyNumber: String): String = {
-    val regime = agnosticEnrolmenKey.regime.value;
-    val idType = agnosticEnrolmenKey.idType.value;
-    val idValue = agnosticEnrolmenKey.id.value;
-    if (!isEnabled(CallPEGA)) stubBase + s"/penalties-stub/appeals/submit?regime=$regime&idType=$idType&id=$idValue&isLPP=$isLPP&penaltyNumber=$penaltyNumber"
+  def getRegimeAgnosticAppealSubmissionUrl(penaltyNumber: String): String = {
+    if (!isEnabled(CallPEGA)) stubBase + s"/penalties-stub/penalty/first-stage-appeal/$penaltyNumber"
     else pegaBase + s"/penalty/first-stage-appeal/$penaltyNumber"
   }
 

@@ -63,13 +63,13 @@ class RegimePEGAConnectorISpec extends IntegrationSpecCommonBase with RegimeAppe
           isClientResponsibleForLateSubmission = None
         )
       )
-      val result = await(connector.submitAppeal(modelToSend, aKey, isLPP = false, penaltyNumber = "1234567890", correlationId))
+      val result = await(connector.submitAppeal(modelToSend, penaltyNumber = "1234567890", correlationId))
       result.isRight shouldBe true
     }
 
     "Jsonify the model and send the request and return the response - when PEGA feature switch disabled, call stub" in new Setup {
       disableFeatureSwitch(CallPEGA)
-      mockResponseForAppealSubmissionStub(Status.OK, aKey, penaltyNumber = "123456789")
+      mockResponseForAppealSubmissionStub(Status.OK, penaltyNumber = "123456789")
       val modelToSend: AppealSubmission = AppealSubmission(
         taxRegime = "VAT",
         appealLevel = FirstStageAppeal,
@@ -90,13 +90,13 @@ class RegimePEGAConnectorISpec extends IntegrationSpecCommonBase with RegimeAppe
           isClientResponsibleForLateSubmission = None
         )
       )
-      val result = await(connector.submitAppeal(modelToSend, aKey, isLPP = false, penaltyNumber = "123456789", correlationId))
+      val result = await(connector.submitAppeal(modelToSend, penaltyNumber = "123456789", correlationId))
       result.isRight shouldBe true
     }
 
     "Jsonify the model and send the request and return the response - when PEGA feature switch disabled, call stub - for LPP" in new Setup {
       disableFeatureSwitch(CallPEGA)
-      mockResponseForAppealSubmissionStub(Status.OK, aKey, isLPP = true, penaltyNumber = "123456789")
+      mockResponseForAppealSubmissionStub(Status.OK, penaltyNumber = "123456789")
       val modelToSend: AppealSubmission = AppealSubmission  (
         taxRegime = "VAT",
         appealLevel = FirstStageAppeal,
@@ -117,7 +117,7 @@ class RegimePEGAConnectorISpec extends IntegrationSpecCommonBase with RegimeAppe
           isClientResponsibleForLateSubmission = None
         )
       )
-      val result = await(connector.submitAppeal(modelToSend, aKey, isLPP = true, penaltyNumber = "123456789", correlationId))
+      val result = await(connector.submitAppeal(modelToSend, penaltyNumber = "123456789", correlationId))
       result.isRight shouldBe true
     }
   }

@@ -19,7 +19,6 @@ package connectors
 import config.AppConfig
 import config.featureSwitches.CallAPI1808HIP
 import connectors.parsers.AppealsParser.{AppealSubmissionResponse, AppealSubmissionResponseReads, UnexpectedFailure}
-import models.AgnosticEnrolmentKey
 import models.appeals.AppealSubmission
 import play.api.http.HeaderNames._
 import play.api.http.MimeTypes
@@ -35,16 +34,11 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class RegimePEGAConnector @Inject() (httpClient: HttpClient, appConfig: AppConfig)(implicit ec: ExecutionContext) {
 
-  def submitAppeal(appealSubmission: AppealSubmission,
-                   enrolmentKey: AgnosticEnrolmentKey,
-                   isLPP: Boolean,
-                   penaltyNumber: String,
-                   correlationId: String): Future[AppealSubmissionResponse] = {
-
+  def submitAppeal(appealSubmission: AppealSubmission, penaltyNumber: String, correlationId: String): Future[AppealSubmissionResponse] = {
     implicit val hc: HeaderCarrier = headersForEIS(correlationId, appConfig.eiOutboundBearerToken, appConfig.eisEnvironment)
     implicit val writesAppealSubmission: Writes[AppealSubmission] =
       if (appConfig.isEnabled(CallAPI1808HIP)) AppealSubmission.apiWritesHIP else AppealSubmission.apiWrites
-    val submitAppealUrl = appConfig.getRegimeAgnosticAppealSubmissionUrl(enrolmentKey, isLPP, penaltyNumber)
+    val submitAppealUrl = appConfig.getRegimeAgnosticAppealSubmissionUrl(penaltyNumber)
 
     httpClient
       .POST[AppealSubmission, AppealSubmissionResponse](submitAppealUrl, appealSubmission, hc.otherHeaders)
