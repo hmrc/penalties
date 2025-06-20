@@ -608,6 +608,8 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       |   "lateAppeal": false
       |}
       |""".stripMargin)
+  
+  private val defaultAppealSubmissionWrites = AppealSubmission.apiWritesHIP
 
   "parseAppealInformationFromJson" should {
     "for bereavement" must {
@@ -1336,7 +1338,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
     }
   }
 
-  "apiWrites" should {
+  "apiWritesHIP" should {
     "for bereavement" must {
       "write the model to JSON" in {
         val modelToCovertToJson: AppealSubmission = AppealSubmission(
@@ -1381,10 +1383,11 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           )
         )
 
-        val result = Json.toJson(modelToCovertToJson)(AppealSubmission.apiWrites)
+        val result = Json.toJson(modelToCovertToJson)(defaultAppealSubmissionWrites)
         result shouldBe jsonRepresentingModel
       }
     }
+
     "for crime" must {
       "write the model to JSON" in {
         val modelToConvertToJson: AppealSubmission = AppealSubmission(
@@ -1431,7 +1434,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           )
         )
 
-        val result = Json.toJson(modelToConvertToJson)(AppealSubmission.apiWrites)
+        val result = Json.toJson(modelToConvertToJson)(defaultAppealSubmissionWrites)
         result shouldBe jsonRepresentingModel
       }
     }
@@ -1481,7 +1484,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           )
         )
 
-        val result = Json.toJson(modelToConvertToJson)(AppealSubmission.apiWrites)
+        val result = Json.toJson(modelToConvertToJson)(defaultAppealSubmissionWrites)
         result shouldBe jsonRepresentingModel
       }
     }
@@ -1530,7 +1533,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           )
         )
 
-        val result = Json.toJson(modelToConvertToJson)(AppealSubmission.apiWrites)
+        val result = Json.toJson(modelToConvertToJson)(defaultAppealSubmissionWrites)
         result shouldBe jsonRepresentingModel
       }
     }
@@ -1584,7 +1587,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
               "isClientResponsibleForLateSubmission" -> true
             )
           )
-          val result = Json.toJson(modelToConvertToJson)(AppealSubmission.apiWrites)
+          val result = Json.toJson(modelToConvertToJson)(defaultAppealSubmissionWrites)
           result shouldBe jsonRepresentingModel
         }
 
@@ -1634,7 +1637,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
               "isClientResponsibleForLateSubmission" -> true
             )
           )
-          val result = Json.toJson(modelToConvertToJson)(AppealSubmission.apiWrites)
+          val result = Json.toJson(modelToConvertToJson)(defaultAppealSubmissionWrites)
           result shouldBe jsonRepresentingModel
         }
 
@@ -1684,7 +1687,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
               "isClientResponsibleForLateSubmission" -> true
             )
           )
-          val result = Json.toJson(modelToConvertToJson)(AppealSubmission.apiWrites)
+          val result = Json.toJson(modelToConvertToJson)(defaultAppealSubmissionWrites)
           result shouldBe jsonRepresentingModel
         }
       }
@@ -1736,7 +1739,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           )
         )
 
-        val result = Json.toJson(modelToConvertToJson)(AppealSubmission.apiWrites)
+        val result = Json.toJson(modelToConvertToJson)(defaultAppealSubmissionWrites)
         result shouldBe jsonRepresentingModel
       }
     }
@@ -1789,7 +1792,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           )
         )
 
-        val result = Json.toJson(modelToConvertToJson)(AppealSubmission.apiWrites)
+        val result = Json.toJson(modelToConvertToJson)(defaultAppealSubmissionWrites)
         result shouldBe jsonRepresentingModel
       }
 
@@ -1839,7 +1842,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           )
         )
 
-        val result = Json.toJson(modelToConvertToJson)(AppealSubmission.apiWrites)
+        val result = Json.toJson(modelToConvertToJson)(defaultAppealSubmissionWrites)
         result shouldBe jsonRepresentingModel
       }
 
@@ -1891,12 +1894,60 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           )
         )
 
-        val result = Json.toJson(modelToConvertToJson)(AppealSubmission.apiWrites)
+        val result = Json.toJson(modelToConvertToJson)(defaultAppealSubmissionWrites)
         result shouldBe jsonRepresentingModel
       }
     }
   }
 
+  "apiWrites" should {
+    "write the model to JSON the same as apiWritesHIP, but excluding appealLevel from the model" in {
+        val modelToCovertToJson: AppealSubmission = AppealSubmission(
+          taxRegime = "VAT",
+          appealLevel = FirstStageAppeal,
+          customerReferenceNo = "123456789",
+          dateOfAppeal = LocalDateTime.parse("2020-01-01T00:00:00"),
+          isLPP = false,
+          appealSubmittedBy = "agent",
+          agentDetails = Some(AgentDetails(agentReferenceNo = "AGENT1", isExcuseRelatedToAgent = true)),
+          appealInformation = BereavementAppealInformation(
+            startDateOfEvent = "2021-04-23T00:00:00",
+            statement = None,
+            lateAppeal = true,
+            lateAppealReason = Some("Reason"),
+            isClientResponsibleForSubmission = Some(false),
+            isClientResponsibleForLateSubmission = Some(true),
+            honestyDeclaration = true,
+            reasonableExcuse = "bereavement"
+          )
+        )
+        val jsonRepresentingModel: JsValue = Json.obj(
+          "appealSubmittedBy" -> "agent",
+          "sourceSystem" -> "MDTP",
+          "taxRegime" -> "VAT",
+          "customerReferenceNo" -> "123456789",
+          "dateOfAppeal" -> "2020-01-01T00:00:00Z",
+          "isLPP" -> false,
+          "agentDetails" -> Json.obj(
+            "agentReferenceNo" -> "AGENT1",
+            "isExcuseRelatedToAgent" -> true
+          ),
+          "appealInformation" -> Json.obj(
+            "reasonableExcuse" -> "bereavement",
+            "honestyDeclaration" -> true,
+            "startDateOfEvent" -> "2021-04-23T00:00:00Z",
+            "lateAppeal" -> true,
+            "lateAppealReason" -> "Reason",
+            "isClientResponsibleForSubmission" -> false,
+            "isClientResponsibleForLateSubmission" -> true
+          )
+        )
+
+        val result = Json.toJson(modelToCovertToJson)(AppealSubmission.apiWrites)
+        result shouldBe jsonRepresentingModel
+      }
+  }
+  
   "BereavementAppealInformation" should {
     "bereavementAppealWrites" must {
       "write the appeal model to JSON" in {
