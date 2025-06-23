@@ -103,8 +103,8 @@ class AppConfig @Inject()(val config: Configuration, servicesConfig: ServicesCon
     else etmpBase + s"/penalty/financial-data/NINO/$nino/ITSA"
   }
 
-  def getAppealSubmissionURL(enrolmentKey: String, isLPP: Boolean, penaltyNumber: String): String = {
-    if (!isEnabled(CallPEGA)) stubBase + s"/penalties-stub/appeals/submit?enrolmentKey=$enrolmentKey&isLPP=$isLPP&penaltyNumber=$penaltyNumber"
+  def getAppealSubmissionURL(penaltyNumber: String): String = {
+    if (!isEnabled(CallPEGA)) stubBase + s"/penalties-stub/penalty/first-stage-appeal/$penaltyNumber"
     else pegaBase + s"/penalty/first-stage-appeal/$penaltyNumber"
   }
 
