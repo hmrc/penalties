@@ -50,7 +50,7 @@ class AppealService @Inject()(appealsConnector: PEGAConnector,
     val response: Future[AppealsParser.AppealSubmissionResponse] = if (isEnabled(CallAPI1808HIP)) {
       hipAppealsConnector.submitAppeal(appealSubmission, penaltyNumber, correlationId)
     } else {
-      appealsConnector.submitAppeal(appealSubmission, enrolmentKey, isLPP, penaltyNumber, correlationId)
+      appealsConnector.submitAppeal(appealSubmission, penaltyNumber, correlationId)
     }
     response.flatMap {
       _.fold(

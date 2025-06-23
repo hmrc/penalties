@@ -58,13 +58,13 @@ class PEGAConnectorISpec extends IntegrationSpecCommonBase with AppealWiremock w
          isClientResponsibleForLateSubmission = None
        )
      )
-     val result = await(connector.submitAppeal(modelToSend, "HMRC-MTD-VAT~VRN~1234567890", isLPP = false, penaltyNumber = "1234567890", correlationId))
+     val result = await(connector.submitAppeal(modelToSend, penaltyNumber = "1234567890", correlationId))
      result.isRight shouldBe true
    }
 
    "Jsonify the model and send the request and return the response - when PEGA feature switch disabled, call stub" in new Setup {
      disableFeatureSwitch(CallPEGA)
-     mockResponseForAppealSubmissionStub(Status.OK, "HMRC-MTD-VAT~VRN~123456789", penaltyNumber = "123456789")
+     mockResponseForAppealSubmissionStub(Status.OK, penaltyNumber = "123456789")
      val modelToSend: AppealSubmission = AppealSubmission(
        taxRegime = "VAT",
        appealLevel = FirstStageAppeal,
@@ -85,13 +85,13 @@ class PEGAConnectorISpec extends IntegrationSpecCommonBase with AppealWiremock w
          isClientResponsibleForLateSubmission = None
        )
      )
-     val result = await(connector.submitAppeal(modelToSend, "HMRC-MTD-VAT~VRN~123456789", isLPP = false, penaltyNumber = "123456789", correlationId))
+     val result = await(connector.submitAppeal(modelToSend, penaltyNumber = "123456789", correlationId))
      result.isRight shouldBe true
    }
 
    "Jsonify the model and send the request and return the response - when PEGA feature switch disabled, call stub - for LPP" in new Setup {
      disableFeatureSwitch(CallPEGA)
-     mockResponseForAppealSubmissionStub(Status.OK, "HMRC-MTD-VAT~VRN~123456789", isLPP = true, penaltyNumber = "123456789")
+     mockResponseForAppealSubmissionStub(Status.OK, penaltyNumber = "123456789")
      val modelToSend: AppealSubmission = AppealSubmission  (
        taxRegime = "VAT",
        appealLevel = FirstStageAppeal,
@@ -112,7 +112,7 @@ class PEGAConnectorISpec extends IntegrationSpecCommonBase with AppealWiremock w
          isClientResponsibleForLateSubmission = None
        )
      )
-     val result = await(connector.submitAppeal(modelToSend, "HMRC-MTD-VAT~VRN~123456789", isLPP = true, penaltyNumber = "123456789", correlationId))
+     val result = await(connector.submitAppeal(modelToSend, penaltyNumber = "123456789", correlationId))
      result.isRight shouldBe true
    }
  }
