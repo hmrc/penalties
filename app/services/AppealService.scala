@@ -17,15 +17,16 @@
 package services
 
 import config.AppConfig
-import config.featureSwitches.{FeatureSwitching, SanitiseFileName}
-import connectors.PEGAConnector
+import config.featureSwitches.{CallAPI1808HIP, FeatureSwitching, SanitiseFileName}
 import connectors.parsers.AppealsParser
+import connectors.{HIPConnector, PEGAConnector}
 import models.appeals.{AppealResponseModel, AppealSubmission, MultiplePenaltiesData}
 import models.getPenaltyDetails.GetPenaltyDetails
 import models.getPenaltyDetails.latePayment.{LPPDetails, LPPPenaltyCategoryEnum, LPPPenaltyStatusEnum}
 import models.notification._
 import models.upload.UploadJourney
 import play.api.Configuration
+import uk.gov.hmrc.http.HeaderCarrier
 import utils.Logger.logger
 import utils.{DateHelper, FileHelper, UUIDGenerator}
 
@@ -33,6 +34,7 @@ import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class AppealService @Inject()(appealsConnector: PEGAConnector,
+                              hipAppealsConnector: HIPConnector,
                               appConfig: AppConfig,
                               idGenerator: UUIDGenerator)(implicit ec: ExecutionContext, val config: Configuration) extends FeatureSwitching {
 
@@ -42,8 +44,15 @@ class AppealService @Inject()(appealsConnector: PEGAConnector,
                    enrolmentKey: String,
                    isLPP: Boolean,
                    penaltyNumber: String,
-                   correlationId: String): Future[Either[AppealsParser.ErrorResponse, AppealResponseModel]] = {
-    appealsConnector.submitAppeal(appealSubmission, enrolmentKey, isLPP, penaltyNumber, correlationId).flatMap {
+                   correlationId: String)
+                  (implicit headerCarrier:HeaderCarrier): Future[Either[AppealsParser.ErrorResponse, AppealResponseModel]] = {
+
+    val response: Future[AppealsParser.AppealSubmissionResponse] = if (isEnabled(CallAPI1808HIP)) {
+      hipAppealsConnector.submitAppeal(appealSubmission, penaltyNumber, correlationId)
+    } else {
+      appealsConnector.submitAppeal(appealSubmission, penaltyNumber, correlationId)
+    }
+    response.flatMap {
       _.fold(
         error => {
           logger.error(s"[AppealService][submitAppeal] - Submit appeal call failed with error: ${error.body} " +

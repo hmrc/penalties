@@ -17,15 +17,13 @@
 package controllers
 
 import config.featureSwitches.{CallDES, FeatureSwitching}
+import models.{Id, IdType, Regime}
 import org.scalatest.prop.TableDrivenPropertyChecks
 import play.api.libs.json.Json
 import play.api.test.Helpers._
 import utils.{AuthMock, IntegrationSpecCommonBase, RegimeComplianceWiremock}
-import models.{AgnosticEnrolmentKey, Id, IdType, Regime}
 
 class RegimeComplianceControllerISpec extends IntegrationSpecCommonBase with RegimeComplianceWiremock with FeatureSwitching with TableDrivenPropertyChecks with AuthMock{
-  val enrolmentKey: String = "HMRC-MTD-VAT~VRN~123456789"
-
   class Setup {
     enableFeatureSwitch(CallDES)
   }
@@ -35,8 +33,6 @@ class RegimeComplianceControllerISpec extends IntegrationSpecCommonBase with Reg
     (Regime("VATC"), IdType("VRN"), Id("123456789")),
     (Regime("ITSA"), IdType("NINO"), Id("AB123456C")),
   ).forEvery { (regime, idType, id) =>
-
-    val enrolmentKey = AgnosticEnrolmentKey(regime, idType, id) 
 
     val apiPath = s"/${regime.value}/compliance/data/${idType.value}/${id.value}?"
 

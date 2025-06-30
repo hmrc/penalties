@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,19 +19,20 @@ package services
 import base.{LogCapturing, SpecBase}
 import config.AppConfig
 import config.featureSwitches.{CallAPI1808HIP, FeatureSwitching, SanitiseFileName}
-import connectors.{HIPConnector, PEGAConnector}
 import connectors.parsers.AppealsParser
 import connectors.parsers.AppealsParser.UnexpectedFailure
+import connectors.{HIPConnector, RegimePEGAConnector}
 import models.appeals.AppealLevel.FirstStageAppeal
-import models.appeals._
+import models.appeals.{AppealResponseModel, AppealSubmission, CrimeAppealInformation, MultiplePenaltiesData}
 import models.getFinancialDetails.MainTransactionEnum
 import models.getPenaltyDetails.GetPenaltyDetails
 import models.getPenaltyDetails.appealInfo.{AppealInformationType, AppealLevelEnum, AppealStatusEnum}
 import models.getPenaltyDetails.latePayment._
 import models.notification._
-import models.upload._
+import models.upload.{UploadDetails, UploadJourney, UploadStatusEnum}
+import models.{AgnosticEnrolmentKey, Id, IdType, Regime}
 import org.mockito.ArgumentMatchers
-import org.mockito.Mockito._
+import org.mockito.Mockito.{mock, reset, when}
 import play.api.Configuration
 import play.api.test.Helpers._
 import uk.gov.hmrc.http.HeaderCarrier
@@ -42,22 +43,27 @@ import java.time.{LocalDate, LocalDateTime}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Random
 
-class AppealServiceSpec extends SpecBase with LogCapturing with FeatureSwitching {
+class RegimeAppealServiceSpec extends SpecBase with LogCapturing with FeatureSwitching {
   implicit val ec: ExecutionContext = ExecutionContext.Implicits.global
   implicit val hc: HeaderCarrier = HeaderCarrier(otherHeaders = Seq("CorrelationId" -> "id"))
-  val mockAppealsConnector: PEGAConnector = mock(classOf[PEGAConnector])
+  val mockAppealsConnector: RegimePEGAConnector = mock(classOf[RegimePEGAConnector])
   val mockHIPConnector: HIPConnector = mock(classOf[HIPConnector])
   val correlationId: String = "correlationId"
   val mockAppConfig: AppConfig = mock(classOf[AppConfig])
   val mockUUIDGenerator: UUIDGenerator = mock(classOf[UUIDGenerator])
   implicit val config: Configuration = mockAppConfig.config
 
-  class Setup {
-    disableFeatureSwitch(CallAPI1808HIP)
-    val service = new AppealService(
+  class Setup(enableHIP: Boolean = false) {
+    if(enableHIP){
+      enableFeatureSwitch(CallAPI1808HIP)
+    } else {
+      disableFeatureSwitch(CallAPI1808HIP)
+    }
+    val service = new RegimeAppealService(
       mockAppealsConnector, mockHIPConnector, mockAppConfig, mockUUIDGenerator
     )
     reset(mockAppealsConnector)
+    reset(mockHIPConnector)
     reset(mockAppConfig)
     reset(mockUUIDGenerator)
     when(mockAppConfig.isEnabled(ArgumentMatchers.eq(SanitiseFileName))).thenReturn(false)
@@ -67,7 +73,8 @@ class AppealServiceSpec extends SpecBase with LogCapturing with FeatureSwitching
     when(mockAppConfig.maximumFilenameLength).thenReturn(150)
   }
 
-  "submitAppeal" should {
+  "submitAppeal" when {
+    val enrolmentKey: AgnosticEnrolmentKey = AgnosticEnrolmentKey(Regime("HMRC-MTD-VAT"), IdType("VRN"), Id("123456789"))
     val modelToPassToServer: AppealSubmission = AppealSubmission(
       taxRegime = "VAT",
       appealLevel = FirstStageAppeal,
@@ -89,33 +96,67 @@ class AppealServiceSpec extends SpecBase with LogCapturing with FeatureSwitching
       )
     )
 
-    "return the response from the connector i.e. act as a pass-through function" in new Setup {
-      when(mockAppealsConnector.submitAppeal(ArgumentMatchers.any(),
-        ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(Right(appealResponseModel)))
+    "calling PEGA" should {
 
-      val result: Either[AppealsParser.ErrorResponse, AppealResponseModel] = await(
-        service.submitAppeal(modelToPassToServer, "HMRC-MTD-VAT~VRN~123456789", isLPP = false, penaltyNumber = "123456789", correlationId = correlationId))
-      result shouldBe Right(appealResponseModel)
+      "return the response from the connector i.e. act as a pass-through function" in new Setup {
+        when(mockAppealsConnector.submitAppeal(ArgumentMatchers.any(), ArgumentMatchers.any(),
+          ArgumentMatchers.any())).thenReturn(Future.successful(Right(appealResponseModel)))
+
+        val result: Either[AppealsParser.ErrorResponse, AppealResponseModel] = await(
+          service.submitAppeal(modelToPassToServer, enrolmentKey, penaltyNumber = "123456789", correlationId = correlationId))
+        result shouldBe Right(appealResponseModel)
+      }
+
+      "return the response from the connector on error i.e. act as a pass-through function" in new Setup {
+        when(mockAppealsConnector.submitAppeal(ArgumentMatchers.any(), ArgumentMatchers.any(),
+          ArgumentMatchers.any())).thenReturn(Future.successful(
+          Left(UnexpectedFailure(BAD_GATEWAY, s"Unexpected response, status $BAD_GATEWAY returned"))))
+
+        val result: Either[AppealsParser.ErrorResponse, AppealResponseModel] = await(service.submitAppeal(
+          modelToPassToServer, enrolmentKey, penaltyNumber = "123456789", correlationId = correlationId))
+        result shouldBe Left(UnexpectedFailure(BAD_GATEWAY, s"Unexpected response, status $BAD_GATEWAY returned"))
+      }
+
+      "throw an exception when the connector throws an exception" in new Setup {
+        when(mockAppealsConnector.submitAppeal(ArgumentMatchers.any(), ArgumentMatchers.any(),
+          ArgumentMatchers.any())).thenReturn(Future.failed(new Exception("Something went wrong")))
+
+        val result: Exception = intercept[Exception](await(service.submitAppeal(
+          modelToPassToServer, enrolmentKey, penaltyNumber = "123456789", correlationId = correlationId)))
+        result.getMessage shouldBe "Something went wrong"
+      }
     }
 
-    "return the response from the connector on error i.e. act as a pass-through function" in new Setup {
-      when(mockAppealsConnector.submitAppeal(ArgumentMatchers.any(),
-        ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(
-        Left(UnexpectedFailure(BAD_GATEWAY, s"Unexpected response, status $BAD_GATEWAY returned"))))
+    "calling HIP" should {
+      "return the response from the connector i.e. act as a pass-through function" in new Setup(enableHIP = true) {
+        when(mockHIPConnector.submitAppeal(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any()))
+          .thenReturn(Future.successful(Right(appealResponseModel)))
 
-      val result: Either[AppealsParser.ErrorResponse, AppealResponseModel] = await(service.submitAppeal(
-        modelToPassToServer, "HMRC-MTD-VAT~VRN~123456789", isLPP = false, penaltyNumber = "123456789", correlationId = correlationId))
-      result shouldBe Left(UnexpectedFailure(BAD_GATEWAY, s"Unexpected response, status $BAD_GATEWAY returned"))
+        val result: Either[AppealsParser.ErrorResponse, AppealResponseModel] = await(
+          service.submitAppeal(modelToPassToServer, enrolmentKey, penaltyNumber = "123456789", correlationId = correlationId))
+        result shouldBe Right(appealResponseModel)
+      }
+
+      "return the response from the connector on error i.e. act as a pass-through function" in new Setup(enableHIP = true) {
+        when(mockHIPConnector.submitAppeal(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any()))
+          .thenReturn(Future.successful(Left(UnexpectedFailure(BAD_GATEWAY, s"Unexpected response, status $BAD_GATEWAY returned"))))
+
+        val result: Either[AppealsParser.ErrorResponse, AppealResponseModel] = await(service.submitAppeal(
+          modelToPassToServer, enrolmentKey, penaltyNumber = "123456789", correlationId = correlationId))
+        result shouldBe Left(UnexpectedFailure(BAD_GATEWAY, s"Unexpected response, status $BAD_GATEWAY returned"))
+      }
+
+      "throw an exception when the connector throws an exception" in new Setup(enableHIP = true) {
+        when(mockHIPConnector.submitAppeal(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any()))
+          .thenReturn(Future.failed(new Exception("Something went wrong")))
+
+        val result: Exception = intercept[Exception](await(service.submitAppeal(
+          modelToPassToServer, enrolmentKey, penaltyNumber = "123456789", correlationId = correlationId)))
+        result.getMessage shouldBe "Something went wrong"
+      }
     }
 
-    "throw an exception when the connector throws an exception" in new Setup {
-      when(mockAppealsConnector.submitAppeal(ArgumentMatchers.any(),
-        ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.failed(new Exception("Something went wrong")))
 
-      val result: Exception = intercept[Exception](await(service.submitAppeal(
-        modelToPassToServer, "HMRC-MTD-VAT~VRN~123456789", isLPP = false, penaltyNumber = "123456789", correlationId = correlationId)))
-      result.getMessage shouldBe "Something went wrong"
-    }
   }
 
   "createSDESNotifications" should {
@@ -263,7 +304,7 @@ class AppealServiceSpec extends SpecBase with LogCapturing with FeatureSwitching
           logs => {
             val result = service.createSDESNotifications(Some(uploads), caseID = "PR-1234")
             result shouldBe expectedResult
-            logs.exists(_.getMessage == "[AppealService][createSDESNotifications] - There are 3 uploads but" +
+            logs.exists(_.getMessage == "[RegimeAppealService][createSDESNotifications] - There are 3 uploads but" +
               s" only 2 uploads have upload details defined (possible missing files for case ID: PR-1234)") shouldBe true
           }
         }
@@ -319,6 +360,7 @@ class AppealServiceSpec extends SpecBase with LogCapturing with FeatureSwitching
         result shouldBe expectedResult
       }
     }
+
     s"truncate file name" when {
       val mockDateTime: LocalDateTime = LocalDateTime.of(2020, 1, 1, 0, 0, 0)
       val longFilename = Random.alphanumeric.take(160).mkString
@@ -597,4 +639,5 @@ class AppealServiceSpec extends SpecBase with LogCapturing with FeatureSwitching
       }
     }
   }
+
 }

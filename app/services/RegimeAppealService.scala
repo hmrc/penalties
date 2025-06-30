@@ -17,32 +17,41 @@
 package services
 
 import config.AppConfig
-import config.featureSwitches.{FeatureSwitching, SanitiseFileName}
-import connectors.RegimePEGAConnector
+import config.featureSwitches.{CallAPI1808HIP, FeatureSwitching, SanitiseFileName}
 import connectors.parsers.AppealsParser
-
+import connectors.{HIPConnector, RegimePEGAConnector}
+import models.AgnosticEnrolmentKey
 import models.appeals.{AppealResponseModel, AppealSubmission, MultiplePenaltiesData}
 import models.getPenaltyDetails.GetPenaltyDetails
 import models.getPenaltyDetails.latePayment.{LPPDetails, LPPPenaltyCategoryEnum, LPPPenaltyStatusEnum}
 import models.notification._
 import models.upload.UploadJourney
 import play.api.Configuration
+import uk.gov.hmrc.http.HeaderCarrier
 import utils.Logger.logger
 import utils.{DateHelper, FileHelper, UUIDGenerator}
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
-import models.{AgnosticEnrolmentKey}
 
 class RegimeAppealService @Inject()(appealsConnector: RegimePEGAConnector,
-                              appConfig: AppConfig,
-                              idGenerator: UUIDGenerator)(implicit ec: ExecutionContext, val config: Configuration) extends FeatureSwitching {
+                                    hipAppealsConnector: HIPConnector,
+                                    appConfig: AppConfig,
+                                    idGenerator: UUIDGenerator)(implicit ec: ExecutionContext, val config: Configuration) extends FeatureSwitching {
 
   private val regexToSanitiseFileName: String = "[\\\\\\/:*?<>|\"‘’“”]"
 
   def submitAppeal(appealSubmission: AppealSubmission,
-                   enrolmentKey: AgnosticEnrolmentKey, isLPP: Boolean, penaltyNumber: String, correlationId: String): Future[Either[AppealsParser.ErrorResponse, AppealResponseModel]] = {
-    appealsConnector.submitAppeal(appealSubmission, enrolmentKey, isLPP, penaltyNumber, correlationId).flatMap {
+                   enrolmentKey: AgnosticEnrolmentKey,
+                   penaltyNumber: String,
+                   correlationId: String)
+                  (implicit headerCarrier:HeaderCarrier): Future[Either[AppealsParser.ErrorResponse, AppealResponseModel]] = {
+    val response: Future[AppealsParser.AppealSubmissionResponse] = if (isEnabled(CallAPI1808HIP)) {
+      hipAppealsConnector.submitAppeal(appealSubmission, penaltyNumber, correlationId)
+    } else {
+      appealsConnector.submitAppeal(appealSubmission, penaltyNumber, correlationId)
+    }
+    response.flatMap {
       _.fold(
         error => {
           logger.error(s"[RegimeAppealService][submitAppeal] - Submit appeal call failed with error: ${error.body} and status: ${error.status} for enrolment: $enrolmentKey")

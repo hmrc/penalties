@@ -17,6 +17,7 @@
 package models.appeals.reasonableExcuses
 
 import config.AppConfig
+import models.Regime
 import play.api.libs.json.{JsValue, Json}
 
 sealed trait ReasonableExcuse {
@@ -60,20 +61,15 @@ object ReasonableExcuse {
     override val descriptionMessageKey: String = "reasonableExcuses.otherReason"
   }
 
-  val allReasonableExcuses: Seq[ReasonableExcuse] = {
-    Seq(
-      Bereavement,
-      Crime,
-      FireOrFlood,
-      Health,
-      LossOfStaff,
-      TechnicalIssues,
-      Other
-    )
-  }
+  def allExcusesToJson(appConfig: AppConfig, regime: Regime): JsValue = {
+    val reasonableExcuses: Seq[ReasonableExcuse] = regime.value.toUpperCase match {
+      case "VATC" => allReasonableExcusesForVATC
+      case "ITSA" => allReasonableExcusesForITSA
+      case _ => Seq.empty[ReasonableExcuse]
+    }
 
-  def allExcusesToJson(appConfig: AppConfig): JsValue = {
-    val filteredActiveReasonableExcuses: Seq[ReasonableExcuse] = allReasonableExcuses.filter(_.isEnabled(appConfig))
+    val filteredActiveReasonableExcuses = reasonableExcuses.filter(_.isEnabled(appConfig))
+
     Json.obj(
       "excuses" -> filteredActiveReasonableExcuses.map {
         excuse => {
@@ -85,4 +81,23 @@ object ReasonableExcuse {
       }
     )
   }
+
+  val allReasonableExcusesForVATC: Seq[ReasonableExcuse] = Seq(
+    Bereavement,
+    Crime,
+    FireOrFlood,
+    Health,
+    LossOfStaff,
+    TechnicalIssues,
+    Other
+  )
+
+  val allReasonableExcusesForITSA: Seq[ReasonableExcuse] = Seq(
+    Bereavement,
+    Crime,
+    FireOrFlood,
+    Health,
+    TechnicalIssues,
+    Other
+  )
 }

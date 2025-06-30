@@ -16,6 +16,7 @@
 
 package models.appeals
 
+import models.appeals.AppealLevel.FirstStageAppeal
 import models.upload.UploadJourney
 import play.api.libs.json._
 
@@ -407,6 +408,7 @@ object OtherAppealInformation {
 
 case class AppealSubmission(
                              taxRegime: String,
+                             appealLevel: AppealLevel,
                              appealSubmittedBy: String,
                              customerReferenceNo: String,
                              dateOfAppeal: LocalDateTime,
@@ -418,6 +420,9 @@ case class AppealSubmission(
 }
 
 object AppealSubmission {
+
+  val defaultAppealLevel: AppealLevel = FirstStageAppeal
+
   def parseAppealInformationFromJson(reason: String, payload: JsValue): JsResult[AppealInformation] = {
     reason match {
       case "bereavement" =>
@@ -459,6 +464,7 @@ object AppealSubmission {
   val apiReads: Reads[AppealSubmission] = (json: JsValue) => {
     for {
       taxRegime <- (json \ "taxRegime").validate[String]
+      optAppealLevel <- (json \ "appealLevel").validateOpt[AppealLevel]
       appealSubmittedBy <- (json \ "appealSubmittedBy").validate[String]
       customerReferenceNo <- (json \ "customerReferenceNo").validate[String]
       dateOfAppeal <- (json \ "dateOfAppeal").validate[LocalDateTime]
@@ -469,6 +475,9 @@ object AppealSubmission {
     } yield {
       AppealSubmission(
         taxRegime,
+        optAppealLevel.getOrElse(defaultAppealLevel),
+        // This optionality is a temporary,
+        // will be made mandatory in DL-16530 clean-up ticket
         appealSubmittedBy,
         customerReferenceNo,
         dateOfAppeal,
@@ -479,11 +488,27 @@ object AppealSubmission {
     }
   }
 
-  implicit val apiWrites: Writes[AppealSubmission] = (appealSubmission: AppealSubmission) => {
+  val apiWrites: Writes[AppealSubmission] = (appealSubmission: AppealSubmission) => {
     val dateOfAppealZoned: String = appealSubmission.dateOfAppeal.toInstant(ZoneOffset.UTC).toString
     Json.obj(
       "sourceSystem" -> appealSubmission.sourceSystem,
       "taxRegime" -> appealSubmission.taxRegime,
+      "customerReferenceNo" -> appealSubmission.customerReferenceNo,
+      "dateOfAppeal" -> dateOfAppealZoned,
+      "isLPP" -> appealSubmission.isLPP,
+      "appealSubmittedBy" -> appealSubmission.appealSubmittedBy,
+      "appealInformation" -> parseAppealInformationToJson(appealSubmission.appealInformation)
+    ).deepMerge(
+      appealSubmission.agentDetails.fold(Json.obj())(agentDetails => Json.obj("agentDetails" -> agentDetails))
+    )
+  }
+
+  val apiWritesHIP: Writes[AppealSubmission] = (appealSubmission: AppealSubmission) => {
+    val dateOfAppealZoned: String = appealSubmission.dateOfAppeal.toInstant(ZoneOffset.UTC).toString
+    Json.obj(
+      "sourceSystem" -> appealSubmission.sourceSystem,
+      "taxRegime" -> appealSubmission.taxRegime,
+      "appealLevel" -> appealSubmission.appealLevel,
       "customerReferenceNo" -> appealSubmission.customerReferenceNo,
       "dateOfAppeal" -> dateOfAppealZoned,
       "isLPP" -> appealSubmission.isLPP,

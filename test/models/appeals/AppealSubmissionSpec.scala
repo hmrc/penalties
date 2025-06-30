@@ -16,6 +16,7 @@
 
 package models.appeals
 
+import models.appeals.AppealLevel.FirstStageAppeal
 import models.upload.{UploadDetails, UploadJourney, UploadStatusEnum}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
@@ -29,6 +30,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
        |{
        |   "sourceSystem": "MDTP",
        |   "taxRegime": "VAT",
+       |   "appealLevel": "01",
        |   "customerReferenceNo": "123456789",
        |   "dateOfAppeal": ${if (withZone) "\"2020-01-01T00:00:00Z\"" else "\"2020-01-01T00:00:00\""},
        |   "isLPP": true,
@@ -51,6 +53,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
        |{
        |    "sourceSystem": "MDTP",
        |    "taxRegime": "VAT",
+       |   "appealLevel": "01",
        |    "customerReferenceNo": "123456789",
        |    "dateOfAppeal": ${if (withZone) "\"2020-01-01T00:00:00Z\"" else "\"2020-01-01T00:00:00\""},
        |    "isLPP": true,
@@ -77,6 +80,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
        |{
        |    "sourceSystem": "MDTP",
        |    "taxRegime": "VAT",
+       |   "appealLevel": "01",
        |    "customerReferenceNo": "123456789",
        |    "dateOfAppeal": ${if (withZone) "\"2020-01-01T00:00:00Z\"" else "\"2020-01-01T00:00:00\""},
        |    "isLPP": true,
@@ -102,6 +106,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
        |{
        |    "sourceSystem": "MDTP",
        |    "taxRegime": "VAT",
+       |   "appealLevel": "01",
        |    "customerReferenceNo": "123456789",
        |    "dateOfAppeal": ${if (withZone) "\"2020-01-01T00:00:00Z\"" else "\"2020-01-01T00:00:00\""},
        |    "isLPP": true,
@@ -155,6 +160,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
        |{
        |    "sourceSystem": "MDTP",
        |    "taxRegime": "VAT",
+       |   "appealLevel": "01",
        |    "customerReferenceNo": "123456789",
        |    "dateOfAppeal": ${if (withZone) "\"2020-01-01T00:00:00Z\"" else "\"2020-01-01T00:00:00\""},
        |    "isLPP": true,
@@ -180,6 +186,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
        |{
        |    "sourceSystem": "MDTP",
        |    "taxRegime": "VAT",
+       |   "appealLevel": "01",
        |    "customerReferenceNo": "123456789",
        |    "dateOfAppeal": ${if (withZone) "\"2020-01-01T00:00:00Z\"" else "\"2020-01-01T00:00:00\""},
        |    "isLPP": true,
@@ -206,6 +213,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
        |{
        |    "sourceSystem": "MDTP",
        |    "taxRegime": "VAT",
+       |   "appealLevel": "01",
        |    "customerReferenceNo": "123456789",
        |    "dateOfAppeal": ${if (withZone) "\"2020-01-01T00:00:00Z\"" else "\"2020-01-01T00:00:00\""},
        |    "isLPP": true,
@@ -232,6 +240,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
        |{
        |    "sourceSystem": "MDTP",
        |    "taxRegime": "VAT",
+       |   "appealLevel": "01",
        |    "customerReferenceNo": "123456789",
        |    "dateOfAppeal": ${if (withZone) "\"2020-01-01T00:00:00Z\"" else "\"2020-01-01T00:00:00\""},
        |    "isLPP": true,
@@ -297,6 +306,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
        |{
        |    "sourceSystem": "MDTP",
        |    "taxRegime": "VAT",
+       |   "appealLevel": "01",
        |    "customerReferenceNo": "123456789",
        |    "dateOfAppeal": ${if (withZone) "\"2020-01-01T00:00:00Z\"" else "\"2020-01-01T00:00:00\""},
        |    "isLPP": true,
@@ -326,6 +336,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
        |{
        |    "sourceSystem": "MDTP",
        |    "taxRegime": "VAT",
+       |   "appealLevel": "01",
        |    "customerReferenceNo": "123456789",
        |    "dateOfAppeal": ${if (withZone) "\"2020-01-01T00:00:00Z\"" else "\"2020-01-01T00:00:00\""},
        |    "isLPP": true,
@@ -347,11 +358,38 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
        |}
        |""".stripMargin)
 
+  val otherAppealJsonWithNoAppealLevel: JsValue = Json.parse(
+    s"""
+       |{
+       |    "sourceSystem": "MDTP",
+       |    "taxRegime": "VAT",
+       |    "customerReferenceNo": "123456789",
+       |    "dateOfAppeal": "2020-01-01T00:00:00Z",
+       |    "isLPP": true,
+       |    "appealSubmittedBy": "agent",
+       |    "agentDetails": {
+       |       "agentReferenceNo": "AGENT1",
+       |       "isExcuseRelatedToAgent": true
+       |    },
+       |    "appealInformation": {
+       |						 "reasonableExcuse": "other",
+       |            "honestyDeclaration": true,
+       |            "startDateOfEvent": "2020-01-01T00:00:00Z",
+       |            "statement": "This is a reason.",
+       |            "lateAppeal": true,
+       |            "lateAppealReason": "Reason",
+       |            "isClientResponsibleForSubmission": false,
+       |            "isClientResponsibleForLateSubmission": true
+       |		}
+       |}
+       |""".stripMargin)
+
   val otherAppealJsonWithKeyMissing: JsValue = Json.parse(
     """
       |{
       |    "sourceSystem": "MDTP",
       |    "taxRegime": "VAT",
+       |   "appealLevel": "01",
       |    "customerReferenceNo": "123456789",
       |    "dateOfAppeal": "2020-01-01T00:00:00",
       |    "isLPP": true,
@@ -384,6 +422,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       |{
       |    "sourceSystem": "MDTP",
       |    "taxRegime": "VAT",
+       |   "appealLevel": "01",
       |    "customerReferenceNo": "123456789",
       |    "dateOfAppeal": "2020-01-01T00:00:00",
       |    "isLPP": true,
@@ -569,6 +608,8 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       |   "lateAppeal": false
       |}
       |""".stripMargin)
+  
+  private val defaultAppealSubmissionWrites = AppealSubmission.apiWritesHIP
 
   "parseAppealInformationFromJson" should {
     "for bereavement" must {
@@ -951,10 +992,40 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
   }
 
   "apiReads" should {
+
+    "add default 'appealLevel = FirstStageAppeal('01')' to the model if not present from downstream" in {
+      val expectedResult = AppealSubmission(
+        taxRegime = "VAT",
+        appealLevel = FirstStageAppeal,
+        customerReferenceNo = "123456789",
+        dateOfAppeal = LocalDateTime.parse("2020-01-01T00:00:00"),
+        isLPP = true,
+        appealSubmittedBy = "agent",
+        agentDetails = Some(AgentDetails(agentReferenceNo = "AGENT1", isExcuseRelatedToAgent = true)),
+        appealInformation = OtherAppealInformation(
+          startDateOfEvent = "2020-01-01T00:00:00Z",
+          statement = Some("This is a reason."),
+          supportingEvidence = None,
+          lateAppeal = true,
+          lateAppealReason = Some("Reason"),
+          isClientResponsibleForSubmission = Some(false),
+          isClientResponsibleForLateSubmission = Some(true),
+          honestyDeclaration = true,
+          reasonableExcuse = "other",
+          uploadedFiles = None
+        )
+      )
+
+      val result = Json.fromJson(otherAppealJsonWithNoAppealLevel)(AppealSubmission.apiReads)
+      result.isSuccess shouldBe true
+      result.get shouldBe expectedResult
+    }
+
     "for bereavement" must {
       "parse the JSON into a model when all keys are present" in {
         val expectedResult = AppealSubmission(
           taxRegime = "VAT",
+          appealLevel = FirstStageAppeal,
           customerReferenceNo = "123456789",
           dateOfAppeal = LocalDateTime.parse("2020-01-01T00:00:00"),
           isLPP = true,
@@ -982,10 +1053,12 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
         result.isSuccess shouldBe false
       }
     }
+
     "for crime" must {
       "parse the JSON into a model when all keys are present" in {
         val expectedResult = AppealSubmission(
           taxRegime = "VAT",
+          appealLevel = FirstStageAppeal,
           customerReferenceNo = "123456789",
           dateOfAppeal = LocalDateTime.parse("2020-01-01T00:00:00"),
           isLPP = true,
@@ -1019,6 +1092,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       "parse the JSON into a model when all keys are present" in {
         val expectedResult = AppealSubmission(
           taxRegime = "VAT",
+          appealLevel = FirstStageAppeal,
           customerReferenceNo = "123456789",
           dateOfAppeal = LocalDateTime.parse("2020-01-01T00:00:00"),
           isLPP = true,
@@ -1051,6 +1125,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       "parse the JSON into a model when all keys are present" in {
         val expectedResult = AppealSubmission(
           taxRegime = "VAT",
+          appealLevel = FirstStageAppeal,
           customerReferenceNo = "123456789",
           dateOfAppeal = LocalDateTime.parse("2020-01-01T00:00:00"),
           isLPP = true,
@@ -1083,6 +1158,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       "parse the JSON into a model when all keys are present" in {
         val expectedResult = AppealSubmission(
           taxRegime = "VAT",
+          appealLevel = FirstStageAppeal,
           customerReferenceNo = "123456789",
           dateOfAppeal = LocalDateTime.parse("2020-01-01T00:00:00"),
           isLPP = true,
@@ -1116,6 +1192,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       "read the JSON when there was no hospital stay" in {
         val expectedResult = AppealSubmission(
           taxRegime = "VAT",
+          appealLevel = FirstStageAppeal,
           customerReferenceNo = "123456789",
           dateOfAppeal = LocalDateTime.parse("2020-01-01T00:00:00"),
           isLPP = true,
@@ -1143,6 +1220,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       "read the JSON when there is an ongoing hospital stay" in {
         val expectedResult = AppealSubmission(
           taxRegime = "VAT",
+          appealLevel = FirstStageAppeal,
           customerReferenceNo = "123456789",
           dateOfAppeal = LocalDateTime.parse("2020-01-01T00:00:00"),
           isLPP = true,
@@ -1170,6 +1248,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       "read the JSON when there has been a hospital stay" in {
         val expectedResult = AppealSubmission(
           taxRegime = "VAT",
+          appealLevel = FirstStageAppeal,
           customerReferenceNo = "123456789",
           dateOfAppeal = LocalDateTime.parse("2020-01-01T00:00:00"),
           isLPP = true,
@@ -1199,6 +1278,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       "parse the JSON into a model when all keys are present" in {
         val expectedResult = AppealSubmission(
           taxRegime = "VAT",
+          appealLevel = FirstStageAppeal,
           customerReferenceNo = "123456789",
           dateOfAppeal = LocalDateTime.parse("2020-01-01T00:00:00"),
           isLPP = true,
@@ -1226,6 +1306,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
       "parse the JSON into a model when all keys are present - no evidence" in {
         val expectedResult = AppealSubmission(
           taxRegime = "VAT",
+          appealLevel = FirstStageAppeal,
           customerReferenceNo = "123456789",
           dateOfAppeal = LocalDateTime.parse("2020-01-01T00:00:00"),
           isLPP = true,
@@ -1257,11 +1338,573 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
     }
   }
 
-  "apiWrites" should {
+  "apiWritesHIP" should {
     "for bereavement" must {
       "write the model to JSON" in {
         val modelToCovertToJson: AppealSubmission = AppealSubmission(
           taxRegime = "VAT",
+          appealLevel = FirstStageAppeal,
+          customerReferenceNo = "123456789",
+          dateOfAppeal = LocalDateTime.parse("2020-01-01T00:00:00"),
+          isLPP = false,
+          appealSubmittedBy = "agent",
+          agentDetails = Some(AgentDetails(agentReferenceNo = "AGENT1", isExcuseRelatedToAgent = true)),
+          appealInformation = BereavementAppealInformation(
+            startDateOfEvent = "2021-04-23T00:00:00",
+            statement = None,
+            lateAppeal = true,
+            lateAppealReason = Some("Reason"),
+            isClientResponsibleForSubmission = Some(false),
+            isClientResponsibleForLateSubmission = Some(true),
+            honestyDeclaration = true,
+            reasonableExcuse = "bereavement"
+          )
+        )
+        val jsonRepresentingModel: JsValue = Json.obj(
+          "appealSubmittedBy" -> "agent",
+          "sourceSystem" -> "MDTP",
+          "taxRegime" -> "VAT",
+          "appealLevel" -> "01",
+          "customerReferenceNo" -> "123456789",
+          "dateOfAppeal" -> "2020-01-01T00:00:00Z",
+          "isLPP" -> false,
+          "agentDetails" -> Json.obj(
+            "agentReferenceNo" -> "AGENT1",
+            "isExcuseRelatedToAgent" -> true
+          ),
+          "appealInformation" -> Json.obj(
+            "reasonableExcuse" -> "bereavement",
+            "honestyDeclaration" -> true,
+            "startDateOfEvent" -> "2021-04-23T00:00:00Z",
+            "lateAppeal" -> true,
+            "lateAppealReason" -> "Reason",
+            "isClientResponsibleForSubmission" -> false,
+            "isClientResponsibleForLateSubmission" -> true
+          )
+        )
+
+        val result = Json.toJson(modelToCovertToJson)(defaultAppealSubmissionWrites)
+        result shouldBe jsonRepresentingModel
+      }
+    }
+
+    "for crime" must {
+      "write the model to JSON" in {
+        val modelToConvertToJson: AppealSubmission = AppealSubmission(
+          taxRegime = "VAT",
+          appealLevel = FirstStageAppeal,
+          customerReferenceNo = "123456789",
+          dateOfAppeal = LocalDateTime.parse("2020-01-01T00:00:00"),
+          isLPP = false,
+          appealSubmittedBy = "agent",
+          agentDetails = Some(AgentDetails(agentReferenceNo = "AGENT1", isExcuseRelatedToAgent = true)),
+          appealInformation = CrimeAppealInformation(
+            startDateOfEvent = "2021-04-23T00:00:00",
+            reportedIssueToPolice = "yes",
+            statement = None,
+            lateAppeal = true,
+            lateAppealReason = Some("Reason"),
+            isClientResponsibleForSubmission = Some(false),
+            isClientResponsibleForLateSubmission = Some(true),
+            honestyDeclaration = true,
+            reasonableExcuse = "crime"
+          )
+        )
+        val jsonRepresentingModel: JsValue = Json.obj(
+          "appealSubmittedBy" -> "agent",
+          "sourceSystem" -> "MDTP",
+          "taxRegime" -> "VAT",
+          "appealLevel" -> "01",
+          "customerReferenceNo" -> "123456789",
+          "dateOfAppeal" -> "2020-01-01T00:00:00Z",
+          "isLPP" -> false,
+          "agentDetails" -> Json.obj(
+            "agentReferenceNo" -> "AGENT1",
+            "isExcuseRelatedToAgent" -> true
+          ),
+          "appealInformation" -> Json.obj(
+            "reasonableExcuse" -> "crime",
+            "honestyDeclaration" -> true,
+            "startDateOfEvent" -> "2021-04-23T00:00:00Z",
+            "reportedIssueToPolice" -> "yes",
+            "lateAppeal" -> true,
+            "lateAppealReason" -> "Reason",
+            "isClientResponsibleForSubmission" -> false,
+            "isClientResponsibleForLateSubmission" -> true
+          )
+        )
+
+        val result = Json.toJson(modelToConvertToJson)(defaultAppealSubmissionWrites)
+        result shouldBe jsonRepresentingModel
+      }
+    }
+
+    "for fireOrFlood" must {
+      "write the model to Json" in {
+        val modelToConvertToJson: AppealSubmission = AppealSubmission(
+          taxRegime = "VAT",
+          appealLevel = FirstStageAppeal,
+          customerReferenceNo = "123456789",
+          dateOfAppeal = LocalDateTime.parse("2020-01-01T00:00:00"),
+          isLPP = false,
+          appealSubmittedBy = "agent",
+          agentDetails = Some(AgentDetails(agentReferenceNo = "AGENT1", isExcuseRelatedToAgent = true)),
+          appealInformation = FireOrFloodAppealInformation(
+            startDateOfEvent = "2021-04-23T00:00:00",
+            statement = None,
+            lateAppeal = true,
+            lateAppealReason = Some("Reason"),
+            isClientResponsibleForSubmission = Some(false),
+            isClientResponsibleForLateSubmission = Some(true),
+            honestyDeclaration = true,
+            reasonableExcuse = "fireandflood"
+          )
+        )
+
+        val jsonRepresentingModel: JsValue = Json.obj(
+          "appealSubmittedBy" -> "agent",
+          "sourceSystem" -> "MDTP",
+          "taxRegime" -> "VAT",
+          "appealLevel" -> "01",
+          "customerReferenceNo" -> "123456789",
+          "dateOfAppeal" -> "2020-01-01T00:00:00Z",
+          "isLPP" -> false,
+          "agentDetails" -> Json.obj(
+            "agentReferenceNo" -> "AGENT1",
+            "isExcuseRelatedToAgent" -> true
+          ),
+          "appealInformation" -> Json.obj(
+            "reasonableExcuse" -> "fireandflood",
+            "honestyDeclaration" -> true,
+            "startDateOfEvent" -> "2021-04-23T00:00:00Z",
+            "lateAppeal" -> true,
+            "lateAppealReason" -> "Reason",
+            "isClientResponsibleForSubmission" -> false,
+            "isClientResponsibleForLateSubmission" -> true
+          )
+        )
+
+        val result = Json.toJson(modelToConvertToJson)(defaultAppealSubmissionWrites)
+        result shouldBe jsonRepresentingModel
+      }
+    }
+
+    "for loss of staff" must {
+      "write the model to JSON" in {
+        val modelToConvertToJson: AppealSubmission = AppealSubmission(
+          taxRegime = "VAT",
+          appealLevel = FirstStageAppeal,
+          customerReferenceNo = "123456789",
+          dateOfAppeal = LocalDateTime.parse("2020-01-01T00:00:00"),
+          isLPP = false,
+          appealSubmittedBy = "agent",
+          agentDetails = Some(AgentDetails(agentReferenceNo = "AGENT1", isExcuseRelatedToAgent = true)),
+          appealInformation = LossOfStaffAppealInformation(
+            startDateOfEvent = "2021-04-23T00:00:00",
+            statement = None,
+            lateAppeal = true,
+            lateAppealReason = Some("Reason"),
+            isClientResponsibleForSubmission = Some(false),
+            isClientResponsibleForLateSubmission = Some(true),
+            honestyDeclaration = true,
+            reasonableExcuse = "lossOfEssentialStaff"
+          )
+        )
+        val jsonRepresentingModel: JsValue = Json.obj(
+          "appealSubmittedBy" -> "agent",
+          "sourceSystem" -> "MDTP",
+          "taxRegime" -> "VAT",
+          "appealLevel" -> "01",
+          "customerReferenceNo" -> "123456789",
+          "dateOfAppeal" -> "2020-01-01T00:00:00Z",
+          "isLPP" -> false,
+          "agentDetails" -> Json.obj(
+            "agentReferenceNo" -> "AGENT1",
+            "isExcuseRelatedToAgent" -> true
+          ),
+          "appealInformation" -> Json.obj(
+            "reasonableExcuse" -> "lossOfEssentialStaff",
+            "honestyDeclaration" -> true,
+            "startDateOfEvent" -> "2021-04-23T00:00:00Z",
+            "lateAppeal" -> true,
+            "lateAppealReason" -> "Reason",
+            "isClientResponsibleForSubmission" -> false,
+            "isClientResponsibleForLateSubmission" -> true
+          )
+        )
+
+        val result = Json.toJson(modelToConvertToJson)(defaultAppealSubmissionWrites)
+        result shouldBe jsonRepresentingModel
+      }
+    }
+
+    "for health" must {
+      "write the appeal to JSON" when {
+        "there has been a hospital stay - and is no longer ongoing (both start and end date) - write the appeal model to JSON" in {
+          val modelToConvertToJson = AppealSubmission(
+            taxRegime = "VAT",
+          appealLevel = FirstStageAppeal,
+            customerReferenceNo = "123456789",
+            dateOfAppeal = LocalDateTime.parse("2020-01-01T00:00:00"),
+            isLPP = false,
+            appealSubmittedBy = "agent",
+            agentDetails = Some(AgentDetails(agentReferenceNo = "AGENT1", isExcuseRelatedToAgent = true)),
+            appealInformation = HealthAppealInformation(
+              startDateOfEvent = Some("2020-01-01T00:00:00"),
+              endDateOfEvent = Some("2020-01-01T00:00:01"),
+              eventOngoing = false,
+              statement = None,
+              lateAppeal = true,
+              lateAppealReason = Some("Reason"),
+              isClientResponsibleForSubmission = Some(false),
+              isClientResponsibleForLateSubmission = Some(true),
+              honestyDeclaration = true,
+              reasonableExcuse = "health",
+              hospitalStayInvolved = true
+            )
+          )
+          val jsonRepresentingModel: JsValue = Json.obj(
+            "appealSubmittedBy" -> "agent",
+            "sourceSystem" -> "MDTP",
+            "taxRegime" -> "VAT",
+          "appealLevel" -> "01",
+            "customerReferenceNo" -> "123456789",
+            "dateOfAppeal" -> "2020-01-01T00:00:00Z",
+            "isLPP" -> false,
+            "agentDetails" -> Json.obj(
+              "agentReferenceNo" -> "AGENT1",
+              "isExcuseRelatedToAgent" -> true
+            ),
+            "appealInformation" -> Json.obj(
+              "reasonableExcuse" -> "unexpectedHospitalStay",
+              "honestyDeclaration" -> true,
+              "startDateOfEvent" -> "2020-01-01T00:00:00Z",
+              "endDateOfEvent" -> "2020-01-01T00:00:01Z",
+              "eventOngoing" -> false,
+              "lateAppeal" -> true,
+              "lateAppealReason" -> "Reason",
+              "isClientResponsibleForSubmission" -> false,
+              "isClientResponsibleForLateSubmission" -> true
+            )
+          )
+          val result = Json.toJson(modelToConvertToJson)(defaultAppealSubmissionWrites)
+          result shouldBe jsonRepresentingModel
+        }
+
+        "there has been a hospital stay AND it is ongoing (no end date) - write the appeal model to JSON" in {
+          val modelToConvertToJson = AppealSubmission(
+            taxRegime = "VAT",
+          appealLevel = FirstStageAppeal,
+            customerReferenceNo = "123456789",
+            dateOfAppeal = LocalDateTime.parse("2020-01-01T00:00:00"),
+            isLPP = false,
+            appealSubmittedBy = "agent",
+            agentDetails = Some(AgentDetails(agentReferenceNo = "AGENT1", isExcuseRelatedToAgent = true)),
+            appealInformation = HealthAppealInformation(
+              startDateOfEvent = Some("2021-04-23T00:00:00"),
+              endDateOfEvent = None,
+              eventOngoing = true,
+              statement = None,
+              lateAppeal = true,
+              lateAppealReason = Some("Reason"),
+              isClientResponsibleForSubmission = Some(false),
+              isClientResponsibleForLateSubmission = Some(true),
+              honestyDeclaration = true,
+              reasonableExcuse = "health",
+              hospitalStayInvolved = true
+            )
+          )
+          val jsonRepresentingModel: JsValue = Json.obj(
+            "appealSubmittedBy" -> "agent",
+            "sourceSystem" -> "MDTP",
+            "taxRegime" -> "VAT",
+          "appealLevel" -> "01",
+            "customerReferenceNo" -> "123456789",
+            "dateOfAppeal" -> "2020-01-01T00:00:00Z",
+            "isLPP" -> false,
+            "agentDetails" -> Json.obj(
+              "agentReferenceNo" -> "AGENT1",
+              "isExcuseRelatedToAgent" -> true
+            ),
+            "appealInformation" -> Json.obj(
+              "reasonableExcuse" -> "unexpectedHospitalStay",
+              "honestyDeclaration" -> true,
+              "startDateOfEvent" -> "2021-04-23T00:00:00Z",
+              "eventOngoing" -> true,
+              "lateAppeal" -> true,
+              "lateAppealReason" -> "Reason",
+              "isClientResponsibleForSubmission" -> false,
+              "isClientResponsibleForLateSubmission" -> true
+            )
+          )
+          val result = Json.toJson(modelToConvertToJson)(defaultAppealSubmissionWrites)
+          result shouldBe jsonRepresentingModel
+        }
+
+        "there has been NO hospital stay (startDateOfEvent present, eventOngoing = false, hospitalStayInvolved = false) " +
+          "write the appeal model to JSON" in {
+          val modelToConvertToJson = AppealSubmission(
+            taxRegime = "VAT",
+          appealLevel = FirstStageAppeal,
+            customerReferenceNo = "123456789",
+            dateOfAppeal = LocalDateTime.parse("2020-01-01T00:00:00"),
+            isLPP = false,
+            appealSubmittedBy = "agent",
+            agentDetails = Some(AgentDetails(agentReferenceNo = "AGENT1", isExcuseRelatedToAgent = true)),
+            appealInformation = HealthAppealInformation(
+              endDateOfEvent = None,
+              eventOngoing = false,
+              startDateOfEvent = Some("2021-04-23T00:00:00"),
+              statement = None,
+              lateAppeal = true,
+              lateAppealReason = Some("Reason"),
+              isClientResponsibleForSubmission = Some(false),
+              isClientResponsibleForLateSubmission = Some(true),
+              honestyDeclaration = true,
+              reasonableExcuse = "health",
+              hospitalStayInvolved = false
+            )
+          )
+          val jsonRepresentingModel: JsValue = Json.obj(
+            "appealSubmittedBy" -> "agent",
+            "sourceSystem" -> "MDTP",
+            "taxRegime" -> "VAT",
+          "appealLevel" -> "01",
+            "customerReferenceNo" -> "123456789",
+            "dateOfAppeal" -> "2020-01-01T00:00:00Z",
+            "isLPP" -> false,
+            "agentDetails" -> Json.obj(
+              "agentReferenceNo" -> "AGENT1",
+              "isExcuseRelatedToAgent" -> true
+            ),
+            "appealInformation" -> Json.obj(
+              "reasonableExcuse" -> "seriousOrLifeThreateningIllHealth",
+              "honestyDeclaration" -> true,
+              "startDateOfEvent" -> "2021-04-23T00:00:00Z",
+              "lateAppeal" -> true,
+              "lateAppealReason" -> "Reason",
+              "isClientResponsibleForSubmission" -> false,
+              "isClientResponsibleForLateSubmission" -> true
+            )
+          )
+          val result = Json.toJson(modelToConvertToJson)(defaultAppealSubmissionWrites)
+          result shouldBe jsonRepresentingModel
+        }
+      }
+    }
+
+    "for technical issues" must {
+      "write the model to JSON" in {
+        val modelToConvertToJson: AppealSubmission = AppealSubmission(
+          taxRegime = "VAT",
+          appealLevel = FirstStageAppeal,
+          customerReferenceNo = "123456789",
+          dateOfAppeal = LocalDateTime.parse("2020-01-01T00:00:00"),
+          isLPP = false,
+          appealSubmittedBy = "agent",
+          agentDetails = Some(AgentDetails(agentReferenceNo = "AGENT1", isExcuseRelatedToAgent = true)),
+          appealInformation = TechnicalIssuesAppealInformation(
+            startDateOfEvent = "2021-04-23T00:00:00",
+            endDateOfEvent = "2021-04-24T00:00:01",
+            statement = None,
+            lateAppeal = false,
+            lateAppealReason = None,
+            isClientResponsibleForSubmission = Some(false),
+            isClientResponsibleForLateSubmission = Some(true),
+            honestyDeclaration = true,
+            reasonableExcuse = "technicalIssue"
+          )
+        )
+
+        val jsonRepresentingModel: JsValue = Json.obj(
+          "appealSubmittedBy" -> "agent",
+          "sourceSystem" -> "MDTP",
+          "taxRegime" -> "VAT",
+          "appealLevel" -> "01",
+          "customerReferenceNo" -> "123456789",
+          "dateOfAppeal" -> "2020-01-01T00:00:00Z",
+          "isLPP" -> false,
+          "agentDetails" -> Json.obj(
+            "agentReferenceNo" -> "AGENT1",
+            "isExcuseRelatedToAgent" -> true
+          ),
+          "appealInformation" -> Json.obj(
+            "reasonableExcuse" -> "technicalIssue",
+            "honestyDeclaration" -> true,
+            "startDateOfEvent" -> "2021-04-23T00:00:00Z",
+            "endDateOfEvent" -> "2021-04-24T00:00:01Z",
+            "lateAppeal" -> false,
+            "isClientResponsibleForSubmission" -> false,
+            "isClientResponsibleForLateSubmission" -> true
+          )
+        )
+
+        val result = Json.toJson(modelToConvertToJson)(defaultAppealSubmissionWrites)
+        result shouldBe jsonRepresentingModel
+      }
+    }
+
+    "for other" must {
+      "write the model to JSON" in {
+        val modelToConvertToJson: AppealSubmission = AppealSubmission(
+          taxRegime = "VAT",
+          appealLevel = FirstStageAppeal,
+          customerReferenceNo = "123456789",
+          dateOfAppeal = LocalDateTime.parse("2020-01-01T00:00:00"),
+          isLPP = false,
+          appealSubmittedBy = "agent",
+          agentDetails = Some(AgentDetails(agentReferenceNo = "AGENT1", isExcuseRelatedToAgent = true)),
+          appealInformation = OtherAppealInformation(
+            startDateOfEvent = "2021-04-23T00:00:00",
+            statement = Some("This was the reason"),
+            supportingEvidence = Some(Evidence(noOfUploadedFiles = 1)),
+            lateAppeal = false,
+            lateAppealReason = None,
+            isClientResponsibleForSubmission = Some(false),
+            isClientResponsibleForLateSubmission = Some(true),
+            honestyDeclaration = true,
+            reasonableExcuse = "other",
+            uploadedFiles = None
+          )
+        )
+
+        val jsonRepresentingModel: JsValue = Json.obj(
+          "appealSubmittedBy" -> "agent",
+          "sourceSystem" -> "MDTP",
+          "taxRegime" -> "VAT",
+          "appealLevel" -> "01",
+          "customerReferenceNo" -> "123456789",
+          "dateOfAppeal" -> "2020-01-01T00:00:00Z",
+          "isLPP" -> false,
+          "agentDetails" -> Json.obj(
+            "agentReferenceNo" -> "AGENT1",
+            "isExcuseRelatedToAgent" -> true
+          ),
+          "appealInformation" -> Json.obj(
+            "reasonableExcuse" -> "other",
+            "honestyDeclaration" -> true,
+            "startDateOfEvent" -> "2021-04-23T00:00:00Z",
+            "statement" -> "This was the reason",
+            "supportingEvidence" -> Json.obj("noOfUploadedFiles" -> 1),
+            "lateAppeal" -> false,
+            "isClientResponsibleForSubmission" -> false,
+            "isClientResponsibleForLateSubmission" -> true
+          )
+        )
+
+        val result = Json.toJson(modelToConvertToJson)(defaultAppealSubmissionWrites)
+        result shouldBe jsonRepresentingModel
+      }
+
+      "write the model to JSON - no evidence" in {
+        val modelToConvertToJson: AppealSubmission = AppealSubmission(
+          taxRegime = "VAT",
+          appealLevel = FirstStageAppeal,
+          customerReferenceNo = "123456789",
+          dateOfAppeal = LocalDateTime.parse("2020-01-01T00:00:00"),
+          isLPP = false,
+          appealSubmittedBy = "agent",
+          agentDetails = Some(AgentDetails(agentReferenceNo = "AGENT1", isExcuseRelatedToAgent = true)),
+          appealInformation = OtherAppealInformation(
+            startDateOfEvent = "2021-04-23T00:00:00",
+            statement = Some("This was the reason"),
+            supportingEvidence = None,
+            lateAppeal = false,
+            lateAppealReason = None,
+            isClientResponsibleForSubmission = Some(false),
+            isClientResponsibleForLateSubmission = Some(true),
+            honestyDeclaration = true,
+            reasonableExcuse = "other",
+            uploadedFiles = None
+          )
+        )
+
+        val jsonRepresentingModel: JsValue = Json.obj(
+          "appealSubmittedBy" -> "agent",
+          "sourceSystem" -> "MDTP",
+          "taxRegime" -> "VAT",
+          "appealLevel" -> "01",
+          "customerReferenceNo" -> "123456789",
+          "dateOfAppeal" -> "2020-01-01T00:00:00Z",
+          "isLPP" -> false,
+          "agentDetails" -> Json.obj(
+            "agentReferenceNo" -> "AGENT1",
+            "isExcuseRelatedToAgent" -> true
+          ),
+          "appealInformation" -> Json.obj(
+            "reasonableExcuse" -> "other",
+            "honestyDeclaration" -> true,
+            "startDateOfEvent" -> "2021-04-23T00:00:00Z",
+            "statement" -> "This was the reason",
+            "lateAppeal" -> false,
+            "isClientResponsibleForSubmission" -> false,
+            "isClientResponsibleForLateSubmission" -> true
+          )
+        )
+
+        val result = Json.toJson(modelToConvertToJson)(defaultAppealSubmissionWrites)
+        result shouldBe jsonRepresentingModel
+      }
+
+      "write the model to JSON - for late appeal" in {
+        val modelToConvertToJson: AppealSubmission = AppealSubmission(
+          taxRegime = "VAT",
+          appealLevel = FirstStageAppeal,
+          customerReferenceNo = "123456789",
+          dateOfAppeal = LocalDateTime.parse("2020-01-01T00:00:00"),
+          isLPP = false,
+          appealSubmittedBy = "agent",
+          agentDetails = Some(AgentDetails(agentReferenceNo = "AGENT1", isExcuseRelatedToAgent = true)),
+          appealInformation = OtherAppealInformation(
+            startDateOfEvent = "2021-04-23T00:00:00",
+            statement = Some("This was the reason"),
+            supportingEvidence = Some(Evidence(noOfUploadedFiles = 1)),
+            lateAppeal = true,
+            lateAppealReason = Some("Late reason"),
+            isClientResponsibleForSubmission = Some(false),
+            isClientResponsibleForLateSubmission = Some(true),
+            honestyDeclaration = true,
+            reasonableExcuse = "other",
+            uploadedFiles = None
+          )
+        )
+
+        val jsonRepresentingModel: JsValue = Json.obj(
+          "appealSubmittedBy" -> "agent",
+          "sourceSystem" -> "MDTP",
+          "taxRegime" -> "VAT",
+          "appealLevel" -> "01",
+          "customerReferenceNo" -> "123456789",
+          "dateOfAppeal" -> "2020-01-01T00:00:00Z",
+          "isLPP" -> false,
+          "agentDetails" -> Json.obj(
+            "agentReferenceNo" -> "AGENT1",
+            "isExcuseRelatedToAgent" -> true
+          ),
+          "appealInformation" -> Json.obj(
+            "reasonableExcuse" -> "other",
+            "honestyDeclaration" -> true,
+            "startDateOfEvent" -> "2021-04-23T00:00:00Z",
+            "statement" -> "This was the reason",
+            "supportingEvidence" -> Json.obj("noOfUploadedFiles" -> 1),
+            "lateAppeal" -> true,
+            "lateAppealReason" -> "Late reason",
+            "isClientResponsibleForSubmission" -> false,
+            "isClientResponsibleForLateSubmission" -> true
+          )
+        )
+
+        val result = Json.toJson(modelToConvertToJson)(defaultAppealSubmissionWrites)
+        result shouldBe jsonRepresentingModel
+      }
+    }
+  }
+
+  "apiWrites" should {
+    "write the model to JSON the same as apiWritesHIP, but excluding appealLevel from the model" in {
+        val modelToCovertToJson: AppealSubmission = AppealSubmission(
+          taxRegime = "VAT",
+          appealLevel = FirstStageAppeal,
           customerReferenceNo = "123456789",
           dateOfAppeal = LocalDateTime.parse("2020-01-01T00:00:00"),
           isLPP = false,
@@ -1303,499 +1946,8 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
         val result = Json.toJson(modelToCovertToJson)(AppealSubmission.apiWrites)
         result shouldBe jsonRepresentingModel
       }
-    }
-    "for crime" must {
-      "write the model to JSON" in {
-        val modelToConvertToJson: AppealSubmission = AppealSubmission(
-          taxRegime = "VAT",
-          customerReferenceNo = "123456789",
-          dateOfAppeal = LocalDateTime.parse("2020-01-01T00:00:00"),
-          isLPP = false,
-          appealSubmittedBy = "agent",
-          agentDetails = Some(AgentDetails(agentReferenceNo = "AGENT1", isExcuseRelatedToAgent = true)),
-          appealInformation = CrimeAppealInformation(
-            startDateOfEvent = "2021-04-23T00:00:00",
-            reportedIssueToPolice = "yes",
-            statement = None,
-            lateAppeal = true,
-            lateAppealReason = Some("Reason"),
-            isClientResponsibleForSubmission = Some(false),
-            isClientResponsibleForLateSubmission = Some(true),
-            honestyDeclaration = true,
-            reasonableExcuse = "crime"
-          )
-        )
-        val jsonRepresentingModel: JsValue = Json.obj(
-          "appealSubmittedBy" -> "agent",
-          "sourceSystem" -> "MDTP",
-          "taxRegime" -> "VAT",
-          "customerReferenceNo" -> "123456789",
-          "dateOfAppeal" -> "2020-01-01T00:00:00Z",
-          "isLPP" -> false,
-          "agentDetails" -> Json.obj(
-            "agentReferenceNo" -> "AGENT1",
-            "isExcuseRelatedToAgent" -> true
-          ),
-          "appealInformation" -> Json.obj(
-            "reasonableExcuse" -> "crime",
-            "honestyDeclaration" -> true,
-            "startDateOfEvent" -> "2021-04-23T00:00:00Z",
-            "reportedIssueToPolice" -> "yes",
-            "lateAppeal" -> true,
-            "lateAppealReason" -> "Reason",
-            "isClientResponsibleForSubmission" -> false,
-            "isClientResponsibleForLateSubmission" -> true
-          )
-        )
-
-        val result = Json.toJson(modelToConvertToJson)(AppealSubmission.apiWrites)
-        result shouldBe jsonRepresentingModel
-      }
-    }
-
-    "for fireOrFlood" must {
-      "write the model to Json" in {
-        val modelToConvertToJson: AppealSubmission = AppealSubmission(
-          taxRegime = "VAT",
-          customerReferenceNo = "123456789",
-          dateOfAppeal = LocalDateTime.parse("2020-01-01T00:00:00"),
-          isLPP = false,
-          appealSubmittedBy = "agent",
-          agentDetails = Some(AgentDetails(agentReferenceNo = "AGENT1", isExcuseRelatedToAgent = true)),
-          appealInformation = FireOrFloodAppealInformation(
-            startDateOfEvent = "2021-04-23T00:00:00",
-            statement = None,
-            lateAppeal = true,
-            lateAppealReason = Some("Reason"),
-            isClientResponsibleForSubmission = Some(false),
-            isClientResponsibleForLateSubmission = Some(true),
-            honestyDeclaration = true,
-            reasonableExcuse = "fireandflood"
-          )
-        )
-
-        val jsonRepresentingModel: JsValue = Json.obj(
-          "appealSubmittedBy" -> "agent",
-          "sourceSystem" -> "MDTP",
-          "taxRegime" -> "VAT",
-          "customerReferenceNo" -> "123456789",
-          "dateOfAppeal" -> "2020-01-01T00:00:00Z",
-          "isLPP" -> false,
-          "agentDetails" -> Json.obj(
-            "agentReferenceNo" -> "AGENT1",
-            "isExcuseRelatedToAgent" -> true
-          ),
-          "appealInformation" -> Json.obj(
-            "reasonableExcuse" -> "fireandflood",
-            "honestyDeclaration" -> true,
-            "startDateOfEvent" -> "2021-04-23T00:00:00Z",
-            "lateAppeal" -> true,
-            "lateAppealReason" -> "Reason",
-            "isClientResponsibleForSubmission" -> false,
-            "isClientResponsibleForLateSubmission" -> true
-          )
-        )
-
-        val result = Json.toJson(modelToConvertToJson)(AppealSubmission.apiWrites)
-        result shouldBe jsonRepresentingModel
-      }
-    }
-
-    "for loss of staff" must {
-      "write the model to JSON" in {
-        val modelToConvertToJson: AppealSubmission = AppealSubmission(
-          taxRegime = "VAT",
-          customerReferenceNo = "123456789",
-          dateOfAppeal = LocalDateTime.parse("2020-01-01T00:00:00"),
-          isLPP = false,
-          appealSubmittedBy = "agent",
-          agentDetails = Some(AgentDetails(agentReferenceNo = "AGENT1", isExcuseRelatedToAgent = true)),
-          appealInformation = LossOfStaffAppealInformation(
-            startDateOfEvent = "2021-04-23T00:00:00",
-            statement = None,
-            lateAppeal = true,
-            lateAppealReason = Some("Reason"),
-            isClientResponsibleForSubmission = Some(false),
-            isClientResponsibleForLateSubmission = Some(true),
-            honestyDeclaration = true,
-            reasonableExcuse = "lossOfEssentialStaff"
-          )
-        )
-        val jsonRepresentingModel: JsValue = Json.obj(
-          "appealSubmittedBy" -> "agent",
-          "sourceSystem" -> "MDTP",
-          "taxRegime" -> "VAT",
-          "customerReferenceNo" -> "123456789",
-          "dateOfAppeal" -> "2020-01-01T00:00:00Z",
-          "isLPP" -> false,
-          "agentDetails" -> Json.obj(
-            "agentReferenceNo" -> "AGENT1",
-            "isExcuseRelatedToAgent" -> true
-          ),
-          "appealInformation" -> Json.obj(
-            "reasonableExcuse" -> "lossOfEssentialStaff",
-            "honestyDeclaration" -> true,
-            "startDateOfEvent" -> "2021-04-23T00:00:00Z",
-            "lateAppeal" -> true,
-            "lateAppealReason" -> "Reason",
-            "isClientResponsibleForSubmission" -> false,
-            "isClientResponsibleForLateSubmission" -> true
-          )
-        )
-
-        val result = Json.toJson(modelToConvertToJson)(AppealSubmission.apiWrites)
-        result shouldBe jsonRepresentingModel
-      }
-    }
-
-    "for health" must {
-      "write the appeal to JSON" when {
-        "there has been a hospital stay - and is no longer ongoing (both start and end date) - write the appeal model to JSON" in {
-          val modelToConvertToJson = AppealSubmission(
-            taxRegime = "VAT",
-            customerReferenceNo = "123456789",
-            dateOfAppeal = LocalDateTime.parse("2020-01-01T00:00:00"),
-            isLPP = false,
-            appealSubmittedBy = "agent",
-            agentDetails = Some(AgentDetails(agentReferenceNo = "AGENT1", isExcuseRelatedToAgent = true)),
-            appealInformation = HealthAppealInformation(
-              startDateOfEvent = Some("2020-01-01T00:00:00"),
-              endDateOfEvent = Some("2020-01-01T00:00:01"),
-              eventOngoing = false,
-              statement = None,
-              lateAppeal = true,
-              lateAppealReason = Some("Reason"),
-              isClientResponsibleForSubmission = Some(false),
-              isClientResponsibleForLateSubmission = Some(true),
-              honestyDeclaration = true,
-              reasonableExcuse = "health",
-              hospitalStayInvolved = true
-            )
-          )
-          val jsonRepresentingModel: JsValue = Json.obj(
-            "appealSubmittedBy" -> "agent",
-            "sourceSystem" -> "MDTP",
-            "taxRegime" -> "VAT",
-            "customerReferenceNo" -> "123456789",
-            "dateOfAppeal" -> "2020-01-01T00:00:00Z",
-            "isLPP" -> false,
-            "agentDetails" -> Json.obj(
-              "agentReferenceNo" -> "AGENT1",
-              "isExcuseRelatedToAgent" -> true
-            ),
-            "appealInformation" -> Json.obj(
-              "reasonableExcuse" -> "unexpectedHospitalStay",
-              "honestyDeclaration" -> true,
-              "startDateOfEvent" -> "2020-01-01T00:00:00Z",
-              "endDateOfEvent" -> "2020-01-01T00:00:01Z",
-              "eventOngoing" -> false,
-              "lateAppeal" -> true,
-              "lateAppealReason" -> "Reason",
-              "isClientResponsibleForSubmission" -> false,
-              "isClientResponsibleForLateSubmission" -> true
-            )
-          )
-          val result = Json.toJson(modelToConvertToJson)(AppealSubmission.apiWrites)
-          result shouldBe jsonRepresentingModel
-        }
-
-        "there has been a hospital stay AND it is ongoing (no end date) - write the appeal model to JSON" in {
-          val modelToConvertToJson = AppealSubmission(
-            taxRegime = "VAT",
-            customerReferenceNo = "123456789",
-            dateOfAppeal = LocalDateTime.parse("2020-01-01T00:00:00"),
-            isLPP = false,
-            appealSubmittedBy = "agent",
-            agentDetails = Some(AgentDetails(agentReferenceNo = "AGENT1", isExcuseRelatedToAgent = true)),
-            appealInformation = HealthAppealInformation(
-              startDateOfEvent = Some("2021-04-23T00:00:00"),
-              endDateOfEvent = None,
-              eventOngoing = true,
-              statement = None,
-              lateAppeal = true,
-              lateAppealReason = Some("Reason"),
-              isClientResponsibleForSubmission = Some(false),
-              isClientResponsibleForLateSubmission = Some(true),
-              honestyDeclaration = true,
-              reasonableExcuse = "health",
-              hospitalStayInvolved = true
-            )
-          )
-          val jsonRepresentingModel: JsValue = Json.obj(
-            "appealSubmittedBy" -> "agent",
-            "sourceSystem" -> "MDTP",
-            "taxRegime" -> "VAT",
-            "customerReferenceNo" -> "123456789",
-            "dateOfAppeal" -> "2020-01-01T00:00:00Z",
-            "isLPP" -> false,
-            "agentDetails" -> Json.obj(
-              "agentReferenceNo" -> "AGENT1",
-              "isExcuseRelatedToAgent" -> true
-            ),
-            "appealInformation" -> Json.obj(
-              "reasonableExcuse" -> "unexpectedHospitalStay",
-              "honestyDeclaration" -> true,
-              "startDateOfEvent" -> "2021-04-23T00:00:00Z",
-              "eventOngoing" -> true,
-              "lateAppeal" -> true,
-              "lateAppealReason" -> "Reason",
-              "isClientResponsibleForSubmission" -> false,
-              "isClientResponsibleForLateSubmission" -> true
-            )
-          )
-          val result = Json.toJson(modelToConvertToJson)(AppealSubmission.apiWrites)
-          result shouldBe jsonRepresentingModel
-        }
-
-        "there has been NO hospital stay (startDateOfEvent present, eventOngoing = false, hospitalStayInvolved = false) " +
-          "write the appeal model to JSON" in {
-          val modelToConvertToJson = AppealSubmission(
-            taxRegime = "VAT",
-            customerReferenceNo = "123456789",
-            dateOfAppeal = LocalDateTime.parse("2020-01-01T00:00:00"),
-            isLPP = false,
-            appealSubmittedBy = "agent",
-            agentDetails = Some(AgentDetails(agentReferenceNo = "AGENT1", isExcuseRelatedToAgent = true)),
-            appealInformation = HealthAppealInformation(
-              endDateOfEvent = None,
-              eventOngoing = false,
-              startDateOfEvent = Some("2021-04-23T00:00:00"),
-              statement = None,
-              lateAppeal = true,
-              lateAppealReason = Some("Reason"),
-              isClientResponsibleForSubmission = Some(false),
-              isClientResponsibleForLateSubmission = Some(true),
-              honestyDeclaration = true,
-              reasonableExcuse = "health",
-              hospitalStayInvolved = false
-            )
-          )
-          val jsonRepresentingModel: JsValue = Json.obj(
-            "appealSubmittedBy" -> "agent",
-            "sourceSystem" -> "MDTP",
-            "taxRegime" -> "VAT",
-            "customerReferenceNo" -> "123456789",
-            "dateOfAppeal" -> "2020-01-01T00:00:00Z",
-            "isLPP" -> false,
-            "agentDetails" -> Json.obj(
-              "agentReferenceNo" -> "AGENT1",
-              "isExcuseRelatedToAgent" -> true
-            ),
-            "appealInformation" -> Json.obj(
-              "reasonableExcuse" -> "seriousOrLifeThreateningIllHealth",
-              "honestyDeclaration" -> true,
-              "startDateOfEvent" -> "2021-04-23T00:00:00Z",
-              "lateAppeal" -> true,
-              "lateAppealReason" -> "Reason",
-              "isClientResponsibleForSubmission" -> false,
-              "isClientResponsibleForLateSubmission" -> true
-            )
-          )
-          val result = Json.toJson(modelToConvertToJson)(AppealSubmission.apiWrites)
-          result shouldBe jsonRepresentingModel
-        }
-      }
-    }
-
-    "for technical issues" must {
-      "write the model to JSON" in {
-        val modelToConvertToJson: AppealSubmission = AppealSubmission(
-          taxRegime = "VAT",
-          customerReferenceNo = "123456789",
-          dateOfAppeal = LocalDateTime.parse("2020-01-01T00:00:00"),
-          isLPP = false,
-          appealSubmittedBy = "agent",
-          agentDetails = Some(AgentDetails(agentReferenceNo = "AGENT1", isExcuseRelatedToAgent = true)),
-          appealInformation = TechnicalIssuesAppealInformation(
-            startDateOfEvent = "2021-04-23T00:00:00",
-            endDateOfEvent = "2021-04-24T00:00:01",
-            statement = None,
-            lateAppeal = false,
-            lateAppealReason = None,
-            isClientResponsibleForSubmission = Some(false),
-            isClientResponsibleForLateSubmission = Some(true),
-            honestyDeclaration = true,
-            reasonableExcuse = "technicalIssue"
-          )
-        )
-
-        val jsonRepresentingModel: JsValue = Json.obj(
-          "appealSubmittedBy" -> "agent",
-          "sourceSystem" -> "MDTP",
-          "taxRegime" -> "VAT",
-          "customerReferenceNo" -> "123456789",
-          "dateOfAppeal" -> "2020-01-01T00:00:00Z",
-          "isLPP" -> false,
-          "agentDetails" -> Json.obj(
-            "agentReferenceNo" -> "AGENT1",
-            "isExcuseRelatedToAgent" -> true
-          ),
-          "appealInformation" -> Json.obj(
-            "reasonableExcuse" -> "technicalIssue",
-            "honestyDeclaration" -> true,
-            "startDateOfEvent" -> "2021-04-23T00:00:00Z",
-            "endDateOfEvent" -> "2021-04-24T00:00:01Z",
-            "lateAppeal" -> false,
-            "isClientResponsibleForSubmission" -> false,
-            "isClientResponsibleForLateSubmission" -> true
-          )
-        )
-
-        val result = Json.toJson(modelToConvertToJson)(AppealSubmission.apiWrites)
-        result shouldBe jsonRepresentingModel
-      }
-    }
-
-    "for other" must {
-      "write the model to JSON" in {
-        val modelToConvertToJson: AppealSubmission = AppealSubmission(
-          taxRegime = "VAT",
-          customerReferenceNo = "123456789",
-          dateOfAppeal = LocalDateTime.parse("2020-01-01T00:00:00"),
-          isLPP = false,
-          appealSubmittedBy = "agent",
-          agentDetails = Some(AgentDetails(agentReferenceNo = "AGENT1", isExcuseRelatedToAgent = true)),
-          appealInformation = OtherAppealInformation(
-            startDateOfEvent = "2021-04-23T00:00:00",
-            statement = Some("This was the reason"),
-            supportingEvidence = Some(Evidence(noOfUploadedFiles = 1)),
-            lateAppeal = false,
-            lateAppealReason = None,
-            isClientResponsibleForSubmission = Some(false),
-            isClientResponsibleForLateSubmission = Some(true),
-            honestyDeclaration = true,
-            reasonableExcuse = "other",
-            uploadedFiles = None
-          )
-        )
-
-        val jsonRepresentingModel: JsValue = Json.obj(
-          "appealSubmittedBy" -> "agent",
-          "sourceSystem" -> "MDTP",
-          "taxRegime" -> "VAT",
-          "customerReferenceNo" -> "123456789",
-          "dateOfAppeal" -> "2020-01-01T00:00:00Z",
-          "isLPP" -> false,
-          "agentDetails" -> Json.obj(
-            "agentReferenceNo" -> "AGENT1",
-            "isExcuseRelatedToAgent" -> true
-          ),
-          "appealInformation" -> Json.obj(
-            "reasonableExcuse" -> "other",
-            "honestyDeclaration" -> true,
-            "startDateOfEvent" -> "2021-04-23T00:00:00Z",
-            "statement" -> "This was the reason",
-            "supportingEvidence" -> Json.obj("noOfUploadedFiles" -> 1),
-            "lateAppeal" -> false,
-            "isClientResponsibleForSubmission" -> false,
-            "isClientResponsibleForLateSubmission" -> true
-          )
-        )
-
-        val result = Json.toJson(modelToConvertToJson)(AppealSubmission.apiWrites)
-        result shouldBe jsonRepresentingModel
-      }
-
-      "write the model to JSON - no evidence" in {
-        val modelToConvertToJson: AppealSubmission = AppealSubmission(
-          taxRegime = "VAT",
-          customerReferenceNo = "123456789",
-          dateOfAppeal = LocalDateTime.parse("2020-01-01T00:00:00"),
-          isLPP = false,
-          appealSubmittedBy = "agent",
-          agentDetails = Some(AgentDetails(agentReferenceNo = "AGENT1", isExcuseRelatedToAgent = true)),
-          appealInformation = OtherAppealInformation(
-            startDateOfEvent = "2021-04-23T00:00:00",
-            statement = Some("This was the reason"),
-            supportingEvidence = None,
-            lateAppeal = false,
-            lateAppealReason = None,
-            isClientResponsibleForSubmission = Some(false),
-            isClientResponsibleForLateSubmission = Some(true),
-            honestyDeclaration = true,
-            reasonableExcuse = "other",
-            uploadedFiles = None
-          )
-        )
-
-        val jsonRepresentingModel: JsValue = Json.obj(
-          "appealSubmittedBy" -> "agent",
-          "sourceSystem" -> "MDTP",
-          "taxRegime" -> "VAT",
-          "customerReferenceNo" -> "123456789",
-          "dateOfAppeal" -> "2020-01-01T00:00:00Z",
-          "isLPP" -> false,
-          "agentDetails" -> Json.obj(
-            "agentReferenceNo" -> "AGENT1",
-            "isExcuseRelatedToAgent" -> true
-          ),
-          "appealInformation" -> Json.obj(
-            "reasonableExcuse" -> "other",
-            "honestyDeclaration" -> true,
-            "startDateOfEvent" -> "2021-04-23T00:00:00Z",
-            "statement" -> "This was the reason",
-            "lateAppeal" -> false,
-            "isClientResponsibleForSubmission" -> false,
-            "isClientResponsibleForLateSubmission" -> true
-          )
-        )
-
-        val result = Json.toJson(modelToConvertToJson)(AppealSubmission.apiWrites)
-        result shouldBe jsonRepresentingModel
-      }
-
-      "write the model to JSON - for late appeal" in {
-        val modelToConvertToJson: AppealSubmission = AppealSubmission(
-          taxRegime = "VAT",
-          customerReferenceNo = "123456789",
-          dateOfAppeal = LocalDateTime.parse("2020-01-01T00:00:00"),
-          isLPP = false,
-          appealSubmittedBy = "agent",
-          agentDetails = Some(AgentDetails(agentReferenceNo = "AGENT1", isExcuseRelatedToAgent = true)),
-          appealInformation = OtherAppealInformation(
-            startDateOfEvent = "2021-04-23T00:00:00",
-            statement = Some("This was the reason"),
-            supportingEvidence = Some(Evidence(noOfUploadedFiles = 1)),
-            lateAppeal = true,
-            lateAppealReason = Some("Late reason"),
-            isClientResponsibleForSubmission = Some(false),
-            isClientResponsibleForLateSubmission = Some(true),
-            honestyDeclaration = true,
-            reasonableExcuse = "other",
-            uploadedFiles = None
-          )
-        )
-
-        val jsonRepresentingModel: JsValue = Json.obj(
-          "appealSubmittedBy" -> "agent",
-          "sourceSystem" -> "MDTP",
-          "taxRegime" -> "VAT",
-          "customerReferenceNo" -> "123456789",
-          "dateOfAppeal" -> "2020-01-01T00:00:00Z",
-          "isLPP" -> false,
-          "agentDetails" -> Json.obj(
-            "agentReferenceNo" -> "AGENT1",
-            "isExcuseRelatedToAgent" -> true
-          ),
-          "appealInformation" -> Json.obj(
-            "reasonableExcuse" -> "other",
-            "honestyDeclaration" -> true,
-            "startDateOfEvent" -> "2021-04-23T00:00:00Z",
-            "statement" -> "This was the reason",
-            "supportingEvidence" -> Json.obj("noOfUploadedFiles" -> 1),
-            "lateAppeal" -> true,
-            "lateAppealReason" -> "Late reason",
-            "isClientResponsibleForSubmission" -> false,
-            "isClientResponsibleForLateSubmission" -> true
-          )
-        )
-
-        val result = Json.toJson(modelToConvertToJson)(AppealSubmission.apiWrites)
-        result shouldBe jsonRepresentingModel
-      }
-    }
   }
-
+  
   "BereavementAppealInformation" should {
     "bereavementAppealWrites" must {
       "write the appeal model to JSON" in {

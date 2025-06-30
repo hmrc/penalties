@@ -16,7 +16,7 @@
 
 package utils
 
-import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, containing, equalTo, equalToJson, post, stubFor, urlEqualTo}
+import com.github.tomakehurst.wiremock.client.WireMock._
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
 
 trait AuthMock {

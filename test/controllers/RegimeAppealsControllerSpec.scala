@@ -21,7 +21,11 @@ import config.AppConfig
 import config.featureSwitches.FeatureSwitching
 import connectors.FileNotificationOrchestratorConnector
 import connectors.parsers.AppealsParser.UnexpectedFailure
-import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser.{GetPenaltyDetailsFailureResponse, GetPenaltyDetailsMalformed, GetPenaltyDetailsSuccessResponse}
+import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser.{
+  GetPenaltyDetailsFailureResponse,
+  GetPenaltyDetailsMalformed,
+  GetPenaltyDetailsSuccessResponse
+}
 import controllers.auth.AuthAction
 import models.appeals.AppealTypeEnum.{Additional, Late_Payment, Late_Submission}
 import models.appeals.{AppealData, MultiplePenaltiesData}
@@ -31,6 +35,7 @@ import models.getPenaltyDetails.GetPenaltyDetails
 import models.getPenaltyDetails.latePayment._
 import models.getPenaltyDetails.lateSubmission._
 import models.notification._
+import models.{AgnosticEnrolmentKey, Id, IdType, Regime}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
 import org.mockito.{ArgumentCaptor, ArgumentMatchers}
@@ -42,14 +47,14 @@ import play.api.mvc.Result
 import play.api.test.Helpers._
 import services.auditing.AuditService
 import services.{PenaltyDetailsService, RegimeAppealService}
-import uk.gov.hmrc.http.HttpResponse
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import utils.AuthActionMock
 import utils.Logger.logger
 import utils.PagerDutyHelper.PagerDutyKeys
+
 import java.time.{LocalDate, LocalDateTime}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-import models.{AgnosticEnrolmentKey, Regime, IdType, Id}
 
 class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with LogCapturing {
   val mockAppealsService: RegimeAppealService = mock(classOf[RegimeAppealService])
@@ -91,6 +96,8 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
 
     val controller = new RegimeAppealsController(if (withRealAppConfig) appConfig
     else mockAppConfig, mockAppealsService, mockGetPenaltyDetailsService, mockFileNotificationConnector, mockAuditService, stubControllerComponents(), mockAuthAction)
+
+    implicit val hc: HeaderCarrier = HeaderCarrier()
   }
 
   "getAppealsDataForLateSubmissionPenalty" should {
@@ -674,7 +681,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
   }
 
   "getReasonableExcuses" should {
-    "return all the excuses that are stored in the ReasonableExcuse model" in new Setup {
+    "return all the excuses that are stored in the ReasonableExcuse model for VAT" in new Setup {
       val jsonExpectedToReturn: JsValue = Json.parse(
         """
           |{
@@ -712,7 +719,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
           |""".stripMargin
       )
 
-      val result: Future[Result] = controller.getReasonableExcuses()(fakeRequest)
+      val result: Future[Result] = controller.getReasonableExcuses(regime)(fakeRequest)
       status(result) shouldBe OK
       contentAsJson(result) shouldBe jsonExpectedToReturn
     }
@@ -754,7 +761,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
         .thenReturn(true)
       when(mockAppConfig.isReasonableExcuseEnabled(ArgumentMatchers.eq("other")))
         .thenReturn(false)
-      val result: Future[Result] = controller.getReasonableExcuses()(fakeRequest)
+      val result: Future[Result] = controller.getReasonableExcuses(Regime("VATC"))(fakeRequest)
       status(result) shouldBe OK
       contentAsJson(result) shouldBe jsonExpectedToReturn
     }
@@ -763,8 +770,8 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
   "submitAppeal" should {
     "return BAD_REQUEST (400)" when {
       "the request body is not valid JSON" in new Setup {
-        val result: Future[Result] = controller.submitAppeal(regime, idType, id, isLPP = false, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = false)(fakeRequest)
-        status(result) shouldBe BAD_REQUEST
+        val result: Future[Result] = controller.submitAppeal(regime, idType, id, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = false)(fakeRequest)
+        status(result) shouldBe BAD_REQUEST 
         contentAsString(result) shouldBe "Invalid body received i.e. could not be parsed to JSON"
       }
 
@@ -776,12 +783,12 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
             |    "taxRegime": "VATC",
             |    "customerReferenceNo": "123456789",
             |    "dateOfAppeal": "2020-01-01T00:00:00",
-            |    "isLPP": true,
+            |    "isLPP": false,
             |    "appealSubmittedBy": "customer"
             |}
             |""".stripMargin)
 
-        val result: Future[Result] = controller.submitAppeal(regime, idType, id, isLPP = false, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = false)(fakeRequest.withJsonBody(appealsJson))
+        val result: Future[Result] = controller.submitAppeal(regime, idType, id, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = false)(fakeRequest.withJsonBody(appealsJson))
         status(result) shouldBe BAD_REQUEST
         contentAsString(result) shouldBe "Failed to parse to model"
       }
@@ -790,16 +797,17 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
     "return the error status code" when {
       "the connector calls fails" in new Setup {
 
-        when(mockAppealsService.submitAppeal(any(), any(), any(), any(), any()))
+        when(mockAppealsService.submitAppeal(any(), any(), any(), any())(any()))
           .thenReturn(Future.successful(Left(UnexpectedFailure(GATEWAY_TIMEOUT, s"Unexpected response, status $GATEWAY_TIMEOUT returned"))))
         val appealsJson: JsValue = Json.parse(
           """
             |{
             |    "sourceSystem": "MDTP",
             |    "taxRegime": "VAT",
+            |    "appealLevel": "01",
             |    "customerReferenceNo": "123456789",
             |    "dateOfAppeal": "2020-01-01T00:00:00",
-            |    "isLPP": true,
+            |    "isLPP": false,
             |    "appealSubmittedBy": "customer",
             |    "appealInformation": {
             |						 "reasonableExcuse": "crime",
@@ -811,23 +819,24 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
             |		}
             |}
             |""".stripMargin)
-        val result: Future[Result] = controller.submitAppeal(regime, idType, id, isLPP = false, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = false)(fakeRequest.withJsonBody(appealsJson))
+        val result: Future[Result] = controller.submitAppeal(regime, idType, id, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = false)(fakeRequest.withJsonBody(appealsJson))
         status(result) shouldBe GATEWAY_TIMEOUT
       }
     }
 
     "return OK (200)" when {
       "the JSON request body can be parsed and the connector returns a successful response for crime" in new Setup {
-        when(mockAppealsService.submitAppeal(any(), any(), any(), any(), any()))
+        when(mockAppealsService.submitAppeal(any(), any(), any(), any())(any()))
           .thenReturn(Future.successful(Right(appealResponseModel)))
         val appealsJson: JsValue = Json.parse(
           """
             |{
             |    "sourceSystem": "MDTP",
             |    "taxRegime": "VAT",
+            |    "appealLevel": "01",
             |    "customerReferenceNo": "123456789",
             |    "dateOfAppeal": "2020-01-01T00:00:00",
-            |    "isLPP": true,
+            |    "isLPP": false,
             |    "appealSubmittedBy": "customer",
             |    "appealInformation": {
             |						 "reasonableExcuse": "crime",
@@ -842,22 +851,23 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
           "caseId" -> "PR-123456789",
           "status" -> OK
         )
-        val result: Future[Result] = controller.submitAppeal(regime, idType, id, isLPP = false, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = false)(fakeRequest.withJsonBody(appealsJson))
+        val result: Future[Result] = controller.submitAppeal(regime, idType, id, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = false)(fakeRequest.withJsonBody(appealsJson))
         status(result) shouldBe OK
         contentAsJson(result) shouldBe expectedJsonResponse
       }
 
       "the JSON request body can be parsed and the connector returns a successful response for loss of staff" in new Setup {
-        when(mockAppealsService.submitAppeal(any(), any(), any(), any(), any()))
+        when(mockAppealsService.submitAppeal(any(), any(), any(), any())(any()))
           .thenReturn(Future.successful(Right(appealResponseModel)))
         val appealsJson: JsValue = Json.parse(
           """
             |{
             |    "sourceSystem": "MDTP",
             |    "taxRegime": "VAT",
+            |    "appealLevel": "01",
             |    "customerReferenceNo": "123456789",
             |    "dateOfAppeal": "2020-01-01T00:00:00",
-            |    "isLPP": true,
+            |    "isLPP": false,
             |    "appealSubmittedBy": "customer",
             |    "appealInformation": {
             |						 "reasonableExcuse": "lossOfEssentialStaff",
@@ -867,21 +877,22 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
             |		}
             |}
             |""".stripMargin)
-        val result: Future[Result] = controller.submitAppeal(regime, idType, id, isLPP = false, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = false)(fakeRequest.withJsonBody(appealsJson))
+        val result: Future[Result] = controller.submitAppeal(regime, idType, id, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = false)(fakeRequest.withJsonBody(appealsJson))
         status(result) shouldBe OK
       }
 
       "the Json request body can be parsed and the connector returns a successful response for fire or flood" in new Setup {
-        when(mockAppealsService.submitAppeal(any(), any(), any(), any(), any()))
+        when(mockAppealsService.submitAppeal(any(), any(), any(), any())(any()))
           .thenReturn(Future.successful(Right(appealResponseModel)))
         val appealsJson: JsValue = Json.parse(
           """
             |{
             |    "sourceSystem": "MDTP",
             |    "taxRegime": "VAT",
+            |    "appealLevel": "01",
             |    "customerReferenceNo": "123456789",
             |    "dateOfAppeal": "2020-01-01T00:00:00",
-            |    "isLPP": true,
+            |    "isLPP": false,
             |    "appealSubmittedBy": "customer",
             |    "appealInformation": {
             |						 "reasonableExcuse": "fireandflood",
@@ -891,21 +902,22 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
             |		}
             |}
             |""".stripMargin)
-        val result: Future[Result] = controller.submitAppeal(regime, idType, id, isLPP = false, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = false)(fakeRequest.withJsonBody(appealsJson))
+        val result: Future[Result] = controller.submitAppeal(regime, idType, id, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = false)(fakeRequest.withJsonBody(appealsJson))
         status(result) shouldBe OK
       }
 
       "the Json request body can be parsed and the connector returns a successful response for technical issues" in new Setup {
-        when(mockAppealsService.submitAppeal(any(), any(), any(), any(), any()))
+        when(mockAppealsService.submitAppeal(any(), any(), any(), any())(any()))
           .thenReturn(Future.successful(Right(appealResponseModel)))
         val appealsJson: JsValue = Json.parse(
           """
             |{
             |    "sourceSystem": "MDTP",
             |    "taxRegime": "VAT",
+            |    "appealLevel": "01",
             |    "customerReferenceNo": "123456789",
             |    "dateOfAppeal": "2020-01-01T00:00:00",
-            |    "isLPP": true,
+            |    "isLPP": false,
             |    "appealSubmittedBy": "customer",
             |    "appealInformation": {
             |						 "reasonableExcuse": "technicalIssue",
@@ -916,19 +928,20 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
             |		}
             |}
             |""".stripMargin)
-        val result: Future[Result] = controller.submitAppeal(regime, idType, id, isLPP = false, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = false)(fakeRequest.withJsonBody(appealsJson))
+        val result: Future[Result] = controller.submitAppeal(regime, idType, id, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = false)(fakeRequest.withJsonBody(appealsJson))
         status(result) shouldBe OK
       }
 
       "the Json request body can be parsed and the connector returns a successful response for health" when {
         "there was no hospital stay" in new Setup {
-          when(mockAppealsService.submitAppeal(any(), any(), any(), any(), any()))
+          when(mockAppealsService.submitAppeal(any(), any(), any(), any())(any()))
             .thenReturn(Future.successful(Right(appealResponseModel)))
           val appealsJson: JsValue = Json.parse(
             """
               |{
               |    "sourceSystem": "MDTP",
               |    "taxRegime": "VAT",
+            |    "appealLevel": "01",
               |    "customerReferenceNo": "123456789",
               |    "dateOfAppeal": "2020-01-01T00:00:00",
               |    "isLPP": true,
@@ -943,18 +956,19 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
               |		}
               |}
               |""".stripMargin)
-          val result: Future[Result] = controller.submitAppeal(regime, idType, id, isLPP = false, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = false)(fakeRequest.withJsonBody(appealsJson))
+          val result: Future[Result] = controller.submitAppeal(regime, idType, id, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = false)(fakeRequest.withJsonBody(appealsJson))
           status(result) shouldBe OK
         }
 
         "there is an ongoing hospital stay" in new Setup {
-          when(mockAppealsService.submitAppeal(any(), any(), any(), any(), any()))
+          when(mockAppealsService.submitAppeal(any(), any(), any(), any())(any()))
             .thenReturn(Future.successful(Right(appealResponseModel)))
           val appealsJson: JsValue = Json.parse(
             """
               |{
               |    "sourceSystem": "MDTP",
               |    "taxRegime": "VAT",
+            |    "appealLevel": "01",
               |    "customerReferenceNo": "123456789",
               |    "dateOfAppeal": "2020-01-01T00:00:00",
               |    "isLPP": true,
@@ -969,18 +983,19 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
               |		}
               |}
               |""".stripMargin)
-          val result: Future[Result] = controller.submitAppeal(regime, idType, id, isLPP = false, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = false)(fakeRequest.withJsonBody(appealsJson))
+          val result: Future[Result] = controller.submitAppeal(regime, idType, id, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = false)(fakeRequest.withJsonBody(appealsJson))
           status(result) shouldBe OK
         }
 
         "there was a hospital stay that has ended" in new Setup {
-          when(mockAppealsService.submitAppeal(any(), any(), any(), any(), any()))
+          when(mockAppealsService.submitAppeal(any(), any(), any(), any())(any()))
             .thenReturn(Future.successful(Right(appealResponseModel)))
           val appealsJson: JsValue = Json.parse(
             """
               |{
               |    "sourceSystem": "MDTP",
               |    "taxRegime": "VAT",
+            |    "appealLevel": "01",
               |    "customerReferenceNo": "123456789",
               |    "dateOfAppeal": "2020-01-01T00:00:00",
               |    "isLPP": true,
@@ -996,21 +1011,22 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
               |		}
               |}
               |""".stripMargin)
-          val result: Future[Result] = controller.submitAppeal(regime, idType, id, isLPP = false, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = false)(fakeRequest.withJsonBody(appealsJson))
+          val result: Future[Result] = controller.submitAppeal(regime, idType, id, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = false)(fakeRequest.withJsonBody(appealsJson))
           status(result) shouldBe OK
         }
 
         "the JSON request body can be parsed and the appeal is a LPP" in new Setup {
-          when(mockAppealsService.submitAppeal(any(), any(), any(), any(), any()))
+          when(mockAppealsService.submitAppeal(any(), any(), any(), any())(any()))
             .thenReturn(Future.successful(Right(appealResponseModel)))
           val appealsJson: JsValue = Json.parse(
             """
               |{
               |    "sourceSystem": "MDTP",
               |    "taxRegime": "VAT",
+              |    "appealLevel": "01",
               |    "customerReferenceNo": "123456789",
               |    "dateOfAppeal": "2020-01-01T00:00:00",
-              |    "isLPP": true,
+              |    "isLPP": false,
               |    "appealSubmittedBy": "customer",
               |    "appealInformation": {
               |						"reasonableExcuse": "crime",
@@ -1021,7 +1037,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
               |		}
               |}
               |""".stripMargin)
-          val result: Future[Result] = controller.submitAppeal(regime, idType, id, isLPP = true, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = false)(fakeRequest.withJsonBody(appealsJson))
+          val result: Future[Result] = controller.submitAppeal(regime, idType, id, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = false)(fakeRequest.withJsonBody(appealsJson))
           status(result) shouldBe OK
         }
       }
@@ -1029,7 +1045,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
 
     "when the appeal is not part of a multi appeal" should {
       "return 200 (OK) even if the file notification call fails (5xx response)" in new Setup {
-        when(mockAppealsService.submitAppeal(any(), any(), any(), any(), any()))
+        when(mockAppealsService.submitAppeal(any(), any(), any(), any())(any()))
           .thenReturn(Future.successful(Right(appealResponseModel)))
         when(mockFileNotificationConnector.postFileNotifications(any())(any()))
           .thenReturn(Future.successful(HttpResponse.apply(INTERNAL_SERVER_ERROR, "")))
@@ -1040,6 +1056,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
             |{
             |    "sourceSystem": "MDTP",
             |    "taxRegime": "VAT",
+            |    "appealLevel": "01",
             |    "customerReferenceNo": "123456789",
             |    "dateOfAppeal": "2020-01-01T00:00:00",
             |    "isLPP": true,
@@ -1074,7 +1091,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
             |""".stripMargin)
         withCaptureOfLoggingFrom(logger) {
           logs => {
-            val result: Result = await(controller.submitAppeal(regime, idType, id, isLPP = false, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = false)(fakeRequest.withJsonBody(appealsJson)))
+            val result: Result = await(controller.submitAppeal(regime, idType, id, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = false)(fakeRequest.withJsonBody(appealsJson)))
             result.header.status shouldBe OK
             eventually {
               verify(mockAuditService, times(1)).audit(argumentCaptorForAuditModel.capture())(any(), any(), any())
@@ -1085,7 +1102,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
       }
 
       "return 200 (OK) even if the file notification call fails (4xx response) and audit the storage failure" in new Setup {
-        when(mockAppealsService.submitAppeal(any(), any(), any(), any(), any()))
+        when(mockAppealsService.submitAppeal(any(), any(), any(), any())(any()))
           .thenReturn(Future.successful(Right(appealResponseModel)))
         when(mockFileNotificationConnector.postFileNotifications(any())(any()))
           .thenReturn(Future.successful(HttpResponse.apply(BAD_REQUEST, "")))
@@ -1097,6 +1114,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
             |{
             |    "sourceSystem": "MDTP",
             |    "taxRegime": "VAT",
+            |    "appealLevel": "01",
             |    "customerReferenceNo": "123456789",
             |    "dateOfAppeal": "2020-01-01T00:00:00",
             |    "isLPP": true,
@@ -1131,7 +1149,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
             |""".stripMargin)
         withCaptureOfLoggingFrom(logger) {
           logs => {
-            val result: Result = await(controller.submitAppeal(regime, idType, id, isLPP = false, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = false)(fakeRequest.withJsonBody(appealsJson)))
+            val result: Result = await(controller.submitAppeal(regime, idType, id, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = false)(fakeRequest.withJsonBody(appealsJson)))
             result.header.status shouldBe OK
             eventually {
               verify(mockAuditService, times(1)).audit(argumentCaptorForAuditModel.capture())(any(), any(), any())
@@ -1144,7 +1162,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
       }
 
       "return 200 (OK) even if the file notification call fails (with exception) and audit the storage failure" in new Setup {
-        when(mockAppealsService.submitAppeal(any(), any(), any(), any(), any()))
+        when(mockAppealsService.submitAppeal(any(), any(), any(), any())(any()))
           .thenReturn(Future.successful(Right(appealResponseModel)))
         when(mockFileNotificationConnector.postFileNotifications(any())(any()))
           .thenReturn(Future.failed(new Exception("failed")))
@@ -1156,6 +1174,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
             |{
             |    "sourceSystem": "MDTP",
             |    "taxRegime": "VAT",
+            |    "appealLevel": "01",
             |    "customerReferenceNo": "123456789",
             |    "dateOfAppeal": "2020-01-01T00:00:00",
             |    "isLPP": true,
@@ -1190,7 +1209,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
             |""".stripMargin)
         withCaptureOfLoggingFrom(logger) {
           logs => {
-            val result: Result = await(controller.submitAppeal(regime, idType, id, isLPP = false, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = false)(fakeRequest.withJsonBody(appealsJson)))
+            val result: Result = await(controller.submitAppeal(regime, idType, id, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = false)(fakeRequest.withJsonBody(appealsJson)))
             result.header.status shouldBe OK
             eventually {
               verify(mockAuditService, times(1)).audit(argumentCaptorForAuditModel.capture())(any(), any(), any())
@@ -1204,7 +1223,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
 
     "when the appeal is part of a multi appeal" should {
       "return a partial success response (207) if the file notification call fails (5xx response)" in new Setup {
-        when(mockAppealsService.submitAppeal(any(), any(), any(), any(), any()))
+        when(mockAppealsService.submitAppeal(any(), any(), any(), any())(any()))
           .thenReturn(Future.successful(Right(appealResponseModel)))
         when(mockFileNotificationConnector.postFileNotifications(any())(any()))
           .thenReturn(Future.successful(HttpResponse.apply(INTERNAL_SERVER_ERROR, "")))
@@ -1216,6 +1235,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
             |{
             |    "sourceSystem": "MDTP",
             |    "taxRegime": "VAT",
+            |    "appealLevel": "01",
             |    "customerReferenceNo": "123456789",
             |    "dateOfAppeal": "2020-01-01T00:00:00",
             |    "isLPP": true,
@@ -1255,7 +1275,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
         )
         withCaptureOfLoggingFrom(logger) {
           logs => {
-            val result: Result = await(controller.submitAppeal(regime, idType, id, isLPP = false, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = true)(fakeRequest.withJsonBody(appealsJson)))
+            val result: Result = await(controller.submitAppeal(regime, idType, id, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = true)(fakeRequest.withJsonBody(appealsJson)))
             result.header.status shouldBe MULTI_STATUS
             contentAsJson(Future(result)) shouldBe expectedJsonResponse
             eventually {
@@ -1267,7 +1287,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
       }
 
       "return a 207 (MULTI_STATUS) if the file notification call fails (4xx response) and audit the storage failure" in new Setup {
-        when(mockAppealsService.submitAppeal(any(), any(), any(), any(), any()))
+        when(mockAppealsService.submitAppeal(any(), any(), any(), any())(any()))
           .thenReturn(Future.successful(Right(appealResponseModel)))
         when(mockFileNotificationConnector.postFileNotifications(any())(any()))
           .thenReturn(Future.successful(HttpResponse.apply(BAD_REQUEST, "")))
@@ -1279,6 +1299,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
             |{
             |    "sourceSystem": "MDTP",
             |    "taxRegime": "VAT",
+            |    "appealLevel": "01",
             |    "customerReferenceNo": "123456789",
             |    "dateOfAppeal": "2020-01-01T00:00:00",
             |    "isLPP": true,
@@ -1318,7 +1339,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
         )
         withCaptureOfLoggingFrom(logger) {
           logs => {
-            val result: Result = await(controller.submitAppeal(regime, idType, id, isLPP = false, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = true)(fakeRequest.withJsonBody(appealsJson)))
+            val result: Result = await(controller.submitAppeal(regime, idType, id, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = true)(fakeRequest.withJsonBody(appealsJson)))
             result.header.status shouldBe MULTI_STATUS
             contentAsJson(Future(result)) shouldBe expectedJsonResponse
             eventually {
@@ -1332,7 +1353,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
       }
 
       "return 207 (MULTI_STATUS) if the file notification call fails (with exception) and audit the storage failure" in new Setup {
-        when(mockAppealsService.submitAppeal(any(), any(), any(), any(), any()))
+        when(mockAppealsService.submitAppeal(any(), any(), any(), any())(any()))
           .thenReturn(Future.successful(Right(appealResponseModel)))
         when(mockFileNotificationConnector.postFileNotifications(any())(any()))
           .thenReturn(Future.failed(new Exception("failed")))
@@ -1344,6 +1365,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
             |{
             |    "sourceSystem": "MDTP",
             |    "taxRegime": "VAT",
+            |    "appealLevel": "01",
             |    "customerReferenceNo": "123456789",
             |    "dateOfAppeal": "2020-01-01T00:00:00",
             |    "isLPP": true,
@@ -1383,7 +1405,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
         )
         withCaptureOfLoggingFrom(logger) {
           logs => {
-            val result: Result = await(controller.submitAppeal(regime, idType, id, isLPP = false, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = true)(fakeRequest.withJsonBody(appealsJson)))
+            val result: Result = await(controller.submitAppeal(regime, idType, id, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = true)(fakeRequest.withJsonBody(appealsJson)))
             result.header.status shouldBe MULTI_STATUS
             logs.map(_.getMessage) should contain (s"[RegimeAppealsController][submitAppeal] Unable to store file notification for user with enrolment: VATC~VRN~123456789 penalty 123456789 (correlation ID: $correlationId) - An unknown exception occurred when attempting to store file notifications, with error: failed") 
             contentAsJson(Future(result)) shouldBe expectedJsonResponse
