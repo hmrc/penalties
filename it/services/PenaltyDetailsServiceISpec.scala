@@ -30,7 +30,7 @@ import play.api.http.Status.{IM_A_TEAPOT, INTERNAL_SERVER_ERROR}
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import utils.{RegimeETMPWiremock, IntegrationSpecCommonBase}
 import models.{AgnosticEnrolmentKey, Regime, IdType, Id}
-import java.time.{LocalDate, Instant}
+import java.time.{LocalDate}
 
 class PenaltyDetailsServiceISpec extends IntegrationSpecCommonBase with RegimeETMPWiremock with FeatureSwitching with TableDrivenPropertyChecks {
   setEnabledFeatureSwitches()
@@ -48,10 +48,10 @@ class PenaltyDetailsServiceISpec extends IntegrationSpecCommonBase with RegimeET
         mockInstant,
         totalisations = Some(
           Totalisations(
-            LSPTotalValue = Some(200),
+            lspTotalValue = Some(200),
             penalisedPrincipalTotal = Some(2000),
-            LPPPostedTotal = Some(165.25),
-            LPPEstimatedTotal = Some(15.26),
+            lppPostedTotal = Some(165.25),
+            lppEstimatedTotal = Some(15.26),
             totalAccountOverdue = None,
             totalAccountPostedInterest = None,
             totalAccountAccruingInterest = None
@@ -64,7 +64,7 @@ class PenaltyDetailsServiceISpec extends IntegrationSpecCommonBase with RegimeET
               inactivePenaltyPoints = 12,
               regimeThreshold = 10,
               penaltyChargeAmount = 684.25,
-              PoCAchievementDate = Some(LocalDate.of(2022, 1, 1))
+              pocAchievementDate = Some(LocalDate.of(2022, 1, 1))
             ),
             details = Seq(
               LSPDetails(
@@ -75,7 +75,7 @@ class PenaltyDetailsServiceISpec extends IntegrationSpecCommonBase with RegimeET
                 penaltyCreationDate = LocalDate.of(2022, 10, 30),
                 penaltyExpiryDate = LocalDate.of(2022, 10, 30),
                 communicationsDate = Some(LocalDate.of(2022, 10, 30)),
-                FAPIndicator = None,
+                fapIndicator = None,
                 lateSubmissions = Some(
                   Seq(
                     LateSubmission(
@@ -124,14 +124,14 @@ class PenaltyDetailsServiceISpec extends IntegrationSpecCommonBase with RegimeET
                 penaltyAmountOutstanding = None,
                 penaltyAmountPaid = None,
                 penaltyAmountPosted = 0,
-                LPP1LRDays = Some("15"),
-                LPP1HRDays = Some("31"),
-                LPP2Days = Some("31"),
-                LPP1HRCalculationAmount = Some(99.99),
-                LPP1LRCalculationAmount = Some(99.99),
-                LPP2Percentage = Some(BigDecimal(4.00).setScale(2)),
-                LPP1LRPercentage = Some(BigDecimal(2.00).setScale(2)),
-                LPP1HRPercentage = Some(BigDecimal(2.00).setScale(2)),
+                lpp1LRDays = Some("15"),
+                lpp1HRDays = Some("31"),
+                lpp2Days = Some("31"),
+                lpp1HRCalculationAmt = Some(99.99),
+                lpp1LRCalculationAmt = Some(99.99),
+                lpp2Percentage = Some(BigDecimal(4.00).setScale(2)),
+                lpp1LRPercentage = Some(BigDecimal(2.00).setScale(2)),
+                lpp1HRPercentage = Some(BigDecimal(2.00).setScale(2)),
                 penaltyChargeDueDate = Some(LocalDate.of(2022, 10, 30)),
                 principalChargeLatestClearing = None,
                 timeToPay = Some(Seq(TimeToPay(
@@ -147,7 +147,7 @@ class PenaltyDetailsServiceISpec extends IntegrationSpecCommonBase with RegimeET
             )
           )
         )),
-        breathingSpace = Some(Seq(BreathingSpace(BSStartDate = LocalDate.of(2023, 1, 1), BSEndDate = LocalDate.of(2023, 12, 31))))
+        breathingSpace = Some(Seq(BreathingSpace(bsStartDate = LocalDate.of(2023, 1, 1), bsEndDate = LocalDate.of(2023, 12, 31))))
       )
 
       s"call the connector and return a successful result" in {

@@ -51,10 +51,10 @@ class RegimePenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase w
       |    "processingDate": "$mockInstant",
       |    "penaltyData": {
       |      "totalisations": {
-      |        "LSPTotalValue": 200,
+      |        "lspTotalValue": 200,
       |        "penalisedPrincipalTotal": 2000,
-      |        "LPPPostedTotal": 165.25,
-      |        "LPPEstimatedTotal": 15.26
+      |        "lppPostedTotal": 165.25,
+      |        "lppEstimatedTotal": 15.26
       |      },
       |      "lsp": {
       |        "lspSummary": {
@@ -72,14 +72,14 @@ class RegimePenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase w
       |            "penaltyCategory": "LPP1",
       |            "penaltyStatus": "A",
       |            "penaltyAmountPosted": 0,
-      |            "LPP1LRCalculationAmount": 99.99,
-      |            "LPP1LRDays": "15",
-      |            "LPP1LRPercentage": 2.00,
-      |            "LPP1HRCalculationAmount": 99.99,
-      |            "LPP1HRDays": "31",
-      |            "LPP1HRPercentage": 2.00,
-      |            "LPP2Days": "31",
-      |            "LPP2Percentage": 4.00,
+      |            "lpp1LRCalculationAmt": 99.99,
+      |            "lpp1LRDays": "15",
+      |            "lpp1LRPercentage": 2.00,
+      |            "lpp1HRCalculationAmt": 99.99,
+      |            "lpp1HRDays": "31",
+      |            "lpp1HRPercentage": 2.00,
+      |            "lpp2Days": "31",
+      |            "lpp2Percentage": 4.00,
       |            "penaltyChargeCreationDate": "2022-10-30",
       |            "penaltyChargeDueDate": "2022-10-30",
       |            "principalChargeReference": "XM002610011594",
@@ -112,10 +112,10 @@ class RegimePenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase w
       |    "processingDate": "$mockInstant",
       |    "penaltyData": {
       |      "totalisations": {
-      |        "LSPTotalValue": 200,
+      |        "lspTotalValue": 200,
       |        "penalisedPrincipalTotal": 2000,
-      |        "LPPPostedTotal": 165.25,
-      |        "LPPEstimatedTotal": 15.26
+      |        "lppPostedTotal": 165.25,
+      |        "lppEstimatedTotal": 15.26
       |      },
       |      "lsp": {
       |        "lspSummary": {
@@ -161,28 +161,28 @@ class RegimePenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase w
       |          {
       |            "principalChargeDueDate": "2022-10-30",
       |            "principalChargeBillingTo": "2022-10-30",
-      |            "LPP1LRPercentage": 2,
-      |            "LPP1HRDays": "31",
+      |            "lpp1LRPercentage": 2,
+      |            "lpp1HRDays": "31",
       |            "penaltyChargeDueDate": "2022-10-30",
-      |            "LPP2Days": "31",
+      |            "lpp2Days": "31",
       |            "penaltyAmountPosted": 0,
       |            "penaltyChargeCreationDate": "2022-10-30",
-      |            "LPP1HRPercentage": 2,
-      |            "LPP1LRDays": "15",
+      |            "lpp1HRPercentage": 2,
+      |            "lpp1LRDays": "15",
       |            "timeToPay": [
       |              {
       |                "ttpStartDate": "2022-01-01",
       |                "ttpEndDate": "2022-12-31"
       |              }
       |            ],
-      |            "LPP1HRCalculationAmount": 99.99,
+      |            "lpp1HRCalculationAmt": 99.99,
       |            "penaltyCategory": "LPP1",
       |            "principalChargeReference": "XM002610011594",
       |            "principalChargeBillingFrom": "2022-10-30",
       |            "penaltyStatus": "A",
       |            "mainTransaction": "4703",
-      |            "LPP2Percentage": 4,
-      |            "LPP1LRCalculationAmount": 99.99,
+      |            "lpp2Percentage": 4,
+      |            "lpp1LRCalculationAmt": 99.99,
       |            "principalChargeMainTransaction": "4700",
       |            "penaltyAmountAccruing": 99.99
       |          }
@@ -201,10 +201,10 @@ class RegimePenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase w
       |    "processingDate": "$mockInstant",
       |    "penaltyData": {
       |      "totalisations": {
-      |        "LSPTotalValue": 200,
+      |        "lspTotalValue": 200,
       |        "penalisedPrincipalTotal": 2000,
-      |        "LPPPostedTotal": 165.25,
-      |        "LPPEstimatedTotal": 15.26,
+      |        "lppPostedTotal": 165.25,
+      |        "lppEstimatedTotal": 15.26,
       |        "totalAccountOverdue": 1000.0,
       |        "totalAccountPostedInterest": 12.34,
       |        "totalAccountAccruingInterest": 43.21
@@ -285,10 +285,10 @@ class RegimePenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase w
       |    "processingDate": "$mockInstant",
       |    "penaltyData": {
       |      "totalisations": {
-      |        "LSPTotalValue": 200,
+      |        "lspTotalValue": 200,
       |        "penalisedPrincipalTotal": 2000,
-      |        "LPPPostedTotal": 165.25,
-      |        "LPPEstimatedTotal": 15.26,
+      |        "lppPostedTotal": 165.25,
+      |        "lppEstimatedTotal": 15.26,
       |        "totalAccountOverdue": 1000,
       |        "totalAccountPostedInterest": 12.34,
       |        "totalAccountAccruingInterest": 43.21
@@ -342,10 +342,10 @@ class RegimePenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase w
       |    "processingDate": "$mockInstant",
       |    "penaltyData": {
       |      "totalisations": {
-      |        "LSPTotalValue": 200,
+      |        "lspTotalValue": 200,
       |        "penalisedPrincipalTotal": 2000,
-      |        "LPPPostedTotal": 165.25,
-      |        "LPPEstimatedTotal": 15.26
+      |        "lppPostedTotal": 165.25,
+      |        "lppEstimatedTotal": 15.26
       |      },
       |      "lsp": {
       |        "lspSummary": {
@@ -396,10 +396,10 @@ class RegimePenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase w
       |    "processingDate": "$mockInstant",
       |    "penaltyData": {
       |      "totalisations": {
-      |        "LSPTotalValue": 200,
+      |        "lspTotalValue": 200,
       |        "penalisedPrincipalTotal": 2000,
-      |        "LPPPostedTotal": 220.25,
-      |        "LPPEstimatedTotal": 15.26
+      |        "lppPostedTotal": 220.25,
+      |        "lppEstimatedTotal": 15.26
       |      },
       |      "lsp": null,
       |      "lpp": {
@@ -433,9 +433,9 @@ class RegimePenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase w
       |    "processingDate": "$mockInstant",
       |    "penaltyData": {
       |      "totalisations": {
-      |        "LSPTotalValue": 0,
+      |        "lspTotalValue": 0,
       |        "penalisedPrincipalTotal": 0,
-      |        "LPPPostedTotal": 0.00,
+      |        "lppPostedTotal": 0.00,
       |        "totalAccountOverdue": 1000,
       |        "totalAccountPostedInterest": 12.34,
       |        "totalAccountAccruingInterest": 43.21
@@ -527,10 +527,10 @@ class RegimePenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase w
             |    "processingDate": "$mockInstant",
             |    "penaltyData": {
             |      "totalisations": {
-            |        "LSPTotalValue": 200,
+            |        "lspTotalValue": 200,
             |        "penalisedPrincipalTotal": 2000,
-            |        "LPPPostedTotal": 165.25,
-            |        "LPPEstimatedTotal": 15.26
+            |        "lppPostedTotal": 165.25,
+            |        "lppEstimatedTotal": 15.26
             |      },
             |      "lsp": null,
             |      "lpp": { "lppDetails": [] },
@@ -674,10 +674,10 @@ class RegimePenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase w
           |    "processingDate": "$mockInstant",
           |    "penaltyData": {
           |      "totalisations":{
-          |        "LSPTotalValue":200,
+          |        "lspTotalValue":200,
           |        "penalisedPrincipalTotal":2000,
-          |        "LPPPostedTotal":165.25,
-          |        "LPPEstimatedTotal":15.26
+          |        "lppPostedTotal":165.25,
+          |        "lppEstimatedTotal":15.26
           |      },
           |      "lsp":{
           |        "lspSummary":{
@@ -765,10 +765,10 @@ class RegimePenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase w
           |    "processingDate": "$mockInstant",
           |    "penaltyData": {
           |      "totalisations":{
-          |        "LSPTotalValue":200,
+          |        "lspTotalValue":200,
           |        "penalisedPrincipalTotal":2000,
-          |        "LPPPostedTotal":165.25,
-          |        "LPPEstimatedTotal":15.26,
+          |        "lppPostedTotal":165.25,
+          |        "lppEstimatedTotal":15.26,
           |        "totalAccountOverdue": 1000.0,
           |        "totalAccountPostedInterest": 12.34,
           |        "totalAccountAccruingInterest": 43.21

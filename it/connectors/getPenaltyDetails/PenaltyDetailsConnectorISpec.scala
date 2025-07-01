@@ -34,7 +34,7 @@ import org.scalatest.prop.TableDrivenPropertyChecks
 import play.api.http.Status
 import play.api.http.Status.IM_A_TEAPOT
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
+import uk.gov.hmrc.http.{HeaderCarrier}
 import utils.{IntegrationSpecCommonBase}
 import utils.RegimeETMPWiremock
 import models.penaltyDetails.lateSubmission.{LateSubmissionPenalty, LSPSummary, LateSubmission, LSPDetails}
@@ -132,7 +132,7 @@ class PenaltyDetailsConnectorISpec
                 inactivePenaltyPoints = 2,
                 regimeThreshold = 2,
                 penaltyChargeAmount = 200.00,
-                PoCAchievementDate = Some(LocalDate.of(2021, 4, 23))
+                pocAchievementDate = Some(LocalDate.of(2021, 4, 23))
               ),
               details = Seq(
                 LSPDetails(
@@ -143,7 +143,7 @@ class PenaltyDetailsConnectorISpec
                   penaltyCreationDate = LocalDate.of(2021, 4, 23),
                   penaltyExpiryDate = LocalDate.of(2021, 4, 23),
                   communicationsDate = Some(LocalDate.of(2021, 4, 23)),
-                  FAPIndicator = None,
+                  fapIndicator = None,
                   lateSubmissions = Some(
                     Seq(
                       LateSubmission(

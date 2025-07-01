@@ -138,10 +138,10 @@ class RegimePenaltiesFrontendControllerSpec extends SpecBase with LogCapturing w
       val penaltyDetailsAfterCombining = getPenaltyDetails.copy(
         totalisations = Some(
           Totalisations(
-            LSPTotalValue = None,
+            lspTotalValue = None,
             penalisedPrincipalTotal = None,
-            LPPPostedTotal = None,
-            LPPEstimatedTotal = None,
+            lppPostedTotal = None,
+            lppEstimatedTotal = None,
             totalAccountOverdue = Some(1000),
             totalAccountPostedInterest = Some(123.45),
             totalAccountAccruingInterest = Some(23.45)

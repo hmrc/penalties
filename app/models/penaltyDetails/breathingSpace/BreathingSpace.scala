@@ -20,7 +20,7 @@ import play.api.libs.json.{Json, OFormat}
 
 import java.time.LocalDate
 
-case class BreathingSpace(BSStartDate: LocalDate, BSEndDate: LocalDate)
+case class BreathingSpace(bsStartDate: LocalDate, bsEndDate: LocalDate)
 
 object BreathingSpace {
   implicit val format: OFormat[BreathingSpace] = Json.format[BreathingSpace]

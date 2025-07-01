@@ -25,7 +25,7 @@ case class LSPSummary(
                        inactivePenaltyPoints: Int,
                        regimeThreshold: Int,
                        penaltyChargeAmount: BigDecimal,
-                       PoCAchievementDate: Option[LocalDate]
+                       pocAchievementDate: Option[LocalDate]
                      )
 
 object LSPSummary {
@@ -34,9 +34,9 @@ object LSPSummary {
     inactivePenaltyPoints <- (json \ "inactivePenaltyPoints").validate[Int]
     regimeThreshold <- (json \ "regimeThreshold").validate[Int]
     penaltyChargeAmount <- (json \ "penaltyChargeAmount").validate[BigDecimal]
-    PoCAchievementDate <- (json \ "pocAchievementDate").validateOpt[LocalDate]
+    pocAchievementDate <- (json \ "pocAchievementDate").validateOpt[LocalDate]
   } yield {
-    LSPSummary(activePenaltyPoints, inactivePenaltyPoints, regimeThreshold, penaltyChargeAmount, PoCAchievementDate)
+    LSPSummary(activePenaltyPoints, inactivePenaltyPoints, regimeThreshold, penaltyChargeAmount, pocAchievementDate)
   }
 
   implicit val writes: Writes[LSPSummary] = (o: LSPSummary) => Json.obj(
@@ -44,6 +44,6 @@ object LSPSummary {
     "inactivePenaltyPoints" -> o.inactivePenaltyPoints,
     "regimeThreshold" -> o.regimeThreshold,
     "penaltyChargeAmount" -> o.penaltyChargeAmount,
-    "pocAchievementDate" -> o.PoCAchievementDate
+    "pocAchievementDate" -> o.pocAchievementDate
   )
 }

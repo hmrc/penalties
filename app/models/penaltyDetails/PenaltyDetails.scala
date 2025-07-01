@@ -44,6 +44,11 @@ object PenaltyDetails {
       }
     case _ => JsError("Expected a string for Instant")
   }
+  
+  implicit val instantWrites: Writes[Instant] = Writes[Instant] { instant =>
+    JsString(instant.toString)
+  }
+  
   implicit val getPenaltyDetailsReads: Reads[PenaltyDetails] = (
     (JsPath \ "success" \ "processingDate").read[Instant](instantReads) and
       (JsPath \ "success" \ "penaltyData" \ "totalisations")

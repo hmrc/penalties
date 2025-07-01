@@ -31,10 +31,10 @@ val getPenaltyDetailsWithLSPAndLPPAsJson: JsValue = Json.parse(
      |    "processingDate": "$mockInstant",
      |    "penaltyData": {
      |      "totalisations": {
-     |        "LSPTotalValue": 200,
+     |        "lspTotalValue": 200,
      |        "penalisedPrincipalTotal": 2000,
-     |        "LPPPostedTotal": 165.25,
-     |        "LPPEstimatedTotal": 15.26
+     |        "lppPostedTotal": 165.25,
+     |        "lppEstimatedTotal": 15.26
      |      },
      |      "lsp": {
      |        "lspSummary": {
@@ -98,8 +98,8 @@ val getPenaltyDetailsWithLSPAndLPPAsJson: JsValue = Json.parse(
      |            "lpp1LRDays": "15",
      |            "lpp1HRDays": "31",
      |            "lpp2Days": "31",
-     |            "lpp1HRCalculationAmount": 99.99,
-     |            "lpp1LRCalculationAmount": 99.99,
+     |            "lpp1HRCalculationAmt": 99.99,
+     |            "lpp1LRCalculationAmt": 99.99,
      |            "lpp2Percentage": 4.00,
      |            "lpp1LRPercentage": 2.00,
      |            "lpp1HRPercentage": 2.00,
@@ -127,8 +127,8 @@ val getPenaltyDetailsWithLSPAndLPPAsJson: JsValue = Json.parse(
      |      },
      |      "breathingSpace": [
      |        {
-     |          "BSStartDate": "2023-01-01",
-     |          "BSEndDate": "2023-12-31"
+     |          "bsStartDate": "2023-01-01",
+     |          "bsEndDate": "2023-12-31"
      |        }
      |      ]
      |    }

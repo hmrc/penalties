@@ -29,7 +29,7 @@ case class LSPDetails(
     penaltyCreationDate: LocalDate,
     penaltyExpiryDate: LocalDate,
     communicationsDate: Option[LocalDate],
-    FAPIndicator: Option[String],
+    fapIndicator: Option[String],
     lateSubmissions: Option[Seq[LateSubmission]],
     expiryReason: Option[ExpiryReasonEnum.Value],
     appealInformation: Option[Seq[AppealInformationType]],
@@ -54,7 +54,7 @@ object LSPDetails {
       penaltyCreationDate <- (json \ "penaltyCreationDate").validate[LocalDate]
       penaltyExpiryDate <- (json \ "penaltyExpiryDate").validate[LocalDate]
       communicationsDate <- (json \ "communicationsDate").validateOpt[LocalDate]
-      FAPIndicator <- (json \ "FAPIndicator").validateOpt[String]
+      fapIndicator <- (json \ "fapIndicator").validateOpt[String]
       lateSubmissions <- (json \ "lateSubmissions")
         .validateOpt[Seq[LateSubmission]]
       expiryReason <- (json \ "expiryReason")
@@ -76,7 +76,7 @@ object LSPDetails {
         penaltyCreationDate,
         penaltyExpiryDate,
         communicationsDate,
-        FAPIndicator,
+        fapIndicator,
         lateSubmissions,
         expiryReason,
         appealInformation,

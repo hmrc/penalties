@@ -27,7 +27,7 @@ import models.appeals.{AppealResponseModel, AppealSubmission, CrimeAppealInforma
 import models.getFinancialDetails.MainTransactionEnum
 import models.penaltyDetails.PenaltyDetails
 import models.penaltyDetails.appealInfo.{AppealInformationType, AppealLevelEnum, AppealStatusEnum}
-import models.penaltyDetails.latePayment.{LatePaymentPenalty, LPPDetails, LPPPenaltyCategoryEnum, LPPPenaltyStatusEnum, TimeToPay}
+import models.penaltyDetails.latePayment.{LatePaymentPenalty, LPPDetails, LPPPenaltyCategoryEnum, LPPPenaltyStatusEnum}
 import models.notification.{SDESAudit, SDESChecksum, SDESNotification, SDESNotificationFile, SDESProperties}
 import models.upload.{UploadDetails, UploadJourney, UploadStatusEnum}
 import org.mockito.ArgumentMatchers
@@ -486,14 +486,14 @@ class RegimeAppealServiceSpec extends SpecBase with LogCapturing with FeatureSwi
       penaltyAmountOutstanding = Some(100),
       penaltyAmountPaid = Some(13.45),
       penaltyAmountPosted = 113.45,
-      LPP1LRDays = None,
-      LPP1HRDays = None,
-      LPP2Days = None,
-      LPP1HRCalculationAmount = None,
-      LPP1LRCalculationAmount = None,
-      LPP2Percentage = None,
-      LPP1LRPercentage = None,
-      LPP1HRPercentage = None,
+      lpp1LRDays = None,
+      lpp1HRDays = None,
+      lpp2Days = None,
+      lpp1HRCalculationAmt = None,
+      lpp1LRCalculationAmt = None,
+      lpp2Percentage = None,
+      lpp1LRPercentage = None,
+      lpp1HRPercentage = None,
       penaltyChargeDueDate = Some(LocalDate.of(2022, 8, 7)),
       principalChargeLatestClearing = Some(LocalDate.of(2022, 10, 1)),
       penaltyAmountAccruing = BigDecimal(0),
@@ -518,14 +518,14 @@ class RegimeAppealServiceSpec extends SpecBase with LogCapturing with FeatureSwi
       penaltyAmountOutstanding = Some(100),
       penaltyAmountPaid = Some(13.44),
       penaltyAmountPosted = 113.44,
-      LPP1LRDays = None,
-      LPP1HRDays = None,
-      LPP2Days = None,
-      LPP1HRCalculationAmount = None,
-      LPP1LRCalculationAmount = None,
-      LPP2Percentage = None,
-      LPP1LRPercentage = None,
-      LPP1HRPercentage = None,
+      lpp1LRDays = None,
+      lpp1HRDays = None,
+      lpp2Days = None,
+      lpp1HRCalculationAmt = None,
+      lpp1LRCalculationAmt = None,
+      lpp2Percentage = None,
+      lpp1LRPercentage = None,
+      lpp1HRPercentage = None,
       penaltyChargeDueDate = Some(LocalDate.of(2022, 8, 7)),
       principalChargeLatestClearing = Some(LocalDate.of(2022, 10, 1)),
       penaltyAmountAccruing = BigDecimal(0),

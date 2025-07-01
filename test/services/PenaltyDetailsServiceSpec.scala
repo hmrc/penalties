@@ -79,10 +79,10 @@ class PenaltyDetailsServiceSpec extends SpecBase with LogCapturing with LPPDetai
       processingDate = instant,
       totalisations = Some(
         Totalisations(
-          LSPTotalValue = Some(200),
+          lspTotalValue = Some(200),
           penalisedPrincipalTotal = Some(2000),
-          LPPPostedTotal = Some(165.25),
-          LPPEstimatedTotal = Some(15.26),
+          lppPostedTotal = Some(165.25),
+          lppEstimatedTotal = Some(15.26),
           totalAccountOverdue = None,
           totalAccountPostedInterest = None,
           totalAccountAccruingInterest = None
@@ -95,7 +95,7 @@ class PenaltyDetailsServiceSpec extends SpecBase with LogCapturing with LPPDetai
             inactivePenaltyPoints = 12,
             regimeThreshold = 10,
             penaltyChargeAmount = 684.25,
-            PoCAchievementDate = Some(LocalDate.of(2022, 1, 1))
+            pocAchievementDate = Some(LocalDate.of(2022, 1, 1))
           ),
           details = Seq(
             LSPDetails(
@@ -106,7 +106,7 @@ class PenaltyDetailsServiceSpec extends SpecBase with LogCapturing with LPPDetai
               penaltyCreationDate = LocalDate.of(2022, 10, 30),
               penaltyExpiryDate = LocalDate.of(2022, 10, 30),
               communicationsDate = Some(LocalDate.of(2022, 10, 30)),
-              FAPIndicator = Some("X"),
+              fapIndicator = Some("X"),
               lateSubmissions = Some(
                 Seq(
                   LateSubmission(
@@ -153,14 +153,14 @@ class PenaltyDetailsServiceSpec extends SpecBase with LogCapturing with LPPDetai
               penaltyAmountOutstanding = None,
               penaltyAmountPaid = None,
               penaltyAmountPosted = 0,
-              LPP1LRDays = Some("15"),
-              LPP1HRDays = Some("31"),
-              LPP2Days = Some("31"),
-              LPP1HRCalculationAmount = Some(99.99),
-              LPP1LRCalculationAmount = Some(99.99),
-              LPP2Percentage = Some(BigDecimal(4.00).setScale(2)),
-              LPP1LRPercentage = Some(BigDecimal(2.00).setScale(2)),
-              LPP1HRPercentage = Some(BigDecimal(2.00).setScale(2)),
+              lpp1LRDays = Some("15"),
+              lpp1HRDays = Some("31"),
+              lpp2Days = Some("31"),
+              lpp1HRCalculationAmt = Some(99.99),
+              lpp1LRCalculationAmt = Some(99.99),
+              lpp2Percentage = Some(BigDecimal(4.00).setScale(2)),
+              lpp1LRPercentage = Some(BigDecimal(2.00).setScale(2)),
+              lpp1HRPercentage = Some(BigDecimal(2.00).setScale(2)),
               penaltyChargeDueDate = Some(LocalDate.of(2022, 10, 30)),
               principalChargeDocNumber = None,
               principalChargeLatestClearing = None,
@@ -173,7 +173,7 @@ class PenaltyDetailsServiceSpec extends SpecBase with LogCapturing with LPPDetai
         )
       )),
       breathingSpace = Some(Seq(
-        BreathingSpace(BSStartDate = LocalDate.of(2023, 1, 1), BSEndDate = LocalDate.of(2023, 12, 31))
+        BreathingSpace(bsStartDate = LocalDate.of(2023, 1, 1), bsEndDate = LocalDate.of(2023, 12, 31))
       ))
     )
 

@@ -123,17 +123,15 @@ class PenaltyDetailsConnectorSpec
     when(mockAppConfig.hipAuthorisationToken).thenReturn("encodedToken")
     when(mockAppConfig.hipServiceOriginatorIdKeyV1).thenReturn("OriginatorId")
     when(mockAppConfig.hipServiceOriginatorIdV1).thenReturn("ServiceXYZ")
-    when(mockAppConfig.hipEnvironmentHeader).thenReturn("Environment" -> "env")
+    when(mockAppConfig.hipEnvironment).thenReturn("env")
 
-    when(mockAppConfig.eisEnvironment).thenReturn("env")
-    when(mockAppConfig.eiOutboundBearerToken).thenReturn("token")
-    // when(
-    //   mockConfiguration.getOptional[String](
-    //     ArgumentMatchers.eq("feature.switch.time-machine-now")
-    //   )(ArgumentMatchers.any())
-    // )
-    //   .thenReturn(None)
-    // sys.props -= TIME_MACHINE_NOW
+    when(
+      mockConfiguration.getOptional[String](
+        ArgumentMatchers.eq("feature.switch.time-machine-now")
+      )(ArgumentMatchers.any())
+    )
+      .thenReturn(None)
+    sys.props -= TIME_MACHINE_NOW
   }
 
   val mockPenaltyDetailsModelAPI1812: PenaltyDetails = PenaltyDetails(
@@ -177,9 +175,7 @@ class PenaltyDetailsConnectorSpec
       when(mockAppConfig.hipAuthorisationToken).thenReturn("encodedToken")
       when(mockAppConfig.hipServiceOriginatorIdKeyV1).thenReturn("OriginatorId")
       when(mockAppConfig.hipServiceOriginatorIdV1).thenReturn("ServiceXYZ")
-      when(mockAppConfig.hipEnvironmentHeader).thenReturn(
-        "Environment" -> "env"
-      )
+      when(mockAppConfig.hipEnvironment).thenReturn("env")
 
       when(
         mockHttpClient.GET[PenaltyDetailsResponse](
@@ -207,11 +203,11 @@ class PenaltyDetailsConnectorSpec
       headers should contain key "Authorization"
       headers("Authorization") shouldBe "Basic encodedToken"
 
-      headers should contain key "CorrelationId"
-      headers("CorrelationId").length should be >= 36
+      headers should contain key "correlationid"
+      headers("correlationid").length should be >= 36
 
       headers should contain key "X-Originating-System"
-      headers("X-Originating-System") shouldBe "MTDP"
+      headers("X-Originating-System") shouldBe "MDTP"
 
       headers should contain key "X-Receipt-Date"
       noException should be thrownBy Instant.parse(headers("X-Receipt-Date"))

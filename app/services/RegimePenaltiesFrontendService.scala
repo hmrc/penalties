@@ -205,7 +205,7 @@ class RegimePenaltiesFrontendService @Inject()(getFinancialDetailsService: Finan
               totalAccountOverdue = financialDetails.totalisation.flatMap(_.regimeTotalisations.flatMap(_.totalAccountOverdue)),
               totalAccountPostedInterest = financialDetails.totalisation.flatMap(_.interestTotalisations.flatMap(_.totalAccountPostedInterest)),
               totalAccountAccruingInterest = financialDetails.totalisation.flatMap(_.interestTotalisations.flatMap(_.totalAccountAccruingInterest)),
-              LPPPostedTotal = oldTotalisations.LPPPostedTotal.map(_ + totalAmountOfManualLPPs.getOrElse(BigDecimal(0)))
+              lppPostedTotal = oldTotalisations.lppPostedTotal.map(_ + totalAmountOfManualLPPs.getOrElse(BigDecimal(0)))
             )
           }
         )
@@ -217,18 +217,18 @@ class RegimePenaltiesFrontendService @Inject()(getFinancialDetailsService: Finan
           totalAccountOverdue = financialDetails.totalisation.flatMap(_.regimeTotalisations.flatMap(_.totalAccountOverdue)),
           totalAccountPostedInterest = financialDetails.totalisation.flatMap(_.interestTotalisations.flatMap(_.totalAccountPostedInterest)),
           totalAccountAccruingInterest = financialDetails.totalisation.flatMap(_.interestTotalisations.flatMap(_.totalAccountAccruingInterest)),
-          LSPTotalValue = None,
+          lspTotalValue = None,
           penalisedPrincipalTotal = None,
-          LPPPostedTotal = totalAmountOfManualLPPs,
-          LPPEstimatedTotal = None
+          lppPostedTotal = totalAmountOfManualLPPs,
+          lppEstimatedTotal = None
         )
         penaltyDetails.copy(totalisations = Some(totalisations))
       }
       case _ => {
         //No totalisations at all, don't do any processing on totalisation field (except adding LPPPostedTotal for Manual LPPs
         val totalisations: Totalisations = new Totalisations(totalAccountOverdue = None, totalAccountPostedInterest = None,
-          totalAccountAccruingInterest = None, LSPTotalValue = None, penalisedPrincipalTotal = None, LPPEstimatedTotal = None,
-          LPPPostedTotal = totalAmountOfManualLPPs
+          totalAccountAccruingInterest = None, lspTotalValue = None, penalisedPrincipalTotal = None, lppEstimatedTotal = None,
+          lppPostedTotal = totalAmountOfManualLPPs
         )
         penaltyDetails.copy(totalisations = Some(totalisations))
       }

@@ -142,13 +142,14 @@ implicit val throwingReads: HttpReads[HttpResponse] = new HttpReads[HttpResponse
   }
 
   private val requestIdPattern =
-    """.*([A-Za-z0-9]{8}-[A-Za-z0-9]{4}-[A-Za-z0-9]{4}-[A-Za-z0-9]{4}).*""".r
+    """.*([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}).*""".r
 
-  private val CorrelationIdHeader: String = "CorrelationId"
+  private val CorrelationIdHeader: String = "correlationid"
   private val AuthorizationHeader: String = "Authorization"
   private val xOriginatingSystemHeader: String = "X-Originating-System"
   private val xReceiptDateHeader: String = "X-Receipt-Date"
   private val xTransmittingSystemHeader: String = "X-Transmitting-System"
+  private val EnvironmentHeader: String = "Environment"
 
   private def buildHeadersV1(implicit
       hc: HeaderCarrier
@@ -157,11 +158,13 @@ implicit val throwingReads: HttpReads[HttpResponse] = new HttpReads[HttpResponse
       appConfig.hipServiceOriginatorIdKeyV1 -> appConfig.hipServiceOriginatorIdV1,
       CorrelationIdHeader -> getCorrelationId(hc),
       AuthorizationHeader -> s"Basic ${appConfig.hipAuthorisationToken}",
-      appConfig.hipEnvironmentHeader,
-      xOriginatingSystemHeader -> "MTDP",
-      xReceiptDateHeader -> DateTimeFormatter.ISO_INSTANT.format(
-        Instant.now().truncatedTo(ChronoUnit.SECONDS)
-      ),
+      EnvironmentHeader -> appConfig.hipEnvironment,
+      xOriginatingSystemHeader -> "MDTP",
+      xReceiptDateHeader -> {
+        val instant = Instant.now().truncatedTo(ChronoUnit.SECONDS)
+        val localDateTime = java.time.LocalDateTime.ofInstant(instant, java.time.ZoneOffset.UTC)
+        DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss").format(localDateTime) + "Z"
+      },
       xTransmittingSystemHeader -> "HIP"
     )
 

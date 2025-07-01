@@ -29,7 +29,7 @@ import connectors.parsers.getFinancialDetails.FinancialDetailsParser.{
 import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser._
 import controllers.auth.AuthAction
 import models.getFinancialDetails.{DocumentDetails, FinancialDetails, LineItemDetails, MainTransactionEnum}
-import models.penaltyDetails.{PenaltyDetails, Totalisations}
+import models.penaltyDetails.{PenaltyDetails}
 import models.penaltyDetails.latePayment._
 import models.penaltyDetails.lateSubmission.{LSPSummary, LateSubmissionPenalty}
 import models.{Regime, IdType, Id}
@@ -99,7 +99,7 @@ class RegimeAPIControllerSpec extends SpecBase with FeatureSwitching with LogCap
             inactivePenaltyPoints = 0,
             regimeThreshold = 5,
             penaltyChargeAmount = 200,
-            PoCAchievementDate = Some(LocalDate.of(2022, 1, 1))
+            pocAchievementDate = Some(LocalDate.of(2022, 1, 1))
           ),
           details = Seq() // omitted
         )
@@ -126,7 +126,7 @@ class RegimeAPIControllerSpec extends SpecBase with FeatureSwitching with LogCap
             inactivePenaltyPoints = 0,
             regimeThreshold = 4,
             penaltyChargeAmount = 200,
-            PoCAchievementDate = Some(LocalDate.of(2022, 1, 1))
+            pocAchievementDate = Some(LocalDate.of(2022, 1, 1))
           ),
           details = Seq() // omitted
         )
@@ -149,14 +149,14 @@ class RegimeAPIControllerSpec extends SpecBase with FeatureSwitching with LogCap
                 penaltyAmountOutstanding = None,
                 penaltyAmountPaid = None,
                 penaltyAmountPosted = 0,
-                LPP1LRDays = None,
-                LPP1HRDays = None,
-                LPP2Days = None,
-                LPP1HRCalculationAmount = None,
-                LPP1LRCalculationAmount = None,
-                LPP2Percentage = None,
-                LPP1LRPercentage = None,
-                LPP1HRPercentage = None,
+                lpp1LRDays = None,
+                lpp1HRDays = None,
+                lpp2Days = None,
+                lpp1HRCalculationAmt = None,
+                lpp1LRCalculationAmt = None,
+                lpp2Percentage = None,
+                lpp1LRPercentage = None,
+                lpp1HRPercentage = None,
                 penaltyChargeDueDate = Some(LocalDate.of(2022, 1, 1)),
                 principalChargeLatestClearing = None,
                 principalChargeDocNumber = None,
@@ -179,14 +179,14 @@ class RegimeAPIControllerSpec extends SpecBase with FeatureSwitching with LogCap
                 penaltyAmountOutstanding = None,
                 penaltyAmountPaid = None,
                 penaltyAmountPosted = 0,
-                LPP1LRDays = None,
-                LPP1HRDays = None,
-                LPP2Days = None,
-                LPP1HRCalculationAmount = None,
-                LPP1LRCalculationAmount = None,
-                LPP2Percentage = None,
-                LPP1LRPercentage = None,
-                LPP1HRPercentage = None,
+                lpp1LRDays = None,
+                lpp1HRDays = None,
+                lpp2Days = None,
+                lpp1HRCalculationAmt = None,
+                lpp1LRCalculationAmt = None,
+                lpp2Percentage = None,
+                lpp1LRPercentage = None,
+                lpp1HRPercentage = None,
                 penaltyChargeDueDate = Some(LocalDate.of(2022, 1, 1)),
                 principalChargeLatestClearing = None,
                 principalChargeDocNumber = None,
@@ -209,14 +209,14 @@ class RegimeAPIControllerSpec extends SpecBase with FeatureSwitching with LogCap
                 penaltyAmountOutstanding = Some(144),
                 penaltyAmountPaid = Some(0.21),
                 penaltyAmountPosted = 144.21,
-                LPP1LRDays = None,
-                LPP1HRDays = None,
-                LPP2Days = None,
-                LPP1HRCalculationAmount = None,
-                LPP1LRCalculationAmount = None,
-                LPP2Percentage = None,
-                LPP1LRPercentage = None,
-                LPP1HRPercentage = None,
+                lpp1LRDays = None,
+                lpp1HRDays = None,
+                lpp2Days = None,
+                lpp1HRCalculationAmt = None,
+                lpp1LRCalculationAmt = None,
+                lpp2Percentage = None,
+                lpp1LRPercentage = None,
+                lpp1HRPercentage = None,
                 penaltyChargeDueDate = Some(LocalDate.of(2022, 1, 1)),
                 principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
                 principalChargeDocNumber = None,
@@ -239,14 +239,14 @@ class RegimeAPIControllerSpec extends SpecBase with FeatureSwitching with LogCap
                 penaltyAmountOutstanding = Some(144),
                 penaltyAmountPaid = Some(0.21),
                 penaltyAmountPosted = 144.21,
-                LPP1LRDays = None,
-                LPP1HRDays = None,
-                LPP2Days = None,
-                LPP1HRCalculationAmount = None,
-                LPP1LRCalculationAmount = None,
-                LPP2Percentage = None,
-                LPP1LRPercentage = None,
-                LPP1HRPercentage = None,
+                lpp1LRDays = None,
+                lpp1HRDays = None,
+                lpp2Days = None,
+                lpp1HRCalculationAmt = None,
+                lpp1LRCalculationAmt = None,
+                lpp2Percentage = None,
+                lpp1LRPercentage = None,
+                lpp1HRPercentage = None,
                 penaltyChargeDueDate = Some(LocalDate.of(2022, 1, 1)),
                 principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
                 principalChargeDocNumber = None,

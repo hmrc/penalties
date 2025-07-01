@@ -33,7 +33,7 @@ import play.api.Configuration
 import play.api.libs.json.{JsString, JsValue, Json, JsError, JsSuccess}
 import play.api.mvc._
 import services.auditing.AuditService
-import services.{APIService, FinancialDetailsService, LoggingContext, PenaltyDetailsService, RegimeFilterService}
+import services.{FinancialDetailsService, LoggingContext, PenaltyDetailsService, RegimeFilterService}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import utils.Logger.logger
