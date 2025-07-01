@@ -18,20 +18,21 @@ package services
 
 import config.AppConfig
 import config.featureSwitches.{CallAPI1808HIP, FeatureSwitching, SanitiseFileName}
-import connectors.parsers.AppealsParser
 import connectors.{HIPConnector, RegimePEGAConnector}
-import models.AgnosticEnrolmentKey
+import connectors.parsers.AppealsParser
 import models.appeals.{AppealResponseModel, AppealSubmission, MultiplePenaltiesData}
 import models.penaltyDetails.latePayment.{LPPDetails, LPPPenaltyCategoryEnum, LPPPenaltyStatusEnum}
 import models.notification._
 import models.upload.UploadJourney
 import play.api.Configuration
-import uk.gov.hmrc.http.HeaderCarrier
 import utils.Logger.logger
 import utils.{DateHelper, FileHelper, UUIDGenerator}
-import models.penaltyDetails.PenaltyDetails
+
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
+import models.AgnosticEnrolmentKey
+import uk.gov.hmrc.http.HeaderCarrier
+import models.penaltyDetails.PenaltyDetails
 
 class RegimeAppealService @Inject() (appealsConnector: RegimePEGAConnector,
                                      hipAppealsConnector: HIPConnector,
@@ -43,12 +44,13 @@ class RegimeAppealService @Inject() (appealsConnector: RegimePEGAConnector,
 
   def submitAppeal(appealSubmission: AppealSubmission,
                    enrolmentKey: AgnosticEnrolmentKey,
+                   isLPP: Boolean,
                    penaltyNumber: String,
                    correlationId: String)(implicit headerCarrier: HeaderCarrier): Future[Either[AppealsParser.ErrorResponse, AppealResponseModel]] = {
     val response: Future[AppealsParser.AppealSubmissionResponse] = if (isEnabled(CallAPI1808HIP)) {
       hipAppealsConnector.submitAppeal(appealSubmission, penaltyNumber, correlationId)
     } else {
-      appealsConnector.submitAppeal(appealSubmission, penaltyNumber, correlationId)
+      appealsConnector.submitAppeal(appealSubmission, enrolmentKey, isLPP, penaltyNumber, correlationId)
     }
     response.flatMap {
       _.fold(

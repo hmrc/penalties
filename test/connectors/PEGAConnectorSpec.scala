@@ -19,7 +19,6 @@ package connectors
 import base.{LogCapturing, SpecBase}
 import config.featureSwitches.{CallPEGA, FeatureSwitching}
 import connectors.parsers.AppealsParser.{AppealSubmissionResponse, UnexpectedFailure}
-import models.appeals.AppealLevel.FirstStageAppeal
 import models.appeals.{AgentDetails, AppealSubmission, CrimeAppealInformation}
 import org.mockito.Mockito._
 import org.mockito.{ArgumentCaptor, ArgumentMatchers}
@@ -61,7 +60,6 @@ class PEGAConnectorSpec extends SpecBase with FeatureSwitching with LogCapturing
         .thenReturn(Future.successful(Right(appealResponseModel)))
       val modelToSend: AppealSubmission = AppealSubmission(
         taxRegime = "VAT",
-        appealLevel = FirstStageAppeal,
         customerReferenceNo = "123456789",
         dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
         isLPP = false,
@@ -80,7 +78,7 @@ class PEGAConnectorSpec extends SpecBase with FeatureSwitching with LogCapturing
         )
       )
       val result: AppealSubmissionResponse = await(connector.submitAppeal(modelToSend,
-        penaltyNumber = "1234567890", correlationId = "id"))
+        "HMRC-MTD-VAT~VRN~123456789", isLPP = false, penaltyNumber = "1234567890", correlationId = "id"))
       result shouldBe Right(appealResponseModel)
 
       argumentCaptorOtherHeaders.getValue.find(_._1 == "Authorization").get._2 shouldBe "Bearer placeholder"
@@ -100,7 +98,6 @@ class PEGAConnectorSpec extends SpecBase with FeatureSwitching with LogCapturing
         .thenReturn(Future.successful(Right(appealResponseModel)))
       val modelToSend: AppealSubmission = AppealSubmission(
         taxRegime = "VAT",
-        appealLevel = FirstStageAppeal,
         customerReferenceNo = "123456789",
         dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
         isLPP = false,
@@ -119,7 +116,7 @@ class PEGAConnectorSpec extends SpecBase with FeatureSwitching with LogCapturing
         )
       )
       val result: AppealSubmissionResponse = await(connector.submitAppeal(modelToSend,
-        penaltyNumber = "1234567890", correlationId = "id"))
+        "HMRC-MTD-VAT~VRN~123456789", isLPP = true, penaltyNumber = "1234567890", correlationId = "id"))
       result shouldBe Right(appealResponseModel)
     }
 
@@ -135,7 +132,6 @@ class PEGAConnectorSpec extends SpecBase with FeatureSwitching with LogCapturing
         .thenReturn(Future.failed(UpstreamErrorResponse.apply("", BAD_REQUEST)))
       val modelToSend: AppealSubmission = AppealSubmission(
         taxRegime = "VAT",
-        appealLevel = FirstStageAppeal,
         customerReferenceNo = "123456789",
         dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
         isLPP = false,
@@ -156,7 +152,7 @@ class PEGAConnectorSpec extends SpecBase with FeatureSwitching with LogCapturing
       withCaptureOfLoggingFrom(logger) {
         logs => {
           val result: AppealSubmissionResponse = await(connector.submitAppeal(modelToSend,
-            penaltyNumber = "1234567890", correlationId = "id"))
+            "HMRC-MTD-VAT~VRN~123456789", isLPP = true, penaltyNumber = "1234567890", correlationId = "id"))
           logs.exists(_.getMessage.contains(PagerDutyKeys.RECEIVED_4XX_FROM_1808_API.toString)) shouldBe true
           result shouldBe Left(UnexpectedFailure(BAD_REQUEST, ""))
         }
@@ -175,7 +171,6 @@ class PEGAConnectorSpec extends SpecBase with FeatureSwitching with LogCapturing
         .thenReturn(Future.failed(UpstreamErrorResponse.apply("", INTERNAL_SERVER_ERROR)))
       val modelToSend: AppealSubmission = AppealSubmission(
         taxRegime = "VAT",
-        appealLevel = FirstStageAppeal,
         customerReferenceNo = "123456789",
         dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
         isLPP = false,
@@ -196,7 +191,7 @@ class PEGAConnectorSpec extends SpecBase with FeatureSwitching with LogCapturing
       withCaptureOfLoggingFrom(logger) {
         logs => {
           val result: AppealSubmissionResponse = await(connector.submitAppeal(modelToSend,
-            penaltyNumber = "1234567890", correlationId = "id"))
+            "HMRC-MTD-VAT~VRN~123456789", isLPP = true, penaltyNumber = "1234567890", correlationId = "id"))
           logs.exists(_.getMessage.contains(PagerDutyKeys.RECEIVED_5XX_FROM_1808_API.toString)) shouldBe true
           result shouldBe Left(UnexpectedFailure(INTERNAL_SERVER_ERROR, ""))
         }
@@ -215,7 +210,6 @@ class PEGAConnectorSpec extends SpecBase with FeatureSwitching with LogCapturing
         .thenReturn(Future.failed(new Exception("failed")))
       val modelToSend: AppealSubmission = AppealSubmission(
         taxRegime = "VAT",
-        appealLevel = FirstStageAppeal,
         customerReferenceNo = "123456789",
         dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
         isLPP = false,
@@ -236,7 +230,7 @@ class PEGAConnectorSpec extends SpecBase with FeatureSwitching with LogCapturing
       withCaptureOfLoggingFrom(logger) {
         logs => {
           val result: AppealSubmissionResponse = await(connector.submitAppeal(modelToSend,
-            penaltyNumber = "1234567890", correlationId = "id"))
+            "HMRC-MTD-VAT~VRN~123456789", isLPP = true, penaltyNumber = "1234567890", correlationId = "id"))
           logs.exists(_.getMessage.contains(PagerDutyKeys.UNKNOWN_EXCEPTION_CALLING_1808_API.toString)) shouldBe true
           result shouldBe Left(UnexpectedFailure(INTERNAL_SERVER_ERROR, "An unknown exception occurred. Contact the Penalties team for more information."))
         }

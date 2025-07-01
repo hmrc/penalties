@@ -716,7 +716,6 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
               |{
               |    "sourceSystem": "MDTP",
               |    "taxRegime": "VAT",
-       |   "appealLevel": "01",
               |    "customerReferenceNo": "123456789",
               |    "dateOfAppeal": "2020-01-01T00:00:00",
               |    "isLPP": true,
@@ -744,7 +743,6 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
               |{
               |    "sourceSystem": "MDTP",
               |    "taxRegime": "VAT",
-       |   "appealLevel": "01",
               |    "customerReferenceNo": "123456789",
               |    "dateOfAppeal": "2020-01-01T00:00:00",
               |    "isLPP": true,
@@ -777,7 +775,6 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
               |{
               |    "sourceSystem": "MDTP",
               |    "taxRegime": "VAT",
-       |   "appealLevel": "01",
               |    "customerReferenceNo": "123456789",
               |    "dateOfAppeal": "2020-01-01T00:00:00",
               |    "isLPP": true,
@@ -812,7 +809,6 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
               |{
               |    "sourceSystem": "MDTP",
               |    "taxRegime": "VAT",
-       |   "appealLevel": "01",
               |    "customerReferenceNo": "123456789",
               |    "dateOfAppeal": "2020-01-01T00:00:00",
               |    "isLPP": true,
@@ -841,7 +837,6 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
               |{
               |    "sourceSystem": "MDTP",
               |    "taxRegime": "VAT",
-       |   "appealLevel": "01",
               |    "customerReferenceNo": "123456789",
               |    "dateOfAppeal": "2020-01-01T00:00:00",
               |    "isLPP": true,
@@ -870,7 +865,6 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
               |{
               |    "sourceSystem": "MDTP",
               |    "taxRegime": "VAT",
-       |   "appealLevel": "01",
               |    "customerReferenceNo": "123456789",
               |    "dateOfAppeal": "2020-01-01T00:00:00",
               |    "isLPP": true,
@@ -901,7 +895,6 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
                 |{
                 |    "sourceSystem": "MDTP",
                 |    "taxRegime": "VAT",
-       |   "appealLevel": "01",
                 |    "customerReferenceNo": "123456789",
                 |    "dateOfAppeal": "2020-01-01T00:00:00",
                 |    "isLPP": true,
@@ -932,7 +925,6 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
                 |{
                 |    "sourceSystem": "MDTP",
                 |    "taxRegime": "VAT",
-       |   "appealLevel": "01",
                 |    "customerReferenceNo": "123456789",
                 |    "dateOfAppeal": "2020-01-01T00:00:00",
                 |    "isLPP": true,
@@ -963,7 +955,6 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
                 |{
                 |    "sourceSystem": "MDTP",
                 |    "taxRegime": "VAT",
-       |   "appealLevel": "01",
                 |    "customerReferenceNo": "123456789",
                 |    "dateOfAppeal": "2020-01-01T00:00:00",
                 |    "isLPP": true,
@@ -995,7 +986,6 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
                 |{
                 |    "sourceSystem": "MDTP",
                 |    "taxRegime": "VAT",
-       |   "appealLevel": "01",
                 |    "customerReferenceNo": "123456789",
                 |    "dateOfAppeal": "2020-01-01T00:00:00",
                 |    "isLPP": true,
@@ -1032,7 +1022,6 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
               |{
               |    "sourceSystem": "MDTP",
               |    "taxRegime": "VAT",
-       |   "appealLevel": "01",
               |    "customerReferenceNo": "123456789",
               |    "dateOfAppeal": "2020-01-01T00:00:00",
               |    "isLPP": true,
@@ -1093,7 +1082,6 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
               |{
               |    "sourceSystem": "MDTP",
               |    "taxRegime": "VAT",
-       |   "appealLevel": "01",
               |    "customerReferenceNo": "123456789",
               |    "dateOfAppeal": "2020-01-01T00:00:00",
               |    "isLPP": true,
@@ -1156,7 +1144,6 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
               |{
               |    "sourceSystem": "MDTP",
               |    "taxRegime": "VAT",
-       |   "appealLevel": "01",
               |    "customerReferenceNo": "123456789",
               |    "dateOfAppeal": "2020-01-01T00:00:00",
               |    "isLPP": true,
@@ -1220,7 +1207,6 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
               |{
               |    "sourceSystem": "MDTP",
               |    "taxRegime": "VAT",
-       |   "appealLevel": "01",
               |    "customerReferenceNo": "123456789",
               |    "dateOfAppeal": "2020-01-01T00:00:00",
               |    "isLPP": true,
@@ -1287,7 +1273,6 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
               |{
               |    "sourceSystem": "MDTP",
               |    "taxRegime": "VAT",
-       |   "appealLevel": "01",
               |    "customerReferenceNo": "123456789",
               |    "dateOfAppeal": "2020-01-01T00:00:00",
               |    "isLPP": true,
@@ -1359,7 +1344,6 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
               |{
               |    "sourceSystem": "MDTP",
               |    "taxRegime": "VAT",
-       |   "appealLevel": "01",
               |    "customerReferenceNo": "123456789",
               |    "dateOfAppeal": "2020-01-01T00:00:00",
               |    "isLPP": true,
