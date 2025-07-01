@@ -22,6 +22,7 @@ import config.featureSwitches.{CallAPI1808HIP, FeatureSwitching, SanitiseFileNam
 import connectors.{HIPConnector, PEGAConnector}
 import connectors.parsers.AppealsParser
 import connectors.parsers.AppealsParser.UnexpectedFailure
+import models.appeals.AppealLevel.FirstStageAppeal
 import models.appeals._
 import models.getFinancialDetails.MainTransactionEnum
 import models.getPenaltyDetails.GetPenaltyDetails
@@ -69,6 +70,7 @@ class AppealServiceSpec extends SpecBase with LogCapturing with FeatureSwitching
   "submitAppeal" should {
     val modelToPassToServer: AppealSubmission = AppealSubmission(
       taxRegime = "VAT",
+      appealLevel = FirstStageAppeal,
       customerReferenceNo = "123456789",
       dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
       isLPP = false,
@@ -88,7 +90,7 @@ class AppealServiceSpec extends SpecBase with LogCapturing with FeatureSwitching
     )
 
     "return the response from the connector i.e. act as a pass-through function" in new Setup {
-      when(mockAppealsConnector.submitAppeal(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(),
+      when(mockAppealsConnector.submitAppeal(ArgumentMatchers.any(),
         ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(Right(appealResponseModel)))
 
       val result: Either[AppealsParser.ErrorResponse, AppealResponseModel] = await(
@@ -97,7 +99,7 @@ class AppealServiceSpec extends SpecBase with LogCapturing with FeatureSwitching
     }
 
     "return the response from the connector on error i.e. act as a pass-through function" in new Setup {
-      when(mockAppealsConnector.submitAppeal(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(),
+      when(mockAppealsConnector.submitAppeal(ArgumentMatchers.any(),
         ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(
         Left(UnexpectedFailure(BAD_GATEWAY, s"Unexpected response, status $BAD_GATEWAY returned"))))
 
@@ -107,7 +109,7 @@ class AppealServiceSpec extends SpecBase with LogCapturing with FeatureSwitching
     }
 
     "throw an exception when the connector throws an exception" in new Setup {
-      when(mockAppealsConnector.submitAppeal(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(),
+      when(mockAppealsConnector.submitAppeal(ArgumentMatchers.any(),
         ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.failed(new Exception("Something went wrong")))
 
       val result: Exception = intercept[Exception](await(service.submitAppeal(

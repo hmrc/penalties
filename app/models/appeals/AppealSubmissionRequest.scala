@@ -17,25 +17,27 @@
 package models.appeals
 
 import play.api.libs.json.{JsObject, JsValue, Json, Writes}
+
 import java.time.{LocalDateTime, ZoneOffset}
 
-case class AppealSubmissionRequest(
-    taxRegime: String,
-    penaltyId: String,
-    dateOfAppeal: LocalDateTime,
-    isLPP: Boolean,
-    appealSubmittedBy: String,
-    appealInformation: AppealInformation,
-    agentDetails: Option[AgentDetails]
-) {
+case class AppealSubmissionRequest(taxRegime: String,
+                                   appealLevel: AppealLevel,
+                                   penaltyId: String,
+                                   dateOfAppeal: LocalDateTime,
+                                   isLPP: Boolean,
+                                   appealSubmittedBy: String,
+                                   appealInformation: AppealInformation,
+                                   agentDetails: Option[AgentDetails]) {
+
   val sourceSystem: String = "MDTP"
-  val appealLevel: String  = "01"
 }
 
 object AppealSubmissionRequest {
+
   def apply(appealSubmission: AppealSubmission, penaltyId: String): AppealSubmissionRequest =
     AppealSubmissionRequest(
       taxRegime = appealSubmission.taxRegime,
+      appealLevel = appealSubmission.appealLevel,
       penaltyId = penaltyId,
       dateOfAppeal = appealSubmission.dateOfAppeal,
       isLPP = appealSubmission.isLPP,

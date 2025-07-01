@@ -22,7 +22,6 @@ import connectors.FileNotificationOrchestratorConnector
 import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser
 import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser.PenaltyDetailsSuccessResponse
 import controllers.auth.AuthAction
-import models.{AgnosticEnrolmentKey, Id, IdType, Regime}
 import models.appeals.AppealTypeEnum._
 import models.appeals._
 import models.appeals.reasonableExcuses.ReasonableExcuse
@@ -31,6 +30,7 @@ import models.penaltyDetails.PenaltyDetails
 import models.penaltyDetails.latePayment.LPPDetails
 import models.penaltyDetails.lateSubmission.LSPDetails
 import models.notification._
+import models.{AgnosticEnrolmentKey, Id, IdType, Regime}
 import play.api.Configuration
 import play.api.libs.json.Json
 import play.api.mvc._
@@ -122,11 +122,11 @@ class RegimeAppealsController @Inject()(val appConfig: AppConfig,
     }
   }
 
-  def getReasonableExcuses: Action[AnyContent] = Action {
-    Ok(ReasonableExcuse.allExcusesToJson(appConfig))
+  def getReasonableExcuses(regime: Regime): Action[AnyContent] = Action {
+    Ok(ReasonableExcuse.allExcusesToJson(appConfig, regime))
   }
 
-  def submitAppeal(regime: Regime, idType: IdType, id: Id, isLPP: Boolean, penaltyNumber: String, correlationId: String, isMultiAppeal: Boolean): Action[AnyContent] = authAction.async {
+  def submitAppeal(regime: Regime, idType: IdType, id: Id, penaltyNumber: String, correlationId: String, isMultiAppeal: Boolean): Action[AnyContent] = authAction.async {
     implicit request => {
       val agnosticEnrolmenKey = AgnosticEnrolmentKey(regime, idType, id)
       request.body.asJson.fold({
@@ -142,7 +142,7 @@ class RegimeAppealsController @Inject()(val appConfig: AppConfig,
               Future(BadRequest("Failed to parse to model"))
             },
             appealSubmission => {
-              submitAppealToPEGA(appealSubmission, agnosticEnrolmenKey, isLPP, penaltyNumber, correlationId, isMultiAppeal).map {
+              submitAppealToPEGA(appealSubmission, agnosticEnrolmenKey, penaltyNumber, correlationId, isMultiAppeal).map {
                 responseModel => {
                   Status(responseModel.status)(Json.toJson(responseModel))
                 }
@@ -155,9 +155,9 @@ class RegimeAppealsController @Inject()(val appConfig: AppConfig,
   }
 
   private def submitAppealToPEGA(appealSubmission: AppealSubmission, enrolmentKey: AgnosticEnrolmentKey,
-                                 isLPP: Boolean, penaltyNumber: String, correlationId: String, isMultiAppeal: Boolean)
+                                 penaltyNumber: String, correlationId: String, isMultiAppeal: Boolean)
                                 (implicit hc: HeaderCarrier, request: Request[_]): Future[AppealSubmissionResponseModel] = {
-    appealService.submitAppeal(appealSubmission, enrolmentKey, isLPP, penaltyNumber, correlationId).flatMap {
+    appealService.submitAppeal(appealSubmission, enrolmentKey, penaltyNumber, correlationId).flatMap {
       _.fold(
         error => {
           logger.error(s"[RegimeAppealsController][submitAppeal] Error submiting appeal to PEGA for user with enrolment: $enrolmentKey penalty $penaltyNumber - Received error from PEGA with status ${error.status} and error message: ${error.body} " +

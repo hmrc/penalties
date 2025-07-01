@@ -16,7 +16,6 @@
 
 package connectors.getPenaltyDetails
 
-import java.time.LocalDate
 import config.featureSwitches.{CallAPI1812ETMP, FeatureSwitching}
 import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser.{
   PenaltyDetailsFailureResponse,
@@ -41,6 +40,7 @@ import models.penaltyDetails.lateSubmission.{LateSubmissionPenalty, LSPSummary, 
 import models.penaltyDetails.lateSubmission.{LSPPenaltyCategoryEnum, LSPPenaltyStatusEnum, TaxReturnStatusEnum}
 import models.penaltyDetails.appealInfo.AppealInformationType
 import java.time.Instant
+import java.time.LocalDate
 
 class PenaltyDetailsConnectorISpec
     extends IntegrationSpecCommonBase

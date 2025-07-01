@@ -114,28 +114,38 @@ Get list of reasonable excuses used to make an appeal.
 | Successful retrieval | 200    |
 
 
-#### `POST       /penalties/appeals/submit-appeal`
+#### `POST       /penalties/:regime/appeals/submit-appeal/:idType/:id`
 
 Submit an appeal for a penalty.
 
+Accepted Regime and IdTypes:
+
+| TaxRegime | IdType    | Example ID        |
+|-----------|-----------|-------------------|
+| `VATC`    | `VRN`     | `711224466`       |
+| `ITSA`    | `nino`    | `AA803080A`       |
+| `ITSA`    | `mtditid` | `012345678912345` |
+
 The following query parameters should be specified:
 
-| Parameter       | Type    | Mandatory |
-|-----------------|---------|-----------|
-| `enrolmentKey`  | String  | Yes       |
-| `isLPP`         | Boolean | Yes       |       
-| `penaltyNumber` | String  | Yes       |     
-| `correlationId` | String  | Yes       |     
+| Parameter       | Type    | Mandatory | Notes                                  |
+|-----------------|---------|-----------|----------------------------------------|
+| `penaltyNumber` | String  | Yes       |                                        |
+| `correlationId` | String  | Yes       |                                        |
+| `isMultiAppeal` | Boolean | No        | default = `false`                      |
 
-URL format - `/penalties/appeals/submit-appeal?{enrolmentKey}=[keyValue]&{isLPP}=[boolValue]&{penaltyNumber}=[penaltyId]&{correlationId}=[value]`
+URL format - `/penalties/{regime}/appeals/submit-appeal/{idType}/{id}?{penaltyNumber}=[penaltyId]&{correlationId}=[value]&{isMultiAppeal}=[boolValue]`
 
-Example URL - `/penalties/appeals/submit-appeal?enrolmentKey=HMRC-MTD-VAT~VRN~224060020&isLPP=false&penaltyNumber=123456786&correlationId=a8010aef-9253-45a8-b8ac-c843dc2d3318`
+Example VATC URL - `/penalties/vatc/appeals/submit-appeal/vrn/711224466/?penaltyNumber=123456786&correlationId=a8010aef-9253-45a8-b8ac-c843dc2d3318&isMultiAppeal=true`
+
+Example ITSA URL - `/penalties/itsa/appeals/submit-appeal/nino/AA803080A/?penaltyNumber=123456786&correlationId=a8010aef-9253-45a8-b8ac-c843dc2d3318`
 
 Example payload:
 ```
 {
     "sourceSystem": "MDTP",
     "taxRegime": "VAT",
+    "appealLevel": "01",
     "customerReferenceNo": "123456789",
     "dateOfAppeal": "2020-01-01T00:00:00",
     "isLPP": true,
@@ -153,6 +163,10 @@ Example payload:
     }
 }
 ```
+Note:
+- _appealLevel_ is only present in the API submission when submitting to HIP. Submissions to IF will exclude _appealLevel_ from the request body. 
+- Valid _appealLevel_ values are "01" or "02", but is not mandatory from downstream service.
+- If not present in downstream model it will be defaulted to "01" before model is processed by this service. 
 
 | Scenario                                         | Status |
 |--------------------------------------------------|--------|

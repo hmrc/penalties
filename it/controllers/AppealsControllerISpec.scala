@@ -385,12 +385,13 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
  "submitAppeal" should {
    disableFeatureSwitch(CallAPI1808HIP)
    "call the connector and send the appeal data received in the request body - returns OK when successful for bereavement" in {
-     mockResponseForAppealSubmissionStub(OK, "HMRC-MTD-VAT~VRN~123456789", penaltyNumber = "123456789")
+     mockResponseForAppealSubmissionStub(OK, penaltyNumber = "123456789")
      val jsonToSubmit: JsValue = Json.parse(
        """
          |{
          |    "sourceSystem": "MDTP",
          |    "taxRegime": "VAT",
+       |   "appealLevel": "01",
          |    "customerReferenceNo": "123456789",
          |    "dateOfAppeal": "2020-01-01T00:00:00",
          |    "isLPP": false,
@@ -411,12 +412,13 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
      result.status shouldBe OK
    }
    "call the connector and send the appeal data received in the request body - returns OK when successful for crime" in {
-     mockResponseForAppealSubmissionStub(OK, "HMRC-MTD-VAT~VRN~123456789", penaltyNumber = "123456789")
+     mockResponseForAppealSubmissionStub(OK, penaltyNumber = "123456789")
      val jsonToSubmit: JsValue = Json.parse(
        """
          |{
          |    "sourceSystem": "MDTP",
          |    "taxRegime": "VAT",
+       |   "appealLevel": "01",
          |    "customerReferenceNo": "123456789",
          |    "dateOfAppeal": "2020-01-01T00:00:00",
          |    "isLPP": false,
@@ -438,12 +440,13 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
    }
 
    "call the connector and send the appeal data received in the request body - returns OK when successful for fire or flood" in {
-     mockResponseForAppealSubmissionStub(OK, "HMRC-MTD-VAT~VRN~123456789", penaltyNumber = "123456789")
+     mockResponseForAppealSubmissionStub(OK, penaltyNumber = "123456789")
      val jsonToSubmit: JsValue = Json.parse(
        """
          |{
          |    "sourceSystem": "MDTP",
          |    "taxRegime": "VAT",
+       |   "appealLevel": "01",
          |    "customerReferenceNo": "123456789",
          |    "dateOfAppeal": "2020-01-01T00:00:00",
          |    "isLPP": false,
@@ -464,12 +467,13 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
    }
 
    "call the connector and send the appeal data received in the request body - returns OK when successful for loss of staff" in {
-     mockResponseForAppealSubmissionStub(OK, "HMRC-MTD-VAT~VRN~123456789", penaltyNumber = "123456789")
+     mockResponseForAppealSubmissionStub(OK, penaltyNumber = "123456789")
      val jsonToSubmit: JsValue = Json.parse(
        """
          |{
          |    "sourceSystem": "MDTP",
          |    "taxRegime": "VAT",
+       |   "appealLevel": "01",
          |    "customerReferenceNo": "123456789",
          |    "dateOfAppeal": "2020-01-01T00:00:00",
          |    "isLPP": false,
@@ -490,12 +494,13 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
    }
 
    "call the connector and send the appeal data received in the request body - returns OK when successful for technical issues" in {
-     mockResponseForAppealSubmissionStub(OK, "HMRC-MTD-VAT~VRN~123456789", penaltyNumber = "123456789")
+     mockResponseForAppealSubmissionStub(OK, penaltyNumber = "123456789")
      val jsonToSubmit: JsValue = Json.parse(
        """
          |{
          |    "sourceSystem": "MDTP",
          |    "taxRegime": "VAT",
+       |   "appealLevel": "01",
          |    "customerReferenceNo": "123456789",
          |    "dateOfAppeal": "2020-01-01T00:00:00",
          |    "isLPP": false,
@@ -518,12 +523,13 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
 
    "call the connector and send the appeal data received in the request body - returns OK when successful for health" when {
      "there has been no hospital stay" in {
-       mockResponseForAppealSubmissionStub(OK, "HMRC-MTD-VAT~VRN~123456789", penaltyNumber = "123456789")
+       mockResponseForAppealSubmissionStub(OK, penaltyNumber = "123456789")
        val jsonToSubmit: JsValue = Json.parse(
          """
            |{
            |    "sourceSystem": "MDTP",
            |    "taxRegime": "VAT",
+       |   "appealLevel": "01",
            |    "customerReferenceNo": "123456789",
            |    "dateOfAppeal": "2020-01-01T00:00:00",
            |    "isLPP": false,
@@ -546,12 +552,13 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
      }
 
      "there is an ongoing hospital stay" in {
-       mockResponseForAppealSubmissionStub(OK, "HMRC-MTD-VAT~VRN~123456789", penaltyNumber = "123456789")
+       mockResponseForAppealSubmissionStub(OK, penaltyNumber = "123456789")
        val jsonToSubmit: JsValue = Json.parse(
          """
            |{
            |    "sourceSystem": "MDTP",
            |    "taxRegime": "VAT",
+       |   "appealLevel": "01",
            |    "customerReferenceNo": "123456789",
            |    "dateOfAppeal": "2020-01-01T00:00:00",
            |    "isLPP": false,
@@ -574,12 +581,13 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
      }
 
      "there has been a hospital stay" in {
-       mockResponseForAppealSubmissionStub(OK, "HMRC-MTD-VAT~VRN~123456789", penaltyNumber = "123456789")
+       mockResponseForAppealSubmissionStub(OK, penaltyNumber = "123456789")
        val jsonToSubmit: JsValue = Json.parse(
          """
            |{
            |    "sourceSystem": "MDTP",
            |    "taxRegime": "VAT",
+       |   "appealLevel": "01",
            |    "customerReferenceNo": "123456789",
            |    "dateOfAppeal": "2020-01-01T00:00:00",
            |    "isLPP": false,
@@ -603,13 +611,14 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
      }
 
      "call the connector and send the appeal data received in the request body - returns OK when successful for other with file upload" in {
-       mockResponseForAppealSubmissionStub(OK, "HMRC-MTD-VAT~VRN~123456789", penaltyNumber = "123456789")
+       mockResponseForAppealSubmissionStub(OK, penaltyNumber = "123456789")
        mockResponseForFileNotificationOrchestrator(OK)
        val jsonToSubmit: JsValue = Json.parse(
          """
            |{
            |    "sourceSystem": "MDTP",
            |    "taxRegime": "VAT",
+       |   "appealLevel": "01",
            |    "customerReferenceNo": "123456789",
            |    "dateOfAppeal": "2020-01-01T00:00:00",
            |    "isLPP": false,
@@ -651,13 +660,14 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
 
      "call the connector and send the appeal data received in the request body - returns OK when successful for other " +
        "with file upload (audit storage failure) - single appeal" in {
-       mockResponseForAppealSubmissionStub(OK, "HMRC-MTD-VAT~VRN~123456789", penaltyNumber = "123456789")
+       mockResponseForAppealSubmissionStub(OK, penaltyNumber = "123456789")
        mockResponseForFileNotificationOrchestrator(INTERNAL_SERVER_ERROR)
        val jsonToSubmit: JsValue = Json.parse(
          """
            |{
            |    "sourceSystem": "MDTP",
            |    "taxRegime": "VAT",
+       |   "appealLevel": "01",
            |    "customerReferenceNo": "123456789",
            |    "dateOfAppeal": "2020-01-01T00:00:00",
            |    "isLPP": false,
@@ -701,12 +711,13 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
      }
 
      "call the connector and send the appeal data received in the request body - returns OK when successful for LPP" in {
-       mockResponseForAppealSubmissionStub(OK, "HMRC-MTD-VAT~VRN~123456789", isLPP = true, penaltyNumber = "123456789")
+       mockResponseForAppealSubmissionStub(OK, penaltyNumber = "123456789")
        val jsonToSubmit: JsValue = Json.parse(
          """
            |{
            |    "sourceSystem": "MDTP",
            |    "taxRegime": "VAT",
+       |   "appealLevel": "01",
            |    "customerReferenceNo": "123456789",
            |    "dateOfAppeal": "2020-01-01T00:00:00",
            |    "isLPP": true,
@@ -729,13 +740,14 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
 
      "call the connector and send the appeal data received in the request body - returns OK when successful for other" +
        " with file upload (audit storage failure) - part of multi appeal" in {
-       mockResponseForAppealSubmissionStub(OK, "HMRC-MTD-VAT~VRN~123456789", penaltyNumber = "123456789")
+       mockResponseForAppealSubmissionStub(OK, penaltyNumber = "123456789")
        mockResponseForFileNotificationOrchestrator(INTERNAL_SERVER_ERROR)
        val jsonToSubmit: JsValue = Json.parse(
          """
            |{
            |    "sourceSystem": "MDTP",
            |    "taxRegime": "VAT",
+       |   "appealLevel": "01",
            |    "customerReferenceNo": "123456789",
            |    "dateOfAppeal": "2020-01-01T00:00:00",
            |    "isLPP": false,
@@ -803,12 +815,13 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
 
    "return error status code" when {
      "the call to PEGA/stub fails" in {
-       mockResponseForAppealSubmissionStub(GATEWAY_TIMEOUT, "HMRC-MTD-VAT~VRN~123456789", penaltyNumber = "123456789")
+       mockResponseForAppealSubmissionStub(GATEWAY_TIMEOUT, penaltyNumber = "123456789")
        val jsonToSubmit: JsValue = Json.parse(
          """
            |{
            |    "sourceSystem": "MDTP",
            |    "taxRegime": "VAT",
+       |   "appealLevel": "01",
            |    "customerReferenceNo": "123456789",
            |    "dateOfAppeal": "2020-01-01T00:00:00",
            |    "isLPP": false,
@@ -830,12 +843,13 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
      }
 
      "the call to PEGA/stub has a fault" in {
-       mockResponseForAppealSubmissionStubFault("HMRC-MTD-VAT~VRN~123456789", penaltyNumber = "123456789")
+       mockResponseForAppealSubmissionStubFault(penaltyNumber = "123456789")
        val jsonToSubmit: JsValue = Json.parse(
          """
            |{
            |    "sourceSystem": "MDTP",
            |    "taxRegime": "VAT",
+       |   "appealLevel": "01",
            |    "customerReferenceNo": "123456789",
            |    "dateOfAppeal": "2020-01-01T00:00:00",
            |    "isLPP": false,

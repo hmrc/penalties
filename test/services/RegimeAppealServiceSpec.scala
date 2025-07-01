@@ -22,14 +22,15 @@ import config.featureSwitches.{CallAPI1808HIP, FeatureSwitching, SanitiseFileNam
 import connectors.parsers.AppealsParser
 import connectors.parsers.AppealsParser.UnexpectedFailure
 import connectors.{HIPConnector, RegimePEGAConnector}
-import models.{AgnosticEnrolmentKey, Id, IdType, Regime}
+import models.appeals.AppealLevel.FirstStageAppeal
 import models.appeals.{AppealResponseModel, AppealSubmission, CrimeAppealInformation, MultiplePenaltiesData}
 import models.getFinancialDetails.MainTransactionEnum
-import models.penaltyDetails.PenaltyDetails
-import models.penaltyDetails.appealInfo.{AppealInformationType, AppealLevelEnum, AppealStatusEnum}
-import models.penaltyDetails.latePayment.{LatePaymentPenalty, LPPDetails, LPPPenaltyCategoryEnum, LPPPenaltyStatusEnum}
-import models.notification.{SDESAudit, SDESChecksum, SDESNotification, SDESNotificationFile, SDESProperties}
+import models.getPenaltyDetails.GetPenaltyDetails
+import models.getPenaltyDetails.appealInfo.{AppealInformationType, AppealLevelEnum, AppealStatusEnum}
+import models.getPenaltyDetails.latePayment._
+import models.notification._
 import models.upload.{UploadDetails, UploadJourney, UploadStatusEnum}
+import models.{AgnosticEnrolmentKey, Id, IdType, Regime}
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito.{mock, reset, when}
 import play.api.Configuration
@@ -79,6 +80,7 @@ class RegimeAppealServiceSpec extends SpecBase with LogCapturing with FeatureSwi
     val enrolmentKey: AgnosticEnrolmentKey = AgnosticEnrolmentKey(Regime("HMRC-MTD-VAT"), IdType("VRN"), Id("123456789"))
     val modelToPassToServer: AppealSubmission = AppealSubmission(
       taxRegime = "VAT",
+      appealLevel = FirstStageAppeal,
       customerReferenceNo = "123456789",
       dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
       isLPP = false,
@@ -100,35 +102,30 @@ class RegimeAppealServiceSpec extends SpecBase with LogCapturing with FeatureSwi
     "calling PEGA" should {
 
       "return the response from the connector i.e. act as a pass-through function" in new Setup {
-        when(
-          mockAppealsConnector
-            .submitAppeal(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
-          .thenReturn(Future.successful(Right(appealResponseModel)))
+        when(mockAppealsConnector.submitAppeal(ArgumentMatchers.any(), ArgumentMatchers.any(),
+          ArgumentMatchers.any())).thenReturn(Future.successful(Right(appealResponseModel)))
 
-        val result: Either[AppealsParser.ErrorResponse, AppealResponseModel] =
-          await(service.submitAppeal(modelToPassToServer, enrolmentKey, isLPP = false, penaltyNumber = "123456789", correlationId = correlationId))
+        val result: Either[AppealsParser.ErrorResponse, AppealResponseModel] = await(
+          service.submitAppeal(modelToPassToServer, enrolmentKey, penaltyNumber = "123456789", correlationId = correlationId))
         result shouldBe Right(appealResponseModel)
       }
 
       "return the response from the connector on error i.e. act as a pass-through function" in new Setup {
-        when(
-          mockAppealsConnector
-            .submitAppeal(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
-          .thenReturn(Future.successful(Left(UnexpectedFailure(BAD_GATEWAY, s"Unexpected response, status $BAD_GATEWAY returned"))))
+        when(mockAppealsConnector.submitAppeal(ArgumentMatchers.any(), ArgumentMatchers.any(),
+          ArgumentMatchers.any())).thenReturn(Future.successful(
+          Left(UnexpectedFailure(BAD_GATEWAY, s"Unexpected response, status $BAD_GATEWAY returned"))))
 
-        val result: Either[AppealsParser.ErrorResponse, AppealResponseModel] =
-          await(service.submitAppeal(modelToPassToServer, enrolmentKey, isLPP = false, penaltyNumber = "123456789", correlationId = correlationId))
+        val result: Either[AppealsParser.ErrorResponse, AppealResponseModel] = await(service.submitAppeal(
+          modelToPassToServer, enrolmentKey, penaltyNumber = "123456789", correlationId = correlationId))
         result shouldBe Left(UnexpectedFailure(BAD_GATEWAY, s"Unexpected response, status $BAD_GATEWAY returned"))
       }
 
       "throw an exception when the connector throws an exception" in new Setup {
-        when(
-          mockAppealsConnector
-            .submitAppeal(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
-          .thenReturn(Future.failed(new Exception("Something went wrong")))
+        when(mockAppealsConnector.submitAppeal(ArgumentMatchers.any(), ArgumentMatchers.any(),
+          ArgumentMatchers.any())).thenReturn(Future.failed(new Exception("Something went wrong")))
 
-        val result: Exception = intercept[Exception](
-          await(service.submitAppeal(modelToPassToServer, enrolmentKey, isLPP = false, penaltyNumber = "123456789", correlationId = correlationId)))
+        val result: Exception = intercept[Exception](await(service.submitAppeal(
+          modelToPassToServer, enrolmentKey, penaltyNumber = "123456789", correlationId = correlationId)))
         result.getMessage shouldBe "Something went wrong"
       }
     }
@@ -138,8 +135,8 @@ class RegimeAppealServiceSpec extends SpecBase with LogCapturing with FeatureSwi
         when(mockHIPConnector.submitAppeal(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any()))
           .thenReturn(Future.successful(Right(appealResponseModel)))
 
-        val result: Either[AppealsParser.ErrorResponse, AppealResponseModel] =
-          await(service.submitAppeal(modelToPassToServer, enrolmentKey, isLPP = false, penaltyNumber = "123456789", correlationId = correlationId))
+        val result: Either[AppealsParser.ErrorResponse, AppealResponseModel] = await(
+          service.submitAppeal(modelToPassToServer, enrolmentKey, penaltyNumber = "123456789", correlationId = correlationId))
         result shouldBe Right(appealResponseModel)
       }
 
@@ -147,8 +144,8 @@ class RegimeAppealServiceSpec extends SpecBase with LogCapturing with FeatureSwi
         when(mockHIPConnector.submitAppeal(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any()))
           .thenReturn(Future.successful(Left(UnexpectedFailure(BAD_GATEWAY, s"Unexpected response, status $BAD_GATEWAY returned"))))
 
-        val result: Either[AppealsParser.ErrorResponse, AppealResponseModel] =
-          await(service.submitAppeal(modelToPassToServer, enrolmentKey, isLPP = false, penaltyNumber = "123456789", correlationId = correlationId))
+        val result: Either[AppealsParser.ErrorResponse, AppealResponseModel] = await(service.submitAppeal(
+          modelToPassToServer, enrolmentKey, penaltyNumber = "123456789", correlationId = correlationId))
         result shouldBe Left(UnexpectedFailure(BAD_GATEWAY, s"Unexpected response, status $BAD_GATEWAY returned"))
       }
 
@@ -156,8 +153,8 @@ class RegimeAppealServiceSpec extends SpecBase with LogCapturing with FeatureSwi
         when(mockHIPConnector.submitAppeal(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any()))
           .thenReturn(Future.failed(new Exception("Something went wrong")))
 
-        val result: Exception = intercept[Exception](
-          await(service.submitAppeal(modelToPassToServer, enrolmentKey, isLPP = false, penaltyNumber = "123456789", correlationId = correlationId)))
+        val result: Exception = intercept[Exception](await(service.submitAppeal(
+          modelToPassToServer, enrolmentKey, penaltyNumber = "123456789", correlationId = correlationId)))
         result.getMessage shouldBe "Something went wrong"
       }
     }

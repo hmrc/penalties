@@ -20,7 +20,6 @@ import com.github.tomakehurst.wiremock.client.WireMock._
 import com.github.tomakehurst.wiremock.http.Fault
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
 import play.api.libs.json.{JsValue, Json}
-import models.AgnosticEnrolmentKey
 
 trait RegimeAppealWiremock {
 
@@ -49,11 +48,8 @@ trait RegimeAppealWiremock {
       ))
   }
 
-  def mockResponseForAppealSubmissionStub(status: Int, agnosticEnrolmenKey: AgnosticEnrolmentKey, penaltyNumber: String, isLPP: Boolean = false): StubMapping = {
-    val regime = agnosticEnrolmenKey.regime.value;
-    val idType = agnosticEnrolmenKey.idType.value;
-    val idValue = agnosticEnrolmenKey.id.value;
-    stubFor(post(urlEqualTo(s"/penalties-stub/appeals/submit?regime=$regime&idType=$idType&id=$idValue&isLPP=$isLPP&penaltyNumber=$penaltyNumber"))
+  def mockResponseForAppealSubmissionStub(status: Int, penaltyNumber: String): StubMapping = {
+    stubFor(post(urlEqualTo(s"/penalties-stub/penalty/first-stage-appeal/$penaltyNumber"))
       .willReturn(
         aResponse()
           .withBody(if(status == 200) appealResponseModel.toString() else errorResponse.toString())
@@ -61,11 +57,8 @@ trait RegimeAppealWiremock {
       ))
   }
 
-  def mockResponseForAppealSubmissionStubFault(agnosticEnrolmenKey: AgnosticEnrolmentKey, penaltyNumber: String, isLPP: Boolean = false): StubMapping = {
-    val regime = agnosticEnrolmenKey.regime.value;
-    val idType = agnosticEnrolmenKey.idType.value;
-    val idValue = agnosticEnrolmenKey.id.value;
-    stubFor(post(urlEqualTo(s"/penalties-stub/appeals/submit?regime=$regime&idType=$idType&id=$idValue&isLPP=$isLPP&penaltyNumber=$penaltyNumber"))
+  def mockResponseForAppealSubmissionStubFault(penaltyNumber: String): StubMapping = {
+    stubFor(post(urlEqualTo(s"/penalties-stub/penalty/first-stage-appeal/$penaltyNumber"))
       .willReturn(
         aResponse()
           .withFault(Fault.CONNECTION_RESET_BY_PEER)
