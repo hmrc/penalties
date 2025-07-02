@@ -61,6 +61,7 @@ class AppConfig @Inject()(val config: Configuration, servicesConfig: ServicesCon
   lazy val appName: String = config.get[String]("appName")
 
   lazy val eiOutboundBearerToken: String = config.get[String]("eis.outboundBearerToken")
+
   lazy val eisEnvironment: String = config.get[String]("eis.environment")
 
   lazy val desBearerToken: String = config.get[String]("des.outboundBearerToken")
@@ -103,13 +104,16 @@ class AppConfig @Inject()(val config: Configuration, servicesConfig: ServicesCon
     else etmpBase + s"/penalty/financial-data/NINO/$nino/ITSA"
   }
 
-  def getAppealSubmissionURL(penaltyNumber: String): String = {
-    if (!isEnabled(CallPEGA)) stubBase + s"/penalties-stub/penalty/first-stage-appeal/$penaltyNumber"
+  def getAppealSubmissionURL(enrolmentKey: String, isLPP: Boolean, penaltyNumber: String): String = {
+    if (!isEnabled(CallPEGA)) stubBase + s"/penalties-stub/appeals/submit?enrolmentKey=$enrolmentKey&isLPP=$isLPP&penaltyNumber=$penaltyNumber"
     else pegaBase + s"/penalty/first-stage-appeal/$penaltyNumber"
   }
 
-  def getRegimeAgnosticAppealSubmissionUrl(penaltyNumber: String): String = {
-    if (!isEnabled(CallPEGA)) stubBase + s"/penalties-stub/penalty/first-stage-appeal/$penaltyNumber"
+  def getRegimeAgnosticAppealSubmissionUrl(agnosticEnrolmenKey: AgnosticEnrolmentKey, isLPP: Boolean, penaltyNumber: String): String = {
+    val regime = agnosticEnrolmenKey.regime.value;
+    val idType = agnosticEnrolmenKey.idType.value;
+    val idValue = agnosticEnrolmenKey.id.value;
+    if (!isEnabled(CallPEGA)) stubBase + s"/penalties-stub/appeals/submit?regime=$regime&idType=$idType&id=$idValue&isLPP=$isLPP&penaltyNumber=$penaltyNumber"
     else pegaBase + s"/penalty/first-stage-appeal/$penaltyNumber"
   }
 
@@ -137,16 +141,18 @@ class AppConfig @Inject()(val config: Configuration, servicesConfig: ServicesCon
   }
 
   def getPenaltyDetailsVatUrl: String = {
-    if (!isEnabled(CallAPI1812ETMP)) stubBase + "/penalties-stub/penalty/details/"
-    else etmpBase + "/penalty/details/"
+    if (isEnabled(CallAPI1812ETMP)) etmpBase + "/penalty/details/"
+    else stubBase + "/penalties-stub/penalty/details/"
   }
 
-  def getRegimeAgnosticPenaltyDetailsUrl(agnosticEnrolmenKey: AgnosticEnrolmentKey): String = {
+  def getRegimeAgnosticPenaltyDetailsUrl(agnosticEnrolmenKey: AgnosticEnrolmentKey, dateLimit: Option[String] = None): String = {
     val regime = agnosticEnrolmenKey.regime.value;
     val idType = agnosticEnrolmenKey.idType.value;
     val idValue = agnosticEnrolmenKey.id.value;
-    if (!isEnabled(CallAPI1812ETMP)) stubBase + s"/penalties-stub/penalty/details/$regime/$idType/$idValue"
-    else etmpBase + s"/penalty/details/$regime/$idType/$idValue"
+    val dateLimitParam: String = dateLimit.map(dateLimit => s"&dateLimit=$dateLimit").getOrElse("")
+  
+    if (isEnabled(CallAPI1812ETMP)) hipBase + s"/RESTAdapter/cross-regime/taxpayer/penalties?taxRegime=$regime&idType=$idType&idNumber=$idValue$dateLimitParam"
+    else stubBase + s"/penalties-stub/penalty/details/$regime/$idType/$idValue"
   }
 
   def getFinancialDetailsVatUrl(vrn: String): String = {
@@ -168,16 +174,9 @@ class AppConfig @Inject()(val config: Configuration, servicesConfig: ServicesCon
     val idValue = agnosticEnrolmenKey.id.value;
     getComplianceDataUrl + s"${idType}/${idValue}/$regime?from=${fromDate}&to=$toDate" 
 
-    // s"${getComplianceDataUrl}${agnosticEnrolmenKey.idType.value}/${agnosticEnrolmenKey.id.value}/${agnosticEnrolmenKey.regime.value}?from=$fromDate&to=$toDate"
-  // def getComplianceData(vrn: String, fromDate: String, toDate: String): String = {
-  //   if (isEnabled(CallDES)) {
-  //     desBase + s"/enterprise/obligation-data/vrn/$vrn/VATC?from=$fromDate&to=$toDate"
-  //   } else {
-  //     stubBase + s"/penalties-stub/enterprise/obligation-data/vrn/$vrn/VATC?from=$fromDate&to=$toDate"
-  //   }
-  // }
-
   }
+
+
 
   lazy val hipBase: String = servicesConfig.baseUrl("hip")
   def hipSubmitUrl: String = hipBase + "/v1/penalty/appeal"
@@ -188,5 +187,7 @@ class AppConfig @Inject()(val config: Configuration, servicesConfig: ServicesCon
 
   val hipServiceOriginatorIdKeyV1: String = getString("microservice.services.hip.originator-id-key")
   val hipServiceOriginatorIdV1: String    = getString("microservice.services.hip.originator-id-value")
+
+  lazy val hipEnvironment: String = getString("microservice.services.hip.environment")
 
 }

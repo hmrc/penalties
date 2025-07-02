@@ -17,13 +17,12 @@
 package connectors
 
 import config.AppConfig
-import config.featureSwitches.CallAPI1808HIP
 import connectors.parsers.AppealsParser.{AppealSubmissionResponse, AppealSubmissionResponseReads, UnexpectedFailure}
+import models.AgnosticEnrolmentKey
 import models.appeals.AppealSubmission
 import play.api.http.HeaderNames._
 import play.api.http.MimeTypes
 import play.api.http.Status.INTERNAL_SERVER_ERROR
-import play.api.libs.json.Writes
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, UpstreamErrorResponse}
 import utils.Logger.logger
 import utils.PagerDutyHelper
@@ -32,39 +31,34 @@ import utils.PagerDutyHelper.PagerDutyKeys._
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class RegimePEGAConnector @Inject() (httpClient: HttpClient, appConfig: AppConfig)(implicit ec: ExecutionContext) {
+class RegimePEGAConnector @Inject()(httpClient: HttpClient,
+                                    appConfig: AppConfig)(implicit ec: ExecutionContext) {
 
-  def submitAppeal(appealSubmission: AppealSubmission, penaltyNumber: String, correlationId: String): Future[AppealSubmissionResponse] = {
+  def submitAppeal(appealSubmission: AppealSubmission, enrolmentKey: AgnosticEnrolmentKey, isLPP: Boolean, penaltyNumber: String, correlationId: String): Future[AppealSubmissionResponse] = {
     implicit val hc: HeaderCarrier = headersForEIS(correlationId, appConfig.eiOutboundBearerToken, appConfig.eisEnvironment)
-    implicit val writesAppealSubmission: Writes[AppealSubmission] =
-      if (appConfig.isEnabled(CallAPI1808HIP)) AppealSubmission.apiWritesHIP else AppealSubmission.apiWrites
-    val submitAppealUrl = appConfig.getRegimeAgnosticAppealSubmissionUrl(penaltyNumber)
-
-    httpClient
-      .POST[AppealSubmission, AppealSubmissionResponse](submitAppealUrl, appealSubmission, hc.otherHeaders)
-      .recover {
-        case e: UpstreamErrorResponse =>
-          PagerDutyHelper.logStatusCode("submitAppeal", e.statusCode)(RECEIVED_4XX_FROM_1808_API, RECEIVED_5XX_FROM_1808_API)
-          logger.error(
-            s"[RegimePEGAConnector][submitAppeal] -" +
-              s" Received ${e.statusCode} status from API 1808 call - returning status to caller")
-          Left(UnexpectedFailure(e.statusCode, e.message))
-        case e: Exception =>
-          PagerDutyHelper.log("submitAppeal", UNKNOWN_EXCEPTION_CALLING_1808_API)
-          logger.error(
-            s"[RegimePEGAConnector][submitAppeal] -" +
-              s" An unknown exception occurred - returning 500 back to caller - message: ${e.getMessage}")
-          Left(UnexpectedFailure(INTERNAL_SERVER_ERROR, "An unknown exception occurred. Contact the Penalties team for more information."))
+    httpClient.POST[AppealSubmission, AppealSubmissionResponse](appConfig.getRegimeAgnosticAppealSubmissionUrl(enrolmentKey, isLPP, penaltyNumber), appealSubmission, hc.otherHeaders).recover {
+      case e: UpstreamErrorResponse => {
+        PagerDutyHelper.logStatusCode("submitAppeal", e.statusCode)(RECEIVED_4XX_FROM_1808_API, RECEIVED_5XX_FROM_1808_API)
+        logger.error(s"[RegimePEGAConnector][submitAppeal] -" +
+          s" Received ${e.statusCode} status from API 1808 call - returning status to caller")
+        Left(UnexpectedFailure(e.statusCode, e.message))
       }
+      case e: Exception => {
+        PagerDutyHelper.log("submitAppeal", UNKNOWN_EXCEPTION_CALLING_1808_API)
+        logger.error(s"[RegimePEGAConnector][submitAppeal] -" +
+          s" An unknown exception occurred - returning 500 back to caller - message: ${e.getMessage}")
+        Left(UnexpectedFailure(INTERNAL_SERVER_ERROR, "An unknown exception occurred. Contact the Penalties team for more information."))
+      }
+    }
   }
 
   def headersForEIS(correlationId: String, bearerToken: String, environment: String): HeaderCarrier = {
     val headers = Seq(
-      "Environment"   -> environment,
+      "Environment"      -> environment,
       "CorrelationId" -> correlationId,
-      CONTENT_TYPE    -> MimeTypes.JSON,
-      ACCEPT          -> MimeTypes.JSON,
-      AUTHORIZATION   -> s"Bearer $bearerToken"
+      CONTENT_TYPE       -> MimeTypes.JSON,
+      ACCEPT             -> MimeTypes.JSON,
+      AUTHORIZATION -> s"Bearer $bearerToken"
     )
     HeaderCarrier(otherHeaders = headers)
   }

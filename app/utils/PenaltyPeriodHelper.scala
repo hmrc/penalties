@@ -17,10 +17,15 @@
 package utils
 
 import models.getPenaltyDetails.lateSubmission.LateSubmission
+import models.penaltyDetails.lateSubmission.{LateSubmission => RegimeLateSubmission}
 
 object PenaltyPeriodHelper {
 
   def sortByPenaltyStartDate(p1: LateSubmission, p2: LateSubmission): Int = {
+    p1.taxPeriodStartDate.get.compareTo(p2.taxPeriodStartDate.get)
+  }
+
+  def sortByPenaltyStartDate(p1: RegimeLateSubmission, p2: RegimeLateSubmission): Int = {
     p1.taxPeriodStartDate.get.compareTo(p2.taxPeriodStartDate.get)
   }
 }

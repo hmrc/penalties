@@ -17,14 +17,13 @@
 package models.appeals.reasonableExcuses
 
 import base.SpecBase
-import models.Regime
 import models.appeals.reasonableExcuses.ReasonableExcuse._
 import play.api.libs.json.{JsValue, Json}
 
 class ReasonableExcuseSpec extends SpecBase {
 
   "allReasonableExcuses" should {
-    "return all reasonable excuses for VAT" in {
+    "return all reasonable excuses" in {
       val expectedResult = Seq(
         Bereavement,
         Crime,
@@ -34,37 +33,13 @@ class ReasonableExcuseSpec extends SpecBase {
         TechnicalIssues,
         Other
       )
-      val result = ReasonableExcuse.allReasonableExcusesForVATC
-      result shouldBe expectedResult
-    }
-
-    "return all reasonable excuses for ITSA" in {
-      val expectedResult = Seq(
-        Bereavement,
-        Crime,
-        FireOrFlood,
-        Health,
-        TechnicalIssues,
-        Other
-      )
-      val result = ReasonableExcuse.allReasonableExcusesForITSA
+      val result = ReasonableExcuse.allReasonableExcuses
       result shouldBe expectedResult
     }
   }
 
   "allExcusesToJson" should {
-    "return the JSON equivalent of an empty list with an invalid regime" in {
-      val jsonExpectedToReturn: JsValue = Json.parse(
-        """
-          |{
-          |  "excuses": []
-          |}
-          |""".stripMargin)
-        val result = ReasonableExcuse.allExcusesToJson(appConfig, Regime("invalid"))
-        result shouldBe jsonExpectedToReturn
-    }
-
-    "return the JSON equivalent of all active excuses with VAT as Regime" in {
+    "return the JSON equivalent of all active excuses" in {
       val jsonExpectedToReturn: JsValue = Json.parse(
         """
           |{
@@ -100,44 +75,9 @@ class ReasonableExcuseSpec extends SpecBase {
           |  ]
           |}
           |""".stripMargin)
-      val result = ReasonableExcuse.allExcusesToJson(appConfig, Regime("VATC"))
-      result shouldBe jsonExpectedToReturn
+        val result = ReasonableExcuse.allExcusesToJson(appConfig)
+        result shouldBe jsonExpectedToReturn
     }
 
-    "return the JSON equivalent of all active excuses with ITSA as Regime" in {
-      val jsonExpectedToReturn: JsValue = Json.parse(
-        """
-          |{
-          |  "excuses": [
-          |    {
-          |      "type": "bereavement",
-          |      "descriptionKey": "reasonableExcuses.bereavementReason"
-          |    },
-          |    {
-          |      "type": "crime",
-          |      "descriptionKey": "reasonableExcuses.crimeReason"
-          |    },
-          |    {
-          |      "type": "fireOrFlood",
-          |      "descriptionKey": "reasonableExcuses.fireOrFloodReason"
-          |    },
-          |    {
-          |      "type": "health",
-          |      "descriptionKey": "reasonableExcuses.healthReason"
-          |    },
-          |    {
-          |      "type": "technicalIssues",
-          |      "descriptionKey": "reasonableExcuses.technicalIssuesReason"
-          |    },
-          |    {
-          |      "type": "other",
-          |      "descriptionKey": "reasonableExcuses.otherReason"
-          |    }
-          |  ]
-          |}
-          |""".stripMargin)
-      val result = ReasonableExcuse.allExcusesToJson(appConfig, Regime("ITSA"))
-      result shouldBe jsonExpectedToReturn
-    }
   }
 }

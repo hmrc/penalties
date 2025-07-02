@@ -33,7 +33,7 @@ class PenaltyDetailsService @Inject()(getPenaltyDetailsConnector: PenaltyDetails
                                          filterService: RegimeFilterService)
                                         (implicit ec: ExecutionContext, val config: Configuration) extends FeatureSwitching {
 
-  def getDataFromPenaltyService(enrolmentKey: AgnosticEnrolmentKey)(implicit hc: HeaderCarrier): Future[GetPenaltyDetailsResponse] = {
+  def getDataFromPenaltyService(enrolmentKey: AgnosticEnrolmentKey)(implicit hc: HeaderCarrier): Future[PenaltyDetailsResponse] = {
     val startOfLogMsg: String = s"[PenaltyDetailsService][getDataFromPenaltyService][${enrolmentKey.regime.value}]"
     getPenaltyDetailsConnector.getPenaltyDetails(enrolmentKey).map {
       handleConnectorResponse(_)(startOfLogMsg, enrolmentKey)
@@ -41,11 +41,11 @@ class PenaltyDetailsService @Inject()(getPenaltyDetailsConnector: PenaltyDetails
   }
 
 
-  private def handleConnectorResponse(connectorResponse: GetPenaltyDetailsResponse)
-                                     (implicit startOfLogMsg: String, enrolmentKeyInfo: AgnosticEnrolmentKey): GetPenaltyDetailsResponse = {
+  private def handleConnectorResponse(connectorResponse: PenaltyDetailsResponse)
+                                     (implicit startOfLogMsg: String, enrolmentKeyInfo: AgnosticEnrolmentKey): PenaltyDetailsResponse = {
 
     connectorResponse match {
-      case res@Right(_@GetPenaltyDetailsSuccessResponse(penaltyDetails)) =>
+      case res@Right(_@PenaltyDetailsSuccessResponse(penaltyDetails)) =>
         implicit val loggingContext: LoggingContext = LoggingContext(
           callingClass = "PenaltiesDetailsService",
           function = "handleConnectorResponse",
@@ -53,18 +53,18 @@ class PenaltyDetailsService @Inject()(getPenaltyDetailsConnector: PenaltyDetails
         )
 
         logger.debug(s"$startOfLogMsg - Got a success response from the connector. Parsed model: $penaltyDetails")
-        Right(GetPenaltyDetailsSuccessResponse(filterService.filterEstimatedLPP1DuringPeriodOfFamiliarisation(
+        Right(PenaltyDetailsSuccessResponse(filterService.filterEstimatedLPP1DuringPeriodOfFamiliarisation(
           filterService.filterPenaltiesWith9xAppealStatus(
             penaltyDetails
           )
         )))
-      case res@Left(GetPenaltyDetailsNoContent) =>
-        logger.debug(s"$startOfLogMsg - Got a 404 response and no data was found for GetPenaltyDetails call")
+      case res@Left(PenaltyDetailsNoContent) =>
+        logger.debug(s"$startOfLogMsg - Got a 404 response and no data was found for PenaltyDetails call")
         res
-      case res@Left(GetPenaltyDetailsMalformed) =>
+      case res@Left(PenaltyDetailsMalformed) =>
         logger.info(s"$startOfLogMsg - Failed to parse HTTP response into model for $enrolmentKeyInfo")
         res
-      case res@Left(GetPenaltyDetailsFailureResponse(_)) =>
+      case res@Left(PenaltyDetailsFailureResponse(_, _)) =>
         logger.error(s"$startOfLogMsg - Unknown status returned from connector for $enrolmentKeyInfo")
         res
     }

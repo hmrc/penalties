@@ -18,8 +18,8 @@ package services
 
 import config.AppConfig
 import config.featureSwitches.{CallAPI1808HIP, FeatureSwitching, SanitiseFileName}
-import connectors.parsers.AppealsParser
 import connectors.{HIPConnector, PEGAConnector}
+import connectors.parsers.AppealsParser
 import models.appeals.{AppealResponseModel, AppealSubmission, MultiplePenaltiesData}
 import models.getPenaltyDetails.GetPenaltyDetails
 import models.getPenaltyDetails.latePayment.{LPPDetails, LPPPenaltyCategoryEnum, LPPPenaltyStatusEnum}
@@ -50,7 +50,7 @@ class AppealService @Inject()(appealsConnector: PEGAConnector,
     val response: Future[AppealsParser.AppealSubmissionResponse] = if (isEnabled(CallAPI1808HIP)) {
       hipAppealsConnector.submitAppeal(appealSubmission, penaltyNumber, correlationId)
     } else {
-      appealsConnector.submitAppeal(appealSubmission, penaltyNumber, correlationId)
+      appealsConnector.submitAppeal(appealSubmission, enrolmentKey, isLPP, penaltyNumber, correlationId)
     }
     response.flatMap {
       _.fold(

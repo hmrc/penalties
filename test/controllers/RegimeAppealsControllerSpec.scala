@@ -22,20 +22,19 @@ import config.featureSwitches.FeatureSwitching
 import connectors.FileNotificationOrchestratorConnector
 import connectors.parsers.AppealsParser.UnexpectedFailure
 import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser.{
-  GetPenaltyDetailsFailureResponse,
-  GetPenaltyDetailsMalformed,
-  GetPenaltyDetailsSuccessResponse
+  PenaltyDetailsFailureResponse,
+  PenaltyDetailsMalformed,
+  PenaltyDetailsSuccessResponse
 }
 import controllers.auth.AuthAction
 import models.appeals.AppealTypeEnum.{Additional, Late_Payment, Late_Submission}
 import models.appeals.{AppealData, MultiplePenaltiesData}
 import models.auditing.PenaltyAppealFileNotificationStorageFailureModel
 import models.getFinancialDetails.MainTransactionEnum
-import models.getPenaltyDetails.GetPenaltyDetails
-import models.getPenaltyDetails.latePayment._
-import models.getPenaltyDetails.lateSubmission._
+import models.penaltyDetails.PenaltyDetails
+import models.penaltyDetails.latePayment._
+import models.penaltyDetails.lateSubmission._
 import models.notification._
-import models.{AgnosticEnrolmentKey, Id, IdType, Regime}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
 import org.mockito.{ArgumentCaptor, ArgumentMatchers}
@@ -55,53 +54,81 @@ import utils.PagerDutyHelper.PagerDutyKeys
 import java.time.{LocalDate, LocalDateTime}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+import models.{AgnosticEnrolmentKey, Id, IdType, Regime}
+import java.time.Instant
 
 class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with LogCapturing {
-  val mockAppealsService: RegimeAppealService = mock(classOf[RegimeAppealService])
-  val mockAppConfig: AppConfig = mock(classOf[AppConfig])
+  val mockAppealsService: RegimeAppealService = mock(
+    classOf[RegimeAppealService]
+  )
+  val mockAppConfig: AppConfig       = mock(classOf[AppConfig])
   val mockAuditService: AuditService = mock(classOf[AuditService])
-  val mockGetPenaltyDetailsService: PenaltyDetailsService = mock(classOf[PenaltyDetailsService])
+  val mockPenaltyDetailsService: PenaltyDetailsService = mock(
+    classOf[PenaltyDetailsService]
+  )
   val mockAuthAction: AuthAction = injector.instanceOf(classOf[AuthActionMock])
-  val correlationId = "id-1234567890"
-  val mockFileNotificationConnector: FileNotificationOrchestratorConnector = mock(classOf[FileNotificationOrchestratorConnector])
+  val correlationId              = "id-1234567890"
+  val mockFileNotificationConnector: FileNotificationOrchestratorConnector =
+    mock(classOf[FileNotificationOrchestratorConnector])
+  val instant                        = Instant.now()
   implicit val config: Configuration = mockAppConfig.config
-  val sampleSDESNotifications: Seq[SDESNotification] = Seq(SDESNotification(
-    informationType = "S18",
-    file = SDESNotificationFile(
-      recipientOrSender = "123456789012", name = "file1.txt", location = "download.file", checksum = SDESChecksum("SHA-256", "check12345678"), size = 987, properties = Seq(
-        SDESProperties(
-          "CaseId", "PR-123456789"
-        ),
-        SDESProperties(
-          "SourceFileUploadDate", "2018-04-24T09:30:00Z"
+  val sampleSDESNotifications: Seq[SDESNotification] = Seq(
+    SDESNotification(
+      informationType = "S18",
+      file = SDESNotificationFile(
+        recipientOrSender = "123456789012",
+        name = "file1.txt",
+        location = "download.file",
+        checksum = SDESChecksum("SHA-256", "check12345678"),
+        size = 987,
+        properties = Seq(
+          SDESProperties(
+            "CaseId",
+            "PR-123456789"
+          ),
+          SDESProperties(
+            "SourceFileUploadDate",
+            "2018-04-24T09:30:00Z"
+          )
         )
-      )
-    ), audit = SDESAudit(correlationId)
-  ))
-
-  val regime = Regime("VATC") 
-  val idType = IdType("VRN")
-  val id = Id("123456789")
-  val vrn123456789: AgnosticEnrolmentKey = AgnosticEnrolmentKey(
-    regime, idType, id
+      ),
+      audit = SDESAudit(correlationId)
+    )
   )
 
+  val regime = Regime("VATC")
+  val idType = IdType("VRN")
+  val id     = Id("123456789")
+  val vrn123456789: AgnosticEnrolmentKey = AgnosticEnrolmentKey(
+    regime,
+    idType,
+    id
+  )
 
   class Setup(withRealAppConfig: Boolean = true) {
     reset(mockAppConfig)
     reset(mockAppealsService)
-    reset(mockGetPenaltyDetailsService)
+    reset(mockPenaltyDetailsService)
     reset(mockFileNotificationConnector)
     reset(mockAuditService)
 
-    val controller = new RegimeAppealsController(if (withRealAppConfig) appConfig
-    else mockAppConfig, mockAppealsService, mockGetPenaltyDetailsService, mockFileNotificationConnector, mockAuditService, stubControllerComponents(), mockAuthAction)
+    val controller = new RegimeAppealsController(
+      if (withRealAppConfig) appConfig
+      else mockAppConfig,
+      mockAppealsService,
+      mockPenaltyDetailsService,
+      mockFileNotificationConnector,
+      mockAuditService,
+      stubControllerComponents(),
+      mockAuthAction
+    )
 
     implicit val hc: HeaderCarrier = HeaderCarrier()
   }
 
   "getAppealsDataForLateSubmissionPenalty" should {
-    val getPenaltyDetails: GetPenaltyDetails = GetPenaltyDetails(
+    val getPenaltyDetails: PenaltyDetails = PenaltyDetails(
+      processingDate = instant,
       totalisations = None,
       lateSubmissionPenalty = Some(
         LateSubmissionPenalty(
@@ -110,7 +137,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
             inactivePenaltyPoints = 0,
             regimeThreshold = 5,
             penaltyChargeAmount = 200,
-            PoCAchievementDate = Some(LocalDate.of(2022, 1, 1))
+            pocAchievementDate = Some(LocalDate.of(2022, 1, 1))
           ),
           details = Seq(
             LSPDetails(
@@ -121,11 +148,12 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
               penaltyCreationDate = LocalDate.of(2022, 4, 1),
               penaltyExpiryDate = LocalDate.of(2022, 4, 1),
               communicationsDate = Some(LocalDate.of(2022, 5, 8)),
-              FAPIndicator = None,
+              fapIndicator = None,
               lateSubmissions = Some(
                 Seq(
                   LateSubmission(
                     lateSubmissionID = "001",
+                    incomeSource = None,
                     taxPeriod = Some("23AA"),
                     taxPeriodStartDate = Some(LocalDate.of(2022, 1, 1)),
                     taxPeriodEndDate = Some(LocalDate.of(2022, 3, 31)),
@@ -151,11 +179,12 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
               penaltyCreationDate = LocalDate.of(2022, 4, 1),
               penaltyExpiryDate = LocalDate.of(2022, 4, 1),
               communicationsDate = Some(LocalDate.of(2022, 4, 1)),
-              FAPIndicator = None,
+              fapIndicator = None,
               lateSubmissions = Some(
                 Seq(
                   LateSubmission(
                     lateSubmissionID = "001",
+                    incomeSource = None,
                     taxPeriod = Some("23AA"),
                     taxPeriodStartDate = Some(LocalDate.of(2022, 4, 1)),
                     taxPeriodEndDate = Some(LocalDate.of(2022, 6, 30)),
@@ -180,7 +209,8 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
       breathingSpace = None
     )
 
-    val getPenaltyDetailsNoCommunicationsDate: GetPenaltyDetails = GetPenaltyDetails(
+    val getPenaltyDetailsNoCommunicationsDate: PenaltyDetails = PenaltyDetails(
+      processingDate = instant,
       totalisations = None,
       lateSubmissionPenalty = Some(
         LateSubmissionPenalty(
@@ -189,7 +219,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
             inactivePenaltyPoints = 0,
             regimeThreshold = 5,
             penaltyChargeAmount = 200,
-            PoCAchievementDate = Some(LocalDate.of(2022, 1, 1))
+            pocAchievementDate = Some(LocalDate.of(2022, 1, 1))
           ),
           details = Seq(
             LSPDetails(
@@ -200,12 +230,13 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
               penaltyCreationDate = LocalDate.of(2022, 4, 1),
               penaltyExpiryDate = LocalDate.of(2022, 4, 1),
               communicationsDate = None,
-              FAPIndicator = None,
+              fapIndicator = None,
               lateSubmissions = Some(
                 Seq(
                   LateSubmission(
                     lateSubmissionID = "001",
                     taxPeriod = Some("23AA"),
+                    incomeSource = None,
                     taxPeriodStartDate = Some(LocalDate.of(2022, 1, 1)),
                     taxPeriodEndDate = Some(LocalDate.of(2022, 3, 31)),
                     taxPeriodDueDate = Some(LocalDate.of(2022, 5, 7)),
@@ -230,11 +261,12 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
               penaltyCreationDate = LocalDate.of(2022, 4, 1),
               penaltyExpiryDate = LocalDate.of(2022, 4, 1),
               communicationsDate = None,
-              FAPIndicator = None,
+              fapIndicator = None,
               lateSubmissions = Some(
                 Seq(
                   LateSubmission(
                     lateSubmissionID = "001",
+                    incomeSource = None,
                     taxPeriod = Some("23AA"),
                     taxPeriodStartDate = Some(LocalDate.of(2022, 4, 1)),
                     taxPeriodEndDate = Some(LocalDate.of(2022, 6, 30)),
@@ -259,83 +291,159 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
       breathingSpace = None
     )
 
-    s"return NOT_FOUND (${Status.NOT_FOUND}) when ETMP can not find the data for the given enrolment key" in new Setup(true) {
+    s"return NOT_FOUND (${Status.NOT_FOUND}) when ETMP can not find the data for the given enrolment key" in new Setup(
+      true
+    ) {
 
       val vrn: AgnosticEnrolmentKey = AgnosticEnrolmentKey(
-        Regime("VATC"), 
+        Regime("VATC"),
         IdType("VRN"),
         Id("123456789")
       )
-      when(mockGetPenaltyDetailsService.getDataFromPenaltyService(ArgumentMatchers.eq(vrn))(ArgumentMatchers.any()))
-        .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(NOT_FOUND))))
+      when(
+        mockPenaltyDetailsService.getDataFromPenaltyService(
+          ArgumentMatchers.eq(vrn)
+        )(ArgumentMatchers.any())
+      )
+        .thenReturn(
+          Future.successful(Left(PenaltyDetailsFailureResponse(NOT_FOUND)))
+        )
 
-      val result: Future[Result] = controller.getAppealsDataForLateSubmissionPenalty("1", regime, idType, id)(fakeRequest)
+      val result: Future[Result] =
+        controller.getAppealsDataForLateSubmissionPenalty(
+          "1",
+          regime,
+          idType,
+          id
+        )(fakeRequest)
       status(result) shouldBe Status.NOT_FOUND
-      contentAsString(result) shouldBe s"A downstream call returned 404 for ${vrn}"
+      contentAsString(
+        result
+      ) shouldBe s"A downstream call returned 404 for ${vrn}"
     }
 
     s"return NOT_FOUND (${Status.NOT_FOUND}) when ETMP returns data but the given penaltyId is wrong" in new Setup {
       val samplePenaltyId: String = "1234"
 
-        val vrn: AgnosticEnrolmentKey = AgnosticEnrolmentKey(
-          Regime("VATC"), 
-          IdType("VRN"),
-          Id("123456789")
-        )
-      val regime = Regime("VATC") 
+      val vrn: AgnosticEnrolmentKey = AgnosticEnrolmentKey(
+        Regime("VATC"),
+        IdType("VRN"),
+        Id("123456789")
+      )
+      val regime = Regime("VATC")
       val idType = IdType("VRN")
-      val id = Id("123456789")
-      when(mockGetPenaltyDetailsService.getDataFromPenaltyService(ArgumentMatchers.eq(vrn))(ArgumentMatchers.any()))
-        .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetails))))
+      val id     = Id("123456789")
+      when(
+        mockPenaltyDetailsService.getDataFromPenaltyService(
+          ArgumentMatchers.eq(vrn)
+        )(ArgumentMatchers.any())
+      )
+        .thenReturn(
+          Future.successful(
+            Right(PenaltyDetailsSuccessResponse(getPenaltyDetails))
+          )
+        )
 
-      val result: Future[Result] = controller.getAppealsDataForLateSubmissionPenalty(samplePenaltyId, regime, idType, id)(fakeRequest)
+      val result: Future[Result] =
+        controller.getAppealsDataForLateSubmissionPenalty(
+          samplePenaltyId,
+          regime,
+          idType,
+          id
+        )(fakeRequest)
       status(result) shouldBe Status.NOT_FOUND
-      contentAsString(result) shouldBe "Penalty ID was not found in users penalties."
+      contentAsString(
+        result
+      ) shouldBe "Penalty ID was not found in users penalties."
     }
 
     s"return ISE (${Status.INTERNAL_SERVER_ERROR}) when the call to ETMP fails for some reason" in new Setup {
 
-        val vrn: AgnosticEnrolmentKey = AgnosticEnrolmentKey(
-          Regime("VATC"), 
-          IdType("VRN"),
-          Id("123456789")
+      val vrn: AgnosticEnrolmentKey = AgnosticEnrolmentKey(
+        Regime("VATC"),
+        IdType("VRN"),
+        Id("123456789")
+      )
+      when(
+        mockPenaltyDetailsService.getDataFromPenaltyService(
+          ArgumentMatchers.eq(vrn)
+        )(ArgumentMatchers.any())
+      )
+        .thenReturn(
+          Future.successful(
+            Left(PenaltyDetailsFailureResponse(INTERNAL_SERVER_ERROR))
+          )
         )
-      when(mockGetPenaltyDetailsService.getDataFromPenaltyService(ArgumentMatchers.eq(vrn))(ArgumentMatchers.any()))
-        .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(INTERNAL_SERVER_ERROR))))
 
-      val result: Future[Result] = controller.getAppealsDataForLateSubmissionPenalty("1", regime, idType, id)(fakeRequest)
+      val result: Future[Result] =
+        controller.getAppealsDataForLateSubmissionPenalty(
+          "1",
+          regime,
+          idType,
+          id
+        )(fakeRequest)
       status(result) shouldBe Status.INTERNAL_SERVER_ERROR
     }
 
     s"return ISE (${Status.INTERNAL_SERVER_ERROR}) when API 1812 call returns malformed data" in new Setup {
 
-        val vrn: AgnosticEnrolmentKey = AgnosticEnrolmentKey(
-          Regime("VATC"), 
-          IdType("VRN"),
-          Id("123456789")
-        )
-      when(mockGetPenaltyDetailsService.getDataFromPenaltyService(ArgumentMatchers.eq(vrn))(ArgumentMatchers.any()))
-        .thenReturn(Future.successful(Left(GetPenaltyDetailsMalformed)))
-      withCaptureOfLoggingFrom(logger) {
-        logs => {
-          val result: Future[Result] = controller.getAppealsDataForLateSubmissionPenalty("1234567891", regime, idType, id)(fakeRequest)
-          status(result) shouldBe Status.INTERNAL_SERVER_ERROR
-          logs.exists(_.getMessage.contains(PagerDutyKeys.MALFORMED_RESPONSE_FROM_1812_API.toString)) shouldBe true
-        }
+      val vrn: AgnosticEnrolmentKey = AgnosticEnrolmentKey(
+        Regime("VATC"),
+        IdType("VRN"),
+        Id("123456789")
+      )
+      when(
+        mockPenaltyDetailsService.getDataFromPenaltyService(
+          ArgumentMatchers.eq(vrn)
+        )(ArgumentMatchers.any())
+      )
+        .thenReturn(Future.successful(Left(PenaltyDetailsMalformed)))
+      withCaptureOfLoggingFrom(logger) { logs =>
+        val result: Future[Result] =
+          controller.getAppealsDataForLateSubmissionPenalty(
+            "1234567891",
+            regime,
+            idType,
+            id
+          )(fakeRequest)
+        status(result) shouldBe Status.INTERNAL_SERVER_ERROR
+        logs.exists(
+          _.getMessage.contains(
+            PagerDutyKeys.MALFORMED_RESPONSE_FROM_1812_API.toString
+          )
+        ) shouldBe true
       }
     }
 
     s"return OK (${Status.OK}) when the call to ETMP succeeds and the penalty ID matches (defaulting comms date if not present)" in new Setup {
       val samplePenaltyId: String = "123456789"
       val sampleEnrolmentKey: AgnosticEnrolmentKey = AgnosticEnrolmentKey(
-        Regime("VATC"), 
+        Regime("VATC"),
         IdType("VRN"),
         Id("123456789")
       )
-      when(mockGetPenaltyDetailsService.getDataFromPenaltyService(ArgumentMatchers.eq(sampleEnrolmentKey))(ArgumentMatchers.any()))
-        .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetailsNoCommunicationsDate))))
+      when(
+        mockPenaltyDetailsService.getDataFromPenaltyService(
+          ArgumentMatchers.eq(sampleEnrolmentKey)
+        )(ArgumentMatchers.any())
+      )
+        .thenReturn(
+          Future.successful(
+            Right(
+              PenaltyDetailsSuccessResponse(
+                getPenaltyDetailsNoCommunicationsDate
+              )
+            )
+          )
+        )
       when(mockAppConfig.getTimeMachineDateTime).thenReturn(LocalDateTime.now)
-      val result: Future[Result] = controller.getAppealsDataForLateSubmissionPenalty(samplePenaltyId, regime, idType, id)(fakeRequest)
+      val result: Future[Result] =
+        controller.getAppealsDataForLateSubmissionPenalty(
+          samplePenaltyId,
+          regime,
+          idType,
+          id
+        )(fakeRequest)
       status(result) shouldBe Status.OK
       val appealDataToReturn: AppealData = AppealData(
         Late_Submission,
@@ -344,21 +452,37 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
         dueDate = LocalDate.of(2022, 5, 7),
         dateCommunicationSent = LocalDate.now
       )
-      contentAsString(result) shouldBe Json.toJson(appealDataToReturn).toString()
+      contentAsString(result) shouldBe Json
+        .toJson(appealDataToReturn)
+        .toString()
     }
 
     s"return OK (${Status.OK}) when the call to ETMP succeeds and the penalty ID matches" in new Setup {
       val samplePenaltyId: String = "123456789"
 
-             val vrn: AgnosticEnrolmentKey = AgnosticEnrolmentKey(
-          Regime("VATC"), 
-          IdType("VRN"),
-          Id("123456789")
+      val vrn: AgnosticEnrolmentKey = AgnosticEnrolmentKey(
+        Regime("VATC"),
+        IdType("VRN"),
+        Id("123456789")
+      )
+      when(
+        mockPenaltyDetailsService.getDataFromPenaltyService(
+          ArgumentMatchers.eq(vrn)
+        )(ArgumentMatchers.any())
+      )
+        .thenReturn(
+          Future.successful(
+            Right(PenaltyDetailsSuccessResponse(getPenaltyDetails))
+          )
         )
-      when(mockGetPenaltyDetailsService.getDataFromPenaltyService(ArgumentMatchers.eq(vrn))(ArgumentMatchers.any()))
-        .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetails))))
 
-      val result: Future[Result] = controller.getAppealsDataForLateSubmissionPenalty(samplePenaltyId, regime, idType, id)(fakeRequest)
+      val result: Future[Result] =
+        controller.getAppealsDataForLateSubmissionPenalty(
+          samplePenaltyId,
+          regime,
+          idType,
+          id
+        )(fakeRequest)
       status(result) shouldBe Status.OK
       val appealDataToReturn: AppealData = AppealData(
         Late_Submission,
@@ -367,17 +491,21 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
         dueDate = LocalDate.of(2022, 5, 7),
         dateCommunicationSent = LocalDate.of(2022, 5, 8)
       )
-      contentAsString(result) shouldBe Json.toJson(appealDataToReturn).toString()
+      contentAsString(result) shouldBe Json
+        .toJson(appealDataToReturn)
+        .toString()
     }
   }
 
   "getAppealsDataForLatePaymentPenalty" should {
-    val getPenaltyDetails: GetPenaltyDetails = GetPenaltyDetails(
+    val getPenaltyDetails: PenaltyDetails = PenaltyDetails(
+      processingDate = instant,
       totalisations = None,
       lateSubmissionPenalty = None,
       latePaymentPenalty = Some(
         LatePaymentPenalty(
-          Some(
+          manualLPPIndicator = false,
+          lppDetails = Some(
             Seq(
               LPPDetails(
                 penaltyCategory = LPPPenaltyCategoryEnum.SecondPenalty,
@@ -393,19 +521,20 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
                 penaltyAmountOutstanding = None,
                 penaltyAmountPaid = None,
                 penaltyAmountPosted = 0,
-                LPP1LRDays = None,
-                LPP1HRDays = None,
-                LPP2Days = None,
-                LPP1HRCalculationAmount = None,
-                LPP1LRCalculationAmount = None,
-                LPP2Percentage = None,
-                LPP1LRPercentage = None,
-                LPP1HRPercentage = None,
+                lpp1LRDays = None,
+                lpp1HRDays = None,
+                lpp2Days = None,
+                lpp1HRCalculationAmt = None,
+                lpp1LRCalculationAmt = None,
+                lpp2Percentage = None,
+                lpp1LRPercentage = None,
+                lpp1HRPercentage = None,
                 penaltyChargeDueDate = Some(LocalDate.of(2022, 8, 7)),
                 principalChargeLatestClearing = None,
-                metadata = LPPDetailsMetadata(),
+                principalChargeSubTr = None,
+                principalChargeDocNumber = None,
                 penaltyAmountAccruing = BigDecimal(100),
-                principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
+                principalChargeMainTr = MainTransactionEnum.VATReturnCharge,
                 vatOutstandingAmount = Some(BigDecimal(123.45))
               ),
               LPPDetails(
@@ -422,19 +551,20 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
                 penaltyAmountOutstanding = Some(100),
                 penaltyAmountPaid = Some(13.45),
                 penaltyAmountPosted = 113.45,
-                LPP1LRDays = None,
-                LPP1HRDays = None,
-                LPP2Days = None,
-                LPP1HRCalculationAmount = None,
-                LPP1LRCalculationAmount = None,
-                LPP2Percentage = None,
-                LPP1LRPercentage = None,
-                LPP1HRPercentage = None,
+                lpp1LRDays = None,
+                lpp1HRDays = None,
+                lpp2Days = None,
+                lpp1HRCalculationAmt = None,
+                lpp1LRCalculationAmt = None,
+                lpp2Percentage = None,
+                lpp1LRPercentage = None,
+                lpp1HRPercentage = None,
                 penaltyChargeDueDate = Some(LocalDate.of(2022, 8, 7)),
                 principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
-                metadata = LPPDetailsMetadata(),
                 penaltyAmountAccruing = BigDecimal(0),
-                principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
+                principalChargeMainTr = MainTransactionEnum.VATReturnCharge,
+                principalChargeDocNumber = None,
+                principalChargeSubTr = None,
                 vatOutstandingAmount = Some(BigDecimal(123.45))
               )
             )
@@ -444,12 +574,14 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
       breathingSpace = None
     )
 
-    val getPenaltyDetailsNoCommunicationsDate: GetPenaltyDetails = GetPenaltyDetails(
+    val getPenaltyDetailsNoCommunicationsDate: PenaltyDetails = PenaltyDetails(
+      processingDate = instant,
       totalisations = None,
       lateSubmissionPenalty = None,
       latePaymentPenalty = Some(
         LatePaymentPenalty(
-          Some(
+          manualLPPIndicator = false,
+          lppDetails = Some(
             Seq(
               LPPDetails(
                 penaltyCategory = LPPPenaltyCategoryEnum.SecondPenalty,
@@ -465,19 +597,20 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
                 penaltyAmountOutstanding = None,
                 penaltyAmountPaid = None,
                 penaltyAmountPosted = 0,
-                LPP1LRDays = None,
-                LPP1HRDays = None,
-                LPP2Days = None,
-                LPP1HRCalculationAmount = None,
-                LPP1LRCalculationAmount = None,
-                LPP2Percentage = None,
-                LPP1LRPercentage = None,
-                LPP1HRPercentage = None,
+                lpp1LRDays = None,
+                lpp1HRDays = None,
+                lpp2Days = None,
+                lpp1HRCalculationAmt = None,
+                lpp1LRCalculationAmt = None,
+                lpp2Percentage = None, 
+                lpp1LRPercentage = None,
+                lpp1HRPercentage = None,
                 penaltyChargeDueDate = Some(LocalDate.of(2022, 8, 7)),
                 principalChargeLatestClearing = None,
-                metadata = LPPDetailsMetadata(),
+                principalChargeDocNumber = None,
+                principalChargeSubTr = None,
                 penaltyAmountAccruing = BigDecimal(100),
-                principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
+                principalChargeMainTr = MainTransactionEnum.VATReturnCharge,
                 vatOutstandingAmount = Some(BigDecimal(123.45))
               ),
               LPPDetails(
@@ -494,19 +627,20 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
                 penaltyAmountOutstanding = Some(100),
                 penaltyAmountPaid = Some(13.45),
                 penaltyAmountPosted = 113.45,
-                LPP1LRDays = None,
-                LPP1HRDays = None,
-                LPP2Days = None,
-                LPP1HRCalculationAmount = None,
-                LPP1LRCalculationAmount = None,
-                LPP2Percentage = None,
-                LPP1LRPercentage = None,
-                LPP1HRPercentage = None,
+                lpp1LRDays = None,
+                lpp1HRDays = None,
+                lpp2Days = None,
+                lpp1HRCalculationAmt = None,
+                lpp1LRCalculationAmt = None,
+                lpp2Percentage = None,
+                lpp1LRPercentage = None,
+                lpp1HRPercentage = None,
                 penaltyChargeDueDate = Some(LocalDate.of(2022, 8, 7)),
                 principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
-                metadata = LPPDetailsMetadata(),
+                principalChargeDocNumber = None,
+                principalChargeSubTr = None,
                 penaltyAmountAccruing = BigDecimal(0),
-                principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
+                principalChargeMainTr = MainTransactionEnum.VATReturnCharge,
                 vatOutstandingAmount = Some(BigDecimal(123.45))
               )
             )
@@ -519,82 +653,153 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
     s"return NOT_FOUND (${Status.NOT_FOUND}) when ETMP can not find the data for the given enrolment key" in new Setup {
 
       val vrn: AgnosticEnrolmentKey = AgnosticEnrolmentKey(
-        Regime("VATC"), 
+        Regime("VATC"),
         IdType("VRN"),
         Id("123456789")
       )
-      when(mockGetPenaltyDetailsService.getDataFromPenaltyService(ArgumentMatchers.eq(vrn))(ArgumentMatchers.any()))
-        .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(NOT_FOUND))))
+      when(
+        mockPenaltyDetailsService.getDataFromPenaltyService(
+          ArgumentMatchers.eq(vrn)
+        )(ArgumentMatchers.any())
+      )
+        .thenReturn(
+          Future.successful(Left(PenaltyDetailsFailureResponse(NOT_FOUND)))
+        )
 
-      val result: Future[Result] = controller.getAppealsDataForLatePaymentPenalty("1", regime, idType, id,
-        isAdditional = false)(fakeRequest)
+      val result: Future[Result] =
+        controller.getAppealsDataForLatePaymentPenalty(
+          "1",
+          regime,
+          idType,
+          id,
+          isAdditional = false
+        )(fakeRequest)
       status(result) shouldBe Status.NOT_FOUND
-      contentAsString(result) shouldBe s"A downstream call returned 404 for ${vrn}"
+      contentAsString(
+        result
+      ) shouldBe s"A downstream call returned 404 for ${vrn}"
     }
 
     s"return NOT_FOUND (${Status.NOT_FOUND}) when ETMP returns data but the given penaltyId is wrong" in new Setup {
       val samplePenaltyId: String = "1234"
 
       val vrn: AgnosticEnrolmentKey = AgnosticEnrolmentKey(
-        Regime("VATC"), 
+        Regime("VATC"),
         IdType("VRN"),
         Id("123456789")
       )
-      when(mockGetPenaltyDetailsService.getDataFromPenaltyService(ArgumentMatchers.eq(vrn))(ArgumentMatchers.any()))
-        .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetails))))
+      when(
+        mockPenaltyDetailsService.getDataFromPenaltyService(
+          ArgumentMatchers.eq(vrn)
+        )(ArgumentMatchers.any())
+      )
+        .thenReturn(
+          Future.successful(
+            Right(PenaltyDetailsSuccessResponse(getPenaltyDetails))
+          )
+        )
 
-      val result: Future[Result] = controller.getAppealsDataForLatePaymentPenalty(samplePenaltyId, regime, idType, id,
-        isAdditional = false)(fakeRequest)
+      val result: Future[Result] =
+        controller.getAppealsDataForLatePaymentPenalty(
+          samplePenaltyId,
+          regime,
+          idType,
+          id,
+          isAdditional = false
+        )(fakeRequest)
       status(result) shouldBe Status.NOT_FOUND
-      contentAsString(result) shouldBe "Penalty ID was not found in users penalties."
+      contentAsString(
+        result
+      ) shouldBe "Penalty ID was not found in users penalties."
     }
 
     s"return ISE (${Status.INTERNAL_SERVER_ERROR}) when the call to ETMP fails for some reason" in new Setup {
 
-              val vrn: AgnosticEnrolmentKey = AgnosticEnrolmentKey(
-          Regime("VATC"), 
-          IdType("VRN"),
-          Id("123456789")
+      val vrn: AgnosticEnrolmentKey = AgnosticEnrolmentKey(
+        Regime("VATC"),
+        IdType("VRN"),
+        Id("123456789")
+      )
+      when(
+        mockPenaltyDetailsService.getDataFromPenaltyService(
+          ArgumentMatchers.eq(vrn)
+        )(ArgumentMatchers.any())
+      )
+        .thenReturn(
+          Future.successful(
+            Left(PenaltyDetailsFailureResponse(INTERNAL_SERVER_ERROR))
+          )
         )
-      when(mockGetPenaltyDetailsService.getDataFromPenaltyService(ArgumentMatchers.eq(vrn))(ArgumentMatchers.any()))
-        .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(INTERNAL_SERVER_ERROR))))
 
-      val result: Future[Result] = controller.getAppealsDataForLatePaymentPenalty("1", regime, idType, id,
-        isAdditional = false)(fakeRequest)
+      val result: Future[Result] =
+        controller.getAppealsDataForLatePaymentPenalty(
+          "1",
+          regime,
+          idType,
+          id,
+          isAdditional = false
+        )(fakeRequest)
       status(result) shouldBe Status.INTERNAL_SERVER_ERROR
     }
 
     s"return ISE (${Status.INTERNAL_SERVER_ERROR}) when API 1812 call returns malformed data" in new Setup {
 
-              val vrn: AgnosticEnrolmentKey = AgnosticEnrolmentKey(
-          Regime("VATC"), 
-          IdType("VRN"),
-          Id("123456789")
-        )
-      when(mockGetPenaltyDetailsService.getDataFromPenaltyService(ArgumentMatchers.eq(vrn))(ArgumentMatchers.any()))
-        .thenReturn(Future.successful(Left(GetPenaltyDetailsMalformed)))
-      withCaptureOfLoggingFrom(logger) {
-        logs => {
-          val result: Future[Result] = controller.getAppealsDataForLatePaymentPenalty("1234567891", regime, idType, id, isAdditional = false)(fakeRequest)
-          status(result) shouldBe Status.INTERNAL_SERVER_ERROR
-          logs.exists(_.getMessage.contains(PagerDutyKeys.MALFORMED_RESPONSE_FROM_1812_API.toString)) shouldBe true
-        }
+      val vrn: AgnosticEnrolmentKey = AgnosticEnrolmentKey(
+        Regime("VATC"),
+        IdType("VRN"),
+        Id("123456789")
+      )
+      when(
+        mockPenaltyDetailsService.getDataFromPenaltyService(
+          ArgumentMatchers.eq(vrn)
+        )(ArgumentMatchers.any())
+      )
+        .thenReturn(Future.successful(Left(PenaltyDetailsMalformed)))
+      withCaptureOfLoggingFrom(logger) { logs =>
+        val result: Future[Result] =
+          controller.getAppealsDataForLatePaymentPenalty(
+            "1234567891",
+            regime,
+            idType,
+            id,
+            isAdditional = false
+          )(fakeRequest)
+        status(result) shouldBe Status.INTERNAL_SERVER_ERROR
+        logs.exists(
+          _.getMessage.contains(
+            PagerDutyKeys.MALFORMED_RESPONSE_FROM_1812_API.toString
+          )
+        ) shouldBe true
       }
     }
 
     s"return OK (${Status.OK}) when the call to ETMP succeeds and the penalty ID matches" in new Setup {
       val samplePenaltyId: String = "1234567890"
 
-        val vrn: AgnosticEnrolmentKey = AgnosticEnrolmentKey(
-          Regime("VATC"), 
-          IdType("VRN"),
-          Id("123456789")
+      val vrn: AgnosticEnrolmentKey = AgnosticEnrolmentKey(
+        Regime("VATC"),
+        IdType("VRN"),
+        Id("123456789")
+      )
+      when(
+        mockPenaltyDetailsService.getDataFromPenaltyService(
+          ArgumentMatchers.eq(vrn)
+        )(ArgumentMatchers.any())
+      )
+        .thenReturn(
+          Future.successful(
+            Right(PenaltyDetailsSuccessResponse(getPenaltyDetails))
+          )
         )
-      when(mockGetPenaltyDetailsService.getDataFromPenaltyService(ArgumentMatchers.eq(vrn))(ArgumentMatchers.any()))
-        .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetails))))
 
-      val result: Future[Result] = controller.getAppealsDataForLatePaymentPenalty(samplePenaltyId, regime, idType, id,
-        isAdditional = false)(fakeRequest)
+      val result: Future[Result] =
+        controller.getAppealsDataForLatePaymentPenalty(
+          samplePenaltyId,
+          regime,
+          idType,
+          id,
+          isAdditional = false
+        )(fakeRequest)
       status(result) shouldBe Status.OK
       val appealDataToReturn: AppealData = AppealData(
         `type` = Late_Payment,
@@ -603,22 +808,38 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
         dueDate = LocalDate.of(2022, 5, 7),
         dateCommunicationSent = LocalDate.of(2022, 5, 8)
       )
-      contentAsString(result) shouldBe Json.toJson(appealDataToReturn).toString()
+      contentAsString(result) shouldBe Json
+        .toJson(appealDataToReturn)
+        .toString()
     }
 
     s"return OK (${Status.OK}) when the call to ETMP succeeds and the penalty ID matches for Additional penalty" in new Setup {
       val samplePenaltyId: String = "1234567891"
 
       val vrn: AgnosticEnrolmentKey = AgnosticEnrolmentKey(
-          Regime("VATC"), 
-          IdType("VRN"),
-          Id("123456789")
+        Regime("VATC"),
+        IdType("VRN"),
+        Id("123456789")
+      )
+      when(
+        mockPenaltyDetailsService.getDataFromPenaltyService(
+          ArgumentMatchers.eq(vrn)
+        )(ArgumentMatchers.any())
+      )
+        .thenReturn(
+          Future.successful(
+            Right(PenaltyDetailsSuccessResponse(getPenaltyDetails))
+          )
         )
-      when(mockGetPenaltyDetailsService.getDataFromPenaltyService(ArgumentMatchers.eq(vrn))(ArgumentMatchers.any()))
-        .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetails))))
 
-      val result: Future[Result] = controller.getAppealsDataForLatePaymentPenalty(samplePenaltyId, regime, idType, id,
-        isAdditional = true)(fakeRequest)
+      val result: Future[Result] =
+        controller.getAppealsDataForLatePaymentPenalty(
+          samplePenaltyId,
+          regime,
+          idType,
+          id,
+          isAdditional = true
+        )(fakeRequest)
       status(result) shouldBe Status.OK
       val appealDataToReturn: AppealData = AppealData(
         `type` = Additional,
@@ -627,23 +848,43 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
         dueDate = LocalDate.of(2022, 8, 7),
         dateCommunicationSent = LocalDate.of(2022, 8, 8)
       )
-      contentAsString(result) shouldBe Json.toJson(appealDataToReturn).toString()
+      contentAsString(result) shouldBe Json
+        .toJson(appealDataToReturn)
+        .toString()
     }
 
     s"return OK (${Status.OK}) when the call to ETMP succeeds and the penalty ID matches (LPP1 - defaulting comms date if not present)" in new Setup {
       val samplePenaltyId: String = "1234567890"
 
-        val vrn: AgnosticEnrolmentKey = AgnosticEnrolmentKey(
-          Regime("VATC"), 
-          IdType("VRN"),
-          Id("123456789")
-        )
+      val vrn: AgnosticEnrolmentKey = AgnosticEnrolmentKey(
+        Regime("VATC"),
+        IdType("VRN"),
+        Id("123456789")
+      )
 
       when(mockAppConfig.getTimeMachineDateTime).thenReturn(LocalDateTime.now)
-      when(mockGetPenaltyDetailsService.getDataFromPenaltyService(ArgumentMatchers.eq(vrn))(ArgumentMatchers.any()))
-        .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetailsNoCommunicationsDate))))
-      val result: Future[Result] = controller.getAppealsDataForLatePaymentPenalty(samplePenaltyId, regime, idType, id,
-        isAdditional = false)(fakeRequest)
+      when(
+        mockPenaltyDetailsService.getDataFromPenaltyService(
+          ArgumentMatchers.eq(vrn)
+        )(ArgumentMatchers.any())
+      )
+        .thenReturn(
+          Future.successful(
+            Right(
+              PenaltyDetailsSuccessResponse(
+                getPenaltyDetailsNoCommunicationsDate
+              )
+            )
+          )
+        )
+      val result: Future[Result] =
+        controller.getAppealsDataForLatePaymentPenalty(
+          samplePenaltyId,
+          regime,
+          idType,
+          id,
+          isAdditional = false
+        )(fakeRequest)
       status(result) shouldBe Status.OK
       val appealDataToReturn: AppealData = AppealData(
         `type` = Late_Payment,
@@ -652,22 +893,42 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
         dueDate = LocalDate.of(2022, 5, 7),
         dateCommunicationSent = LocalDate.now
       )
-      contentAsString(result) shouldBe Json.toJson(appealDataToReturn).toString()
+      contentAsString(result) shouldBe Json
+        .toJson(appealDataToReturn)
+        .toString()
     }
 
     s"return OK (${Status.OK}) when the call to ETMP succeeds and the penalty ID matches (LPP2 - defaulting comms date if not present)" in new Setup {
       val samplePenaltyId: String = "1234567891"
 
-        val vrn: AgnosticEnrolmentKey = AgnosticEnrolmentKey(
-          Regime("VATC"), 
-          IdType("VRN"),
-          Id("123456789")
-        )
+      val vrn: AgnosticEnrolmentKey = AgnosticEnrolmentKey(
+        Regime("VATC"),
+        IdType("VRN"),
+        Id("123456789")
+      )
       when(mockAppConfig.getTimeMachineDateTime).thenReturn(LocalDateTime.now)
-      when(mockGetPenaltyDetailsService.getDataFromPenaltyService(ArgumentMatchers.eq(vrn))(ArgumentMatchers.any()))
-        .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetailsNoCommunicationsDate))))
-      val result: Future[Result] = controller.getAppealsDataForLatePaymentPenalty(samplePenaltyId, regime, idType, id,
-        isAdditional = true)(fakeRequest)
+      when(
+        mockPenaltyDetailsService.getDataFromPenaltyService(
+          ArgumentMatchers.eq(vrn)
+        )(ArgumentMatchers.any())
+      )
+        .thenReturn(
+          Future.successful(
+            Right(
+              PenaltyDetailsSuccessResponse(
+                getPenaltyDetailsNoCommunicationsDate
+              )
+            )
+          )
+        )
+      val result: Future[Result] =
+        controller.getAppealsDataForLatePaymentPenalty(
+          samplePenaltyId,
+          regime,
+          idType,
+          id,
+          isAdditional = true
+        )(fakeRequest)
       status(result) shouldBe Status.OK
       val appealDataToReturn: AppealData = AppealData(
         `type` = Additional,
@@ -676,12 +937,14 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
         dueDate = LocalDate.of(2022, 8, 7),
         dateCommunicationSent = LocalDate.now
       )
-      contentAsString(result) shouldBe Json.toJson(appealDataToReturn).toString()
+      contentAsString(result) shouldBe Json
+        .toJson(appealDataToReturn)
+        .toString()
     }
   }
 
   "getReasonableExcuses" should {
-    "return all the excuses that are stored in the ReasonableExcuse model for VAT" in new Setup {
+    "return all the excuses that are stored in the ReasonableExcuse model" in new Setup {
       val jsonExpectedToReturn: JsValue = Json.parse(
         """
           |{
@@ -719,12 +982,15 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
           |""".stripMargin
       )
 
-      val result: Future[Result] = controller.getReasonableExcuses(regime)(fakeRequest)
+      val result: Future[Result] =
+        controller.getReasonableExcuses()(fakeRequest)
       status(result) shouldBe OK
       contentAsJson(result) shouldBe jsonExpectedToReturn
     }
 
-    "return only those reasonable excuses that are active based on config" in new Setup(withRealAppConfig = false) {
+    "return only those reasonable excuses that are active based on config" in new Setup(
+      withRealAppConfig = false
+    ) {
       val jsonExpectedToReturn: JsValue = Json.parse(
         """
           |{
@@ -759,9 +1025,12 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
       )
       when(mockAppConfig.isReasonableExcuseEnabled(ArgumentMatchers.any()))
         .thenReturn(true)
-      when(mockAppConfig.isReasonableExcuseEnabled(ArgumentMatchers.eq("other")))
+      when(
+        mockAppConfig.isReasonableExcuseEnabled(ArgumentMatchers.eq("other"))
+      )
         .thenReturn(false)
-      val result: Future[Result] = controller.getReasonableExcuses(Regime("VATC"))(fakeRequest)
+      val result: Future[Result] =
+        controller.getReasonableExcuses()(fakeRequest)
       status(result) shouldBe OK
       contentAsJson(result) shouldBe jsonExpectedToReturn
     }
@@ -770,25 +1039,42 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
   "submitAppeal" should {
     "return BAD_REQUEST (400)" when {
       "the request body is not valid JSON" in new Setup {
-        val result: Future[Result] = controller.submitAppeal(regime, idType, id, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = false)(fakeRequest)
-        status(result) shouldBe BAD_REQUEST 
-        contentAsString(result) shouldBe "Invalid body received i.e. could not be parsed to JSON"
+        val result: Future[Result] = controller.submitAppeal(
+          regime,
+          idType,
+          id,
+          isLPP = false,
+          penaltyNumber = "123456789",
+          correlationId = correlationId,
+          isMultiAppeal = false
+        )(fakeRequest)
+        status(result) shouldBe BAD_REQUEST
+        contentAsString(
+          result
+        ) shouldBe "Invalid body received i.e. could not be parsed to JSON"
       }
 
       "the request body is valid JSON but can not be serialised to a model" in new Setup {
-        val appealsJson: JsValue = Json.parse(
-          """
+        val appealsJson: JsValue = Json.parse("""
             |{
             |    "sourceSystem": "MDTP",
             |    "taxRegime": "VATC",
             |    "customerReferenceNo": "123456789",
             |    "dateOfAppeal": "2020-01-01T00:00:00",
-            |    "isLPP": false,
+            |    "isLPP": true,
             |    "appealSubmittedBy": "customer"
             |}
             |""".stripMargin)
 
-        val result: Future[Result] = controller.submitAppeal(regime, idType, id, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = false)(fakeRequest.withJsonBody(appealsJson))
+        val result: Future[Result] = controller.submitAppeal(
+          regime,
+          idType,
+          id,
+          isLPP = false,
+          penaltyNumber = "123456789",
+          correlationId = correlationId,
+          isMultiAppeal = false
+        )(fakeRequest.withJsonBody(appealsJson))
         status(result) shouldBe BAD_REQUEST
         contentAsString(result) shouldBe "Failed to parse to model"
       }
@@ -797,17 +1083,15 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
     "return the error status code" when {
       "the connector calls fails" in new Setup {
 
-        when(mockAppealsService.submitAppeal(any(), any(), any(), any())(any()))
+        when(mockAppealsService.submitAppeal(any(), any(), any(), any(), any())(any()))
           .thenReturn(Future.successful(Left(UnexpectedFailure(GATEWAY_TIMEOUT, s"Unexpected response, status $GATEWAY_TIMEOUT returned"))))
-        val appealsJson: JsValue = Json.parse(
-          """
+        val appealsJson: JsValue = Json.parse("""
             |{
             |    "sourceSystem": "MDTP",
             |    "taxRegime": "VAT",
-            |    "appealLevel": "01",
             |    "customerReferenceNo": "123456789",
             |    "dateOfAppeal": "2020-01-01T00:00:00",
-            |    "isLPP": false,
+            |    "isLPP": true,
             |    "appealSubmittedBy": "customer",
             |    "appealInformation": {
             |						 "reasonableExcuse": "crime",
@@ -819,24 +1103,30 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
             |		}
             |}
             |""".stripMargin)
-        val result: Future[Result] = controller.submitAppeal(regime, idType, id, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = false)(fakeRequest.withJsonBody(appealsJson))
+        val result: Future[Result] = controller.submitAppeal(
+          regime,
+          idType,
+          id,
+          isLPP = false,
+          penaltyNumber = "123456789",
+          correlationId = correlationId,
+          isMultiAppeal = false
+        )(fakeRequest.withJsonBody(appealsJson))
         status(result) shouldBe GATEWAY_TIMEOUT
       }
     }
 
     "return OK (200)" when {
       "the JSON request body can be parsed and the connector returns a successful response for crime" in new Setup {
-        when(mockAppealsService.submitAppeal(any(), any(), any(), any())(any()))
+        when(mockAppealsService.submitAppeal(any(), any(), any(), any(), any())(any()))
           .thenReturn(Future.successful(Right(appealResponseModel)))
-        val appealsJson: JsValue = Json.parse(
-          """
+        val appealsJson: JsValue = Json.parse("""
             |{
             |    "sourceSystem": "MDTP",
             |    "taxRegime": "VAT",
-            |    "appealLevel": "01",
             |    "customerReferenceNo": "123456789",
             |    "dateOfAppeal": "2020-01-01T00:00:00",
-            |    "isLPP": false,
+            |    "isLPP": true,
             |    "appealSubmittedBy": "customer",
             |    "appealInformation": {
             |						 "reasonableExcuse": "crime",
@@ -851,23 +1141,29 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
           "caseId" -> "PR-123456789",
           "status" -> OK
         )
-        val result: Future[Result] = controller.submitAppeal(regime, idType, id, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = false)(fakeRequest.withJsonBody(appealsJson))
+        val result: Future[Result] = controller.submitAppeal(
+          regime,
+          idType,
+          id,
+          isLPP = false,
+          penaltyNumber = "123456789",
+          correlationId = correlationId,
+          isMultiAppeal = false
+        )(fakeRequest.withJsonBody(appealsJson))
         status(result) shouldBe OK
         contentAsJson(result) shouldBe expectedJsonResponse
       }
 
       "the JSON request body can be parsed and the connector returns a successful response for loss of staff" in new Setup {
-        when(mockAppealsService.submitAppeal(any(), any(), any(), any())(any()))
+        when(mockAppealsService.submitAppeal(any(), any(), any(), any(), any())(any()))
           .thenReturn(Future.successful(Right(appealResponseModel)))
-        val appealsJson: JsValue = Json.parse(
-          """
+        val appealsJson: JsValue = Json.parse("""
             |{
             |    "sourceSystem": "MDTP",
             |    "taxRegime": "VAT",
-            |    "appealLevel": "01",
             |    "customerReferenceNo": "123456789",
             |    "dateOfAppeal": "2020-01-01T00:00:00",
-            |    "isLPP": false,
+            |    "isLPP": true,
             |    "appealSubmittedBy": "customer",
             |    "appealInformation": {
             |						 "reasonableExcuse": "lossOfEssentialStaff",
@@ -877,22 +1173,28 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
             |		}
             |}
             |""".stripMargin)
-        val result: Future[Result] = controller.submitAppeal(regime, idType, id, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = false)(fakeRequest.withJsonBody(appealsJson))
+        val result: Future[Result] = controller.submitAppeal(
+          regime,
+          idType,
+          id,
+          isLPP = false,
+          penaltyNumber = "123456789",
+          correlationId = correlationId,
+          isMultiAppeal = false
+        )(fakeRequest.withJsonBody(appealsJson))
         status(result) shouldBe OK
       }
 
       "the Json request body can be parsed and the connector returns a successful response for fire or flood" in new Setup {
-        when(mockAppealsService.submitAppeal(any(), any(), any(), any())(any()))
+        when(mockAppealsService.submitAppeal(any(), any(), any(), any(), any())(any()))
           .thenReturn(Future.successful(Right(appealResponseModel)))
-        val appealsJson: JsValue = Json.parse(
-          """
+        val appealsJson: JsValue = Json.parse("""
             |{
             |    "sourceSystem": "MDTP",
             |    "taxRegime": "VAT",
-            |    "appealLevel": "01",
             |    "customerReferenceNo": "123456789",
             |    "dateOfAppeal": "2020-01-01T00:00:00",
-            |    "isLPP": false,
+            |    "isLPP": true,
             |    "appealSubmittedBy": "customer",
             |    "appealInformation": {
             |						 "reasonableExcuse": "fireandflood",
@@ -902,22 +1204,28 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
             |		}
             |}
             |""".stripMargin)
-        val result: Future[Result] = controller.submitAppeal(regime, idType, id, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = false)(fakeRequest.withJsonBody(appealsJson))
+        val result: Future[Result] = controller.submitAppeal(
+          regime,
+          idType,
+          id,
+          isLPP = false,
+          penaltyNumber = "123456789",
+          correlationId = correlationId,
+          isMultiAppeal = false
+        )(fakeRequest.withJsonBody(appealsJson))
         status(result) shouldBe OK
       }
 
       "the Json request body can be parsed and the connector returns a successful response for technical issues" in new Setup {
-        when(mockAppealsService.submitAppeal(any(), any(), any(), any())(any()))
+        when(mockAppealsService.submitAppeal(any(), any(), any(), any(), any())(any()))
           .thenReturn(Future.successful(Right(appealResponseModel)))
-        val appealsJson: JsValue = Json.parse(
-          """
+        val appealsJson: JsValue = Json.parse("""
             |{
             |    "sourceSystem": "MDTP",
             |    "taxRegime": "VAT",
-            |    "appealLevel": "01",
             |    "customerReferenceNo": "123456789",
             |    "dateOfAppeal": "2020-01-01T00:00:00",
-            |    "isLPP": false,
+            |    "isLPP": true,
             |    "appealSubmittedBy": "customer",
             |    "appealInformation": {
             |						 "reasonableExcuse": "technicalIssue",
@@ -928,20 +1236,26 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
             |		}
             |}
             |""".stripMargin)
-        val result: Future[Result] = controller.submitAppeal(regime, idType, id, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = false)(fakeRequest.withJsonBody(appealsJson))
+        val result: Future[Result] = controller.submitAppeal(
+          regime,
+          idType,
+          id,
+          isLPP = false,
+          penaltyNumber = "123456789",
+          correlationId = correlationId,
+          isMultiAppeal = false
+        )(fakeRequest.withJsonBody(appealsJson))
         status(result) shouldBe OK
       }
 
       "the Json request body can be parsed and the connector returns a successful response for health" when {
         "there was no hospital stay" in new Setup {
-          when(mockAppealsService.submitAppeal(any(), any(), any(), any())(any()))
+          when(mockAppealsService.submitAppeal(any(), any(), any(), any(), any())(any()))
             .thenReturn(Future.successful(Right(appealResponseModel)))
-          val appealsJson: JsValue = Json.parse(
-            """
+          val appealsJson: JsValue = Json.parse("""
               |{
               |    "sourceSystem": "MDTP",
               |    "taxRegime": "VAT",
-            |    "appealLevel": "01",
               |    "customerReferenceNo": "123456789",
               |    "dateOfAppeal": "2020-01-01T00:00:00",
               |    "isLPP": true,
@@ -956,19 +1270,25 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
               |		}
               |}
               |""".stripMargin)
-          val result: Future[Result] = controller.submitAppeal(regime, idType, id, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = false)(fakeRequest.withJsonBody(appealsJson))
+          val result: Future[Result] = controller.submitAppeal(
+            regime,
+            idType,
+            id,
+            isLPP = false,
+            penaltyNumber = "123456789",
+            correlationId = correlationId,
+            isMultiAppeal = false
+          )(fakeRequest.withJsonBody(appealsJson))
           status(result) shouldBe OK
         }
 
         "there is an ongoing hospital stay" in new Setup {
-          when(mockAppealsService.submitAppeal(any(), any(), any(), any())(any()))
+          when(mockAppealsService.submitAppeal(any(), any(), any(), any(), any())(any()))
             .thenReturn(Future.successful(Right(appealResponseModel)))
-          val appealsJson: JsValue = Json.parse(
-            """
+          val appealsJson: JsValue = Json.parse("""
               |{
               |    "sourceSystem": "MDTP",
               |    "taxRegime": "VAT",
-            |    "appealLevel": "01",
               |    "customerReferenceNo": "123456789",
               |    "dateOfAppeal": "2020-01-01T00:00:00",
               |    "isLPP": true,
@@ -983,19 +1303,25 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
               |		}
               |}
               |""".stripMargin)
-          val result: Future[Result] = controller.submitAppeal(regime, idType, id, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = false)(fakeRequest.withJsonBody(appealsJson))
+          val result: Future[Result] = controller.submitAppeal(
+            regime,
+            idType,
+            id,
+            isLPP = false,
+            penaltyNumber = "123456789",
+            correlationId = correlationId,
+            isMultiAppeal = false
+          )(fakeRequest.withJsonBody(appealsJson))
           status(result) shouldBe OK
         }
 
         "there was a hospital stay that has ended" in new Setup {
-          when(mockAppealsService.submitAppeal(any(), any(), any(), any())(any()))
+          when(mockAppealsService.submitAppeal(any(), any(), any(), any(), any())(any()))
             .thenReturn(Future.successful(Right(appealResponseModel)))
-          val appealsJson: JsValue = Json.parse(
-            """
+          val appealsJson: JsValue = Json.parse("""
               |{
               |    "sourceSystem": "MDTP",
               |    "taxRegime": "VAT",
-            |    "appealLevel": "01",
               |    "customerReferenceNo": "123456789",
               |    "dateOfAppeal": "2020-01-01T00:00:00",
               |    "isLPP": true,
@@ -1011,22 +1337,28 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
               |		}
               |}
               |""".stripMargin)
-          val result: Future[Result] = controller.submitAppeal(regime, idType, id, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = false)(fakeRequest.withJsonBody(appealsJson))
+          val result: Future[Result] = controller.submitAppeal(
+            regime,
+            idType,
+            id,
+            isLPP = false,
+            penaltyNumber = "123456789",
+            correlationId = correlationId,
+            isMultiAppeal = false
+          )(fakeRequest.withJsonBody(appealsJson))
           status(result) shouldBe OK
         }
 
         "the JSON request body can be parsed and the appeal is a LPP" in new Setup {
-          when(mockAppealsService.submitAppeal(any(), any(), any(), any())(any()))
+          when(mockAppealsService.submitAppeal(any(), any(), any(), any(), any())(any()))
             .thenReturn(Future.successful(Right(appealResponseModel)))
-          val appealsJson: JsValue = Json.parse(
-            """
+          val appealsJson: JsValue = Json.parse("""
               |{
               |    "sourceSystem": "MDTP",
               |    "taxRegime": "VAT",
-              |    "appealLevel": "01",
               |    "customerReferenceNo": "123456789",
               |    "dateOfAppeal": "2020-01-01T00:00:00",
-              |    "isLPP": false,
+              |    "isLPP": true,
               |    "appealSubmittedBy": "customer",
               |    "appealInformation": {
               |						"reasonableExcuse": "crime",
@@ -1037,7 +1369,15 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
               |		}
               |}
               |""".stripMargin)
-          val result: Future[Result] = controller.submitAppeal(regime, idType, id, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = false)(fakeRequest.withJsonBody(appealsJson))
+          val result: Future[Result] = controller.submitAppeal(
+            regime,
+            idType,
+            id,
+            isLPP = true,
+            penaltyNumber = "123456789",
+            correlationId = correlationId,
+            isMultiAppeal = false
+          )(fakeRequest.withJsonBody(appealsJson))
           status(result) shouldBe OK
         }
       }
@@ -1045,18 +1385,21 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
 
     "when the appeal is not part of a multi appeal" should {
       "return 200 (OK) even if the file notification call fails (5xx response)" in new Setup {
-        when(mockAppealsService.submitAppeal(any(), any(), any(), any())(any()))
+        when(mockAppealsService.submitAppeal(any(), any(), any(), any(), any())(any()))
           .thenReturn(Future.successful(Right(appealResponseModel)))
         when(mockFileNotificationConnector.postFileNotifications(any())(any()))
-          .thenReturn(Future.successful(HttpResponse.apply(INTERNAL_SERVER_ERROR, "")))
-        val argumentCaptorForAuditModel = ArgumentCaptor.forClass(classOf[PenaltyAppealFileNotificationStorageFailureModel])
-        when(mockAppealsService.createSDESNotifications(any(), any())).thenReturn(sampleSDESNotifications)
-        val appealsJson: JsValue = Json.parse(
-          """
+          .thenReturn(
+            Future.successful(HttpResponse.apply(INTERNAL_SERVER_ERROR, ""))
+          )
+        val argumentCaptorForAuditModel = ArgumentCaptor.forClass(
+          classOf[PenaltyAppealFileNotificationStorageFailureModel]
+        )
+        when(mockAppealsService.createSDESNotifications(any(), any()))
+          .thenReturn(sampleSDESNotifications)
+        val appealsJson: JsValue = Json.parse("""
             |{
             |    "sourceSystem": "MDTP",
             |    "taxRegime": "VAT",
-            |    "appealLevel": "01",
             |    "customerReferenceNo": "123456789",
             |    "dateOfAppeal": "2020-01-01T00:00:00",
             |    "isLPP": true,
@@ -1089,32 +1432,47 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
             |		}
             |}
             |""".stripMargin)
-        withCaptureOfLoggingFrom(logger) {
-          logs => {
-            val result: Result = await(controller.submitAppeal(regime, idType, id, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = false)(fakeRequest.withJsonBody(appealsJson)))
-            result.header.status shouldBe OK
-            eventually {
-              verify(mockAuditService, times(1)).audit(argumentCaptorForAuditModel.capture())(any(), any(), any())
-              logs.exists(_.getMessage.contains(PagerDutyKeys.RECEIVED_5XX_FROM_FILE_NOTIFICATION_ORCHESTRATOR.toString)) shouldBe true
-            }
+        withCaptureOfLoggingFrom(logger) { logs =>
+          val result: Result = await(
+            controller.submitAppeal(
+              regime,
+              idType,
+              id,
+              isLPP = false,
+              penaltyNumber = "123456789",
+              correlationId = correlationId,
+              isMultiAppeal = false
+            )(fakeRequest.withJsonBody(appealsJson))
+          )
+          result.header.status shouldBe OK
+          eventually {
+            verify(mockAuditService, times(1)).audit(
+              argumentCaptorForAuditModel.capture()
+            )(any(), any(), any())
+            logs.exists(
+              _.getMessage.contains(
+                PagerDutyKeys.RECEIVED_5XX_FROM_FILE_NOTIFICATION_ORCHESTRATOR.toString
+              )
+            ) shouldBe true
           }
         }
       }
 
       "return 200 (OK) even if the file notification call fails (4xx response) and audit the storage failure" in new Setup {
-        when(mockAppealsService.submitAppeal(any(), any(), any(), any())(any()))
+        when(mockAppealsService.submitAppeal(any(), any(), any(), any(), any())(any()))
           .thenReturn(Future.successful(Right(appealResponseModel)))
         when(mockFileNotificationConnector.postFileNotifications(any())(any()))
           .thenReturn(Future.successful(HttpResponse.apply(BAD_REQUEST, "")))
-        val argumentCaptorForAuditModel = ArgumentCaptor.forClass(classOf[PenaltyAppealFileNotificationStorageFailureModel])
-        when(mockAppealsService.createSDESNotifications(any(), any())).thenReturn(sampleSDESNotifications)
+        val argumentCaptorForAuditModel = ArgumentCaptor.forClass(
+          classOf[PenaltyAppealFileNotificationStorageFailureModel]
+        )
+        when(mockAppealsService.createSDESNotifications(any(), any()))
+          .thenReturn(sampleSDESNotifications)
 
-        val appealsJson: JsValue = Json.parse(
-          """
+        val appealsJson: JsValue = Json.parse("""
             |{
             |    "sourceSystem": "MDTP",
             |    "taxRegime": "VAT",
-            |    "appealLevel": "01",
             |    "customerReferenceNo": "123456789",
             |    "dateOfAppeal": "2020-01-01T00:00:00",
             |    "isLPP": true,
@@ -1147,34 +1505,51 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
             |		}
             |}
             |""".stripMargin)
-        withCaptureOfLoggingFrom(logger) {
-          logs => {
-            val result: Result = await(controller.submitAppeal(regime, idType, id, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = false)(fakeRequest.withJsonBody(appealsJson)))
-            result.header.status shouldBe OK
-            eventually {
-              verify(mockAuditService, times(1)).audit(argumentCaptorForAuditModel.capture())(any(), any(), any())
-              logs.exists(_.getMessage.contains(PagerDutyKeys.RECEIVED_4XX_FROM_FILE_NOTIFICATION_ORCHESTRATOR.toString)) shouldBe true
-            }
+        withCaptureOfLoggingFrom(logger) { logs =>
+          val result: Result = await(
+            controller.submitAppeal(
+              regime,
+              idType,
+              id,
+              isLPP = false,
+              penaltyNumber = "123456789",
+              correlationId = correlationId,
+              isMultiAppeal = false
+            )(fakeRequest.withJsonBody(appealsJson))
+          )
+          result.header.status shouldBe OK
+          eventually {
+            verify(mockAuditService, times(1)).audit(
+              argumentCaptorForAuditModel.capture()
+            )(any(), any(), any())
+            logs.exists(
+              _.getMessage.contains(
+                PagerDutyKeys.RECEIVED_4XX_FROM_FILE_NOTIFICATION_ORCHESTRATOR.toString
+              )
+            ) shouldBe true
           }
         }
 
-        argumentCaptorForAuditModel.getValue shouldBe PenaltyAppealFileNotificationStorageFailureModel(sampleSDESNotifications)
+        argumentCaptorForAuditModel.getValue shouldBe PenaltyAppealFileNotificationStorageFailureModel(
+          sampleSDESNotifications
+        )
       }
 
       "return 200 (OK) even if the file notification call fails (with exception) and audit the storage failure" in new Setup {
-        when(mockAppealsService.submitAppeal(any(), any(), any(), any())(any()))
+        when(mockAppealsService.submitAppeal(any(), any(), any(), any(), any())(any()))
           .thenReturn(Future.successful(Right(appealResponseModel)))
         when(mockFileNotificationConnector.postFileNotifications(any())(any()))
           .thenReturn(Future.failed(new Exception("failed")))
-        val argumentCaptorForAuditModel = ArgumentCaptor.forClass(classOf[PenaltyAppealFileNotificationStorageFailureModel])
-        when(mockAppealsService.createSDESNotifications(any(), any())).thenReturn(sampleSDESNotifications)
+        val argumentCaptorForAuditModel = ArgumentCaptor.forClass(
+          classOf[PenaltyAppealFileNotificationStorageFailureModel]
+        )
+        when(mockAppealsService.createSDESNotifications(any(), any()))
+          .thenReturn(sampleSDESNotifications)
 
-        val appealsJson: JsValue = Json.parse(
-          """
+        val appealsJson: JsValue = Json.parse("""
             |{
             |    "sourceSystem": "MDTP",
             |    "taxRegime": "VAT",
-            |    "appealLevel": "01",
             |    "customerReferenceNo": "123456789",
             |    "dateOfAppeal": "2020-01-01T00:00:00",
             |    "isLPP": true,
@@ -1207,35 +1582,50 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
             |		}
             |}
             |""".stripMargin)
-        withCaptureOfLoggingFrom(logger) {
-          logs => {
-            val result: Result = await(controller.submitAppeal(regime, idType, id, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = false)(fakeRequest.withJsonBody(appealsJson)))
-            result.header.status shouldBe OK
-            eventually {
-              verify(mockAuditService, times(1)).audit(argumentCaptorForAuditModel.capture())(any(), any(), any())
-            }
+        withCaptureOfLoggingFrom(logger) { logs =>
+          val result: Result = await(
+            controller.submitAppeal(
+              regime,
+              idType,
+              id,
+              isLPP = false,
+              penaltyNumber = "123456789",
+              correlationId = correlationId,
+              isMultiAppeal = false
+            )(fakeRequest.withJsonBody(appealsJson))
+          )
+          result.header.status shouldBe OK
+          eventually {
+            verify(mockAuditService, times(1)).audit(
+              argumentCaptorForAuditModel.capture()
+            )(any(), any(), any())
           }
         }
 
-        argumentCaptorForAuditModel.getValue shouldBe PenaltyAppealFileNotificationStorageFailureModel(sampleSDESNotifications)
+        argumentCaptorForAuditModel.getValue shouldBe PenaltyAppealFileNotificationStorageFailureModel(
+          sampleSDESNotifications
+        )
       }
     }
 
     "when the appeal is part of a multi appeal" should {
       "return a partial success response (207) if the file notification call fails (5xx response)" in new Setup {
-        when(mockAppealsService.submitAppeal(any(), any(), any(), any())(any()))
+        when(mockAppealsService.submitAppeal(any(), any(), any(), any(), any())(any()))
           .thenReturn(Future.successful(Right(appealResponseModel)))
         when(mockFileNotificationConnector.postFileNotifications(any())(any()))
-          .thenReturn(Future.successful(HttpResponse.apply(INTERNAL_SERVER_ERROR, "")))
-        val argumentCaptorForAuditModel = ArgumentCaptor.forClass(classOf[PenaltyAppealFileNotificationStorageFailureModel])
-        when(mockAppealsService.createSDESNotifications(any(), any())).thenReturn(sampleSDESNotifications)
+          .thenReturn(
+            Future.successful(HttpResponse.apply(INTERNAL_SERVER_ERROR, ""))
+          )
+        val argumentCaptorForAuditModel = ArgumentCaptor.forClass(
+          classOf[PenaltyAppealFileNotificationStorageFailureModel]
+        )
+        when(mockAppealsService.createSDESNotifications(any(), any()))
+          .thenReturn(sampleSDESNotifications)
 
-        val appealsJson: JsValue = Json.parse(
-          """
+        val appealsJson: JsValue = Json.parse("""
             |{
             |    "sourceSystem": "MDTP",
             |    "taxRegime": "VAT",
-            |    "appealLevel": "01",
             |    "customerReferenceNo": "123456789",
             |    "dateOfAppeal": "2020-01-01T00:00:00",
             |    "isLPP": true,
@@ -1273,33 +1663,48 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
           "status" -> MULTI_STATUS,
           "error" -> s"Appeal submitted (case ID: PR-123456789, correlation ID: $correlationId) but received 500 response from file notification orchestrator"
         )
-        withCaptureOfLoggingFrom(logger) {
-          logs => {
-            val result: Result = await(controller.submitAppeal(regime, idType, id, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = true)(fakeRequest.withJsonBody(appealsJson)))
-            result.header.status shouldBe MULTI_STATUS
-            contentAsJson(Future(result)) shouldBe expectedJsonResponse
-            eventually {
-              verify(mockAuditService, times(1)).audit(argumentCaptorForAuditModel.capture())(any(), any(), any())
-              logs.exists(_.getMessage.contains(PagerDutyKeys.RECEIVED_5XX_FROM_FILE_NOTIFICATION_ORCHESTRATOR.toString)) shouldBe true
-            }
+        withCaptureOfLoggingFrom(logger) { logs =>
+          val result: Result = await(
+            controller.submitAppeal(
+              regime,
+              idType,
+              id,
+              isLPP = false,
+              penaltyNumber = "123456789",
+              correlationId = correlationId,
+              isMultiAppeal = true
+            )(fakeRequest.withJsonBody(appealsJson))
+          )
+          result.header.status shouldBe MULTI_STATUS
+          contentAsJson(Future(result)) shouldBe expectedJsonResponse
+          eventually {
+            verify(mockAuditService, times(1)).audit(
+              argumentCaptorForAuditModel.capture()
+            )(any(), any(), any())
+            logs.exists(
+              _.getMessage.contains(
+                PagerDutyKeys.RECEIVED_5XX_FROM_FILE_NOTIFICATION_ORCHESTRATOR.toString
+              )
+            ) shouldBe true
           }
         }
       }
 
       "return a 207 (MULTI_STATUS) if the file notification call fails (4xx response) and audit the storage failure" in new Setup {
-        when(mockAppealsService.submitAppeal(any(), any(), any(), any())(any()))
+        when(mockAppealsService.submitAppeal(any(), any(), any(), any(), any())(any()))
           .thenReturn(Future.successful(Right(appealResponseModel)))
         when(mockFileNotificationConnector.postFileNotifications(any())(any()))
           .thenReturn(Future.successful(HttpResponse.apply(BAD_REQUEST, "")))
-        val argumentCaptorForAuditModel = ArgumentCaptor.forClass(classOf[PenaltyAppealFileNotificationStorageFailureModel])
-        when(mockAppealsService.createSDESNotifications(any(), any())).thenReturn(sampleSDESNotifications)
+        val argumentCaptorForAuditModel = ArgumentCaptor.forClass(
+          classOf[PenaltyAppealFileNotificationStorageFailureModel]
+        )
+        when(mockAppealsService.createSDESNotifications(any(), any()))
+          .thenReturn(sampleSDESNotifications)
 
-        val appealsJson: JsValue = Json.parse(
-          """
+        val appealsJson: JsValue = Json.parse("""
             |{
             |    "sourceSystem": "MDTP",
             |    "taxRegime": "VAT",
-            |    "appealLevel": "01",
             |    "customerReferenceNo": "123456789",
             |    "dateOfAppeal": "2020-01-01T00:00:00",
             |    "isLPP": true,
@@ -1337,35 +1742,52 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
           "status" -> MULTI_STATUS,
           "error" -> s"Appeal submitted (case ID: PR-123456789, correlation ID: $correlationId) but received 400 response from file notification orchestrator"
         )
-        withCaptureOfLoggingFrom(logger) {
-          logs => {
-            val result: Result = await(controller.submitAppeal(regime, idType, id, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = true)(fakeRequest.withJsonBody(appealsJson)))
-            result.header.status shouldBe MULTI_STATUS
-            contentAsJson(Future(result)) shouldBe expectedJsonResponse
-            eventually {
-              verify(mockAuditService, times(1)).audit(argumentCaptorForAuditModel.capture())(any(), any(), any())
-              logs.exists(_.getMessage.contains(PagerDutyKeys.RECEIVED_4XX_FROM_FILE_NOTIFICATION_ORCHESTRATOR.toString)) shouldBe true
-            }
+        withCaptureOfLoggingFrom(logger) { logs =>
+          val result: Result = await(
+            controller.submitAppeal(
+              regime,
+              idType,
+              id,
+              isLPP = false,
+              penaltyNumber = "123456789",
+              correlationId = correlationId,
+              isMultiAppeal = true
+            )(fakeRequest.withJsonBody(appealsJson))
+          )
+          result.header.status shouldBe MULTI_STATUS
+          contentAsJson(Future(result)) shouldBe expectedJsonResponse
+          eventually {
+            verify(mockAuditService, times(1)).audit(
+              argumentCaptorForAuditModel.capture()
+            )(any(), any(), any())
+            logs.exists(
+              _.getMessage.contains(
+                PagerDutyKeys.RECEIVED_4XX_FROM_FILE_NOTIFICATION_ORCHESTRATOR.toString
+              )
+            ) shouldBe true
           }
         }
 
-        argumentCaptorForAuditModel.getValue shouldBe PenaltyAppealFileNotificationStorageFailureModel(sampleSDESNotifications)
+        argumentCaptorForAuditModel.getValue shouldBe PenaltyAppealFileNotificationStorageFailureModel(
+          sampleSDESNotifications
+        )
       }
 
       "return 207 (MULTI_STATUS) if the file notification call fails (with exception) and audit the storage failure" in new Setup {
-        when(mockAppealsService.submitAppeal(any(), any(), any(), any())(any()))
+        when(mockAppealsService.submitAppeal(any(), any(), any(), any(), any())(any()))
           .thenReturn(Future.successful(Right(appealResponseModel)))
         when(mockFileNotificationConnector.postFileNotifications(any())(any()))
           .thenReturn(Future.failed(new Exception("failed")))
-        val argumentCaptorForAuditModel = ArgumentCaptor.forClass(classOf[PenaltyAppealFileNotificationStorageFailureModel])
-        when(mockAppealsService.createSDESNotifications(any(), any())).thenReturn(sampleSDESNotifications)
+        val argumentCaptorForAuditModel = ArgumentCaptor.forClass(
+          classOf[PenaltyAppealFileNotificationStorageFailureModel]
+        )
+        when(mockAppealsService.createSDESNotifications(any(), any()))
+          .thenReturn(sampleSDESNotifications)
 
-        val appealsJson: JsValue = Json.parse(
-          """
+        val appealsJson: JsValue = Json.parse("""
             |{
             |    "sourceSystem": "MDTP",
             |    "taxRegime": "VAT",
-            |    "appealLevel": "01",
             |    "customerReferenceNo": "123456789",
             |    "dateOfAppeal": "2020-01-01T00:00:00",
             |    "isLPP": true,
@@ -1401,21 +1823,35 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
         val expectedJsonResponse: JsObject = Json.obj(
           "caseId" -> "PR-123456789",
           "status" -> MULTI_STATUS,
-          "error" -> s"Appeal submitted (case ID: PR-123456789, correlation ID: $correlationId) but failed to store file uploads with unknown error"
+          "error"  -> s"Appeal submitted (case ID: PR-123456789, correlation ID: $correlationId) but failed to store file uploads with unknown error"
         )
-        withCaptureOfLoggingFrom(logger) {
-          logs => {
-            val result: Result = await(controller.submitAppeal(regime, idType, id, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = true)(fakeRequest.withJsonBody(appealsJson)))
-            result.header.status shouldBe MULTI_STATUS
-            logs.map(_.getMessage) should contain (s"[RegimeAppealsController][submitAppeal] Unable to store file notification for user with enrolment: VATC~VRN~123456789 penalty 123456789 (correlation ID: $correlationId) - An unknown exception occurred when attempting to store file notifications, with error: failed") 
-            contentAsJson(Future(result)) shouldBe expectedJsonResponse
-            eventually {
-              verify(mockAuditService, times(1)).audit(argumentCaptorForAuditModel.capture())(any(), any(), any())
-            }
+        withCaptureOfLoggingFrom(logger) { logs =>
+          val result: Result = await(
+            controller.submitAppeal(
+              regime,
+              idType,
+              id,
+              isLPP = false,
+              penaltyNumber = "123456789",
+              correlationId = correlationId,
+              isMultiAppeal = true
+            )(fakeRequest.withJsonBody(appealsJson))
+          )
+          result.header.status shouldBe MULTI_STATUS
+          logs.map(_.getMessage) should contain(
+            s"[RegimeAppealsController][submitAppeal] Unable to store file notification for user with enrolment: VATC~VRN~123456789 penalty 123456789 (correlation ID: $correlationId) - An unknown exception occurred when attempting to store file notifications, with error: failed"
+          )
+          contentAsJson(Future(result)) shouldBe expectedJsonResponse
+          eventually {
+            verify(mockAuditService, times(1)).audit(
+              argumentCaptorForAuditModel.capture()
+            )(any(), any(), any())
           }
         }
 
-        argumentCaptorForAuditModel.getValue shouldBe PenaltyAppealFileNotificationStorageFailureModel(sampleSDESNotifications)
+        argumentCaptorForAuditModel.getValue shouldBe PenaltyAppealFileNotificationStorageFailureModel(
+          sampleSDESNotifications
+        )
       }
     }
   }
@@ -1435,19 +1871,20 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
       penaltyAmountOutstanding = Some(100),
       penaltyAmountPaid = Some(13.45),
       penaltyAmountPosted = 113.45,
-      LPP1LRDays = None,
-      LPP1HRDays = None,
-      LPP2Days = None,
-      LPP1HRCalculationAmount = None,
-      LPP1LRCalculationAmount = None,
-      LPP2Percentage = None,
-      LPP1LRPercentage = None,
-      LPP1HRPercentage = None,
+      lpp1LRDays = None,
+      lpp1HRDays = None,
+      lpp2Days = None,
+      lpp1HRCalculationAmt = None,
+      lpp1LRCalculationAmt = None,
+      lpp2Percentage = None,
+      lpp1LRPercentage = None,
+      lpp1HRPercentage = None,
       penaltyChargeDueDate = Some(LocalDate.of(2022, 8, 7)),
       principalChargeLatestClearing = Some(LocalDate.of(2022, 10, 1)),
-      metadata = LPPDetailsMetadata(),
+      principalChargeDocNumber = None,
+      principalChargeSubTr = None,
       penaltyAmountAccruing = BigDecimal(0),
-      principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
+      principalChargeMainTr = MainTransactionEnum.VATReturnCharge,
       vatOutstandingAmount = Some(BigDecimal(123.45))
     )
 
@@ -1465,57 +1902,72 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
       penaltyAmountOutstanding = Some(100),
       penaltyAmountPaid = Some(13.44),
       penaltyAmountPosted = 113.44,
-      LPP1LRDays = None,
-      LPP1HRDays = None,
-      LPP2Days = None,
-      LPP1HRCalculationAmount = None,
-      LPP1LRCalculationAmount = None,
-      LPP2Percentage = None,
-      LPP1LRPercentage = None,
-      LPP1HRPercentage = None,
+      lpp1LRDays = None,
+      lpp1HRDays = None,
+      lpp2Days = None,
+      lpp1HRCalculationAmt = None,
+      lpp1LRCalculationAmt = None,
+      lpp2Percentage = None,
+      lpp1LRPercentage = None,
+      lpp1HRPercentage = None,
       penaltyChargeDueDate = Some(LocalDate.of(2022, 8, 7)),
       principalChargeLatestClearing = Some(LocalDate.of(2022, 10, 1)),
-      metadata = LPPDetailsMetadata(),
+      principalChargeDocNumber = None,
+      principalChargeSubTr = None,
       penaltyAmountAccruing = BigDecimal(0),
-      principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
+      principalChargeMainTr = MainTransactionEnum.VATReturnCharge,
       vatOutstandingAmount = Some(BigDecimal(123.45))
     )
 
-    val getPenaltyDetailsOnePenalty: GetPenaltyDetails = GetPenaltyDetails(
+    val getPenaltyDetailsOnePenalty: PenaltyDetails = PenaltyDetails(
+      processingDate = instant,
       totalisations = None,
       lateSubmissionPenalty = None,
-      latePaymentPenalty = Some(LatePaymentPenalty(Some(Seq(sampleLPP1)))),
+      latePaymentPenalty = Some(LatePaymentPenalty(Some(Seq(sampleLPP1)), manualLPPIndicator = false)),
       breathingSpace = None
     )
 
-    val getPenaltyDetailsTwoPenalties: GetPenaltyDetails = GetPenaltyDetails(
+    val getPenaltyDetailsTwoPenalties: PenaltyDetails = PenaltyDetails(
+      processingDate = instant,
       totalisations = None,
       lateSubmissionPenalty = None,
-      latePaymentPenalty = Some(LatePaymentPenalty(Some(Seq(sampleLPP2, sampleLPP1)))),
+      latePaymentPenalty = Some(LatePaymentPenalty(Some(Seq(sampleLPP2, sampleLPP1)), manualLPPIndicator = false)),
       breathingSpace = None
     )
 
     s"return NO_CONTENT (${Status.NO_CONTENT})" when {
       "the appeal service returns None" in new Setup {
-  
+
         val vrn: AgnosticEnrolmentKey = AgnosticEnrolmentKey(
-          Regime("VATC"), 
+          Regime("VATC"),
           IdType("VRN"),
           Id("123456789")
         )
-        when(mockGetPenaltyDetailsService.getDataFromPenaltyService(ArgumentMatchers.eq(vrn))(ArgumentMatchers.any()))
-          .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetailsOnePenalty))))
-        when(mockAppealsService.findMultiplePenalties(any(), any())).thenReturn(None)
-        val result: Future[Result] = controller.getMultiplePenaltyData("1234567891", regime, idType, id)(fakeRequest)
+        when(
+          mockPenaltyDetailsService.getDataFromPenaltyService(
+            ArgumentMatchers.eq(vrn)
+          )(ArgumentMatchers.any())
+        )
+          .thenReturn(
+            Future.successful(
+              Right(PenaltyDetailsSuccessResponse(getPenaltyDetailsOnePenalty))
+            )
+          )
+        when(mockAppealsService.findMultiplePenalties(any(), any()))
+          .thenReturn(None)
+        val result: Future[Result] =
+          controller.getMultiplePenaltyData("1234567891", regime, idType, id)(
+            fakeRequest
+          )
         status(result) shouldBe Status.NO_CONTENT
       }
     }
 
     s"return OK (${Status.OK})" when {
       "the appeal service returns Some" in new Setup {
-  
+
         val vrn: AgnosticEnrolmentKey = AgnosticEnrolmentKey(
-          Regime("VATC"), 
+          Regime("VATC"),
           IdType("VRN"),
           Id("123456789")
         )
@@ -1528,10 +1980,24 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
           secondPenaltyCommunicationDate = LocalDate.of(2022, 9, 8)
         )
         when(mockAppConfig.getTimeMachineDateTime).thenReturn(LocalDateTime.now)
-        when(mockGetPenaltyDetailsService.getDataFromPenaltyService(ArgumentMatchers.eq(vrn))(ArgumentMatchers.any()))
-          .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetailsTwoPenalties))))
-        when(mockAppealsService.findMultiplePenalties(any(), any())).thenReturn(Some(expectedReturnModel))
-        val result: Future[Result] = controller.getMultiplePenaltyData("1234567892", regime, idType, id)(fakeRequest)
+        when(
+          mockPenaltyDetailsService.getDataFromPenaltyService(
+            ArgumentMatchers.eq(vrn)
+          )(ArgumentMatchers.any())
+        )
+          .thenReturn(
+            Future.successful(
+              Right(
+                PenaltyDetailsSuccessResponse(getPenaltyDetailsTwoPenalties)
+              )
+            )
+          )
+        when(mockAppealsService.findMultiplePenalties(any(), any()))
+          .thenReturn(Some(expectedReturnModel))
+        val result: Future[Result] =
+          controller.getMultiplePenaltyData("1234567892", regime, idType, id)(
+            fakeRequest
+          )
         status(result) shouldBe Status.OK
         contentAsJson(result) shouldBe Json.toJson(expectedReturnModel)
       }
@@ -1539,55 +2005,86 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
 
     s"return ISE (${Status.INTERNAL_SERVER_ERROR})" when {
       "API 1812 call returns malformed data" in new Setup {
-  
+
         val vrn: AgnosticEnrolmentKey = AgnosticEnrolmentKey(
-          Regime("VATC"), 
+          Regime("VATC"),
           IdType("VRN"),
           Id("123456789")
         )
-        when(mockGetPenaltyDetailsService.getDataFromPenaltyService(ArgumentMatchers.eq(vrn))(ArgumentMatchers.any()))
-          .thenReturn(Future.successful(Left(GetPenaltyDetailsMalformed)))
-        withCaptureOfLoggingFrom(logger) {
-          logs => {
-            val result: Future[Result] = controller.getMultiplePenaltyData("1234567891", regime, idType, id)(fakeRequest)
-            status(result) shouldBe Status.INTERNAL_SERVER_ERROR
-            logs.exists(_.getMessage.contains(PagerDutyKeys.MALFORMED_RESPONSE_FROM_1812_API.toString)) shouldBe true
-          }
+        when(
+          mockPenaltyDetailsService.getDataFromPenaltyService(
+            ArgumentMatchers.eq(vrn)
+          )(ArgumentMatchers.any())
+        )
+          .thenReturn(Future.successful(Left(PenaltyDetailsMalformed)))
+        withCaptureOfLoggingFrom(logger) { logs =>
+          val result: Future[Result] = controller.getMultiplePenaltyData(
+            "1234567891",
+            regime,
+            idType,
+            id
+          )(fakeRequest)
+          status(result) shouldBe Status.INTERNAL_SERVER_ERROR
+          logs.exists(
+            _.getMessage.contains(
+              PagerDutyKeys.MALFORMED_RESPONSE_FROM_1812_API.toString
+            )
+          ) shouldBe true
         }
       }
 
       "the call to ETMP fails for some reason" in new Setup {
-  
+
         val vrn: AgnosticEnrolmentKey = AgnosticEnrolmentKey(
-          Regime("VATC"), 
+          Regime("VATC"),
           IdType("VRN"),
           Id("123456789")
         )
-          val regime = Regime("VATC") 
-  val idType = IdType("VRN")
-  val id = Id("123456789")
-        when(mockGetPenaltyDetailsService.getDataFromPenaltyService(ArgumentMatchers.eq(vrn))(ArgumentMatchers.any()))
-          .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(INTERNAL_SERVER_ERROR))))
-        val result: Future[Result] = controller.getMultiplePenaltyData("1", regime, idType, id)(fakeRequest)
+        val regime = Regime("VATC")
+        val idType = IdType("VRN")
+        val id     = Id("123456789")
+        when(
+          mockPenaltyDetailsService.getDataFromPenaltyService(
+            ArgumentMatchers.eq(vrn)
+          )(ArgumentMatchers.any())
+        )
+          .thenReturn(
+            Future.successful(
+              Left(PenaltyDetailsFailureResponse(INTERNAL_SERVER_ERROR))
+            )
+          )
+        val result: Future[Result] =
+          controller.getMultiplePenaltyData("1", regime, idType, id)(
+            fakeRequest
+          )
         status(result) shouldBe Status.INTERNAL_SERVER_ERROR
       }
     }
 
     s"return NOT_FOUND (${Status.NOT_FOUND}) when ETMP can not find the data for the given enrolment key" in new Setup {
 
-        val vrn: AgnosticEnrolmentKey = AgnosticEnrolmentKey(
-          Regime("VATC"), 
-          IdType("VRN"),
-          Id("123456789")
+      val vrn: AgnosticEnrolmentKey = AgnosticEnrolmentKey(
+        Regime("VATC"),
+        IdType("VRN"),
+        Id("123456789")
+      )
+      val regime = Regime("VATC")
+      val idType = IdType("VRN")
+      val id     = Id("123456789")
+      when(
+        mockPenaltyDetailsService.getDataFromPenaltyService(
+          ArgumentMatchers.eq(vrn)
+        )(ArgumentMatchers.any())
+      )
+        .thenReturn(
+          Future.successful(Left(PenaltyDetailsFailureResponse(NOT_FOUND)))
         )
-          val regime = Regime("VATC") 
-  val idType = IdType("VRN")
-  val id = Id("123456789")
-      when(mockGetPenaltyDetailsService.getDataFromPenaltyService(ArgumentMatchers.eq(vrn))(ArgumentMatchers.any()))
-        .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(NOT_FOUND))))
-      val result: Future[Result] = controller.getMultiplePenaltyData("1", regime, idType, id)(fakeRequest)
+      val result: Future[Result] =
+        controller.getMultiplePenaltyData("1", regime, idType, id)(fakeRequest)
       status(result) shouldBe Status.NOT_FOUND
-      contentAsString(result) shouldBe s"A downstream call returned 404 for ${vrn}"
+      contentAsString(
+        result
+      ) shouldBe s"A downstream call returned 404 for ${vrn}"
     }
   }
 }

@@ -92,7 +92,7 @@ class AppConfigSpec extends AnyWordSpec with ShouldMatchers with FeatureSwitchin
       enableFeatureSwitch(CallPEGA)
       when(mockServicesConfig.baseUrl(ArgumentMatchers.any()))
         .thenReturn("localhost:0000")
-      val result: String = this.config.getAppealSubmissionURL(penaltyNumber = "0000001")
+      val result: String = this.config.getAppealSubmissionURL("HMRC-MTD-VAT~VRN~123456789", isLPP = false, penaltyNumber = "0000001")
       result shouldBe "localhost:0000/penalty/first-stage-appeal/0000001"
     }
 
@@ -100,8 +100,16 @@ class AppConfigSpec extends AnyWordSpec with ShouldMatchers with FeatureSwitchin
       disableFeatureSwitch(CallPEGA)
       when(mockServicesConfig.baseUrl(ArgumentMatchers.any()))
         .thenReturn("localhost:0000")
-      val result: String = this.config.getAppealSubmissionURL(penaltyNumber = "0000001")
-      result shouldBe "localhost:0000/penalties-stub/penalty/first-stage-appeal/0000001"
+      val result: String = this.config.getAppealSubmissionURL("HMRC-MTD-VAT~VRN~123456789", isLPP = false, penaltyNumber = "0000001")
+      result shouldBe "localhost:0000/penalties-stub/appeals/submit?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=false&penaltyNumber=0000001"
+    }
+
+    "call the stub when the feature switch is disabled - for LPP" in new Setup {
+      disableFeatureSwitch(CallPEGA)
+      when(mockServicesConfig.baseUrl(ArgumentMatchers.any()))
+        .thenReturn("localhost:0000")
+      val result: String = this.config.getAppealSubmissionURL("HMRC-MTD-VAT~VRN~123456789", isLPP = true, penaltyNumber = "0000001")
+      result shouldBe "localhost:0000/penalties-stub/appeals/submit?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=true&penaltyNumber=0000001"
     }
   }
 
