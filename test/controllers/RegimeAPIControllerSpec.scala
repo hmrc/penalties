@@ -133,7 +133,8 @@ class RegimeAPIControllerSpec extends SpecBase with FeatureSwitching with LogCap
       ),
       latePaymentPenalty = Some(
         LatePaymentPenalty(
-          Some(
+          manualLPPIndicator = false,
+          lppDetails = Some(
             Seq(
               LPPDetails(
                 penaltyCategory = LPPPenaltyCategoryEnum.SecondPenalty,
@@ -160,9 +161,9 @@ class RegimeAPIControllerSpec extends SpecBase with FeatureSwitching with LogCap
                 penaltyChargeDueDate = Some(LocalDate.of(2022, 1, 1)),
                 principalChargeLatestClearing = None,
                 principalChargeDocNumber = None,
-                principalChargeSubTransaction = None,
+                principalChargeSubTr = None,
                 penaltyAmountAccruing = BigDecimal(100.00),
-                principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
+                principalChargeMainTr = MainTransactionEnum.VATReturnCharge,
                 vatOutstandingAmount = Some(BigDecimal(123.45))
               ),
               LPPDetails(
@@ -190,9 +191,9 @@ class RegimeAPIControllerSpec extends SpecBase with FeatureSwitching with LogCap
                 penaltyChargeDueDate = Some(LocalDate.of(2022, 1, 1)),
                 principalChargeLatestClearing = None,
                 principalChargeDocNumber = None,
-                principalChargeSubTransaction = None,
+                principalChargeSubTr = None,
                 penaltyAmountAccruing = BigDecimal(100.00),
-                principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
+                principalChargeMainTr = MainTransactionEnum.VATReturnCharge,
                 vatOutstandingAmount = Some(BigDecimal(123.45))
               ),
               LPPDetails(
@@ -220,9 +221,9 @@ class RegimeAPIControllerSpec extends SpecBase with FeatureSwitching with LogCap
                 penaltyChargeDueDate = Some(LocalDate.of(2022, 1, 1)),
                 principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
                 principalChargeDocNumber = None,
-                principalChargeSubTransaction = None,
+                principalChargeSubTr = None,
                 penaltyAmountAccruing = BigDecimal(0),
-                principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
+                principalChargeMainTr = MainTransactionEnum.VATReturnCharge,
                 vatOutstandingAmount = Some(BigDecimal(123.45))
               ),
               LPPDetails(
@@ -250,9 +251,9 @@ class RegimeAPIControllerSpec extends SpecBase with FeatureSwitching with LogCap
                 penaltyChargeDueDate = Some(LocalDate.of(2022, 1, 1)),
                 principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
                 principalChargeDocNumber = None,
-                principalChargeSubTransaction = None,
+                principalChargeSubTr = None,
                 penaltyAmountAccruing = BigDecimal(0),
-                principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
+                principalChargeMainTr = MainTransactionEnum.VATReturnCharge,
                 vatOutstandingAmount = Some(BigDecimal(123.45))
               )
             )
@@ -265,7 +266,7 @@ class RegimeAPIControllerSpec extends SpecBase with FeatureSwitching with LogCap
     val latePaymentPenaltyDetails = getPenaltyDetailsFullAPIResponse.latePaymentPenalty.get.lppDetails
 
     val penaltyDetailsWithManualLPP =
-      getPenaltyDetailsFullAPIResponse.latePaymentPenalty.get.copy(lppDetails = latePaymentPenaltyDetails, ManualLPPIndicator = Some(true))
+      getPenaltyDetailsFullAPIResponse.latePaymentPenalty.get.copy(lppDetails = latePaymentPenaltyDetails, manualLPPIndicator = true)
 
     val getPenaltyDetailsWithManualLPP = getPenaltyDetailsFullAPIResponse.copy(latePaymentPenalty = Some(penaltyDetailsWithManualLPP))
 
@@ -793,6 +794,7 @@ class RegimeAPIControllerSpec extends SpecBase with FeatureSwitching with LogCap
     |        ]
     |      },
     |      "lpp": {
+    |        "manualLPPIndicator": false,
     |        "lppDetails": [
     |          {
     |            "penaltyCategory": "LPP1",
@@ -812,7 +814,7 @@ class RegimeAPIControllerSpec extends SpecBase with FeatureSwitching with LogCap
     |            "principalChargeDueDate": "2022-10-30",
     |            "communicationsDate": "2022-10-30",
     |            "penaltyAmountAccruing": 1.11,
-    |            "principalChargeMainTransaction": "4700",
+    |            "principalChargeMainTr": "4700",
     |            "penaltyAmountOutstanding": 99.99,
     |            "penaltyAmountPosted": 0.00,
     |            "penaltyAmountPaid": 1001.45,
@@ -826,7 +828,7 @@ class RegimeAPIControllerSpec extends SpecBase with FeatureSwitching with LogCap
     |            "lpp1HRPercentage": 2.00,
     |            "penaltyChargeDueDate": "2022-10-30",
     |            "principalChargeDocNumber": "DOC1",
-    |            "principalChargeSubTransaction": "SUB1"
+    |            "principalChargeSubTr": "SUB1"
     |          }
     |        ],
     |        "manualLPPIndicator": false

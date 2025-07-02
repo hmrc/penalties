@@ -94,7 +94,8 @@ class RegimePenaltiesFrontendControllerSpec extends SpecBase with LogCapturing w
         lateSubmissionPenalty = None,
         latePaymentPenalty = Some(
           LatePaymentPenalty(
-            Some(
+            manualLPPIndicator = false,
+            lppDetails = Some(
               Seq(
                 lpp2,
                 lpp1PrincipalChargeDueToday.copy(penaltyStatus = LPPPenaltyStatusEnum.Posted),
@@ -122,7 +123,8 @@ class RegimePenaltiesFrontendControllerSpec extends SpecBase with LogCapturing w
         lateSubmissionPenalty = None,
         latePaymentPenalty = Some(
           LatePaymentPenalty(
-            Some(
+            manualLPPIndicator = false,
+            lppDetails = Some(
               Seq(
                 lpp2,
                 lpp1PrincipalChargeDueToday.copy(penaltyStatus = LPPPenaltyStatusEnum.Posted),
@@ -150,14 +152,15 @@ class RegimePenaltiesFrontendControllerSpec extends SpecBase with LogCapturing w
         lateSubmissionPenalty = None,
         latePaymentPenalty = Some(
           LatePaymentPenalty(
-            Some(
+            manualLPPIndicator = false,
+            lppDetails = Some(
               Seq(
                 lpp2.copy(penaltyStatus = LPPPenaltyStatusEnum.Posted,
                   penaltyChargeReference = Some("123456790"),
                   principalChargeDocNumber = Some("123456790"),
-                  principalChargeSubTransaction = Some("123456790"),
+                  principalChargeSubTr = Some("123456790"),
                   principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
-                  principalChargeMainTransaction = VATReturnSecondLPP,
+                  principalChargeMainTr = VATReturnSecondLPP,
                   timeToPay = Some(Seq(TimeToPay(
                     ttpStartDate = Some(LocalDate.of(2022, 1, 1)),
                     ttpEndDate = Some(LocalDate.of(2022, 12, 31))
@@ -166,9 +169,9 @@ class RegimePenaltiesFrontendControllerSpec extends SpecBase with LogCapturing w
                 lpp1PrincipalChargeDueToday.copy(penaltyStatus = LPPPenaltyStatusEnum.Posted,
                   penaltyChargeReference = Some("123456789"),
                   principalChargeDocNumber = Some("123456789"),
-                  principalChargeSubTransaction = Some("123456789"),
+                  principalChargeSubTr = Some("123456789"),
                   principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
-                  principalChargeMainTransaction = VATReturnFirstLPP,
+                  principalChargeMainTr = VATReturnFirstLPP,
                   timeToPay = Some(Seq(TimeToPay(
                     ttpStartDate = Some(LocalDate.of(2022, 1, 1)),
                     ttpEndDate = Some(LocalDate.of(2022, 12, 31))

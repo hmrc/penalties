@@ -497,10 +497,10 @@ class RegimeAppealServiceSpec extends SpecBase with LogCapturing with FeatureSwi
       penaltyChargeDueDate = Some(LocalDate.of(2022, 8, 7)),
       principalChargeLatestClearing = Some(LocalDate.of(2022, 10, 1)),
       penaltyAmountAccruing = BigDecimal(0),
-      principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
+      principalChargeMainTr = MainTransactionEnum.VATReturnCharge,
       vatOutstandingAmount = Some(BigDecimal(123.45)),
       principalChargeDocNumber = None,
-      principalChargeSubTransaction = None,
+      principalChargeSubTr = None,
       timeToPay = None
     )
 
@@ -529,10 +529,10 @@ class RegimeAppealServiceSpec extends SpecBase with LogCapturing with FeatureSwi
       penaltyChargeDueDate = Some(LocalDate.of(2022, 8, 7)),
       principalChargeLatestClearing = Some(LocalDate.of(2022, 10, 1)),
       penaltyAmountAccruing = BigDecimal(0),
-      principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
+      principalChargeMainTr = MainTransactionEnum.VATReturnCharge,
       vatOutstandingAmount = Some(BigDecimal(123.45)),
       principalChargeDocNumber = None,
-      principalChargeSubTransaction = None,
+      principalChargeSubTr = None,
       timeToPay = None
     )
 
@@ -540,7 +540,7 @@ class RegimeAppealServiceSpec extends SpecBase with LogCapturing with FeatureSwi
       processingDate = Instant.now(),
       totalisations = None,
       lateSubmissionPenalty = None,
-      latePaymentPenalty = Some(LatePaymentPenalty(lppDetails = Some(Seq(sampleLPP1)))),
+      latePaymentPenalty = Some(LatePaymentPenalty(lppDetails = Some(Seq(sampleLPP1)), manualLPPIndicator = false)),
       breathingSpace = None
     )
 
@@ -548,7 +548,7 @@ class RegimeAppealServiceSpec extends SpecBase with LogCapturing with FeatureSwi
       processingDate = Instant.now(),
       totalisations = None,
       lateSubmissionPenalty = None,
-      latePaymentPenalty = Some(LatePaymentPenalty(lppDetails = Some(Seq(sampleLPP2, sampleLPP1)))),
+      latePaymentPenalty = Some(LatePaymentPenalty(lppDetails = Some(Seq(sampleLPP2, sampleLPP1)), manualLPPIndicator = false)),
       breathingSpace = None
     )
 
@@ -561,7 +561,7 @@ class RegimeAppealServiceSpec extends SpecBase with LogCapturing with FeatureSwi
           Seq(
             sampleLPP2.copy(communicationsDate = None),
             sampleLPP1.copy(communicationsDate = None)
-          )))),
+          )), manualLPPIndicator = false)),
       breathingSpace = None
     )
 
@@ -577,7 +577,7 @@ class RegimeAppealServiceSpec extends SpecBase with LogCapturing with FeatureSwi
             appealDescription = Some("Some value")
           )))),
           sampleLPP1
-        )))),
+        )), manualLPPIndicator = false)),
       breathingSpace = None
     )
 
@@ -598,7 +598,7 @@ class RegimeAppealServiceSpec extends SpecBase with LogCapturing with FeatureSwi
             communicationsDate = None
           ),
           sampleLPP1
-        )))),
+        )), manualLPPIndicator = false)),
       breathingSpace = None
     )
 
@@ -621,7 +621,7 @@ class RegimeAppealServiceSpec extends SpecBase with LogCapturing with FeatureSwi
           sampleLPP1.copy(
             principalChargeLatestClearing = None
           )
-        )))),
+        )), manualLPPIndicator = false)),
       breathingSpace = None
     )
 

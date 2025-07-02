@@ -108,6 +108,7 @@ class PenaltyDetailsServiceISpec extends IntegrationSpecCommonBase with RegimeET
           )
         ),
         latePaymentPenalty = Some(LatePaymentPenalty(
+          manualLPPIndicator = false,
           lppDetails = Some(
             Seq(
               LPPDetails(
@@ -139,9 +140,9 @@ class PenaltyDetailsServiceISpec extends IntegrationSpecCommonBase with RegimeET
                   ttpEndDate = Some(LocalDate.of(2022, 12, 31))
                 ))),
                 principalChargeDocNumber = Some("DOC1"),
-                principalChargeSubTransaction = Some("SUB1"),
+                principalChargeSubTr = Some("SUB1"),
                 penaltyAmountAccruing = BigDecimal(99.99),
-                principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
+                principalChargeMainTr = MainTransactionEnum.VATReturnCharge,
                 vatOutstandingAmount = None
               )
             )

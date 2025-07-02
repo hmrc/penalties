@@ -128,7 +128,7 @@ class RegimePenaltiesFrontendService @Inject()(getFinancialDetailsService: Finan
                      financialDetailsWithClearedItems: FinancialDetails,
                      financialDetailsWithoutClearedItems: FinancialDetails): PenaltyDetails = {
     val allLPPData = combineLPPData(penaltyDetails, financialDetailsWithClearedItems)
-    val penaltyDetailsWithCombinedLPPs = penaltyDetails.copy(latePaymentPenalty = Some(LatePaymentPenalty(allLPPData)))
+    val penaltyDetailsWithCombinedLPPs = penaltyDetails.copy(latePaymentPenalty = Some(LatePaymentPenalty(allLPPData, penaltyDetails.latePaymentPenalty.map(_.manualLPPIndicator).getOrElse(false))))
     val totalisationsCombined = combineTotalisations(penaltyDetailsWithCombinedLPPs, financialDetailsWithoutClearedItems)
     totalisationsCombined
   }
@@ -150,14 +150,26 @@ class RegimePenaltiesFrontendService @Inject()(getFinancialDetailsService: Finan
           penaltyAmountPosted = manualLPPDetails.documentTotalAmount.get,
           penaltyAmountOutstanding = manualLPPDetails.documentOutstandingAmount,
           penaltyAmountPaid = Some(penaltyAmountPaid),
-          principalChargeMainTransaction = ManualLPP,
+          principalChargeMainTr = ManualLPP,
           principalChargeBillingFrom = penaltyChargeCreationDate,
           principalChargeBillingTo = penaltyChargeCreationDate,
           principalChargeDueDate = penaltyChargeCreationDate,
           timeToPay = None,
           principalChargeDocNumber = None,
-          principalChargeSubTransaction = None,
-          None, None, None, None, None, None, None, None, None, None, None, None, None
+          principalChargeSubTr = None,
+          lpp1LRCalculationAmt = None,
+          lpp1LRDays = None,
+          lpp1LRPercentage = None,
+          lpp1HRCalculationAmt = None,
+          lpp1HRDays = None,
+          lpp1HRPercentage = None,
+          lpp2Days = None,
+          lpp2Percentage = None,
+          penaltyChargeDueDate = None,
+          communicationsDate = None,
+          appealInformation = None,
+          principalChargeLatestClearing = None,
+          vatOutstandingAmount = None
         )
       }
     })
@@ -171,7 +183,7 @@ class RegimePenaltiesFrontendService @Inject()(getFinancialDetailsService: Finan
         penaltyDetails.latePaymentPenalty.flatMap(
           _.lppDetails.map(
             _.map(
-              penalty => penalty.copy(principalChargeMainTransaction = penalty.principalChargeMainTransaction)
+              penalty => penalty.copy(principalChargeMainTr = penalty.principalChargeMainTr)
             ) ++ manualLPPAs1812Models
           )
         )
@@ -179,7 +191,7 @@ class RegimePenaltiesFrontendService @Inject()(getFinancialDetailsService: Finan
         penaltyDetails.latePaymentPenalty.flatMap(
           _.lppDetails.map(
             _.map(
-              penalty => penalty.copy(principalChargeMainTransaction = penalty.principalChargeMainTransaction,
+              penalty => penalty.copy(principalChargeMainTr = penalty.principalChargeMainTr,
                 vatOutstandingAmount = if(vatAmounts.contains(Some(penalty.principalChargeReference))) {
                   vatAmounts(Some(penalty.principalChargeReference))
                 } else None
@@ -193,7 +205,7 @@ class RegimePenaltiesFrontendService @Inject()(getFinancialDetailsService: Finan
 
   private def combineTotalisations(penaltyDetails: PenaltyDetails, financialDetails: FinancialDetails): PenaltyDetails = {
     val totalAmountOfManualLPPs: Option[BigDecimal] = penaltyDetails.latePaymentPenalty.flatMap(
-      _.lppDetails.map(_.filter(_.principalChargeMainTransaction.equals(ManualLPP)).map(
+      _.lppDetails.map(_.filter(_.principalChargeMainTr.equals(ManualLPP)).map(
         _.penaltyAmountOutstanding.getOrElse(BigDecimal(0))).sum)
     ).fold[Option[BigDecimal]](None)(amount => if(amount == BigDecimal(0)) None else Some(amount))
     (financialDetails.totalisation.isDefined, penaltyDetails.totalisations.isDefined) match {

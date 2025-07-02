@@ -48,13 +48,13 @@ trait RegimeLPPDetailsBase {
     penaltyChargeDueDate = Some(LocalDate.of(2022, 10, 30)),
     principalChargeLatestClearing = None,
     principalChargeDocNumber = None,
-    principalChargeSubTransaction = None,
+    principalChargeSubTr = None,
     timeToPay = Some(Seq(TimeToPay(
       ttpStartDate = Some(LocalDate.of(2022, 1, 1)),
       ttpEndDate = Some(LocalDate.of(2022, 12, 31))
     ))),
     penaltyAmountAccruing = BigDecimal(144.21),
-    principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
+    principalChargeMainTr = MainTransactionEnum.VATReturnCharge,
     vatOutstandingAmount = Some(BigDecimal(123.45))
   )
 
@@ -83,13 +83,13 @@ trait RegimeLPPDetailsBase {
     penaltyChargeDueDate = Some(LocalDate.of(2022, 10, 30)),
     principalChargeLatestClearing = None,
     principalChargeDocNumber = None,
-    principalChargeSubTransaction = None,
+    principalChargeSubTr = None,
     timeToPay = Some(Seq(TimeToPay(
       ttpStartDate = Some(LocalDate.of(2022, 1, 1)),
       ttpEndDate = Some(LocalDate.of(2022, 12, 31))
     ))),
     penaltyAmountAccruing = BigDecimal(144.21),
-    principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
+    principalChargeMainTr = MainTransactionEnum.VATReturnCharge,
     vatOutstandingAmount = Some(BigDecimal(123.45))
   )
 

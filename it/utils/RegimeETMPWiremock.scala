@@ -79,6 +79,7 @@ val getPenaltyDetailsWithLSPAndLPPAsJson: JsValue = Json.parse(
      |        ]
      |      },
      |      "lpp": {
+     |        "manualLPPIndicator": false,
      |        "lppDetails": [
      |          {
      |            "penaltyCategory": "LPP1",
@@ -91,7 +92,7 @@ val getPenaltyDetailsWithLSPAndLPPAsJson: JsValue = Json.parse(
      |            "penaltyAmountOutstanding": null,
      |            "penaltyAmountPaid": null,
      |            "penaltyAmountAccruing": 99.99,
-     |            "principalChargeMainTransaction": "4700",
+     |            "principalChargeMainTr": "4700",
      |            "principalChargeBillingFrom": "2022-10-30",
      |            "principalChargeBillingTo": "2022-10-30",
      |            "principalChargeDueDate": "2022-10-30",
@@ -121,7 +122,7 @@ val getPenaltyDetailsWithLSPAndLPPAsJson: JsValue = Json.parse(
      |              }
      |             ],
      |            "principalChargeDocNumber": "DOC1",
-     |            "principalChargeSubTransaction": "SUB1"
+     |            "principalChargeSubTr": "SUB1"
      |          }
      |        ]
      |      },

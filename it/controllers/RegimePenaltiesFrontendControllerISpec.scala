@@ -67,6 +67,7 @@ class RegimePenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase w
       |        "lspDetails": []
       |      },
       |      "lpp": {
+      |        "manualLPPIndicator": false,
       |        "lppDetails": [
       |          {
       |            "penaltyCategory": "LPP1",
@@ -84,7 +85,7 @@ class RegimePenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase w
       |            "penaltyChargeDueDate": "2022-10-30",
       |            "principalChargeReference": "XM002610011594",
       |            "principalChargeDocNumber": "DOC1",
-      |            "principalChargeSubTransaction": "SUB1",
+      |            "principalChargeSubTr": "SUB1",
       |            "principalChargeBillingFrom": "2022-10-30",
       |            "principalChargeBillingTo": "2022-10-30",
       |            "principalChargeDueDate": "2022-10-30",
@@ -94,7 +95,7 @@ class RegimePenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase w
       |                "ttpEndDate": "2022-12-31"
       |              }
       |            ],
-      |            "principalChargeMainTransaction": "4700",
+      |            "principalChargeMainTr": "4700",
       |            "penaltyAmountAccruing": 99.99
       |          }
       |        ]
@@ -157,6 +158,7 @@ class RegimePenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase w
       |        ]
       |      },
       |      "lpp": {
+      |        "manualLPPIndicator": false,
       |        "lppDetails": [
       |          {
       |            "principalChargeDueDate": "2022-10-30",
@@ -183,8 +185,10 @@ class RegimePenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase w
       |            "mainTransaction": "4703",
       |            "lpp2Percentage": 4,
       |            "lpp1LRCalculationAmt": 99.99,
-      |            "principalChargeMainTransaction": "4700",
-      |            "penaltyAmountAccruing": 99.99
+      |            "principalChargeMainTr": "4700",
+      |            "penaltyAmountAccruing": 99.99,
+      |            "principalChargeDocNumber": "DOC1",
+      |            "principalChargeSubTr": "SUB1"
       |          }
       |        ]
       |      },
@@ -249,6 +253,7 @@ class RegimePenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase w
       |        ]
       |      },
       |      "lpp": {
+      |        "manualLPPIndicator": false,
       |        "lppDetails": [
       |          {
       |            "penaltyCategory": "LPP1",
@@ -259,16 +264,26 @@ class RegimePenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase w
       |            "principalChargeBillingTo": "2022-10-30",
       |            "principalChargeDueDate": "2022-10-30",
       |            "penaltyAmountPosted": 0,
+      |            "lpp1LRDays": "15",
+      |            "lpp1HRDays": "31",
+      |            "lpp2Days": "31",
+      |            "lpp1HRCalculationAmt": 99.99,
+      |            "lpp1LRCalculationAmt": 99.99,
       |            "timeToPay": [
       |              {
       |                "ttpStartDate": "2022-01-01",
       |                "ttpEndDate": "2022-12-31"
       |              }
       |            ],
+      |            "lpp2Percentage": 4,
+      |            "lpp1LRPercentage": 2,
+      |            "lpp1HRPercentage": 2,
       |            "penaltyChargeDueDate": "2022-10-30",
       |            "penaltyAmountAccruing": 99.99,
-      |            "principalChargeMainTransaction": "4700",
-      |            "vatOutstandingAmount": 543.21
+      |            "principalChargeMainTr": "4700",
+      |            "vatOutstandingAmount": 543.21,
+      |            "principalChargeDocNumber": "DOC1",
+      |            "principalChargeSubTr": "SUB1"
       |          }
       |        ]
       |      },
@@ -304,6 +319,7 @@ class RegimePenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase w
       |        "lspDetails": []
       |      },
       |      "lpp": {
+      |        "manualLPPIndicator": false,
       |        "lppDetails": [
       |          {
       |            "penaltyCategory": "LPP1",
@@ -314,18 +330,26 @@ class RegimePenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase w
       |            "principalChargeBillingTo": "2022-10-30",
       |            "principalChargeDueDate": "2022-10-30",
       |            "penaltyAmountPosted": 0,
+      |            "lpp1LRDays": "15",
+      |            "lpp1HRDays": "31",
+      |            "lpp2Days": "31",
+      |            "lpp1HRCalculationAmt": 99.99,
+      |            "lpp1LRCalculationAmt": 99.99,
       |            "timeToPay": [
       |              {
       |                "ttpStartDate": "2022-01-01",
       |                "ttpEndDate": "2022-12-31"
       |              }
       |            ],
+      |            "lpp2Percentage": 4,
+      |            "lpp1LRPercentage": 2,
+      |            "lpp1HRPercentage": 2,
       |            "penaltyChargeDueDate": "2022-10-30",
       |            "penaltyAmountAccruing": 99.99,
-      |            "principalChargeMainTransaction": "4700",
+      |            "principalChargeMainTr": "4700",
       |            "vatOutstandingAmount": 543.21,
       |            "principalChargeDocNumber": "DOC1",
-      |            "principalChargeSubTransaction": "SUB1"
+      |            "principalChargeSubTr": "SUB1"
       |          }
       |        ]
       |      },
@@ -358,6 +382,7 @@ class RegimePenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase w
       |        "lspDetails": []
       |      },
       |      "lpp": {
+      |        "manualLPPIndicator": false,
       |        "lppDetails": [
       |          {
       |            "penaltyCategory": "LPP1",
@@ -368,18 +393,26 @@ class RegimePenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase w
       |            "principalChargeBillingTo": "2022-10-30",
       |            "principalChargeDueDate": "2022-10-30",
       |            "penaltyAmountPosted": 0,
+      |            "lpp1LRDays": "15",
+      |            "lpp1HRDays": "31",
+      |            "lpp2Days": "31",
+      |            "lpp1HRCalculationAmt": 99.99,
+      |            "lpp1LRCalculationAmt": 99.99,
       |            "timeToPay": [
       |              {
       |                "ttpStartDate": "2022-01-01",
       |                "ttpEndDate": "2022-12-31"
       |              }
       |            ],
+      |            "lpp2Percentage": 4,
+      |            "lpp1LRPercentage": 2,
+      |            "lpp1HRPercentage": 2,
       |            "penaltyChargeDueDate": "2022-10-30",
       |            "penaltyAmountAccruing": 99.99,
-      |            "principalChargeMainTransaction": "4700",
+      |            "principalChargeMainTr": "4700",
       |            "vatOutstandingAmount": 543.21,
       |            "principalChargeDocNumber": "DOC1",
-      |            "principalChargeSubTransaction": "SUB1"
+      |            "principalChargeSubTr": "SUB1"
       |          }
       |        ]
       |      },
@@ -403,6 +436,7 @@ class RegimePenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase w
       |      },
       |      "lsp": null,
       |      "lpp": {
+      |        "manualLPPIndicator": false,
       |        "lppDetails": [
       |          {
       |            "penaltyCategory": "MANUAL",
@@ -416,7 +450,7 @@ class RegimePenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase w
       |            "penaltyAmountPosted": 100,
       |            "penaltyAmountPaid": 45,
       |            "penaltyAmountAccruing": 0,
-      |            "principalChargeMainTransaction": "4787"
+      |            "principalChargeMainTr": "4787"
       |          }
       |        ]
       |      },
@@ -441,7 +475,7 @@ class RegimePenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase w
       |        "totalAccountAccruingInterest": 43.21
       |      },
       |      "lsp": null,
-      |      "lpp": { "lppDetails": [] },
+      |      "lpp": { "lppDetails": [], "manualLPPIndicator": false },
       |      "breathingSpace": null
       |    }
       |  }
@@ -533,7 +567,7 @@ class RegimePenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase w
             |        "lppEstimatedTotal": 15.26
             |      },
             |      "lsp": null,
-            |      "lpp": { "lppDetails": [] },
+            |      "lpp": { "lppDetails": [], "manualLPPIndicator": false },
             |      "breathingSpace": null
             |    }
             |  }
@@ -723,6 +757,7 @@ class RegimePenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase w
           |        ]
           |      },
           |      "lpp":{
+          |        "manualLPPIndicator": false,
           |        "lppDetails":[
           |          {
           |            "penaltyCategory": "LPP1",
@@ -745,10 +780,10 @@ class RegimePenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase w
           |            "penaltyAmountPosted": 0,
           |            "penaltyChargeDueDate": "2022-10-30",
           |            "penaltyAmountAccruing": 99.99,
-          |            "principalChargeMainTransaction": "4700",
+          |            "principalChargeMainTr": "4700",
           |            "vatOutstandingAmount": 543.21,
           |            "principalChargeDocNumber": "DOC1",
-          |            "principalChargeSubTransaction": "SUB1"
+          |            "principalChargeSubTr": "SUB1"
           |          }
           |        ]
           |      },
@@ -817,6 +852,7 @@ class RegimePenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase w
           |        ]
           |      },
           |      "lpp":{
+          |        "manualLPPIndicator": false,
           |        "lppDetails":[
           |          {
           |            "penaltyCategory": "LPP1",
@@ -839,10 +875,10 @@ class RegimePenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase w
           |            "penaltyAmountPosted": 0,
           |            "penaltyChargeDueDate": "2022-10-30",
           |            "penaltyAmountAccruing": 99.99,
-          |            "principalChargeMainTransaction": "4700",
+          |            "principalChargeMainTr": "4700",
           |            "vatOutstandingAmount": 543.21,
           |            "principalChargeDocNumber": "DOC1",
-          |            "principalChargeSubTransaction": "SUB1"
+          |            "principalChargeSubTr": "SUB1"
           |          }
           |        ]
           |      },

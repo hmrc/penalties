@@ -504,7 +504,8 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
       lateSubmissionPenalty = None,
       latePaymentPenalty = Some(
         LatePaymentPenalty(
-          Some(
+          manualLPPIndicator = false,
+          lppDetails = Some(
             Seq(
               LPPDetails(
                 penaltyCategory = LPPPenaltyCategoryEnum.SecondPenalty,
@@ -530,10 +531,10 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
                 lpp1HRPercentage = None,
                 penaltyChargeDueDate = Some(LocalDate.of(2022, 8, 7)),
                 principalChargeLatestClearing = None,
-                principalChargeSubTransaction = None,
+                principalChargeSubTr = None,
                 principalChargeDocNumber = None,
                 penaltyAmountAccruing = BigDecimal(100),
-                principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
+                principalChargeMainTr = MainTransactionEnum.VATReturnCharge,
                 vatOutstandingAmount = Some(BigDecimal(123.45))
               ),
               LPPDetails(
@@ -561,9 +562,9 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
                 penaltyChargeDueDate = Some(LocalDate.of(2022, 8, 7)),
                 principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
                 penaltyAmountAccruing = BigDecimal(0),
-                principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
+                principalChargeMainTr = MainTransactionEnum.VATReturnCharge,
                 principalChargeDocNumber = None,
-                principalChargeSubTransaction = None,
+                principalChargeSubTr = None,
                 vatOutstandingAmount = Some(BigDecimal(123.45))
               )
             )
@@ -579,7 +580,8 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
       lateSubmissionPenalty = None,
       latePaymentPenalty = Some(
         LatePaymentPenalty(
-          Some(
+          manualLPPIndicator = false,
+          lppDetails = Some(
             Seq(
               LPPDetails(
                 penaltyCategory = LPPPenaltyCategoryEnum.SecondPenalty,
@@ -606,9 +608,9 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
                 penaltyChargeDueDate = Some(LocalDate.of(2022, 8, 7)),
                 principalChargeLatestClearing = None,
                 principalChargeDocNumber = None,
-                principalChargeSubTransaction = None,
+                principalChargeSubTr = None,
                 penaltyAmountAccruing = BigDecimal(100),
-                principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
+                principalChargeMainTr = MainTransactionEnum.VATReturnCharge,
                 vatOutstandingAmount = Some(BigDecimal(123.45))
               ),
               LPPDetails(
@@ -636,9 +638,9 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
                 penaltyChargeDueDate = Some(LocalDate.of(2022, 8, 7)),
                 principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
                 principalChargeDocNumber = None,
-                principalChargeSubTransaction = None,
+                principalChargeSubTr = None,
                 penaltyAmountAccruing = BigDecimal(0),
-                principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
+                principalChargeMainTr = MainTransactionEnum.VATReturnCharge,
                 vatOutstandingAmount = Some(BigDecimal(123.45))
               )
             )
@@ -1880,9 +1882,9 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
       penaltyChargeDueDate = Some(LocalDate.of(2022, 8, 7)),
       principalChargeLatestClearing = Some(LocalDate.of(2022, 10, 1)),
       principalChargeDocNumber = None,
-      principalChargeSubTransaction = None,
+      principalChargeSubTr = None,
       penaltyAmountAccruing = BigDecimal(0),
-      principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
+      principalChargeMainTr = MainTransactionEnum.VATReturnCharge,
       vatOutstandingAmount = Some(BigDecimal(123.45))
     )
 
@@ -1911,9 +1913,9 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
       penaltyChargeDueDate = Some(LocalDate.of(2022, 8, 7)),
       principalChargeLatestClearing = Some(LocalDate.of(2022, 10, 1)),
       principalChargeDocNumber = None,
-      principalChargeSubTransaction = None,
+      principalChargeSubTr = None,
       penaltyAmountAccruing = BigDecimal(0),
-      principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
+      principalChargeMainTr = MainTransactionEnum.VATReturnCharge,
       vatOutstandingAmount = Some(BigDecimal(123.45))
     )
 
@@ -1921,7 +1923,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
       processingDate = instant,
       totalisations = None,
       lateSubmissionPenalty = None,
-      latePaymentPenalty = Some(LatePaymentPenalty(Some(Seq(sampleLPP1)))),
+      latePaymentPenalty = Some(LatePaymentPenalty(Some(Seq(sampleLPP1)), manualLPPIndicator = false)),
       breathingSpace = None
     )
 
@@ -1929,7 +1931,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
       processingDate = instant,
       totalisations = None,
       lateSubmissionPenalty = None,
-      latePaymentPenalty = Some(LatePaymentPenalty(Some(Seq(sampleLPP2, sampleLPP1)))),
+      latePaymentPenalty = Some(LatePaymentPenalty(Some(Seq(sampleLPP2, sampleLPP1)), manualLPPIndicator = false)),
       breathingSpace = None
     )
 

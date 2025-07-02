@@ -41,7 +41,7 @@ class RegimeFilterService @Inject()()(implicit appConfig: AppConfig) {
       if (filteredLPPs.nonEmpty && filteredLPPs.get.nonEmpty && numberOfFilteredLPPs >= 0) {
         logger.info(s"[RegimeFilterService][filterEstimatedLPP1DuringPeriodOfFamiliarisation] Filtering for [${loggingContext.callingClass}][${loggingContext.function}] -" +
           s" Filtered ${numberOfFilteredLPPs} LPP1(s) from payload for ${loggingContext.enrolmentKey}")
-        penaltiesDetails.copy(latePaymentPenalty = Some(LatePaymentPenalty(filteredLPPs, penaltiesDetails.latePaymentPenalty.get.ManualLPPIndicator)))
+        penaltiesDetails.copy(latePaymentPenalty = Some(LatePaymentPenalty(filteredLPPs, penaltiesDetails.latePaymentPenalty.get.manualLPPIndicator)))
       } else {
         logger.info(s"[RegimeFilterService][filterEstimatedLPP1DuringPeriodOfFamiliarisation] Filtering for [${loggingContext.callingClass}][${loggingContext.function}] - Filtered all LPP1s from payload for ${loggingContext.enrolmentKey}")
         penaltiesDetails.copy(latePaymentPenalty = None)
@@ -95,7 +95,7 @@ class RegimeFilterService @Inject()()(implicit appConfig: AppConfig) {
     if (filteredLPPs.nonEmpty && filteredLPPs.get.nonEmpty && noOfFilteredLPPs > 0) {
       logger.info(s"[RegimeFilterService][filterPenaltiesWith9xAppealStatus] Filtering for [${loggingContext.callingClass}][${loggingContext.function}] -" +
         s" Filtered ${noOfFilteredLPPs} LPP(s) from payload for ${loggingContext.enrolmentKey}")
-      Some(LatePaymentPenalty(filteredLPPs))
+      Some(LatePaymentPenalty(filteredLPPs, penaltiesDetails.latePaymentPenalty.map(_.manualLPPIndicator).getOrElse(false)))
     } else if (noOfFilteredLPPs == 0) {
       logger.info(s"[RegimeFilterService][prepareLatePaymentPenaltiesAfterFilter] Filtering for [${loggingContext.callingClass}][${loggingContext.function}] -" +
         s" No LPPs to filter from payload for ${loggingContext.enrolmentKey}")

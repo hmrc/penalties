@@ -159,6 +159,7 @@ class RegimeAppealsControllerISpec
      |        ]
      |      },
      |      "lpp": {
+     |        "manualLPPIndicator": false,
      |        "lppDetails": [
      |          {
      |            "penaltyCategory": "LPP1",
@@ -171,7 +172,7 @@ class RegimeAppealsControllerISpec
      |            "penaltyAmountOutstanding": null,
      |            "penaltyAmountPaid": null,
      |            "penaltyAmountAccruing": 99.99,
-     |            "principalChargeMainTransaction": "4700",
+     |            "principalChargeMainTr": "4700",
      |            "principalChargeBillingFrom": "2022-01-01",
      |            "principalChargeBillingTo": "2022-12-31",
      |            "principalChargeDueDate": "2023-02-07",
@@ -201,7 +202,7 @@ class RegimeAppealsControllerISpec
      |              }
      |            ],
      |            "principalChargeDocNumber": "DOC1",
-     |            "principalChargeSubTransaction": "SUB1"
+     |            "principalChargeSubTr": "SUB1"
      |          },
      |          {
      |            "penaltyCategory": "LPP2",
@@ -214,7 +215,7 @@ class RegimeAppealsControllerISpec
      |            "penaltyAmountOutstanding": null,
      |            "penaltyAmountPaid": null,
      |            "penaltyAmountAccruing": 0,
-     |            "principalChargeMainTransaction": "4700",
+     |            "principalChargeMainTr": "4700",
      |            "principalChargeBillingFrom": "2024-01-01",
      |            "principalChargeBillingTo": "2024-12-31",
      |            "principalChargeDueDate": "2025-02-07",
@@ -233,7 +234,7 @@ class RegimeAppealsControllerISpec
      |            "vatOutstandingAmount": null,
      |            "timeToPay": [],
      |            "principalChargeDocNumber": "DOC3",
-     |            "principalChargeSubTransaction": "SUB3"
+     |            "principalChargeSubTr": "SUB3"
      |          }
      |        ]
      |      },
@@ -1400,6 +1401,7 @@ class RegimeAppealsControllerISpec
           |        "LPPEstimatedTotal": 15.26
           |      },
           |      "lpp": {
+          |        "manualLPPIndicator": false,
           |        "lppDetails": [
           |          {
           |            "penaltyChargeReference": "1234567887",
@@ -1409,7 +1411,7 @@ class RegimeAppealsControllerISpec
           |            "penaltyAmountAccruing": 0,
           |            "penaltyAmountOutstanding": 144.00,
           |            "penaltyAmountPaid": 0,
-          |            "principalChargeMainTransaction": "4700",
+          |            "principalChargeMainTr": "4700",
           |            "principalChargeBillingFrom": "2022-01-01",
           |            "principalChargeBillingTo": "2022-12-31",
           |            "principalChargeDueDate": "2023-02-07",
@@ -1433,7 +1435,7 @@ class RegimeAppealsControllerISpec
           |            ],
           |            "principalChargeReference": "1234567890",
           |            "principalChargeDocNumber": "DOC1",
-          |            "principalChargeSubTransaction": "SUB1"
+          |            "principalChargeSubTr": "SUB1"
           |          }
           |        ]
           |      }
@@ -1454,6 +1456,7 @@ class RegimeAppealsControllerISpec
      |        "LPPEstimatedTotal": 15.26
      |      },
      |      "lpp": {
+     |        "manualLPPIndicator": false,
      |        "lppDetails": [
      |          {
      |            "penaltyCategory": "LPP2",
@@ -1465,7 +1468,7 @@ class RegimeAppealsControllerISpec
      |            "penaltyAmountAccruing": 0,
      |            "penaltyAmountOutstanding": 144.00,
      |            "penaltyAmountPaid": 0,
-     |            "principalChargeMainTransaction": "4700",
+     |            "principalChargeMainTr": "4700",
      |            "principalChargeBillingFrom": "2022-01-01",
      |            "principalChargeBillingTo": "2022-12-31",
      |            "principalChargeDueDate": "2023-02-07",
@@ -1488,7 +1491,7 @@ class RegimeAppealsControllerISpec
      |              }
      |            ],
      |            "principalChargeDocNumber": "DOC1",
-     |            "principalChargeSubTransaction": "SUB1"
+     |            "principalChargeSubTr": "SUB1"
      |          },
      |          {
      |            "penaltyCategory": "LPP1",
@@ -1500,7 +1503,7 @@ class RegimeAppealsControllerISpec
      |            "penaltyAmountAccruing": 0,
      |            "penaltyAmountOutstanding": 144.01,
      |            "penaltyAmountPaid": 0,
-     |            "principalChargeMainTransaction": "4700",
+     |            "principalChargeMainTr": "4700",
      |            "principalChargeBillingFrom": "2022-01-01",
      |            "principalChargeBillingTo": "2022-12-31",
      |            "principalChargeDueDate": "2023-02-07",
@@ -1523,7 +1526,7 @@ class RegimeAppealsControllerISpec
      |              }
      |            ],
      |            "principalChargeDocNumber": "DOC2",
-     |            "principalChargeSubTransaction": "SUB2"
+     |            "principalChargeSubTr": "SUB2"
      |          }
      |        ]
      |      }
@@ -1543,6 +1546,7 @@ class RegimeAppealsControllerISpec
           |        "LPPEstimatedTotal": 15.26
           |      },
           |      "lpp": {
+          |        "manualLPPIndicator": false,
           |        "lppDetails": [
           |          {
           |            "penaltyChargeReference": "1234567888",
@@ -1553,7 +1557,7 @@ class RegimeAppealsControllerISpec
           |            "penaltyAmountAccruing": 0,
           |            "penaltyAmountOutstanding": 144.00,
           |            "penaltyAmountPaid": 0,
-          |            "principalChargeMainTransaction": "4700",
+          |            "principalChargeMainTr": "4700",
           |            "principalChargeBillingFrom": "2022-01-01",
           |            "principalChargeBillingTo": "2022-12-31",
           |            "principalChargeDueDate": "2023-02-07",
@@ -1576,7 +1580,7 @@ class RegimeAppealsControllerISpec
           |              }
           |            ],
           |            "principalChargeDocNumber": "DOC1",
-          |            "principalChargeSubTransaction": "SUB1",
+          |            "principalChargeSubTr": "SUB1",
           |            "principalChargeReference": "1234567890"
           |          },
           |          {
@@ -1588,7 +1592,7 @@ class RegimeAppealsControllerISpec
           |            "penaltyAmountAccruing": 0,
           |            "penaltyAmountOutstanding": 144.01,
           |            "penaltyAmountPaid": 0,
-          |            "principalChargeMainTransaction": "4700",
+          |            "principalChargeMainTr": "4700",
           |            "principalChargeBillingFrom": "2022-01-01",
           |            "principalChargeBillingTo": "2022-12-31",
           |            "principalChargeDueDate": "2023-02-07",
@@ -1611,7 +1615,7 @@ class RegimeAppealsControllerISpec
           |              }
           |            ],
           |            "principalChargeDocNumber": "DOC2",
-          |            "principalChargeSubTransaction": "SUB2",
+          |            "principalChargeSubTr": "SUB2",
           |            "principalChargeReference": "1234567890",
           |            "appealInformation": [
           |              {
@@ -1639,6 +1643,7 @@ class RegimeAppealsControllerISpec
      |        "LPPEstimatedTotal": 15.26
      |      },
      |      "lpp": {
+     |        "manualLPPIndicator": false,
      |        "lppDetails": [
      |          {
      |            "penaltyCategory": "LPP2",
@@ -1651,7 +1656,7 @@ class RegimeAppealsControllerISpec
      |            "penaltyAmountOutstanding": null,
      |            "penaltyAmountPaid": null,
      |            "penaltyAmountAccruing": 99.99,
-     |            "principalChargeMainTransaction": "4700",
+     |            "principalChargeMainTr": "4700",
      |            "principalChargeBillingFrom": "2022-01-01",
      |            "principalChargeBillingTo": "2022-12-31",
      |            "principalChargeDueDate": "2023-02-07",
@@ -1680,7 +1685,7 @@ class RegimeAppealsControllerISpec
      |              }
      |            ],
      |            "principalChargeDocNumber": "DOC1",
-     |            "principalChargeSubTransaction": "SUB1"
+     |            "principalChargeSubTr": "SUB1"
      |          },
      |          {
      |            "penaltyCategory": "LPP1",
@@ -1693,7 +1698,7 @@ class RegimeAppealsControllerISpec
      |            "penaltyAmountOutstanding": null,
      |            "penaltyAmountPaid": null,
      |            "penaltyAmountAccruing": 99.99,
-     |            "principalChargeMainTransaction": "4700",
+     |            "principalChargeMainTr": "4700",
      |            "principalChargeBillingFrom": "2022-01-01",
      |            "principalChargeBillingTo": "2022-12-31",
      |            "principalChargeDueDate": "2023-02-07",
@@ -1723,7 +1728,7 @@ class RegimeAppealsControllerISpec
      |              }
      |            ],
      |            "principalChargeDocNumber": "DOC2",
-     |            "principalChargeSubTransaction": "SUB2"
+     |            "principalChargeSubTr": "SUB2"
      |          }
      |        ]
      |      }
@@ -1744,6 +1749,7 @@ class RegimeAppealsControllerISpec
           |        "LPPEstimatedTotal": 15.26
           |      },
           |      "lpp": {
+          |        "manualLPPIndicator": false,
           |        "lppDetails": [
           |          {
           |            "penaltyChargeReference": "1234567888",
@@ -1767,7 +1773,7 @@ class RegimeAppealsControllerISpec
           |            "principalChargeReference": "1234567890",
           |            "principalChargeBillingFrom": "2022-01-01",
           |            "principalChargeBillingTo": "2022-12-31",
-          |            "principalChargeMainTransaction": "4700",
+          |            "principalChargeMainTr": "4700",
           |            "principalChargeDueDate": "2023-02-07"
           |          },
           |          {
@@ -1792,7 +1798,7 @@ class RegimeAppealsControllerISpec
           |            "principalChargeReference": "1234567890",
           |            "principalChargeBillingFrom": "2022-01-01",
           |            "principalChargeBillingTo": "2022-12-31",
-          |            "principalChargeMainTransaction": "4700",
+          |            "principalChargeMainTr": "4700",
           |            "principalChargeDueDate": "2023-02-07"
           |          }
           |        ]

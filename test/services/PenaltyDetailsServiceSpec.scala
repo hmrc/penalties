@@ -137,6 +137,7 @@ class PenaltyDetailsServiceSpec extends SpecBase with LogCapturing with LPPDetai
         )
       ),
       latePaymentPenalty = Some(LatePaymentPenalty(
+        manualLPPIndicator = false,
         lppDetails = Some(
           Seq(
             LPPDetails(
@@ -164,9 +165,9 @@ class PenaltyDetailsServiceSpec extends SpecBase with LogCapturing with LPPDetai
               penaltyChargeDueDate = Some(LocalDate.of(2022, 10, 30)),
               principalChargeDocNumber = None,
               principalChargeLatestClearing = None,
-              principalChargeSubTransaction = None,
+              principalChargeSubTr = None,
               penaltyAmountAccruing = BigDecimal(144.21),
-              principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
+              principalChargeMainTr = MainTransactionEnum.VATReturnCharge,
               vatOutstandingAmount = Some(BigDecimal(123.45))
             )
           )
