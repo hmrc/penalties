@@ -39,7 +39,7 @@ class FinancialDetailsServiceISpec extends IntegrationSpecCommonBase with Regime
     (Regime("ITSA"), IdType("NINO"), Id("AB123456C")),
   ).forEvery { (regime, idType, id) =>
 
-    val aKey = AgnosticEnrolmentKey(regime, idType, id) 
+    val aKey = AgnosticEnrolmentKey(regime, idType, id)
 
     s"getFinancialDetails for $regime" when {
       val getFinancialDetailsModel: FinancialDetailsHIP = FinancialDetailsHIP(
@@ -62,14 +62,14 @@ class FinancialDetailsServiceISpec extends IntegrationSpecCommonBase with Regime
         mockStubResponseForGetFinancialDetails(Status.OK , Some(getFinancialDetailsAsJson.toString()))
         val result = await(service.getFinancialDetails(aKey))
         result.isRight shouldBe true
-        result.toOption.get shouldBe GetFinancialDetailsSuccessResponse(getFinancialDetailsModel)
+        result.toOption.get shouldBe GetFinancialDetailsHipSuccessResponse(getFinancialDetailsModel)
       }
 
       "call the connector and return a successful result - passing custom parameters when defined" in {
         mockStubResponseForGetFinancialDetails(Status.OK, Some(getFinancialDetailsAsJson.toString()))
         val result = await(service.getFinancialDetails(aKey))
         result.isRight shouldBe true
-        result.toOption.get shouldBe GetFinancialDetailsSuccessResponse(getFinancialDetailsModel)
+        result.toOption.get shouldBe GetFinancialDetailsHipSuccessResponse(getFinancialDetailsModel)
       }
 
       s"the response body is not well formed: $GetFinancialDetailsMalformed" in {

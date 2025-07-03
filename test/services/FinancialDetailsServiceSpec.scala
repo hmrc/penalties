@@ -40,7 +40,7 @@ class FinancialDetailsServiceSpec extends SpecBase with FeatureSwitching with Lo
   implicit val hc: HeaderCarrier = HeaderCarrier()
   implicit val config: Configuration = mock(classOf[Configuration])
 
-  val regime = Regime("VATC") 
+  val regime = Regime("VATC")
   val idType = IdType("VRN")
   val id = Id("123456789")
   val vrn123456789: AgnosticEnrolmentKey = AgnosticEnrolmentKey(
@@ -76,19 +76,19 @@ class FinancialDetailsServiceSpec extends SpecBase with FeatureSwitching with Lo
       when(config.getOptional[String](ArgumentMatchers.any())(ArgumentMatchers.any()))
         .thenReturn(None)
       when(mockGetFinancialDetailsConnector.getFinancialDetails(any())(any()))
-        .thenReturn(Future.successful(Right(GetFinancialDetailsSuccessResponse(mockGetFinancialDetailsResponseAsModel))))
+        .thenReturn(Future.successful(Right(GetFinancialDetailsHipSuccessResponse(mockGetFinancialDetailsResponseAsModel))))
       val result: GetFinancialDetailsResponse = await(service.getFinancialDetails(vrn123456789))
       result.isRight shouldBe true
-      result.toOption.get shouldBe GetFinancialDetailsSuccessResponse(mockGetFinancialDetailsResponseAsModel)
+      result.toOption.get shouldBe GetFinancialDetailsHipSuccessResponse(mockGetFinancialDetailsResponseAsModel)
     }
 
     s"call the connector and return a $GetFinancialDetailsSuccessResponse when the request is successful (with the time machine date)" in new Setup {
       setTimeMachineDate(Some(LocalDateTime.of(2024, 1, 1, 0, 0, 0)))
       when(mockGetFinancialDetailsConnector.getFinancialDetails(any())(any()))
-        .thenReturn(Future.successful(Right(GetFinancialDetailsSuccessResponse(mockGetFinancialDetailsResponseAsModel))))
+        .thenReturn(Future.successful(Right(GetFinancialDetailsHipSuccessResponse(mockGetFinancialDetailsResponseAsModel))))
       val result: GetFinancialDetailsResponse = await(service.getFinancialDetails(vrn123456789))
       result.isRight shouldBe true
-      result.toOption.get shouldBe GetFinancialDetailsSuccessResponse(mockGetFinancialDetailsResponseAsModel)
+      result.toOption.get shouldBe GetFinancialDetailsHipSuccessResponse(mockGetFinancialDetailsResponseAsModel)
     }
 
     s"call the connector and return $GetFinancialDetailsNoContent when the response body contains NO_DATA_FOUND" in new Setup {

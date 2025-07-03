@@ -17,7 +17,7 @@
 package config
 
 import config.featureSwitches._
-import models.AgnosticEnrolmentKey
+import models.{AgnosticEnrolmentKey, Id}
 import play.api.Configuration
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
@@ -90,8 +90,8 @@ class AppConfig @Inject()(val config: Configuration, servicesConfig: ServicesCon
 
   // Non-agnostic 1811
   def getFinancialDetailsUrl(vrn: String): String =
-    if (isEnabled(CallAPI1811ETMP)) etmpBase + s"/penalty/financial-data/VRN/$vrn/VATC"
-    else stubBase + s"/penalties-stub/penalty/financial-data/VRN/$vrn/VATC"
+    if (isEnabled(CallAPI1811Stub)) stubBase + s"/penalties-stub/penalty/financial-data/VRN/$vrn/VATC"
+    else etmpBase + s"/penalty/financial-data/VRN/$vrn/VATC"
 
   // Non-agnostic 1808
   def getAppealSubmissionURL(penaltyNumber: String): String =
@@ -118,13 +118,18 @@ class AppConfig @Inject()(val config: Configuration, servicesConfig: ServicesCon
 
   def getMimeType(mimeType: String): Option[String] = config.getOptional[String](s"files.extensions.$mimeType")
 
-  // Agnostic 1811
-  def getRegimeFinancialDetailsUrl(enrolmentKey: AgnosticEnrolmentKey): String = {
-    val taxregime = enrolmentKey.regime.value
-    val id = enrolmentKey.idType.value
-    val idValue = enrolmentKey.id.value
-    if (isEnabled(CallAPI1811ETMP)) hipBase + s"/RESTAdapter/cross-regime/taxpayer/financial-data/query"
-    else stubBase + s"/penalties-stub/RESTAdapter/cross-regime/taxpayer/financial-data/query"
+  // Agnostic 1811 - IF/HIP
+  def getRegimeFinancialDetailsUrl(id: Id): String = {
+    val urlIF = s"/penalty/financial-data/VRN/${id.value}/VATC" // ETMP route will never be called by ITSA
+    val urlHIP = "/RESTAdapter/cross-regime/taxpayer/financial-data/query"
+    val callStub = isEnabled(CallAPI1811Stub)
+    val callHIP = isEnabled(CallAPI1811HIP)
+    (callStub, callHIP) match {
+      case (true , true) => stubBase + urlHIP
+      case (true , false) => stubBase + "/penalties-stub" + urlIF
+      case (false , true) => hipBase + urlHIP
+      case (false , false) => etmpBase + urlIF
+    }
   }
 
   // Agnostic 1812
@@ -134,11 +139,6 @@ class AppConfig @Inject()(val config: Configuration, servicesConfig: ServicesCon
     val idValue = agnosticEnrolmentKey.id.value
     if (isEnabled(CallAPI1812ETMP)) etmpBase + s"/penalty/details/$regime/$idType/$idValue"
     else stubBase + s"/penalties-stub/penalty/details/$regime/$idType/$idValue"
-  }
-
-  def getFinancialDetailsVatUrl(vrn: String): String = {
-    if (!isEnabled(CallAPI1811ETMP)) stubBase + s"/penalties-stub/penalty/financial-data/VRN/$vrn/VATC"
-    else etmpBase + s"/penalty/financial-data/VRN/$vrn/VATC"
   }
 
   private def getComplianceDataUrl: String = {

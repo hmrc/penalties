@@ -24,16 +24,16 @@ import connectors.parsers.getFinancialDetails.FinancialDetailsParser.GetFinancia
 import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser
 import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser.GetPenaltyDetailsSuccessResponse
 import controllers.auth.AuthAction
-import models.{AgnosticEnrolmentKey, Id, IdType, Regime}
 import models.api.APIModel
 import models.auditing.{ThirdParty1812APIRetrievalRegimeAuditModel, ThirdPartyAPI1811RetrievalRegimeAuditModel, UserHasPenaltyRegimeAuditModel}
-import models.getFinancialDetails.FinancialDetailsHIP
+import models.getFinancialDetails.FinancialDetails
 import models.getPenaltyDetails.GetPenaltyDetails
+import models.{AgnosticEnrolmentKey, Id, IdType, Regime}
 import play.api.Configuration
 import play.api.libs.json.{JsString, JsValue, Json}
 import play.api.mvc._
 import services.auditing.AuditService
-import services.{FinancialDetailsService, LoggingContext, PenaltyDetailsService, RegimeAPIService, RegimeFilterService}
+import services._
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import utils.Logger.logger
@@ -43,6 +43,7 @@ import utils.{DateHelper, PagerDutyHelper}
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
+//noinspection ScalaStyle
 class RegimeAPIController @Inject()(auditService: AuditService,
                                     apiService: RegimeAPIService,
                                     getPenaltyDetailsService: PenaltyDetailsService,
@@ -52,7 +53,9 @@ class RegimeAPIController @Inject()(auditService: AuditService,
                                     dateHelper: DateHelper,
                                     cc: ControllerComponents,
                                     filterService: RegimeFilterService,
-                                    authAction: AuthAction)(implicit ec: ExecutionContext, val config: Configuration) extends BackendController(cc) with FeatureSwitching {
+                                    authAction: AuthAction)
+                                   (implicit ec: ExecutionContext,
+                                    val config: Configuration) extends BackendController(cc) with FeatureSwitching {
 
   def getSummaryData(regime: Regime, idType: IdType, id: Id): Action[AnyContent] = authAction.async {
     implicit request => {
@@ -106,11 +109,10 @@ class RegimeAPIController @Inject()(auditService: AuditService,
             }
           )
         }
-      // }
     }
   }
 
-  private def callFinancialDetailsForManualLPPs(enrolmentKey: AgnosticEnrolmentKey)(implicit hc: HeaderCarrier): Future[Option[FinancialDetailsHIP]] = {
+  private def callFinancialDetailsForManualLPPs(enrolmentKey: AgnosticEnrolmentKey)(implicit hc: HeaderCarrier): Future[Option[FinancialDetails]] = {
     getFinancialDetailsService.getFinancialDetails(enrolmentKey).map {
       financialDetailsResponseWithoutClearedItems =>
         logger.info(s"[RegimeAPIController][callFinancialDetailsForManualLPPs] - Calling 1811 for response without cleared items")
@@ -130,13 +132,13 @@ class RegimeAPIController @Inject()(auditService: AuditService,
         },
           financialDetailsResponseWithoutClearedItems => {
             logger.info(s"[RegimeAPIController][callFinancialDetailsForManualLPPs] - 1811 call (VATVC/BTA API) returned 200 for ${enrolmentKey}" )
-            Some(financialDetailsResponseWithoutClearedItems.asInstanceOf[GetFinancialDetailsSuccessResponse].financialData)
+            Some(financialDetailsResponseWithoutClearedItems.asInstanceOf[GetFinancialDetailsSuccessResponse].financialDetails)
           })
     }
   }
 
   private def returnResponseForAPI(penaltyDetails: GetPenaltyDetails, enrolmentKey: AgnosticEnrolmentKey,
-                                   financialDetails: Option[FinancialDetailsHIP] = None)(implicit request: Request[_]): Result = {
+                                   financialDetails: Option[FinancialDetails] = None)(implicit request: Request[_]): Result = {
     val pointsTotal = penaltyDetails.lateSubmissionPenalty.map(_.summary.activePenaltyPoints).getOrElse(0)
     val penaltyAmountWithEstimateStatus = apiService.findEstimatedPenaltiesAmount(penaltyDetails)
     val noOfEstimatedPenalties = apiService.getNumberOfEstimatedPenalties(penaltyDetails)
@@ -216,8 +218,6 @@ class RegimeAPIController @Inject()(auditService: AuditService,
                 Status(res.status)(Json.toJson(res.body))
             }
           })
-          // })
-      // }
     }
   }
 

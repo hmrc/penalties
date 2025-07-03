@@ -40,7 +40,10 @@ class FinancialDetailsService @Inject()(getFinancialDetailsConnector: FinancialD
   private def handleConnectorResponse(connectorResponse: GetFinancialDetailsResponse)
                                      (implicit startOfLogMsg: String, enrolmentKey: AgnosticEnrolmentKey): GetFinancialDetailsResponse = {
     connectorResponse match {
-      case res@Right(_@GetFinancialDetailsSuccessResponse(financialData)) =>
+      case res@Right(_@GetFinancialDetailsSuccessResponse(financialDetails)) =>
+        logger.debug(s"$startOfLogMsg - Got a success response from the connector. Parsed model: $financialDetails")
+        res
+      case res@Right(_@GetFinancialDetailsHipSuccessResponse(financialData)) =>
         logger.debug(s"$startOfLogMsg - Got a success response from the connector. Parsed model: $financialData")
         res
       case res@Left(GetFinancialDetailsNoContent) =>

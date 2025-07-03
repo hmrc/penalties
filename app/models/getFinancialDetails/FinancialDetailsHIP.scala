@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,20 +18,15 @@ package models.getFinancialDetails
 
 import play.api.libs.json._
 
-case class FinancialDetailsHIP(
-                                processingDate: String,
-                                financialData: FinancialDetails)
+case class FinancialDetailsHIP(processingDate: String, financialData: FinancialDetails)
 
 object FinancialDetailsHIP {
   implicit val reads: Reads[FinancialDetailsHIP] = new Reads[FinancialDetailsHIP] {
-    override def reads(json: JsValue): JsResult[FinancialDetailsHIP] = {
+    override def reads(json: JsValue): JsResult[FinancialDetailsHIP] =
       for {
         processingDate <- (json \ "success" \ "processingDate").validate[String]
-        financialData <- (json \ "success" \ "financialData").validate[FinancialDetails]
-      } yield {
-        FinancialDetailsHIP(processingDate, financialData)
-      }
-    }
+        financialData  <- (json \ "success" \ "financialData").validate[FinancialDetails]
+      } yield FinancialDetailsHIP(processingDate, financialData)
   }
 
   implicit val writes: Writes[FinancialDetailsHIP] = Json.writes[FinancialDetailsHIP]

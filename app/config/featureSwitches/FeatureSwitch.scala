@@ -22,7 +22,7 @@ sealed trait FeatureSwitch {
 
 object FeatureSwitch {
   val prefix: String = "feature.switch"
-  val listOfAllFeatureSwitches: List[FeatureSwitch] = List(CallPEGA, CallDES, CallAPI1812ETMP, CallAPI1811ETMP, SanitiseFileName)
+  val listOfAllFeatureSwitches: List[FeatureSwitch] = List(CallPEGA, CallDES, CallAPI1812ETMP, CallAPI1811Stub, SanitiseFileName)
 }
 
 case object CallPEGA extends FeatureSwitch {
@@ -37,8 +37,12 @@ case object CallAPI1812ETMP extends FeatureSwitch {
   override val name: String = s"${FeatureSwitch.prefix}.call-api-1812-etmp"
 }
 
-case object CallAPI1811ETMP extends FeatureSwitch {
-  override val name: String = s"${FeatureSwitch.prefix}.call-api-1811-etmp"
+case object CallAPI1811Stub extends FeatureSwitch {
+  override val name: String = s"${FeatureSwitch.prefix}.call-api-1811-stub"
+}
+
+case object CallAPI1811HIP extends FeatureSwitch {
+  override val name: String = s"${FeatureSwitch.prefix}.call-api-1811-hip"
 }
 
 case object SanitiseFileName extends FeatureSwitch {

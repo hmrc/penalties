@@ -17,7 +17,7 @@
 package controllers
 
 import com.github.tomakehurst.wiremock.client.WireMock.{postRequestedFor, urlEqualTo}
-import config.featureSwitches.{CallAPI1811ETMP, CallAPI1812ETMP, FeatureSwitching}
+import config.featureSwitches.{CallAPI1811Stub, CallAPI1812ETMP, FeatureSwitching}
 import play.api.http.Status
 import play.api.libs.json.{JsValue, Json}
 import play.api.test.Helpers._
@@ -324,7 +324,7 @@ class APIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock wit
            |}
            |}
            |}""".stripMargin)
-       enableFeatureSwitch(CallAPI1811ETMP)
+       disableFeatureSwitch(CallAPI1811Stub)
        mockResponseForGetFinancialDetails(Status.OK, s"VRN/123456789/VATC?searchType=CHGREF&searchItem=XC00178236592&dateType=BILLING&dateFrom=2020-10-03&dateTo=2021-07-12&includeClearedItems=false" +
          s"&includeStatisticalItems=true&includePaymentOnAccount=true&addRegimeTotalisation=false&addLockInformation=true&addPenaltyDetails=true" +
          s"&addPostedInterestDetails=true&addAccruingInterestDetails=true", Some(getFinancialDetailsAsJson.toString()))
@@ -340,7 +340,7 @@ class APIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock wit
 
    "return the status from EIS" when {
      "404 response received " in {
-       enableFeatureSwitch(CallAPI1811ETMP)
+       disableFeatureSwitch(CallAPI1811Stub)
        mockResponseForGetFinancialDetails(Status.NOT_FOUND, s"VRN/123456789/VATC?searchType=CHGREF&searchItem=XC00178236592&dateType=BILLING&dateFrom=2020-10-03&dateTo=2021-07-12&includeClearedItems=false" +
          s"&includeStatisticalItems=true&includePaymentOnAccount=true&addRegimeTotalisation=false&addLockInformation=true&addPenaltyDetails=true" +
          s"&addPostedInterestDetails=true&addAccruingInterestDetails=true")
@@ -353,7 +353,7 @@ class APIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock wit
      }
 
      "Non 200 response received " in {
-       enableFeatureSwitch(CallAPI1811ETMP)
+       disableFeatureSwitch(CallAPI1811Stub)
        mockResponseForGetFinancialDetails(Status.BAD_REQUEST, s"VRN/123456789/VATC?searchType=CHGREF&searchItem=XC00178236592&dateType=BILLING&dateFrom=2020-10-03&dateTo=2021-07-12&includeClearedItems=false" +
          s"&includeStatisticalItems=true&includePaymentOnAccount=true&addRegimeTotalisation=false&addLockInformation=true&addPenaltyDetails=true" +
          s"&addPostedInterestDetails=true&addAccruingInterestDetails=true", Some(""))
