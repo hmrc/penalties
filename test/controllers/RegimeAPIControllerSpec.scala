@@ -20,15 +20,21 @@ import base.{LogCapturing, SpecBase}
 import config.featureSwitches.FeatureSwitching
 import connectors.getFinancialDetails.FinancialDetailsConnector
 import connectors.getPenaltyDetails.PenaltyDetailsConnector
-import connectors.parsers.getFinancialDetails.FinancialDetailsParser.{GetFinancialDetailsFailureResponse, GetFinancialDetailsMalformed, GetFinancialDetailsNoContent, GetFinancialDetailsSuccessResponse}
+import connectors.parsers.getFinancialDetails.FinancialDetailsParser.{
+  GetFinancialDetailsFailureResponse,
+  GetFinancialDetailsHipSuccessResponse,
+  GetFinancialDetailsMalformed,
+  GetFinancialDetailsNoContent
+}
 import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser._
 import controllers.auth.AuthAction
-import models.getFinancialDetails.{DocumentDetails, FinancialDetails, LineItemDetails, MainTransactionEnum}
+import models.getFinancialDetails._
 import models.getPenaltyDetails.GetPenaltyDetails
 import models.getPenaltyDetails.latePayment._
 import models.getPenaltyDetails.lateSubmission.{LSPSummary, LateSubmissionPenalty}
-import models.{Regime, IdType, Id}
+import models.{Id, IdType, Regime}
 import org.mockito.ArgumentMatchers._
+import org.mockito.Mockito._
 import play.api.Configuration
 import play.api.http.Status
 import play.api.libs.json.Json
@@ -37,10 +43,10 @@ import play.api.test.Helpers._
 import services._
 import services.auditing.AuditService
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
-import utils.{AuthActionMock, DateHelper}
 import utils.Logger.logger
 import utils.PagerDutyHelper.PagerDutyKeys
-import org.mockito.Mockito._
+import utils.{AuthActionMock, DateHelper}
+
 import java.time.LocalDate
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -49,7 +55,7 @@ class RegimeAPIControllerSpec extends SpecBase with FeatureSwitching with LogCap
   val mockAppealsService: RegimeAppealService = mock(classOf[RegimeAppealService])
   val mockAuditService: AuditService = mock(classOf[AuditService])
   val dateHelper: DateHelper = injector.instanceOf(classOf[DateHelper])
-  val mockAPIService: APIService = mock(classOf[APIService])
+  val mockAPIService: RegimeAPIService = mock(classOf[RegimeAPIService])
   val mockGetPenaltyDetailsService: PenaltyDetailsService = mock(classOf[PenaltyDetailsService])
   val mockGetFinancialDetailsService: FinancialDetailsService = mock(classOf[FinancialDetailsService])
   val mockGetFinancialDetailsConnector: FinancialDetailsConnector = mock(classOf[FinancialDetailsConnector])
@@ -401,8 +407,8 @@ class RegimeAPIControllerSpec extends SpecBase with FeatureSwitching with LogCap
     s"return OK (${Status.OK}) when ManualLPPIndicator is true and there is a Manual LPP in the 1811 details" in new Setup(isFSEnabled = true) {
       when(mockAPIService.checkIfHasAnyPenaltyData(any())).thenReturn(true)
       when(mockAPIService.getNumberOfEstimatedPenalties(any())).thenReturn(2)
-      when(mockGetFinancialDetailsService.getFinancialDetails(any(), any())(any()))
-        .thenReturn(Future.successful(Right(GetFinancialDetailsSuccessResponse(financialDetailsWithManualLPP))))
+      when(mockGetFinancialDetailsService.getFinancialDetails(any())(any()))
+        .thenReturn(Future.successful(Right(GetFinancialDetailsHipSuccessResponse(FinancialDetailsHIP("2025-05-06", financialDetailsWithManualLPP)))))
       when(mockGetPenaltyDetailsService.getDataFromPenaltyService(any())(any()))
         .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetailsWithManualLPP))))
       when(mockAPIService.findEstimatedPenaltiesAmount(any()))
@@ -428,8 +434,8 @@ class RegimeAPIControllerSpec extends SpecBase with FeatureSwitching with LogCap
     s"return OK (${Status.OK}) when ManualLPPIndicator is true and but there is no Manual LPP in the 1811 details" in new Setup(isFSEnabled = true) {
       when(mockAPIService.checkIfHasAnyPenaltyData(any())).thenReturn(true)
       when(mockAPIService.getNumberOfEstimatedPenalties(any())).thenReturn(2)
-      when(mockGetFinancialDetailsService.getFinancialDetails(any(), any())(any()))
-        .thenReturn(Future.successful(Right(GetFinancialDetailsSuccessResponse(financialDetailsWithoutManualLPP))))
+      when(mockGetFinancialDetailsService.getFinancialDetails(any())(any()))
+        .thenReturn(Future.successful(Right(GetFinancialDetailsHipSuccessResponse(FinancialDetailsHIP("2025-05-06", financialDetailsWithManualLPP)))))
       when(mockGetPenaltyDetailsService.getDataFromPenaltyService(any())(any()))
         .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetailsWithManualLPP))))
       when(mockAPIService.findEstimatedPenaltiesAmount(any()))
@@ -455,7 +461,7 @@ class RegimeAPIControllerSpec extends SpecBase with FeatureSwitching with LogCap
     s"return OK (${Status.OK}) when ManualLPPIndicator is true but the 1811 returns a failure response" in new Setup(isFSEnabled = true) {
       when(mockAPIService.checkIfHasAnyPenaltyData(any())).thenReturn(true)
       when(mockAPIService.getNumberOfEstimatedPenalties(any())).thenReturn(2)
-      when(mockGetFinancialDetailsService.getFinancialDetails(any(), any())(any()))
+      when(mockGetFinancialDetailsService.getFinancialDetails(any())(any()))
         .thenReturn(Future.successful(Left(GetFinancialDetailsFailureResponse(Status.UNPROCESSABLE_ENTITY))))
       when(mockGetPenaltyDetailsService.getDataFromPenaltyService(any())(any()))
         .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetailsWithManualLPP))))
@@ -482,7 +488,7 @@ class RegimeAPIControllerSpec extends SpecBase with FeatureSwitching with LogCap
     s"return OK (${Status.OK}) when ManualLPPIndicator is true but the 1811 returns No Content" in new Setup(isFSEnabled = true) {
       when(mockAPIService.checkIfHasAnyPenaltyData(any())).thenReturn(true)
       when(mockAPIService.getNumberOfEstimatedPenalties(any())).thenReturn(2)
-      when(mockGetFinancialDetailsService.getFinancialDetails(any(), any())(any()))
+      when(mockGetFinancialDetailsService.getFinancialDetails(any())(any()))
         .thenReturn(Future.successful(Left(GetFinancialDetailsNoContent)))
       when(mockGetPenaltyDetailsService.getDataFromPenaltyService(any())(any()))
         .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetailsWithManualLPP))))
@@ -509,7 +515,7 @@ class RegimeAPIControllerSpec extends SpecBase with FeatureSwitching with LogCap
     s"return OK (${Status.OK}) when ManualLPPIndicator is true but the 1811 returns a Malformed Response, which is logged out" in new Setup(isFSEnabled = true) {
       when(mockAPIService.checkIfHasAnyPenaltyData(any())).thenReturn(true)
       when(mockAPIService.getNumberOfEstimatedPenalties(any())).thenReturn(2)
-      when(mockGetFinancialDetailsService.getFinancialDetails(any(), any())(any()))
+      when(mockGetFinancialDetailsService.getFinancialDetails(any())(any()))
         .thenReturn(Future.successful(Left(GetFinancialDetailsMalformed)))
       when(mockGetPenaltyDetailsService.getDataFromPenaltyService(any())(any()))
         .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetailsWithManualLPP))))

@@ -45,8 +45,8 @@ class RegimePenaltiesFrontendService @Inject()(getFinancialDetailsService: Finan
 
   def handleAndCombineGetFinancialDetailsData(penaltyDetails: GetPenaltyDetails, enrolmentKey: AgnosticEnrolmentKey, arn: Option[String])
                                              (implicit request: Request[_], ec: ExecutionContext, hc: HeaderCarrier): Future[Result] = {
-   // val vrn: String = EnrolmentKey(enrolmentKey).key
-    getFinancialDetailsService.getFinancialDetails(enrolmentKey, None).flatMap {
+
+    getFinancialDetailsService.getFinancialDetails(enrolmentKey).flatMap {
       financialDetailsResponseWithClearedItems =>
         financialDetailsResponseWithClearedItems.fold({
           errorResponse => {
@@ -63,14 +63,15 @@ class RegimePenaltiesFrontendService @Inject()(getFinancialDetailsService: Finan
         },
           financialDetailsSuccessWithClearedItems => { //NOTE: The decision was taken to make 2 calls to retrieve data with and without cleared items
             logger.debug(s"[RegimePenaltiesFrontendService][handleAndCombineGetFinancialDetailsData] - 1811 clearedItems=true call returned 200 for ${enrolmentKey}")
-            getFinancialDetailsService.getFinancialDetails(enrolmentKey, Some(appConfig.queryParametersForGetFinancialDetailsWithoutClearedItems)).map {
+            getFinancialDetailsService.getFinancialDetails(enrolmentKey).map {
               financialDetailsResponseWithoutClearedItems =>
                 financialDetailsResponseWithoutClearedItems.fold({
                   handleErrorResponseFromGetFinancialDetails(_, enrolmentKey)(handleNoContent = {
                     logger.info(s"[RegimePenaltiesFrontendService][handleAndCombineGetFinancialDetailsData] - 1811 call returned 404 for ${enrolmentKey} with NO_DATA_FOUND in response body")
                     val newPenaltyDetails = combineAPIData(penaltyDetails,
                       financialDetailsSuccessWithClearedItems.asInstanceOf[GetFinancialDetailsSuccessResponse].financialDetails,
-                      FinancialDetails(None, None))
+                      FinancialDetails(None, None)
+                    )
                     returnResponse(newPenaltyDetails, enrolmentKey, arn)
                   })
                 },

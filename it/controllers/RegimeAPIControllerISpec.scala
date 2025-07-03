@@ -16,14 +16,15 @@
 
 package controllers
 
-import com.github.tomakehurst.wiremock.client.WireMock.{postRequestedFor, urlEqualTo}
-import config.featureSwitches.{CallAPI1811ETMP, CallAPI1812ETMP, FeatureSwitching}
+import com.github.tomakehurst.wiremock.client.WireMock.{anyUrl, postRequestedFor, urlEqualTo}
+import config.featureSwitches.{CallAPI1811Stub, CallAPI1812ETMP, FeatureSwitching}
 import org.scalatest.prop.TableDrivenPropertyChecks
 import play.api.http.Status
 import play.api.libs.json.{JsValue, Json}
 import play.api.test.Helpers._
 import utils.{AuthMock, IntegrationSpecCommonBase, RegimeETMPWiremock}
 import models.{Id, IdType, Regime}
+import play.twirl.api.TwirlHelperImports.twirlJavaCollectionToScala
 
 import scala.jdk.CollectionConverters._
 
@@ -245,8 +246,9 @@ class RegimeAPIControllerISpec extends IntegrationSpecCommonBase with RegimeETMP
             val sampleAPI1811Response = Json.parse(
               """
                 |{
-                | "getFinancialData" : {
-                | "financialDetails": {
+                | "success": {
+                | "processingDate": "2025-05-06",
+                |  "financialData":{
                 |  "totalisation": {
                 |    "regimeTotalisation": {
                 |      "totalAccountOverdue": 1000.0,
@@ -339,7 +341,7 @@ class RegimeAPIControllerISpec extends IntegrationSpecCommonBase with RegimeETMP
                 |}
                 |}
                 |}""".stripMargin)
-            withFeature(CallAPI1811ETMP -> FEATURE_SWITCH_ON) {
+            withFeature(CallAPI1811Stub -> FEATURE_SWITCH_ON) {
 
               mockStubResponseForAuthorisedUser
               mockResponseForGetFinancialDetails(Status.OK, regime, idType, id,
@@ -362,7 +364,7 @@ class RegimeAPIControllerISpec extends IntegrationSpecCommonBase with RegimeETMP
 
         "return the status from EIS" when {
           "404 response received " in {
-            withFeature(CallAPI1811ETMP -> FEATURE_SWITCH_ON) {
+            withFeature(CallAPI1811Stub -> FEATURE_SWITCH_ON) {
 
               mockStubResponseForAuthorisedUser
               mockResponseForGetFinancialDetails(Status.NOT_FOUND, regime, idType, id,
@@ -381,7 +383,7 @@ class RegimeAPIControllerISpec extends IntegrationSpecCommonBase with RegimeETMP
           }
 
           "Non 200 response received " in {
-            withFeature(CallAPI1811ETMP -> FEATURE_SWITCH_ON) {
+            withFeature(CallAPI1811Stub -> FEATURE_SWITCH_ON) {
 
               mockStubResponseForAuthorisedUser
               mockResponseForGetFinancialDetails(Status.BAD_REQUEST, regime, idType, id,

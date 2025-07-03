@@ -17,6 +17,7 @@
 package config
 
 import config.featureSwitches._
+import models.Id
 import org.mockito.ArgumentMatchers
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
@@ -25,7 +26,7 @@ import org.scalatest.wordspec.AnyWordSpec
 import play.api.Configuration
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
-import java.time.{LocalDateTime, LocalDate}
+import java.time.{LocalDate, LocalDateTime}
 
 class AppConfigSpec extends AnyWordSpec with ShouldMatchers with FeatureSwitching {
   val mockConfiguration: Configuration = mock(classOf[Configuration])
@@ -70,20 +71,62 @@ class AppConfigSpec extends AnyWordSpec with ShouldMatchers with FeatureSwitchin
   }
 
   "getFinancialDetailsUrl" should {
-    "call API1811 when the feature switch is enabled" in new Setup {
-      enableFeatureSwitch(CallAPI1811ETMP)
+    "call API1811 when the stub feature switch is disabled" in new Setup {
+      disableFeatureSwitch(CallAPI1811Stub)
       when(mockServicesConfig.baseUrl(ArgumentMatchers.any()))
         .thenReturn("localhost:0000")
       val result: String = this.config.getFinancialDetailsUrl("123456789")
       result shouldBe "localhost:0000/penalty/financial-data/VRN/123456789/VATC"
     }
 
-    "call API1811 stub when the feature switch is disabled" in new Setup {
-      disableFeatureSwitch(CallAPI1811ETMP)
+    "call API1811 stub when the stub feature switch is enabled" in new Setup {
+      disableFeatureSwitch(CallAPI1811Stub)
       when(mockServicesConfig.baseUrl(ArgumentMatchers.any()))
         .thenReturn("localhost:0000")
       val result: String = this.config.getFinancialDetailsUrl("123456789")
       result shouldBe "localhost:0000/penalties-stub/penalty/financial-data/VRN/123456789/VATC"
+    }
+  }
+
+  "getRegimeFinancialDetailsUrl" when {
+    "calling the IF endpoint" should {
+      "call API1811 when the stub feature switch is disabled" in new Setup {
+        disableFeatureSwitch(CallAPI1811Stub)
+        disableFeatureSwitch(CallAPI1811HIP)
+        when(mockServicesConfig.baseUrl(ArgumentMatchers.any()))
+          .thenReturn("localhost:0000")
+        val result: String = this.config.getRegimeFinancialDetailsUrl(Id("123456789"))
+        result shouldBe "localhost:0000/penalty/financial-data/VRN/123456789/VATC"
+      }
+
+      "call API1811 stub when the stub feature switch is enabled" in new Setup {
+        enableFeatureSwitch(CallAPI1811Stub)
+        disableFeatureSwitch(CallAPI1811HIP)
+        when(mockServicesConfig.baseUrl(ArgumentMatchers.any()))
+          .thenReturn("localhost:0000")
+        val result: String = this.config.getRegimeFinancialDetailsUrl(Id("123456789"))
+        result shouldBe "localhost:0000/penalties-stub/penalty/financial-data/VRN/123456789/VATC"
+      }
+    }
+
+    "calling the HIP endpoint" should {
+      "call API1811 when the stub feature switch is disabled" in new Setup {
+        enableFeatureSwitch(CallAPI1811HIP)
+        disableFeatureSwitch(CallAPI1811Stub)
+        when(mockServicesConfig.baseUrl(ArgumentMatchers.any()))
+          .thenReturn("localhost:0000")
+        val result: String = this.config.getRegimeFinancialDetailsUrl(Id("123456789"))
+        result shouldBe "localhost:0000/RESTAdapter/cross-regime/taxpayer/financial-data/query"
+      }
+
+      "call API1811 stub when the stub feature switch is enabled" in new Setup {
+        enableFeatureSwitch(CallAPI1811HIP)
+        enableFeatureSwitch(CallAPI1811Stub)
+        when(mockServicesConfig.baseUrl(ArgumentMatchers.any()))
+          .thenReturn("localhost:0000")
+        val result: String = this.config.getRegimeFinancialDetailsUrl(Id("123456789"))
+        result shouldBe "localhost:0000/RESTAdapter/cross-regime/taxpayer/financial-data/query"
+      }
     }
   }
 
