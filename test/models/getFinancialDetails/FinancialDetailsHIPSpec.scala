@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,8 +23,7 @@ import play.api.libs.json.{JsValue, Json}
 import java.time.LocalDate
 
 class FinancialDetailsHIPSpec extends SpecBase {
-  val modelAsJson: JsValue = Json.parse(
-    """
+  val modelAsJson: JsValue = Json.parse("""
       |{
       | "success": {
       | "processingDate": "2023-11-28T10:15:10Z",
@@ -66,8 +65,7 @@ class FinancialDetailsHIPSpec extends SpecBase {
       |}
       |""".stripMargin)
 
-  val parsedModelAsJson: JsValue = Json.parse(
-    """
+  val parsedModelAsJson: JsValue = Json.parse("""
       |{
       | "processingDate": "2023-11-28T10:15:10Z",
       | "financialData":{
@@ -115,10 +113,11 @@ class FinancialDetailsHIPSpec extends SpecBase {
           )
         )
       ),
-      totalisation = Some(FinancialDetailsTotalisation(
-        regimeTotalisations = Some(RegimeTotalisation(totalAccountOverdue = Some(1000))),
-        interestTotalisations = Some(InterestTotalisation(totalAccountPostedInterest = Some(123.45), totalAccountAccruingInterest = Some(23.45)))
-      ))
+      totalisation = Some(
+        FinancialDetailsTotalisation(
+          regimeTotalisations = Some(RegimeTotalisation(totalAccountOverdue = Some(1000))),
+          interestTotalisations = Some(InterestTotalisation(totalAccountPostedInterest = Some(123.45), totalAccountAccruingInterest = Some(23.45)))
+        ))
     )
   )
 

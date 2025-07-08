@@ -21,13 +21,11 @@ import play.api.libs.json._
 case class FinancialDetailsHIP(processingDate: String, financialData: FinancialDetails)
 
 object FinancialDetailsHIP {
-  implicit val reads: Reads[FinancialDetailsHIP] = new Reads[FinancialDetailsHIP] {
-    override def reads(json: JsValue): JsResult[FinancialDetailsHIP] =
-      for {
-        processingDate <- (json \ "success" \ "processingDate").validate[String]
-        financialData  <- (json \ "success" \ "financialData").validate[FinancialDetails]
-      } yield FinancialDetailsHIP(processingDate, financialData)
-  }
+  implicit val reads: Reads[FinancialDetailsHIP] = (json: JsValue) =>
+    for {
+      processingDate <- (json \ "success" \ "processingDate").validate[String]
+      financialData  <- (json \ "success" \ "financialData").validate[FinancialDetails]
+    } yield FinancialDetailsHIP(processingDate, financialData)
 
   implicit val writes: Writes[FinancialDetailsHIP] = Json.writes[FinancialDetailsHIP]
 }

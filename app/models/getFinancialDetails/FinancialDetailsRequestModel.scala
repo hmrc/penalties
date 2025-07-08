@@ -130,13 +130,14 @@ case class FinancialDetailsRequestModel(searchType: Option[String],
       "addPenaltyDetails"          -> addPenaltyDetails,
       "addPostedInterestDetails"   -> addPostedInterestDetails,
       "addAccruingInterestDetails" -> addAccruingInterestDetails
-    ).collect {
-      case (key, Some(value)) => key -> value.toString
+    ).collect { case (key, Some(value)) =>
+      key -> value.toString
     }
 }
 
 object FinancialDetailsRequestModel {
   implicit val format: Format[FinancialDetailsRequestModel] = Json.format[FinancialDetailsRequestModel]
 
-  val emptyModel = FinancialDetailsRequestModel(None, None, None, None, None, None, None, None, None, None, None, None, None)
+  val emptyModel: FinancialDetailsRequestModel =
+    FinancialDetailsRequestModel(None, None, None, None, None, None, None, None, None, None, None, None, None)
 }

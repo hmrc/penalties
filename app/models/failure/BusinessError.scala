@@ -18,10 +18,7 @@ package models.failure
 
 import play.api.libs.json.{Format, Json}
 
-case class BusinessError(
-                          processingDate: String,
-                          code: String,
-                          text: String)
+case class BusinessError(processingDate: String, code: String, text: String)
 
 object BusinessError {
   implicit val format: Format[BusinessError] = Json.format[BusinessError]

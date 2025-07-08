@@ -30,7 +30,7 @@ import utils.{IntegrationSpecCommonBase, RegimeETMPWiremock}
 import java.time.LocalDate
 
 class FinancialDetailsServiceISpec extends IntegrationSpecCommonBase with RegimeETMPWiremock with FeatureSwitching with TableDrivenPropertyChecks {
-//  setEnabledFeatureSwitches(CallAPI1811Stub)
+
   setEnabledFeatureSwitches()
   val service: FinancialDetailsService = injector.instanceOf[FinancialDetailsService]
 
@@ -57,7 +57,7 @@ class FinancialDetailsServiceISpec extends IntegrationSpecCommonBase with Regime
     )
     val financialDetailsHip: FinancialDetailsHIP = FinancialDetailsHIP(processingDate = "2025-05-06", financialData = financialData)
 
-    s"getFinancialDetails for $regime" when {
+    s"getFinancialDetails for ${regime.value} regime" when {
 
       Seq("HIP", "IF").foreach { upstream =>
         val isHip = upstream == "HIP"

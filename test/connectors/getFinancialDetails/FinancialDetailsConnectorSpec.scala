@@ -20,8 +20,8 @@ import base.{LogCapturing, SpecBase}
 import config.AppConfig
 import config.featureSwitches.CallAPI1811HIP
 import connectors.parsers.getFinancialDetails.FinancialDetailsParser._
-import models.getFinancialDetails.totalisation.{FinancialDetailsTotalisation, InterestTotalisation, RegimeTotalisation}
 import models.getFinancialDetails._
+import models.getFinancialDetails.totalisation.{FinancialDetailsTotalisation, InterestTotalisation, RegimeTotalisation}
 import models.{AgnosticEnrolmentKey, Id, IdType, Regime}
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
@@ -41,28 +41,26 @@ class FinancialDetailsConnectorSpec extends SpecBase with LogCapturing {
   val mockHttpClient: HttpClient    = mock(classOf[HttpClient])
   val mockAppConfig: AppConfig      = mock(classOf[AppConfig])
 
-  val regime  = "VATC"
-  val idType  = "VRN"
-  val idValue = "123456789"
+  val regime: Regime = Regime("VATC")
+  val idType: IdType = IdType("VRN")
+  val idValue: Id    = Id("123456789")
 
   val urlIF  = s"/penalty/financial-data/VRN/$idValue/VATC"
   val urlHIP = "/RESTAdapter/cross-regime/taxpayer/financial-data/query"
 
-  val vrn123456789: AgnosticEnrolmentKey = AgnosticEnrolmentKey(
-    regime = Regime(regime),
-    idType = IdType(idType),
-    id = Id(idValue)
-  )
+  val vrn123456789: AgnosticEnrolmentKey = AgnosticEnrolmentKey(regime, idType, idValue)
   val financialDetailsBody: JsObject = Json.obj(
-    "taxRegime" -> regime,
+    "taxRegime" -> regime.value,
     "taxpayerInformation" -> Json.obj(
-      "idType"   -> idType,
-      "idNumber" -> idValue
+      "idType"   -> idType.value,
+      "idNumber" -> idValue.value
     )
   )
 
   when(mockAppConfig.queryParametersForGetFinancialDetails).thenReturn("")
+  when(mockAppConfig.queryParametersForGetFinancialDetailsMap).thenReturn(Seq.empty)
   when(mockAppConfig.addDateRangeQueryParameters()).thenReturn("")
+  when(mockAppConfig.addDateRangeQueryParametersMap()).thenReturn(Seq.empty)
 
   val financialDetailsModelAPI1811: FinancialDetails = FinancialDetails(
     documentDetails = Some(
@@ -85,7 +83,7 @@ class FinancialDetailsConnectorSpec extends SpecBase with LogCapturing {
   trait SetupHIP {
     val connector = new FinancialDetailsConnector(mockHttpClient, mockAppConfig)
     when(mockAppConfig.isEnabled(ArgumentMatchers.eq(CallAPI1811HIP))).thenReturn(true)
-    when(mockAppConfig.getRegimeFinancialDetailsUrl(Id(idValue))).thenReturn(urlHIP)
+    when(mockAppConfig.getRegimeFinancialDetailsUrl(idValue)).thenReturn(urlHIP)
 
     def buildErrorResponseMock(errorResponse: Exception): OngoingStubbing[Future[GetFinancialDetailsResponse]] =
       when(
@@ -98,7 +96,7 @@ class FinancialDetailsConnectorSpec extends SpecBase with LogCapturing {
   trait SetupIF {
     val connector = new FinancialDetailsConnector(mockHttpClient, mockAppConfig)
     when(mockAppConfig.isEnabled(ArgumentMatchers.eq(CallAPI1811HIP))).thenReturn(false)
-    when(mockAppConfig.getRegimeFinancialDetailsUrl(Id(idValue))).thenReturn(urlIF)
+    when(mockAppConfig.getRegimeFinancialDetailsUrl(idValue)).thenReturn(urlIF)
 
     def buildErrorResponseMock(errorResponse: Exception): OngoingStubbing[Future[GetFinancialDetailsResponse]] =
       when(
@@ -108,98 +106,100 @@ class FinancialDetailsConnectorSpec extends SpecBase with LogCapturing {
           ArgumentMatchers.any())).thenReturn(Future.failed(errorResponse))
   }
 
-//  "getFinancialDetails" when {
-//    "calling the HIP endpoint" should {
-//      "return the financial details in a Right when the call succeeds" in new SetupHIP {
-//        val successResponse: GetFinancialDetailsSuccess = GetFinancialDetailsHipSuccessResponse(financialDetailsHipModelAPI1811)
-//        when(mockHttpClient.POST[JsObject, GetFinancialDetailsResponse](
-//          ArgumentMatchers.eq(urlHIP),
-//          ArgumentMatchers.eq(financialDetailsBody),
-//          ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(Right(successResponse)))
-//
-//        val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails(vrn123456789)(HeaderCarrier()))
-//        result shouldBe Right(GetFinancialDetailsHipSuccessResponse(financialDetailsHipModelAPI1811))
-//      }
-//      "return a GetFinancialDetailsFailureResponse with upstream error status and log error message" when {
-//        "a 4XX is returned from upstream" in new SetupHIP {
-//          val errorResponse: UpstreamErrorResponse = UpstreamErrorResponse.apply("", BAD_REQUEST)
-//          buildErrorResponseMock(errorResponse)
-//
-//          withCaptureOfLoggingFrom(logger) { logs =>
-//            val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails(vrn123456789)(HeaderCarrier()))
-//            logs.exists(_.getMessage.contains(PagerDutyKeys.RECEIVED_4XX_FROM_1811_API.toString)) shouldBe true
-//            result shouldBe Left(GetFinancialDetailsFailureResponse(BAD_REQUEST))
-//          }
-//        }
-//        "a 5XX is returned from upstream" in new SetupHIP {
-//          val errorResponse: UpstreamErrorResponse = UpstreamErrorResponse.apply("", BAD_GATEWAY)
-//          buildErrorResponseMock(errorResponse)
-//
-//          withCaptureOfLoggingFrom(logger) { logs =>
-//            val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails(vrn123456789)(HeaderCarrier()))
-//            logs.exists(_.getMessage.contains(PagerDutyKeys.RECEIVED_5XX_FROM_1811_API.toString)) shouldBe true
-//            result shouldBe Left(GetFinancialDetailsFailureResponse(BAD_GATEWAY))
-//          }
-//        }
-//        "an unknown exception is returned from upstream" in new SetupHIP {
-//          val errorResponse: Exception = new Exception("An unknown error")
-//          buildErrorResponseMock(errorResponse)
-//
-//          withCaptureOfLoggingFrom(logger) { logs =>
-//            val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails(vrn123456789)(HeaderCarrier()))
-//            logs.exists(_.getMessage.contains(PagerDutyKeys.UNKNOWN_EXCEPTION_CALLING_1811_API.toString)) shouldBe true
-//            result shouldBe Left(GetFinancialDetailsFailureResponse(INTERNAL_SERVER_ERROR))
-//          }
-//        }
-//      }
-//    }
-//
-//    "calling the IF endpoint" should {
-//      "return the financial details in a Right when the call succeeds" in new SetupIF {
-//        val successResponse: GetFinancialDetailsSuccess = GetFinancialDetailsSuccessResponse(financialDetailsModelAPI1811)
-//        when(
-//          mockHttpClient.GET[GetFinancialDetailsResponse](ArgumentMatchers.eq(urlIF), ArgumentMatchers.any(), ArgumentMatchers.any())(
-//            ArgumentMatchers.any(),
-//            ArgumentMatchers.any(),
-//            ArgumentMatchers.any())).thenReturn(Future.successful(Right(successResponse)))
-//
-//        val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails(vrn123456789)(HeaderCarrier()))
-//        result shouldBe Right(GetFinancialDetailsSuccessResponse(financialDetailsModelAPI1811))
-//      }
-//      "return a GetFinancialDetailsFailureResponse with upstream error status and log error message" when {
-//        "a 4XX is returned from upstream" in new SetupIF {
-//          val errorResponse: UpstreamErrorResponse = UpstreamErrorResponse.apply("", BAD_REQUEST)
-//          buildErrorResponseMock(errorResponse)
-//
-//          withCaptureOfLoggingFrom(logger) { logs =>
-//            val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails(vrn123456789)(HeaderCarrier()))
-//            logs.exists(_.getMessage.contains(PagerDutyKeys.RECEIVED_4XX_FROM_1811_API.toString)) shouldBe true
-//            result shouldBe Left(GetFinancialDetailsFailureResponse(BAD_REQUEST))
-//          }
-//        }
-//        "a 5XX is returned from upstream" in new SetupIF {
-//          val errorResponse: UpstreamErrorResponse = UpstreamErrorResponse.apply("", BAD_GATEWAY)
-//          buildErrorResponseMock(errorResponse)
-//
-//          withCaptureOfLoggingFrom(logger) { logs =>
-//            val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails(vrn123456789)(HeaderCarrier()))
-//            logs.exists(_.getMessage.contains(PagerDutyKeys.RECEIVED_5XX_FROM_1811_API.toString)) shouldBe true
-//            result shouldBe Left(GetFinancialDetailsFailureResponse(BAD_GATEWAY))
-//          }
-//        }
-//        "an unknown exception is returned from upstream" in new SetupIF {
-//          val errorResponse: Exception = new Exception("An unknown error")
-//          buildErrorResponseMock(errorResponse)
-//
-//          withCaptureOfLoggingFrom(logger) { logs =>
-//            val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails(vrn123456789)(HeaderCarrier()))
-//            logs.exists(_.getMessage.contains(PagerDutyKeys.UNKNOWN_EXCEPTION_CALLING_1811_API.toString)) shouldBe true
-//            result shouldBe Left(GetFinancialDetailsFailureResponse(INTERNAL_SERVER_ERROR))
-//          }
-//        }
-//      }
-//    }
-//  }
+  "getFinancialDetails" when {
+    "calling the HIP endpoint" should {
+      "return the financial details in a Right when the call succeeds" in new SetupHIP {
+        val successResponse: GetFinancialDetailsSuccess = GetFinancialDetailsHipSuccessResponse(financialDetailsHipModelAPI1811)
+        when(
+          mockHttpClient.POST[JsObject, GetFinancialDetailsResponse](
+            ArgumentMatchers.eq(urlHIP),
+            ArgumentMatchers.eq(financialDetailsBody),
+            ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
+          .thenReturn(Future.successful(Right(successResponse)))
+
+        val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails(vrn123456789)(HeaderCarrier()))
+        result shouldBe Right(GetFinancialDetailsHipSuccessResponse(financialDetailsHipModelAPI1811))
+      }
+      "return a GetFinancialDetailsFailureResponse with upstream error status and log error message" when {
+        "a 4XX is returned from upstream" in new SetupHIP {
+          val errorResponse: UpstreamErrorResponse = UpstreamErrorResponse.apply("", BAD_REQUEST)
+          buildErrorResponseMock(errorResponse)
+
+          withCaptureOfLoggingFrom(logger) { logs =>
+            val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails(vrn123456789)(HeaderCarrier()))
+            logs.exists(_.getMessage.contains(PagerDutyKeys.RECEIVED_4XX_FROM_1811_API.toString)) shouldBe true
+            result shouldBe Left(GetFinancialDetailsFailureResponse(BAD_REQUEST))
+          }
+        }
+        "a 5XX is returned from upstream" in new SetupHIP {
+          val errorResponse: UpstreamErrorResponse = UpstreamErrorResponse.apply("", BAD_GATEWAY)
+          buildErrorResponseMock(errorResponse)
+
+          withCaptureOfLoggingFrom(logger) { logs =>
+            val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails(vrn123456789)(HeaderCarrier()))
+            logs.exists(_.getMessage.contains(PagerDutyKeys.RECEIVED_5XX_FROM_1811_API.toString)) shouldBe true
+            result shouldBe Left(GetFinancialDetailsFailureResponse(BAD_GATEWAY))
+          }
+        }
+        "an unknown exception is returned from upstream" in new SetupHIP {
+          val errorResponse: Exception = new Exception("An unknown error")
+          buildErrorResponseMock(errorResponse)
+
+          withCaptureOfLoggingFrom(logger) { logs =>
+            val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails(vrn123456789)(HeaderCarrier()))
+            logs.exists(_.getMessage.contains(PagerDutyKeys.UNKNOWN_EXCEPTION_CALLING_1811_API.toString)) shouldBe true
+            result shouldBe Left(GetFinancialDetailsFailureResponse(INTERNAL_SERVER_ERROR))
+          }
+        }
+      }
+    }
+
+    "calling the IF endpoint" should {
+      "return the financial details in a Right when the call succeeds" in new SetupIF {
+        val successResponse: GetFinancialDetailsSuccess = GetFinancialDetailsSuccessResponse(financialDetailsModelAPI1811)
+        when(
+          mockHttpClient.GET[GetFinancialDetailsResponse](ArgumentMatchers.eq(urlIF), ArgumentMatchers.any(), ArgumentMatchers.any())(
+            ArgumentMatchers.any(),
+            ArgumentMatchers.any(),
+            ArgumentMatchers.any())).thenReturn(Future.successful(Right(successResponse)))
+
+        val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails(vrn123456789)(HeaderCarrier()))
+        result shouldBe Right(GetFinancialDetailsSuccessResponse(financialDetailsModelAPI1811))
+      }
+      "return a GetFinancialDetailsFailureResponse with upstream error status and log error message" when {
+        "a 4XX is returned from upstream" in new SetupIF {
+          val errorResponse: UpstreamErrorResponse = UpstreamErrorResponse.apply("", BAD_REQUEST)
+          buildErrorResponseMock(errorResponse)
+
+          withCaptureOfLoggingFrom(logger) { logs =>
+            val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails(vrn123456789)(HeaderCarrier()))
+            logs.exists(_.getMessage.contains(PagerDutyKeys.RECEIVED_4XX_FROM_1811_API.toString)) shouldBe true
+            result shouldBe Left(GetFinancialDetailsFailureResponse(BAD_REQUEST))
+          }
+        }
+        "a 5XX is returned from upstream" in new SetupIF {
+          val errorResponse: UpstreamErrorResponse = UpstreamErrorResponse.apply("", BAD_GATEWAY)
+          buildErrorResponseMock(errorResponse)
+
+          withCaptureOfLoggingFrom(logger) { logs =>
+            val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails(vrn123456789)(HeaderCarrier()))
+            logs.exists(_.getMessage.contains(PagerDutyKeys.RECEIVED_5XX_FROM_1811_API.toString)) shouldBe true
+            result shouldBe Left(GetFinancialDetailsFailureResponse(BAD_GATEWAY))
+          }
+        }
+        "an unknown exception is returned from upstream" in new SetupIF {
+          val errorResponse: Exception = new Exception("An unknown error")
+          buildErrorResponseMock(errorResponse)
+
+          withCaptureOfLoggingFrom(logger) { logs =>
+            val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails(vrn123456789)(HeaderCarrier()))
+            logs.exists(_.getMessage.contains(PagerDutyKeys.UNKNOWN_EXCEPTION_CALLING_1811_API.toString)) shouldBe true
+            result shouldBe Left(GetFinancialDetailsFailureResponse(INTERNAL_SERVER_ERROR))
+          }
+        }
+      }
+    }
+  }
 
   "getFinancialDetailsForAPI" when {
     "calling the HIP endpoint" should {
@@ -210,8 +210,7 @@ class FinancialDetailsConnectorSpec extends SpecBase with LogCapturing {
           when(
             mockHttpClient.POST[JsObject, HttpResponse](
               ArgumentMatchers.eq(urlHIP),
-              ArgumentMatchers.any(),
-              //            ArgumentMatchers.eq(financialDetailsBody),
+              ArgumentMatchers.eq(financialDetailsBody),
               ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
             .thenReturn(Future.successful(successResponse))
 
@@ -224,11 +223,11 @@ class FinancialDetailsConnectorSpec extends SpecBase with LogCapturing {
           val successResponse: HttpResponse =
             HttpResponse.apply(status = Status.OK, json = Json.toJson(financialDetailsHipModelAPI1811), headers = Map.empty)
           when(
-            mockHttpClient.POST[JsObject, HttpResponse](
-              ArgumentMatchers.eq(urlHIP),
+            mockHttpClient.POST[JsObject, HttpResponse](ArgumentMatchers.eq(urlHIP), ArgumentMatchers.any(), ArgumentMatchers.any())(
               ArgumentMatchers.any(),
-//            ArgumentMatchers.eq(financialDetailsBody),
-              ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
+              ArgumentMatchers.any(),
+              ArgumentMatchers.any(),
+              ArgumentMatchers.any()))
             .thenReturn(Future.successful(successResponse))
 
           val result: HttpResponse = await(
@@ -294,99 +293,107 @@ class FinancialDetailsConnectorSpec extends SpecBase with LogCapturing {
       }
     }
 
-//    "calling the IF endpoint" should {
-//      "return a 200 response when the call succeeds" when {
-//        "there are no query parameters" in new SetupIF {
-//          val successResponse: HttpResponse = HttpResponse.apply(status = Status.OK, json = Json.toJson(financialDetailsModelAPI1811), headers = Map.empty)
-//
-//          when(
-//            mockHttpClient.GET[HttpResponse](ArgumentMatchers.eq(urlIF), ArgumentMatchers.any(), ArgumentMatchers.any())(
-//              ArgumentMatchers.any(),
-//              ArgumentMatchers.any(),
-//              ArgumentMatchers.any())).thenReturn(Future.successful(successResponse))
-//
-//          val result: HttpResponse = await(connector.getFinancialDetailsForAPI(vrn123456789, FinancialDetailsRequestModel.emptyModel)(HeaderCarrier()))
-//          result.isInstanceOf[HttpResponse] shouldBe true
-//          result.status shouldBe OK
-//        }
-//        "all query parameters are in use" in new SetupIF {
-//          val successResponse: HttpResponse = HttpResponse.apply(status = Status.OK, json = Json.toJson(financialDetailsModelAPI1811), headers = Map.empty)
-//          val urlWithQueryParameters: String = urlIF + "?searchType=CHGREF&searchItem=XC00178236592&dateType=BILLING&dateFrom=2020-10-03&dateTo=2021-07-12" +
-//            s"&includeClearedItems=false&includeStatisticalItems=true&includePaymentOnAccount=true&addRegimeTotalisation=false&addLockInformation=true" +
-//            s"&addPenaltyDetails=true&addPostedInterestDetails=true&addAccruingInterestDetails=true"
-//          when(
-//            mockHttpClient.GET[HttpResponse](ArgumentMatchers.eq(urlWithQueryParameters), ArgumentMatchers.any(), ArgumentMatchers.any())(
-//              ArgumentMatchers.any(),
-//              ArgumentMatchers.any(),
-//              ArgumentMatchers.any())).thenReturn(Future.successful(successResponse))
-//
-//          val result: HttpResponse = await(connector.getFinancialDetailsForAPI(
-//            enrolmentKey = vrn123456789,
-//            searchType = Some("CHGREF"),
-//            searchItem = Some("XC00178236592"),
-//            dateType = Some("BILLING"),
-//            dateFrom = Some("2020-10-03"),
-//            dateTo = Some("2021-07-12"),
-//            includeClearedItems = Some(false),
-//            includeStatisticalItems = Some(true),
-//            includePaymentOnAccount = Some(true),
-//            addRegimeTotalisation = Some(false),
-//            addLockInformation = Some(true),
-//            addPenaltyDetails = Some(true),
-//            addPostedInterestDetails = Some(true),
-//            addAccruingInterestDetails = Some(true)
-//          )(HeaderCarrier()))
-//          result.isInstanceOf[HttpResponse] shouldBe true
-//          result.status shouldBe OK
-//        }
-//      }
-//      "return a 200 response when the call succeeds" in new SetupIF {
-//        val successResponse: HttpResponse = HttpResponse.apply(status = Status.OK, json = Json.toJson(financialDetailsModelAPI1811), headers = Map.empty)
-//        when(
-//          mockHttpClient.GET[HttpResponse](ArgumentMatchers.eq(urlIF), ArgumentMatchers.any(), ArgumentMatchers.any())(
-//            ArgumentMatchers.any(),
-//            ArgumentMatchers.any(),
-//            ArgumentMatchers.any())).thenReturn(Future.successful(successResponse))
-//
-//        val result: HttpResponse = await(connector.getFinancialDetailsForAPI(vrn123456789, FinancialDetailsRequestModel.emptyModel)(HeaderCarrier()))
-//        result.isInstanceOf[HttpResponse] shouldBe true
-//        result.status shouldBe OK
-//      }
-//      "return a HttpResponse with upstream error status and log error message" when {
-//        "a 4XX is returned from upstream" in new SetupIF {
-//          val errorResponse: UpstreamErrorResponse = UpstreamErrorResponse.apply("", BAD_REQUEST)
-//          buildErrorResponseMock(errorResponse)
-//
-//          withCaptureOfLoggingFrom(logger) { logs =>
-//            val result: HttpResponse = await(connector.getFinancialDetailsForAPI(vrn123456789, FinancialDetailsRequestModel.emptyModel)(HeaderCarrier()))
-//            logs.exists(_.getMessage.contains(s"Received $BAD_REQUEST status from API 1811 call")) shouldBe true
-//            result.isInstanceOf[HttpResponse] shouldBe true
-//            result.status shouldBe BAD_REQUEST
-//          }
-//        }
-//        "a 5XX is returned from upstream" in new SetupIF {
-//          val errorResponse: UpstreamErrorResponse = UpstreamErrorResponse.apply("", BAD_GATEWAY)
-//          buildErrorResponseMock(errorResponse)
-//
-//          withCaptureOfLoggingFrom(logger) { logs =>
-//            val result: HttpResponse = await(connector.getFinancialDetailsForAPI(vrn123456789, FinancialDetailsRequestModel.emptyModel)(HeaderCarrier()))
-//            logs.exists(_.getMessage.contains(s"Received $BAD_GATEWAY status from API 1811 call")) shouldBe true
-//            result.isInstanceOf[HttpResponse] shouldBe true
-//            result.status shouldBe BAD_GATEWAY
-//          }
-//        }
-//        "an unknown exception is returned from upstream" in new SetupIF {
-//          val errorResponse: Exception = new Exception("An unknown error")
-//          buildErrorResponseMock(errorResponse)
-//
-//          withCaptureOfLoggingFrom(logger) { logs =>
-//            val result: HttpResponse = await(connector.getFinancialDetailsForAPI(vrn123456789, FinancialDetailsRequestModel.emptyModel)(HeaderCarrier()))
-//            logs.exists(_.getMessage.contains(PagerDutyKeys.UNKNOWN_EXCEPTION_CALLING_1811_API.toString)) shouldBe true
-//            result.isInstanceOf[HttpResponse] shouldBe true
-//            result.status shouldBe INTERNAL_SERVER_ERROR
-//          }
-//        }
-//      }
-//    }
+    "calling the IF endpoint" should {
+      "return a 200 response when the call succeeds" when {
+        "there are no query parameters" in new SetupIF {
+          val successResponse: HttpResponse =
+            HttpResponse.apply(status = Status.OK, json = Json.toJson(financialDetailsModelAPI1811), headers = Map.empty)
+
+          when(
+            mockHttpClient.GET[HttpResponse](ArgumentMatchers.eq(urlIF), ArgumentMatchers.any(), ArgumentMatchers.any())(
+              ArgumentMatchers.any(),
+              ArgumentMatchers.any(),
+              ArgumentMatchers.any())).thenReturn(Future.successful(successResponse))
+
+          val result: HttpResponse =
+            await(connector.getFinancialDetailsForAPI(vrn123456789, FinancialDetailsRequestModel.emptyModel)(HeaderCarrier()))
+          result.isInstanceOf[HttpResponse] shouldBe true
+          result.status shouldBe OK
+        }
+      }
+      "all query parameters are in use" in new SetupIF {
+        val successResponse: HttpResponse =
+          HttpResponse.apply(status = Status.OK, json = Json.toJson(financialDetailsModelAPI1811), headers = Map.empty)
+        val urlWithQueryParameters
+            : String = urlIF + "?searchType=CHGREF&searchItem=XC00178236592&dateType=BILLING&dateFrom=2020-10-03&dateTo=2021-07-12" +
+          s"&includeClearedItems=false&includeStatisticalItems=true&includePaymentOnAccount=true&addRegimeTotalisation=false&addLockInformation=true" +
+          s"&addPenaltyDetails=true&addPostedInterestDetails=true&addAccruingInterestDetails=true"
+        when(
+          mockHttpClient.GET[HttpResponse](ArgumentMatchers.eq(urlWithQueryParameters), ArgumentMatchers.any(), ArgumentMatchers.any())(
+            ArgumentMatchers.any(),
+            ArgumentMatchers.any(),
+            ArgumentMatchers.any())).thenReturn(Future.successful(successResponse))
+
+        val fullRequestModel: FinancialDetailsRequestModel = FinancialDetailsRequestModel(
+          searchType = Some("CHGREF"),
+          searchItem = Some("XC00178236592"),
+          dateType = Some("BILLING"),
+          dateFrom = Some("2020-10-03"),
+          dateTo = Some("2021-07-12"),
+          includeClearedItems = Some(false),
+          includeStatisticalItems = Some(true),
+          includePaymentOnAccount = Some(true),
+          addRegimeTotalisation = Some(false),
+          addLockInformation = Some(true),
+          addPenaltyDetails = Some(true),
+          addPostedInterestDetails = Some(true),
+          addAccruingInterestDetails = Some(true)
+        )
+        val result: HttpResponse = await(connector.getFinancialDetailsForAPI(enrolmentKey = vrn123456789, fullRequestModel)(HeaderCarrier()))
+        result.isInstanceOf[HttpResponse] shouldBe true
+        result.status shouldBe OK
+      }
+    }
+    "return a 200 response when the call succeeds" in new SetupIF {
+      val successResponse: HttpResponse =
+        HttpResponse.apply(status = Status.OK, json = Json.toJson(financialDetailsModelAPI1811), headers = Map.empty)
+      when(
+        mockHttpClient.GET[HttpResponse](ArgumentMatchers.eq(urlIF), ArgumentMatchers.any(), ArgumentMatchers.any())(
+          ArgumentMatchers.any(),
+          ArgumentMatchers.any(),
+          ArgumentMatchers.any())).thenReturn(Future.successful(successResponse))
+
+      val result: HttpResponse = await(connector.getFinancialDetailsForAPI(vrn123456789, FinancialDetailsRequestModel.emptyModel)(HeaderCarrier()))
+      result.isInstanceOf[HttpResponse] shouldBe true
+      result.status shouldBe OK
+    }
+    "return a HttpResponse with upstream error status and log error message" when {
+      "a 4XX is returned from upstream" in new SetupIF {
+        val errorResponse: UpstreamErrorResponse = UpstreamErrorResponse.apply("", BAD_REQUEST)
+        buildErrorResponseMock(errorResponse)
+
+        withCaptureOfLoggingFrom(logger) { logs =>
+          val result: HttpResponse =
+            await(connector.getFinancialDetailsForAPI(vrn123456789, FinancialDetailsRequestModel.emptyModel)(HeaderCarrier()))
+          logs.exists(_.getMessage.contains(s"Received $BAD_REQUEST status from API 1811 call")) shouldBe true
+          result.isInstanceOf[HttpResponse] shouldBe true
+          result.status shouldBe BAD_REQUEST
+        }
+      }
+      "a 5XX is returned from upstream" in new SetupIF {
+        val errorResponse: UpstreamErrorResponse = UpstreamErrorResponse.apply("", BAD_GATEWAY)
+        buildErrorResponseMock(errorResponse)
+
+        withCaptureOfLoggingFrom(logger) { logs =>
+          val result: HttpResponse =
+            await(connector.getFinancialDetailsForAPI(vrn123456789, FinancialDetailsRequestModel.emptyModel)(HeaderCarrier()))
+          logs.exists(_.getMessage.contains(s"Received $BAD_GATEWAY status from API 1811 call")) shouldBe true
+          result.isInstanceOf[HttpResponse] shouldBe true
+          result.status shouldBe BAD_GATEWAY
+        }
+      }
+      "an unknown exception is returned from upstream" in new SetupIF {
+        val errorResponse: Exception = new Exception("An unknown error")
+        buildErrorResponseMock(errorResponse)
+
+        withCaptureOfLoggingFrom(logger) { logs =>
+          val result: HttpResponse =
+            await(connector.getFinancialDetailsForAPI(vrn123456789, FinancialDetailsRequestModel.emptyModel)(HeaderCarrier()))
+          logs.exists(_.getMessage.contains(PagerDutyKeys.UNKNOWN_EXCEPTION_CALLING_1811_API.toString)) shouldBe true
+          result.isInstanceOf[HttpResponse] shouldBe true
+          result.status shouldBe INTERNAL_SERVER_ERROR
+        }
+      }
+    }
   }
 }

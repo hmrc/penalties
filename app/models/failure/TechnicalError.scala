@@ -18,10 +18,7 @@ package models.failure
 
 import play.api.libs.json.{Format, Json}
 
-case class TechnicalError(
-                           code: String,
-                           message: String,
-                           logId: String)
+case class TechnicalError(code: String, message: String, logId: String)
 
 object TechnicalError {
   implicit val format: Format[TechnicalError] = Json.format[TechnicalError]

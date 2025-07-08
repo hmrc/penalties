@@ -61,7 +61,7 @@ class AppConfigSpec extends AnyWordSpec with ShouldMatchers with FeatureSwitchin
         ("dateFrom", LocalDate.now().minusYears(2).toString),
         ("dateTo", LocalDate.now().toString)
       )
-      val result: String = this.config.addDateRangeQueryParameters()
+      val result: Seq[(String, String)] = this.config.addDateRangeQueryParametersMap()
       result shouldBe expectedResult
     }
   }

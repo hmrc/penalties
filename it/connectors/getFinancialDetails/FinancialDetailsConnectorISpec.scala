@@ -54,7 +54,6 @@ class FinancialDetailsConnectorISpec extends IntegrationSpecCommonBase with ETMP
     addPostedInterestDetails = Some(true),
     addAccruingInterestDetails = Some(true)
   )
-  //  implicit val hc: HeaderCarrier           = HeaderCarrier()
 
   class Setup(upstreamService: String) {
     val connector: FinancialDetailsConnector = injector.instanceOf[FinancialDetailsConnector]
