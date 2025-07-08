@@ -21,8 +21,8 @@ sealed trait FeatureSwitch {
 }
 
 object FeatureSwitch {
-  val prefix: String = "feature.switch"
-  val listOfAllFeatureSwitches: List[FeatureSwitch] = List(CallPEGA, CallDES, CallAPI1812ETMP, CallAPI1811Stub, SanitiseFileName)
+  val prefix: String                                = "feature.switch"
+  val listOfAllFeatureSwitches: List[FeatureSwitch] = List(CallPEGA, CallDES, CallAPI1812ETMP, CallAPI1811Stub, CallAPI1811HIP, SanitiseFileName)
 }
 
 case object CallPEGA extends FeatureSwitch {

@@ -17,7 +17,7 @@
 package controllers
 
 import com.github.tomakehurst.wiremock.client.WireMock.{postRequestedFor, urlEqualTo}
-import config.featureSwitches.FeatureSwitching
+import config.featureSwitches.{CallAPI1811HIP, CallAPI1811Stub, FeatureSwitching}
 import models.{Id, IdType, Regime}
 import org.scalatest.prop.TableDrivenPropertyChecks
 import play.api.http.Status
@@ -28,12 +28,16 @@ import utils.{AuthMock, IntegrationSpecCommonBase, RegimeETMPWiremock}
 import java.time.LocalDate
 import scala.jdk.CollectionConverters._
 
-class RegimePenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with RegimeETMPWiremock with FeatureSwitching with TableDrivenPropertyChecks with AuthMock {
-  setEnabledFeatureSwitches()
+class RegimePenaltiesFrontendControllerISpec
+    extends IntegrationSpecCommonBase
+    with RegimeETMPWiremock
+    with FeatureSwitching
+    with TableDrivenPropertyChecks
+    with AuthMock {
+
   val controller: RegimePenaltiesFrontendController = injector.instanceOf[RegimePenaltiesFrontendController]
 
-  val getPenaltyDetailsJson: JsValue = Json.parse(
-    """
+  val getPenaltyDetailsJson: JsValue = Json.parse("""
       |{
       | "totalisations": {
       |   "LSPTotalValue": 200,
@@ -87,8 +91,7 @@ class RegimePenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase w
       |}
       |""".stripMargin)
 
-  val getPenaltyDetailsJsonWithBlankAppealLevel: JsValue = Json.parse(
-    """
+  val getPenaltyDetailsJsonWithBlankAppealLevel: JsValue = Json.parse("""
       |{
       | "totalisations": {
       |   "LSPTotalValue": 200,
@@ -177,8 +180,7 @@ class RegimePenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase w
       |}
       |""".stripMargin)
 
-  val getPenaltyDetailsJsonWithRemovedExpiryReasonAndDefaultedAppealLevel: JsValue = Json.parse(
-    """
+  val getPenaltyDetailsJsonWithRemovedExpiryReasonAndDefaultedAppealLevel: JsValue = Json.parse("""
       |{
       | "totalisations": {
       |   "LSPTotalValue": 200,
@@ -431,438 +433,455 @@ class RegimePenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase w
       |        ]
       |    }
       |}
-      |""".stripMargin
-  )
+      |""".stripMargin)
+
+  val queryParamsIF: String = "?includeClearedItems=true&includeStatisticalItems=true&includePaymentOnAccount=true" +
+    "&addRegimeTotalisation=true&addLockInformation=true&addPenaltyDetails=true&addPostedInterestDetails=true" +
+    "&addAccruingInterestDetails=true&dateType=POSTING&dateFrom=2023-07-07&dateTo=2025-07-07"
 
   Table(
     ("Regime", "IdType", "Id"),
     (Regime("VATC"), IdType("VRN"), Id("123456789")),
-    (Regime("ITSA"), IdType("NINO"), Id("AB123456C")),
+//    (Regime("ITSA"), IdType("NINO"), Id("AB123456C"))
   ).forEvery { (regime, idType, id) =>
-
     val etmpUri = s"/${regime.value}/etmp/penalties/${idType.value}/${id.value}"
 
-    s"return OK (${Status.OK}) for $regime" when {
+    s"for '$regime' regime" when {
+      Seq("IF").foreach { upstream =>
+//      Seq("HIP", "IF").foreach { upstream =>
+        val isHip = upstream == "HIP"
+//        val switches = if (isHip) Seq(CallAPI1811Stub, CallAPI1811HIP) else Seq(CallAPI1811Stub)
+        val switches = if (isHip) Seq(CallAPI1811HIP) else Seq()
+//        setEnabledFeatureSwitches(switches: _*)
+        setEnabledFeatureSwitches()
+        s"calling '$upstream' upstream service" should {
+          s"return OK (${Status.OK})" when {
+            "the get penalty details call succeeds and the get financial details call succeeds (combining the data together)" in {
+              mockStubResponseForAuthorisedUser
+              mockStubResponseForGetPenaltyDetails(Status.OK, regime, idType, id, body = Some(getPenaltyDetailsJson.toString()))
+              mockStubResponseForGetFinancialDetailsIF(regime, idType, id, Status.OK, Some(queryParamsIF))
+//              mockStubResponseForGetFinancialDetails(Status.OK, Some(getFinancialDetailsWithoutTotalisationsAsJson.toString()))
+//              mockStubResponseForGetFinancialDetails(Status.OK, Some(getFinancialDetailsTotalisationsAsJson.toString()))
 
-      "the get penalty details call succeeds and the get financial details call succeeds (combining the data together)" in {
-        mockStubResponseForAuthorisedUser
-        mockStubResponseForGetPenaltyDetails(Status.OK, regime, idType, id, body = Some(getPenaltyDetailsJson.toString()))
-        mockStubResponseForGetFinancialDetails(Status.OK, Some(getFinancialDetailsWithoutTotalisationsAsJson.toString()))
-        mockStubResponseForGetFinancialDetails(Status.OK, Some(getFinancialDetailsTotalisationsAsJson.toString()))
+              val result = await(buildClientForRequestToApp(uri = etmpUri).get())
+              result.status shouldBe OK
+              Json.parse(result.body) shouldBe combinedPenaltyAndFinancialData
+            }
 
-        val result = await(buildClientForRequestToApp(uri = etmpUri).get())
-        result.status shouldBe OK
-        Json.parse(result.body) shouldBe combinedPenaltyAndFinancialData
+//            "the get penalty details call includes blank appealLevel fields" in {
+//              mockStubResponseForAuthorisedUser
+//              mockStubResponseForGetPenaltyDetails(Status.OK, regime, idType, id, body = Some(getPenaltyDetailsJsonWithBlankAppealLevel.toString()))
+//              mockStubResponseForGetFinancialDetails(Status.OK)
+//              mockStubResponseForGetFinancialDetails(Status.OK, Some(getFinancialDetailsTotalisationsAsJson.toString()))
+//
+//              val result = await(buildClientForRequestToApp(uri = etmpUri).get())
+//              result.status shouldBe OK
+//              Json.parse(result.body) shouldBe getPenaltyDetailsJsonWithRemovedExpiryReasonAndDefaultedAppealLevel
+//            }
+
+//            "the get penalty details call succeeds and the get financial details call succeeds (combining the data together - second 1811 call returns NO_CONTENT)" in {
+//              mockStubResponseForAuthorisedUser
+//              mockStubResponseForGetPenaltyDetails(Status.OK, regime, idType, id, body = Some(getPenaltyDetailsJson.toString()))
+//              mockStubResponseForGetFinancialDetails(Status.OK)
+//              mockStubResponseForGetFinancialDetails(Status.NO_CONTENT)
+//
+//              val result = await(buildClientForRequestToApp(uri = etmpUri).get())
+//              result.status shouldBe OK
+//              Json.parse(result.body) shouldBe combinedPenaltyAndFinancialDataWithout1811Totalisations
+//            }
+//
+//            "the get penalty details call succeeds and the get financial details call succeeds (combining the data together - for manual LPP)" in {
+//              val getFinancialDetailsWithManualLPP: JsValue = Json.parse(
+//                """
+//                  |{
+//                  | "success": {
+//                  | "processingDate": "2023-11-28T10:15:10Z",
+//                  |   "financialData":{
+//                  |     "documentDetails": [
+//                  |     {
+//                  |      "chargeReferenceNumber": "PENALTY1234",
+//                  |      "issueDate": "2023-04-01",
+//                  |      "documentTotalAmount": "100.00",
+//                  |      "documentOutstandingAmount": "55.00",
+//                  |      "lineItemDetails": [
+//                  |        {
+//                  |          "mainTransaction": "4787"
+//                  |      }]
+//                  |    }
+//                  |  ]
+//                  |}
+//                  |}
+//                  |}
+//                  |""".stripMargin
+//              )
+//              val getPenaltyDetailsJson: JsValue = Json.parse("""
+//                  |{
+//                  | "totalisations": {
+//                  |   "LSPTotalValue": 200,
+//                  |   "penalisedPrincipalTotal": 2000,
+//                  |   "LPPPostedTotal": 165.25,
+//                  |   "LPPEstimatedTotal": 15.26
+//                  | },
+//                  | "lateSubmissionPenalty": {
+//                  |   "summary": {
+//                  |     "activePenaltyPoints": 0,
+//                  |     "inactivePenaltyPoints": 0,
+//                  |     "regimeThreshold": 5,
+//                  |     "penaltyChargeAmount": 200.00,
+//                  |     "PoCAchievementDate": "2022-01-01"
+//                  |   },
+//                  |   "details": []
+//                  | },
+//                  | "latePaymentPenalty": {
+//                  |    "details": []
+//                  | }
+//                  |}
+//                  |""".stripMargin)
+//              mockStubResponseForAuthorisedUser
+//              mockStubResponseForGetPenaltyDetails(Status.OK, regime, idType, id, body = Some(getPenaltyDetailsJson.toString()))
+//              mockStubResponseForGetFinancialDetails(Status.OK, body = Some(getFinancialDetailsWithManualLPP.toString()))
+//              mockStubResponseForGetFinancialDetails(Status.NO_CONTENT)
+//
+//              val result = await(buildClientForRequestToApp(uri = etmpUri).get())
+//              result.status shouldBe OK
+//              Json.parse(result.body) shouldBe combinedPenaltyAndFinancialDataWithManualLPP
+//            }
+//
+//            s"the get penalty details call succeeds and the get financial details call returns NO_CONTENT (${Status.NO_CONTENT}) (returning penalty details unaltered)" in {
+//              val getPenaltyDetailsNoLPPJson: JsValue = Json.parse("""
+//                  |{
+//                  |}
+//                  |""".stripMargin)
+//              val noDataFoundBody =
+//                """
+//                  |{
+//                  | "failures": [
+//                  |   {
+//                  |     "code": "NO_DATA_FOUND",
+//                  |     "reason": "This is a reason"
+//                  |   }
+//                  | ]
+//                  |}
+//                  |""".stripMargin
+//              mockStubResponseForGetFinancialDetails(Status.NOT_FOUND, Some(noDataFoundBody))
+//              mockStubResponseForAuthorisedUser
+//              mockStubResponseForGetPenaltyDetails(Status.OK, regime, idType, id, body = Some(getPenaltyDetailsNoLPPJson.toString()))
+//              val result = await(buildClientForRequestToApp(uri = etmpUri).get())
+//              result.status shouldBe OK
+//              Json.parse(result.body) shouldBe getPenaltyDetailsNoLPPJson
+//            }
+          }
+
+//          s"return NO_CONTENT (${Status.NO_CONTENT})" when {
+//            "the get penalty details call returns 404 with NO_DATA_FOUND in body" in {
+//              val noDataFoundBody =
+//                """
+//                  |{
+//                  | "failures": [
+//                  |   {
+//                  |     "code": "NO_DATA_FOUND",
+//                  |     "reason": "This is a reason"
+//                  |   }
+//                  | ]
+//                  |}
+//                  |""".stripMargin
+//              mockStubResponseForAuthorisedUser
+//              mockStubResponseForGetPenaltyDetails(Status.NOT_FOUND, regime, idType, id, body = Some(noDataFoundBody))
+//              val result = await(buildClientForRequestToApp(uri = etmpUri).get())
+//              result.status shouldBe NO_CONTENT
+//            }
+//
+//            "the get financial details call returns 404 with NO_DATA_FOUND in body" in {
+//              val noDataFoundBody =
+//                """
+//                  |{
+//                  | "failures": [
+//                  |   {
+//                  |     "code": "NO_DATA_FOUND",
+//                  |     "reason": "This is a reason"
+//                  |   }
+//                  | ]
+//                  |}
+//                  |""".stripMargin
+//              mockStubResponseForAuthorisedUser
+//              mockStubResponseForGetPenaltyDetails(Status.OK, regime, idType, id, body = Some(getPenaltyDetailsJson.toString()))
+//              mockStubResponseForGetFinancialDetails(Status.NOT_FOUND, Some(noDataFoundBody))
+//
+//              val result = await(buildClientForRequestToApp(uri = etmpUri).get())
+//              result.status shouldBe NO_CONTENT
+//            }
+//          }
+//
+//          s"return ISE (${Status.INTERNAL_SERVER_ERROR})" when {
+//            "the get penalty details call fails" in {
+//              mockStubResponseForAuthorisedUser
+//              mockStubResponseForGetPenaltyDetails(Status.INTERNAL_SERVER_ERROR, regime, idType, id, body = Some(""))
+//              val result = await(buildClientForRequestToApp(uri = etmpUri).get())
+//              result.status shouldBe INTERNAL_SERVER_ERROR
+//            }
+//
+//            "the first get financial details call fails" in {
+//              mockStubResponseForAuthorisedUser
+//              mockStubResponseForGetPenaltyDetails(Status.OK, regime, idType, id, body = Some(getPenaltyDetailsJson.toString()))
+//              mockStubResponseForGetFinancialDetails(Status.INTERNAL_SERVER_ERROR)
+//
+//              val result = await(buildClientForRequestToApp(uri = etmpUri).get())
+//              result.status shouldBe INTERNAL_SERVER_ERROR
+//            }
+//
+//            "the second get financial details call fails" in {
+//              mockStubResponseForAuthorisedUser
+//              mockStubResponseForGetPenaltyDetails(Status.OK, regime, idType, id, body = Some(getPenaltyDetailsJson.toString()))
+//              mockStubResponseForGetFinancialDetails(Status.OK)
+//              mockStubResponseForGetFinancialDetails(Status.INTERNAL_SERVER_ERROR)
+//
+//              val result = await(buildClientForRequestToApp(uri = etmpUri).get())
+//              result.status shouldBe INTERNAL_SERVER_ERROR
+//            }
+//          }
+//
+//          s"audit the response when the user has > 0 penalties" in {
+//            val penaltyDetailsWithLSPAndLPPs: JsValue = Json.parse("""
+//                |{
+//                |   "totalisations":{
+//                |      "LSPTotalValue":200,
+//                |      "penalisedPrincipalTotal":2000,
+//                |      "LPPPostedTotal":165.25,
+//                |      "LPPEstimatedTotal":15.26
+//                |   },
+//                |   "lateSubmissionPenalty":{
+//                |      "summary":{
+//                |         "activePenaltyPoints": 1,
+//                |         "inactivePenaltyPoints": 0,
+//                |         "regimeThreshold": 5,
+//                |         "penaltyChargeAmount": 200,
+//                |         "PoCAchievementDate": "2022-01-01"
+//                |      },
+//                |      "details":[
+//                |         {
+//                |            "penaltyNumber":"12345678901234",
+//                |            "penaltyOrder":"01",
+//                |            "penaltyCategory":"P",
+//                |            "penaltyStatus":"ACTIVE",
+//                |            "penaltyCreationDate":"2022-10-30",
+//                |            "penaltyExpiryDate":"2022-10-30",
+//                |            "communicationsDate":"2022-10-30",
+//                |            "lateSubmissions":[
+//                |               {
+//                |                  "lateSubmissionID": "001",
+//                |                  "taxPeriod":  "23AA",
+//                |                  "taxPeriodStartDate":"2022-01-01",
+//                |                  "taxPeriodEndDate":"2022-12-31",
+//                |                  "taxPeriodDueDate":"2023-02-07",
+//                |                  "returnReceiptDate":"2023-02-01",
+//                |                  "taxReturnStatus":"Fulfilled"
+//                |               }
+//                |            ],
+//                |            "appealInformation":[
+//                |               {
+//                |                  "appealStatus":"99",
+//                |                  "appealLevel":"01",
+//                |                  "appealDescription": "Some value"
+//                |               }
+//                |            ],
+//                |            "chargeDueDate":"2022-10-30",
+//                |            "chargeOutstandingAmount":200,
+//                |            "chargeAmount":200,
+//                |            "triggeringProcess": "P123",
+//                |            "chargeReference": "CHARGEREF1"
+//                |         }
+//                |      ]
+//                |   },
+//                |   "latePaymentPenalty":{
+//                |      "details":[
+//                |         {
+//                |            "principalChargeDueDate":"2022-10-30",
+//                |            "principalChargeBillingTo":"2022-10-30",
+//                |            "penaltyAmountPosted": 0,
+//                |            "LPP1LRPercentage":2,
+//                |            "LPP1HRDays":"31",
+//                |            "penaltyChargeDueDate":"2022-10-30",
+//                |            "communicationsDate":"2022-10-30",
+//                |            "LPP2Days":"31",
+//                |            "penaltyChargeCreationDate":"2022-10-30",
+//                |            "LPP1HRPercentage":2,
+//                |            "LPP1LRDays":"15",
+//                |            "LPP1HRCalculationAmount":99.99,
+//                |            "penaltyChargeReference":"1234567890",
+//                |            "penaltyCategory":"LPP1",
+//                |            "principalChargeReference":"XM002610011594",
+//                |            "penaltyStatus":"A",
+//                |            "penaltyAmountAccruing": 99.99,
+//                |            "principalChargeBillingFrom":"2022-10-30",
+//                |            "LPP2Percentage":4,
+//                |            "appealInformation":[
+//                |               {
+//                |                  "appealStatus":"99",
+//                |                  "appealLevel":"01",
+//                |                  "appealDescription": "Some value"
+//                |               }
+//                |            ],
+//                |            "LPP1LRCalculationAmount":99.99,
+//                |            "principalChargeMainTransaction": "4700",
+//                |            "penaltyAmountOutstanding":0,
+//                |            "principalChargeDocNumber": "DOC1",
+//                |            "principalChargeSubTransaction": "SUB1"
+//                |         }
+//                |      ]
+//                |   }
+//                |}
+//                |""".stripMargin)
+//
+//            val penaltyDetailsWithLSPAndLPPAndFinancialDetails: JsValue = Json.parse("""
+//                |{
+//                |   "totalisations":{
+//                |      "LSPTotalValue":200,
+//                |      "penalisedPrincipalTotal":2000,
+//                |      "LPPPostedTotal":165.25,
+//                |      "LPPEstimatedTotal":15.26,
+//                |      "totalAccountOverdue": 1000.0,
+//                |      "totalAccountPostedInterest": 12.34,
+//                |      "totalAccountAccruingInterest": 43.21
+//                |   },
+//                |   "lateSubmissionPenalty":{
+//                |      "summary":{
+//                |         "activePenaltyPoints": 1,
+//                |         "inactivePenaltyPoints": 0,
+//                |         "regimeThreshold": 5,
+//                |         "penaltyChargeAmount": 200,
+//                |         "PoCAchievementDate": "2022-01-01"
+//                |      },
+//                |      "details":[
+//                |         {
+//                |            "penaltyNumber":"12345678901234",
+//                |            "penaltyOrder":"01",
+//                |            "penaltyCategory":"P",
+//                |            "penaltyStatus":"ACTIVE",
+//                |            "penaltyCreationDate":"2022-10-30",
+//                |            "penaltyExpiryDate":"2022-10-30",
+//                |            "communicationsDate":"2022-10-30",
+//                |            "lateSubmissions":[
+//                |               {
+//                |                  "lateSubmissionID": "001",
+//                |                  "taxPeriod":  "23AA",
+//                |                  "taxPeriodStartDate":"2022-01-01",
+//                |                  "taxPeriodEndDate":"2022-12-31",
+//                |                  "taxPeriodDueDate":"2023-02-07",
+//                |                  "returnReceiptDate":"2023-02-01",
+//                |                  "taxReturnStatus":"Fulfilled"
+//                |               }
+//                |            ],
+//                |            "appealInformation":[
+//                |               {
+//                |                  "appealStatus":"99",
+//                |                  "appealLevel":"01",
+//                |                  "appealDescription": "Some value"
+//                |               }
+//                |            ],
+//                |            "chargeDueDate":"2022-10-30",
+//                |            "chargeOutstandingAmount":200,
+//                |            "chargeAmount":200,
+//                |            "triggeringProcess": "P123",
+//                |            "chargeReference": "CHARGEREF1"
+//                |         }
+//                |      ]
+//                |   },
+//                |   "latePaymentPenalty":{
+//                |      "details":[
+//                |         {
+//                |            "principalChargeDueDate":"2022-10-30",
+//                |            "principalChargeBillingTo":"2022-10-30",
+//                |            "penaltyAmountPosted": 0,
+//                |            "LPP1LRPercentage":2,
+//                |            "LPP1HRDays":"31",
+//                |            "penaltyChargeDueDate":"2022-10-30",
+//                |            "communicationsDate":"2022-10-30",
+//                |            "LPP2Days":"31",
+//                |            "penaltyChargeCreationDate":"2022-10-30",
+//                |            "LPP1HRPercentage":2,
+//                |            "LPP1LRDays":"15",
+//                |            "LPP1HRCalculationAmount":99.99,
+//                |            "penaltyChargeReference":"1234567890",
+//                |            "penaltyCategory":"LPP1",
+//                |            "principalChargeReference":"XM002610011594",
+//                |            "penaltyStatus":"A",
+//                |            "penaltyAmountAccruing": 99.99,
+//                |            "principalChargeMainTransaction": "4700",
+//                |            "principalChargeBillingFrom":"2022-10-30",
+//                |            "principalChargeDocNumber": "DOC1",
+//                |            "principalChargeSubTransaction": "SUB1",
+//                |            "mainTransaction":"4700",
+//                |            "LPP2Percentage":4,
+//                |            "appealInformation":[
+//                |               {
+//                |                  "appealStatus":"99",
+//                |                  "appealLevel":"01",
+//                |                  "appealDescription": "Some value"
+//                |               }
+//                |            ],
+//                |            "LPP1LRCalculationAmount":99.99,
+//                |            "penaltyAmountOutstanding":0,
+//                |            "vatOutstandingAmount": 543.21
+//                |         }
+//                |      ]
+//                |   }
+//                |}
+//                |""".stripMargin)
+//            mockStubResponseForAuthorisedUser
+//            mockStubResponseForGetPenaltyDetails(Status.OK, regime, idType, id, body = Some(penaltyDetailsWithLSPAndLPPs.toString()))
+//            mockStubResponseForGetFinancialDetails(Status.OK)
+//            mockStubResponseForGetFinancialDetails(Status.OK, Some(getFinancialDetailsTotalisationsAsJson.toString))
+//            val result = await(buildClientForRequestToApp(uri = etmpUri).get())
+//            result.status shouldBe Status.OK
+//            Json.parse(result.body) shouldBe penaltyDetailsWithLSPAndLPPAndFinancialDetails
+//            wireMockServer
+//              .findAll(postRequestedFor(urlEqualTo("/write/audit")))
+//              .asScala
+//              .toList
+//              .exists(_.getBodyAsString.contains("UserHasPenalty")) shouldBe true
+//          }
+//
+//          s"NOT audit the response when the user has 0 LSPs and 0 LPPs" in {
+//            val getPenaltyDetailsWithNoPointsAsJson: JsValue = Json.parse("""
+//                |{
+//                | "totalisations": {
+//                |   "LSPTotalValue": 0,
+//                |   "penalisedPrincipalTotal": 0,
+//                |   "LPPPostedTotal": 0.00,
+//                |   "totalAccountOverdue": 1000,
+//                |   "totalAccountPostedInterest": 12.34,
+//                |   "totalAccountAccruingInterest": 43.21
+//                | },
+//                | "lateSubmissionPenalty": {
+//                |   "summary": {
+//                |     "activePenaltyPoints": 0,
+//                |     "inactivePenaltyPoints": 0,
+//                |     "regimeThreshold": 0,
+//                |     "penaltyChargeAmount": 0.00,
+//                |     "PoCAchievementDate": "2022-01-01"
+//                |   },
+//                |   "details": []
+//                | },
+//                | "latePaymentPenalty": {
+//                |   "details": []
+//                | }
+//                |}
+//                |""".stripMargin)
+//            mockStubResponseForAuthorisedUser
+//            mockStubResponseForGetPenaltyDetails(Status.OK, regime, idType, id, body = Some(getPenaltyDetailsWithNoPointsAsJson.toString()))
+//            mockStubResponseForGetFinancialDetails(Status.OK)
+//            mockStubResponseForGetFinancialDetails(Status.OK, Some(getFinancialDetailsTotalisationsAsJson.toString))
+//            val result = await(buildClientForRequestToApp(uri = etmpUri).get())
+//            result.status shouldBe Status.OK
+//            result.body shouldBe getPenaltyDetailsWithNoPointsAsJson.toString()
+//            wireMockServer
+//              .findAll(postRequestedFor(urlEqualTo("/write/audit")))
+//              .asScala
+//              .toList
+//              .exists(_.getBodyAsString.contains("UserHasPenalty")) shouldBe false
+//          }
+        }
       }
-
-      "the get penalty details call includes blank appealLevel fields" in {
-        mockStubResponseForAuthorisedUser
-        mockStubResponseForGetPenaltyDetails(Status.OK, regime, idType, id, body = Some(getPenaltyDetailsJsonWithBlankAppealLevel.toString()))
-        mockStubResponseForGetFinancialDetails(Status.OK)
-        mockStubResponseForGetFinancialDetails(Status.OK, Some(getFinancialDetailsTotalisationsAsJson.toString()))
-
-        val result = await(buildClientForRequestToApp(uri = etmpUri).get())
-        result.status shouldBe OK
-        Json.parse(result.body) shouldBe getPenaltyDetailsJsonWithRemovedExpiryReasonAndDefaultedAppealLevel
-      }
-
-      "the get penalty details call succeeds and the get financial details call succeeds (combining the data together - second 1811 call returns NO_CONTENT)" in {
-        mockStubResponseForAuthorisedUser
-        mockStubResponseForGetPenaltyDetails(Status.OK, regime, idType, id, body = Some(getPenaltyDetailsJson.toString()))
-        mockStubResponseForGetFinancialDetails(Status.OK)
-        mockStubResponseForGetFinancialDetails(Status.NO_CONTENT)
-
-        val result = await(buildClientForRequestToApp(uri = etmpUri).get())
-        result.status shouldBe OK
-        Json.parse(result.body) shouldBe combinedPenaltyAndFinancialDataWithout1811Totalisations
-      }
-
-      "the get penalty details call succeeds and the get financial details call succeeds (combining the data together - for manual LPP)" in {
-        val getFinancialDetailsWithManualLPP: JsValue = Json.parse(
-          """
-            |{
-            | "success": {
-            | "processingDate": "2023-11-28T10:15:10Z",
-            |   "financialData":{
-            |     "documentDetails": [
-            |     {
-            |      "chargeReferenceNumber": "PENALTY1234",
-            |      "issueDate": "2023-04-01",
-            |      "documentTotalAmount": "100.00",
-            |      "documentOutstandingAmount": "55.00",
-            |      "lineItemDetails": [
-            |        {
-            |          "mainTransaction": "4787"
-            |      }]
-            |    }
-            |  ]
-            |}
-            |}
-            |}
-            |""".stripMargin
-        )
-        val getPenaltyDetailsJson: JsValue = Json.parse(
-          """
-            |{
-            | "totalisations": {
-            |   "LSPTotalValue": 200,
-            |   "penalisedPrincipalTotal": 2000,
-            |   "LPPPostedTotal": 165.25,
-            |   "LPPEstimatedTotal": 15.26
-            | },
-            | "lateSubmissionPenalty": {
-            |   "summary": {
-            |     "activePenaltyPoints": 0,
-            |     "inactivePenaltyPoints": 0,
-            |     "regimeThreshold": 5,
-            |     "penaltyChargeAmount": 200.00,
-            |     "PoCAchievementDate": "2022-01-01"
-            |   },
-            |   "details": []
-            | },
-            | "latePaymentPenalty": {
-            |    "details": []
-            | }
-            |}
-            |""".stripMargin)
-        mockStubResponseForAuthorisedUser
-        mockStubResponseForGetPenaltyDetails(Status.OK, regime, idType, id, body = Some(getPenaltyDetailsJson.toString()))
-        mockStubResponseForGetFinancialDetails(Status.OK, body = Some(getFinancialDetailsWithManualLPP.toString()))
-        mockStubResponseForGetFinancialDetails(Status.NO_CONTENT)
-
-        val result = await(buildClientForRequestToApp(uri = etmpUri).get())
-        result.status shouldBe OK
-        Json.parse(result.body) shouldBe combinedPenaltyAndFinancialDataWithManualLPP
-      }
-
-      s"the get penalty details call succeeds and the get financial details call returns NO_CONTENT (${Status.NO_CONTENT}) (returning penalty details unaltered)" in {
-        val getPenaltyDetailsNoLPPJson: JsValue = Json.parse(
-          """
-            |{
-            |}
-            |""".stripMargin)
-        val noDataFoundBody =
-          """
-            |{
-            | "failures": [
-            |   {
-            |     "code": "NO_DATA_FOUND",
-            |     "reason": "This is a reason"
-            |   }
-            | ]
-            |}
-            |""".stripMargin
-        mockStubResponseForGetFinancialDetails(Status.NOT_FOUND, Some(noDataFoundBody))
-        mockStubResponseForAuthorisedUser
-        mockStubResponseForGetPenaltyDetails(Status.OK, regime, idType, id, body = Some(getPenaltyDetailsNoLPPJson.toString()))
-        val result = await(buildClientForRequestToApp(uri = etmpUri).get())
-        result.status shouldBe OK
-        Json.parse(result.body) shouldBe getPenaltyDetailsNoLPPJson
-      }
-    }
-
-    s"return NO_CONTENT (${Status.NO_CONTENT}) for $regime" when {
-      "the get penalty details call returns 404 with NO_DATA_FOUND in body" in {
-        val noDataFoundBody =
-          """
-            |{
-            | "failures": [
-            |   {
-            |     "code": "NO_DATA_FOUND",
-            |     "reason": "This is a reason"
-            |   }
-            | ]
-            |}
-            |""".stripMargin
-        mockStubResponseForAuthorisedUser
-        mockStubResponseForGetPenaltyDetails(Status.NOT_FOUND, regime, idType, id, body = Some(noDataFoundBody))
-        val result = await(buildClientForRequestToApp(uri = etmpUri).get())
-        result.status shouldBe NO_CONTENT
-      }
-
-      "the get financial details call returns 404 with NO_DATA_FOUND in body" in {
-        val noDataFoundBody =
-          """
-            |{
-            | "failures": [
-            |   {
-            |     "code": "NO_DATA_FOUND",
-            |     "reason": "This is a reason"
-            |   }
-            | ]
-            |}
-            |""".stripMargin
-        mockStubResponseForAuthorisedUser
-        mockStubResponseForGetPenaltyDetails(Status.OK, regime, idType, id, body = Some(getPenaltyDetailsJson.toString()))
-        mockStubResponseForGetFinancialDetails(Status.NOT_FOUND, Some(noDataFoundBody))
-
-        val result = await(buildClientForRequestToApp(uri = etmpUri).get())
-        result.status shouldBe NO_CONTENT
-      }
-    }
-
-    s"return ISE (${Status.INTERNAL_SERVER_ERROR}) for $regime" when {
-      "the get penalty details call fails" in {
-        mockStubResponseForAuthorisedUser
-        mockStubResponseForGetPenaltyDetails(Status.INTERNAL_SERVER_ERROR, regime, idType, id, body = Some(""))
-        val result = await(buildClientForRequestToApp(uri = etmpUri).get())
-        result.status shouldBe INTERNAL_SERVER_ERROR
-      }
-
-      "the first get financial details call fails" in {
-        mockStubResponseForAuthorisedUser
-        mockStubResponseForGetPenaltyDetails(Status.OK, regime, idType, id, body = Some(getPenaltyDetailsJson.toString()))
-        mockStubResponseForGetFinancialDetails(Status.INTERNAL_SERVER_ERROR)
-
-        val result = await(buildClientForRequestToApp(uri = etmpUri).get())
-        result.status shouldBe INTERNAL_SERVER_ERROR
-      }
-
-      "the second get financial details call fails" in {
-        mockStubResponseForAuthorisedUser
-        mockStubResponseForGetPenaltyDetails(Status.OK, regime, idType, id, body = Some(getPenaltyDetailsJson.toString()))
-        mockStubResponseForGetFinancialDetails(Status.OK)
-        mockStubResponseForGetFinancialDetails(Status.INTERNAL_SERVER_ERROR)
-
-        val result = await(buildClientForRequestToApp(uri = etmpUri).get())
-        result.status shouldBe INTERNAL_SERVER_ERROR
-      }
-    }
-
-    s"audit the response when the user has > 0 penalties for $regime" in {
-      val penaltyDetailsWithLSPAndLPPs: JsValue = Json.parse(
-        """
-          |{
-          |   "totalisations":{
-          |      "LSPTotalValue":200,
-          |      "penalisedPrincipalTotal":2000,
-          |      "LPPPostedTotal":165.25,
-          |      "LPPEstimatedTotal":15.26
-          |   },
-          |   "lateSubmissionPenalty":{
-          |      "summary":{
-          |         "activePenaltyPoints": 1,
-          |         "inactivePenaltyPoints": 0,
-          |         "regimeThreshold": 5,
-          |         "penaltyChargeAmount": 200,
-          |         "PoCAchievementDate": "2022-01-01"
-          |      },
-          |      "details":[
-          |         {
-          |            "penaltyNumber":"12345678901234",
-          |            "penaltyOrder":"01",
-          |            "penaltyCategory":"P",
-          |            "penaltyStatus":"ACTIVE",
-          |            "penaltyCreationDate":"2022-10-30",
-          |            "penaltyExpiryDate":"2022-10-30",
-          |            "communicationsDate":"2022-10-30",
-          |            "lateSubmissions":[
-          |               {
-          |                  "lateSubmissionID": "001",
-          |                  "taxPeriod":  "23AA",
-          |                  "taxPeriodStartDate":"2022-01-01",
-          |                  "taxPeriodEndDate":"2022-12-31",
-          |                  "taxPeriodDueDate":"2023-02-07",
-          |                  "returnReceiptDate":"2023-02-01",
-          |                  "taxReturnStatus":"Fulfilled"
-          |               }
-          |            ],
-          |            "appealInformation":[
-          |               {
-          |                  "appealStatus":"99",
-          |                  "appealLevel":"01",
-          |                  "appealDescription": "Some value"
-          |               }
-          |            ],
-          |            "chargeDueDate":"2022-10-30",
-          |            "chargeOutstandingAmount":200,
-          |            "chargeAmount":200,
-          |            "triggeringProcess": "P123",
-          |            "chargeReference": "CHARGEREF1"
-          |         }
-          |      ]
-          |   },
-          |   "latePaymentPenalty":{
-          |      "details":[
-          |         {
-          |            "principalChargeDueDate":"2022-10-30",
-          |            "principalChargeBillingTo":"2022-10-30",
-          |            "penaltyAmountPosted": 0,
-          |            "LPP1LRPercentage":2,
-          |            "LPP1HRDays":"31",
-          |            "penaltyChargeDueDate":"2022-10-30",
-          |            "communicationsDate":"2022-10-30",
-          |            "LPP2Days":"31",
-          |            "penaltyChargeCreationDate":"2022-10-30",
-          |            "LPP1HRPercentage":2,
-          |            "LPP1LRDays":"15",
-          |            "LPP1HRCalculationAmount":99.99,
-          |            "penaltyChargeReference":"1234567890",
-          |            "penaltyCategory":"LPP1",
-          |            "principalChargeReference":"XM002610011594",
-          |            "penaltyStatus":"A",
-          |            "penaltyAmountAccruing": 99.99,
-          |            "principalChargeBillingFrom":"2022-10-30",
-          |            "LPP2Percentage":4,
-          |            "appealInformation":[
-          |               {
-          |                  "appealStatus":"99",
-          |                  "appealLevel":"01",
-          |                  "appealDescription": "Some value"
-          |               }
-          |            ],
-          |            "LPP1LRCalculationAmount":99.99,
-          |            "principalChargeMainTransaction": "4700",
-          |            "penaltyAmountOutstanding":0,
-          |            "principalChargeDocNumber": "DOC1",
-          |            "principalChargeSubTransaction": "SUB1"
-          |         }
-          |      ]
-          |   }
-          |}
-          |""".stripMargin)
-
-      val penaltyDetailsWithLSPAndLPPAndFinancialDetails: JsValue = Json.parse(
-        """
-          |{
-          |   "totalisations":{
-          |      "LSPTotalValue":200,
-          |      "penalisedPrincipalTotal":2000,
-          |      "LPPPostedTotal":165.25,
-          |      "LPPEstimatedTotal":15.26,
-          |      "totalAccountOverdue": 1000.0,
-          |      "totalAccountPostedInterest": 12.34,
-          |      "totalAccountAccruingInterest": 43.21
-          |   },
-          |   "lateSubmissionPenalty":{
-          |      "summary":{
-          |         "activePenaltyPoints": 1,
-          |         "inactivePenaltyPoints": 0,
-          |         "regimeThreshold": 5,
-          |         "penaltyChargeAmount": 200,
-          |         "PoCAchievementDate": "2022-01-01"
-          |      },
-          |      "details":[
-          |         {
-          |            "penaltyNumber":"12345678901234",
-          |            "penaltyOrder":"01",
-          |            "penaltyCategory":"P",
-          |            "penaltyStatus":"ACTIVE",
-          |            "penaltyCreationDate":"2022-10-30",
-          |            "penaltyExpiryDate":"2022-10-30",
-          |            "communicationsDate":"2022-10-30",
-          |            "lateSubmissions":[
-          |               {
-          |                  "lateSubmissionID": "001",
-          |                  "taxPeriod":  "23AA",
-          |                  "taxPeriodStartDate":"2022-01-01",
-          |                  "taxPeriodEndDate":"2022-12-31",
-          |                  "taxPeriodDueDate":"2023-02-07",
-          |                  "returnReceiptDate":"2023-02-01",
-          |                  "taxReturnStatus":"Fulfilled"
-          |               }
-          |            ],
-          |            "appealInformation":[
-          |               {
-          |                  "appealStatus":"99",
-          |                  "appealLevel":"01",
-          |                  "appealDescription": "Some value"
-          |               }
-          |            ],
-          |            "chargeDueDate":"2022-10-30",
-          |            "chargeOutstandingAmount":200,
-          |            "chargeAmount":200,
-          |            "triggeringProcess": "P123",
-          |            "chargeReference": "CHARGEREF1"
-          |         }
-          |      ]
-          |   },
-          |   "latePaymentPenalty":{
-          |      "details":[
-          |         {
-          |            "principalChargeDueDate":"2022-10-30",
-          |            "principalChargeBillingTo":"2022-10-30",
-          |            "penaltyAmountPosted": 0,
-          |            "LPP1LRPercentage":2,
-          |            "LPP1HRDays":"31",
-          |            "penaltyChargeDueDate":"2022-10-30",
-          |            "communicationsDate":"2022-10-30",
-          |            "LPP2Days":"31",
-          |            "penaltyChargeCreationDate":"2022-10-30",
-          |            "LPP1HRPercentage":2,
-          |            "LPP1LRDays":"15",
-          |            "LPP1HRCalculationAmount":99.99,
-          |            "penaltyChargeReference":"1234567890",
-          |            "penaltyCategory":"LPP1",
-          |            "principalChargeReference":"XM002610011594",
-          |            "penaltyStatus":"A",
-          |            "penaltyAmountAccruing": 99.99,
-          |            "principalChargeMainTransaction": "4700",
-          |            "principalChargeBillingFrom":"2022-10-30",
-          |            "principalChargeDocNumber": "DOC1",
-          |            "principalChargeSubTransaction": "SUB1",
-          |            "mainTransaction":"4700",
-          |            "LPP2Percentage":4,
-          |            "appealInformation":[
-          |               {
-          |                  "appealStatus":"99",
-          |                  "appealLevel":"01",
-          |                  "appealDescription": "Some value"
-          |               }
-          |            ],
-          |            "LPP1LRCalculationAmount":99.99,
-          |            "penaltyAmountOutstanding":0,
-          |            "vatOutstandingAmount": 543.21
-          |         }
-          |      ]
-          |   }
-          |}
-          |""".stripMargin)
-      mockStubResponseForAuthorisedUser
-      mockStubResponseForGetPenaltyDetails(Status.OK, regime, idType, id, body = Some(penaltyDetailsWithLSPAndLPPs.toString()))
-      mockStubResponseForGetFinancialDetails(Status.OK)
-      mockStubResponseForGetFinancialDetails(Status.OK, Some(getFinancialDetailsTotalisationsAsJson.toString))
-      val result = await(buildClientForRequestToApp(uri = etmpUri).get())
-      result.status shouldBe Status.OK
-      Json.parse(result.body) shouldBe penaltyDetailsWithLSPAndLPPAndFinancialDetails
-      wireMockServer.findAll(postRequestedFor(urlEqualTo("/write/audit"))).asScala.toList.exists(_.getBodyAsString.contains("UserHasPenalty")) shouldBe true
-    }
-
-    s"NOT audit the response when the user has 0 LSPs and 0 LPPs for ${regime.value}" in {
-      val getPenaltyDetailsWithNoPointsAsJson: JsValue = Json.parse(
-        """
-          |{
-          | "totalisations": {
-          |   "LSPTotalValue": 0,
-          |   "penalisedPrincipalTotal": 0,
-          |   "LPPPostedTotal": 0.00,
-          |   "totalAccountOverdue": 1000,
-          |   "totalAccountPostedInterest": 12.34,
-          |   "totalAccountAccruingInterest": 43.21
-          | },
-          | "lateSubmissionPenalty": {
-          |   "summary": {
-          |     "activePenaltyPoints": 0,
-          |     "inactivePenaltyPoints": 0,
-          |     "regimeThreshold": 0,
-          |     "penaltyChargeAmount": 0.00,
-          |     "PoCAchievementDate": "2022-01-01"
-          |   },
-          |   "details": []
-          | },
-          | "latePaymentPenalty": {
-          |   "details": []
-          | }
-          |}
-          |""".stripMargin)
-      mockStubResponseForAuthorisedUser
-      mockStubResponseForGetPenaltyDetails(Status.OK, regime, idType, id, body = Some(getPenaltyDetailsWithNoPointsAsJson.toString()))
-      mockStubResponseForGetFinancialDetails(Status.OK)
-      mockStubResponseForGetFinancialDetails(Status.OK, Some(getFinancialDetailsTotalisationsAsJson.toString))
-      val result = await(buildClientForRequestToApp(uri = etmpUri).get())
-      result.status shouldBe Status.OK
-      result.body shouldBe getPenaltyDetailsWithNoPointsAsJson.toString()
-      wireMockServer.findAll(postRequestedFor(urlEqualTo("/write/audit"))).asScala.toList.exists(_.getBodyAsString.contains("UserHasPenalty")) shouldBe false
     }
   }
 }

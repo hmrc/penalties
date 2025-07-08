@@ -29,6 +29,18 @@ class AppConfig @Inject()(val config: Configuration, servicesConfig: ServicesCon
 
   import servicesConfig._
 
+  // These are for agnostic IF/HIP connector
+  lazy val queryParametersForGetFinancialDetailsMap: Seq[(String, String)] = Seq(
+    ("includeClearedItems", config.get[String]("eis.includeCleared")),
+    ("includeStatisticalItems", config.get[String]("eis.includeStatistical")),
+    ("includePaymentOnAccount", config.get[String]("eis.includePOA")),
+    ("addRegimeTotalisation", config.get[String]("eis.addRegimeTotalisation")),
+    ("addLockInformation", config.get[String]("eis.includeLocks")),
+    ("addPenaltyDetails", config.get[String]("eis.includePenaltyDetails")),
+    ("addPostedInterestDetails", config.get[String]("eis.calculatePostedInterest")),
+    ("addAccruingInterestDetails", config.get[String]("eis.calculateAccruedInterest"))
+  )
+  // These are for non-agnostic connector
   lazy val queryParametersForGetFinancialDetails: String = {
     s"?includeClearedItems=${config.get[Boolean]("eis.includeCleared")}" +
       s"&includeStatisticalItems=${config.get[Boolean]("eis.includeStatistical")}" +
@@ -39,7 +51,7 @@ class AppConfig @Inject()(val config: Configuration, servicesConfig: ServicesCon
       s"&addPostedInterestDetails=${config.get[Boolean]("eis.calculatePostedInterest")}" +
       s"&addAccruingInterestDetails=${config.get[Boolean]("eis.calculateAccruedInterest")}"
   }
-
+  // These are for non-agnostic connector
   lazy val queryParametersForGetFinancialDetailsWithoutClearedItems: String = {
     s"?includeClearedItems=false" +
       s"&includeStatisticalItems=${config.get[Boolean]("eis.includeStatistical")}" +
@@ -51,6 +63,13 @@ class AppConfig @Inject()(val config: Configuration, servicesConfig: ServicesCon
       s"&addAccruingInterestDetails=${config.get[Boolean]("eis.calculateAccruedInterest")}"
   }
 
+  // These are for agnostic IF/HIP connector
+  def addDateRangeQueryParametersMap(): Seq[(String, String)] = Seq(
+    ("dateType", config.get[String]("eis.dateType")),
+    ("dateFrom", getTimeMachineDateTime.toLocalDate.minusYears(2).toString),
+    ("dateTo", getTimeMachineDateTime.toLocalDate.toString)
+  )
+  // These are for non-agnostic connector
   def addDateRangeQueryParameters(): String = s"&dateType=${config.get[String]("eis.dateType")}" +
     s"&dateFrom=${getTimeMachineDateTime.toLocalDate.minusYears(2)}" +
     s"&dateTo=${getTimeMachineDateTime.toLocalDate}"

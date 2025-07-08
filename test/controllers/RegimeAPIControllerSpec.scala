@@ -55,7 +55,7 @@ class RegimeAPIControllerSpec extends SpecBase with FeatureSwitching with LogCap
   val mockAppealsService: RegimeAppealService = mock(classOf[RegimeAppealService])
   val mockAuditService: AuditService = mock(classOf[AuditService])
   val dateHelper: DateHelper = injector.instanceOf(classOf[DateHelper])
-  val mockAPIService: RegimeAPIService = mock(classOf[RegimeAPIService])
+  val mockAPIService: APIService = mock(classOf[APIService])
   val mockGetPenaltyDetailsService: PenaltyDetailsService = mock(classOf[PenaltyDetailsService])
   val mockGetFinancialDetailsService: FinancialDetailsService = mock(classOf[FinancialDetailsService])
   val mockGetFinancialDetailsConnector: FinancialDetailsConnector = mock(classOf[FinancialDetailsConnector])
@@ -435,7 +435,7 @@ class RegimeAPIControllerSpec extends SpecBase with FeatureSwitching with LogCap
       when(mockAPIService.checkIfHasAnyPenaltyData(any())).thenReturn(true)
       when(mockAPIService.getNumberOfEstimatedPenalties(any())).thenReturn(2)
       when(mockGetFinancialDetailsService.getFinancialDetails(any())(any()))
-        .thenReturn(Future.successful(Right(GetFinancialDetailsHipSuccessResponse(FinancialDetailsHIP("2025-05-06", financialDetailsWithManualLPP)))))
+        .thenReturn(Future.successful(Right(GetFinancialDetailsHipSuccessResponse(FinancialDetailsHIP("2025-05-06", financialDetailsWithoutManualLPP)))))
       when(mockGetPenaltyDetailsService.getDataFromPenaltyService(any())(any()))
         .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetailsWithManualLPP))))
       when(mockAPIService.findEstimatedPenaltiesAmount(any()))
@@ -644,7 +644,7 @@ class RegimeAPIControllerSpec extends SpecBase with FeatureSwitching with LogCap
           |}""".stripMargin)
 
 
-      when(mockGetFinancialDetailsConnector.getFinancialDetailsForAPI(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any())(any()))
+      when(mockGetFinancialDetailsConnector.getFinancialDetailsForAPI(any(), any())(any()))
         .thenReturn(Future.successful(HttpResponse.apply(OK, sampleAPI1811Response.toString)))
       val result = controller.getFinancialDetails(regime = Regime("VATC"), idType = IdType("VRN"), id = Id("123456789"),
         searchType = Some("CHGREF"),
@@ -667,7 +667,7 @@ class RegimeAPIControllerSpec extends SpecBase with FeatureSwitching with LogCap
     }
 
     s"return NOT_FOUND (${Status.NOT_FOUND}) when the call returns no data (auditing the response)" in new Setup(true) {
-      when(mockGetFinancialDetailsConnector.getFinancialDetailsForAPI(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any())(any()))
+      when(mockGetFinancialDetailsConnector.getFinancialDetailsForAPI(any(), any())(any()))
         .thenReturn(Future.successful(HttpResponse.apply(NOT_FOUND, "NOT_FOUND")))
 
       val result = controller.getFinancialDetails(regime = Regime("VATC"), idType = IdType("VRN"), id = Id("123456789"),
@@ -690,7 +690,7 @@ class RegimeAPIControllerSpec extends SpecBase with FeatureSwitching with LogCap
     }
 
     s"return the status from EIS when the call returns a non 200 or 404 status (auditing the response)" in new Setup(true) {
-      when(mockGetFinancialDetailsConnector.getFinancialDetailsForAPI(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any())(any()))
+      when(mockGetFinancialDetailsConnector.getFinancialDetailsForAPI(any(), any())(any()))
         .thenReturn(Future.successful(HttpResponse.apply(INTERNAL_SERVER_ERROR, "INTERNAL_SERVER_ERROR")))
 
       val result = controller.getFinancialDetails(regime = Regime("VATC"), idType = IdType("VRN"), id = Id("123456789"),

@@ -16,65 +16,80 @@
 
 package services
 
-import config.featureSwitches.FeatureSwitching
+import com.github.tomakehurst.wiremock.stubbing.StubMapping
+import config.featureSwitches.{CallAPI1811Stub, FeatureSwitching}
 import connectors.parsers.getFinancialDetails.FinancialDetailsParser._
 import models.getFinancialDetails._
 import models.getFinancialDetails.totalisation._
+import models.{AgnosticEnrolmentKey, Id, IdType, Regime}
 import org.scalatest.prop.TableDrivenPropertyChecks
-import play.api.http.Status
-import play.api.http.Status.{IM_A_TEAPOT, INTERNAL_SERVER_ERROR}
+import play.api.http.Status._
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
-import utils.{RegimeETMPWiremock, IntegrationSpecCommonBase}
-import models.{AgnosticEnrolmentKey, Regime, IdType, Id}
+import utils.{IntegrationSpecCommonBase, RegimeETMPWiremock}
 
 import java.time.LocalDate
 
 class FinancialDetailsServiceISpec extends IntegrationSpecCommonBase with RegimeETMPWiremock with FeatureSwitching with TableDrivenPropertyChecks {
+//  setEnabledFeatureSwitches(CallAPI1811Stub)
   setEnabledFeatureSwitches()
   val service: FinancialDetailsService = injector.instanceOf[FinancialDetailsService]
 
   Table(
     ("Regime", "IdType", "Id"),
     (Regime("VATC"), IdType("VRN"), Id("123456789")),
-    (Regime("ITSA"), IdType("NINO"), Id("AB123456C")),
+    (Regime("ITSA"), IdType("NINO"), Id("AB123456C"))
   ).forEvery { (regime, idType, id) =>
-
     val aKey = AgnosticEnrolmentKey(regime, idType, id)
-
-    s"getFinancialDetails for $regime" when {
-      val getFinancialDetailsModel: FinancialDetailsHIP = FinancialDetailsHIP(
-        processingDate = "2025-05-06",
-        financialData = FinancialDetails(
-        documentDetails = Some(Seq(DocumentDetails(
+    val financialData: FinancialDetails = FinancialDetails(
+      documentDetails = Some(
+        Seq(DocumentDetails(
           chargeReferenceNumber = Some("XM002610011594"),
           documentOutstandingAmount = Some(543.21),
           lineItemDetails = Some(Seq(LineItemDetails(Some(MainTransactionEnum.VATReturnFirstLPP)))),
           documentTotalAmount = Some(100.00),
-          issueDate = Some(LocalDate.of(2022, 1, 1)))
-        )),
-        totalisation = Some(FinancialDetailsTotalisation(
+          issueDate = Some(LocalDate.of(2022, 1, 1))
+        ))),
+      totalisation = Some(
+        FinancialDetailsTotalisation(
           regimeTotalisations = Some(RegimeTotalisation(totalAccountOverdue = Some(1000))),
           interestTotalisations = Some(InterestTotalisation(totalAccountPostedInterest = Some(12.34), totalAccountAccruingInterest = Some(43.21)))
         ))
-      ))
+    )
+    val financialDetailsHip: FinancialDetailsHIP = FinancialDetailsHIP(processingDate = "2025-05-06", financialData = financialData)
 
-      "call the connector and return a successful result" in {
-        mockStubResponseForGetFinancialDetails(Status.OK , Some(getFinancialDetailsAsJson.toString()))
-        val result = await(service.getFinancialDetails(aKey))
-        result.isRight shouldBe true
-        result.toOption.get shouldBe GetFinancialDetailsHipSuccessResponse(getFinancialDetailsModel)
-      }
+    s"getFinancialDetails for $regime" when {
 
-      "call the connector and return a successful result - passing custom parameters when defined" in {
-        mockStubResponseForGetFinancialDetails(Status.OK, Some(getFinancialDetailsAsJson.toString()))
-        val result = await(service.getFinancialDetails(aKey))
-        result.isRight shouldBe true
-        result.toOption.get shouldBe GetFinancialDetailsHipSuccessResponse(getFinancialDetailsModel)
-      }
+      Seq("HIP", "IF").foreach { upstream =>
+        val isHip = upstream == "HIP"
+        val successResponse =
+          if (isHip) GetFinancialDetailsHipSuccessResponse(financialDetailsHip)
+          else GetFinancialDetailsSuccessResponse(financialDetailsHip.financialData)
 
-      s"the response body is not well formed: $GetFinancialDetailsMalformed" in {
-        mockStubResponseForGetFinancialDetails(Status.OK, Some(
-          """
+        def stubCall(status: Int, body: Option[String]): StubMapping =
+          if (isHip) mockStubResponseForGetFinancialDetails(status, body)
+          else mockStubResponseForGetFinancialDetailsIF(regime, idType, id, status)
+
+        s"calling $upstream endpoint" should {
+
+          "call the connector and return a successful result" in {
+//            stubCall(OK, Some(getFinancialDetailsAsJson.toString()))
+            mockStubResponseForGetFinancialDetails(OK, Some(getFinancialDetailsAsJson.toString()))
+            val result = await(service.getFinancialDetails(aKey))
+
+            result shouldBe Right(successResponse)
+          }
+
+          "call the connector and return a successful result - passing custom parameters when defined" in {
+            stubCall(OK, Some(getFinancialDetailsAsJson.toString()))
+            val result = await(service.getFinancialDetails(aKey))
+
+            result shouldBe Right(successResponse)
+          }
+
+          s"the response body is not well formed: $GetFinancialDetailsMalformed" in {
+            stubCall(
+              OK,
+              Some("""
           {
            "documentDetails": [
             {
@@ -82,35 +97,38 @@ class FinancialDetailsServiceISpec extends IntegrationSpecCommonBase with Regime
             }
            ]
           }
-          """))
-        val result = await(service.getFinancialDetails(aKey))
-        result.isLeft shouldBe true
-        result.left.getOrElse(GetFinancialDetailsFailureResponse(IM_A_TEAPOT)) shouldBe GetFinancialDetailsMalformed
-      }
+          """)
+            )
+            val result = await(service.getFinancialDetails(aKey))
 
-      s"the response body contains NO_DATA_FOUND for 404 response - returning $GetFinancialDetailsNoContent" in {
-        val noDataFoundBody =
-          """
-            |{
-            | "failures":[
-            |   {
-            |     "code": "NO_DATA_FOUND",
-            |     "reason": "This is a reason"
-            |   }
-            | ]
-            |}
-            |""".stripMargin
-        mockStubResponseForGetFinancialDetails(Status.NOT_FOUND, Some(noDataFoundBody))
-        val result = await(service.getFinancialDetails(aKey))
-        result.isLeft shouldBe true
-        result.left.getOrElse(GetFinancialDetailsFailureResponse(IM_A_TEAPOT)) shouldBe GetFinancialDetailsNoContent
-      }
+            result shouldBe Left(GetFinancialDetailsMalformed)
+          }
 
-      s"an unknown response is returned from the connector - $GetFinancialDetailsFailureResponse" in {
-        mockStubResponseForGetFinancialDetails(Status.IM_A_TEAPOT)
-        val result = await(service.getFinancialDetails(aKey))
-        result.isLeft shouldBe true
-        result.left.getOrElse(GetFinancialDetailsFailureResponse(INTERNAL_SERVER_ERROR)) shouldBe GetFinancialDetailsFailureResponse(Status.IM_A_TEAPOT)
+          s"the response body contains NO_DATA_FOUND for 404 response - returning $GetFinancialDetailsNoContent" in {
+            val noDataFoundBody =
+              """
+                |{
+                | "failures":[
+                |   {
+                |     "code": "NO_DATA_FOUND",
+                |     "reason": "This is a reason"
+                |   }
+                | ]
+                |}
+                |""".stripMargin
+            stubCall(NOT_FOUND, Some(noDataFoundBody))
+            val result = await(service.getFinancialDetails(aKey))
+
+            result shouldBe Left(GetFinancialDetailsNoContent)
+          }
+
+          s"an unknown response is returned from the connector - $GetFinancialDetailsFailureResponse" in {
+            stubCall(IM_A_TEAPOT, None)
+            val result = await(service.getFinancialDetails(aKey))
+
+            result shouldBe Left(GetFinancialDetailsFailureResponse(IM_A_TEAPOT))
+          }
+        }
       }
     }
   }

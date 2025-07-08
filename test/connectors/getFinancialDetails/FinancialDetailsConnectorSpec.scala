@@ -18,22 +18,20 @@ package connectors.getFinancialDetails
 
 import base.{LogCapturing, SpecBase}
 import config.AppConfig
-import config.featureSwitches.{CallAPI1811HIP, CallAPI1811Stub}
+import config.featureSwitches.CallAPI1811HIP
 import connectors.parsers.getFinancialDetails.FinancialDetailsParser._
 import models.getFinancialDetails.totalisation.{FinancialDetailsTotalisation, InterestTotalisation, RegimeTotalisation}
-import models.getFinancialDetails.{DocumentDetails, FinancialDetails, FinancialDetailsHIP, LineItemDetails}
+import models.getFinancialDetails._
+import models.{AgnosticEnrolmentKey, Id, IdType, Regime}
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
+import org.mockito.stubbing.OngoingStubbing
 import play.api.http.Status
 import play.api.libs.json.{JsObject, Json}
 import play.api.test.Helpers._
 import uk.gov.hmrc.http._
 import utils.Logger.logger
 import utils.PagerDutyHelper.PagerDutyKeys
-import models.{AgnosticEnrolmentKey, Id, IdType, Regime}
-import org.mockito.ArgumentMatchers.any
-import org.mockito.stubbing.OngoingStubbing
-import uk.gov.hmrc.http
 
 import java.time.LocalDate
 import scala.concurrent.{ExecutionContext, Future}
@@ -58,7 +56,7 @@ class FinancialDetailsConnectorSpec extends SpecBase with LogCapturing {
   val financialDetailsBody: JsObject = Json.obj(
     "taxRegime" -> regime,
     "taxpayerInformation" -> Json.obj(
-      "idType" -> idType,
+      "idType"   -> idType,
       "idNumber" -> idValue
     )
   )
@@ -85,29 +83,29 @@ class FinancialDetailsConnectorSpec extends SpecBase with LogCapturing {
     FinancialDetailsHIP(processingDate = "2025-05-06", financialData = financialDetailsModelAPI1811)
 
   trait SetupHIP {
-    val connector                            = new FinancialDetailsConnector(mockHttpClient, mockAppConfig)
+    val connector = new FinancialDetailsConnector(mockHttpClient, mockAppConfig)
     when(mockAppConfig.isEnabled(ArgumentMatchers.eq(CallAPI1811HIP))).thenReturn(true)
     when(mockAppConfig.getRegimeFinancialDetailsUrl(Id(idValue))).thenReturn(urlHIP)
 
-    def buildErrorResponseMock(errorResponse: Exception): OngoingStubbing[Future[GetFinancialDetailsResponse]] = {
-      when(mockHttpClient.POST[JsObject, GetFinancialDetailsResponse](
-        ArgumentMatchers.eq(urlHIP),
-        ArgumentMatchers.any(),
-        ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.failed(errorResponse))
-    }
+    def buildErrorResponseMock(errorResponse: Exception): OngoingStubbing[Future[GetFinancialDetailsResponse]] =
+      when(
+        mockHttpClient.POST[JsObject, GetFinancialDetailsResponse](ArgumentMatchers.eq(urlHIP), ArgumentMatchers.any(), ArgumentMatchers.any())(
+          ArgumentMatchers.any(),
+          ArgumentMatchers.any(),
+          ArgumentMatchers.any(),
+          ArgumentMatchers.any())).thenReturn(Future.failed(errorResponse))
   }
   trait SetupIF {
-    val connector                            = new FinancialDetailsConnector(mockHttpClient, mockAppConfig)
+    val connector = new FinancialDetailsConnector(mockHttpClient, mockAppConfig)
     when(mockAppConfig.isEnabled(ArgumentMatchers.eq(CallAPI1811HIP))).thenReturn(false)
     when(mockAppConfig.getRegimeFinancialDetailsUrl(Id(idValue))).thenReturn(urlIF)
 
-    def buildErrorResponseMock(errorResponse: Exception): OngoingStubbing[Future[GetFinancialDetailsResponse]] = {
+    def buildErrorResponseMock(errorResponse: Exception): OngoingStubbing[Future[GetFinancialDetailsResponse]] =
       when(
         mockHttpClient.GET[GetFinancialDetailsResponse](ArgumentMatchers.eq(urlIF), ArgumentMatchers.any(), ArgumentMatchers.any())(
           ArgumentMatchers.any(),
           ArgumentMatchers.any(),
           ArgumentMatchers.any())).thenReturn(Future.failed(errorResponse))
-    }
   }
 
 //  "getFinancialDetails" when {
@@ -207,41 +205,51 @@ class FinancialDetailsConnectorSpec extends SpecBase with LogCapturing {
     "calling the HIP endpoint" should {
       "return a 200 response when the call succeeds" when {
         "there are no extra parameters are passed in the request body" in new SetupHIP {
-          val successResponse: HttpResponse = HttpResponse.apply(status = Status.OK, json = Json.toJson(financialDetailsHipModelAPI1811), headers = Map.empty)
-          when(mockHttpClient.POST[JsObject, HttpResponse](
-            ArgumentMatchers.eq(urlHIP),
-            ArgumentMatchers.any(),
-            //            ArgumentMatchers.eq(financialDetailsBody),
-            ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(successResponse))
+          val successResponse: HttpResponse =
+            HttpResponse.apply(status = Status.OK, json = Json.toJson(financialDetailsHipModelAPI1811), headers = Map.empty)
+          when(
+            mockHttpClient.POST[JsObject, HttpResponse](
+              ArgumentMatchers.eq(urlHIP),
+              ArgumentMatchers.any(),
+              //            ArgumentMatchers.eq(financialDetailsBody),
+              ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
+            .thenReturn(Future.successful(successResponse))
 
-          val result: HttpResponse = await(connector.getFinancialDetailsForAPI(vrn123456789, None, None, None, None, None, None, None, None, None, None, None, None, None)(HeaderCarrier()))
+          val result: HttpResponse =
+            await(connector.getFinancialDetailsForAPI(vrn123456789, FinancialDetailsRequestModel.emptyModel)(HeaderCarrier()))
           result.isInstanceOf[HttpResponse] shouldBe true
           result.status shouldBe OK
         }
         "all extra parameters are in use in the request body" in new SetupHIP {
-          val successResponse: HttpResponse = HttpResponse.apply(status = Status.OK, json = Json.toJson(financialDetailsHipModelAPI1811), headers = Map.empty)
-          when(mockHttpClient.POST[JsObject, HttpResponse](
-            ArgumentMatchers.eq(urlHIP),
-            ArgumentMatchers.any(),
+          val successResponse: HttpResponse =
+            HttpResponse.apply(status = Status.OK, json = Json.toJson(financialDetailsHipModelAPI1811), headers = Map.empty)
+          when(
+            mockHttpClient.POST[JsObject, HttpResponse](
+              ArgumentMatchers.eq(urlHIP),
+              ArgumentMatchers.any(),
 //            ArgumentMatchers.eq(financialDetailsBody),
-            ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(successResponse))
+              ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
+            .thenReturn(Future.successful(successResponse))
 
-          val result: HttpResponse = await(connector.getFinancialDetailsForAPI(
-            enrolmentKey = vrn123456789,
-            searchType = Some("CHGREF"),
-            searchItem = Some("XC00178236592"),
-            dateType = Some("BILLING"),
-            dateFrom = Some("2020-10-03"),
-            dateTo = Some("2021-07-12"),
-            includeClearedItems = Some(false),
-            includeStatisticalItems = Some(true),
-            includePaymentOnAccount = Some(true),
-            addRegimeTotalisation = Some(false),
-            addLockInformation = Some(true),
-            addPenaltyDetails = Some(true),
-            addPostedInterestDetails = Some(true),
-            addAccruingInterestDetails = Some(true)
-          )(HeaderCarrier()))
+          val result: HttpResponse = await(
+            connector.getFinancialDetailsForAPI(
+              enrolmentKey = vrn123456789,
+              requestBody = FinancialDetailsRequestModel(
+                searchType = Some("CHGREF"),
+                searchItem = Some("XC00178236592"),
+                dateType = Some("BILLING"),
+                dateFrom = Some("2020-10-03"),
+                dateTo = Some("2021-07-12"),
+                includeClearedItems = Some(false),
+                includeStatisticalItems = Some(true),
+                includePaymentOnAccount = Some(true),
+                addRegimeTotalisation = Some(false),
+                addLockInformation = Some(true),
+                addPenaltyDetails = Some(true),
+                addPostedInterestDetails = Some(true),
+                addAccruingInterestDetails = Some(true)
+              )
+            )(HeaderCarrier()))
           result.isInstanceOf[HttpResponse] shouldBe true
           result.status shouldBe OK
         }
@@ -252,7 +260,8 @@ class FinancialDetailsConnectorSpec extends SpecBase with LogCapturing {
           buildErrorResponseMock(errorResponse)
 
           withCaptureOfLoggingFrom(logger) { logs =>
-            val result: HttpResponse = await(connector.getFinancialDetailsForAPI(vrn123456789, None, None, None, None, None, None, None, None, None, None, None, None, None)(HeaderCarrier()))
+            val result: HttpResponse =
+              await(connector.getFinancialDetailsForAPI(vrn123456789, FinancialDetailsRequestModel.emptyModel)(HeaderCarrier()))
             logs.exists(_.getMessage.contains(s"Received $BAD_REQUEST status from API 1811 call")) shouldBe true
             result.isInstanceOf[HttpResponse] shouldBe true
             result.status shouldBe BAD_REQUEST
@@ -263,7 +272,8 @@ class FinancialDetailsConnectorSpec extends SpecBase with LogCapturing {
           buildErrorResponseMock(errorResponse)
 
           withCaptureOfLoggingFrom(logger) { logs =>
-            val result: HttpResponse = await(connector.getFinancialDetailsForAPI(vrn123456789, None, None, None, None, None, None, None, None, None, None, None, None, None)(HeaderCarrier()))
+            val result: HttpResponse =
+              await(connector.getFinancialDetailsForAPI(vrn123456789, FinancialDetailsRequestModel.emptyModel)(HeaderCarrier()))
             logs.exists(_.getMessage.contains(s"Received $BAD_GATEWAY status from API 1811 call")) shouldBe true
             result.isInstanceOf[HttpResponse] shouldBe true
             result.status shouldBe BAD_GATEWAY
@@ -274,7 +284,8 @@ class FinancialDetailsConnectorSpec extends SpecBase with LogCapturing {
           buildErrorResponseMock(errorResponse)
 
           withCaptureOfLoggingFrom(logger) { logs =>
-            val result: HttpResponse = await(connector.getFinancialDetailsForAPI(vrn123456789, None, None, None, None, None, None, None, None, None, None, None, None, None)(HeaderCarrier()))
+            val result: HttpResponse =
+              await(connector.getFinancialDetailsForAPI(vrn123456789, FinancialDetailsRequestModel.emptyModel)(HeaderCarrier()))
             logs.exists(_.getMessage.contains(PagerDutyKeys.UNKNOWN_EXCEPTION_CALLING_1811_API.toString)) shouldBe true
             result.isInstanceOf[HttpResponse] shouldBe true
             result.status shouldBe INTERNAL_SERVER_ERROR
@@ -294,7 +305,7 @@ class FinancialDetailsConnectorSpec extends SpecBase with LogCapturing {
 //              ArgumentMatchers.any(),
 //              ArgumentMatchers.any())).thenReturn(Future.successful(successResponse))
 //
-//          val result: HttpResponse = await(connector.getFinancialDetailsForAPI(vrn123456789, None, None, None, None, None, None, None, None, None, None, None, None, None)(HeaderCarrier()))
+//          val result: HttpResponse = await(connector.getFinancialDetailsForAPI(vrn123456789, FinancialDetailsRequestModel.emptyModel)(HeaderCarrier()))
 //          result.isInstanceOf[HttpResponse] shouldBe true
 //          result.status shouldBe OK
 //        }
@@ -337,7 +348,7 @@ class FinancialDetailsConnectorSpec extends SpecBase with LogCapturing {
 //            ArgumentMatchers.any(),
 //            ArgumentMatchers.any())).thenReturn(Future.successful(successResponse))
 //
-//        val result: HttpResponse = await(connector.getFinancialDetailsForAPI(vrn123456789, None, None, None, None, None, None, None, None, None, None, None, None, None)(HeaderCarrier()))
+//        val result: HttpResponse = await(connector.getFinancialDetailsForAPI(vrn123456789, FinancialDetailsRequestModel.emptyModel)(HeaderCarrier()))
 //        result.isInstanceOf[HttpResponse] shouldBe true
 //        result.status shouldBe OK
 //      }
@@ -347,7 +358,7 @@ class FinancialDetailsConnectorSpec extends SpecBase with LogCapturing {
 //          buildErrorResponseMock(errorResponse)
 //
 //          withCaptureOfLoggingFrom(logger) { logs =>
-//            val result: HttpResponse = await(connector.getFinancialDetailsForAPI(vrn123456789, None, None, None, None, None, None, None, None, None, None, None, None, None)(HeaderCarrier()))
+//            val result: HttpResponse = await(connector.getFinancialDetailsForAPI(vrn123456789, FinancialDetailsRequestModel.emptyModel)(HeaderCarrier()))
 //            logs.exists(_.getMessage.contains(s"Received $BAD_REQUEST status from API 1811 call")) shouldBe true
 //            result.isInstanceOf[HttpResponse] shouldBe true
 //            result.status shouldBe BAD_REQUEST
@@ -358,7 +369,7 @@ class FinancialDetailsConnectorSpec extends SpecBase with LogCapturing {
 //          buildErrorResponseMock(errorResponse)
 //
 //          withCaptureOfLoggingFrom(logger) { logs =>
-//            val result: HttpResponse = await(connector.getFinancialDetailsForAPI(vrn123456789, None, None, None, None, None, None, None, None, None, None, None, None, None)(HeaderCarrier()))
+//            val result: HttpResponse = await(connector.getFinancialDetailsForAPI(vrn123456789, FinancialDetailsRequestModel.emptyModel)(HeaderCarrier()))
 //            logs.exists(_.getMessage.contains(s"Received $BAD_GATEWAY status from API 1811 call")) shouldBe true
 //            result.isInstanceOf[HttpResponse] shouldBe true
 //            result.status shouldBe BAD_GATEWAY
@@ -369,7 +380,7 @@ class FinancialDetailsConnectorSpec extends SpecBase with LogCapturing {
 //          buildErrorResponseMock(errorResponse)
 //
 //          withCaptureOfLoggingFrom(logger) { logs =>
-//            val result: HttpResponse = await(connector.getFinancialDetailsForAPI(vrn123456789, None, None, None, None, None, None, None, None, None, None, None, None, None)(HeaderCarrier()))
+//            val result: HttpResponse = await(connector.getFinancialDetailsForAPI(vrn123456789, FinancialDetailsRequestModel.emptyModel)(HeaderCarrier()))
 //            logs.exists(_.getMessage.contains(PagerDutyKeys.UNKNOWN_EXCEPTION_CALLING_1811_API.toString)) shouldBe true
 //            result.isInstanceOf[HttpResponse] shouldBe true
 //            result.status shouldBe INTERNAL_SERVER_ERROR
@@ -377,58 +388,5 @@ class FinancialDetailsConnectorSpec extends SpecBase with LogCapturing {
 //        }
 //      }
 //    }
-  }
-
-  "buildHipRequestForApiBody" should {
-    "build the Json request body" which {
-      "only contains the base body" when {
-        "no other parameters are given" in {
-          val result: JsObject = FinancialDetailsConnector.buildHipRequestForApiBody(vrn123456789, None, None, None, None, None, None, None, None, None, None, None, None, None)
-          val expectedResult = Json.obj(
-            "taxRegime" -> vrn123456789.regime.value,
-            "taxpayerInformation" -> Json.obj(
-              "idType" -> vrn123456789.idType.value,
-              "idNumber" -> vrn123456789.id.value
-            )
-          )
-
-          result shouldBe expectedResult
-        }
-        "some but not all required targetedSearch parameters are given" in {
-          val resultWithoutSearchItem: JsObject = FinancialDetailsConnector.buildHipRequestForApiBody(vrn123456789, searchType = Some("CHGREF"),
-            searchItem = None, None, None, None, None, None, None, None, None, None, None, None)
-          val resultWithoutSearchType: JsObject = FinancialDetailsConnector.buildHipRequestForApiBody(vrn123456789, searchType = None,
-            searchItem = Some("XC00178236592"), None, None, None, None, None, None, None, None, None, None, None)
-          val expectedResult = Json.obj(
-            "taxRegime" -> vrn123456789.regime.value,
-            "taxpayerInformation" -> Json.obj(
-              "idType" -> vrn123456789.idType.value,
-              "idNumber" -> vrn123456789.id.value
-            )
-          )
-
-          resultWithoutSearchItem shouldBe expectedResult
-          resultWithoutSearchType shouldBe expectedResult
-        }
-      }
-      "contains the base body plus targetedSearch when the correct targetedSearch parameters are given" in {
-        val result: JsObject = FinancialDetailsConnector.buildHipRequestForApiBody(vrn123456789,
-          searchType = Some("CHGREF"),
-          searchItem = Some("XC00178236592"), None, None, None, None, None, None, None, None, None, None, None)
-        val expectedResult = Json.obj(
-          "taxRegime" -> vrn123456789.regime.value,
-          "taxpayerInformation" -> Json.obj(
-            "idType"   -> vrn123456789.idType.value,
-            "idNumber" -> vrn123456789.id.value
-          ),
-          "targetedSearch" -> Json.obj(
-            "searchType"   -> "CHGREF",
-            "searchItem" -> "XC00178236592"
-          )
-        )
-
-        result shouldBe expectedResult
-      }
-    }
   }
 }

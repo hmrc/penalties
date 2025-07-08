@@ -52,6 +52,20 @@ class AppConfigSpec extends AnyWordSpec with ShouldMatchers with FeatureSwitchin
     }
   }
 
+  "addDateRangeQueryParametersMap" should {
+    "set the correct dateTo and dateFrom" in new Setup {
+      when(mockConfiguration.getOptional[String](any())(any())).thenReturn(Some(LocalDateTime.now().toString))
+      when(mockConfiguration.get[String](any())(any())).thenReturn("POSTING")
+      val expectedResult: Seq[(String, String)] = Seq(
+        ("dateType", "POSTING"),
+        ("dateFrom", LocalDate.now().minusYears(2).toString),
+        ("dateTo", LocalDate.now().toString)
+      )
+      val result: String = this.config.addDateRangeQueryParameters()
+      result shouldBe expectedResult
+    }
+  }
+
   "getPenaltyDetailsUrl" should {
     "call API1812 when the feature switch is enabled" in new Setup {
       enableFeatureSwitch(CallAPI1812ETMP)
@@ -80,7 +94,7 @@ class AppConfigSpec extends AnyWordSpec with ShouldMatchers with FeatureSwitchin
     }
 
     "call API1811 stub when the stub feature switch is enabled" in new Setup {
-      disableFeatureSwitch(CallAPI1811Stub)
+      enableFeatureSwitch(CallAPI1811Stub)
       when(mockServicesConfig.baseUrl(ArgumentMatchers.any()))
         .thenReturn("localhost:0000")
       val result: String = this.config.getFinancialDetailsUrl("123456789")

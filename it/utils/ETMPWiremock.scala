@@ -437,21 +437,19 @@ trait ETMPWiremock extends WiremockHelper{
       ))
   }
 
-  def mockResponseForGetFinancialDetails(status: Int, vatcUrl: String, body: Option[String] = None): StubMapping = {
+  def mockResponseForGetFinancialDetails(status: Int, vatcUrl: String, responseBody: Option[String] = None): StubMapping =
     stubFor(get(urlEqualTo(s"/penalty/financial-data/$vatcUrl"))
       .willReturn(
         aResponse()
-          .withBody(body.fold(getFinancialDetailsWithoutTotalisationsAsJson.toString())(identity))
+          .withBody(responseBody.fold(getFinancialDetailsWithoutTotalisationsAsJson.toString())(identity))
           .withStatus(status)
       ))
-  }
 
-  def mockResponseForGetFinancialDetailsHIP(status: Int, vatcUrl: String, body: Option[String] = None): StubMapping = {
+  def mockResponseForGetFinancialDetailsHIP(status: Int, responseBody: Option[String] = None): StubMapping =
     stubFor(post(urlEqualTo(s"/RESTAdapter/cross-regime/taxpayer/financial-data/query"))
       .willReturn(
         aResponse()
-          .withBody(body.fold(getFinancialDetailsWithoutTotalisationsAsJsonHIP.toString())(identity))
+          .withBody(responseBody.fold(getFinancialDetailsWithoutTotalisationsAsJsonHIP.toString())(identity))
           .withStatus(status)
       ))
-  }
 }

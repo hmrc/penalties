@@ -62,7 +62,7 @@ class GetFinancialDetailsConnectorISpec extends IntegrationSpecCommonBase with E
              }]
            }
           """
-      mockResponseForGetFinancialDetails(Status.OK, s"VRN/123456789/VATC?includeClearedItems=true&includeStatisticalItems=true&includePaymentOnAccount=true&addRegimeTotalisation=true&addLockInformation=true&addPenaltyDetails=true&addPostedInterestDetails=true&addAccruingInterestDetails=true" + dateQueryParams, body = Some(malformedBody))
+      mockResponseForGetFinancialDetails(Status.OK, s"VRN/123456789/VATC?includeClearedItems=true&includeStatisticalItems=true&includePaymentOnAccount=true&addRegimeTotalisation=true&addLockInformation=true&addPenaltyDetails=true&addPostedInterestDetails=true&addAccruingInterestDetails=true" + dateQueryParams, Some(malformedBody))
       val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails("123456789", None))
       result.isLeft shouldBe true
       result.left.getOrElse(GetFinancialDetailsFailureResponse(IM_A_TEAPOT)) shouldBe GetFinancialDetailsMalformed

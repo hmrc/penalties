@@ -58,6 +58,19 @@ class PenaltyDetailsService @Inject()(getPenaltyDetailsConnector: PenaltyDetails
             penaltyDetails
           )
         )))
+      case res@Right(_@GetPenaltyDetailsSuccessResponse(penaltyDetails)) =>
+        implicit val loggingContext: LoggingContext = LoggingContext(
+          callingClass = "PenaltiesDetailsService",
+          function = "handleConnectorResponse",
+          enrolmentKey = enrolmentKeyInfo.toString
+        )
+
+        logger.debug(s"$startOfLogMsg - Got a success response from the connector. Parsed model: $penaltyDetails")
+        Right(GetPenaltyDetailsSuccessResponse(filterService.filterEstimatedLPP1DuringPeriodOfFamiliarisation(
+          filterService.filterPenaltiesWith9xAppealStatus(
+            penaltyDetails
+          )
+        )))
       case res@Left(GetPenaltyDetailsNoContent) =>
         logger.debug(s"$startOfLogMsg - Got a 404 response and no data was found for GetPenaltyDetails call")
         res

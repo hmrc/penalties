@@ -23,51 +23,50 @@ import models.getPenaltyDetails.GetPenaltyDetails
 import models.getPenaltyDetails.latePayment.{LPPDetails, LPPPenaltyStatusEnum}
 
 @Singleton
-class APIService @Inject()() {
-  def getNumberOfEstimatedPenalties(penaltyDetails: GetPenaltyDetails): Int = {
+class APIService @Inject() {
+  def getNumberOfEstimatedPenalties(penaltyDetails: GetPenaltyDetails): Int =
     penaltyDetails.latePaymentPenalty.flatMap(_.details.map(_.count(_.penaltyStatus.equals(LPPPenaltyStatusEnum.Accruing)))).getOrElse(0)
-  }
 
-  def findEstimatedPenaltiesAmount(penaltyDetails: GetPenaltyDetails): BigDecimal = {
-    penaltyDetails.latePaymentPenalty.flatMap(
-      _.details.map(
-        _.filter(_.penaltyStatus.equals(LPPPenaltyStatusEnum.Accruing)).map(_.penaltyAmountAccruing).sum
+  def findEstimatedPenaltiesAmount(penaltyDetails: GetPenaltyDetails): BigDecimal =
+    penaltyDetails.latePaymentPenalty
+      .flatMap(
+        _.details.map(
+          _.filter(_.penaltyStatus.equals(LPPPenaltyStatusEnum.Accruing)).map(_.penaltyAmountAccruing).sum
+        )
       )
-      ).getOrElse(0)
-  }
+      .getOrElse(0)
 
-  def checkIfHasAnyPenaltyData(penaltyDetails: GetPenaltyDetails): Boolean ={
+  def checkIfHasAnyPenaltyData(penaltyDetails: GetPenaltyDetails): Boolean =
     penaltyDetails.latePaymentPenalty.exists(_.details.exists(_.nonEmpty)) || penaltyDetails.lateSubmissionPenalty.exists(_.details.nonEmpty)
-  }
 
   def getNumberOfCrystallisedPenalties(penaltyDetails: GetPenaltyDetails, financialDetails: Option[FinancialDetails]): Int = {
-    val numOfDueLSPs: Int = penaltyDetails.lateSubmissionPenalty.map(
-      _.details.map(
-        penalty => penalty.chargeOutstandingAmount.getOrElse(BigDecimal(0)))).map(_.count(_ > BigDecimal(0)))
+    val numOfDueLSPs: Int = penaltyDetails.lateSubmissionPenalty
+      .map(_.details.map(penalty => penalty.chargeOutstandingAmount.getOrElse(BigDecimal(0))))
+      .map(_.count(_ > BigDecimal(0)))
       .getOrElse(0)
     val lppDetails: Seq[LPPDetails] = penaltyDetails.latePaymentPenalty.flatMap(_.details).getOrElse(Seq.empty)
-    val postedLPPs = lppDetails.filterNot(penalty => penalty.penaltyStatus.equals(LPPPenaltyStatusEnum.Accruing))
-    val outstandingPostedLPPs = postedLPPs.filter(_.penaltyAmountOutstanding.getOrElse(BigDecimal(0)) > BigDecimal(0))
-    val numOfDueLPPs = outstandingPostedLPPs.size
-    val numOfManualLPPs: Int = if(financialDetails.isDefined) countManualLPPs(financialDetails.get) else 0
+    val postedLPPs                  = lppDetails.filterNot(penalty => penalty.penaltyStatus.equals(LPPPenaltyStatusEnum.Accruing))
+    val outstandingPostedLPPs       = postedLPPs.filter(_.penaltyAmountOutstanding.getOrElse(BigDecimal(0)) > BigDecimal(0))
+    val numOfDueLPPs                = outstandingPostedLPPs.size
+    val numOfManualLPPs: Int        = financialDetails.map(countManualLPPs).getOrElse(0)
     numOfDueLSPs + numOfDueLPPs + numOfManualLPPs
   }
 
   def getCrystallisedPenaltyTotal(penaltyDetails: GetPenaltyDetails, financialDetails: Option[FinancialDetails]): BigDecimal = {
-    val crystallisedLSPAmountDue: BigDecimal = penaltyDetails.lateSubmissionPenalty.map(
-      _.details.map(
-        _.chargeOutstandingAmount.getOrElse(BigDecimal(0))).sum
-    ).getOrElse(BigDecimal(0))
+    val crystallisedLSPAmountDue: BigDecimal = penaltyDetails.lateSubmissionPenalty
+      .map(
+        _.details.map(_.chargeOutstandingAmount.getOrElse(BigDecimal(0))).sum
+      )
+      .getOrElse(BigDecimal(0))
     val lppDetails: Seq[LPPDetails] = penaltyDetails.latePaymentPenalty.flatMap(_.details).getOrElse(Seq.empty)
-    val postedLPPs = lppDetails.filterNot(penalty => penalty.penaltyStatus.equals(LPPPenaltyStatusEnum.Accruing))
-    val crystallisedLPPAmountDue = postedLPPs.map(_.penaltyAmountOutstanding.getOrElse(BigDecimal(0))).sum
-    val manualLPPDue: BigDecimal = if(financialDetails.isDefined) manualLPPTotals(financialDetails.get) else BigDecimal(0)
+    val postedLPPs                  = lppDetails.filterNot(penalty => penalty.penaltyStatus.equals(LPPPenaltyStatusEnum.Accruing))
+    val crystallisedLPPAmountDue    = postedLPPs.map(_.penaltyAmountOutstanding.getOrElse(BigDecimal(0))).sum
+    val manualLPPDue: BigDecimal    = financialDetails.map(manualLPPTotals).getOrElse(0)
     crystallisedLSPAmountDue + crystallisedLPPAmountDue + manualLPPDue
   }
 
-  private def countManualLPPs(financialDetails: FinancialDetails): Int = {
+  private def countManualLPPs(financialDetails: FinancialDetails): Int =
     financialDetails.documentDetails.map(_.count(_.lineItemDetails.exists(_.exists(_.mainTransaction.contains(ManualLPP))))).getOrElse(0)
-  }
 
   private def manualLPPTotals(financialDetails: FinancialDetails): BigDecimal = {
     val manualLPPs = financialDetails.documentDetails.map(_.filter(_.lineItemDetails.exists(_.exists(_.mainTransaction.contains(ManualLPP)))))
