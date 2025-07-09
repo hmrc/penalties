@@ -45,7 +45,7 @@ class GetFinancialDetailsServiceISpec extends IntegrationSpecCommonBase with ETM
        issueDate = Some(LocalDate.of(2022, 1, 1)))
      )),
      totalisation = Some(FinancialDetailsTotalisation(
-       regimeTotalisations = Some(RegimeTotalisation(totalAccountOverdue = Some(1000))),
+       regimeTotalisation = Some(RegimeTotalisation(totalAccountOverdue = Some(1000))),
        interestTotalisations = Some(InterestTotalisation(totalAccountPostedInterest = Some(12.34), totalAccountAccruingInterest = Some(43.21)))
      ))
    )

@@ -43,14 +43,14 @@ class FinancialDetailsTotalisationSpec extends SpecBase {
       |   "totalAccountPostedInterest": 123.45,
       |   "totalAccountAccruingInterest": 54.32
       | },
-      | "regimeTotalisations": {
+      | "regimeTotalisation": {
       |   "totalAccountOverdue": 123.45
       | }
       |}
       |""".stripMargin)
 
   val model: FinancialDetailsTotalisation = FinancialDetailsTotalisation(
-    regimeTotalisations = Some(RegimeTotalisation(
+    regimeTotalisation = Some(RegimeTotalisation(
       totalAccountOverdue = Some(123.45)
     )),
     interestTotalisations = Some(InterestTotalisation(

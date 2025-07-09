@@ -202,7 +202,7 @@ class PenaltiesFrontendService @Inject()(getFinancialDetailsService: GetFinancia
         val newTotalisations: Option[Totalisations] = penaltyDetails.totalisations.map(
           oldTotalisations => {
             oldTotalisations.copy(
-              totalAccountOverdue = financialDetails.totalisation.flatMap(_.regimeTotalisations.flatMap(_.totalAccountOverdue)),
+              totalAccountOverdue = financialDetails.totalisation.flatMap(_.regimeTotalisation.flatMap(_.totalAccountOverdue)),
               totalAccountPostedInterest = financialDetails.totalisation.flatMap(_.interestTotalisations.flatMap(_.totalAccountPostedInterest)),
               totalAccountAccruingInterest = financialDetails.totalisation.flatMap(_.interestTotalisations.flatMap(_.totalAccountAccruingInterest)),
               LPPPostedTotal = oldTotalisations.LPPPostedTotal.map(_ + totalAmountOfManualLPPs.getOrElse(BigDecimal(0)))
@@ -214,7 +214,7 @@ class PenaltiesFrontendService @Inject()(getFinancialDetailsService: GetFinancia
       case (true, false) => {
         //If there is no totalisations already, create a new object
         val totalisations: Totalisations = new Totalisations(
-          totalAccountOverdue = financialDetails.totalisation.flatMap(_.regimeTotalisations.flatMap(_.totalAccountOverdue)),
+          totalAccountOverdue = financialDetails.totalisation.flatMap(_.regimeTotalisation.flatMap(_.totalAccountOverdue)),
           totalAccountPostedInterest = financialDetails.totalisation.flatMap(_.interestTotalisations.flatMap(_.totalAccountPostedInterest)),
           totalAccountAccruingInterest = financialDetails.totalisation.flatMap(_.interestTotalisations.flatMap(_.totalAccountAccruingInterest)),
           LSPTotalValue = None,

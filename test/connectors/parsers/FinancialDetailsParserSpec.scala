@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,8 @@
 package connectors.parsers
 
 import base.LogCapturing
-import connectors.parsers.getFinancialDetails.GetFinancialDetailsParser
-import connectors.parsers.getFinancialDetails.GetFinancialDetailsParser._
+import connectors.parsers.getFinancialDetails.FinancialDetailsParser
+import connectors.parsers.getFinancialDetails.FinancialDetailsParser._
 import models.getFinancialDetails.totalisation.{FinancialDetailsTotalisation, InterestTotalisation, RegimeTotalisation}
 import models.getFinancialDetails.{DocumentDetails, FinancialDetails, GetFinancialData, LineItemDetails}
 import org.scalatest.matchers.should.Matchers
@@ -32,7 +32,7 @@ import utils.PagerDutyHelper.PagerDutyKeys
 
 import java.time.LocalDate
 
-class GetFinancialDetailsParserSpec extends AnyWordSpec with Matchers with LogCapturing {
+class FinancialDetailsParserSpec extends AnyWordSpec with Matchers with LogCapturing {
 
   val mockGetFinancialDetailsModelAPI1811: GetFinancialData = GetFinancialData(
     FinancialDetails(
@@ -117,24 +117,24 @@ class GetFinancialDetailsParserSpec extends AnyWordSpec with Matchers with LogCa
   "GetFinancialDetailsReads" should {
     s"parse an OK (${Status.OK}) response" when {
       s"the body of the response is valid" in {
-        val result = GetFinancialDetailsParser.GetFinancialDetailsReads.read("GET", "/", mockOKHttpResponseWithValidBody)
+        val result = FinancialDetailsParser.FinancialDetailsReads.read("GET", "/", mockOKHttpResponseWithValidBody)
         result.isRight shouldBe true
-        result.toOption.get.asInstanceOf[GetFinancialDetailsSuccessResponse].financialDetails shouldBe mockGetFinancialDetailsModelAPI1811.financialDetails
+        result.toOption.get.asInstanceOf[FinancialDetailsSuccessResponse].financialDetails shouldBe mockGetFinancialDetailsModelAPI1811.financialDetails
       }
     }
 
-    s"the body is malformed - returning a $Left $GetFinancialDetailsMalformed" in {
-      val result = GetFinancialDetailsParser.GetFinancialDetailsReads.read("GET", "/", mockOKHttpResponseWithInvalidBody)
+    s"the body is malformed - returning a $Left $FinancialDetailsMalformed" in {
+      val result = FinancialDetailsParser.FinancialDetailsReads.read("GET", "/", mockOKHttpResponseWithInvalidBody)
       result.isLeft shouldBe true
     }
 
     s"parse an BAD REQUEST (${Status.BAD_REQUEST}) response - and log a PagerDuty" in {
       withCaptureOfLoggingFrom(logger) {
         logs => {
-          val result = GetFinancialDetailsParser.GetFinancialDetailsReads.read("GET", "/", mockBadRequestHttpResponse)
+          val result = FinancialDetailsParser.FinancialDetailsReads.read("GET", "/", mockBadRequestHttpResponse)
           logs.exists(_.getMessage.contains(PagerDutyKeys.RECEIVED_4XX_FROM_1811_API.toString)) shouldBe true
           result.isLeft shouldBe true
-          result.left.getOrElse(GetFinancialDetailsFailureResponse(IM_A_TEAPOT)).asInstanceOf[GetFinancialDetailsFailureResponse].status shouldBe Status.BAD_REQUEST
+          result.left.getOrElse(FinancialDetailsFailureResponse(IM_A_TEAPOT)).asInstanceOf[FinancialDetailsFailureResponse].status shouldBe Status.BAD_REQUEST
         }
       }
     }
@@ -142,10 +142,10 @@ class GetFinancialDetailsParserSpec extends AnyWordSpec with Matchers with LogCa
     s"parse an FORBIDDEN (${Status.FORBIDDEN}) response - and log a PagerDuty" in {
       withCaptureOfLoggingFrom(logger) {
         logs => {
-          val result = GetFinancialDetailsParser.GetFinancialDetailsReads.read("GET", "/", mockForbiddenHttpResponse)
+          val result = FinancialDetailsParser.FinancialDetailsReads.read("GET", "/", mockForbiddenHttpResponse)
           logs.exists(_.getMessage.contains(PagerDutyKeys.RECEIVED_4XX_FROM_1811_API.toString)) shouldBe true
           result.isLeft shouldBe true
-          result.left.getOrElse(GetFinancialDetailsFailureResponse(IM_A_TEAPOT)).asInstanceOf[GetFinancialDetailsFailureResponse].status shouldBe Status.FORBIDDEN
+          result.left.getOrElse(FinancialDetailsFailureResponse(IM_A_TEAPOT)).asInstanceOf[FinancialDetailsFailureResponse].status shouldBe Status.FORBIDDEN
         }
       }
     }
@@ -153,10 +153,10 @@ class GetFinancialDetailsParserSpec extends AnyWordSpec with Matchers with LogCa
     s"parse an NOT FOUND (${Status.NOT_FOUND}) response" in {
       withCaptureOfLoggingFrom(logger) {
         logs => {
-          val result = GetFinancialDetailsParser.GetFinancialDetailsReads.read("GET", "/", mockNotFoundHttpResponse)
+          val result = FinancialDetailsParser.FinancialDetailsReads.read("GET", "/", mockNotFoundHttpResponse)
           logs.exists(_.getMessage.contains(PagerDutyKeys.INVALID_JSON_RECEIVED_FROM_1811_API.toString)) shouldBe true
           result.isLeft shouldBe true
-          result.left.getOrElse(GetFinancialDetailsFailureResponse(IM_A_TEAPOT)).asInstanceOf[GetFinancialDetailsFailureResponse].status shouldBe Status.NOT_FOUND
+          result.left.getOrElse(FinancialDetailsFailureResponse(IM_A_TEAPOT)).asInstanceOf[FinancialDetailsFailureResponse].status shouldBe Status.NOT_FOUND
         }
       }
     }
@@ -164,27 +164,27 @@ class GetFinancialDetailsParserSpec extends AnyWordSpec with Matchers with LogCa
     s"parse an CONFLICT (${Status.CONFLICT}) response - and log a PagerDuty" in {
       withCaptureOfLoggingFrom(logger) {
         logs => {
-          val result = GetFinancialDetailsParser.GetFinancialDetailsReads.read("GET", "/", mockConflictHttpResponse)
+          val result = FinancialDetailsParser.FinancialDetailsReads.read("GET", "/", mockConflictHttpResponse)
           logs.exists(_.getMessage.contains(PagerDutyKeys.RECEIVED_4XX_FROM_1811_API.toString)) shouldBe true
           result.isLeft shouldBe true
-          result.left.getOrElse(GetFinancialDetailsFailureResponse(IM_A_TEAPOT)).asInstanceOf[GetFinancialDetailsFailureResponse].status shouldBe Status.CONFLICT
+          result.left.getOrElse(FinancialDetailsFailureResponse(IM_A_TEAPOT)).asInstanceOf[FinancialDetailsFailureResponse].status shouldBe Status.CONFLICT
         }
       }
     }
 
     s"parse a NO_CONTENT (${Status.NO_CONTENT}) response" in {
-      val result = GetFinancialDetailsParser.GetFinancialDetailsReads.read("GET", "/", mockNoContentHttpResponse)
+      val result = FinancialDetailsParser.FinancialDetailsReads.read("GET", "/", mockNoContentHttpResponse)
       result.isLeft shouldBe true
-      result.left.getOrElse(GetFinancialDetailsFailureResponse(IM_A_TEAPOT)) shouldBe GetFinancialDetailsNoContent
+      result.left.getOrElse(FinancialDetailsFailureResponse(IM_A_TEAPOT)) shouldBe FinancialDetailsNoContent
     }
 
     s"parse an UNPROCESSABLE ENTITY (${Status.UNPROCESSABLE_ENTITY}) response - and log a PagerDuty" in {
       withCaptureOfLoggingFrom(logger) {
         logs => {
-          val result = GetFinancialDetailsParser.GetFinancialDetailsReads.read("GET", "/", mockUnprocessableEnityHttpResponse)
+          val result = FinancialDetailsParser.FinancialDetailsReads.read("GET", "/", mockUnprocessableEnityHttpResponse)
           logs.exists(_.getMessage.contains(PagerDutyKeys.RECEIVED_4XX_FROM_1811_API.toString)) shouldBe true
           result.isLeft shouldBe true
-          result.left.getOrElse(GetFinancialDetailsFailureResponse(IM_A_TEAPOT)).asInstanceOf[GetFinancialDetailsFailureResponse].status shouldBe Status.UNPROCESSABLE_ENTITY
+          result.left.getOrElse(FinancialDetailsFailureResponse(IM_A_TEAPOT)).asInstanceOf[FinancialDetailsFailureResponse].status shouldBe Status.UNPROCESSABLE_ENTITY
         }
       }
     }
@@ -192,10 +192,10 @@ class GetFinancialDetailsParserSpec extends AnyWordSpec with Matchers with LogCa
     s"parse an INTERNAL SERVER ERROR (${Status.INTERNAL_SERVER_ERROR}) response - and log a PagerDuty" in {
       withCaptureOfLoggingFrom(logger) {
         logs => {
-          val result = GetFinancialDetailsParser.GetFinancialDetailsReads.read("GET", "/", mockISEHttpResponse)
+          val result = FinancialDetailsParser.FinancialDetailsReads.read("GET", "/", mockISEHttpResponse)
           logs.exists(_.getMessage.contains(PagerDutyKeys.RECEIVED_5XX_FROM_1811_API.toString)) shouldBe true
           result.isLeft shouldBe true
-          result.left.getOrElse(GetFinancialDetailsFailureResponse(IM_A_TEAPOT)).asInstanceOf[GetFinancialDetailsFailureResponse].status shouldBe Status.INTERNAL_SERVER_ERROR
+          result.left.getOrElse(FinancialDetailsFailureResponse(IM_A_TEAPOT)).asInstanceOf[FinancialDetailsFailureResponse].status shouldBe Status.INTERNAL_SERVER_ERROR
         }
       }
     }
@@ -203,10 +203,10 @@ class GetFinancialDetailsParserSpec extends AnyWordSpec with Matchers with LogCa
     s"parse an SERVICE UNAVAILABLE (${Status.SERVICE_UNAVAILABLE}) response - and log a PagerDuty" in {
       withCaptureOfLoggingFrom(logger) {
         logs => {
-          val result = GetFinancialDetailsParser.GetFinancialDetailsReads.read("GET", "/", mockServiceUnavailableHttpResponse)
+          val result = FinancialDetailsParser.FinancialDetailsReads.read("GET", "/", mockServiceUnavailableHttpResponse)
           logs.exists(_.getMessage.contains(PagerDutyKeys.RECEIVED_5XX_FROM_1811_API.toString)) shouldBe true
           result.isLeft shouldBe true
-          result.left.getOrElse(GetFinancialDetailsFailureResponse(IM_A_TEAPOT)).asInstanceOf[GetFinancialDetailsFailureResponse].status shouldBe Status.SERVICE_UNAVAILABLE
+          result.left.getOrElse(FinancialDetailsFailureResponse(IM_A_TEAPOT)).asInstanceOf[FinancialDetailsFailureResponse].status shouldBe Status.SERVICE_UNAVAILABLE
         }
       }
     }
@@ -214,10 +214,10 @@ class GetFinancialDetailsParserSpec extends AnyWordSpec with Matchers with LogCa
     s"parse an unknown error (e.g. IM A TEAPOT - ${Status.IM_A_TEAPOT}) - and log a PagerDuty" in {
       withCaptureOfLoggingFrom(logger) {
         logs => {
-          val result = GetFinancialDetailsParser.GetFinancialDetailsReads.read("GET", "/", mockImATeapotHttpResponse)
+          val result = FinancialDetailsParser.FinancialDetailsReads.read("GET", "/", mockImATeapotHttpResponse)
           logs.exists(_.getMessage.contains(PagerDutyKeys.RECEIVED_4XX_FROM_1811_API.toString)) shouldBe true
           result.isLeft shouldBe true
-          result.left.getOrElse(GetFinancialDetailsFailureResponse(INTERNAL_SERVER_ERROR)).asInstanceOf[GetFinancialDetailsFailureResponse].status shouldBe Status.IM_A_TEAPOT
+          result.left.getOrElse(FinancialDetailsFailureResponse(INTERNAL_SERVER_ERROR)).asInstanceOf[FinancialDetailsFailureResponse].status shouldBe Status.IM_A_TEAPOT
         }
       }
     }

@@ -69,7 +69,7 @@ class RegimePenaltiesFrontendService @Inject()(getFinancialDetailsService: Finan
                   handleErrorResponseFromGetFinancialDetails(_, enrolmentKey)(handleNoContent = {
                     logger.info(s"[RegimePenaltiesFrontendService][handleAndCombineGetFinancialDetailsData] - 1811 call returned 404 for ${enrolmentKey} with NO_DATA_FOUND in response body")
                     val newPenaltyDetails = combineAPIData(penaltyDetails,
-                      financialDetailsSuccessWithClearedItems.asInstanceOf[GetFinancialDetailsSuccessResponse].financialDetails,
+                      financialDetailsSuccessWithClearedItems.asInstanceOf[FinancialDetailsSuccessResponse].financialDetails,
                       FinancialDetails(None, None))
                     returnResponse(newPenaltyDetails, enrolmentKey, arn)
                   })
@@ -77,8 +77,8 @@ class RegimePenaltiesFrontendService @Inject()(getFinancialDetailsService: Finan
                   financialDetailsSuccessWithoutClearedItems => {
                     logger.debug(s"[RegimePenaltiesFrontendService][handleAndCombineGetFinancialDetailsData] - 1811 clearedItems=false call returned 200 for ${enrolmentKey}")
                     val newPenaltyDetails = combineAPIData(penaltyDetails,
-                      financialDetailsSuccessWithClearedItems.asInstanceOf[GetFinancialDetailsSuccessResponse].financialDetails,
-                      financialDetailsSuccessWithoutClearedItems.asInstanceOf[GetFinancialDetailsSuccessResponse].financialDetails)
+                      financialDetailsSuccessWithClearedItems.asInstanceOf[FinancialDetailsSuccessResponse].financialDetails,
+                      financialDetailsSuccessWithoutClearedItems.asInstanceOf[FinancialDetailsSuccessResponse].financialDetails)
                     logger.info(s"[RegimePenaltiesFrontendService][handleAndCombineGetFinancialDetailsData] - 1811 call returned 200 for ${enrolmentKey}")
                     returnResponse(newPenaltyDetails, enrolmentKey, arn)
                   })
@@ -88,19 +88,19 @@ class RegimePenaltiesFrontendService @Inject()(getFinancialDetailsService: Finan
     }
   }
 
-  def handleErrorResponseFromGetFinancialDetails(financialDetailsResponseWithClearedItems: GetFinancialDetailsFailure, enrolmentKey: AgnosticEnrolmentKey)
+  def handleErrorResponseFromGetFinancialDetails(financialDetailsResponseWithClearedItems: FinancialDetailsFailure, enrolmentKey: AgnosticEnrolmentKey)
                                                 (handleNoContent: => Result): Result = {
     financialDetailsResponseWithClearedItems match {
-      case GetFinancialDetailsNoContent => handleNoContent
-      case GetFinancialDetailsFailureResponse(status) if status == NOT_FOUND => {
+      case FinancialDetailsNoContent => handleNoContent
+      case FinancialDetailsFailureResponse(status) if status == NOT_FOUND => {
         logger.info(s"[RegimePenaltiesFrontendService][handleAndCombineGetFinancialDetailsData] - 1811 call returned 404 for ${enrolmentKey}")
         NotFound(s"A downstream call returned 404 for ${enrolmentKey}")
       }
-      case GetFinancialDetailsFailureResponse(status) => {
+      case FinancialDetailsFailureResponse(status) => {
         logger.error(s"[RegimePenaltiesFrontendService][handleAndCombineGetFinancialDetailsData] - 1811 call returned an unexpected status: $status")
         InternalServerError(s"A downstream call returned an unexpected status: $status")
       }
-      case GetFinancialDetailsMalformed => {
+      case FinancialDetailsMalformed => {
         PagerDutyHelper.log("getPenaltiesData", MALFORMED_RESPONSE_FROM_1811_API)
         logger.error(s"[RegimePenaltiesFrontendService][handleAndCombineGetFinancialDetailsData] - 1811 call returned invalid body - failed to parse financial details response for ${enrolmentKey}")
         InternalServerError(s"We were unable to parse penalty data.")
@@ -202,7 +202,7 @@ class RegimePenaltiesFrontendService @Inject()(getFinancialDetailsService: Finan
         val newTotalisations: Option[Totalisations] = penaltyDetails.totalisations.map(
           oldTotalisations => {
             oldTotalisations.copy(
-              totalAccountOverdue = financialDetails.totalisation.flatMap(_.regimeTotalisations.flatMap(_.totalAccountOverdue)),
+              totalAccountOverdue = financialDetails.totalisation.flatMap(_.regimeTotalisation.flatMap(_.totalAccountOverdue)),
               totalAccountPostedInterest = financialDetails.totalisation.flatMap(_.interestTotalisations.flatMap(_.totalAccountPostedInterest)),
               totalAccountAccruingInterest = financialDetails.totalisation.flatMap(_.interestTotalisations.flatMap(_.totalAccountAccruingInterest)),
               LPPPostedTotal = oldTotalisations.LPPPostedTotal.map(_ + totalAmountOfManualLPPs.getOrElse(BigDecimal(0)))
@@ -214,7 +214,7 @@ class RegimePenaltiesFrontendService @Inject()(getFinancialDetailsService: Finan
       case (true, false) => {
         //If there is no totalisations already, create a new object
         val totalisations: Totalisations = new Totalisations(
-          totalAccountOverdue = financialDetails.totalisation.flatMap(_.regimeTotalisations.flatMap(_.totalAccountOverdue)),
+          totalAccountOverdue = financialDetails.totalisation.flatMap(_.regimeTotalisation.flatMap(_.totalAccountOverdue)),
           totalAccountPostedInterest = financialDetails.totalisation.flatMap(_.interestTotalisations.flatMap(_.totalAccountPostedInterest)),
           totalAccountAccruingInterest = financialDetails.totalisation.flatMap(_.interestTotalisations.flatMap(_.totalAccountAccruingInterest)),
           LSPTotalValue = None,

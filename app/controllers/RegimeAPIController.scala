@@ -17,23 +17,22 @@
 package controllers
 
 import config.featureSwitches.FeatureSwitching
-import connectors.getFinancialDetails.FinancialDetailsConnector
 import connectors.getPenaltyDetails.PenaltyDetailsConnector
 import connectors.parsers.getFinancialDetails.FinancialDetailsParser
-import connectors.parsers.getFinancialDetails.FinancialDetailsParser.GetFinancialDetailsSuccessResponse
+import connectors.parsers.getFinancialDetails.FinancialDetailsParser.FinancialDetailsSuccessResponse
 import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser
 import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser.GetPenaltyDetailsSuccessResponse
 import controllers.auth.AuthAction
-import models.{AgnosticEnrolmentKey, Id, IdType, Regime}
 import models.api.APIModel
 import models.auditing.{ThirdParty1812APIRetrievalRegimeAuditModel, ThirdPartyAPI1811RetrievalRegimeAuditModel, UserHasPenaltyRegimeAuditModel}
 import models.getFinancialDetails.FinancialDetails
 import models.getPenaltyDetails.GetPenaltyDetails
+import models.{AgnosticEnrolmentKey, Id, IdType, Regime}
 import play.api.Configuration
 import play.api.libs.json.{JsString, JsValue, Json}
 import play.api.mvc._
 import services.auditing.AuditService
-import services.{APIService, FinancialDetailsService, LoggingContext, PenaltyDetailsService, RegimeFilterService}
+import services._
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import utils.Logger.logger
@@ -47,7 +46,6 @@ class RegimeAPIController @Inject()(auditService: AuditService,
                                     apiService: APIService,
                                     getPenaltyDetailsService: PenaltyDetailsService,
                                     getFinancialDetailsService: FinancialDetailsService,
-                                    getFinancialDetailsConnector: FinancialDetailsConnector,
                                     getPenaltyDetailsConnector: PenaltyDetailsConnector,
                                     dateHelper: DateHelper,
                                     cc: ControllerComponents,
@@ -115,22 +113,22 @@ class RegimeAPIController @Inject()(auditService: AuditService,
       financialDetailsResponseWithoutClearedItems =>
         logger.info(s"[RegimeAPIController][callFinancialDetailsForManualLPPs] - Calling 1811 for response without cleared items")
         financialDetailsResponseWithoutClearedItems.fold({
-          case FinancialDetailsParser.GetFinancialDetailsFailureResponse(status) =>
+          case FinancialDetailsParser.FinancialDetailsFailureResponse(status) =>
             logger.info(s"[RegimeAPIController][callFinancialDetailsForManualLPPs] - 1811 call (VATVC/BTA API)" +
               s" returned an unexpected status: $status, returning None")
             None
-          case FinancialDetailsParser.GetFinancialDetailsMalformed =>
+          case FinancialDetailsParser.FinancialDetailsMalformed =>
             PagerDutyHelper.log("callFinancialDetailsForManualLPPs", MALFORMED_RESPONSE_FROM_1811_API)
             logger.error(s"[RegimeAPIController][callFinancialDetailsForManualLPPs] - 1811 call (VATVC/BTA API)" +
               s" returned invalid body - failed to parse penalty details response for ${enrolmentKey}, returning None")
             None
-          case FinancialDetailsParser.GetFinancialDetailsNoContent =>
+          case FinancialDetailsParser.FinancialDetailsNoContent =>
             logger.info(s"[RegimeAPIController][callFinancialDetailsForManualLPPs] - 1811 call (VATVC/BTA API) returned no content for ${enrolmentKey}, returning None")
             None
         },
           financialDetailsResponseWithoutClearedItems => {
             logger.info(s"[RegimeAPIController][callFinancialDetailsForManualLPPs] - 1811 call (VATVC/BTA API) returned 200 for ${enrolmentKey}" )
-            Some(financialDetailsResponseWithoutClearedItems.asInstanceOf[GetFinancialDetailsSuccessResponse].financialDetails)
+            Some(financialDetailsResponseWithoutClearedItems.asInstanceOf[FinancialDetailsSuccessResponse].financialDetails)
           })
     }
   }
@@ -182,7 +180,7 @@ class RegimeAPIController @Inject()(auditService: AuditService,
     implicit request => {
       // composeEnrolmentKey(regime, idType, id).andThen { enrolmentKey =>
         val enrolmentKey = AgnosticEnrolmentKey(regime, idType, id)
-        val response = getFinancialDetailsConnector.getFinancialDetailsForAPI(enrolmentKey,
+        val response = getFinancialDetailsService.getFinancialDetailsForAPI(enrolmentKey,
           searchType,
           searchItem,
           dateType,
