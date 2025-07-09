@@ -23,8 +23,7 @@ import models.getFinancialDetails.totalisation.{FinancialDetailsTotalisation, In
 import models.getFinancialDetails.{DocumentDetails, FinancialDetails, GetFinancialData, LineItemDetails}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
-import play.api.http.Status
-import play.api.http.Status.{IM_A_TEAPOT, INTERNAL_SERVER_ERROR}
+import play.api.http.Status._
 import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.http.HttpResponse
 import utils.Logger.logger
@@ -36,17 +35,19 @@ class FinancialDetailsParserSpec extends AnyWordSpec with Matchers with LogCaptu
 
   val mockGetFinancialDetailsModelAPI1811: GetFinancialData = GetFinancialData(
     FinancialDetails(
-      documentDetails = Some(Seq(DocumentDetails(
-        chargeReferenceNumber = None,
-        documentOutstandingAmount = Some(0.00),
-        lineItemDetails = Some(Seq(LineItemDetails(None))),
-        documentTotalAmount = Some(100.00),
-        issueDate = Some(LocalDate.of(2023, 1, 1)))
-      )),
-      totalisation = Some(FinancialDetailsTotalisation(
-        regimeTotalisation = Some(RegimeTotalisation(totalAccountOverdue = Some(1000.0))),
-        interestTotalisations = Some(InterestTotalisation(totalAccountPostedInterest = Some(12.34), totalAccountAccruingInterest = Some(43.21)))
-      ))
+      documentDetails = Some(
+        Seq(DocumentDetails(
+          chargeReferenceNumber = None,
+          documentOutstandingAmount = Some(0.00),
+          lineItemDetails = Some(Seq(LineItemDetails(None))),
+          documentTotalAmount = Some(100.00),
+          issueDate = Some(LocalDate.of(2023, 1, 1))
+        ))),
+      totalisation = Some(
+        FinancialDetailsTotalisation(
+          regimeTotalisation = Some(RegimeTotalisation(totalAccountOverdue = Some(1000.0))),
+          interestTotalisations = Some(InterestTotalisation(totalAccountPostedInterest = Some(12.34), totalAccountAccruingInterest = Some(43.21)))
+        ))
     )
   )
 
@@ -87,138 +88,141 @@ class FinancialDetailsParserSpec extends AnyWordSpec with Matchers with LogCaptu
       |}
       |""".stripMargin
   )
+  val getHipFinancialDetailsAsJson: JsValue = Json.parse(
+    """
+      |{
+      | "success": {
+      |   "processingDate": "2023-11-28T10:15:10Z",
+      |   "financialData": {
+      |     "documentDetails": [
+      |     {
+      |       "documentOutstandingAmount": 0.0,
+      |       "documentTotalAmount": 100.0,
+      |       "issueDate": "2023-01-01",
+      |       "lineItemDetails": [{}]
+      |     }
+      |   ],
+      |   "totalisation": {
+      |     "regimeTotalisation": {
+      |      "totalAccountOverdue": 1000.0,
+      |      "totalAccountNotYetDue": 250.0,
+      |      "totalAccountCredit": 40.0,
+      |      "totalAccountBalance": 1210
+      |     },
+      |     "targetedSearch_SelectionCriteriaTotalisation": {
+      |      "totalOverdue": 100.0,
+      |      "totalNotYetDue": 0.0,
+      |      "totalBalance": 100.0,
+      |      "totalCredit": 10.0,
+      |      "totalCleared": 50
+      |     },
+      |     "additionalReceivableTotalisations": {
+      |      "totalAccountPostedInterest": 12.34,
+      |      "totalAccountAccruingInterest": 43.21
+      |     }
+      |   }
+      |  }
+      | }
+      |}
+      |""".stripMargin
+  )
 
-  val mockOKHttpResponseWithValidBody: HttpResponse = HttpResponse.apply(
-    status = Status.OK, json = getFinancialDetailsAsJson, headers = Map.empty)
+  def financialDetailsParserReads(httpResponse: HttpResponse): FinancialDetailsResponse =
+    FinancialDetailsParser.FinancialDetailsReads.read("GET", "/", httpResponse)
 
-  val mockOKHttpResponseWithInvalidBody: HttpResponse =
-    HttpResponse.apply(status = Status.OK, json = Json.parse(
-      """
-           {
-            "documentDetails": [{
-               "documentOutstandingAmount": "xyz"
-              }]
-            }
-           """.stripMargin
-    ), headers = Map.empty)
+  "FinancialDetailsReads" should {
+    "when parsing an OK response" should {
+      "return the body in a FinancialDetailsHipSuccessResponse when HIP body is valid" in {
+        val validHipResponse = HttpResponse(status = OK, json = getHipFinancialDetailsAsJson, headers = Map.empty)
+        val result           = financialDetailsParserReads(validHipResponse)
 
-  val mockISEHttpResponse: HttpResponse = HttpResponse.apply(status = Status.INTERNAL_SERVER_ERROR, body = "Something went wrong.")
-  val mockBadRequestHttpResponse: HttpResponse = HttpResponse.apply(status = Status.BAD_REQUEST, body = "Bad Request.")
-  val mockForbiddenHttpResponse: HttpResponse = HttpResponse.apply(status = Status.FORBIDDEN, body = "Forbidden.")
-  val mockNotFoundHttpResponse: HttpResponse = HttpResponse.apply(status = Status.NOT_FOUND, body = "Not Found.")
-  val mockConflictHttpResponse: HttpResponse = HttpResponse.apply(status = Status.CONFLICT, body = "Conflict.")
-  val mockNoContentHttpResponse: HttpResponse = HttpResponse.apply(status = Status.NO_CONTENT, body = "")
-  val mockUnprocessableEnityHttpResponse: HttpResponse = HttpResponse.apply(status = Status.UNPROCESSABLE_ENTITY, body = "Unprocessable Entity.")
-  val mockServiceUnavailableHttpResponse: HttpResponse = HttpResponse.apply(status = Status.SERVICE_UNAVAILABLE, body = "Service Unavailable.")
-
-  val mockImATeapotHttpResponse: HttpResponse = HttpResponse.apply(status = Status.IM_A_TEAPOT, body = "I'm a teapot.")
-
-
-  "GetFinancialDetailsReads" should {
-    s"parse an OK (${Status.OK}) response" when {
-      s"the body of the response is valid" in {
-        val result = FinancialDetailsParser.FinancialDetailsReads.read("GET", "/", mockOKHttpResponseWithValidBody)
         result.isRight shouldBe true
-        result.toOption.get.asInstanceOf[FinancialDetailsSuccessResponse].financialDetails shouldBe mockGetFinancialDetailsModelAPI1811.financialDetails
+        result.toOption.get
+          .asInstanceOf[FinancialDetailsHipSuccessResponse]
+          .financialDetails shouldBe mockGetFinancialDetailsModelAPI1811.financialDetails
       }
-    }
+      "return the body in a FinancialDetailsSuccessResponse when non-HIP body is valid" in {
+        val validNonHipResponse = HttpResponse(status = OK, json = getFinancialDetailsAsJson, headers = Map.empty)
+        val result              = financialDetailsParserReads(validNonHipResponse)
 
-    s"the body is malformed - returning a $Left $FinancialDetailsMalformed" in {
-      val result = FinancialDetailsParser.FinancialDetailsReads.read("GET", "/", mockOKHttpResponseWithInvalidBody)
-      result.isLeft shouldBe true
-    }
+        result.isRight shouldBe true
+        result.toOption.get
+          .asInstanceOf[FinancialDetailsSuccessResponse]
+          .financialDetails shouldBe mockGetFinancialDetailsModelAPI1811.financialDetails
+      }
+      "return a FinancialDetailsMalformed when body is invalid" in {
+        val invalidBody         = Json.parse("""{"documentDetails": [{"documentOutstandingAmount": "xyz"}]}""")
+        val invalidBodyResponse = HttpResponse(status = OK, json = invalidBody, headers = Map.empty)
 
-    s"parse an BAD REQUEST (${Status.BAD_REQUEST}) response - and log a PagerDuty" in {
-      withCaptureOfLoggingFrom(logger) {
-        logs => {
-          val result = FinancialDetailsParser.FinancialDetailsReads.read("GET", "/", mockBadRequestHttpResponse)
-          logs.exists(_.getMessage.contains(PagerDutyKeys.RECEIVED_4XX_FROM_1811_API.toString)) shouldBe true
-          result.isLeft shouldBe true
-          result.left.getOrElse(FinancialDetailsFailureResponse(IM_A_TEAPOT)).asInstanceOf[FinancialDetailsFailureResponse].status shouldBe Status.BAD_REQUEST
+        withCaptureOfLoggingFrom(logger) { logs =>
+          val result = financialDetailsParserReads(invalidBodyResponse)
+          logs.exists(_.getMessage.contains("Unable to validate Json for HIP nor IF schemas")) shouldBe true
+          result shouldBe Left(FinancialDetailsMalformed)
         }
       }
     }
 
-    s"parse an FORBIDDEN (${Status.FORBIDDEN}) response - and log a PagerDuty" in {
-      withCaptureOfLoggingFrom(logger) {
-        logs => {
-          val result = FinancialDetailsParser.FinancialDetailsReads.read("GET", "/", mockForbiddenHttpResponse)
-          logs.exists(_.getMessage.contains(PagerDutyKeys.RECEIVED_4XX_FROM_1811_API.toString)) shouldBe true
-          result.isLeft shouldBe true
-          result.left.getOrElse(FinancialDetailsFailureResponse(IM_A_TEAPOT)).asInstanceOf[FinancialDetailsFailureResponse].status shouldBe Status.FORBIDDEN
+    "return a 404 FinancialDetailsFailureResponse when parsing a NOT_FOUND response with an empty body" in {
+      withCaptureOfLoggingFrom(logger) { logs =>
+        val notFoundNoBodyHttpResponse: HttpResponse = HttpResponse.apply(status = NOT_FOUND, body = "")
+        val result                                   = financialDetailsParserReads(notFoundNoBodyHttpResponse)
+        logs.exists(_.getMessage.contains(PagerDutyKeys.RECEIVED_4XX_FROM_1811_API.toString)) shouldBe true
+        result shouldBe Left(FinancialDetailsFailureResponse(NOT_FOUND))
+      }
+    }
+
+    "return a FinancialDetailsNoContent when parsing a NO_CONTENT response" in {
+      withCaptureOfLoggingFrom(logger) { logs =>
+        val mockNoContentHttpResponse: HttpResponse = HttpResponse.apply(status = NO_CONTENT, body = "")
+        val result                                  = financialDetailsParserReads(mockNoContentHttpResponse)
+        logs.exists(_.getMessage.contains("Received no content from 1811 call")) shouldBe true
+        result shouldBe Left(FinancialDetailsNoContent)
+      }
+    }
+
+    "return a FinancialDetailsFailureResponse" when {
+      "parsing an error with a TechnicalError response body" in {
+        val error                  = """{"error":{"code": "errorCode", "message": "errorMessage", "logId": "errorLogId"}}"""
+        val technicalErrorResponse = HttpResponse(status = SERVICE_UNAVAILABLE, body = error)
+
+        withCaptureOfLoggingFrom(logger) { logs =>
+          val result = financialDetailsParserReads(technicalErrorResponse)
+          logs.exists(_.getMessage.contains("Technical error returned: errorCode - errorMessage")) shouldBe true
+          result shouldBe Left(FinancialDetailsFailureResponse(SERVICE_UNAVAILABLE))
+        }
+      }
+      "parsing an error with a BusinessError response body" in {
+        val errors =
+          """{"errors": [
+            |   {"processingDate": "errorDate", "code": "errorCode", "text": "errorText"},
+            |   {"processingDate": "errorDate2", "code": "errorCode2", "text": "errorText2"}
+            |]}""".stripMargin
+        val businessErrorResponse = HttpResponse(status = UNPROCESSABLE_ENTITY, body = errors)
+
+        withCaptureOfLoggingFrom(logger) { logs =>
+          val result = financialDetailsParserReads(businessErrorResponse)
+          logs.exists(_.getMessage.contains("Business errors returned:")) shouldBe true
+          result shouldBe Left(FinancialDetailsFailureResponse(UNPROCESSABLE_ENTITY))
+        }
+      }
+      "parsing an error with a HipWrappedError response body" in {
+        val hipWrappedError        = """{"response":{"type": "errorType", "reason": "errorReason"}}"""
+        val technicalErrorResponse = HttpResponse(status = BAD_REQUEST, body = hipWrappedError)
+
+        withCaptureOfLoggingFrom(logger) { logs =>
+          val result = financialDetailsParserReads(technicalErrorResponse)
+          logs.exists(_.getMessage.contains("HIP wrapped error returned: errorType - errorReason")) shouldBe true
+          result shouldBe Left(FinancialDetailsFailureResponse(BAD_REQUEST))
         }
       }
     }
 
-    s"parse an NOT FOUND (${Status.NOT_FOUND}) response" in {
-      withCaptureOfLoggingFrom(logger) {
-        logs => {
-          val result = FinancialDetailsParser.FinancialDetailsReads.read("GET", "/", mockNotFoundHttpResponse)
-          logs.exists(_.getMessage.contains(PagerDutyKeys.INVALID_JSON_RECEIVED_FROM_1811_API.toString)) shouldBe true
-          result.isLeft shouldBe true
-          result.left.getOrElse(FinancialDetailsFailureResponse(IM_A_TEAPOT)).asInstanceOf[FinancialDetailsFailureResponse].status shouldBe Status.NOT_FOUND
-        }
-      }
-    }
-
-    s"parse an CONFLICT (${Status.CONFLICT}) response - and log a PagerDuty" in {
-      withCaptureOfLoggingFrom(logger) {
-        logs => {
-          val result = FinancialDetailsParser.FinancialDetailsReads.read("GET", "/", mockConflictHttpResponse)
-          logs.exists(_.getMessage.contains(PagerDutyKeys.RECEIVED_4XX_FROM_1811_API.toString)) shouldBe true
-          result.isLeft shouldBe true
-          result.left.getOrElse(FinancialDetailsFailureResponse(IM_A_TEAPOT)).asInstanceOf[FinancialDetailsFailureResponse].status shouldBe Status.CONFLICT
-        }
-      }
-    }
-
-    s"parse a NO_CONTENT (${Status.NO_CONTENT}) response" in {
-      val result = FinancialDetailsParser.FinancialDetailsReads.read("GET", "/", mockNoContentHttpResponse)
-      result.isLeft shouldBe true
-      result.left.getOrElse(FinancialDetailsFailureResponse(IM_A_TEAPOT)) shouldBe FinancialDetailsNoContent
-    }
-
-    s"parse an UNPROCESSABLE ENTITY (${Status.UNPROCESSABLE_ENTITY}) response - and log a PagerDuty" in {
-      withCaptureOfLoggingFrom(logger) {
-        logs => {
-          val result = FinancialDetailsParser.FinancialDetailsReads.read("GET", "/", mockUnprocessableEnityHttpResponse)
-          logs.exists(_.getMessage.contains(PagerDutyKeys.RECEIVED_4XX_FROM_1811_API.toString)) shouldBe true
-          result.isLeft shouldBe true
-          result.left.getOrElse(FinancialDetailsFailureResponse(IM_A_TEAPOT)).asInstanceOf[FinancialDetailsFailureResponse].status shouldBe Status.UNPROCESSABLE_ENTITY
-        }
-      }
-    }
-
-    s"parse an INTERNAL SERVER ERROR (${Status.INTERNAL_SERVER_ERROR}) response - and log a PagerDuty" in {
-      withCaptureOfLoggingFrom(logger) {
-        logs => {
-          val result = FinancialDetailsParser.FinancialDetailsReads.read("GET", "/", mockISEHttpResponse)
-          logs.exists(_.getMessage.contains(PagerDutyKeys.RECEIVED_5XX_FROM_1811_API.toString)) shouldBe true
-          result.isLeft shouldBe true
-          result.left.getOrElse(FinancialDetailsFailureResponse(IM_A_TEAPOT)).asInstanceOf[FinancialDetailsFailureResponse].status shouldBe Status.INTERNAL_SERVER_ERROR
-        }
-      }
-    }
-
-    s"parse an SERVICE UNAVAILABLE (${Status.SERVICE_UNAVAILABLE}) response - and log a PagerDuty" in {
-      withCaptureOfLoggingFrom(logger) {
-        logs => {
-          val result = FinancialDetailsParser.FinancialDetailsReads.read("GET", "/", mockServiceUnavailableHttpResponse)
-          logs.exists(_.getMessage.contains(PagerDutyKeys.RECEIVED_5XX_FROM_1811_API.toString)) shouldBe true
-          result.isLeft shouldBe true
-          result.left.getOrElse(FinancialDetailsFailureResponse(IM_A_TEAPOT)).asInstanceOf[FinancialDetailsFailureResponse].status shouldBe Status.SERVICE_UNAVAILABLE
-        }
-      }
-    }
-
-    s"parse an unknown error (e.g. IM A TEAPOT - ${Status.IM_A_TEAPOT}) - and log a PagerDuty" in {
-      withCaptureOfLoggingFrom(logger) {
-        logs => {
-          val result = FinancialDetailsParser.FinancialDetailsReads.read("GET", "/", mockImATeapotHttpResponse)
-          logs.exists(_.getMessage.contains(PagerDutyKeys.RECEIVED_4XX_FROM_1811_API.toString)) shouldBe true
-          result.isLeft shouldBe true
-          result.left.getOrElse(FinancialDetailsFailureResponse(INTERNAL_SERVER_ERROR)).asInstanceOf[FinancialDetailsFailureResponse].status shouldBe Status.IM_A_TEAPOT
-        }
+    "parsing an unknown error (e.g. IM A TEAPOT - 418) - and log a PagerDuty" in {
+      withCaptureOfLoggingFrom(logger) { logs =>
+        val imATeapotHttpResponse: HttpResponse = HttpResponse.apply(status = IM_A_TEAPOT, body = "I'm a teapot.")
+        val result                              = financialDetailsParserReads(imATeapotHttpResponse)
+        logs.exists(_.getMessage.contains(PagerDutyKeys.RECEIVED_4XX_FROM_1811_API.toString)) shouldBe true
+        result shouldBe Left(FinancialDetailsFailureResponse(IM_A_TEAPOT))
       }
     }
   }
