@@ -44,7 +44,7 @@ class GetFinancialDetailsParserSpec extends AnyWordSpec with Matchers with LogCa
         issueDate = Some(LocalDate.of(2023, 1, 1)))
       )),
       totalisation = Some(FinancialDetailsTotalisation(
-        regimeTotalisations = Some(RegimeTotalisation(totalAccountOverdue = Some(1000.0))),
+        regimeTotalisation = Some(RegimeTotalisation(totalAccountOverdue = Some(1000.0))),
         interestTotalisations = Some(InterestTotalisation(totalAccountPostedInterest = Some(12.34), totalAccountAccruingInterest = Some(43.21)))
       ))
     )

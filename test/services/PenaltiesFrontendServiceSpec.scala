@@ -137,7 +137,7 @@ class PenaltiesFrontendServiceSpec extends SpecBase with LogCapturing with LPPDe
 
       val financialDetailsWithoutClearedItems: FinancialDetails = FinancialDetails(
         totalisation = Some(FinancialDetailsTotalisation(
-          regimeTotalisations = Some(RegimeTotalisation(totalAccountOverdue = Some(123.45))),
+          regimeTotalisation = Some(RegimeTotalisation(totalAccountOverdue = Some(123.45))),
           interestTotalisations = Some(InterestTotalisation(totalAccountPostedInterest = Some(12.34), totalAccountAccruingInterest = Some(43.21)))
         )),
         documentDetails = None
@@ -183,7 +183,7 @@ class PenaltiesFrontendServiceSpec extends SpecBase with LogCapturing with LPPDe
 
       val financialDetailsWithoutClearedItems: FinancialDetails = FinancialDetails(
         totalisation = Some(FinancialDetailsTotalisation(
-          regimeTotalisations = Some(RegimeTotalisation(totalAccountOverdue = Some(123.45))),
+          regimeTotalisation = Some(RegimeTotalisation(totalAccountOverdue = Some(123.45))),
           interestTotalisations = Some(InterestTotalisation(totalAccountPostedInterest = Some(12.34), totalAccountAccruingInterest = Some(43.21)))
         )),
         documentDetails = None
@@ -220,7 +220,7 @@ class PenaltiesFrontendServiceSpec extends SpecBase with LogCapturing with LPPDe
 
       val financialDetailsWithoutClearedItems: FinancialDetails = FinancialDetails(
         totalisation = Some(FinancialDetailsTotalisation(
-          regimeTotalisations = Some(RegimeTotalisation(totalAccountOverdue = Some(123.45))),
+          regimeTotalisation = Some(RegimeTotalisation(totalAccountOverdue = Some(123.45))),
           interestTotalisations = Some(InterestTotalisation(totalAccountPostedInterest = Some(12.34), totalAccountAccruingInterest = None))
         )),
         documentDetails = None
@@ -256,7 +256,7 @@ class PenaltiesFrontendServiceSpec extends SpecBase with LogCapturing with LPPDe
 
       val financialDetailsWithoutClearedItems: FinancialDetails = FinancialDetails(
         totalisation = Some(FinancialDetailsTotalisation(
-          regimeTotalisations = Some(RegimeTotalisation(totalAccountOverdue = Some(123.45))),
+          regimeTotalisation = Some(RegimeTotalisation(totalAccountOverdue = Some(123.45))),
           interestTotalisations = Some(InterestTotalisation(totalAccountPostedInterest = Some(12.34), totalAccountAccruingInterest = None))
         )),
         documentDetails = None
