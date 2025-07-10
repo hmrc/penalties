@@ -18,11 +18,6 @@ package controllers
 
 import com.github.tomakehurst.wiremock.client.WireMock.{postRequestedFor, urlEqualTo}
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
-import config.featureSwitches.{CallAPI1811ETMP, CallAPI1811HIP, FeatureSwitching}
-import controllers.RegimeAPIControllerISpec.{financialDataIfResponse, financialDetailsQueryParams}
-import models.getFinancialDetails.FinancialDetailsRequestModel
-import models.{AgnosticEnrolmentKey, Id, IdType, Regime}
-import com.github.tomakehurst.wiremock.stubbing.StubMapping
 import config.featureSwitches._
 import controllers.RegimeAPIControllerISpec.{financialDataIfResponse, financialDetailsQueryParams}
 import models.getFinancialDetails.FinancialDetailsRequestModel
@@ -32,7 +27,6 @@ import play.api.http.Status
 import play.api.libs.json.{JsValue, Json}
 import play.api.test.Helpers._
 import utils.{AuthMock, HIPPenaltiesWiremock, IntegrationSpecCommonBase, RegimeETMPWiremock}
-import utils.{AuthMock, IntegrationSpecCommonBase, RegimeETMPWiremock}
 
 import scala.jdk.CollectionConverters._
 

@@ -169,7 +169,7 @@ class AppConfig @Inject() (val config: Configuration, servicesConfig: ServicesCo
     val dateLimitParam: String = dateLimit.map(dateLimit => s"&dateLimit=$dateLimit").getOrElse("")
     val penaltiesHipUrl = s"/RESTAdapter/cross-regime/taxpayer/penalties?taxRegime=$regime&idType=$idType&idNumber=$idValue$dateLimitParam"
     if (isEnabled(CallAPI1812HIP)) hipBase + penaltiesHipUrl
-    else stubBase + "/penalties-stub" + penaltiesHipUrl
+    else stubBase + penaltiesHipUrl
   }
 
   private val clientIdV1: String = getString("microservice.services.hip.client-id")

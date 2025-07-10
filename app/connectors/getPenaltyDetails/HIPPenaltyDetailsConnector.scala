@@ -18,28 +18,21 @@ package connectors.getPenaltyDetails
 
 import config.AppConfig
 import config.featureSwitches.FeatureSwitching
-import models.{AgnosticEnrolmentKey}
+import connectors.parsers.getPenaltyDetails.HIPPenaltyDetailsParser._
+import models.AgnosticEnrolmentKey
 import play.api.Configuration
 import play.api.http.Status.INTERNAL_SERVER_ERROR
-import uk.gov.hmrc.http.{
-  HeaderCarrier,
-  HttpClient,
-  HttpResponse,
-  UpstreamErrorResponse
-}
+import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpReads, HttpResponse, UpstreamErrorResponse}
 import utils.Logger.logger
+import utils.PagerDutyHelper
 import utils.PagerDutyHelper.PagerDutyKeys._
-import utils.{DateHelper, PagerDutyHelper}
 
-import java.time.LocalDateTime
-import java.util.UUID.randomUUID
-import javax.inject.Inject
-import scala.concurrent.{ExecutionContext, Future}
-import connectors.parsers.getPenaltyDetails.HIPPenaltyDetailsParser._
+import java.time.Instant
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
-import java.time.Instant
-import uk.gov.hmrc.http.HttpReads
+import java.util.UUID
+import javax.inject.Inject
+import scala.concurrent.{ExecutionContext, Future}
 
 class HIPPenaltyDetailsConnector @Inject() (
     httpClient: HttpClient,
@@ -71,8 +64,7 @@ implicit val throwingReads: HttpReads[HttpResponse] = new HttpReads[HttpResponse
     httpClient
       .GET[HIPPenaltyDetailsResponse](
         url,
-        Seq.empty[(String, String)],
-        headers
+        headers = headers
       ).map { response =>
          logger.info(s"[getPenaltyDetails] Successful call to 1812 API")
          response
@@ -116,7 +108,7 @@ implicit val throwingReads: HttpReads[HttpResponse] = new HttpReads[HttpResponse
   logger.debug(s"[getPenaltyDetailsForAPI] Headers: ${buildHeadersV1}")
 
     httpClient.GET[HttpResponse](
-      url, Seq.empty[(String, String)], headers = buildHeadersV1
+      url, headers = buildHeadersV1
       )(throwingReads, implicitly, implicitly).recover {
       case e: UpstreamErrorResponse => {
         logger.error(
@@ -155,7 +147,7 @@ implicit val throwingReads: HttpReads[HttpResponse] = new HttpReads[HttpResponse
   ): Seq[(String, String)] =
     Seq(
       appConfig.hipServiceOriginatorIdKeyV1 -> appConfig.hipServiceOriginatorIdV1,
-      CorrelationIdHeader -> getCorrelationId(hc),
+      CorrelationIdHeader -> UUID.randomUUID().toString,
       AuthorizationHeader -> s"Basic ${appConfig.hipAuthorisationToken}",
       EnvironmentHeader -> appConfig.hipEnvironment,
       xOriginatingSystemHeader -> "MDTP",
@@ -166,19 +158,4 @@ implicit val throwingReads: HttpReads[HttpResponse] = new HttpReads[HttpResponse
       },
       xTransmittingSystemHeader -> "HIP"
     )
-
-  def generateNewUUID: String = randomUUID.toString
-
-  def getCorrelationId(hc: HeaderCarrier): String =
-    hc.requestId match {
-      case Some(requestId) =>
-        requestId.value match {
-          case requestIdPattern(prefix) =>
-            val lastTwelveChars = generateNewUUID.takeRight(12)
-            prefix + "-" + lastTwelveChars
-          case _ => generateNewUUID
-        }
-      case _ => generateNewUUID
-    }
-
 }
