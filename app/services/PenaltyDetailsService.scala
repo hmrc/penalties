@@ -71,7 +71,7 @@ class PenaltyDetailsService @Inject() (getPenaltyDetailsConnector: RegimePenalty
       case HIPPenaltyDetailsMalformed => 
         logger.info(s"$startOfLogMsg - Failed to parse HTTP response into HIP model for $enrolmentKey")
         Left(GetPenaltyDetailsMalformed)
-      case HIPPenaltyDetailsFailureResponse(status, _) => 
+      case HIPPenaltyDetailsFailureResponse(status) => 
         logger.error(s"$startOfLogMsg - Unknown status returned from HIP connector for $enrolmentKey")
         Left(GetPenaltyDetailsFailureResponse(status))
     }
@@ -162,6 +162,7 @@ class PenaltyDetailsService @Inject() (getPenaltyDetailsConnector: RegimePenalty
               },
               appealLevel = hipAppeal.appealLevel.map {
                 case models.hipPenaltyDetails.appealInfo.AppealLevelEnum.HMRC => models.getPenaltyDetails.appealInfo.AppealLevelEnum.HMRC
+                case models.hipPenaltyDetails.appealInfo.AppealLevelEnum.TribunalOrSecond => models.getPenaltyDetails.appealInfo.AppealLevelEnum.TribunalOrSecond
                 case models.hipPenaltyDetails.appealInfo.AppealLevelEnum.Tribunal => models.getPenaltyDetails.appealInfo.AppealLevelEnum.Tribunal
                 case _ => models.getPenaltyDetails.appealInfo.AppealLevelEnum.HMRC
               },
@@ -281,6 +282,7 @@ class PenaltyDetailsService @Inject() (getPenaltyDetailsConnector: RegimePenalty
               },
               appealLevel = hipAppeal.appealLevel.map {
                 case models.hipPenaltyDetails.appealInfo.AppealLevelEnum.HMRC => models.getPenaltyDetails.appealInfo.AppealLevelEnum.HMRC
+                case models.hipPenaltyDetails.appealInfo.AppealLevelEnum.TribunalOrSecond => models.getPenaltyDetails.appealInfo.AppealLevelEnum.TribunalOrSecond
                 case models.hipPenaltyDetails.appealInfo.AppealLevelEnum.Tribunal => models.getPenaltyDetails.appealInfo.AppealLevelEnum.Tribunal
                 case _ => models.getPenaltyDetails.appealInfo.AppealLevelEnum.HMRC 
               },

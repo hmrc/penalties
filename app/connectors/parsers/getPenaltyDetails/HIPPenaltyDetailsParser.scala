@@ -16,7 +16,7 @@
 
 package connectors.parsers.getPenaltyDetails
 
-import models.failure.{FailureCodeEnum, FailureResponse}
+import models.failure.{BusinessError, FailureCodeEnum, FailureResponse, HipWrappedError, TechnicalError}
 import models.hipPenaltyDetails.latePayment.{LPPPenaltyCategoryEnum, LPPPenaltyStatusEnum, LatePaymentPenalty}
 import play.api.http.Status._
 import play.api.libs.json.{JsError, JsSuccess, JsValue}
@@ -28,35 +28,15 @@ import utils.PagerDutyHelper.PagerDutyKeys._
 import java.time.LocalDate
 import scala.util.Try
 import models.hipPenaltyDetails.PenaltyDetails
-import play.api.libs.json.Reads
-import play.api.libs.json.Json
 
 object HIPPenaltyDetailsParser {
   sealed trait HIPPenaltyDetailsFailure
 
   sealed trait HIPPenaltyDetailsSuccess
 
-  sealed trait PenaltyApiError
-
   case class HIPPenaltyDetailsSuccessResponse(penaltyDetails: PenaltyDetails) extends HIPPenaltyDetailsSuccess
 
-  case class HIPPenaltyDetailsFailureResponse(
-      status: Int,
-      errorBody: Option[PenaltyApiError] = None
-  ) extends HIPPenaltyDetailsFailure
-
-  case class TechnicalError(code: String, message: String, logID: String)
-      extends PenaltyApiError
-
-  object TechnicalError {
-    implicit val reads: Reads[TechnicalError] = Json.reads[TechnicalError]
-  }
-  case class BusinessError(code: String, text: String, processingDate: String)
-      extends PenaltyApiError
-
-  object BusinessError {
-    implicit val reads: Reads[BusinessError] = Json.reads[BusinessError]
-  }
+  case class HIPPenaltyDetailsFailureResponse(status: Int) extends HIPPenaltyDetailsFailure
 
   case object HIPPenaltyDetailsMalformed extends HIPPenaltyDetailsFailure
 
@@ -77,67 +57,68 @@ object HIPPenaltyDetailsParser {
               logger.debug(s"[HIPPenaltyDetailsReads][read] Json validation errors: $errors")
               Left(HIPPenaltyDetailsMalformed)
           }
-        case NOT_FOUND if response.body.nonEmpty => {
-          Try(handleNotFoundStatusBody(response.json)).fold(parseError => {
-            logger.error(s"[PenaltyDetailsReads][read] Could not parse 404 body with error ${parseError.getMessage}")
-            PagerDutyHelper.log("PenaltyDetailsReads", INVALID_JSON_RECEIVED_FROM_1812_API)
-            Left(HIPPenaltyDetailsFailureResponse(NOT_FOUND))
-          }, identity)
-        }
-          case status @ (BAD_REQUEST | CONFLICT | INTERNAL_SERVER_ERROR |
-            SERVICE_UNAVAILABLE | UNPROCESSABLE_ENTITY) => {
-
-          val json = response.json
-
-          val maybeError: Option[PenaltyApiError] =
-            (json \ "error")
-              .validate[TechnicalError]
-              .asOpt
-              .orElse(
-                (json \ "errors").validate[BusinessError].asOpt
-              )
-
-          maybeError.foreach {
-            case te: TechnicalError =>
-              logger.warn(
-                s"[HIPPenaltyDetailsReads] Technical error: ${te.code} / ${te.logID}"
-              )
-            case be: BusinessError =>
-              logger.warn(
-                s"[HIPPenaltyDetailsReads] Business error: ${be.code} / ${be.text}"
-              )
-          }
-
-          Left(HIPPenaltyDetailsFailureResponse(status, maybeError))
-        }
-        case status@NO_CONTENT => {
-          logger.debug(s"[HIPPenaltyDetailsReads][read] Received 204 when calling ETMP")
-          Left(HIPPenaltyDetailsFailureResponse(status))
-        }
-        case _@status =>
+        case NOT_FOUND if response.body.nonEmpty =>
+          Try(handleNotFoundStatusBody(response.json)).fold(
+            parseError => {
+              logger.error(s"[HIPPenaltyDetailsReads][read] Could not parse 404 body with error ${parseError.getMessage}")
+              PagerDutyHelper.log("HIPPenaltyDetailsReads", INVALID_JSON_RECEIVED_FROM_1812_API)
+              Left(HIPPenaltyDetailsFailureResponse(NOT_FOUND))
+            },
+            identity
+          )
+        case NO_CONTENT =>
+          logger.info("[HIPPenaltyDetailsReads][read] Received no content from 1812 call")
+          Left(HIPPenaltyDetailsNoContent)
+        case status @ (BAD_REQUEST | FORBIDDEN | NOT_FOUND | CONFLICT | UNPROCESSABLE_ENTITY | INTERNAL_SERVER_ERROR | SERVICE_UNAVAILABLE) =>
           PagerDutyHelper.logStatusCode("HIPPenaltyDetailsReads", status)(RECEIVED_4XX_FROM_1812_API, RECEIVED_5XX_FROM_1812_API)
-          logger.error(s"[HIPPenaltyDetailsReads][read] Received unexpected response from GetPenaltyDetails, status code: $status and body: ${response.body}")
+          logger.error(
+            s"[HIPPenaltyDetailsReads][read] Received $status when trying to call PenaltyDetails - with body: ${response.body}")
+          handleErrorResponse(response)
+        case _ @status =>
+          PagerDutyHelper.logStatusCode("HIPPenaltyDetailsReads", status)(RECEIVED_4XX_FROM_1812_API, RECEIVED_5XX_FROM_1812_API)
+          logger.error(
+            s"[HIPPenaltyDetailsReads][read] Received unexpected response from PenaltyDetails, status code: $status and body: ${response.body}")
           Left(HIPPenaltyDetailsFailureResponse(status))
       }
     }
   }
 
-  private def handleNotFoundStatusBody(responseBody: JsValue): HIPPenaltyDetailsResponse = {
-    (responseBody \ "failures").validate[Seq[FailureResponse]].fold(
-      errors => {
-        logger.debug(s"[HIPPenaltyDetailsReads][read] - Parsing errors: $errors")
-        logger.error(s"[HIPPenaltyDetailsReads][read] - Could not parse 404 body returned fromPenaltyDetailscall")
+  private def handleNotFoundStatusBody(responseBody: JsValue): Either[HIPPenaltyDetailsFailure, Nothing] = {
+    val validateFailuresIF = (responseBody \ "failures").validate[Seq[FailureResponse]].asOpt
+    val validateErrorsHIP  = (responseBody \ "errors").validate[BusinessError].asOpt
+    (validateFailuresIF, validateErrorsHIP) match {
+      case (Some(failures), _) if failures.exists(_.code.equals(FailureCodeEnum.NoDataFound)) =>
+        Left(HIPPenaltyDetailsNoContent)
+      case (_, Some(errors)) if errors.code == "016" && errors.text == "Invalid ID Number" =>
+        Left(HIPPenaltyDetailsNoContent)
+      case _ =>
+        logger.error(s"[HIPPenaltyDetailsReads][read] - Unable to parse 404 body returned from PenaltyDetails call")
+        logger.debug(s"[HIPPenaltyDetailsReads][read] - Error response body: $responseBody")
         Left(HIPPenaltyDetailsFailureResponse(NOT_FOUND))
-      },
-      failures => {
-        if (failures.exists(_.code.equals(FailureCodeEnum.NoDataFound))) {
-          Left(HIPPenaltyDetailsNoContent)
-        } else {
-          logger.error(s"[PenaltyDetailsReads][read] - Received following errors fromPenaltyDetails404 call: $failures")
-          Left(HIPPenaltyDetailsFailureResponse(NOT_FOUND))
-        }
-      }
-    )
+    }
+  }
+
+  private def handleErrorResponse(response: HttpResponse): Left[HIPPenaltyDetailsFailure, Nothing] = {
+    val json                  = Try(response.json).getOrElse(play.api.libs.json.Json.obj())
+    val errorOpt              = (json \ "error").validate[TechnicalError].asOpt
+    val errorsOpt             = (json \ "errors").validate[Seq[BusinessError]].asOpt
+    val hipWrappedErrorsOpt   = (json \ "response").validate[Seq[HipWrappedError]].asOpt
+
+    (errorOpt, errorsOpt, hipWrappedErrorsOpt) match {
+      case (Some(error), _, _) =>
+        logger.warn(s"[HIPPenaltyDetailsParser][handleErrorResponse] Technical error returned: ${error.code} - ${error.message}")
+        Left(HIPPenaltyDetailsFailureResponse(response.status))
+      case (_, Some(errors), _) =>
+        logger.warn(s"[HIPPenaltyDetailsParser][handleErrorResponse] Business errors returned: ${errors.mkString("\n")}")
+        Left(HIPPenaltyDetailsFailureResponse(response.status))
+      case (_, _, Some(hipWrappedErrors)) =>
+        val errorMessages = hipWrappedErrors.map(err => s"${err.`type`} - ${err.reason}").mkString(", ")
+        logger.warn(s"[HIPPenaltyDetailsParser][handleErrorResponse] HIP wrapped errors returned: $errorMessages")
+        Left(HIPPenaltyDetailsFailureResponse(response.status))
+      case (None, None, None) =>
+        logger.error("[HIPPenaltyDetailsParser][handleErrorResponse] No recognizable error structure found")
+        Left(HIPPenaltyDetailsFailureResponse(response.status))
+    }
   }
 
   private def addMissingLPP1PrincipalChargeLatestClearing(penaltyDetails: PenaltyDetails): PenaltyDetails = {

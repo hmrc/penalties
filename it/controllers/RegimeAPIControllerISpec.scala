@@ -276,7 +276,7 @@ class RegimeAPIControllerISpec extends IntegrationSpecCommonBase with RegimeETMP
       val enrolmentKey = AgnosticEnrolmentKey(regime, idType, id)
 
     s"getSummaryData for $regime" when {
-      val penaltyUpstreamServices = Seq("HIP", "ETMP")
+      val penaltyUpstreamServices = Seq("HIP", "IF")
       
       penaltyUpstreamServices.foreach { upstreamService =>
         def mockHIPSummary(responseStatus: Int): StubMapping = mockResponseForHIPPenaltyDetails(
@@ -286,7 +286,7 @@ class RegimeAPIControllerISpec extends IntegrationSpecCommonBase with RegimeETMP
           id,
           body = Some(getHIPPenaltyDetailsJson.toString()))
 
-        def mockETMPSummary(responseStatus: Int, body: Option[String] = None): StubMapping = mockResponseForGetPenaltyDetails(
+        def mockIFSummary(responseStatus: Int, body: Option[String] = None): StubMapping = mockResponseForGetPenaltyDetails(
           responseStatus,
           regime,
           idType,
@@ -325,7 +325,6 @@ class RegimeAPIControllerISpec extends IntegrationSpecCommonBase with RegimeETMP
           if (upstreamService == "HIP") {
             setEnabledFeatureSwitches(CallAPI1812HIP)
           } else {
-            disableFeatureSwitch(CallAPI1812HIP)
             setEnabledFeatureSwitches(CallAPI1812ETMP)
           }
 
@@ -338,7 +337,7 @@ class RegimeAPIControllerISpec extends IntegrationSpecCommonBase with RegimeETMP
               if (upstreamService == "HIP") {
                 mockHIPSummary(OK)
               } else {
-                mockETMPSummary(OK, Some(getPenaltyDetailsJson.toString()))
+                mockIFSummary(OK, Some(getPenaltyDetailsJson.toString()))
               }
 
               val result = await(buildClientForRequestToApp(uri = uriToSummaryController).get())
@@ -356,7 +355,7 @@ class RegimeAPIControllerISpec extends IntegrationSpecCommonBase with RegimeETMP
               if (upstreamService == "HIP") {
                 mockHIPSummary(NOT_FOUND)
               } else {
-                mockETMPSummary(NOT_FOUND, Some(""))
+                mockIFSummary(NOT_FOUND, Some(""))
               }
 
               val result = await(buildClientForRequestToApp(uri = uriToSummaryController).get())
@@ -370,7 +369,7 @@ class RegimeAPIControllerISpec extends IntegrationSpecCommonBase with RegimeETMP
               if (upstreamService == "HIP") {
                 mockHIPSummary(INTERNAL_SERVER_ERROR)
               } else {
-                mockETMPSummary(INTERNAL_SERVER_ERROR, Some(""))
+                mockIFSummary(INTERNAL_SERVER_ERROR, Some(""))
               }
 
               val result = await(buildClientForRequestToApp(uri = uriToSummaryController).get())
@@ -395,7 +394,7 @@ class RegimeAPIControllerISpec extends IntegrationSpecCommonBase with RegimeETMP
               if (upstreamService == "HIP") {
                 mockResponseForHIPPenaltyDetails(NOT_FOUND, regime, idType, id, body = Some(notFoundResponseBody))
               } else {
-                mockETMPSummary(NOT_FOUND, Some(notFoundResponseBody))
+                mockIFSummary(NOT_FOUND, Some(notFoundResponseBody))
               }
 
               val result = await(buildClientForRequestToApp(uri = uriToSummaryController).get())
@@ -420,7 +419,7 @@ class RegimeAPIControllerISpec extends IntegrationSpecCommonBase with RegimeETMP
               if (upstreamService == "HIP") {
                 mockResponseForHIPPenaltyDetails(OK, regime, idType, id, body = Some(emptyResponseBody))
               } else {
-                mockETMPSummary(OK, Some(emptyResponseBody))
+                mockIFSummary(OK, Some(emptyResponseBody))
               }
 
               val result = await(buildClientForRequestToApp(uri = uriToSummaryController).get())

@@ -157,15 +157,58 @@ class HIPPenaltyDetailsParserSpec extends AnyWordSpec with Matchers with LogCapt
       |""".stripMargin
   ), headers = Map.empty)
 
-  val mockISEHttpResponse: HttpResponse = HttpResponse.apply(status = Status.INTERNAL_SERVER_ERROR, json = Json.parse("""{"error": {"code": "ISE", "message": "Something went wrong", "logID": "123"}}"""), headers = Map.empty)
-  val mockBadRequestHttpResponse: HttpResponse = HttpResponse.apply(status = Status.BAD_REQUEST, json = Json.parse("""{"error": {"code": "BAD_REQUEST", "message": "Bad Request", "logID": "123"}}"""), headers = Map.empty)
+  val mockISEHttpResponse: HttpResponse = HttpResponse.apply(status = Status.INTERNAL_SERVER_ERROR, json = Json.parse("""{"error": {"code": "ISE", "message": "Something went wrong", "logId": "123"}}"""), headers = Map.empty)
+  val mockBadRequestHttpResponse: HttpResponse = HttpResponse.apply(status = Status.BAD_REQUEST, json = Json.parse("""{"error": {"code": "BAD_REQUEST", "message": "Bad Request", "logId": "123"}}"""), headers = Map.empty)
   val mockNotFoundHttpResponse: HttpResponse = HttpResponse.apply(status = Status.NOT_FOUND, body = "Not Found.")
   val mockNotFoundHttpResponseNoBody: HttpResponse = HttpResponse.apply(status = Status.NOT_FOUND, body = "")
   val mockNoContentHttpResponse: HttpResponse = HttpResponse.apply(status = Status.NO_CONTENT, body = "")
-  val mockConflictHttpResponse: HttpResponse = HttpResponse.apply(status = Status.CONFLICT, json = Json.parse("""{"error": {"code": "CONFLICT", "message": "Conflict", "logID": "123"}}"""), headers = Map.empty)
-  val mockUnprocessableEntityHttpResponse: HttpResponse = HttpResponse.apply(status = Status.UNPROCESSABLE_ENTITY, json = Json.parse("""{"error": {"code": "UNPROCESSABLE", "message": "Unprocessable Entity", "logID": "123"}}"""), headers = Map.empty)
-  val mockServiceUnavailableHttpResponse: HttpResponse = HttpResponse.apply(status = Status.SERVICE_UNAVAILABLE, json = Json.parse("""{"error": {"code": "SERVICE_UNAVAILABLE", "message": "Service Unavailable", "logID": "123"}}"""), headers = Map.empty)
+  val mockConflictHttpResponse: HttpResponse = HttpResponse.apply(status = Status.CONFLICT, json = Json.parse("""{"error": {"code": "CONFLICT", "message": "Conflict", "logId": "123"}}"""), headers = Map.empty)
+  val mockUnprocessableEntityHttpResponse: HttpResponse = HttpResponse.apply(status = Status.UNPROCESSABLE_ENTITY, json = Json.parse("""{"error": {"code": "UNPROCESSABLE", "message": "Unprocessable Entity", "logId": "123"}}"""), headers = Map.empty)
+  val mockServiceUnavailableHttpResponse: HttpResponse = HttpResponse.apply(status = Status.SERVICE_UNAVAILABLE, json = Json.parse("""{"error": {"code": "SERVICE_UNAVAILABLE", "message": "Service Unavailable", "logId": "123"}}"""), headers = Map.empty)
   val mockImATeapotHttpResponse: HttpResponse = HttpResponse.apply(status = Status.IM_A_TEAPOT, body = "I'm a teapot.")
+
+  val mockBusinessErrorsHttpResponse: HttpResponse = HttpResponse.apply(status = Status.BAD_REQUEST, json = Json.parse(
+    """
+      |{
+      | "errors": [
+      |   {
+      |     "processingDate": "2023-11-28T10:15:10Z",
+      |     "code": "BUSINESS_ERROR",
+      |     "text": "Business validation failed"
+      |   }
+      | ]
+      |}
+      |""".stripMargin
+  ), headers = Map.empty)
+
+  val mockHIPErrorsHttpResponse: HttpResponse = HttpResponse.apply(status = Status.INTERNAL_SERVER_ERROR, json = Json.parse(
+    """
+      |{
+      | "response": [
+      |   {
+      |     "type": "System Error",
+      |     "reason": "HIP system temporarily unavailable"
+      |   },
+      |   {
+      |     "type": "Validation Error", 
+      |     "reason": "Invalid request format"
+      |   }
+      | ]
+      |}
+      |""".stripMargin
+  ), headers = Map.empty)
+
+  val mockNotFoundWithHIPBusinessErrorHttpResponse: HttpResponse = HttpResponse.apply(status = Status.NOT_FOUND, json = Json.parse(
+    """
+      |{
+      | "errors": {
+      |   "processingDate": "2023-11-28T10:15:10Z",
+      |   "code": "016",
+      |   "text": "Invalid ID Number"
+      | }
+      |}
+      |""".stripMargin
+  ), headers = Map.empty)
 
   "HIPPenaltyDetailsReads" should {
     s"parse an OK (${Status.OK}) response" when {
@@ -243,7 +286,7 @@ class HIPPenaltyDetailsParserSpec extends AnyWordSpec with Matchers with LogCapt
     s"parse a NO CONTENT (${Status.NO_CONTENT}) response" in {
       val result = HIPPenaltyDetailsParser.HIPPenaltyDetailsReads.read("GET", "/", mockNoContentHttpResponse)
       result.isLeft shouldBe true
-      result.left.getOrElse(HIPPenaltyDetailsFailureResponse(IM_A_TEAPOT)).asInstanceOf[HIPPenaltyDetailsFailureResponse].status shouldBe Status.NO_CONTENT
+      result.left.getOrElse(HIPPenaltyDetailsFailureResponse(IM_A_TEAPOT)) shouldBe HIPPenaltyDetailsNoContent
     }
 
     s"parse a Conflict (${Status.CONFLICT}) response" in {
@@ -274,6 +317,24 @@ class HIPPenaltyDetailsParserSpec extends AnyWordSpec with Matchers with LogCapt
       val result = HIPPenaltyDetailsParser.HIPPenaltyDetailsReads.read("GET", "/", mockImATeapotHttpResponse)
       result.isLeft shouldBe true
       result.left.getOrElse(HIPPenaltyDetailsFailureResponse(INTERNAL_SERVER_ERROR)).asInstanceOf[HIPPenaltyDetailsFailureResponse].status shouldBe Status.IM_A_TEAPOT
+    }
+
+    s"parse a BAD REQUEST (${Status.BAD_REQUEST}) response with business errors" in {
+      val result = HIPPenaltyDetailsParser.HIPPenaltyDetailsReads.read("GET", "/", mockBusinessErrorsHttpResponse)
+      result.isLeft shouldBe true
+      result.left.getOrElse(HIPPenaltyDetailsFailureResponse(IM_A_TEAPOT)).asInstanceOf[HIPPenaltyDetailsFailureResponse].status shouldBe Status.BAD_REQUEST
+    }
+
+    s"parse an INTERNAL SERVER ERROR (${Status.INTERNAL_SERVER_ERROR}) response with HIP errors" in {
+      val result = HIPPenaltyDetailsParser.HIPPenaltyDetailsReads.read("GET", "/", mockHIPErrorsHttpResponse)
+      result.isLeft shouldBe true
+      result.left.getOrElse(HIPPenaltyDetailsFailureResponse(IM_A_TEAPOT)).asInstanceOf[HIPPenaltyDetailsFailureResponse].status shouldBe Status.INTERNAL_SERVER_ERROR
+    }
+
+    s"parse a NOT FOUND (${Status.NOT_FOUND}) response with HIP business error (return $HIPPenaltyDetailsNoContent)" in {
+      val result = HIPPenaltyDetailsParser.HIPPenaltyDetailsReads.read("GET", "/", mockNotFoundWithHIPBusinessErrorHttpResponse)
+      result.isLeft shouldBe true
+      result.left.getOrElse(HIPPenaltyDetailsFailureResponse(IM_A_TEAPOT)) shouldBe HIPPenaltyDetailsNoContent
     }
   }
 } 

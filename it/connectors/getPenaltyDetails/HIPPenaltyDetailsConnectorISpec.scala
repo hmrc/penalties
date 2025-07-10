@@ -225,11 +225,13 @@ class HIPPenaltyDetailsConnectorISpec
 
       s"return a $HIPPenaltyDetailsFailureResponse when the response status is ISE (${Status.INTERNAL_SERVER_ERROR})" in new Setup {
         enableFeatureSwitch(CallAPI1812HIP)
+        val errorBody = """{"error": {"code": "ISE", "message": "Internal Server Error", "logId": "123"}}"""
         mockResponseForHIPPenaltyDetails(
           Status.INTERNAL_SERVER_ERROR,
           regime,
           aKey.idType,
-          aKey.id
+          aKey.id,
+          body = Some(errorBody)
         )
         val result: HIPPenaltyDetailsResponse =
           await(connector.getPenaltyDetails(aKey))
@@ -242,11 +244,13 @@ class HIPPenaltyDetailsConnectorISpec
 
       s"return a $HIPPenaltyDetailsFailureResponse when the response status is ISE (${Status.SERVICE_UNAVAILABLE})" in new Setup {
         enableFeatureSwitch(CallAPI1812HIP)
+        val errorBody = """{"error": {"code": "SERVICE_UNAVAILABLE", "message": "Service Unavailable", "logId": "123"}}"""
         mockResponseForHIPPenaltyDetails(
           Status.SERVICE_UNAVAILABLE,
           regime,
           aKey.idType,
-          aKey.id
+          aKey.id,
+          body = Some(errorBody)
         )
         val result: HIPPenaltyDetailsResponse =
           await(connector.getPenaltyDetails(aKey))
@@ -259,11 +263,13 @@ class HIPPenaltyDetailsConnectorISpec
 
       s"return a $HIPPenaltyDetailsFailureResponse when the response status is NOT FOUND (${Status.NOT_FOUND})" in new Setup {
         enableFeatureSwitch(CallAPI1812HIP)
+        val errorBody = """{"error": {"code": "NOT_FOUND", "message": "Not Found", "logId": "123"}}"""
         mockResponseForHIPPenaltyDetails(
           Status.NOT_FOUND,
           regime,
           aKey.idType,
-          aKey.id
+          aKey.id,
+          body = Some(errorBody)
         )
         val result: HIPPenaltyDetailsResponse =
           await(connector.getPenaltyDetails(aKey))
@@ -302,7 +308,7 @@ class HIPPenaltyDetailsConnectorISpec
         ) shouldBe HIPPenaltyDetailsNoContent
       }
 
-      s"return a $HIPPenaltyDetailsFailureResponse when the response status is NO CONTENT (${Status.NO_CONTENT})" in new Setup {
+      s"return a $HIPPenaltyDetailsNoContent when the response status is NO CONTENT (${Status.NO_CONTENT})" in new Setup {
         enableFeatureSwitch(CallAPI1812HIP)
         mockResponseForHIPPenaltyDetails(
           Status.NO_CONTENT,
@@ -313,19 +319,20 @@ class HIPPenaltyDetailsConnectorISpec
         val result: HIPPenaltyDetailsResponse =
           await(connector.getPenaltyDetails(aKey))
         result.isLeft shouldBe true
-        result.left
-          .getOrElse(HIPPenaltyDetailsFailureResponse(IM_A_TEAPOT))
-          .asInstanceOf[HIPPenaltyDetailsFailureResponse]
-          .status shouldBe Status.NO_CONTENT
+        result.left.getOrElse(
+          HIPPenaltyDetailsFailureResponse(IM_A_TEAPOT)
+        ) shouldBe HIPPenaltyDetailsNoContent
       }
 
       s"return a $HIPPenaltyDetailsFailureResponse when the response status is CONFLICT (${Status.CONFLICT})" in new Setup {
         enableFeatureSwitch(CallAPI1812HIP)
+        val errorBody = """{"error": {"code": "CONFLICT", "message": "Conflict", "logId": "123"}}"""
         mockResponseForHIPPenaltyDetails(
           Status.CONFLICT,
           regime,
           aKey.idType,
-          aKey.id
+          aKey.id,
+          body = Some(errorBody)
         )
         val result: HIPPenaltyDetailsResponse =
           await(connector.getPenaltyDetails(aKey))
@@ -338,11 +345,13 @@ class HIPPenaltyDetailsConnectorISpec
 
       s"return a $HIPPenaltyDetailsFailureResponse when the response status is UNPROCESSABLE ENTITY (${Status.UNPROCESSABLE_ENTITY})" in new Setup {
         enableFeatureSwitch(CallAPI1812HIP)
+        val errorBody = """{"error": {"code": "UNPROCESSABLE_ENTITY", "message": "Unprocessable Entity", "logId": "123"}}"""
         mockResponseForHIPPenaltyDetails(
           Status.UNPROCESSABLE_ENTITY,
           regime,
           aKey.idType,
-          aKey.id
+          aKey.id,
+          body = Some(errorBody)
         )
         val result: HIPPenaltyDetailsResponse =
           await(connector.getPenaltyDetails(aKey))
@@ -355,11 +364,13 @@ class HIPPenaltyDetailsConnectorISpec
 
       s"return a $HIPPenaltyDetailsFailureResponse when the response status is ISE (${Status.BAD_REQUEST})" in new Setup {
         enableFeatureSwitch(CallAPI1812HIP)
+        val errorBody = """{"error": {"code": "BAD_REQUEST", "message": "Bad Request", "logId": "123"}}"""
         mockResponseForHIPPenaltyDetails(
           Status.BAD_REQUEST,
           regime,
           aKey.idType,
-          aKey.id
+          aKey.id,
+          body = Some(errorBody)
         )
         val result: HIPPenaltyDetailsResponse =
           await(connector.getPenaltyDetails(aKey))
@@ -370,53 +381,5 @@ class HIPPenaltyDetailsConnectorISpec
           .status shouldBe Status.BAD_REQUEST
       }
     }
-
-    // s"getPenaltyDetailsForAPI for $regime" should {
-    //   "return a 200 response" in new Setup {
-    //     enableFeatureSwitch(CallAPI1812ETMP)
-    //     mockResponseForHIPPenaltyDetails(
-    //       Status.OK,
-    //       regime,
-    //       aKey.idType,
-    //       aKey.id,
-    //       Some("09")
-    //     )
-    //     val result: HttpResponse =
-    //       await(connector.getPenaltyDetailsForAPI(aKey, dateLimit = Some("09")))
-    //     result.status shouldBe Status.OK
-    //   }
-
-    //   "handle a UpstreamErrorResponse" when {
-    //     "a 4xx error is returned" in new Setup {
-    //       enableFeatureSwitch(CallAPI1812ETMP)
-    //       mockResponseForHIPPenaltyDetails(
-    //         Status.FORBIDDEN,
-    //         regime,
-    //         aKey.idType,
-    //         aKey.id,
-    //         Some("09")
-    //       )
-    //       val result: HttpResponse = await(
-    //         connector.getPenaltyDetailsForAPI(aKey, dateLimit = Some("09"))
-    //       )
-    //       result.status shouldBe Status.FORBIDDEN
-    //     }
-
-    //     "a 5xx error is returned" in new Setup {
-    //       enableFeatureSwitch(CallAPI1812ETMP)
-    //       mockResponseForHIPPenaltyDetails(
-    //         Status.BAD_GATEWAY,
-    //         regime,
-    //         aKey.idType,
-    //         aKey.id,
-    //         Some("09")
-    //       )
-    //       val result: HttpResponse = await(
-    //         connector.getPenaltyDetailsForAPI(aKey, dateLimit = Some("09"))
-    //       )
-    //       result.status shouldBe Status.BAD_GATEWAY
-    //     }
-    //   }
-    // }
   }
 }

@@ -138,15 +138,6 @@ val getHIPPenaltyDetailsWithLSPAndLPPAsJson: JsValue = Json.parse(
      |}
      |""".stripMargin)
 
-   def mockStubResponseForHIPPenaltyDetails(status: Int, apiRegime: Regime, idType: IdType, id: Id, body: Option[String] = None): StubMapping = {
-    stubFor(get(urlEqualTo(s"/penalties-stub/penalty/details/${apiRegime.value}/${idType.value}/${id.value}"))
-      .willReturn(
-        aResponse()
-          .withBody(body.fold(getHIPPenaltyDetailsWithLSPAndLPPAsJson.toString())(identity))
-          .withStatus(status)
-      ))
-  }
-
   def mockResponseForHIPPenaltyDetails(status: Int, apiRegime: Regime, idType: IdType, id: Id, dateLimit: Option[String] = None, body: Option[String] = None): StubMapping = {
     val dateLimitParam = dateLimit.map(d => s"&dateLimit=$d").getOrElse("")
     stubFor(get(urlEqualTo(s"/RESTAdapter/cross-regime/taxpayer/penalties?taxRegime=${apiRegime.value}&idType=${idType.value}&idNumber=${id.value}$dateLimitParam"))

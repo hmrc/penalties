@@ -21,7 +21,8 @@ import play.api.libs.json._
 object AppealLevelEnum extends Enumeration {
 
   val HMRC: AppealLevelEnum.Value = Value("01")
-  val Tribunal: AppealLevelEnum.Value = Value("02")
+  val TribunalOrSecond: AppealLevelEnum.Value = Value("02")
+  val Tribunal: AppealLevelEnum.Value = Value("03")
 
   implicit val format: Format[AppealLevelEnum.Value] = new Format[AppealLevelEnum.Value] {
 
@@ -29,7 +30,8 @@ object AppealLevelEnum extends Enumeration {
 
     override def reads(json: JsValue): JsResult[AppealLevelEnum.Value] = json.as[String].toUpperCase match {
       case "01" => JsSuccess(HMRC)
-      case "02" => JsSuccess(Tribunal)
+      case "02" => JsSuccess(TribunalOrSecond)
+      case "03" => JsSuccess(Tribunal)
       case e => JsError(s"$e not recognised")
     }
   }
