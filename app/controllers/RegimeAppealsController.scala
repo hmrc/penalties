@@ -17,10 +17,9 @@
 package controllers
 
 import config.AppConfig
-import config.featureSwitches.FeatureSwitching
 import connectors.FileNotificationOrchestratorConnector
 import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser
-import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser.GetPenaltyDetailsSuccessResponse
+import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser.{GetPenaltyDetailsSuccessResponse, GetPenaltyDetailsResponse}
 import controllers.auth.AuthAction
 import models.appeals.AppealTypeEnum._
 import models.appeals._
@@ -53,19 +52,23 @@ class RegimeAppealsController @Inject()(val appConfig: AppConfig,
                                   auditService: AuditService,
                                   cc: ControllerComponents,
                                   authAction: AuthAction)(implicit ec: ExecutionContext, val config: Configuration)
-  extends BackendController(cc) with FeatureSwitching {
+  extends BackendController(cc) {
 
   private def getAppealDataForPenalty(penaltyId: String, enrolmentKey: AgnosticEnrolmentKey,
                                     penaltyType: AppealTypeEnum.Value)(implicit hc: HeaderCarrier): Future[Result] = {
 
-    getPenaltyDetailsService.getDataFromPenaltyService(enrolmentKey).map {
-      _.fold(
-        handleFailureResponse(_, enrolmentKey.toString)("getAppealDataForPenalty"),
+    getPenaltyDetailsService.getPenaltyDetails(enrolmentKey).map {
+      handlePenaltyDetailsResponseForAppeals(_, enrolmentKey.toString, penaltyId, penaltyType)
+    }
+  }
+
+  private def handlePenaltyDetailsResponseForAppeals(response: GetPenaltyDetailsResponse, enrolmentKey: String, penaltyId: String, penaltyType: AppealTypeEnum.Value): Result = {
+    response.fold(
+        handleFailureResponse(_, enrolmentKey)("getAppealDataForPenalty"),
         success => {
-          checkAndReturnResponseForPenaltyData(success.asInstanceOf[GetPenaltyDetailsSuccessResponse].penaltyDetails, penaltyId, enrolmentKey.toString, penaltyType)
+          checkAndReturnResponseForPenaltyData(success.asInstanceOf[GetPenaltyDetailsSuccessResponse].penaltyDetails, penaltyId, enrolmentKey, penaltyType)
         }
       )
-    }
   }
 
   def getAppealsDataForLateSubmissionPenalty(penaltyId: String, regime: Regime, idType: IdType, id: Id): Action[AnyContent] = authAction.async {
@@ -220,7 +223,7 @@ class RegimeAppealsController @Inject()(val appConfig: AppConfig,
   def getMultiplePenaltyData(penaltyId: String, regime: Regime, idType: IdType, id: Id): Action[AnyContent] = authAction.async {
     implicit request => {
       val agnosticEnrolmentKey = AgnosticEnrolmentKey(regime, idType, id)
-      getPenaltyDetailsService.getDataFromPenaltyService(agnosticEnrolmentKey).map {
+      getPenaltyDetailsService.getPenaltyDetails(agnosticEnrolmentKey).map {
         _.fold(
           handleFailureResponse(_, agnosticEnrolmentKey.toString)("getMultiplePenaltyData"),
           success => {
@@ -236,11 +239,11 @@ class RegimeAppealsController @Inject()(val appConfig: AppConfig,
   private def handleFailureResponse(response: PenaltyDetailsParser.GetPenaltyDetailsFailure, enrolmentKey: String)(callingMethod: String): Result = {
     response match {
       case PenaltyDetailsParser.GetPenaltyDetailsFailureResponse(status) if status == NOT_FOUND => {
-        logger.info(s"[RegimeAppealsController][$callingMethod] - 1812 call returned 404 for enrolment key: $enrolmentKey")
+        logger.info(s"[RegimeAppealsController][$callingMethod] - call returned 404 for enrolment key: $enrolmentKey")
         NotFound(s"A downstream call returned 404 for ${enrolmentKey}")
       }
       case PenaltyDetailsParser.GetPenaltyDetailsFailureResponse(status) => {
-        logger.error(s"[RegimeAppealsController][$callingMethod] - 1812 call returned an unexpected status: $status for ${enrolmentKey}")
+        logger.error(s"[RegimeAppealsController][$callingMethod] - call returned an unexpected status: $status for ${enrolmentKey}")
         InternalServerError(s"A downstream call returned an unexpected status: $status")
       }
       case PenaltyDetailsParser.GetPenaltyDetailsMalformed => {
@@ -249,7 +252,7 @@ class RegimeAppealsController @Inject()(val appConfig: AppConfig,
         InternalServerError("We were unable to parse penalty data.")
       }
       case PenaltyDetailsParser.GetPenaltyDetailsNoContent => {
-        logger.info(s"s[RegimeAppealsController][$callingMethod] - 1812 call returned no content for ${enrolmentKey}")
+        logger.info(s"s[RegimeAppealsController][$callingMethod] - call returned no content for ${enrolmentKey}")
         InternalServerError(s"Returned no content for ${enrolmentKey}")
       }
     }

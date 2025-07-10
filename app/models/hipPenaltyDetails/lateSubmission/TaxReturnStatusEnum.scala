@@ -14,24 +14,22 @@
  * limitations under the License.
  */
 
-package models.getPenaltyDetails.appealInfo
+package models.hipPenaltyDetails.lateSubmission
 
 import play.api.libs.json._
 
-object AppealLevelEnum extends Enumeration {
+object TaxReturnStatusEnum extends Enumeration {
+  val Open: TaxReturnStatusEnum.Value = Value
+  val Fulfilled: TaxReturnStatusEnum.Value = Value
+  val Reversed: TaxReturnStatusEnum.Value = Value
 
-  val HMRC: AppealLevelEnum.Value = Value("01")
-  val TribunalOrSecond: AppealLevelEnum.Value = Value("02")
-  val Tribunal: AppealLevelEnum.Value = Value("03")
+  implicit val format: Format[TaxReturnStatusEnum.Value] = new Format[TaxReturnStatusEnum.Value] {
+    override def writes(o: TaxReturnStatusEnum.Value): JsValue = JsString(o.toString())
 
-  implicit val format: Format[AppealLevelEnum.Value] = new Format[AppealLevelEnum.Value] {
-
-    override def writes(o: AppealLevelEnum.Value): JsValue = JsString(o.toString)
-
-    override def reads(json: JsValue): JsResult[AppealLevelEnum.Value] = json.as[String].toUpperCase match {
-      case "01" => JsSuccess(HMRC)
-      case "02" => JsSuccess(TribunalOrSecond)
-      case "03" => JsSuccess(Tribunal)
+    override def reads(json: JsValue): JsResult[TaxReturnStatusEnum.Value] = json.as[String].toUpperCase match {
+      case "OPEN" => JsSuccess(Open)
+      case "FULFILLED" => JsSuccess(Fulfilled)
+      case "REVERSED" => JsSuccess(Reversed)
       case e => JsError(s"$e not recognised")
     }
   }

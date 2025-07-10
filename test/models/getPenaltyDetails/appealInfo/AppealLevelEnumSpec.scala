@@ -27,8 +27,13 @@ class AppealLevelEnumSpec extends SpecBase {
     }
 
     "be writable to JSON for appeal level '02'" in {
-      val result = Json.toJson(AppealLevelEnum.Tribunal)(AppealLevelEnum.format)
+      val result = Json.toJson(AppealLevelEnum.TribunalOrSecond)(AppealLevelEnum.format)
       result shouldBe JsString("02")
+    }
+
+    "be writable to JSON for appeal level '03'" in {
+      val result = Json.toJson(AppealLevelEnum.Tribunal)(AppealLevelEnum.format)
+      result shouldBe JsString("03")
     }
 
     "be readable from JSON for appeal level '01'" in{
@@ -39,6 +44,12 @@ class AppealLevelEnumSpec extends SpecBase {
 
     "be readable from JSON for appeal level '02'" in{
       val result = Json.fromJson(JsString("02"))(AppealLevelEnum.format)
+      result.isSuccess shouldBe true
+      result.get shouldBe AppealLevelEnum.TribunalOrSecond
+    }
+
+    "be readable from JSON for appeal level '03'" in{
+      val result = Json.fromJson(JsString("03"))(AppealLevelEnum.format)
       result.isSuccess shouldBe true
       result.get shouldBe AppealLevelEnum.Tribunal
     }

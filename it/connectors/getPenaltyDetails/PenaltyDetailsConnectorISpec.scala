@@ -37,10 +37,10 @@ import utils.{IntegrationSpecCommonBase, RegimeETMPWiremock}
 
 import java.time.LocalDate
 
-class PenaltyDetailsConnectorISpec extends IntegrationSpecCommonBase with RegimeETMPWiremock with FeatureSwitching with TableDrivenPropertyChecks {
+class RegimePenaltyDetailsConnectorISpec extends IntegrationSpecCommonBase with RegimeETMPWiremock with FeatureSwitching with TableDrivenPropertyChecks {
 
   class Setup {
-    val connector: PenaltyDetailsConnector = injector.instanceOf[PenaltyDetailsConnector]
+    val connector: RegimePenaltyDetailsConnector = injector.instanceOf[RegimePenaltyDetailsConnector]
     implicit val hc: HeaderCarrier = HeaderCarrier()
 
   }

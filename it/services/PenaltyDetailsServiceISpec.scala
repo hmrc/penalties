@@ -16,25 +16,24 @@
 
 package services
 
-import config.featureSwitches.FeatureSwitching
+import config.featureSwitches.{CallAPI1812HIP, FeatureSwitching}
 import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser._
-
-
 import models.getFinancialDetails.MainTransactionEnum
 import models.getPenaltyDetails.appealInfo.{AppealInformationType, AppealLevelEnum, AppealStatusEnum}
 import models.getPenaltyDetails.breathingSpace.BreathingSpace
 import models.getPenaltyDetails.latePayment._
 import models.getPenaltyDetails.lateSubmission._
 import models.getPenaltyDetails.{GetPenaltyDetails, Totalisations}
+import models.{AgnosticEnrolmentKey, Id, IdType, Regime}
 import org.scalatest.prop.TableDrivenPropertyChecks
 import play.api.http.Status
 import play.api.http.Status.{IM_A_TEAPOT, INTERNAL_SERVER_ERROR}
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
-import utils.{RegimeETMPWiremock, IntegrationSpecCommonBase}
-import models.{AgnosticEnrolmentKey, Regime, IdType, Id}
+import utils.{HIPPenaltiesWiremock, IntegrationSpecCommonBase, RegimeETMPWiremock}
+
 import java.time.LocalDate
 
-class PenaltyDetailsServiceISpec extends IntegrationSpecCommonBase with RegimeETMPWiremock with FeatureSwitching with TableDrivenPropertyChecks {
+class PenaltyDetailsServiceISpec extends IntegrationSpecCommonBase with RegimeETMPWiremock with HIPPenaltiesWiremock with FeatureSwitching with TableDrivenPropertyChecks {
   setEnabledFeatureSwitches()
   val service: PenaltyDetailsService = injector.instanceOf[PenaltyDetailsService]
 
@@ -46,7 +45,7 @@ class PenaltyDetailsServiceISpec extends IntegrationSpecCommonBase with RegimeET
 
     val enrolmentKey = AgnosticEnrolmentKey(regime, idType, id) 
 
-    s"getDataFromPenaltyService for $regime" when {
+    s"getPenaltyDetails (unified method) for $regime" when {
       val getPenaltyDetailsModel: GetPenaltyDetails = GetPenaltyDetails(
         totalisations = Some(
           Totalisations(
@@ -153,50 +152,126 @@ class PenaltyDetailsServiceISpec extends IntegrationSpecCommonBase with RegimeET
         breathingSpace = Some(Seq(BreathingSpace(BSStartDate = LocalDate.of(2023, 1, 1), BSEndDate = LocalDate.of(2023, 12, 31))))
       )
 
-      s"call the connector and return a successful result" in {
-        mockStubResponseForGetPenaltyDetails(Status.OK, regime, idType, id)
-        val result = await(service.getDataFromPenaltyService(enrolmentKey))
-        result.isRight shouldBe true
-        result.toOption.get shouldBe GetPenaltyDetailsSuccessResponse(getPenaltyDetailsModel)
+      s"call the regular connector and return a successful result" in {
+        withFeature(CallAPI1812HIP -> FEATURE_SWITCH_OFF) {
+          mockStubResponseForGetPenaltyDetails(Status.OK, regime, idType, id)
+          val result = await(service.getPenaltyDetails(enrolmentKey))
+          result.isRight shouldBe true
+          result.toOption.get shouldBe GetPenaltyDetailsSuccessResponse(getPenaltyDetailsModel)
+        }
       }
 
       s"the response body is not well formed: $GetPenaltyDetailsMalformed" in {
-        mockStubResponseForGetPenaltyDetails(Status.OK, regime, idType, id, body = Some(
-          """
-          {
-           "lateSubmissionPenalty": {
-             "summary": {}
+        withFeature(CallAPI1812HIP -> FEATURE_SWITCH_OFF) {
+          mockStubResponseForGetPenaltyDetails(Status.OK, regime, idType, id, body = Some(
+            """
+            {
+             "lateSubmissionPenalty": {
+               "summary": {}
+               }
              }
-           }
-          """))
-        val result = await(service.getDataFromPenaltyService(enrolmentKey))
-        result.isLeft shouldBe true
-        result.left.getOrElse(GetPenaltyDetailsFailureResponse(IM_A_TEAPOT)) shouldBe GetPenaltyDetailsMalformed
+            """))
+          val result = await(service.getPenaltyDetails(enrolmentKey))
+          result.isLeft shouldBe true
+          result.left.getOrElse(GetPenaltyDetailsFailureResponse(IM_A_TEAPOT)) shouldBe GetPenaltyDetailsMalformed
+        }
       }
 
       s"the response body contains NO_DATA_FOUND for 404 response - returning $GetPenaltyDetailsNoContent" in {
-        val noDataFoundBody =
-          """
-            |{
-            | "failures": [
-            |   {
-            |     "code": "NO_DATA_FOUND",
-            |     "reason": "This is a reason"
-            |   }
-            | ]
-            |}
-            |""".stripMargin
-        mockStubResponseForGetPenaltyDetails(Status.NOT_FOUND, regime, idType, id, body = Some(noDataFoundBody))
-        val result = await(service.getDataFromPenaltyService(enrolmentKey))
-        result.isLeft shouldBe true
-        result.left.getOrElse(GetPenaltyDetailsFailureResponse(IM_A_TEAPOT)) shouldBe GetPenaltyDetailsNoContent
+        withFeature(CallAPI1812HIP -> FEATURE_SWITCH_OFF) {
+          val noDataFoundBody =
+            """
+              |{
+              | "failures": [
+              |   {
+              |     "code": "NO_DATA_FOUND",
+              |     "reason": "This is a reason"
+              |   }
+              | ]
+              |}
+              |""".stripMargin
+          mockStubResponseForGetPenaltyDetails(Status.NOT_FOUND, regime, idType, id, body = Some(noDataFoundBody))
+          val result = await(service.getPenaltyDetails(enrolmentKey))
+          result.isLeft shouldBe true
+          result.left.getOrElse(GetPenaltyDetailsFailureResponse(IM_A_TEAPOT)) shouldBe GetPenaltyDetailsNoContent
+        }
       }
 
       s"an unknown response is returned from the connector - $GetPenaltyDetailsFailureResponse" in {
-        mockStubResponseForGetPenaltyDetails(Status.IM_A_TEAPOT, regime, idType, id)
-        val result = await(service.getDataFromPenaltyService(enrolmentKey))
-        result.isLeft shouldBe true
-        result.left.getOrElse(GetPenaltyDetailsFailureResponse(INTERNAL_SERVER_ERROR)) shouldBe GetPenaltyDetailsFailureResponse(Status.IM_A_TEAPOT)
+        withFeature(CallAPI1812HIP -> FEATURE_SWITCH_OFF) {
+          mockStubResponseForGetPenaltyDetails(Status.IM_A_TEAPOT, regime, idType, id)
+          val result = await(service.getPenaltyDetails(enrolmentKey))
+          result.isLeft shouldBe true
+          result.left.getOrElse(GetPenaltyDetailsFailureResponse(INTERNAL_SERVER_ERROR)) shouldBe GetPenaltyDetailsFailureResponse(Status.IM_A_TEAPOT)
+        }
+      }
+    }
+  }
+
+  "HIP Integration Tests" should {
+    Table(
+      ("Regime", "IdType", "Id"),
+      (Regime("VATC"), IdType("VRN"), Id("123456789")),
+      (Regime("ITSA"), IdType("NINO"), Id("AB123456C")),
+    ).forEvery { (regime, idType, id) =>
+
+      val enrolmentKey = AgnosticEnrolmentKey(regime, idType, id)
+
+      s"getPenaltyDetails with HIP feature switch enabled for $regime" when {
+
+        s"call the HIP connector and return a successful result converted to GetPenaltyDetails structure" in {
+          withFeature(CallAPI1812HIP -> FEATURE_SWITCH_ON) {
+            mockResponseForHIPPenaltyDetails(Status.OK, regime, idType, id)
+            val result = await(service.getPenaltyDetails(enrolmentKey))
+            result.isRight shouldBe true
+            result.toOption.get.isInstanceOf[GetPenaltyDetailsSuccessResponse] shouldBe true
+          }
+        }
+
+        s"return $GetPenaltyDetailsMalformed when the HIP response body is not well formed" in {
+          withFeature(CallAPI1812HIP -> FEATURE_SWITCH_ON) {
+            mockResponseForHIPPenaltyDetails(Status.OK, regime, idType, id, body = Some(
+              """
+              {
+               "lateSubmissionPenalty": {
+                 "summary": {}
+                 }
+               }
+              """))
+            val result = await(service.getPenaltyDetails(enrolmentKey))
+            result.isLeft shouldBe true
+            result.left.getOrElse(GetPenaltyDetailsFailureResponse(IM_A_TEAPOT)) shouldBe GetPenaltyDetailsMalformed
+          }
+        }
+
+        s"return $GetPenaltyDetailsNoContent when the HIP response body contains NO_DATA_FOUND for 404 response" in {
+          withFeature(CallAPI1812HIP -> FEATURE_SWITCH_ON) {
+            val noDataFoundBody =
+              """
+                |{
+                | "failures": [
+                |   {
+                |     "code": "NO_DATA_FOUND",
+                |     "reason": "This is a reason"
+                |   }
+                | ]
+                |}
+                |""".stripMargin
+            mockResponseForHIPPenaltyDetails(Status.NOT_FOUND, regime, idType, id, body = Some(noDataFoundBody))
+            val result = await(service.getPenaltyDetails(enrolmentKey))
+            result.isLeft shouldBe true
+            result.left.getOrElse(GetPenaltyDetailsFailureResponse(IM_A_TEAPOT)) shouldBe GetPenaltyDetailsNoContent
+          }
+        }
+
+        s"return $GetPenaltyDetailsFailureResponse when an unknown response is returned from the HIP connector" in {
+          withFeature(CallAPI1812HIP -> FEATURE_SWITCH_ON) {
+            mockResponseForHIPPenaltyDetails(Status.IM_A_TEAPOT, regime, idType, id)
+            val result = await(service.getPenaltyDetails(enrolmentKey))
+            result.isLeft shouldBe true
+            result.left.getOrElse(GetPenaltyDetailsFailureResponse(INTERNAL_SERVER_ERROR)) shouldBe GetPenaltyDetailsFailureResponse(Status.IM_A_TEAPOT)
+          }
+        }
       }
     }
   }

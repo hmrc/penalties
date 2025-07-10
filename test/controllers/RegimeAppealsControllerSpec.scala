@@ -18,7 +18,7 @@ package controllers
 
 import base.{LogCapturing, SpecBase}
 import config.AppConfig
-import config.featureSwitches.FeatureSwitching
+import config.featureSwitches.{FeatureSwitching, CallAPI1812HIP}
 import connectors.FileNotificationOrchestratorConnector
 import connectors.parsers.AppealsParser.UnexpectedFailure
 import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser.{
@@ -57,6 +57,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with LogCapturing {
+  implicit val config: Configuration = appConfig.config
   val mockAppealsService: RegimeAppealService = mock(classOf[RegimeAppealService])
   val mockAppConfig: AppConfig = mock(classOf[AppConfig])
   val mockAuditService: AuditService = mock(classOf[AuditService])
@@ -64,7 +65,6 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
   val mockAuthAction: AuthAction = injector.instanceOf(classOf[AuthActionMock])
   val correlationId = "id-1234567890"
   val mockFileNotificationConnector: FileNotificationOrchestratorConnector = mock(classOf[FileNotificationOrchestratorConnector])
-  implicit val config: Configuration = mockAppConfig.config
   val sampleSDESNotifications: Seq[SDESNotification] = Seq(SDESNotification(
     informationType = "S18",
     file = SDESNotificationFile(
@@ -96,6 +96,8 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
 
     val controller = new RegimeAppealsController(if (withRealAppConfig) appConfig
     else mockAppConfig, mockAppealsService, mockGetPenaltyDetailsService, mockFileNotificationConnector, mockAuditService, stubControllerComponents(), mockAuthAction)
+
+    disableFeatureSwitch(CallAPI1812HIP)
 
     implicit val hc: HeaderCarrier = HeaderCarrier()
   }
@@ -266,7 +268,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
         IdType("VRN"),
         Id("123456789")
       )
-      when(mockGetPenaltyDetailsService.getDataFromPenaltyService(ArgumentMatchers.eq(vrn))(ArgumentMatchers.any()))
+      when(mockGetPenaltyDetailsService.getPenaltyDetails(ArgumentMatchers.eq(vrn))(ArgumentMatchers.any()))
         .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(NOT_FOUND))))
 
       val result: Future[Result] = controller.getAppealsDataForLateSubmissionPenalty("1", regime, idType, id)(fakeRequest)
@@ -285,7 +287,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
       val regime = Regime("VATC") 
       val idType = IdType("VRN")
       val id = Id("123456789")
-      when(mockGetPenaltyDetailsService.getDataFromPenaltyService(ArgumentMatchers.eq(vrn))(ArgumentMatchers.any()))
+      when(mockGetPenaltyDetailsService.getPenaltyDetails(ArgumentMatchers.eq(vrn))(ArgumentMatchers.any()))
         .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetails))))
 
       val result: Future[Result] = controller.getAppealsDataForLateSubmissionPenalty(samplePenaltyId, regime, idType, id)(fakeRequest)
@@ -300,7 +302,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
           IdType("VRN"),
           Id("123456789")
         )
-      when(mockGetPenaltyDetailsService.getDataFromPenaltyService(ArgumentMatchers.eq(vrn))(ArgumentMatchers.any()))
+      when(mockGetPenaltyDetailsService.getPenaltyDetails(ArgumentMatchers.eq(vrn))(ArgumentMatchers.any()))
         .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(INTERNAL_SERVER_ERROR))))
 
       val result: Future[Result] = controller.getAppealsDataForLateSubmissionPenalty("1", regime, idType, id)(fakeRequest)
@@ -314,7 +316,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
           IdType("VRN"),
           Id("123456789")
         )
-      when(mockGetPenaltyDetailsService.getDataFromPenaltyService(ArgumentMatchers.eq(vrn))(ArgumentMatchers.any()))
+      when(mockGetPenaltyDetailsService.getPenaltyDetails(ArgumentMatchers.eq(vrn))(ArgumentMatchers.any()))
         .thenReturn(Future.successful(Left(GetPenaltyDetailsMalformed)))
       withCaptureOfLoggingFrom(logger) {
         logs => {
@@ -332,7 +334,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
         IdType("VRN"),
         Id("123456789")
       )
-      when(mockGetPenaltyDetailsService.getDataFromPenaltyService(ArgumentMatchers.eq(sampleEnrolmentKey))(ArgumentMatchers.any()))
+      when(mockGetPenaltyDetailsService.getPenaltyDetails(ArgumentMatchers.eq(sampleEnrolmentKey))(ArgumentMatchers.any()))
         .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetailsNoCommunicationsDate))))
       when(mockAppConfig.getTimeMachineDateTime).thenReturn(LocalDateTime.now)
       val result: Future[Result] = controller.getAppealsDataForLateSubmissionPenalty(samplePenaltyId, regime, idType, id)(fakeRequest)
@@ -355,7 +357,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
           IdType("VRN"),
           Id("123456789")
         )
-      when(mockGetPenaltyDetailsService.getDataFromPenaltyService(ArgumentMatchers.eq(vrn))(ArgumentMatchers.any()))
+      when(mockGetPenaltyDetailsService.getPenaltyDetails(ArgumentMatchers.eq(vrn))(ArgumentMatchers.any()))
         .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetails))))
 
       val result: Future[Result] = controller.getAppealsDataForLateSubmissionPenalty(samplePenaltyId, regime, idType, id)(fakeRequest)
@@ -523,7 +525,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
         IdType("VRN"),
         Id("123456789")
       )
-      when(mockGetPenaltyDetailsService.getDataFromPenaltyService(ArgumentMatchers.eq(vrn))(ArgumentMatchers.any()))
+      when(mockGetPenaltyDetailsService.getPenaltyDetails(ArgumentMatchers.eq(vrn))(ArgumentMatchers.any()))
         .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(NOT_FOUND))))
 
       val result: Future[Result] = controller.getAppealsDataForLatePaymentPenalty("1", regime, idType, id,
@@ -540,7 +542,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
         IdType("VRN"),
         Id("123456789")
       )
-      when(mockGetPenaltyDetailsService.getDataFromPenaltyService(ArgumentMatchers.eq(vrn))(ArgumentMatchers.any()))
+      when(mockGetPenaltyDetailsService.getPenaltyDetails(ArgumentMatchers.eq(vrn))(ArgumentMatchers.any()))
         .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetails))))
 
       val result: Future[Result] = controller.getAppealsDataForLatePaymentPenalty(samplePenaltyId, regime, idType, id,
@@ -556,7 +558,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
           IdType("VRN"),
           Id("123456789")
         )
-      when(mockGetPenaltyDetailsService.getDataFromPenaltyService(ArgumentMatchers.eq(vrn))(ArgumentMatchers.any()))
+      when(mockGetPenaltyDetailsService.getPenaltyDetails(ArgumentMatchers.eq(vrn))(ArgumentMatchers.any()))
         .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(INTERNAL_SERVER_ERROR))))
 
       val result: Future[Result] = controller.getAppealsDataForLatePaymentPenalty("1", regime, idType, id,
@@ -571,7 +573,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
           IdType("VRN"),
           Id("123456789")
         )
-      when(mockGetPenaltyDetailsService.getDataFromPenaltyService(ArgumentMatchers.eq(vrn))(ArgumentMatchers.any()))
+      when(mockGetPenaltyDetailsService.getPenaltyDetails(ArgumentMatchers.eq(vrn))(ArgumentMatchers.any()))
         .thenReturn(Future.successful(Left(GetPenaltyDetailsMalformed)))
       withCaptureOfLoggingFrom(logger) {
         logs => {
@@ -590,7 +592,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
           IdType("VRN"),
           Id("123456789")
         )
-      when(mockGetPenaltyDetailsService.getDataFromPenaltyService(ArgumentMatchers.eq(vrn))(ArgumentMatchers.any()))
+      when(mockGetPenaltyDetailsService.getPenaltyDetails(ArgumentMatchers.eq(vrn))(ArgumentMatchers.any()))
         .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetails))))
 
       val result: Future[Result] = controller.getAppealsDataForLatePaymentPenalty(samplePenaltyId, regime, idType, id,
@@ -614,7 +616,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
           IdType("VRN"),
           Id("123456789")
         )
-      when(mockGetPenaltyDetailsService.getDataFromPenaltyService(ArgumentMatchers.eq(vrn))(ArgumentMatchers.any()))
+      when(mockGetPenaltyDetailsService.getPenaltyDetails(ArgumentMatchers.eq(vrn))(ArgumentMatchers.any()))
         .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetails))))
 
       val result: Future[Result] = controller.getAppealsDataForLatePaymentPenalty(samplePenaltyId, regime, idType, id,
@@ -640,7 +642,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
         )
 
       when(mockAppConfig.getTimeMachineDateTime).thenReturn(LocalDateTime.now)
-      when(mockGetPenaltyDetailsService.getDataFromPenaltyService(ArgumentMatchers.eq(vrn))(ArgumentMatchers.any()))
+      when(mockGetPenaltyDetailsService.getPenaltyDetails(ArgumentMatchers.eq(vrn))(ArgumentMatchers.any()))
         .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetailsNoCommunicationsDate))))
       val result: Future[Result] = controller.getAppealsDataForLatePaymentPenalty(samplePenaltyId, regime, idType, id,
         isAdditional = false)(fakeRequest)
@@ -664,7 +666,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
           Id("123456789")
         )
       when(mockAppConfig.getTimeMachineDateTime).thenReturn(LocalDateTime.now)
-      when(mockGetPenaltyDetailsService.getDataFromPenaltyService(ArgumentMatchers.eq(vrn))(ArgumentMatchers.any()))
+      when(mockGetPenaltyDetailsService.getPenaltyDetails(ArgumentMatchers.eq(vrn))(ArgumentMatchers.any()))
         .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetailsNoCommunicationsDate))))
       val result: Future[Result] = controller.getAppealsDataForLatePaymentPenalty(samplePenaltyId, regime, idType, id,
         isAdditional = true)(fakeRequest)
@@ -1503,7 +1505,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
           IdType("VRN"),
           Id("123456789")
         )
-        when(mockGetPenaltyDetailsService.getDataFromPenaltyService(ArgumentMatchers.eq(vrn))(ArgumentMatchers.any()))
+        when(mockGetPenaltyDetailsService.getPenaltyDetails(ArgumentMatchers.eq(vrn))(ArgumentMatchers.any()))
           .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetailsOnePenalty))))
         when(mockAppealsService.findMultiplePenalties(any(), any())).thenReturn(None)
         val result: Future[Result] = controller.getMultiplePenaltyData("1234567891", regime, idType, id)(fakeRequest)
@@ -1528,7 +1530,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
           secondPenaltyCommunicationDate = LocalDate.of(2022, 9, 8)
         )
         when(mockAppConfig.getTimeMachineDateTime).thenReturn(LocalDateTime.now)
-        when(mockGetPenaltyDetailsService.getDataFromPenaltyService(ArgumentMatchers.eq(vrn))(ArgumentMatchers.any()))
+        when(mockGetPenaltyDetailsService.getPenaltyDetails(ArgumentMatchers.eq(vrn))(ArgumentMatchers.any()))
           .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetailsTwoPenalties))))
         when(mockAppealsService.findMultiplePenalties(any(), any())).thenReturn(Some(expectedReturnModel))
         val result: Future[Result] = controller.getMultiplePenaltyData("1234567892", regime, idType, id)(fakeRequest)
@@ -1545,7 +1547,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
           IdType("VRN"),
           Id("123456789")
         )
-        when(mockGetPenaltyDetailsService.getDataFromPenaltyService(ArgumentMatchers.eq(vrn))(ArgumentMatchers.any()))
+        when(mockGetPenaltyDetailsService.getPenaltyDetails(ArgumentMatchers.eq(vrn))(ArgumentMatchers.any()))
           .thenReturn(Future.successful(Left(GetPenaltyDetailsMalformed)))
         withCaptureOfLoggingFrom(logger) {
           logs => {
@@ -1566,7 +1568,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
           val regime = Regime("VATC") 
   val idType = IdType("VRN")
   val id = Id("123456789")
-        when(mockGetPenaltyDetailsService.getDataFromPenaltyService(ArgumentMatchers.eq(vrn))(ArgumentMatchers.any()))
+        when(mockGetPenaltyDetailsService.getPenaltyDetails(ArgumentMatchers.eq(vrn))(ArgumentMatchers.any()))
           .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(INTERNAL_SERVER_ERROR))))
         val result: Future[Result] = controller.getMultiplePenaltyData("1", regime, idType, id)(fakeRequest)
         status(result) shouldBe Status.INTERNAL_SERVER_ERROR
@@ -1583,7 +1585,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
           val regime = Regime("VATC") 
   val idType = IdType("VRN")
   val id = Id("123456789")
-      when(mockGetPenaltyDetailsService.getDataFromPenaltyService(ArgumentMatchers.eq(vrn))(ArgumentMatchers.any()))
+      when(mockGetPenaltyDetailsService.getPenaltyDetails(ArgumentMatchers.eq(vrn))(ArgumentMatchers.any()))
         .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(NOT_FOUND))))
       val result: Future[Result] = controller.getMultiplePenaltyData("1", regime, idType, id)(fakeRequest)
       status(result) shouldBe Status.NOT_FOUND

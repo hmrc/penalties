@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package models.getPenaltyDetails.appealInfo
+package models.hipPenaltyDetails.appealInfo
 
 import play.api.libs.json._
 
