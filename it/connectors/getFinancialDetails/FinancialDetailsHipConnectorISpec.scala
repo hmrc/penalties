@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,17 +28,22 @@ import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.http.HttpResponse
 import utils.{ETMPWiremock, IntegrationSpecCommonBase}
 
+import java.time.LocalDate
+
 class FinancialDetailsHipConnectorISpec extends IntegrationSpecCommonBase with ETMPWiremock with FeatureSwitching {
+
+  val connector: FinancialDetailsHipConnector = injector.instanceOf[FinancialDetailsHipConnector]
 
   val vatcEnrolmentKey: AgnosticEnrolmentKey = AgnosticEnrolmentKey(Regime("VATC"), IdType("VRN"), Id("123456789"))
   val itsaEnrolmentKey: AgnosticEnrolmentKey = AgnosticEnrolmentKey(Regime("ITSA"), IdType("NINO"), Id("AA000000A"))
 
+  val dateNow: LocalDate = LocalDate.now()
   val financialDetailsRequestWithoutTargetedSearch: FinancialDetailsRequestModel = FinancialDetailsRequestModel(
     searchType = None,
     searchItem = None,
     dateType = Some("POSTING"),
-    dateFrom = Some("2023-07-09"),
-    dateTo = Some("2025-07-09"),
+    dateFrom = Some(dateNow.minusYears(2).toString),
+    dateTo = Some(dateNow.toString),
     includeClearedItems = Some(true),
     includeStatisticalItems = Some(true),
     includePaymentOnAccount = Some(true),
@@ -51,10 +56,6 @@ class FinancialDetailsHipConnectorISpec extends IntegrationSpecCommonBase with E
   val financialDetailsRequestMaxModel: FinancialDetailsRequestModel =
     financialDetailsRequestWithoutTargetedSearch.copy(searchType = Some("CHGREF"), searchItem = Some("XC00178236592"))
 
-  class Setup {
-    val connector: FinancialDetailsHipConnector = injector.instanceOf[FinancialDetailsHipConnector]
-  }
-
   enableFeatureSwitch(CallAPI1811HIP)
 
   "getFinancialDetails" when {
@@ -62,7 +63,7 @@ class FinancialDetailsHipConnectorISpec extends IntegrationSpecCommonBase with E
       s"calling HIP for ${enrolmentKey.regime.value} regime" should {
         "return a successful response" when {
           val successResponseBody: String = getFinancialDetailsHipResponseWithoutTotalisations.toString()
-          "'includeClearedItems' query parameter is 'true'" in new Setup {
+          "'includeClearedItems' query parameter is 'true'" in {
             val requestBody: String =
               financialDetailsRequestWithoutTargetedSearch.copy(includeClearedItems = Some(true)).toJsonRequest(enrolmentKey).toString()
             mockGetFinancialDetailsHIP(OK, requestBody, successResponseBody)
@@ -70,9 +71,9 @@ class FinancialDetailsHipConnectorISpec extends IntegrationSpecCommonBase with E
             val result: FinancialDetailsResponse = await(connector.getFinancialDetails(enrolmentKey, includeClearedItems = true)(hc))
 
             result.isRight shouldBe true
-            result.getOrElse("wrong") shouldBe a[FinancialDetailsHipSuccessResponse]
+            result.getOrElse(FinancialDetailsNoContent) shouldBe a[FinancialDetailsHipSuccessResponse]
           }
-          "'includeClearedItems' query parameter is 'false'" in new Setup {
+          "'includeClearedItems' query parameter is 'false'" in {
             val requestBody: String =
               financialDetailsRequestWithoutTargetedSearch.copy(includeClearedItems = Some(false)).toJsonRequest(enrolmentKey).toString()
             mockGetFinancialDetailsHIP(OK, requestBody, successResponseBody)
@@ -80,13 +81,13 @@ class FinancialDetailsHipConnectorISpec extends IntegrationSpecCommonBase with E
             val result: FinancialDetailsResponse = await(connector.getFinancialDetails(enrolmentKey, includeClearedItems = false)(hc))
 
             result.isRight shouldBe true
-            result.getOrElse("wrong") shouldBe a[FinancialDetailsHipSuccessResponse]
+            result.getOrElse(FinancialDetailsNoContent) shouldBe a[FinancialDetailsHipSuccessResponse]
           }
         }
 
         "return a failure response" which {
           val requestBody: String = financialDetailsRequestWithoutTargetedSearch.toJsonRequest(enrolmentKey).toString()
-          s"is a $FinancialDetailsMalformed when a malformed response body is returned" in new Setup {
+          s"is a $FinancialDetailsMalformed when a malformed response body is returned" in {
             val malformedResponseBody: String = """{"documentDetails": [{ "documentOutstandingAmount": "xyz"}]}"""
             mockGetFinancialDetailsHIP(OK, requestBody, malformedResponseBody)
 
@@ -95,7 +96,7 @@ class FinancialDetailsHipConnectorISpec extends IntegrationSpecCommonBase with E
             result shouldBe Left(FinancialDetailsMalformed)
           }
           Seq(BAD_REQUEST, NOT_FOUND, UNPROCESSABLE_ENTITY, INTERNAL_SERVER_ERROR, SERVICE_UNAVAILABLE).foreach { errorStatus =>
-            s"is a $FinancialDetailsFailureResponse when a $errorStatus response body is returned" in new Setup {
+            s"is a $FinancialDetailsFailureResponse when a $errorStatus response body is returned" in {
               mockGetFinancialDetailsHIP(errorStatus, requestBody, "{}")
               val result: FinancialDetailsResponse = await(connector.getFinancialDetails(enrolmentKey, includeClearedItems = true)(hc))
 
@@ -112,7 +113,7 @@ class FinancialDetailsHipConnectorISpec extends IntegrationSpecCommonBase with E
       s"calling HIP for ${enrolmentKey.regime.value} regime" should {
         "return a success response" when {
           val successResponseBody: String = getFinancialDetailsHipResponseWithoutTotalisations.toString()
-          "no extra query parameters are given" in new Setup {
+          "no extra query parameters are given" in {
             val requestBody: String = FinancialDetailsRequestModel.emptyModel.toJsonRequest(enrolmentKey).toString()
             mockGetFinancialDetailsHIP(OK, requestBody, successResponseBody)
 
@@ -121,7 +122,7 @@ class FinancialDetailsHipConnectorISpec extends IntegrationSpecCommonBase with E
 
             result.status shouldBe 200
           }
-          "extra query parameters are given" in new Setup {
+          "extra query parameters are given" in {
             val requestBody: String = financialDetailsRequestMaxModel.toJsonRequest(enrolmentKey).toString()
             mockGetFinancialDetailsHIP(OK, requestBody, successResponseBody)
 
@@ -131,8 +132,8 @@ class FinancialDetailsHipConnectorISpec extends IntegrationSpecCommonBase with E
                 searchType = Some("CHGREF"),
                 searchItem = Some("XC00178236592"),
                 dateType = Some("POSTING"),
-                dateFrom = Some("2023-07-09"),
-                dateTo = Some("2025-07-09"),
+                dateFrom = Some(dateNow.minusYears(2).toString),
+                dateTo = Some(dateNow.toString),
                 includeClearedItems = Some(true),
                 includeStatisticalItems = Some(true),
                 includePaymentOnAccount = Some(true),
@@ -148,8 +149,7 @@ class FinancialDetailsHipConnectorISpec extends IntegrationSpecCommonBase with E
         }
 
         "return a failure response" which {
-          val requestBody: String = financialDetailsRequestWithoutTargetedSearch.toJsonRequest(enrolmentKey).toString()
-          "has a 500 status when an unknown exception is returned" in new Setup {
+          "has a 500 status when an unknown exception is returned" in {
             val stubCall: MappingBuilder = post(urlEqualTo("/RESTAdapter/cross-regime/taxpayer/financial-data/query"))
             stubFor(stubCall.willReturn(aResponse().withFault(Fault.CONNECTION_RESET_BY_PEER)))
 
@@ -159,7 +159,7 @@ class FinancialDetailsHipConnectorISpec extends IntegrationSpecCommonBase with E
             result.status shouldBe INTERNAL_SERVER_ERROR
           }
           Seq(BAD_REQUEST, NOT_FOUND, UNPROCESSABLE_ENTITY, INTERNAL_SERVER_ERROR, SERVICE_UNAVAILABLE).foreach { errorStatus =>
-            s"returns the $errorStatus error status response that is returned" in new Setup {
+            s"returns the $errorStatus error status response that is returned" in {
               val requestBody: String = FinancialDetailsRequestModel.emptyModel.toJsonRequest(enrolmentKey).toString()
               mockGetFinancialDetailsHIP(errorStatus, requestBody, "{}")
 

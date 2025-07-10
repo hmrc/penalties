@@ -130,8 +130,8 @@ class FinancialDetailsParserSpec extends AnyWordSpec with Matchers with LogCaptu
   def financialDetailsParserReads(httpResponse: HttpResponse): FinancialDetailsResponse =
     FinancialDetailsParser.FinancialDetailsReads.read("GET", "/", httpResponse)
 
-  "FinancialDetailsReads" should {
-    "when parsing an OK response" should {
+  "FinancialDetailsReads" when {
+    "parsing an OK response" should {
       "return the body in a FinancialDetailsHipSuccessResponse when HIP body is valid" in {
         val validHipResponse = HttpResponse(status = OK, json = getHipFinancialDetailsAsJson, headers = Map.empty)
         val result           = financialDetailsParserReads(validHipResponse)
@@ -162,25 +162,85 @@ class FinancialDetailsParserSpec extends AnyWordSpec with Matchers with LogCaptu
       }
     }
 
-    "return a 404 FinancialDetailsFailureResponse when parsing a NOT_FOUND response with an empty body" in {
-      withCaptureOfLoggingFrom(logger) { logs =>
-        val notFoundNoBodyHttpResponse: HttpResponse = HttpResponse.apply(status = NOT_FOUND, body = "")
-        val result                                   = financialDetailsParserReads(notFoundNoBodyHttpResponse)
-        logs.exists(_.getMessage.contains(PagerDutyKeys.RECEIVED_4XX_FROM_1811_API.toString)) shouldBe true
-        result shouldBe Left(FinancialDetailsFailureResponse(NOT_FOUND))
+    "parsing a NOT_FOUND response with body" should {
+      def notFoundHttpResponseWithBody(responseBody: String): HttpResponse = HttpResponse.apply(status = NOT_FOUND, responseBody)
+      "return a FinancialDetailsNoContent response" when {
+        "able to validate a HIP BusinessError body with a '016' failure code and text" in {
+          val noDataFailureResponseBody = """{"errors":{"processingDate":"2025-03-03", "code":"016", "text":"Invalid ID Number"}}"""
+          val notFoundHttpResponse      = notFoundHttpResponseWithBody(noDataFailureResponseBody)
+
+          val result = financialDetailsParserReads(notFoundHttpResponse)
+          result shouldBe Left(FinancialDetailsNoContent)
+        }
+        "able to validate an IF FailureResponse body with a 'NO_DATA_FOUND' failure code" in {
+          val noDataFailureResponseBody = """{"failures":[{"code": "NO_DATA_FOUND", "reason": "No data returned found for ID"}]}"""
+          val notFoundHttpResponse      = notFoundHttpResponseWithBody(noDataFailureResponseBody)
+
+          val result = financialDetailsParserReads(notFoundHttpResponse)
+          result shouldBe Left(FinancialDetailsNoContent)
+        }
+      }
+      "return a 404 FinancialDetailsFailureResponse" when {
+        "HIP BusinessError body does not have correct '016' failure code" in {
+          val bodyWithInvalidCode        = """{"errors":{"processingDate":"2025-03-03", "code":"16", "text":"Invalid ID Number"}}"""
+          val notFoundNoBodyHttpResponse = notFoundHttpResponseWithBody(bodyWithInvalidCode)
+
+          withCaptureOfLoggingFrom(logger) { logs =>
+            val result = financialDetailsParserReads(notFoundNoBodyHttpResponse)
+            val expectedLog =
+              """Error response body: {"errors":{"processingDate":"2025-03-03","code":"16","text":"Invalid ID Number"}}"""
+            logs.exists(_.getMessage.contains(expectedLog)) shouldBe true
+            result shouldBe Left(FinancialDetailsFailureResponse(NOT_FOUND))
+          }
+        }
+        "HIP BusinessError body does not have correct '016' failure text" in {
+          val bodyWithInvalidText        = """{"errors":{"processingDate":"2025-03-03", "code":"016", "text":"Invalid id num."}}"""
+          val notFoundNoBodyHttpResponse = notFoundHttpResponseWithBody(bodyWithInvalidText)
+
+          withCaptureOfLoggingFrom(logger) { logs =>
+            val result = financialDetailsParserReads(notFoundNoBodyHttpResponse)
+            val expectedLog =
+              """Error response body: {"errors":{"processingDate":"2025-03-03","code":"016","text":"Invalid id num."}}"""
+            logs.exists(_.getMessage.contains(expectedLog)) shouldBe true
+            result shouldBe Left(FinancialDetailsFailureResponse(NOT_FOUND))
+          }
+        }
+        "IF FailureResponse body does not have correct 'NO_DATA_FOUND' failure code" in {
+          val bodyWithInvalidCode        = """{"failures":[{"code": "NOT_FOUND", "reason": "No data returned found for ID"}]}"""
+          val notFoundNoBodyHttpResponse = notFoundHttpResponseWithBody(bodyWithInvalidCode)
+
+          withCaptureOfLoggingFrom(logger) { logs =>
+            val result = financialDetailsParserReads(notFoundNoBodyHttpResponse)
+            val expectedLog =
+              """Error response body: {"failures":[{"code":"NOT_FOUND","reason":"No data returned found for ID"}]}"""
+            logs.exists(_.getMessage.contains(expectedLog)) shouldBe true
+            result shouldBe Left(FinancialDetailsFailureResponse(NOT_FOUND))
+          }
+        }
+        "response body cannot be validated as BusinessError nor FailureResponse" in {
+          val invalidBody          = "{Not good}"
+          val notFoundHttpResponse = HttpResponse.apply(status = NOT_FOUND, body = invalidBody)
+
+          withCaptureOfLoggingFrom(logger) { logs =>
+            val result = financialDetailsParserReads(notFoundHttpResponse)
+            logs.exists(_.getMessage.contains(invalidBody)) shouldBe true
+            result shouldBe Left(FinancialDetailsFailureResponse(NOT_FOUND))
+          }
+        }
       }
     }
 
-    "return a FinancialDetailsNoContent when parsing a NO_CONTENT response" in {
+    "parsing a NO_CONTENT response should return a FinancialDetailsNoContent" in {
+      val mockNoContentHttpResponse = HttpResponse.apply(status = NO_CONTENT, body = "")
+
       withCaptureOfLoggingFrom(logger) { logs =>
-        val mockNoContentHttpResponse: HttpResponse = HttpResponse.apply(status = NO_CONTENT, body = "")
-        val result                                  = financialDetailsParserReads(mockNoContentHttpResponse)
+        val result = financialDetailsParserReads(mockNoContentHttpResponse)
         logs.exists(_.getMessage.contains("Received no content from 1811 call")) shouldBe true
         result shouldBe Left(FinancialDetailsNoContent)
       }
     }
 
-    "return a FinancialDetailsFailureResponse" when {
+    "will return a FinancialDetailsFailureResponse" when {
       "parsing an error with a TechnicalError response body" in {
         val error                  = """{"error":{"code": "errorCode", "message": "errorMessage", "logId": "errorLogId"}}"""
         val technicalErrorResponse = HttpResponse(status = SERVICE_UNAVAILABLE, body = error)
@@ -218,9 +278,10 @@ class FinancialDetailsParserSpec extends AnyWordSpec with Matchers with LogCaptu
     }
 
     "parsing an unknown error (e.g. IM A TEAPOT - 418) - and log a PagerDuty" in {
+      val imATeapotHttpResponse = HttpResponse.apply(status = IM_A_TEAPOT, body = "I'm a teapot.")
+
       withCaptureOfLoggingFrom(logger) { logs =>
-        val imATeapotHttpResponse: HttpResponse = HttpResponse.apply(status = IM_A_TEAPOT, body = "I'm a teapot.")
-        val result                              = financialDetailsParserReads(imATeapotHttpResponse)
+        val result = financialDetailsParserReads(imATeapotHttpResponse)
         logs.exists(_.getMessage.contains(PagerDutyKeys.RECEIVED_4XX_FROM_1811_API.toString)) shouldBe true
         result shouldBe Left(FinancialDetailsFailureResponse(IM_A_TEAPOT))
       }

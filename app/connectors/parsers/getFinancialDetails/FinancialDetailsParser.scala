@@ -91,24 +91,20 @@ object FinancialDetailsParser {
       }
   }
 
-  private def handleNotFoundStatusBody(responseBody: JsValue): Left[FinancialDetailsFailure, Nothing] =
-    (responseBody \ "failures")
-      .validate[Seq[FailureResponse]]
-      .fold(
-        errors => {
-          logger.debug(s"[FinancialDetailsParser][FinancialDetailsReads][read] - Parsing errors: $errors")
-          logger.error(s"[FinancialDetailsParser][FinancialDetailsReads][read] - Could not parse 404 body returned from FinancialDetails call")
-          Left(FinancialDetailsFailureResponse(NOT_FOUND))
-        },
-        failures =>
-          if (failures.exists(_.code.equals(FailureCodeEnum.NoDataFound))) {
-            Left(FinancialDetailsNoContent)
-          } else {
-            logger.error(
-              s"[FinancialDetailsParser][FinancialDetailsReads][read] - Received following errors from FinancialDetails 404 call: $failures")
-            Left(FinancialDetailsFailureResponse(NOT_FOUND))
-          }
-      )
+  private def handleNotFoundStatusBody(responseBody: JsValue): Left[FinancialDetailsFailure, Nothing] = {
+    val validateFailuresIF = (responseBody \ "failures").validate[Seq[FailureResponse]].asOpt
+    val validateErrorsHIP  = (responseBody \ "errors").validate[BusinessError].asOpt
+    (validateFailuresIF, validateErrorsHIP) match {
+      case (Some(failures), _) if failures.exists(_.code.equals(FailureCodeEnum.NoDataFound)) =>
+        Left(FinancialDetailsNoContent)
+      case (_, Some(errors)) if errors.code == "016" && errors.text == "Invalid ID Number" =>
+        Left(FinancialDetailsNoContent)
+      case _ =>
+        logger.error(s"[FinancialDetailsParser][FinancialDetailsReads][read] - Unable to parse 404 body returned from FinancialDetails call")
+        logger.debug(s"[FinancialDetailsParser][FinancialDetailsReads][read] - Error response body: $responseBody")
+        Left(FinancialDetailsFailureResponse(NOT_FOUND))
+    }
+  }
 
   private def handleErrorResponse(response: HttpResponse): Left[FinancialDetailsFailure, Nothing] = {
     val json               = Try(response.json).getOrElse(Json.obj())
