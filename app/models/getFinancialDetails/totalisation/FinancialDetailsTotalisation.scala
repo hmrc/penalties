@@ -19,7 +19,7 @@ package models.getFinancialDetails.totalisation
 import play.api.libs.json.{JsValue, Json, Reads, Writes}
 
 case class FinancialDetailsTotalisation(
-                                         regimeTotalisations: Option[RegimeTotalisation],
+                                         regimeTotalisation: Option[RegimeTotalisation],
                                          interestTotalisations: Option[InterestTotalisation]
                                        )
 

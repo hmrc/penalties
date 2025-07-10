@@ -59,7 +59,7 @@ class GetFinancialDetailsServiceSpec extends SpecBase with FeatureSwitching with
         issueDate = Some(LocalDate.of(2023, 1, 1)))
       )),
       totalisation = Some(FinancialDetailsTotalisation(
-        regimeTotalisations = Some(RegimeTotalisation(totalAccountOverdue = Some(1000))),
+        regimeTotalisation = Some(RegimeTotalisation(totalAccountOverdue = Some(1000))),
         interestTotalisations = Some(InterestTotalisation(totalAccountPostedInterest = Some(123.45), totalAccountAccruingInterest = Some(23.45)))
       ))
     )

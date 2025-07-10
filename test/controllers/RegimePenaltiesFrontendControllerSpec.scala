@@ -17,6 +17,7 @@
 package controllers
 
 import base.{LPPDetailsBase, LSPDetailsBase, LogCapturing, SpecBase}
+import config.featureSwitches.{FeatureSwitching, CallAPI1812HIP}
 import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser.{GetPenaltyDetailsFailureResponse, GetPenaltyDetailsMalformed, GetPenaltyDetailsSuccessResponse}
 import controllers.auth.AuthAction
 import models.getFinancialDetails.MainTransactionEnum.{VATReturnFirstLPP, VATReturnSecondLPP}
@@ -38,10 +39,12 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import models.{AgnosticEnrolmentKey, Id, IdType, Regime}
 
-class RegimePenaltiesFrontendControllerSpec extends SpecBase with LogCapturing with LPPDetailsBase with LSPDetailsBase {
+class RegimePenaltiesFrontendControllerSpec extends SpecBase with LogCapturing with LPPDetailsBase with LSPDetailsBase with FeatureSwitching {
   val mockGetPenaltyDetailsService: PenaltyDetailsService = mock(classOf[PenaltyDetailsService])
   val mockPenaltiesFrontendService: RegimePenaltiesFrontendService = mock(classOf[RegimePenaltiesFrontendService])
   val mockAuthAction: AuthAction = injector.instanceOf(classOf[AuthActionMock])
+  
+  implicit val config: play.api.Configuration = appConfig.config
 
   val regime = Regime("VATC") 
   val idType = IdType("VRN")
@@ -56,24 +59,28 @@ class RegimePenaltiesFrontendControllerSpec extends SpecBase with LogCapturing w
   class Setup(isFSEnabled: Boolean = true) {
     reset(mockGetPenaltyDetailsService)
     reset(mockPenaltiesFrontendService)
+    
+    disableFeatureSwitch(CallAPI1812HIP)
+    
+    implicit val config: play.api.Configuration = appConfig.config
     val controller: RegimePenaltiesFrontendController = new RegimePenaltiesFrontendController(
       mockGetPenaltyDetailsService,
       mockPenaltiesFrontendService,
       stubControllerComponents(),
       mockAuthAction
-    )
+    )(global, config)
   }
 
-  "use API 1812 data and combine with API 1811 data" must {
-    s"return ISE (${Status.INTERNAL_SERVER_ERROR}) when the 1812 call fails" in new Setup(isFSEnabled = true) {
-      when(mockGetPenaltyDetailsService.getDataFromPenaltyService(ArgumentMatchers.any())(ArgumentMatchers.any()))
+  "use unified API data and combine with API 1811 data" must {
+    s"return ISE (${Status.INTERNAL_SERVER_ERROR}) when the penalty details call fails" in new Setup(isFSEnabled = true) {
+      when(mockGetPenaltyDetailsService.getPenaltyDetails(ArgumentMatchers.any())(ArgumentMatchers.any()))
         .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(Status.INTERNAL_SERVER_ERROR))))
       val result = controller.getPenaltiesData(regime, idType, id, Some(""))(fakeRequest)
       status(result) shouldBe Status.INTERNAL_SERVER_ERROR
     }
 
-    s"return ISE (${Status.INTERNAL_SERVER_ERROR}) when the 1812 call response body is malformed" in new Setup(isFSEnabled = true) {
-      when(mockGetPenaltyDetailsService.getDataFromPenaltyService(ArgumentMatchers.any())(ArgumentMatchers.any()))
+    s"return ISE (${Status.INTERNAL_SERVER_ERROR}) when the penalty details call response body is malformed" in new Setup(isFSEnabled = true) {
+      when(mockGetPenaltyDetailsService.getPenaltyDetails(ArgumentMatchers.any())(ArgumentMatchers.any()))
         .thenReturn(Future.successful(Left(GetPenaltyDetailsMalformed)))
       withCaptureOfLoggingFrom(logger) {
         logs => {
@@ -84,7 +91,7 @@ class RegimePenaltiesFrontendControllerSpec extends SpecBase with LogCapturing w
       }
     }
 
-    s"return the service result for the API 1811 call" in new Setup(isFSEnabled = true) {
+    s"return the service result for the financial details combination" in new Setup(isFSEnabled = true) {
       val getPenaltyDetails: GetPenaltyDetails = GetPenaltyDetails(
         totalisations = None,
         lateSubmissionPenalty = None,
@@ -97,12 +104,13 @@ class RegimePenaltiesFrontendControllerSpec extends SpecBase with LogCapturing w
                 lpp2.copy(principalChargeReference = "123456790"),
                 lpp1PrincipalChargeDueToday.copy(penaltyStatus = LPPPenaltyStatusEnum.Posted)
               )
-            )
+            ),
+            ManualLPPIndicator = None
           )
         ),
         breathingSpace = None
       )
-      when(mockGetPenaltyDetailsService.getDataFromPenaltyService(ArgumentMatchers.any())(ArgumentMatchers.any()))
+      when(mockGetPenaltyDetailsService.getPenaltyDetails(ArgumentMatchers.any())(ArgumentMatchers.any()))
         .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetails))))
       when(mockPenaltiesFrontendService.handleAndCombineGetFinancialDetailsData(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
         .thenReturn(Future.successful(InternalServerError("")))
@@ -124,7 +132,8 @@ class RegimePenaltiesFrontendControllerSpec extends SpecBase with LogCapturing w
                 lpp2.copy(principalChargeReference = "123456790"),
                 lpp1PrincipalChargeDueToday.copy(penaltyStatus = LPPPenaltyStatusEnum.Posted)
               )
-            )
+            ),
+            ManualLPPIndicator = None
           )
         ),
         breathingSpace = None
@@ -167,17 +176,158 @@ class RegimePenaltiesFrontendControllerSpec extends SpecBase with LogCapturing w
                     )))
                   ))
               )
-            )
+            ),
+            ManualLPPIndicator = None
           )
         )
       )
-      when(mockGetPenaltyDetailsService.getDataFromPenaltyService(ArgumentMatchers.any())(ArgumentMatchers.any()))
+      when(mockGetPenaltyDetailsService.getPenaltyDetails(ArgumentMatchers.any())(ArgumentMatchers.any()))
         .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetails))))
       when(mockPenaltiesFrontendService.handleAndCombineGetFinancialDetailsData(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
         .thenReturn(Future.successful(Ok(Json.toJson(penaltyDetailsAfterCombining))))
       val result = controller.getPenaltiesData(regime, idType, id, Some("123456789"))(fakeRequest)
       status(result) shouldBe Status.OK
       contentAsJson(result) shouldBe Json.toJson(penaltyDetailsAfterCombining)
+    }
+  }
+
+  "unified API with feature switching" must {
+    val mockConvertedPenaltyDetails: GetPenaltyDetails = GetPenaltyDetails(
+      totalisations = Some(
+        Totalisations(
+          LSPTotalValue = Some(200),
+          penalisedPrincipalTotal = Some(2000),
+          LPPPostedTotal = Some(165.25),
+          LPPEstimatedTotal = Some(15.26),
+          totalAccountOverdue = None,
+          totalAccountPostedInterest = None,
+          totalAccountAccruingInterest = None
+        )
+      ),
+      lateSubmissionPenalty = Some(models.getPenaltyDetails.lateSubmission.LateSubmissionPenalty(
+        summary = models.getPenaltyDetails.lateSubmission.LSPSummary(
+          activePenaltyPoints = 2,
+          inactivePenaltyPoints = 0,
+          regimeThreshold = 4,
+          penaltyChargeAmount = 200,
+          PoCAchievementDate = Some(LocalDate.of(2022, 1, 1))
+        ),
+        details = Seq()
+      )),
+      latePaymentPenalty = Some(LatePaymentPenalty(
+        details = Some(
+          Seq(
+            LPPDetails(
+              principalChargeReference = "12345675",
+              penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
+              penaltyStatus = LPPPenaltyStatusEnum.Posted,
+              penaltyAmountAccruing = BigDecimal(0),
+              penaltyAmountPosted = 144.21,
+              penaltyAmountPaid = Some(0.21),
+              penaltyAmountOutstanding = Some(144),
+              LPP1LRCalculationAmount = None,
+              LPP1LRDays = None,
+              LPP1LRPercentage = None,
+              LPP1HRCalculationAmount = None,
+              LPP1HRDays = None,
+              LPP1HRPercentage = None,
+              LPP2Days = None,
+              LPP2Percentage = None,
+              penaltyChargeCreationDate = Some(LocalDate.of(2022, 1, 1)),
+              communicationsDate = Some(LocalDate.of(2022, 1, 1)),
+              penaltyChargeReference = Some("1234567890"),
+              penaltyChargeDueDate = Some(LocalDate.of(2022, 1, 1)),
+              appealInformation = None,
+              principalChargeMainTransaction = models.getFinancialDetails.MainTransactionEnum.VATReturnCharge,
+              principalChargeBillingFrom = LocalDate.of(2022, 1, 1),
+              principalChargeBillingTo = LocalDate.of(2022, 1, 1),
+              principalChargeDueDate = LocalDate.of(2022, 1, 1),
+              principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
+              vatOutstandingAmount = None,
+              metadata = LPPDetailsMetadata(
+                principalChargeDocNumber = Some("DOC1"),
+                principalChargeSubTransaction = Some("SUB1")
+              )
+            )
+          )
+        ),
+        ManualLPPIndicator = Some(true)
+      )),
+      breathingSpace = None
+    )
+
+    s"use unified service and handle HIP backend when CallAPI1812HIP feature switch is enabled" in new Setup {
+      enableFeatureSwitch(CallAPI1812HIP)
+      
+      when(mockGetPenaltyDetailsService.getPenaltyDetails(ArgumentMatchers.any())(ArgumentMatchers.any()))
+        .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(mockConvertedPenaltyDetails))))
+      when(mockPenaltiesFrontendService.handleAndCombineGetFinancialDetailsData(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
+        .thenReturn(Future.successful(Ok(Json.toJson(mockConvertedPenaltyDetails))))
+
+      val result = controller.getPenaltiesData(regime, idType, id, Some("123456789"))(fakeRequest)
+      status(result) shouldBe Status.OK
+      
+      verify(mockGetPenaltyDetailsService, times(1)).getPenaltyDetails(ArgumentMatchers.any())(ArgumentMatchers.any())
+      verify(mockPenaltiesFrontendService, times(1)).handleAndCombineGetFinancialDetailsData(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
+      
+      disableFeatureSwitch(CallAPI1812HIP)
+    }
+
+    s"use unified service with regular backend when CallAPI1812HIP feature switch is disabled" in new Setup {
+      disableFeatureSwitch(CallAPI1812HIP)
+      
+      when(mockGetPenaltyDetailsService.getPenaltyDetails(ArgumentMatchers.any())(ArgumentMatchers.any()))
+        .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(mockConvertedPenaltyDetails))))
+      when(mockPenaltiesFrontendService.handleAndCombineGetFinancialDetailsData(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
+        .thenReturn(Future.successful(Ok(Json.toJson(mockConvertedPenaltyDetails))))
+
+      val result = controller.getPenaltiesData(regime, idType, id, Some("123456789"))(fakeRequest)
+      status(result) shouldBe Status.OK
+      
+      verify(mockGetPenaltyDetailsService, times(1)).getPenaltyDetails(ArgumentMatchers.any())(ArgumentMatchers.any())
+      verify(mockPenaltiesFrontendService, times(1)).handleAndCombineGetFinancialDetailsData(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
+    }
+
+    s"return ISE (${Status.INTERNAL_SERVER_ERROR}) when unified service call fails" in new Setup {
+      enableFeatureSwitch(CallAPI1812HIP)
+      
+      when(mockGetPenaltyDetailsService.getPenaltyDetails(ArgumentMatchers.any())(ArgumentMatchers.any()))
+        .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(Status.INTERNAL_SERVER_ERROR))))
+
+      val result = controller.getPenaltiesData(regime, idType, id, Some("123456789"))(fakeRequest)
+      status(result) shouldBe Status.INTERNAL_SERVER_ERROR
+      
+      disableFeatureSwitch(CallAPI1812HIP)
+    }
+
+    s"return NOT_FOUND (${Status.NOT_FOUND}) when unified service returns 404" in new Setup {
+      enableFeatureSwitch(CallAPI1812HIP)
+      
+      when(mockGetPenaltyDetailsService.getPenaltyDetails(ArgumentMatchers.any())(ArgumentMatchers.any()))
+        .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(Status.NOT_FOUND))))
+
+      val result = controller.getPenaltiesData(regime, idType, id, Some("123456789"))(fakeRequest)
+      status(result) shouldBe Status.NOT_FOUND
+      contentAsString(result) shouldBe s"A downstream call returned 404 for $vrn123456789"
+      
+      disableFeatureSwitch(CallAPI1812HIP)
+    }
+
+    s"return ISE (${Status.INTERNAL_SERVER_ERROR}) when unified service returns malformed data" in new Setup {
+      enableFeatureSwitch(CallAPI1812HIP)
+      
+      when(mockGetPenaltyDetailsService.getPenaltyDetails(ArgumentMatchers.any())(ArgumentMatchers.any()))
+        .thenReturn(Future.successful(Left(GetPenaltyDetailsMalformed)))
+
+      withCaptureOfLoggingFrom(logger) {
+        logs => {
+          val result = await(controller.getPenaltiesData(regime, idType, id, Some("123456789"))(fakeRequest))
+          result.header.status shouldBe Status.INTERNAL_SERVER_ERROR
+          logs.exists(_.getMessage.contains(PagerDutyKeys.MALFORMED_RESPONSE_FROM_1812_API.toString)) shouldBe true
+        }
+      }
+      
+      disableFeatureSwitch(CallAPI1812HIP)
     }
   }
 }

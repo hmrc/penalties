@@ -205,11 +205,11 @@ class APIController @Inject()(auditService: AuditService,
               Ok(res.json)
             case NOT_FOUND =>
               logger.error("[APIController][getFinancialDetails] - 1811 call (3rd party API) returned 404 - error received: " + res)
-              Status(res.status)(Json.toJson(res.body))
+              Status(res.status)(filterService.tryJsonParseOrJsString(res.body))
             case status =>
               PagerDutyHelper.logStatusCode("getFinancialDetails", status)(RECEIVED_4XX_FROM_1811_API, RECEIVED_5XX_FROM_1811_API)
               logger.error(s"[APIController][getFinancialDetails] - 1811 call (3rd party API) returned an unknown error - status ${res.status} returned from EIS")
-              Status(res.status)(Json.toJson(res.body))
+              Status(res.status)(filterService.tryJsonParseOrJsString(res.body))
           }
         })
     }
@@ -236,11 +236,11 @@ class APIController @Inject()(auditService: AuditService,
               Ok(filteredResBody)
             case NOT_FOUND =>
               logger.error("[APIController][getPenaltyDetails] - 1812 call (3rd party API) returned 404 - error received: " + res)
-              Status(res.status)(Json.toJson(res.body))
+              Status(res.status)(filterService.tryJsonParseOrJsString(res.body))
             case status =>
               PagerDutyHelper.logStatusCode("getPenaltyDetails", status)(RECEIVED_4XX_FROM_1812_API, RECEIVED_5XX_FROM_1812_API)
               logger.error(s"[APIController][getPenaltyDetails] - 1812 call (3rd party API) returned an unknown error - status ${res.status} returned from EIS")
-              Status(res.status)(Json.toJson(res.body))
+              Status(res.status)(filterService.tryJsonParseOrJsString(res.body))
           }
         }
       )

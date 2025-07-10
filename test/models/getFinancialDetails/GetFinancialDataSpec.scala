@@ -83,7 +83,7 @@ class GetFinancialDataSpec extends SpecBase {
       |      }
       |   ],
       |   "totalisation": {
-      |    "regimeTotalisations": {
+      |    "regimeTotalisation": {
       |      "totalAccountOverdue": 1000.0
       |    },
       |    "interestTotalisations": {
@@ -113,7 +113,7 @@ class GetFinancialDataSpec extends SpecBase {
         )
       ),
       totalisation = Some(FinancialDetailsTotalisation(
-        regimeTotalisations = Some(RegimeTotalisation(totalAccountOverdue = Some(1000))),
+        regimeTotalisation = Some(RegimeTotalisation(totalAccountOverdue = Some(1000))),
         interestTotalisations = Some(InterestTotalisation(totalAccountPostedInterest = Some(123.45), totalAccountAccruingInterest = Some(23.45)))
       ))
     )

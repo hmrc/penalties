@@ -16,42 +16,109 @@
 
 package services
 
-import connectors.getFinancialDetails.FinancialDetailsConnector
+import config.featureSwitches.{CallAPI1811HIP, FeatureSwitching}
+import connectors.getFinancialDetails.{FinancialDetailsConnector, FinancialDetailsHipConnector}
 import connectors.parsers.getFinancialDetails.FinancialDetailsParser._
-
+import models.AgnosticEnrolmentKey
 import play.api.Configuration
-import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import utils.Logger.logger
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
-import models.AgnosticEnrolmentKey
 
-class FinancialDetailsService @Inject()(getFinancialDetailsConnector: FinancialDetailsConnector)
-                                          (implicit ec: ExecutionContext, val config: Configuration) {
+class FinancialDetailsService @Inject() (
+    getFinancialDetailsConnector: FinancialDetailsConnector,
+    financialDetailsHipConnector: FinancialDetailsHipConnector)(implicit ec: ExecutionContext, val config: Configuration)
+    extends FeatureSwitching {
 
-  def getFinancialDetails(enrolmentKey: AgnosticEnrolmentKey, optionalParameters: Option[String])(implicit hc: HeaderCarrier): Future[GetFinancialDetailsResponse] = {
-    val startOfLogMsg: String = s"[FinancialDetailsService][getDataFromFinancialService][${enrolmentKey.regime.value}]"
-    getFinancialDetailsConnector.getFinancialDetails(enrolmentKey, optionalParameters).map {
-      handleConnectorResponse(_)(startOfLogMsg, enrolmentKey)
+  def getFinancialDetails(enrolmentKey: AgnosticEnrolmentKey, optionalParameters: Option[String])(implicit
+      hc: HeaderCarrier): Future[FinancialDetailsResponse] = {
+
+    def callHipConnector: Future[FinancialDetailsResponse] = {
+      val includeClearedItems: Boolean = optionalParameters.isEmpty
+      financialDetailsHipConnector.getFinancialDetails(enrolmentKey, includeClearedItems).map(handleConnectorResponse(_, enrolmentKey))
     }
+
+    def callIfConnector: Future[FinancialDetailsResponse] =
+      getFinancialDetailsConnector.getFinancialDetails(enrolmentKey, optionalParameters).map(handleConnectorResponse(_, enrolmentKey))
+
+    if (isEnabled(CallAPI1811HIP)) callHipConnector else callIfConnector
   }
 
-  private def handleConnectorResponse(connectorResponse: GetFinancialDetailsResponse)
-                                     (implicit startOfLogMsg: String, enrolmentKey: AgnosticEnrolmentKey): GetFinancialDetailsResponse = {
+  private def handleConnectorResponse(connectorResponse: FinancialDetailsResponse,
+                                      enrolmentKey: AgnosticEnrolmentKey): FinancialDetailsResponse = {
+    val startOfLogMsg: String = s"[FinancialDetailsService][getFinancialDetails][$enrolmentKey]"
     connectorResponse match {
-      case res@Right(_@GetFinancialDetailsSuccessResponse(financialDetails)) =>
-        logger.debug(s"$startOfLogMsg - Got a success response from the connector. Parsed model: $financialDetails")
+      case res @ Right(_ @FinancialDetailsSuccessResponse(financialDetails)) =>
+        logger.debug(s"$startOfLogMsg - Success response returned from connector. Parsed model: $financialDetails")
         res
-      case res@Left(GetFinancialDetailsNoContent) =>
+      case res @ Right(_ @FinancialDetailsHipSuccessResponse(financialData)) =>
+        logger.debug(s"$startOfLogMsg - Success response returned from connector. Parsed model: $financialData")
+        res
+      case res @ Left(FinancialDetailsNoContent) =>
         logger.debug(s"$startOfLogMsg - Got a 404 response and no data was found for GetFinancialDetails call")
         res
-      case res@Left(GetFinancialDetailsMalformed) =>
+      case res @ Left(FinancialDetailsMalformed) =>
         logger.info(s"$startOfLogMsg - Failed to parse HTTP response into model for ${enrolmentKey}")
         res
-      case res@Left(GetFinancialDetailsFailureResponse(_)) =>
+      case res @ Left(FinancialDetailsFailureResponse(_)) =>
         logger.error(s"$startOfLogMsg - Unknown status returned from connector for ${enrolmentKey}")
         res
     }
+  }
+
+  def getFinancialDetailsForAPI(enrolmentKey: AgnosticEnrolmentKey,
+                                searchType: Option[String],
+                                searchItem: Option[String],
+                                dateType: Option[String],
+                                dateFrom: Option[String],
+                                dateTo: Option[String],
+                                includeClearedItems: Option[Boolean],
+                                includeStatisticalItems: Option[Boolean],
+                                includePaymentOnAccount: Option[Boolean],
+                                addRegimeTotalisation: Option[Boolean],
+                                addLockInformation: Option[Boolean],
+                                addPenaltyDetails: Option[Boolean],
+                                addPostedInterestDetails: Option[Boolean],
+                                addAccruingInterestDetails: Option[Boolean])(implicit hc: HeaderCarrier): Future[HttpResponse] = {
+
+    def callHipConnector: Future[HttpResponse] =
+      financialDetailsHipConnector.getFinancialDetailsForAPI(
+        enrolmentKey,
+        searchType,
+        searchItem,
+        dateType,
+        dateFrom,
+        dateTo,
+        includeClearedItems,
+        includeStatisticalItems,
+        includePaymentOnAccount,
+        addRegimeTotalisation,
+        addLockInformation,
+        addPenaltyDetails,
+        addPostedInterestDetails,
+        addAccruingInterestDetails
+      )
+
+    def callIfConnector: Future[HttpResponse] =
+      getFinancialDetailsConnector.getFinancialDetailsForAPI(
+        enrolmentKey,
+        searchType,
+        searchItem,
+        dateType,
+        dateFrom,
+        dateTo,
+        includeClearedItems,
+        includeStatisticalItems,
+        includePaymentOnAccount,
+        addRegimeTotalisation,
+        addLockInformation,
+        addPenaltyDetails,
+        addPostedInterestDetails,
+        addAccruingInterestDetails
+      )
+
+    if (isEnabled(CallAPI1811HIP)) callHipConnector else callIfConnector
   }
 }

@@ -16,11 +16,13 @@
 
 package controllers
 
-import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser.{GetPenaltyDetailsSuccessResponse, _}
+import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser.{GetPenaltyDetailsSuccessResponse, GetPenaltyDetailsResponse, _}
 import controllers.auth.AuthAction
 import models.{AgnosticEnrolmentKey, Id, IdType, Regime}
+import play.api.Configuration
 import play.api.mvc._
 import services.{PenaltyDetailsService, RegimePenaltiesFrontendService}
+import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import utils.Logger.logger
 import utils.PagerDutyHelper.PagerDutyKeys._
@@ -34,43 +36,45 @@ class RegimePenaltiesFrontendController @Inject()(
                                              penaltiesFrontendService: RegimePenaltiesFrontendService,
                                              cc: ControllerComponents,
                                              authAction: AuthAction
-                                           )(implicit ec: ExecutionContext) extends BackendController(cc) {
+                                           )(implicit ec: ExecutionContext, val config: Configuration) extends BackendController(cc) {
 
   def getPenaltiesData(regime: Regime, idType: IdType, id: Id, arn: Option[String] = None): Action[AnyContent] = authAction.async {
     implicit request =>
     val agnosticEnrolmenKey = AgnosticEnrolmentKey(regime, idType, id)
-    getPenaltyDetailsService.getDataFromPenaltyService(agnosticEnrolmenKey).flatMap {
-      _.fold({
+    
+    getPenaltyDetailsService.getPenaltyDetails(agnosticEnrolmenKey).flatMap {
+      handlePenaltyDetailsResponse(_, agnosticEnrolmenKey, arn)
+    }
+  }
+
+  private def handlePenaltyDetailsResponse(response: GetPenaltyDetailsResponse, agnosticEnrolmenKey: AgnosticEnrolmentKey, arn: Option[String])(implicit request: Request[_], hc: HeaderCarrier): Future[Result] = {
+    response.fold({
         case GetPenaltyDetailsNoContent => {
-          logger.info(s"[RegimePenaltiesFrontendController][getPenaltiesData] - 1812 call returned 404 for $agnosticEnrolmenKey with NO_DATA_FOUND in response body")
+          logger.info(s"[RegimePenaltiesFrontendController][getPenaltiesData] - call returned 404 for $agnosticEnrolmenKey with NO_DATA_FOUND in response body")
           Future(NoContent)
         }
         case GetPenaltyDetailsFailureResponse(status) if status == NOT_FOUND => {
-          logger.info(s"[RegimePenaltiesFrontendController][getPenaltiesData] - 1812 call returned 404 for $agnosticEnrolmenKey")
+          logger.info(s"[RegimePenaltiesFrontendController][getPenaltiesData] - call returned 404 for $agnosticEnrolmenKey")
           Future(NotFound(s"A downstream call returned 404 for $agnosticEnrolmenKey"))
         }
         case GetPenaltyDetailsFailureResponse(status) => {
-          logger.error(s"[RegimePenaltiesFrontendController][getPenaltiesData] - 1812 call returned an unexpected status: $status for $agnosticEnrolmenKey")
+          logger.error(s"[RegimePenaltiesFrontendController][getPenaltiesData] - call returned an unexpected status: $status for $agnosticEnrolmenKey")
           Future(InternalServerError(s"A downstream call returned an unexpected status: $status"))
         }
         case GetPenaltyDetailsMalformed => {
           PagerDutyHelper.log("getPenaltiesData", MALFORMED_RESPONSE_FROM_1812_API)
-          logger.error(s"[RegimePenaltiesFrontendController][getPenaltiesData] - 1812 call returned invalid body - failed to parse penalty details response for $agnosticEnrolmenKey")
+          logger.error(s"[RegimePenaltiesFrontendController][getPenaltiesData] - call returned invalid body - failed to parse penalty details response for $agnosticEnrolmenKey")
           Future(InternalServerError(s"We were unable to parse penalty data."))
         }
       },
-        {
-          case GetPenaltyDetailsSuccessResponse(penaltyDetails) => {
-            logger.info(s"[RegimePenaltiesFrontendController][getPenaltiesData] - 1812 call returned 200 for $agnosticEnrolmenKey")
-            //   def handleAndCombineGetFinancialDetailsData(penaltyDetails: GetPenaltyDetails, enrolmentKey: EnrolmentKey, arn: Option[String])
-            penaltiesFrontendService.handleAndCombineGetFinancialDetailsData(
-              penaltyDetails,
-              agnosticEnrolmenKey,
-              arn
-            )
-          }
-        }
-      )
-    }
+      success => {
+        val penaltyDetails = success.asInstanceOf[GetPenaltyDetailsSuccessResponse].penaltyDetails
+        logger.info(s"[RegimePenaltiesFrontendController][getPenaltiesData] - call returned 200 for $agnosticEnrolmenKey")
+        penaltiesFrontendService.handleAndCombineGetFinancialDetailsData(
+          penaltyDetails,
+          agnosticEnrolmenKey,
+          arn
+        )
+      })
   }
 }
