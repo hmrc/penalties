@@ -1384,6 +1384,7 @@ class RegimePenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase w
                     "LPP2Percentage": 4,
                     "LPP1LRPercentage": 2,
                     "LPP1HRPercentage": 2,
+                    "penaltyChargeDueDate": "2022-10-30",
                     "penaltyAmountAccruing": 99.99,
                     "principalChargeMainTransaction": "4700",
                     "vatOutstandingAmount": 543.21,

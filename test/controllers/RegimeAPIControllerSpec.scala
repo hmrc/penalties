@@ -21,6 +21,12 @@ import config.featureSwitches.{CallAPI1812HIP, FeatureSwitching}
 import connectors.getFinancialDetails.FinancialDetailsConnector
 import connectors.getPenaltyDetails.{HIPPenaltyDetailsConnector, RegimePenaltyDetailsConnector}
 import connectors.parsers.getFinancialDetails.FinancialDetailsParser.{FinancialDetailsFailureResponse, FinancialDetailsMalformed, FinancialDetailsNoContent, FinancialDetailsSuccessResponse}
+import connectors.parsers.getFinancialDetails.FinancialDetailsParser.{
+  FinancialDetailsFailureResponse,
+  FinancialDetailsMalformed,
+  FinancialDetailsNoContent,
+  FinancialDetailsSuccessResponse
+}
 import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser._
 import controllers.auth.AuthAction
 import models.getFinancialDetails.{DocumentDetails, FinancialDetails, LineItemDetails, MainTransactionEnum}
@@ -28,6 +34,7 @@ import models.getPenaltyDetails.latePayment._
 import models.getPenaltyDetails.lateSubmission.{LSPSummary, LateSubmissionPenalty}
 import models.getPenaltyDetails.{GetPenaltyDetails, Totalisations}
 import models.{AgnosticEnrolmentKey, Id, IdType, Regime}
+import models.{Id, IdType, Regime}
 import org.mockito.ArgumentMatchers._
 import org.mockito.Mockito._
 import play.api.Configuration
