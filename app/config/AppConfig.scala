@@ -134,7 +134,7 @@ class AppConfig @Inject() (val config: Configuration, servicesConfig: ServicesCo
 
   def getFinancialDetailsHipUrl: String = {
     val urlBase = if (isEnabled(CallAPI1811Stub)) stubBase else hipBase
-    s"$urlBase/RESTAdapter/cross-regime/taxpayer/financial-data/query"
+    s"$urlBase/etmp/RESTAdapter/cross-regime/taxpayer/financial-data/query"
   }
 
   def getRegimeAgnosticPenaltyDetailsUrl(agnosticEnrolmentKey: AgnosticEnrolmentKey): String = {
@@ -160,14 +160,14 @@ class AppConfig @Inject() (val config: Configuration, servicesConfig: ServicesCo
   }
 
   private lazy val hipBase: String = servicesConfig.baseUrl("hip")
-  def hipSubmitUrl: String         = hipBase + "/v1/penalty/appeal"
+  def hipSubmitUrl: String         = hipBase + "/pegacms/v1/penalty/appeal"
 
   def getHIPPenaltyDetailsUrl(agnosticEnrolmenKey: AgnosticEnrolmentKey, dateLimit: Option[String] = None): String = {
     val regime = agnosticEnrolmenKey.regime.value
     val idType = agnosticEnrolmenKey.idType.value
     val idValue = agnosticEnrolmenKey.id.value
     val dateLimitParam: String = dateLimit.map(dateLimit => s"&dateLimit=$dateLimit").getOrElse("")
-    val penaltiesHipUrl = s"/RESTAdapter/cross-regime/taxpayer/penalties?taxRegime=$regime&idType=$idType&idNumber=$idValue$dateLimitParam"
+    val penaltiesHipUrl = s"/etmp/RESTAdapter/cross-regime/taxpayer/penalties?taxRegime=$regime&idType=$idType&idNumber=$idValue$dateLimitParam"
     if (isEnabled(CallAPI1812HIP)) hipBase + penaltiesHipUrl
     else stubBase + penaltiesHipUrl
   }

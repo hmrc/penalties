@@ -150,7 +150,7 @@ class FinancialDetailsHipConnectorISpec extends IntegrationSpecCommonBase with E
 
         "return a failure response" which {
           "has a 500 status when an unknown exception is returned" in {
-            val stubCall: MappingBuilder = post(urlEqualTo("/RESTAdapter/cross-regime/taxpayer/financial-data/query"))
+            val stubCall: MappingBuilder = post(urlEqualTo("/etmp/RESTAdapter/cross-regime/taxpayer/financial-data/query"))
             stubFor(stubCall.willReturn(aResponse().withFault(Fault.CONNECTION_RESET_BY_PEER)))
 
             val result: HttpResponse = await(
