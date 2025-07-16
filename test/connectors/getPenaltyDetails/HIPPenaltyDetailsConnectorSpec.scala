@@ -76,7 +76,7 @@ class HIPPenaltyDetailsConnectorSpec
     when(
       mockHttpClient.GET[HttpResponse](
         ArgumentMatchers.eq(
-          "/RESTAdapter/cross-regime/taxpayer/penalties?taxRegime=VATC&idType=VRN&idNumber=123456789&dateLimit=09"
+          "/etmp/RESTAdapter/cross-regime/taxpayer/penalties?taxRegime=VATC&idType=VRN&idNumber=123456789&dateLimit=09"
         ),
         ArgumentMatchers.any(),
         ArgumentMatchers.any()
@@ -97,23 +97,23 @@ class HIPPenaltyDetailsConnectorSpec
 
     when(mockAppConfig.getHIPPenaltyDetailsUrl(vrn123456789, None))
       .thenReturn(
-        "http://localhost:1234/RESTAdapter/cross-regime/taxpayer/penalties?taxRegime=VATC&idType=VRN&idNumber=123456789"
+        "http://localhost:1234/etmp/RESTAdapter/cross-regime/taxpayer/penalties?taxRegime=VATC&idType=VRN&idNumber=123456789"
       )
     when(mockAppConfig.getHIPPenaltyDetailsUrl(vrn123456789))
       .thenReturn(
-        "/RESTAdapter/cross-regime/taxpayer/penalties?taxRegime=VATC&idType=VRN&idNumber=123456789"
+        "/etmp/RESTAdapter/cross-regime/taxpayer/penalties?taxRegime=VATC&idType=VRN&idNumber=123456789"
       )
 
     when(mockAppConfig.getHIPPenaltyDetailsUrl(vrn123456789, None))
       .thenReturn(
-        "/RESTAdapter/cross-regime/taxpayer/penalties?taxRegime=VATC&idType=VRN&idNumber=123456789"
+        "/etmp/RESTAdapter/cross-regime/taxpayer/penalties?taxRegime=VATC&idType=VRN&idNumber=123456789"
       )
 
     when(
       mockAppConfig.getHIPPenaltyDetailsUrl(vrn123456789, Some("09"))
     )
       .thenReturn(
-        "/RESTAdapter/cross-regime/taxpayer/penalties?taxRegime=VATC&idType=VRN&idNumber=123456789&dateLimit=09"
+        "/etmp/RESTAdapter/cross-regime/taxpayer/penalties?taxRegime=VATC&idType=VRN&idNumber=123456789&dateLimit=09"
       )
 
     when(mockAppConfig.hipAuthorisationToken).thenReturn("encodedToken")
@@ -143,7 +143,7 @@ class HIPPenaltyDetailsConnectorSpec
       when(
         mockHttpClient.GET[HIPPenaltyDetailsResponse](
           ArgumentMatchers.eq(
-            "/RESTAdapter/cross-regime/taxpayer/penalties?taxRegime=VATC&idType=VRN&idNumber=123456789"
+            "/etmp/RESTAdapter/cross-regime/taxpayer/penalties?taxRegime=VATC&idType=VRN&idNumber=123456789"
           ),
           ArgumentMatchers.any(),
           ArgumentMatchers.any()
@@ -176,7 +176,7 @@ class HIPPenaltyDetailsConnectorSpec
       when(
         mockHttpClient.GET[HIPPenaltyDetailsResponse](
           ArgumentMatchers.eq(
-            "/RESTAdapter/cross-regime/taxpayer/penalties?taxRegime=VATC&idType=VRN&idNumber=123456789"
+            "/etmp/RESTAdapter/cross-regime/taxpayer/penalties?taxRegime=VATC&idType=VRN&idNumber=123456789"
           ),
           ArgumentMatchers.any(),
           headersCaptor.capture()
@@ -222,7 +222,7 @@ class HIPPenaltyDetailsConnectorSpec
       when(
         mockHttpClient.GET[HIPPenaltyDetailsResponse](
           ArgumentMatchers.eq(
-            "/RESTAdapter/cross-regime/taxpayer/penalties?taxRegime=VATC&idType=VRN&idNumber=123456789"
+            "/etmp/RESTAdapter/cross-regime/taxpayer/penalties?taxRegime=VATC&idType=VRN&idNumber=123456789"
           ),
           ArgumentMatchers.any(),
           ArgumentMatchers.any()
@@ -247,7 +247,7 @@ class HIPPenaltyDetailsConnectorSpec
       when(
         mockHttpClient.GET[HIPPenaltyDetailsResponse](
           ArgumentMatchers.eq(
-            "/RESTAdapter/cross-regime/taxpayer/penalties?taxRegime=VATC&idType=VRN&idNumber=123456789"
+            "/etmp/RESTAdapter/cross-regime/taxpayer/penalties?taxRegime=VATC&idType=VRN&idNumber=123456789"
           ),
           ArgumentMatchers.any(),
           ArgumentMatchers.any()
@@ -272,7 +272,7 @@ class HIPPenaltyDetailsConnectorSpec
       when(
         mockHttpClient.GET[HIPPenaltyDetailsResponse](
           ArgumentMatchers.eq(
-            "/RESTAdapter/cross-regime/taxpayer/penalties?taxRegime=VATC&idType=VRN&idNumber=123456789"
+            "/etmp/RESTAdapter/cross-regime/taxpayer/penalties?taxRegime=VATC&idType=VRN&idNumber=123456789"
           ),
           ArgumentMatchers.any(),
           ArgumentMatchers.any()
@@ -297,7 +297,7 @@ class HIPPenaltyDetailsConnectorSpec
       when(
         mockHttpClient.GET[HIPPenaltyDetailsResponse](
           ArgumentMatchers.eq(
-            "/RESTAdapter/cross-regime/taxpayer/penalties?taxRegime=VATC&idType=VRN&idNumber=123456789"
+            "/etmp/RESTAdapter/cross-regime/taxpayer/penalties?taxRegime=VATC&idType=VRN&idNumber=123456789"
           ),
           ArgumentMatchers.any(),
           ArgumentMatchers.any()
@@ -322,7 +322,7 @@ class HIPPenaltyDetailsConnectorSpec
       when(
         mockHttpClient.GET[HIPPenaltyDetailsResponse](
           ArgumentMatchers.eq(
-            "/RESTAdapter/cross-regime/taxpayer/penalties?taxRegime=VATC&idType=VRN&idNumber=123456789"
+            "/etmp/RESTAdapter/cross-regime/taxpayer/penalties?taxRegime=VATC&idType=VRN&idNumber=123456789"
           ),
           ArgumentMatchers.any(),
           ArgumentMatchers.any()
@@ -347,7 +347,7 @@ class HIPPenaltyDetailsConnectorSpec
       when(
         mockHttpClient.GET[HIPPenaltyDetailsResponse](
           ArgumentMatchers.eq(
-            "/RESTAdapter/cross-regime/taxpayer/penalties?taxRegime=VATC&idType=VRN&idNumber=123456789"
+            "/etmp/RESTAdapter/cross-regime/taxpayer/penalties?taxRegime=VATC&idType=VRN&idNumber=123456789"
           ),
           ArgumentMatchers.any(),
           ArgumentMatchers.any()
@@ -372,7 +372,7 @@ class HIPPenaltyDetailsConnectorSpec
       when(
         mockHttpClient.GET[HttpResponse](
           ArgumentMatchers.eq(
-            s"/RESTAdapter/cross-regime/taxpayer/penalties?taxRegime=VATC&idType=VRN&idNumber=123456789"
+            s"/etmp/RESTAdapter/cross-regime/taxpayer/penalties?taxRegime=VATC&idType=VRN&idNumber=123456789"
           ),
           ArgumentMatchers.any(),
           ArgumentMatchers.any()
@@ -405,7 +405,7 @@ class HIPPenaltyDetailsConnectorSpec
       when(
         mockHttpClient.GET[HttpResponse](
           ArgumentMatchers.eq(
-            s"/RESTAdapter/cross-regime/taxpayer/penalties?taxRegime=VATC&idType=VRN&idNumber=123456789"
+            s"/etmp/RESTAdapter/cross-regime/taxpayer/penalties?taxRegime=VATC&idType=VRN&idNumber=123456789"
           ),
           ArgumentMatchers.any(),
           ArgumentMatchers.any()
@@ -436,7 +436,7 @@ class HIPPenaltyDetailsConnectorSpec
       when(
         mockHttpClient.GET[HttpResponse](
           ArgumentMatchers.eq(
-            s"/RESTAdapter/cross-regime/taxpayer/penalties?taxRegime=VATC&idType=VRN&idNumber=123456789"
+            s"/etmp/RESTAdapter/cross-regime/taxpayer/penalties?taxRegime=VATC&idType=VRN&idNumber=123456789"
           ),
           ArgumentMatchers.any(),
           ArgumentMatchers.any()
@@ -469,7 +469,7 @@ class HIPPenaltyDetailsConnectorSpec
       when(
         mockHttpClient.GET[HttpResponse](
           ArgumentMatchers.eq(
-            s"/RESTAdapter/cross-regime/taxpayer/penalties?taxRegime=VATC&idType=VRN&idNumber=123456789$queryParam"
+            s"/etmp/RESTAdapter/cross-regime/taxpayer/penalties?taxRegime=VATC&idType=VRN&idNumber=123456789$queryParam"
           ),
           ArgumentMatchers.any(),
           ArgumentMatchers.any()
@@ -504,7 +504,7 @@ class HIPPenaltyDetailsConnectorSpec
       when(
         mockHttpClient.GET[HttpResponse](
           ArgumentMatchers.eq(
-            s"/RESTAdapter/cross-regime/taxpayer/penalties?taxRegime=VATC&idType=VRN&idNumber=123456789"
+            s"/etmp/RESTAdapter/cross-regime/taxpayer/penalties?taxRegime=VATC&idType=VRN&idNumber=123456789"
           ),
           ArgumentMatchers.any(),
           ArgumentMatchers.any()
@@ -539,7 +539,7 @@ class HIPPenaltyDetailsConnectorSpec
       when(
         mockHttpClient.GET[HttpResponse](
           ArgumentMatchers.eq(
-            "/RESTAdapter/cross-regime/taxpayer/penalties?taxRegime=VATC&idType=VRN&idNumber=123456789&dateLimit=09"
+            "/etmp/RESTAdapter/cross-regime/taxpayer/penalties?taxRegime=VATC&idType=VRN&idNumber=123456789&dateLimit=09"
           ),
           ArgumentMatchers.any(),
           ArgumentMatchers.any()
@@ -566,7 +566,7 @@ class HIPPenaltyDetailsConnectorSpec
       when(
         mockHttpClient.GET[HttpResponse](
           ArgumentMatchers.eq(
-            "/RESTAdapter/cross-regime/taxpayer/penalties?taxRegime=VATC&idType=VRN&idNumber=123456789&dateLimit=09"
+            "/etmp/RESTAdapter/cross-regime/taxpayer/penalties?taxRegime=VATC&idType=VRN&idNumber=123456789&dateLimit=09"
           ),
           ArgumentMatchers.any(),
           ArgumentMatchers.any()
@@ -596,7 +596,7 @@ class HIPPenaltyDetailsConnectorSpec
       when(
         mockHttpClient.GET[HttpResponse](
           ArgumentMatchers.eq(
-            "/RESTAdapter/cross-regime/taxpayer/penalties?taxRegime=VATC&idType=VRN&idNumber=123456789&dateLimit=09"
+            "/etmp/RESTAdapter/cross-regime/taxpayer/penalties?taxRegime=VATC&idType=VRN&idNumber=123456789&dateLimit=09"
           ),
           ArgumentMatchers.any(),
           ArgumentMatchers.any()

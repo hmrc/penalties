@@ -446,7 +446,7 @@ trait ETMPWiremock extends WiremockHelper{
   }
 
   def mockGetFinancialDetailsHIP(status: Int, requestBody: String, responseBody: String): StubMapping = {
-    stubFor(post(urlEqualTo("/RESTAdapter/cross-regime/taxpayer/financial-data/query")).withRequestBody(equalToJson(requestBody))
+    stubFor(post(urlEqualTo("/etmp/RESTAdapter/cross-regime/taxpayer/financial-data/query")).withRequestBody(equalToJson(requestBody))
       .willReturn(aResponse().withBody(responseBody).withStatus(status)))
   }
 }

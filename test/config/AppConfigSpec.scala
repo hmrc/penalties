@@ -93,14 +93,14 @@ class AppConfigSpec extends AnyWordSpec with ShouldMatchers with FeatureSwitchin
       when(mockServicesConfig.baseUrl(ArgumentMatchers.eq("hip"))).thenReturn("localhost:0000")
 
       val result: String = this.config.getFinancialDetailsHipUrl
-      result shouldBe "localhost:0000/RESTAdapter/cross-regime/taxpayer/financial-data/query"
+      result shouldBe "localhost:0000/etmp/RESTAdapter/cross-regime/taxpayer/financial-data/query"
     }
     "call the API 5327 stub when the stub feature switch is enabled" in new Setup {
       enableFeatureSwitch(CallAPI1811Stub)
       when(mockServicesConfig.baseUrl(ArgumentMatchers.eq("penalties-stub"))).thenReturn("localhost:0000/stubbed")
 
       val result: String = this.config.getFinancialDetailsHipUrl
-      result shouldBe "localhost:0000/stubbed/RESTAdapter/cross-regime/taxpayer/financial-data/query"
+      result shouldBe "localhost:0000/stubbed/etmp/RESTAdapter/cross-regime/taxpayer/financial-data/query"
     }
   }
 

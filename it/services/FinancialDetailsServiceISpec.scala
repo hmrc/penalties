@@ -16,16 +16,16 @@
 
 package services
 
-import config.featureSwitches.{CallAPI1811HIP, FeatureSwitching}
+import config.featureSwitches.FeatureSwitching
 import connectors.parsers.getFinancialDetails.FinancialDetailsParser._
 import models.getFinancialDetails._
 import models.getFinancialDetails.totalisation._
+import models.{AgnosticEnrolmentKey, Id, IdType, Regime}
 import org.scalatest.prop.TableDrivenPropertyChecks
 import play.api.http.Status
 import play.api.http.Status.{IM_A_TEAPOT, INTERNAL_SERVER_ERROR}
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import utils.{IntegrationSpecCommonBase, RegimeETMPWiremock}
-import models.{AgnosticEnrolmentKey, Id, IdType, Regime}
 
 import java.time.LocalDate
 

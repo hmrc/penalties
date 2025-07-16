@@ -103,7 +103,7 @@ trait HIPWiremock {
   def mockServiceUnavailableResponse(): StubMapping = mockResponse(503, JsObject.empty)
 
   private def mockResponse(status:Int, responseModel: JsValue): StubMapping = {
-    stubFor(post(urlEqualTo(s"/v1/penalty/appeal"))
+    stubFor(post(urlEqualTo(s"/pegacms/v1/penalty/appeal"))
       .willReturn(
         aResponse()
           .withBody(responseModel.toString())
