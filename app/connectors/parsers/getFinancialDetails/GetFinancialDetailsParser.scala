@@ -46,12 +46,12 @@ object GetFinancialDetailsParser {
     override def read(method: String, url: String, response: HttpResponse): GetFinancialDetailsResponse = {
       response.status match {
         case OK =>
-          logger.debug(s"[GetFinancialDetailsReads][read] Json response: ${response.json}")
           response.json.validate[GetFinancialData] match {
             case JsSuccess(getFinancialData, _) =>
+              logger.info(s"[GetFinancialDetailsReads][read] Success GetFinancialDetailsSuccessResponse returned from connector.")
               Right(GetFinancialDetailsSuccessResponse(getFinancialData.financialDetails))
             case JsError(errors) =>
-              logger.debug(s"[GetFinancialDetailsReads][read] Json validation errors: $errors")
+              logger.error(s"[GetFinancialDetailsReads][read] Json validation errors: $errors")
               Left(GetFinancialDetailsMalformed)
           }
         case NOT_FOUND if response.body.nonEmpty => {
@@ -81,8 +81,8 @@ object GetFinancialDetailsParser {
   private def handleNotFoundStatusBody(responseBody: JsValue): Left[GetFinancialDetailsFailure, Nothing] = {
     (responseBody \ "failures").validate[Seq[FailureResponse]].fold(
       errors => {
-        logger.debug(s"[GetFinancialDetailsReads][read] - Parsing errors: $errors")
-        logger.error(s"[GetFinancialDetailsReads][read] - Could not parse 404 body returned from GetFinancialDetails call")
+        logger.warn(s"[GetFinancialDetailsReads][read] - Could not parse 404 body returned from GetFinancialDetails call")
+        logger.error(s"[GetFinancialDetailsReads][read] - Parsing errors: $errors")
         Left(GetFinancialDetailsFailureResponse(NOT_FOUND))
       },
       failures => {

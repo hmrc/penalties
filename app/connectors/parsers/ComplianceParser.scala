@@ -51,11 +51,10 @@ object ComplianceParser {
         case OK =>
           response.json.validate[Seq[CompliancePayload]](CompliancePayload.seqReads) match {
             case JsSuccess(compliancePayload, _) =>
-              logger.debug(s"[ComplianceCompliancePayloadReads][read] Json response: ${response.json}")
               Right(CompliancePayloadSuccessResponse(compliancePayload.head))
             case JsError(errors) =>
               PagerDutyHelper.log("ComplianceCompliancePayloadReads", INVALID_JSON_RECEIVED_FROM_1330_API)
-              logger.debug(s"[ComplianceCompliancePayloadReads][read] Json validation errors: $errors")
+              logger.error(s"[ComplianceCompliancePayloadReads][read] Json validation errors: $errors")
               Left(CompliancePayloadMalformed)
           }
         case NOT_FOUND => {

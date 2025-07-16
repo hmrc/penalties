@@ -49,7 +49,7 @@ class FeatureSwitchController @Inject()(cc: ControllerComponents)
       dateTimeAsString => {
         Try(LocalDateTime.parse(dateTimeAsString)).fold(
           err => {
-            logger.debug(s"[FeatureSwitchController][setDateFeature] - Exception was thrown when setting time machine date: ${err.getMessage}")
+            logger.error(s"[FeatureSwitchController][setDateFeature] - Exception was thrown when setting time machine date: ${err.getMessage}")
             BadRequest("The date provided is in an invalid format")
           },
           dateTime => {
@@ -69,7 +69,7 @@ class FeatureSwitchController @Inject()(cc: ControllerComponents)
       dateAsString => {
         Try(LocalDate.parse(dateAsString)).fold(
           err => {
-            logger.debug(s"[FeatureSwitchController][setEstimatedLPP1FilterEndDate] - Exception was thrown when setting the estimated LPP1 filter end date: ${err.getMessage}")
+            logger.error(s"[FeatureSwitchController][setEstimatedLPP1FilterEndDate] - Exception was thrown when setting the estimated LPP1 filter end date: ${err.getMessage}")
             BadRequest("The date provided is in an invalid format")
           },
           date => {

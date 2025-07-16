@@ -198,7 +198,6 @@ class RegimeAPIController @Inject()(auditService: AuditService,
             res.status match {
               case OK =>
                 logger.info(s"[RegimeAPIController][getFinancialDetails] - 1811 call (3rd party API) returned 200 for ${enrolmentKey}")
-                logger.debug("[RegimeAPIController][getFinancialDetails] Ok response received: " + res)
                 Ok(res.json)
               case NOT_FOUND =>
                 logger.error("[RegimeAPIController][getFinancialDetails] - 1811 call (3rd party API) returned 404 - error received: " + res)
@@ -242,7 +241,6 @@ class RegimeAPIController @Inject()(auditService: AuditService,
           res.status match {
             case OK =>
               logger.info(s"[RegimeAPIController][getPenaltyDetails] - API call (3rd party API) returned 200 for ${enrolmentKey}")
-              logger.debug("[RegimeAPIController][getPenaltyDetails] Ok response received: " + res)
               Ok(filteredResBody)
             case NOT_FOUND =>
               logger.error("[RegimeAPIController][getPenaltyDetails] - API call (3rd party API) returned 404 - error received: " + res)

@@ -56,8 +56,7 @@ implicit val throwingReads: HttpReads[HttpResponse] = new HttpReads[HttpResponse
 
 
     logger.info(s"[getPenaltyDetails] Resolved URL: ${Option(url).getOrElse("null")}")
-    logger.debug(s"[getPenaltyDetails] Headers: $headers")
-    logger.debug(
+    logger.info(
       s"[HIPPenaltiesDetailsConnector][getPenaltyDetails][appConfig.getHIPPenaltyDetailsUrl($enrolmentKey)]- Calling GET $url \nHeaders: $headers"
     )
 
@@ -104,8 +103,8 @@ implicit val throwingReads: HttpReads[HttpResponse] = new HttpReads[HttpResponse
     val url =
       appConfig.getHIPPenaltyDetailsUrl(enrolmentKey, dateLimit)
 
- logger.info(s"[getPenaltyDetailsForAPI] Resolved URL: ${Option(url).getOrElse("null")}")
-  logger.debug(s"[getPenaltyDetailsForAPI] Headers: ${buildHeadersV1}")
+    logger.info(s"[getPenaltyDetailsForAPI] Resolved URL: ${Option(url).getOrElse("null")}")
+    logger.info(s"[getPenaltyDetailsForAPI] Headers: ${buildHeadersV1}")
 
     httpClient.GET[HttpResponse](
       url, headers = buildHeadersV1

@@ -62,7 +62,7 @@ class RegimePenaltiesFrontendService @Inject()(getFinancialDetailsService: Finan
           }
         },
           financialDetailsSuccessWithClearedItems => { //NOTE: The decision was taken to make 2 calls to retrieve data with and without cleared items
-            logger.debug(s"[RegimePenaltiesFrontendService][handleAndCombineGetFinancialDetailsData] - 1811 clearedItems=true call returned 200 for ${enrolmentKey}")
+            logger.info(s"[RegimePenaltiesFrontendService][handleAndCombineGetFinancialDetailsData] - 1811 clearedItems=true call returned 200 for ${enrolmentKey}")
             getFinancialDetailsService.getFinancialDetails(enrolmentKey, Some(appConfig.queryParametersForGetFinancialDetailsWithoutClearedItems)).map {
               financialDetailsResponseWithoutClearedItems =>
                 financialDetailsResponseWithoutClearedItems.fold({
@@ -75,7 +75,7 @@ class RegimePenaltiesFrontendService @Inject()(getFinancialDetailsService: Finan
                   })
                 },
                   financialDetailsSuccessWithoutClearedItems => {
-                    logger.debug(s"[RegimePenaltiesFrontendService][handleAndCombineGetFinancialDetailsData] - 1811 clearedItems=false call returned 200 for ${enrolmentKey}")
+                    logger.info(s"[RegimePenaltiesFrontendService][handleAndCombineGetFinancialDetailsData] - 1811 clearedItems=false call returned 200 for ${enrolmentKey}")
                     val newPenaltyDetails = combineAPIData(penaltyDetails,
                       financialDetailsSuccessWithClearedItems.financialDetails,
                       financialDetailsSuccessWithoutClearedItems.financialDetails)

@@ -66,7 +66,7 @@ class PenaltyDetailsService @Inject() (getPenaltyDetailsConnector: RegimePenalty
     val startOfLogMsg: String = s"[PenaltyDetailsService][getPenaltyDetails][${enrolmentKey.regime.value}]"
     failure match {
       case HIPPenaltyDetailsNoContent => 
-        logger.debug(s"$startOfLogMsg - Got a 404 response and no data was found for GetPenaltyDetails call")
+        logger.info(s"$startOfLogMsg - Got a 404 response and no data was found for GetPenaltyDetails call")
         Left(GetPenaltyDetailsNoContent)
       case HIPPenaltyDetailsMalformed => 
         logger.info(s"$startOfLogMsg - Failed to parse HTTP response into HIP model for $enrolmentKey")
@@ -340,12 +340,12 @@ class PenaltyDetailsService @Inject() (getPenaltyDetailsConnector: RegimePenalty
           enrolmentKey = enrolmentKeyInfo.toString
         )
 
-        logger.debug(s"$startOfLogMsg - Got a success response from the connector. Parsed model: $penaltyDetails")
+        logger.info(s"$startOfLogMsg - Got a success response from the connector. Parsed model")
         val penaltiesWithAppealStatusFiltered = filterService.filterPenaltiesWith9xAppealStatus(penaltyDetails)
         val filteredPenaltyDetails = filterService.filterEstimatedLPP1DuringPeriodOfFamiliarisation(penaltiesWithAppealStatusFiltered)
         Right(GetPenaltyDetailsSuccessResponse(filteredPenaltyDetails))
       case res @ Left(GetPenaltyDetailsNoContent) =>
-        logger.debug(s"$startOfLogMsg - Got a 404 response and no data was found for GetPenaltyDetails call")
+        logger.info(s"$startOfLogMsg - Got a 404 response and no data was found for GetPenaltyDetails call")
         res
       case res @ Left(GetPenaltyDetailsMalformed) =>
         logger.info(s"$startOfLogMsg - Failed to parse HTTP response into model for $enrolmentKeyInfo")
