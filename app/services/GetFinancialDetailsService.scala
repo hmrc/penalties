@@ -39,10 +39,10 @@ class GetFinancialDetailsService @Inject()(getFinancialDetailsConnector: GetFina
                                      (implicit startOfLogMsg: String, vrn: String): GetFinancialDetailsResponse = {
     connectorResponse match {
       case res@Right(_@GetFinancialDetailsSuccessResponse(financialDetails)) =>
-        logger.debug(s"$startOfLogMsg - Got a success response from the connector. Parsed model: $financialDetails")
+        logger.info(s"$startOfLogMsg - Got a success response from the connector. Parsed model")
         res
       case res@Left(GetFinancialDetailsNoContent) =>
-        logger.debug(s"$startOfLogMsg - Got a 404 response and no data was found for GetFinancialDetails call")
+        logger.info(s"$startOfLogMsg - Got a 404 response and no data was found for GetFinancialDetails call")
         res
       case res@Left(GetFinancialDetailsMalformed) =>
         logger.info(s"$startOfLogMsg - Failed to parse HTTP response into model for VRN: $vrn")

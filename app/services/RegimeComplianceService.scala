@@ -44,7 +44,7 @@ class RegimeComplianceService @Inject()(complianceConnector: RegimeComplianceCon
           }
       },
         complianceData => {
-          logger.debug(s"[RegimeComplianceService][getComplianceData] - Received model: ${complianceData.model} from connector for compliance data")
+          logger.info(s"[RegimeComplianceService][getComplianceData] - Received model from connector for compliance data")
           val orderedModel = complianceData.model.copy(
             obligationDetails = complianceData.model.obligationDetails.sortWith((d1, d2) =>
               d1.inboundCorrespondenceDueDate.isBefore(d2.inboundCorrespondenceDueDate)

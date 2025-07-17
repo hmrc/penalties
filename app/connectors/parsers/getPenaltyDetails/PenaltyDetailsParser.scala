@@ -48,13 +48,12 @@ object PenaltyDetailsParser {
     override def read(method: String, url: String, response: HttpResponse): GetPenaltyDetailsResponse = {
       response.status match {
         case OK =>
-          logger.debug(s"[GetPenaltyDetailsReads][read] Json response: ${response.json}")
           response.json.validate[GetPenaltyDetails] match {
             case JsSuccess(getPenaltyDetails, _) =>
-              logger.debug(s"[GetPenaltyDetailsReads][read] Model: $getPenaltyDetails")
+              logger.info(s"[GetPenaltyDetailsReads][read] Success GetPenaltyDetailsSuccessResponse returned from connector.")
               Right(GetPenaltyDetailsSuccessResponse(addMissingLPP1PrincipalChargeLatestClearing(getPenaltyDetails)))
             case JsError(errors) =>
-              logger.debug(s"[GetPenaltyDetailsReads][read] Json validation errors: $errors")
+              logger.error(s"[GetPenaltyDetailsReads][read] Json validation errors: $errors")
               Left(GetPenaltyDetailsMalformed)
           }
         case NOT_FOUND if response.body.nonEmpty => {
@@ -70,7 +69,7 @@ object PenaltyDetailsParser {
           Left(GetPenaltyDetailsFailureResponse(status))
         }
         case status@NO_CONTENT => {
-          logger.debug(s"[GetPenaltyDetailsReads][read] Received 204 when calling ETMP")
+          logger.info(s"[GetPenaltyDetailsReads][read] Received 204 when calling ETMP")
           Left(GetPenaltyDetailsFailureResponse(status))
         }
         case status@UNPROCESSABLE_ENTITY => {
@@ -89,8 +88,8 @@ object PenaltyDetailsParser {
   private def handleNotFoundStatusBody(responseBody: JsValue): GetPenaltyDetailsResponse = {
     (responseBody \ "failures").validate[Seq[FailureResponse]].fold(
       errors => {
-        logger.debug(s"[GetPenaltyDetailsReads][read] - Parsing errors: $errors")
-        logger.error(s"[GetPenaltyDetailsReads][read] - Could not parse 404 body returned from GetPenaltyDetails call")
+        logger.warn(s"[GetPenaltyDetailsReads][read] - Could not parse 404 body returned from GetPenaltyDetails call")
+        logger.error(s"[GetPenaltyDetailsReads][read] - Parsing errors: $errors")
         Left(GetPenaltyDetailsFailureResponse(NOT_FOUND))
       },
       failures => {

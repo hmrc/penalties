@@ -58,7 +58,7 @@ class RegimeAppealService @Inject()(appealsConnector: RegimePEGAConnector,
           Future(Left(error))
         },
         responseModel => {
-          logger.debug(s"[RegimeAppealService][submitAppeal] - Retrieving response model for penalty: $penaltyNumber")
+          logger.info(s"[RegimeAppealService][submitAppeal] - Retrieving response model for penalty: $penaltyNumber")
           Future(Right(responseModel))
         }
       )

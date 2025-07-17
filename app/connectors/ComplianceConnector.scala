@@ -37,7 +37,7 @@ class ComplianceConnector @Inject()(httpClient: HttpClient,
       "Authorization" -> s"Bearer ${appConfig.desBearerToken}"
     )
     val url: String = appConfig.getComplianceData(identifier, fromDate, toDate)
-    logger.debug(s"[ComplianceConnector][getComplianceData] - Calling GET $url with headers: $desHeaders")
+    logger.info(s"[ComplianceConnector][getComplianceData] - Calling GET $url with headers: $desHeaders")
     httpClient.GET[CompliancePayloadResponse](url, headers = desHeaders).recover {
       case e: UpstreamErrorResponse => {
         PagerDutyHelper.logStatusCode("getComplianceData", e.statusCode)(RECEIVED_4XX_FROM_1330_API, RECEIVED_5XX_FROM_1330_API)

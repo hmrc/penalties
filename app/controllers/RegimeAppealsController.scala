@@ -97,7 +97,7 @@ class RegimeAppealsController @Inject()(val appConfig: AppConfig,
     }
 
     if (appealType == AppealTypeEnum.Late_Submission && lspPenaltyIdInPenaltyDetailsPayload.isDefined) {
-      logger.debug(s"[RegimeAppealsController][getAppealsData] Penalty ID: $penaltyIdToCheck for enrolment key: $enrolmentKey found in ETMP for $appealType.")
+      logger.info(s"[RegimeAppealsController][getAppealsData] Penalty ID: $penaltyIdToCheck for enrolment key: $enrolmentKey found in ETMP for $appealType.")
       val penaltyBasedOnId = lspPenaltyIdInPenaltyDetailsPayload.get
       val sortedDate = penaltyBasedOnId.lateSubmissions.get.sortWith(PenaltyPeriodHelper.sortByPenaltyStartDate(_, _) < 0).head
       val dataToReturn: AppealData = AppealData(
@@ -109,7 +109,7 @@ class RegimeAppealsController @Inject()(val appConfig: AppConfig,
       )
       Ok(Json.toJson(dataToReturn))
     } else if ((appealType == AppealTypeEnum.Late_Payment || appealType == AppealTypeEnum.Additional) && lppPenaltyIdInPenaltyDetailsPayload.isDefined) {
-      logger.debug(s"[RegimeAppealsController][getAppealsData] Penalty ID: $penaltyIdToCheck for enrolment key: $enrolmentKey found in ETMP for $appealType.")
+      logger.info(s"[RegimeAppealsController][getAppealsData] Penalty ID: $penaltyIdToCheck for enrolment key: $enrolmentKey found in ETMP for $appealType.")
       val penaltyBasedOnId = lppPenaltyIdInPenaltyDetailsPayload.get
       val dataToReturn: AppealData = AppealData(
         `type` = appealType,
@@ -140,8 +140,8 @@ class RegimeAppealsController @Inject()(val appConfig: AppConfig,
           val parseResultToModel = Json.fromJson(jsonBody)(AppealSubmission.apiReads)
           parseResultToModel.fold(
             failure => {
-              logger.error(s"[RegimeAppealsController][submitAppeal] Unable to submit appeal for user with enrolment: $agnosticEnrolmenKey penalty $penaltyNumber - Failed to parse request body to model")
-              logger.debug(s"[RegimeAppealsController][submitAppeal] Parse failure(s): $failure")
+              logger.warn(s"[RegimeAppealsController][submitAppeal] Unable to submit appeal for user with enrolment: $agnosticEnrolmenKey penalty $penaltyNumber - Failed to parse request body to model")
+              logger.error(s"[RegimeAppealsController][submitAppeal] Parse failure(s): $failure")
               Future(BadRequest("Failed to parse to model"))
             },
             appealSubmission => {
@@ -165,7 +165,6 @@ class RegimeAppealsController @Inject()(val appConfig: AppConfig,
         error => {
           logger.error(s"[RegimeAppealsController][submitAppeal] Error submiting appeal to PEGA for user with enrolment: $enrolmentKey penalty $penaltyNumber - Received error from PEGA with status ${error.status} and error message: ${error.body} " +
             s"for correlation ID: $correlationId")
-          logger.debug(s"[RegimeAppealsController][submitAppeal] Returning ${error.status} to calling service.")
           val responseModel = AppealSubmissionResponseModel(error = Some(error.body), status = error.status)
           Future(responseModel)
         },
@@ -173,7 +172,7 @@ class RegimeAppealsController @Inject()(val appConfig: AppConfig,
           logger.info(s"[RegimeAppealsController][submitAppeal] - Successfully sent appeal submission to PEGA for user with enrolment: $enrolmentKey and penalty number: $penaltyNumber" +
             s" (correlation ID: $correlationId)")
           val appeal = appealSubmission.appealInformation
-          logger.debug(s"[RegimeAppealsController][submitAppeal] Received caseID response: ${responseModel.caseID} from downstream.")
+          logger.info(s"[RegimeAppealsController][submitAppeal] Received caseID response: ${responseModel.caseID} from downstream.")
           val seqOfNotifications = appeal match {
             case otherAppeal: OtherAppealInformation if otherAppeal.uploadedFiles.isDefined =>
               appealService.createSDESNotifications(otherAppeal.uploadedFiles, responseModel.caseID)
@@ -181,7 +180,7 @@ class RegimeAppealsController @Inject()(val appConfig: AppConfig,
           }
           if (seqOfNotifications.nonEmpty) {
             val redactedNotification = seqOfNotifications.map(notification => notification.copy(file = notification.file.copy(location = "HIDDEN")))
-            logger.debug(s"[RegimeAppealsController][submitAppeal] Posting SDESNotifications: $redactedNotification to Orchestrator")
+            logger.info(s"[RegimeAppealsController][submitAppeal] Posting SDESNotifications: $redactedNotification to Orchestrator")
             fileNotificationOrchestratorConnector.postFileNotifications(seqOfNotifications).map {
               response =>
                 response.status match {
