@@ -61,7 +61,7 @@ class PenaltiesFrontendService @Inject()(getFinancialDetailsService: GetFinancia
           }
         },
           financialDetailsSuccessWithClearedItems => { //NOTE: The decision was taken to make 2 calls to retrieve data with and without cleared items
-            logger.debug(s"[PenaltiesFrontendService][handleAndCombineGetFinancialDetailsData] - 1811 clearedItems=true call returned 200 for VRN: $vrn")
+            logger.info(s"[PenaltiesFrontendService][handleAndCombineGetFinancialDetailsData] - 1811 clearedItems=true call returned 200 for VRN: $vrn")
             getFinancialDetailsService.getFinancialDetails(vrn, Some(appConfig.queryParametersForGetFinancialDetailsWithoutClearedItems)).map {
               financialDetailsResponseWithoutClearedItems =>
                 financialDetailsResponseWithoutClearedItems.fold({
@@ -74,7 +74,7 @@ class PenaltiesFrontendService @Inject()(getFinancialDetailsService: GetFinancia
                   })
                 },
                   financialDetailsSuccessWithoutClearedItems => {
-                    logger.debug(s"[PenaltiesFrontendService][handleAndCombineGetFinancialDetailsData] - 1811 clearedItems=false call returned 200 for VRN: $vrn")
+                    logger.info(s"[PenaltiesFrontendService][handleAndCombineGetFinancialDetailsData] - 1811 clearedItems=false call returned 200 for VRN: $vrn")
                     val newPenaltyDetails = combineAPIData(penaltyDetails,
                       financialDetailsSuccessWithClearedItems.asInstanceOf[GetFinancialDetailsSuccessResponse].financialDetails,
                       financialDetailsSuccessWithoutClearedItems.asInstanceOf[GetFinancialDetailsSuccessResponse].financialDetails)

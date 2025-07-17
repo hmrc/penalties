@@ -51,16 +51,16 @@ class FinancialDetailsService @Inject() (
     val startOfLogMsg: String = s"[FinancialDetailsService][getFinancialDetails][$enrolmentKey]"
     connectorResponse match {
       case res @ Right(_ @FinancialDetailsSuccessResponse(financialDetails)) =>
-        logger.debug(s"$startOfLogMsg - Success response returned from connector. Parsed model: $financialDetails")
+        logger.info(s"$startOfLogMsg - Success response returned from connector.")
         res
       case res @ Right(_ @FinancialDetailsHipSuccessResponse(financialData)) =>
-        logger.debug(s"$startOfLogMsg - Success response returned from connector. Parsed model: $financialData")
+        logger.info(s"$startOfLogMsg - Success response returned from connector.")
         res
       case res @ Left(FinancialDetailsNoContent) =>
-        logger.debug(s"$startOfLogMsg - Got a 404 response and no data was found for GetFinancialDetails call")
+        logger.info(s"$startOfLogMsg - Got a 404 response and no data was found for GetFinancialDetails call")
         res
       case res @ Left(FinancialDetailsMalformed) =>
-        logger.info(s"$startOfLogMsg - Failed to parse HTTP response into model for ${enrolmentKey}")
+        logger.error(s"$startOfLogMsg - Failed to parse HTTP response into model for ${enrolmentKey}")
         res
       case res @ Left(FinancialDetailsFailureResponse(_)) =>
         logger.error(s"$startOfLogMsg - Unknown status returned from connector for ${enrolmentKey}")

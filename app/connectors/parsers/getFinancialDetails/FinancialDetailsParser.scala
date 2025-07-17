@@ -103,7 +103,7 @@ object FinancialDetailsParser {
         Left(FinancialDetailsNoContent)
       case _ =>
         logger.error(s"[FinancialDetailsParser][FinancialDetailsReads][read] - Unable to parse 404 body returned from FinancialDetails call")
-        logger.debug(s"[FinancialDetailsParser][FinancialDetailsReads][read] - Error response body: $responseBody")
+        logger.error(s"[FinancialDetailsParser][FinancialDetailsReads][read] - Error response body: $responseBody")
         Left(FinancialDetailsFailureResponse(NOT_FOUND))
     }
   }

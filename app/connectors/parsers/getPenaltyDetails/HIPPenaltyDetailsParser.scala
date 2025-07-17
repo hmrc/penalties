@@ -48,13 +48,12 @@ object HIPPenaltyDetailsParser {
     override def read(method: String, url: String, response: HttpResponse): HIPPenaltyDetailsResponse = {
       response.status match {
         case OK =>
-          logger.debug(s"[HIPPenaltyDetailsReads][read] Json response: ${response.json}")
           response.json.validate[PenaltyDetails] match {
             case JsSuccess(getPenaltyDetails, _) =>
-              logger.debug(s"[HIPPenaltyDetailsReads][read] Model: $getPenaltyDetails")
+              logger.info(s"[HIPPenaltyDetailsReads][read] Success HIPPenaltyDetailsSuccessResponse returned from connector.")
               Right(HIPPenaltyDetailsSuccessResponse(addMissingLPP1PrincipalChargeLatestClearing(getPenaltyDetails)))
             case JsError(errors) =>
-              logger.debug(s"[HIPPenaltyDetailsReads][read] Json validation errors: $errors")
+              logger.error(s"[HIPPenaltyDetailsReads][read] Json validation errors: $errors")
               Left(HIPPenaltyDetailsMalformed)
           }
         case NOT_FOUND if response.body.nonEmpty =>
@@ -93,7 +92,7 @@ object HIPPenaltyDetailsParser {
         Left(HIPPenaltyDetailsNoContent)
       case _ =>
         logger.error(s"[HIPPenaltyDetailsReads][read] - Unable to parse 404 body returned from PenaltyDetails call")
-        logger.debug(s"[HIPPenaltyDetailsReads][read] - Error response body: $responseBody")
+        logger.error(s"[HIPPenaltyDetailsReads][read] - Error response body: $responseBody")
         Left(HIPPenaltyDetailsFailureResponse(NOT_FOUND))
     }
   }

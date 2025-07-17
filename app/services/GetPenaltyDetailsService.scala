@@ -43,10 +43,10 @@ class GetPenaltyDetailsService @Inject()(getPenaltyDetailsConnector: GetPenaltyD
       case res@Right(_@GetPenaltyDetailsSuccessResponse(penaltyDetails)) =>
         val callingClass: String = "GetPenaltiesDetailsService"
         val function: String = "handleConnectorResponse"
-        logger.debug(s"$startOfLogMsg - Got a success response from the connector. Parsed model: $penaltyDetails")
+        logger.info(s"$startOfLogMsg - Got a success response from the connector. Parsed model")
         Right(GetPenaltyDetailsSuccessResponse(filterService.filterEstimatedLPP1DuringPeriodOfFamiliarisation(filterService.filterPenaltiesWith9xAppealStatus(penaltyDetails)(callingClass, function, vrn), callingClass, function, vrn)))
       case res@Left(GetPenaltyDetailsNoContent) =>
-        logger.debug(s"$startOfLogMsg - Got a 404 response and no data was found for GetPenaltyDetails call")
+        logger.info(s"$startOfLogMsg - Got a 404 response and no data was found for GetPenaltyDetails call")
         res
       case res@Left(GetPenaltyDetailsMalformed) =>
         logger.info(s"$startOfLogMsg - Failed to parse HTTP response into model for VRN: $vrn")

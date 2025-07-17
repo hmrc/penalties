@@ -38,7 +38,7 @@ class RegimeComplianceConnector @Inject()(httpClient: HttpClient,
     )
     val url = appConfig.getRegimeAgnosticComplianceDataUrl(enrolmentKey, fromDate, toDate)
  
-    logger.debug(s"[RegimeComplianceConnector][getComplianceData] - Calling GET $url with headers: $desHeaders")
+    logger.info(s"[RegimeComplianceConnector][getComplianceData] - Calling GET $url with headers: $desHeaders")
     httpClient.GET[CompliancePayloadResponse](url, headers = desHeaders).recover {
       case e: UpstreamErrorResponse => {
         PagerDutyHelper.logStatusCode("getComplianceData", e.statusCode)(RECEIVED_4XX_FROM_1330_API, RECEIVED_5XX_FROM_1330_API)

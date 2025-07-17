@@ -48,7 +48,7 @@ trait FeatureSwitching {
   }
 
   def setTimeMachineDate(dateTimeToSet: Option[LocalDateTime]): Unit = {
-    logger.debug(s"[FeatureSwitching][setTimeMachineDate] - setting time machine date to: $dateTimeToSet")
+    logger.info(s"[FeatureSwitching][setTimeMachineDate] - setting time machine date to: $dateTimeToSet")
     dateTimeToSet.fold(sys.props -= TIME_MACHINE_NOW)(sys.props += TIME_MACHINE_NOW -> _.toString)
   }
 
@@ -65,7 +65,7 @@ trait FeatureSwitching {
   }
 
   def setEstimatedLPP1FilterEndDate(dateTimeToSet: Option[LocalDate]): Unit = {
-    logger.debug(s"[FeatureSwitching][setEstimatedLPP1FilterEndDate] - setting estimated LPP1 filter end date to: $dateTimeToSet")
+    logger.info(s"[FeatureSwitching][setEstimatedLPP1FilterEndDate] - setting estimated LPP1 filter end date to: $dateTimeToSet")
     dateTimeToSet.fold(sys.props -= ESTIMATED_LPP1_FILTER_END_DATE)(sys.props += ESTIMATED_LPP1_FILTER_END_DATE -> _.toString)
   }
 
@@ -75,13 +75,10 @@ trait FeatureSwitching {
 
     (sysProp, optDateAsString) match {
       case (Some(systemPropDate), _) =>
-        logger.debug(s"[FeatureSwitching][getEstimatedLPP1FilterEndDate] Found Estimated LPP1 filter end date in system properties: $systemPropDate")
         Some(LocalDate.parse(systemPropDate))
       case (None, Some(configDate)) =>
-        logger.debug(s"[FeatureSwitching][getEstimatedLPP1FilterEndDate] Found Estimated LPP1 filter end date in config: $configDate")
         Some(LocalDate.parse(configDate))
       case _ =>
-        logger.debug(s"[FeatureSwitching][getEstimatedLPP1FilterEndDate] No Estimated LPP1 filter end date set, returning NONE")
         None
     }
   }

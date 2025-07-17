@@ -60,7 +60,7 @@ class AppealService @Inject()(appealsConnector: PEGAConnector,
           Future(Left(error))
         },
         responseModel => {
-          logger.debug(s"[AppealService][submitAppeal] - Retrieving response model for penalty: $penaltyNumber")
+          logger.info(s"[AppealService][submitAppeal] - Retrieving response model for penalty: $penaltyNumber")
           Future(Right(responseModel))
         }
       )
