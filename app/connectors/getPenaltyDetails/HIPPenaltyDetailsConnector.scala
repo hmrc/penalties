@@ -54,8 +54,6 @@ implicit val throwingReads: HttpReads[HttpResponse] = new HttpReads[HttpResponse
     val headerCarrier = hc.copy(authorization = None)
     val headers = buildHeadersV1
 
-
-    logger.info(s"[getPenaltyDetails] Resolved URL: ${Option(url).getOrElse("null")}")
     logger.info(
       s"[HIPPenaltiesDetailsConnector][getPenaltyDetails][appConfig.getHIPPenaltyDetailsUrl($enrolmentKey)]- Calling GET $url \nHeaders: $headers"
     )
