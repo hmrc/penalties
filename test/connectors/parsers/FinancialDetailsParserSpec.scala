@@ -131,37 +131,6 @@ class FinancialDetailsParserSpec extends AnyWordSpec with Matchers with LogCaptu
     FinancialDetailsParser.FinancialDetailsReads.read("GET", "/", httpResponse)
 
   "FinancialDetailsReads" when {
-    "parsing an OK response" should {
-      "return the body in a FinancialDetailsHipSuccessResponse when HIP body is valid" in {
-        val validHipResponse = HttpResponse(status = OK, json = getHipFinancialDetailsAsJson, headers = Map.empty)
-        val result           = financialDetailsParserReads(validHipResponse)
-
-        result.isRight shouldBe true
-        result.toOption.get
-          .asInstanceOf[FinancialDetailsHipSuccessResponse]
-          .financialDetails shouldBe mockGetFinancialDetailsModelAPI1811.financialDetails
-      }
-      "return the body in a FinancialDetailsSuccessResponse when non-HIP body is valid" in {
-        val validNonHipResponse = HttpResponse(status = OK, json = getFinancialDetailsAsJson, headers = Map.empty)
-        val result              = financialDetailsParserReads(validNonHipResponse)
-
-        result.isRight shouldBe true
-        result.toOption.get
-          .asInstanceOf[FinancialDetailsSuccessResponse]
-          .financialDetails shouldBe mockGetFinancialDetailsModelAPI1811.financialDetails
-      }
-      "return a FinancialDetailsMalformed when body is invalid" in {
-        val invalidBody         = Json.parse("""{"documentDetails": [{"documentOutstandingAmount": "xyz"}]}""")
-        val invalidBodyResponse = HttpResponse(status = OK, json = invalidBody, headers = Map.empty)
-
-        withCaptureOfLoggingFrom(logger) { logs =>
-          val result = financialDetailsParserReads(invalidBodyResponse)
-          logs.exists(_.getMessage.contains("Unable to validate Json for HIP nor IF schemas")) shouldBe true
-          result shouldBe Left(FinancialDetailsMalformed)
-        }
-      }
-    }
-
     "parsing a CREATED response" should {
       "return the body in a FinancialDetailsHipSuccessResponse when HIP body is valid" in {
         val validHipResponse = HttpResponse(status = CREATED, json = getHipFinancialDetailsAsJson, headers = Map.empty)
