@@ -75,13 +75,10 @@ trait FeatureSwitching {
 
     (sysProp, optDateAsString) match {
       case (Some(systemPropDate), _) =>
-        logger.info(s"[FeatureSwitching][getEstimatedLPP1FilterEndDate] Found Estimated LPP1 filter end date in system properties: $systemPropDate")
         Some(LocalDate.parse(systemPropDate))
       case (None, Some(configDate)) =>
-        logger.info(s"[FeatureSwitching][getEstimatedLPP1FilterEndDate] Found Estimated LPP1 filter end date in config: $configDate")
         Some(LocalDate.parse(configDate))
       case _ =>
-        logger.info(s"[FeatureSwitching][getEstimatedLPP1FilterEndDate] No Estimated LPP1 filter end date set, returning NONE")
         None
     }
   }
