@@ -88,11 +88,11 @@ class GetFinancialDetailsParserSpec extends AnyWordSpec with Matchers with LogCa
       |""".stripMargin
   )
 
-  val mockCreatedHttpResponseWithValidBody: HttpResponse = HttpResponse.apply(
-    status = Status.CREATED, json = getFinancialDetailsAsJson, headers = Map.empty)
+  val mockOKHttpResponseWithValidBody: HttpResponse = HttpResponse.apply(
+    status = Status.OK, json = getFinancialDetailsAsJson, headers = Map.empty)
 
-  val mockCreatedHttpResponseWithInvalidBody: HttpResponse =
-    HttpResponse.apply(status = Status.CREATED, json = Json.parse(
+  val mockOKHttpResponseWithInvalidBody: HttpResponse =
+    HttpResponse.apply(status = Status.OK, json = Json.parse(
       """
            {
             "documentDetails": [{
@@ -101,6 +101,8 @@ class GetFinancialDetailsParserSpec extends AnyWordSpec with Matchers with LogCa
             }
            """.stripMargin
     ), headers = Map.empty)
+
+
 
   val mockISEHttpResponse: HttpResponse = HttpResponse.apply(status = Status.INTERNAL_SERVER_ERROR, body = "Something went wrong.")
   val mockBadRequestHttpResponse: HttpResponse = HttpResponse.apply(status = Status.BAD_REQUEST, body = "Bad Request.")
@@ -115,18 +117,20 @@ class GetFinancialDetailsParserSpec extends AnyWordSpec with Matchers with LogCa
 
 
   "GetFinancialDetailsReads" should {
-    s"parse a CREATED (${Status.CREATED}) response" when {
+    s"parse an OK (${Status.OK}) response" when {
       s"the body of the response is valid" in {
-        val result = GetFinancialDetailsParser.GetFinancialDetailsReads.read("GET", "/", mockCreatedHttpResponseWithValidBody)
+        val result = GetFinancialDetailsParser.GetFinancialDetailsReads.read("GET", "/", mockOKHttpResponseWithValidBody)
         result.isRight shouldBe true
         result.toOption.get.asInstanceOf[GetFinancialDetailsSuccessResponse].financialDetails shouldBe mockGetFinancialDetailsModelAPI1811.financialDetails
       }
     }
 
-    s"the body is malformed for CREATED response - returning a $Left $GetFinancialDetailsMalformed" in {
-      val result = GetFinancialDetailsParser.GetFinancialDetailsReads.read("GET", "/", mockCreatedHttpResponseWithInvalidBody)
+    s"the body is malformed - returning a $Left $GetFinancialDetailsMalformed" in {
+      val result = GetFinancialDetailsParser.GetFinancialDetailsReads.read("GET", "/", mockOKHttpResponseWithInvalidBody)
       result.isLeft shouldBe true
     }
+
+
 
     s"parse an BAD REQUEST (${Status.BAD_REQUEST}) response - and log a PagerDuty" in {
       withCaptureOfLoggingFrom(logger) {
