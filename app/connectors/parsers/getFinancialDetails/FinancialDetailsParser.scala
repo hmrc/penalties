@@ -50,7 +50,7 @@ object FinancialDetailsParser {
   implicit object FinancialDetailsReads extends HttpReads[FinancialDetailsResponse] {
     override def read(method: String, url: String, response: HttpResponse): FinancialDetailsResponse =
       response.status match {
-        case OK =>
+        case OK | CREATED =>
           logger.debug(s"[FinancialDetailsParser][FinancialDetailsReads][read] Json response: ${response.json}")
           val attemptHipValidation: JsResult[FinancialDetailsHIP] = response.json.validate[FinancialDetailsHIP]
           val attemptIfValidation: JsResult[GetFinancialData]     = response.json.validate[GetFinancialData]

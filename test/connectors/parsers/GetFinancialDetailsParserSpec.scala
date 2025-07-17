@@ -102,6 +102,20 @@ class GetFinancialDetailsParserSpec extends AnyWordSpec with Matchers with LogCa
            """.stripMargin
     ), headers = Map.empty)
 
+  val mockCreatedHttpResponseWithValidBody: HttpResponse = HttpResponse.apply(
+    status = Status.CREATED, json = getFinancialDetailsAsJson, headers = Map.empty)
+
+  val mockCreatedHttpResponseWithInvalidBody: HttpResponse =
+    HttpResponse.apply(status = Status.CREATED, json = Json.parse(
+      """
+           {
+            "documentDetails": [{
+               "documentOutstandingAmount": "xyz"
+              }]
+            }
+           """.stripMargin
+    ), headers = Map.empty)
+
   val mockISEHttpResponse: HttpResponse = HttpResponse.apply(status = Status.INTERNAL_SERVER_ERROR, body = "Something went wrong.")
   val mockBadRequestHttpResponse: HttpResponse = HttpResponse.apply(status = Status.BAD_REQUEST, body = "Bad Request.")
   val mockForbiddenHttpResponse: HttpResponse = HttpResponse.apply(status = Status.FORBIDDEN, body = "Forbidden.")
@@ -125,6 +139,19 @@ class GetFinancialDetailsParserSpec extends AnyWordSpec with Matchers with LogCa
 
     s"the body is malformed - returning a $Left $GetFinancialDetailsMalformed" in {
       val result = GetFinancialDetailsParser.GetFinancialDetailsReads.read("GET", "/", mockOKHttpResponseWithInvalidBody)
+      result.isLeft shouldBe true
+    }
+
+    s"parse a CREATED (${Status.CREATED}) response" when {
+      s"the body of the response is valid" in {
+        val result = GetFinancialDetailsParser.GetFinancialDetailsReads.read("GET", "/", mockCreatedHttpResponseWithValidBody)
+        result.isRight shouldBe true
+        result.toOption.get.asInstanceOf[GetFinancialDetailsSuccessResponse].financialDetails shouldBe mockGetFinancialDetailsModelAPI1811.financialDetails
+      }
+    }
+
+    s"the body is malformed for CREATED response - returning a $Left $GetFinancialDetailsMalformed" in {
+      val result = GetFinancialDetailsParser.GetFinancialDetailsReads.read("GET", "/", mockCreatedHttpResponseWithInvalidBody)
       result.isLeft shouldBe true
     }
 

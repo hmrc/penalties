@@ -45,7 +45,7 @@ object GetFinancialDetailsParser {
   implicit object GetFinancialDetailsReads extends HttpReads[GetFinancialDetailsResponse] {
     override def read(method: String, url: String, response: HttpResponse): GetFinancialDetailsResponse = {
       response.status match {
-        case OK =>
+        case OK | CREATED =>
           logger.debug(s"[GetFinancialDetailsReads][read] Json response: ${response.json}")
           response.json.validate[GetFinancialData] match {
             case JsSuccess(getFinancialData, _) =>
