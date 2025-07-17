@@ -111,7 +111,7 @@ class FinancialDetailsHipConnectorISpec extends IntegrationSpecCommonBase with E
   "getFinancialDetailsForAPI" when {
     Seq(vatcEnrolmentKey, itsaEnrolmentKey).foreach { enrolmentKey =>
       s"calling HIP for ${enrolmentKey.regime.value} regime" should {
-        "return a success response" when {
+        "return a success response with returned 201 status replaced with a 200 status" when {
           val successResponseBody: String = getFinancialDetailsHipResponseWithoutTotalisations.toString()
           "no extra query parameters are given" in {
             val requestBody: String = FinancialDetailsRequestModel.emptyModel.toJsonRequest(enrolmentKey).toString()
@@ -120,7 +120,7 @@ class FinancialDetailsHipConnectorISpec extends IntegrationSpecCommonBase with E
             val result: HttpResponse = await(
               connector.getFinancialDetailsForAPI(enrolmentKey, None, None, None, None, None, None, None, None, None, None, None, None, None)(hc))
 
-            result.status shouldBe 201
+            result.status shouldBe 200
           }
           "extra query parameters are given" in {
             val requestBody: String = financialDetailsRequestMaxModel.toJsonRequest(enrolmentKey).toString()
@@ -144,7 +144,7 @@ class FinancialDetailsHipConnectorISpec extends IntegrationSpecCommonBase with E
                 addAccruingInterestDetails = Some(true)
               )(hc))
 
-            result.status shouldBe 201
+            result.status shouldBe 200
           }
         }
 
