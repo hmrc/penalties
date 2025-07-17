@@ -20,7 +20,7 @@ import config.AppConfig
 import connectors.parsers.getFinancialDetails.FinancialDetailsParser.{FinancialDetailsFailureResponse, FinancialDetailsResponse}
 import models.AgnosticEnrolmentKey
 import models.getFinancialDetails.FinancialDetailsRequestModel
-import play.api.http.Status.{CREATED, INTERNAL_SERVER_ERROR, OK}
+import play.api.http.Status.INTERNAL_SERVER_ERROR
 import play.api.libs.json.JsObject
 import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse, UpstreamErrorResponse}
@@ -98,11 +98,8 @@ class FinancialDetailsHipConnector @Inject() (httpClient: HttpClient, appConfig:
       addAccruingInterestDetails
     ).toJsonRequest(enrolmentKey)
 
-    httpClient.POST[JsObject, HttpResponse](url, body, headers).map(swapCreatedForOkSuccessStatus).recover(handleErrorResponseForAPICall)
+    httpClient.POST[JsObject, HttpResponse](url, body, headers).recover(handleErrorResponseForAPICall)
   }
-
-  private def swapCreatedForOkSuccessStatus(response: HttpResponse): HttpResponse =
-    if (response.status == CREATED) HttpResponse(OK, response.body, response.headers) else response
 
   private def handleErrorResponseForAPICall: PartialFunction[Throwable, HttpResponse] = {
     case e: UpstreamErrorResponse =>
