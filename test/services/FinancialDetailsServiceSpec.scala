@@ -29,6 +29,7 @@ import org.mockito.Mockito.{mock, reset, when}
 import org.mockito.stubbing.OngoingStubbing
 import play.api.Configuration
 import play.api.http.Status.IM_A_TEAPOT
+import play.api.libs.json.{JsValue, Json}
 import play.api.test.Helpers._
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import utils.Logger.logger
@@ -125,10 +126,331 @@ class FinancialDetailsServiceSpec extends SpecBase with FeatureSwitching with Lo
       ))
   )
 
+  val getFinancialDetailsIFResponseBody: String =
+    """
+      |{
+      | "getFinancialData": {
+      |   "financialDetails":{
+      |     "totalisation": {
+      |       "regimeTotalisation": {
+      |         "totalAccountOverdue": 1000.0,
+      |         "totalAccountNotYetDue": 250.0,
+      |         "totalAccountCredit": 40.0,
+      |         "totalAccountBalance": 1210
+      |       },
+      |       "targetedSearch_SelectionCriteriaTotalisation": {
+      |         "totalOverdue": 100.0,
+      |         "totalNotYetDue": 0.0,
+      |         "totalBalance": 100.0,
+      |         "totalCredit": 10.0,
+      |         "totalCleared": 50
+      |       },
+      |       "additionalReceivableTotalisations": {
+      |         "totalAccountPostedInterest": 12.34,
+      |         "totalAccountAccruingInterest": 43.21
+      |       }
+      |     },
+      |     "documentDetails": [
+      |     {
+      |      "documentNumber": "187346702498",
+      |      "documentType": "TRM New Charge",
+      |      "chargeReferenceNumber": "XM002610011594",
+      |      "businessPartnerNumber": "100893731",
+      |      "contractAccountNumber": "900726630",
+      |      "contractAccountCategory": "VAT",
+      |      "contractObjectNumber": "104920928302302",
+      |      "contractObjectType": "ZVAT",
+      |      "postingDate": "2022-01-01",
+      |      "issueDate": "2022-01-01",
+      |      "documentTotalAmount": "100.0",
+      |      "documentClearedAmount": "100.0",
+      |      "documentOutstandingAmount": "543.21",
+      |      "documentLockDetails": {
+      |        "lockType": "Payment",
+      |        "lockStartDate": "2022-01-01",
+      |        "lockEndDate": "2022-01-01"
+      |      },
+      |      "documentInterestTotals": {
+      |        "interestPostedAmount": "13.12",
+      |        "interestPostedChargeRef": "XB001286323438",
+      |        "interestAccruingAmount": 12.1
+      |      },
+      |      "documentPenaltyTotals": [
+      |        {
+      |          "penaltyType": "LPP1",
+      |          "penaltyStatus": "POSTED",
+      |          "penaltyAmount": "10.01",
+      |          "postedChargeReference": "XR00123933492"
+      |        }
+      |      ],
+      |      "lineItemDetails": [
+      |        {
+      |          "itemNumber": "0001",
+      |          "subItemNumber": "003",
+      |          "mainTransaction": "4703",
+      |          "subTransaction": "1000",
+      |          "chargeDescription": "VAT Return",
+      |          "periodFromDate": "2022-01-01",
+      |          "periodToDate": "2022-01-31",
+      |          "periodKey": "22A1",
+      |          "netDueDate": "2022-02-08",
+      |          "formBundleNumber": "125435934761",
+      |          "statisticalKey": "1",
+      |          "amount": "3420.0",
+      |          "clearingDate": "2022-02-09",
+      |          "clearingReason": "Payment at External Payment Collector Reported",
+      |          "clearingDocument": "719283701921",
+      |          "outgoingPaymentMethod": "B",
+      |          "ddCollectionInProgress": "true",
+      |          "lineItemLockDetails": [
+      |            {
+      |              "lockType": "Payment",
+      |              "lockStartDate": "2022-01-01",
+      |              "lockEndDate": "2022-01-01"
+      |            }
+      |          ],
+      |          "lineItemInterestDetails": {
+      |            "interestKey": "String",
+      |            "currentInterestRate": "-999.999999",
+      |            "interestStartDate": "1920-02-29",
+      |            "interestPostedAmount": "-99999999999.99",
+      |            "interestAccruingAmount": -99999999999.99
+      |          }
+      |      }]
+      |    }
+      |  ]
+      |}
+      |}
+      |}
+      |""".stripMargin
+  val getFinancialDetailsHIPResponseBody: String =
+    """
+      |{
+      | "success": {
+      |   "processingDate": "2023-11-28T10:15:10Z",
+      |   "financialData": {
+      |     "totalisation": {
+      |       "regimeTotalisation": {
+      |         "totalAccountOverdue": 1000.0,
+      |         "totalAccountNotYetDue": 250.0,
+      |         "totalAccountCredit": 40.0,
+      |         "totalAccountBalance": 1210
+      |       },
+      |       "targetedSearch_SelectionCriteriaTotalisation": {
+      |         "totalOverdue": 100.0,
+      |         "totalNotYetDue": 0.0,
+      |         "totalBalance": 100.0,
+      |         "totalCredit": 10.0,
+      |         "totalCleared": 50
+      |       },
+      |       "additionalReceivableTotalisations": {
+      |         "totalAccountPostedInterest": 12.34,
+      |         "totalAccountAccruingInterest": 43.21
+      |       }
+      |     },
+      |     "documentDetails": [
+      |     {
+      |      "documentNumber": "187346702498",
+      |      "documentType": "TRM New Charge",
+      |      "chargeReferenceNumber": "XM002610011594",
+      |      "businessPartnerNumber": "100893731",
+      |      "contractAccountNumber": "900726630",
+      |      "contractAccountCategory": "VAT",
+      |      "contractObjectNumber": "104920928302302",
+      |      "contractObjectType": "ZVAT",
+      |      "postingDate": "2022-01-01",
+      |      "issueDate": "2022-01-01",
+      |      "documentTotalAmount": "100.0",
+      |      "documentClearedAmount": "100.0",
+      |      "documentOutstandingAmount": "543.21",
+      |      "documentLockDetails": {
+      |        "lockType": "Payment",
+      |        "lockStartDate": "2022-01-01",
+      |        "lockEndDate": "2022-01-01"
+      |      },
+      |      "documentInterestTotals": {
+      |        "interestPostedAmount": "13.12",
+      |        "interestPostedChargeRef": "XB001286323438",
+      |        "interestAccruingAmount": 12.1
+      |      },
+      |      "documentPenaltyTotals": [
+      |        {
+      |          "penaltyType": "LPP1",
+      |          "penaltyStatus": "POSTED",
+      |          "penaltyAmount": "10.01",
+      |          "postedChargeReference": "XR00123933492"
+      |        }
+      |      ],
+      |      "lineItemDetails": [
+      |        {
+      |          "itemNumber": "0001",
+      |          "subItemNumber": "003",
+      |          "mainTransaction": "4703",
+      |          "subTransaction": "1000",
+      |          "chargeDescription": "VAT Return",
+      |          "periodFromDate": "2022-01-01",
+      |          "periodToDate": "2022-01-31",
+      |          "periodKey": "22A1",
+      |          "netDueDate": "2022-02-08",
+      |          "formBundleNumber": "125435934761",
+      |          "statisticalKey": "1",
+      |          "amount": "3420.0",
+      |          "clearingDate": "2022-02-09",
+      |          "clearingReason": "Payment at External Payment Collector Reported",
+      |          "clearingDocument": "719283701921",
+      |          "outgoingPaymentMethod": "B",
+      |          "ddCollectionInProgress": "true",
+      |          "lineItemLockDetails": [
+      |            {
+      |              "lockType": "Payment",
+      |              "lockStartDate": "2022-01-01",
+      |              "lockEndDate": "2022-01-01"
+      |            }
+      |          ],
+      |          "lineItemInterestDetails": {
+      |            "interestKey": "String",
+      |            "currentInterestRate": "-999.999999",
+      |            "interestStartDate": "1920-02-29",
+      |            "interestPostedAmount": "-99999999999.99",
+      |            "interestAccruingAmount": -99999999999.99
+      |          }
+      |      }]
+      |    }
+      |  ]
+      |}
+      |}
+      |}
+      |""".stripMargin
+  val getFinancialDetailsInvalidResponseBody: String =
+    """
+      |{
+      | "success": {
+      |   "processingDate": "2023-11-28T10:15:10Z",
+      |   "getFinancialData": {
+      |     "totalisation": {
+      |       "regimeTotalisation": {
+      |         "totalAccountOverdue": 1000.0,
+      |         "totalAccountNotYetDue": 250.0,
+      |         "totalAccountCredit": 40.0,
+      |         "totalAccountBalance": 1210
+      |       },
+      |       "targetedSearch_SelectionCriteriaTotalisation": {
+      |         "totalOverdue": 100.0,
+      |         "totalNotYetDue": 0.0,
+      |         "totalBalance": 100.0,
+      |         "totalCredit": 10.0,
+      |         "totalCleared": 50
+      |       },
+      |       "additionalReceivableTotalisations": {
+      |         "totalAccountPostedInterest": 12.34,
+      |         "totalAccountAccruingInterest": 43.21
+      |       }
+      |     },
+      |     "documentDetails": [
+      |     {
+      |      "documentNumber": "187346702498",
+      |      "documentType": "TRM New Charge",
+      |      "chargeReferenceNumber": "XM002610011594",
+      |      "businessPartnerNumber": "100893731",
+      |      "contractAccountNumber": "900726630",
+      |      "contractAccountCategory": "VAT",
+      |      "contractObjectNumber": "104920928302302",
+      |      "contractObjectType": "ZVAT",
+      |      "postingDate": "2022-01-01",
+      |      "issueDate": "2022-01-01",
+      |      "documentTotalAmount": "100.0",
+      |      "documentClearedAmount": "100.0",
+      |      "documentOutstandingAmount": "543.21",
+      |      "documentLockDetails": {
+      |        "lockType": "Payment",
+      |        "lockStartDate": "2022-01-01",
+      |        "lockEndDate": "2022-01-01"
+      |      },
+      |      "documentInterestTotals": {
+      |        "interestPostedAmount": "13.12",
+      |        "interestPostedChargeRef": "XB001286323438",
+      |        "interestAccruingAmount": 12.1
+      |      },
+      |      "documentPenaltyTotals": [
+      |        {
+      |          "penaltyType": "LPP1",
+      |          "penaltyStatus": "POSTED",
+      |          "penaltyAmount": "10.01",
+      |          "postedChargeReference": "XR00123933492"
+      |        }
+      |      ],
+      |      "lineItemDetails": [
+      |        {
+      |          "itemNumber": "0001",
+      |          "subItemNumber": "003",
+      |          "mainTransaction": "4703",
+      |          "subTransaction": "1000",
+      |          "chargeDescription": "VAT Return",
+      |          "periodFromDate": "2022-01-01",
+      |          "periodToDate": "2022-01-31",
+      |          "periodKey": "22A1",
+      |          "netDueDate": "2022-02-08",
+      |          "formBundleNumber": "125435934761",
+      |          "statisticalKey": "1",
+      |          "amount": "3420.0",
+      |          "clearingDate": "2022-02-09",
+      |          "clearingReason": "Payment at External Payment Collector Reported",
+      |          "clearingDocument": "719283701921",
+      |          "outgoingPaymentMethod": "B",
+      |          "ddCollectionInProgress": "true",
+      |          "lineItemLockDetails": [
+      |            {
+      |              "lockType": "Payment",
+      |              "lockStartDate": "2022-01-01",
+      |              "lockEndDate": "2022-01-01"
+      |            }
+      |          ],
+      |          "lineItemInterestDetails": {
+      |            "interestKey": "String",
+      |            "currentInterestRate": "-999.999999",
+      |            "interestStartDate": "1920-02-29",
+      |            "interestPostedAmount": "-99999999999.99",
+      |            "interestAccruingAmount": -99999999999.99
+      |          }
+      |      }]
+      |    }
+      |  ]
+      |}
+      |}
+      |}
+      |""".stripMargin
+  val financialDetailsForVatApi: JsValue = Json.parse(
+    """
+      |{
+      |  "totalisation": {
+      |    "regimeTotalisation": {
+      |      "totalAccountOverdue": 1000.0
+      |    },
+      |    "interestTotalisations": {
+      |      "totalAccountPostedInterest": 12.34,
+      |      "totalAccountAccruingInterest": 43.21
+      |    }
+      |  },
+      |  "documentDetails": [
+      |    {
+      |      "chargeReferenceNumber": "XM002610011594",
+      |      "documentOutstandingAmount": 543.21,
+      |      "documentTotalAmount": 100,
+      |      "lineItemDetails": [
+      |        {
+      |          "mainTransaction": "4703"
+      |        }
+      |      ],
+      |      "issueDate": "2022-01-01"
+      |    }
+      |  ]
+      |}
+      |""".stripMargin)
+
   private val testCases = Seq(
-//    ("IF", vatcEnrolmentKey),
-    ("HIP", vatcEnrolmentKey)
-//    ("HIP", itsaEnrolmentKey)
+    ("IF", vatcEnrolmentKey),
+    ("HIP", vatcEnrolmentKey),
+    ("HIP", itsaEnrolmentKey)
   )
 
   "getFinancialDetails" when {
@@ -208,19 +530,32 @@ class FinancialDetailsServiceSpec extends SpecBase with FeatureSwitching with Lo
     testCases.foreach { case (upstreamService, enrolmentKey) =>
       val errorLogPrefix = s"[FinancialDetailsService][getFinancialDetailsForAPI][$enrolmentKey]"
 
-      s"calling the $upstreamService service for ${enrolmentKey.regime} regime" should {
-        "return 200 HttpResponse from the connector when call is successful" in new Setup(upstreamService) {
-          buildGetFinancialDetailsForApiMock(enrolmentKey, upstreamService, Future.successful(HttpResponse(200, "")))
+      s"calling the $upstreamService service for ${enrolmentKey.regime} regime" when {
+        "a 200 HttpResponse is returned from the connector" should {
+          s"return the HttpResponse with the FinancialDetails model extracted from its $upstreamService wrapper" in new Setup(upstreamService) {
+            private val successResponseBody = if (upstreamService == "HIP") getFinancialDetailsHIPResponseBody else getFinancialDetailsIFResponseBody
+            buildGetFinancialDetailsForApiMock(enrolmentKey, upstreamService, Future.successful(HttpResponse(200, successResponseBody)))
 
-          val result: HttpResponse =
-            await(service.getFinancialDetailsForAPI(enrolmentKey, None, None, None, None, None, None, None, None, None, None, None, None, None))
+            val result: HttpResponse =
+              await(service.getFinancialDetailsForAPI(enrolmentKey, None, None, None, None, None, None, None, None, None, None, None, None, None))
 
-          result.status shouldBe 200
+            result.status shouldBe 200
+            result.json shouldBe financialDetailsForVatApi
+          }
+          s"return a 500 HttpResponse when the response body is not parsable as the expected format from $upstreamService" in new Setup(upstreamService) {
+            buildGetFinancialDetailsForApiMock(enrolmentKey, upstreamService, Future.successful(HttpResponse(200, getFinancialDetailsInvalidResponseBody)))
+
+            val result: HttpResponse =
+              await(service.getFinancialDetailsForAPI(enrolmentKey, None, None, None, None, None, None, None, None, None, None, None, None, None))
+
+            result.status shouldBe 500
+            result.json shouldBe Json.parse("""{"jsonValidationError":"FinancialDetailsMalformed"}""")
+          }
         }
 
         Seq(BAD_REQUEST, UNAUTHORIZED, NOT_FOUND, INTERNAL_SERVER_ERROR).foreach { errorStatus =>
-          s"return $errorStatus HttpResponse from connector when $errorStatus error is returned" in new Setup(upstreamService) {
-            buildGetFinancialDetailsForApiMock(enrolmentKey, upstreamService, Future.successful(HttpResponse(errorStatus, "")))
+          s"$errorStatus error is returned from the connector, should return error in HttpResponse" in new Setup(upstreamService) {
+            buildGetFinancialDetailsForApiMock(enrolmentKey, upstreamService, Future.successful(HttpResponse(errorStatus, "{}")))
 
             val result: HttpResponse =
               await(service.getFinancialDetailsForAPI(enrolmentKey, None, None, None, None, None, None, None, None, None, None, None, None, None))
@@ -229,7 +564,7 @@ class FinancialDetailsServiceSpec extends SpecBase with FeatureSwitching with Lo
           }
         }
 
-        s"throw an exception from the connector when something unknown has happened" in new Setup(upstreamService) {
+        "something unknown has happened, throw an exception" in new Setup(upstreamService) {
           buildGetFinancialDetailsForApiMock(enrolmentKey, upstreamService, Future.failed(new Exception("Something has gone wrong.")))
 
           val result: Exception = intercept[Exception](

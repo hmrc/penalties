@@ -18,9 +18,13 @@ package services
 
 import config.featureSwitches.{CallAPI1811HIP, FeatureSwitching}
 import connectors.getFinancialDetails.{FinancialDetailsConnector, FinancialDetailsHipConnector}
+import connectors.parsers.getFinancialDetails.FinancialDetailsParser
 import connectors.parsers.getFinancialDetails.FinancialDetailsParser._
 import models.AgnosticEnrolmentKey
+import models.getFinancialDetails.FinancialDetails
 import play.api.Configuration
+import play.api.http.Status.{INTERNAL_SERVER_ERROR, OK}
+import play.api.libs.json.Json
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import utils.Logger.logger
 
@@ -46,8 +50,7 @@ class FinancialDetailsService @Inject() (
     if (isEnabled(CallAPI1811HIP)) callHipConnector else callIfConnector
   }
 
-  private def handleConnectorResponse(connectorResponse: FinancialDetailsResponse,
-                                      enrolmentKey: AgnosticEnrolmentKey): FinancialDetailsResponse = {
+  private def handleConnectorResponse(connectorResponse: FinancialDetailsResponse, enrolmentKey: AgnosticEnrolmentKey): FinancialDetailsResponse = {
     val startOfLogMsg: String = s"[FinancialDetailsService][getFinancialDetails][$enrolmentKey]"
     connectorResponse match {
       case res @ Right(_ @FinancialDetailsSuccessResponse(financialDetails)) =>
@@ -119,6 +122,14 @@ class FinancialDetailsService @Inject() (
         addAccruingInterestDetails
       )
 
-    if (isEnabled(CallAPI1811HIP)) callHipConnector else callIfConnector
+    (if (isEnabled(CallAPI1811HIP)) callHipConnector else callIfConnector).map(convertSuccessResponseToVatApiStructure)
   }
+
+  private def convertSuccessResponseToVatApiStructure(response: HttpResponse): HttpResponse =
+    if (response.status == OK)
+      FinancialDetailsParser.handleSuccessResponseBody(response.json).map(_.financialDetails) match {
+        case Left(error)                               => HttpResponse(INTERNAL_SERVER_ERROR, s"""{"jsonValidationError": "$error"}""")
+        case Right(financialDetails: FinancialDetails) => HttpResponse(response.status, Json.toJson(financialDetails), response.headers)
+      }
+    else response
 }

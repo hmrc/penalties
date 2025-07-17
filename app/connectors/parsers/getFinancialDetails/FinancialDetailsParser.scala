@@ -52,20 +52,7 @@ object FinancialDetailsParser {
       response.status match {
         case OK =>
           logger.debug(s"[FinancialDetailsParser][FinancialDetailsReads][read] Json response: ${response.json}")
-          val attemptHipValidation: JsResult[FinancialDetailsHIP] = response.json.validate[FinancialDetailsHIP]
-          val attemptIfValidation: JsResult[GetFinancialData]     = response.json.validate[GetFinancialData]
-
-          (attemptHipValidation, attemptIfValidation) match {
-            case (JsSuccess(financialDetailsHIP, _), _) =>
-              Right(FinancialDetailsHipSuccessResponse(financialDetailsHIP))
-            case (_, JsSuccess(financialDetailsIF, _)) =>
-              Right(FinancialDetailsSuccessResponse(financialDetailsIF.financialDetails))
-            case (JsError(errorsHIP), JsError(errorsIF)) =>
-              logger.debug(
-                "[FinancialDetailsParser][FinancialDetailsReads][read] Unable to validate Json for HIP nor IF schemas.\n" +
-                  s"HIP validation errors: $errorsHIP\n IF validation errors: $errorsIF")
-              Left(FinancialDetailsMalformed)
-          }
+          handleSuccessResponseBody(response.json)
         case NOT_FOUND if response.body.nonEmpty =>
           Try(handleNotFoundStatusBody(response.json)).fold(
             parseError => {
@@ -89,6 +76,23 @@ object FinancialDetailsParser {
             s"[FinancialDetailsParser][FinancialDetailsReads][read] Received unexpected response from FinancialDetails, status code: $status and body: ${response.body}")
           Left(FinancialDetailsFailureResponse(status))
       }
+  }
+
+  def handleSuccessResponseBody(responseBody: JsValue): FinancialDetailsResponse = {
+    val attemptHipValidation: JsResult[FinancialDetailsHIP] = responseBody.validate[FinancialDetailsHIP]
+    val attemptIfValidation: JsResult[GetFinancialData]     = responseBody.validate[GetFinancialData]
+
+    (attemptHipValidation, attemptIfValidation) match {
+      case (JsSuccess(financialDetailsHIP, _), _) =>
+        Right(FinancialDetailsHipSuccessResponse(financialDetailsHIP))
+      case (_, JsSuccess(financialDetailsIF, _)) =>
+        Right(FinancialDetailsSuccessResponse(financialDetailsIF.financialDetails))
+      case (JsError(errorsHIP), JsError(errorsIF)) =>
+        logger.error(
+          "[FinancialDetailsParser][FinancialDetailsReads][read] Unable to validate Json for HIP nor IF schemas.\n" +
+            s"HIP validation errors: $errorsHIP\n IF validation errors: $errorsIF")
+        Left(FinancialDetailsMalformed)
+    }
   }
 
   private def handleNotFoundStatusBody(responseBody: JsValue): Left[FinancialDetailsFailure, Nothing] = {

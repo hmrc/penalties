@@ -51,7 +51,7 @@ class GetFinancialDetailsServiceISpec extends IntegrationSpecCommonBase with ETM
    )
 
    "call the connector and return a successful result" in {
-     mockStubResponseForGetFinancialDetails(Status.OK, s"VRN/123456789/VATC?$financialDataQueryParam", Some(getFinancialDetailsAsJson.toString()))
+     mockStubResponseForGetFinancialDetails(Status.OK, s"VRN/123456789/VATC?$financialDataQueryParam", Some(getFinancialDetailsIFAsJson.toString()))
      val result = await(service.getFinancialDetails("123456789", None))
      result.isRight shouldBe true
      result.toOption.get shouldBe GetFinancialDetailsSuccessResponse(getFinancialDetailsModel)
@@ -59,7 +59,7 @@ class GetFinancialDetailsServiceISpec extends IntegrationSpecCommonBase with ETM
 
    "call the connector and return a successful result - passing custom parameters when defined" in {
      mockStubResponseForGetFinancialDetails(Status.OK, s"VRN/123456789/VATC?foo=bar&dateType=POSTING&dateFrom=${LocalDate.now().minusYears(2).toString}&dateTo=${LocalDate.now().toString}",
-       Some(getFinancialDetailsAsJson.toString()))
+       Some(getFinancialDetailsIFAsJson.toString()))
      val result = await(service.getFinancialDetails("123456789", Some("?foo=bar")))
      result.isRight shouldBe true
      result.toOption.get shouldBe GetFinancialDetailsSuccessResponse(getFinancialDetailsModel)
