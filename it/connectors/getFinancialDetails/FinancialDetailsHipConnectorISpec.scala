@@ -66,7 +66,7 @@ class FinancialDetailsHipConnectorISpec extends IntegrationSpecCommonBase with E
           "'includeClearedItems' query parameter is 'true'" in {
             val requestBody: String =
               financialDetailsRequestWithoutTargetedSearch.copy(includeClearedItems = Some(true)).toJsonRequest(enrolmentKey).toString()
-            mockGetFinancialDetailsHIP(OK, requestBody, successResponseBody)
+            mockGetFinancialDetailsHIP(CREATED, requestBody, successResponseBody)
 
             val result: FinancialDetailsResponse = await(connector.getFinancialDetails(enrolmentKey, includeClearedItems = true)(hc))
 
@@ -76,7 +76,7 @@ class FinancialDetailsHipConnectorISpec extends IntegrationSpecCommonBase with E
           "'includeClearedItems' query parameter is 'false'" in {
             val requestBody: String =
               financialDetailsRequestWithoutTargetedSearch.copy(includeClearedItems = Some(false)).toJsonRequest(enrolmentKey).toString()
-            mockGetFinancialDetailsHIP(OK, requestBody, successResponseBody)
+            mockGetFinancialDetailsHIP(CREATED, requestBody, successResponseBody)
 
             val result: FinancialDetailsResponse = await(connector.getFinancialDetails(enrolmentKey, includeClearedItems = false)(hc))
 
@@ -89,7 +89,7 @@ class FinancialDetailsHipConnectorISpec extends IntegrationSpecCommonBase with E
           val requestBody: String = financialDetailsRequestWithoutTargetedSearch.toJsonRequest(enrolmentKey).toString()
           s"is a $FinancialDetailsMalformed when a malformed response body is returned" in {
             val malformedResponseBody: String = """{"documentDetails": [{ "documentOutstandingAmount": "xyz"}]}"""
-            mockGetFinancialDetailsHIP(OK, requestBody, malformedResponseBody)
+            mockGetFinancialDetailsHIP(CREATED, requestBody, malformedResponseBody)
 
             val result: FinancialDetailsResponse = await(connector.getFinancialDetails(enrolmentKey, includeClearedItems = true)(hc))
 
@@ -115,16 +115,16 @@ class FinancialDetailsHipConnectorISpec extends IntegrationSpecCommonBase with E
           val successResponseBody: String = getFinancialDetailsHipResponseWithoutTotalisations.toString()
           "no extra query parameters are given" in {
             val requestBody: String = FinancialDetailsRequestModel.emptyModel.toJsonRequest(enrolmentKey).toString()
-            mockGetFinancialDetailsHIP(OK, requestBody, successResponseBody)
+            mockGetFinancialDetailsHIP(CREATED, requestBody, successResponseBody)
 
             val result: HttpResponse = await(
               connector.getFinancialDetailsForAPI(enrolmentKey, None, None, None, None, None, None, None, None, None, None, None, None, None)(hc))
 
-            result.status shouldBe 200
+            result.status shouldBe 201
           }
           "extra query parameters are given" in {
             val requestBody: String = financialDetailsRequestMaxModel.toJsonRequest(enrolmentKey).toString()
-            mockGetFinancialDetailsHIP(OK, requestBody, successResponseBody)
+            mockGetFinancialDetailsHIP(CREATED, requestBody, successResponseBody)
 
             val result: HttpResponse = await(
               connector.getFinancialDetailsForAPI(
@@ -144,7 +144,7 @@ class FinancialDetailsHipConnectorISpec extends IntegrationSpecCommonBase with E
                 addAccruingInterestDetails = Some(true)
               )(hc))
 
-            result.status shouldBe 200
+            result.status shouldBe 201
           }
         }
 

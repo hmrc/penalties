@@ -102,6 +102,8 @@ class GetFinancialDetailsParserSpec extends AnyWordSpec with Matchers with LogCa
            """.stripMargin
     ), headers = Map.empty)
 
+
+
   val mockISEHttpResponse: HttpResponse = HttpResponse.apply(status = Status.INTERNAL_SERVER_ERROR, body = "Something went wrong.")
   val mockBadRequestHttpResponse: HttpResponse = HttpResponse.apply(status = Status.BAD_REQUEST, body = "Bad Request.")
   val mockForbiddenHttpResponse: HttpResponse = HttpResponse.apply(status = Status.FORBIDDEN, body = "Forbidden.")
@@ -127,6 +129,8 @@ class GetFinancialDetailsParserSpec extends AnyWordSpec with Matchers with LogCa
       val result = GetFinancialDetailsParser.GetFinancialDetailsReads.read("GET", "/", mockOKHttpResponseWithInvalidBody)
       result.isLeft shouldBe true
     }
+
+
 
     s"parse an BAD REQUEST (${Status.BAD_REQUEST}) response - and log a PagerDuty" in {
       withCaptureOfLoggingFrom(logger) {

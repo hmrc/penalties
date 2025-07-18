@@ -50,21 +50,22 @@ object FinancialDetailsParser {
   implicit object FinancialDetailsReads extends HttpReads[FinancialDetailsResponse] {
     override def read(method: String, url: String, response: HttpResponse): FinancialDetailsResponse =
       response.status match {
-        case OK =>
-          val attemptHipValidation: JsResult[FinancialDetailsHIP] = response.json.validate[FinancialDetailsHIP]
-          val attemptIfValidation: JsResult[GetFinancialData]     = response.json.validate[GetFinancialData]
-
-          (attemptHipValidation, attemptIfValidation) match {
-            case (JsSuccess(financialDetailsHIP, _), _) =>
-              logger.info(s"[FinancialDetailsParser][FinancialDetailsReads][read] Success FinancialDetailsHipSuccessResponse returned from connector.")
+        case CREATED =>
+          logger.debug(s"[FinancialDetailsParser][FinancialDetailsReads][read] Json response: ${response.json}")
+          response.json.validate[FinancialDetailsHIP] match {
+            case JsSuccess(financialDetailsHIP, _) =>
               Right(FinancialDetailsHipSuccessResponse(financialDetailsHIP))
-            case (_, JsSuccess(financialDetailsIF, _)) =>
-              logger.info(s"[FinancialDetailsParser][FinancialDetailsReads][read] Success FinancialDetailsSuccessResponse returned from connector.")
+            case JsError(errors) =>
+              logger.debug(s"[FinancialDetailsParser][FinancialDetailsReads][read] Unable to validate HIP response with CREATED status: $errors")
+              Left(FinancialDetailsMalformed)
+          }
+        case OK =>
+          logger.debug(s"[FinancialDetailsParser][FinancialDetailsReads][read] Json response: ${response.json}")
+          response.json.validate[GetFinancialData] match {
+            case JsSuccess(financialDetailsIF, _) =>
               Right(FinancialDetailsSuccessResponse(financialDetailsIF.financialDetails))
-            case (JsError(errorsHIP), JsError(errorsIF)) =>
-              logger.error(
-                "[FinancialDetailsParser][FinancialDetailsReads][read] Unable to validate Json for HIP nor IF schemas.\n" +
-                  s"HIP validation errors: $errorsHIP\n IF validation errors: $errorsIF")
+            case JsError(errors) =>
+              logger.debug(s"[FinancialDetailsParser][FinancialDetailsReads][read] Unable to validate non-HIP response with OK status: $errors")
               Left(FinancialDetailsMalformed)
           }
         case NOT_FOUND if response.body.nonEmpty =>
