@@ -46,6 +46,7 @@ object MainTransactionEnum extends Enumeration {
   val ManualLPP: MainTransactionEnum.Value = Value("4787")
   val Unknown: MainTransactionEnum.Value = Value("4700")
   val VATOverpaymentForTax: MainTransactionEnum.Value = Value("4764")
+  val WithValue: String => MainTransactionEnum.Value = (value: String) => Value(value)
 
   implicit val format: Format[MainTransactionEnum.Value] = new Format[MainTransactionEnum.Value] {
     override def writes(o: MainTransactionEnum.Value): JsValue = {
