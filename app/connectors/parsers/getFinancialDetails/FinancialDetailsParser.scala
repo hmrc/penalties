@@ -17,7 +17,7 @@
 package connectors.parsers.getFinancialDetails
 
 import models.failure._
-import models.getFinancialDetails.{FinancialDetails, FinancialDetailsHIP, GetFinancialData}
+import models.getFinancialDetails.{FinancialDetails, GetFinancialData}
 import play.api.http.Status._
 import play.api.libs.json._
 import uk.gov.hmrc.http.{HttpReads, HttpResponse}
@@ -30,14 +30,9 @@ import scala.util.Try
 object FinancialDetailsParser {
   sealed trait FinancialDetailsFailure
 
-  sealed trait FinancialDetailsSuccess {
-    val financialDetails: FinancialDetails
-  }
+  sealed trait FinancialDetailsSuccess
 
   case class FinancialDetailsSuccessResponse(financialDetails: FinancialDetails) extends FinancialDetailsSuccess
-  case class FinancialDetailsHipSuccessResponse(financialData: FinancialDetailsHIP) extends FinancialDetailsSuccess {
-    val financialDetails: FinancialDetails = financialData.financialData
-  }
 
   case class FinancialDetailsFailureResponse(status: Int) extends FinancialDetailsFailure
 
@@ -50,15 +45,6 @@ object FinancialDetailsParser {
   implicit object FinancialDetailsReads extends HttpReads[FinancialDetailsResponse] {
     override def read(method: String, url: String, response: HttpResponse): FinancialDetailsResponse =
       response.status match {
-        case CREATED =>
-          logger.debug(s"[FinancialDetailsParser][FinancialDetailsReads][read] Json response: ${response.json}")
-          response.json.validate[FinancialDetailsHIP] match {
-            case JsSuccess(financialDetailsHIP, _) =>
-              Right(FinancialDetailsHipSuccessResponse(financialDetailsHIP))
-            case JsError(errors) =>
-              logger.debug(s"[FinancialDetailsParser][FinancialDetailsReads][read] Unable to validate HIP response with CREATED status: $errors")
-              Left(FinancialDetailsMalformed)
-          }
         case OK =>
           logger.debug(s"[FinancialDetailsParser][FinancialDetailsReads][read] Json response: ${response.json}")
           response.json.validate[GetFinancialData] match {
@@ -93,39 +79,29 @@ object FinancialDetailsParser {
       }
   }
 
-  private def handleNotFoundStatusBody(responseBody: JsValue): Left[FinancialDetailsFailure, Nothing] = {
-    val validateFailuresIF = (responseBody \ "failures").validate[Seq[FailureResponse]].asOpt
-    val validateErrorsHIP  = (responseBody \ "errors").validate[BusinessError].asOpt
-    (validateFailuresIF, validateErrorsHIP) match {
-      case (Some(failures), _) if failures.exists(_.code.equals(FailureCodeEnum.NoDataFound)) =>
-        Left(FinancialDetailsNoContent)
-      case (_, Some(errors)) if errors.code == "016" && errors.text == "Invalid ID Number" =>
+  private def handleNotFoundStatusBody(responseBody: JsValue): Left[FinancialDetailsFailure, Nothing] =
+    (responseBody \ "failures").validate[Seq[FailureResponse]] match {
+      case JsSuccess(failures, _) if failures.exists(_.code.equals(FailureCodeEnum.NoDataFound)) =>
         Left(FinancialDetailsNoContent)
       case _ =>
         logger.error(s"[FinancialDetailsParser][FinancialDetailsReads][read] - Unable to parse 404 body returned from FinancialDetails call")
         logger.error(s"[FinancialDetailsParser][FinancialDetailsReads][read] - Error response body: $responseBody")
         Left(FinancialDetailsFailureResponse(NOT_FOUND))
     }
-  }
 
   private def handleErrorResponse(response: HttpResponse): Left[FinancialDetailsFailure, Nothing] = {
-    val json               = Try(response.json).getOrElse(Json.obj())
-    val errorOpt           = (json \ "error").validate[TechnicalError].asOpt
-    val errorsOpt          = (json \ "errors").validate[Seq[BusinessError]].asOpt
-    val hipWrappedErrorOpt = (json \ "response").validate[HipWrappedError].asOpt
+    val json      = Try(response.json).getOrElse(Json.obj())
+    val errorOpt  = (json \ "error").validate[TechnicalError].asOpt
+    val errorsOpt = (json \ "errors").validate[Seq[BusinessError]].asOpt
 
-    (errorOpt, errorsOpt, hipWrappedErrorOpt) match {
-      case (Some(error), _, _) =>
+    (errorOpt, errorsOpt) match {
+      case (Some(error), _) =>
         logger.warn(s"[FinancialDetailsParser][handleErrorResponse] Technical error returned: ${error.code} - ${error.message}")
         Left(FinancialDetailsFailureResponse(response.status))
-      case (_, Some(errors), _) =>
+      case (_, Some(errors)) =>
         logger.warn(s"[FinancialDetailsParser][handleErrorResponse] Business errors returned: ${errors.mkString("\n")}")
         Left(FinancialDetailsFailureResponse(response.status))
-      case (_, _, Some(hipWrappedError)) =>
-        logger.warn(
-          s"[FinancialDetailsParser][handleErrorResponse] HIP wrapped error returned: ${hipWrappedError.`type`} - ${hipWrappedError.reason}")
-        Left(FinancialDetailsFailureResponse(response.status))
-      case (None, None, None) =>
+      case (None, None) =>
         logger.error("[FinancialDetailsParser][handleErrorResponse] No recognizable error structure found")
         Left(FinancialDetailsFailureResponse(response.status))
     }

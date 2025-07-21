@@ -307,7 +307,7 @@ class PenaltyDetailsService @Inject() (getPenaltyDetailsConnector: RegimePenalty
         ManualLPPIndicator = Some(hipLPPContainer.manualLPPIndicator)
       )
     }
-    
+    // TODO this is where HIP gets converted to IF structure. Need to apply this to the API call
     models.getPenaltyDetails.GetPenaltyDetails(
       totalisations = regularTotalisations,
       lateSubmissionPenalty = regularLSP,

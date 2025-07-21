@@ -17,7 +17,7 @@
 package connectors.getFinancialDetails
 
 import config.AppConfig
-import connectors.parsers.getFinancialDetails.FinancialDetailsParser.{FinancialDetailsFailureResponse, FinancialDetailsResponse}
+import connectors.parsers.getFinancialDetails.HIPFinancialDetailsParser.{HIPFinancialDetailsFailureResponse, HIPFinancialDetailsResponse}
 import models.AgnosticEnrolmentKey
 import models.getFinancialDetails.FinancialDetailsRequestModel
 import play.api.http.Status.INTERNAL_SERVER_ERROR
@@ -47,24 +47,27 @@ class FinancialDetailsHipConnector @Inject() (httpClient: HttpClient, appConfig:
   )
 
   def getFinancialDetails(enrolmentKey: AgnosticEnrolmentKey, includeClearedItems: Boolean)(implicit
-      hc: HeaderCarrier): Future[FinancialDetailsResponse] = {
+      hc: HeaderCarrier): Future[HIPFinancialDetailsResponse] = {
     // Without clearedItems when from RegimePenaltiesFrontendService.handleAndCombineGetFinancialDetailsData
-    val url  = appConfig.getFinancialDetailsHipUrl
-    val body = appConfig.baseFinancialDetailsRequestModel.copy(includeClearedItems = Some(includeClearedItems)).toJsonRequest(enrolmentKey)
+    val url           = appConfig.getFinancialDetailsHipUrl
+    val body          = appConfig.baseFinancialDetailsRequestModel.copy(includeClearedItems = Some(includeClearedItems)).toJsonRequest(enrolmentKey)
+    val hcWithoutAuth = hc.copy(authorization = None)
 
-    httpClient.POST[JsObject, FinancialDetailsResponse](url, body, headers).recover(handleErrorResponse)
+    httpClient
+      .POST[JsObject, HIPFinancialDetailsResponse](url, body, headers)(implicitly, implicitly, hcWithoutAuth, implicitly)
+      .recover(handleErrorResponse)
   }
 
-  private def handleErrorResponse: PartialFunction[Throwable, FinancialDetailsResponse] = {
+  private def handleErrorResponse: PartialFunction[Throwable, HIPFinancialDetailsResponse] = {
     case e: UpstreamErrorResponse =>
       PagerDutyHelper.logStatusCode("getFinancialDetails", e.statusCode)(RECEIVED_4XX_FROM_1811_API, RECEIVED_5XX_FROM_1811_API)
       logger.error(
         s"[FinancialDetailsConnector][getFinancialDetails] Received ${e.statusCode} from API 1811 call - returning status to caller. Error: ${e.getMessage()}")
-      Left(FinancialDetailsFailureResponse(e.statusCode))
+      Left(HIPFinancialDetailsFailureResponse(e.statusCode))
     case e: Exception =>
       PagerDutyHelper.log("getFinancialDetails", UNKNOWN_EXCEPTION_CALLING_1811_API)
       logger.error(s"[FinancialDetailsConnector][getFinancialDetails] An unknown exception occurred - returning 500 back to caller: ${e.getMessage}")
-      Left(FinancialDetailsFailureResponse(INTERNAL_SERVER_ERROR))
+      Left(HIPFinancialDetailsFailureResponse(INTERNAL_SERVER_ERROR))
   }
 
   def getFinancialDetailsForAPI(enrolmentKey: AgnosticEnrolmentKey,
@@ -97,8 +100,11 @@ class FinancialDetailsHipConnector @Inject() (httpClient: HttpClient, appConfig:
       addPostedInterestDetails,
       addAccruingInterestDetails
     ).toJsonRequest(enrolmentKey)
+    val hcWithoutAuth = hc.copy(authorization = None)
 
-    httpClient.POST[JsObject, HttpResponse](url, body, headers).recover(handleErrorResponseForAPICall)
+    httpClient
+      .POST[JsObject, HttpResponse](url, body, headers)(implicitly, implicitly, hcWithoutAuth, implicitly)
+      .recover(handleErrorResponseForAPICall)
   }
 
   private def handleErrorResponseForAPICall: PartialFunction[Throwable, HttpResponse] = {

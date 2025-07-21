@@ -19,10 +19,7 @@ package models.getFinancialDetails
 import models.getFinancialDetails.totalisation.FinancialDetailsTotalisation
 import play.api.libs.json.{Format, Json}
 
-case class FinancialDetails (
-                              totalisation: Option[FinancialDetailsTotalisation],
-                              documentDetails: Option[Seq[DocumentDetails]]
-                            )
+case class FinancialDetails(totalisation: Option[FinancialDetailsTotalisation], documentDetails: Option[Seq[DocumentDetails]])
 
 object FinancialDetails {
   implicit val format: Format[FinancialDetails] = Json.format[FinancialDetails]
