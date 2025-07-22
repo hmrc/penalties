@@ -41,35 +41,31 @@ class FinancialDetailsService @Inject() (
       financialDetailsHipConnector
         .getFinancialDetails(enrolmentKey, includeClearedItems)
         .map(mapHipToIfResponse)
-        .map(handleConnectorResponse(_, enrolmentKey))
+        .map(logResponse(_, enrolmentKey))
     }
 
     def callIfConnector: Future[FinancialDetailsResponse] =
-      getFinancialDetailsConnector.getFinancialDetails(enrolmentKey, optionalParameters).map(handleConnectorResponse(_, enrolmentKey))
+      getFinancialDetailsConnector.getFinancialDetails(enrolmentKey, optionalParameters).map(logResponse(_, enrolmentKey))
 
     if (isEnabled(CallAPI1811HIP)) callHipConnector else callIfConnector
   }
 
   private def mapHipToIfResponse(response: HIPFinancialDetailsResponse): FinancialDetailsResponse =
-    response.left.map(_.toIFResponse).map(_.toIFResponse)
+    response.left.map(_.toIFFailureResponse).map(_.toIFSuccessResponse)
 
-  private def handleConnectorResponse(connectorResponse: FinancialDetailsResponse, enrolmentKey: AgnosticEnrolmentKey): FinancialDetailsResponse = { // TODO do we need this?
-    // Can't it be handled by the parser
+  private def logResponse(connectorResponse: FinancialDetailsResponse, enrolmentKey: AgnosticEnrolmentKey): FinancialDetailsResponse = {
     val startOfLogMsg: String = s"[FinancialDetailsService][getFinancialDetails][$enrolmentKey]"
     connectorResponse match {
-      case res @ Right(_ @FinancialDetailsSuccessResponse(_)) =>
-        logger.info(s"$startOfLogMsg - Success response returned from connector.")
-        res
-      case res @ Left(FinancialDetailsNoContent) =>
-        logger.info(s"$startOfLogMsg - Got a 404 response and no data was found for GetFinancialDetails call")
-        res
-      case res @ Left(FinancialDetailsMalformed) =>
-        logger.error(s"$startOfLogMsg - Failed to parse HTTP response into model for $enrolmentKey")
-        res
-      case res @ Left(FinancialDetailsFailureResponse(_)) =>
-        logger.error(s"$startOfLogMsg - Unknown status returned from connector for $enrolmentKey")
-        res
+      case _ @Right(_ @FinancialDetailsSuccessResponse(_)) =>
+        logger.info(s"$startOfLogMsg - Success response with data returned from connector")
+      case _ @Left(FinancialDetailsNoContent) =>
+        logger.info(s"$startOfLogMsg - No data found for ID")
+      case _ @Left(FinancialDetailsMalformed) =>
+        logger.error(s"$startOfLogMsg - Failed to parse HTTP response into model for ID")
+      case _ @Left(FinancialDetailsFailureResponse(_)) =>
+        logger.error(s"$startOfLogMsg - Unknown status returned from connector for ID")
     }
+    connectorResponse
   }
 
   def getFinancialDetailsForAPI(enrolmentKey: AgnosticEnrolmentKey,
@@ -103,8 +99,7 @@ class FinancialDetailsService @Inject() (
         addPenaltyDetails,
         addPostedInterestDetails,
         addAccruingInterestDetails
-      ).map(_.json.validate[]) // TODO is there any reason this has to be passed as an HttpResponse?
-    // Can't we just validate it the same way as normal then let vat-api filter the response data or error?
+      )
 
     def callIfConnector: Future[HttpResponse] =
       getFinancialDetailsConnector.getFinancialDetailsForAPI(

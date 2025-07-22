@@ -59,7 +59,7 @@ class FinancialDetailsHipConnector @Inject() (httpClient: HttpClient, appConfig:
   }
 
   private def handleErrorResponse: PartialFunction[Throwable, HIPFinancialDetailsResponse] = {
-    case e: UpstreamErrorResponse =>
+    case e: UpstreamErrorResponse => // TODO do these make the parser errors redundant, plus confusion from 404 -> 422?
       PagerDutyHelper.logStatusCode("getFinancialDetails", e.statusCode)(RECEIVED_4XX_FROM_1811_API, RECEIVED_5XX_FROM_1811_API)
       logger.error(
         s"[FinancialDetailsConnector][getFinancialDetails] Received ${e.statusCode} from API 1811 call - returning status to caller. Error: ${e.getMessage()}")
