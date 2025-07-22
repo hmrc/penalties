@@ -16,7 +16,6 @@
 
 package models.hipPenaltyDetails.latePayment
 
-import models.hipPenaltyDetails.MainTransactionEnum
 import models.hipPenaltyDetails.appealInfo.AppealInformationType
 import play.api.libs.json._
 import utils.JsonUtils
@@ -45,7 +44,7 @@ case class LPPDetails(
   penaltyChargeDueDate: Option[LocalDate],
   appealInformation: Option[Seq[AppealInformationType]],
   principalChargeDocNumber: Option[String],
-  principalChargeMainTr: MainTransactionEnum.Value,
+  principalChargeMainTr: String,
   principalChargeSubTr: Option[String],
   principalChargeBillingFrom: LocalDate,
   principalChargeBillingTo: LocalDate,
@@ -79,7 +78,7 @@ object LPPDetails extends JsonUtils {
         penaltyChargeDueDate <- (json \ "penaltyChargeDueDate").validateOpt[LocalDate]
         appealInformation <- (json \ "appealInformation").validateOpt[Seq[AppealInformationType]]
         principalChargeDocNumber <- (json \ "principalChargeDocNumber").validateOpt[String]
-        principalChargeMainTr <- (json \ "principalChargeMainTr").validate[MainTransactionEnum.Value]
+        principalChargeMainTr <- (json \ "principalChargeMainTr").validate[String]
         principalChargeSubTr <- (json \ "principalChargeSubTr").validateOpt[String]
         principalChargeBillingFrom <- (json \ "principalChargeBillingFrom").validate[LocalDate]
         principalChargeBillingTo <- (json \ "principalChargeBillingTo").validate[LocalDate]

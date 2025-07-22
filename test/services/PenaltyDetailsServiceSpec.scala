@@ -20,16 +20,22 @@ import base.{LPPDetailsBase, LogCapturing, SpecBase}
 import config.AppConfig
 import config.featureSwitches.{CallAPI1812HIP, FeatureSwitching}
 import connectors.getPenaltyDetails.{HIPPenaltyDetailsConnector, RegimePenaltyDetailsConnector}
-import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser.{GetPenaltyDetailsFailureResponse, GetPenaltyDetailsMalformed, GetPenaltyDetailsNoContent, GetPenaltyDetailsResponse, GetPenaltyDetailsSuccessResponse}
+import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser.{
+  GetPenaltyDetailsFailureResponse,
+  GetPenaltyDetailsMalformed,
+  GetPenaltyDetailsNoContent,
+  GetPenaltyDetailsResponse,
+  GetPenaltyDetailsSuccessResponse
+}
 import models.getFinancialDetails.MainTransactionEnum
 import models.getPenaltyDetails.appealInfo.{AppealInformationType, AppealLevelEnum, AppealStatusEnum}
 import models.getPenaltyDetails.breathingSpace.BreathingSpace
 import models.getPenaltyDetails.latePayment._
 import models.getPenaltyDetails.lateSubmission._
 import models.getPenaltyDetails.{GetPenaltyDetails, Totalisations}
+import models.{AgnosticEnrolmentKey, Id, IdType, Regime}
 import org.mockito.ArgumentMatchers
 import org.mockito.ArgumentMatchers.any
-
 import org.mockito.Mockito.{mock, reset, when}
 import play.api.Configuration
 import play.api.http.Status.INTERNAL_SERVER_ERROR
@@ -40,7 +46,6 @@ import utils.Logger.logger
 
 import java.time.LocalDate
 import scala.concurrent.{ExecutionContext, Future}
-import models.{AgnosticEnrolmentKey, Id, IdType, Regime}
 
 class PenaltyDetailsServiceSpec extends SpecBase with LogCapturing with LPPDetailsBase {
   implicit val ec: ExecutionContext = ExecutionContext.Implicits.global
@@ -53,7 +58,7 @@ class PenaltyDetailsServiceSpec extends SpecBase with LogCapturing with LPPDetai
     Id("123456789")
   )
 
-  class Setup(withRealConfig: Boolean = true) extends FeatureSwitching {
+  class Setup extends FeatureSwitching {
     val mockConfig: Configuration = mock(classOf[Configuration])
     val mockServicesConfig: ServicesConfig = mock(classOf[ServicesConfig])
     val filterService: RegimeFilterService = injector.instanceOf(classOf[RegimeFilterService])
@@ -195,6 +200,7 @@ class PenaltyDetailsServiceSpec extends SpecBase with LogCapturing with LPPDetai
       enableFeatureSwitch(CallAPI1812HIP)
       
       import connectors.parsers.getPenaltyDetails.HIPPenaltyDetailsParser._
+
       import java.time.Instant
 
       val mockHIPPenaltyDetailsResponseAsModel: models.hipPenaltyDetails.PenaltyDetails = models.hipPenaltyDetails.PenaltyDetails(
@@ -283,7 +289,7 @@ class PenaltyDetailsServiceSpec extends SpecBase with LogCapturing with LPPDetai
                 penaltyChargeDueDate = Some(LocalDate.of(2022, 10, 30)),
                 appealInformation = Some(Seq(models.hipPenaltyDetails.appealInfo.AppealInformationType(appealStatus = Some(models.hipPenaltyDetails.appealInfo.AppealStatusEnum.Unappealable), appealLevel = Some(models.hipPenaltyDetails.appealInfo.AppealLevelEnum.HMRC), appealDescription = Some("Some value")))),
                 principalChargeDocNumber = Some("DOC1"),
-                principalChargeMainTr = models.hipPenaltyDetails.MainTransactionEnum.VATReturnCharge,
+                principalChargeMainTr = "4700",
                 principalChargeSubTr = Some("SUB1"),
                 principalChargeBillingFrom = LocalDate.of(2022, 10, 30),
                 principalChargeBillingTo = LocalDate.of(2022, 10, 30),

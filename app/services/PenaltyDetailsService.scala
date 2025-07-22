@@ -16,17 +16,18 @@
 
 package services
 
-import config.featureSwitches.FeatureSwitching
+import config.featureSwitches.{CallAPI1812HIP, FeatureSwitching}
 import connectors.getPenaltyDetails.{HIPPenaltyDetailsConnector, RegimePenaltyDetailsConnector}
-import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser._
 import connectors.parsers.getPenaltyDetails.HIPPenaltyDetailsParser._
+import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser._
 import models.AgnosticEnrolmentKey
+import models.getFinancialDetails.MainTransactionEnum
 import play.api.Configuration
 import uk.gov.hmrc.http.HeaderCarrier
 import utils.Logger.logger
+
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
-import config.featureSwitches.CallAPI1812HIP
 
 case class LoggingContext(callingClass: String, function: String, enrolmentKey: String)
 
@@ -37,7 +38,6 @@ class PenaltyDetailsService @Inject() (getPenaltyDetailsConnector: RegimePenalty
 
   def getPenaltyDetails(enrolmentKey: AgnosticEnrolmentKey)(implicit hc: HeaderCarrier): Future[GetPenaltyDetailsResponse] = {
     if (isEnabled(CallAPI1812HIP)) {
-      val startOfLogMsg: String = s"[PenaltyDetailsService][getPenaltyDetails][${enrolmentKey.regime.value}]"
       hipPenaltyDetailsConnector.getPenaltyDetails(enrolmentKey).map { hipResponse =>
         hipResponse.fold(
           failure => convertHIPFailureToRegular(failure, enrolmentKey),
@@ -233,34 +233,7 @@ class PenaltyDetailsService @Inject() (getPenaltyDetailsConnector: RegimePenalty
           penaltyChargeCreationDate = hipLPP.penaltyChargeCreationDate,
           communicationsDate = hipLPP.communicationsDate,
           penaltyChargeReference = hipLPP.penaltyChargeReference,
-          principalChargeMainTransaction = hipLPP.principalChargeMainTr match {
-            case models.hipPenaltyDetails.MainTransactionEnum.VATReturnCharge => models.getFinancialDetails.MainTransactionEnum.VATReturnCharge
-            case models.hipPenaltyDetails.MainTransactionEnum.VATReturnFirstLPP => models.getFinancialDetails.MainTransactionEnum.VATReturnFirstLPP
-            case models.hipPenaltyDetails.MainTransactionEnum.VATReturnSecondLPP => models.getFinancialDetails.MainTransactionEnum.VATReturnSecondLPP
-            case models.hipPenaltyDetails.MainTransactionEnum.CentralAssessment => models.getFinancialDetails.MainTransactionEnum.CentralAssessment
-            case models.hipPenaltyDetails.MainTransactionEnum.CentralAssessmentFirstLPP => models.getFinancialDetails.MainTransactionEnum.CentralAssessmentFirstLPP
-            case models.hipPenaltyDetails.MainTransactionEnum.CentralAssessmentSecondLPP => models.getFinancialDetails.MainTransactionEnum.CentralAssessmentSecondLPP
-            case models.hipPenaltyDetails.MainTransactionEnum.OfficersAssessment => models.getFinancialDetails.MainTransactionEnum.OfficersAssessment
-            case models.hipPenaltyDetails.MainTransactionEnum.OfficersAssessmentFirstLPP => models.getFinancialDetails.MainTransactionEnum.OfficersAssessmentFirstLPP
-            case models.hipPenaltyDetails.MainTransactionEnum.OfficersAssessmentSecondLPP => models.getFinancialDetails.MainTransactionEnum.OfficersAssessmentSecondLPP
-            case models.hipPenaltyDetails.MainTransactionEnum.ErrorCorrection => models.getFinancialDetails.MainTransactionEnum.ErrorCorrection
-            case models.hipPenaltyDetails.MainTransactionEnum.ErrorCorrectionFirstLPP => models.getFinancialDetails.MainTransactionEnum.ErrorCorrectionFirstLPP
-            case models.hipPenaltyDetails.MainTransactionEnum.ErrorCorrectionSecondLPP => models.getFinancialDetails.MainTransactionEnum.ErrorCorrectionSecondLPP
-            case models.hipPenaltyDetails.MainTransactionEnum.AdditionalAssessment => models.getFinancialDetails.MainTransactionEnum.AdditionalAssessment
-            case models.hipPenaltyDetails.MainTransactionEnum.AdditionalAssessmentFirstLPP => models.getFinancialDetails.MainTransactionEnum.AdditionalAssessmentFirstLPP
-            case models.hipPenaltyDetails.MainTransactionEnum.AdditionalAssessmentSecondLPP => models.getFinancialDetails.MainTransactionEnum.AdditionalAssessmentSecondLPP
-            case models.hipPenaltyDetails.MainTransactionEnum.ProtectiveAssessment => models.getFinancialDetails.MainTransactionEnum.ProtectiveAssessment
-            case models.hipPenaltyDetails.MainTransactionEnum.ProtectiveAssessmentFirstLPP => models.getFinancialDetails.MainTransactionEnum.ProtectiveAssessmentFirstLPP
-            case models.hipPenaltyDetails.MainTransactionEnum.ProtectiveAssessmentSecondLPP => models.getFinancialDetails.MainTransactionEnum.ProtectiveAssessmentSecondLPP
-            case models.hipPenaltyDetails.MainTransactionEnum.POAReturnCharge => models.getFinancialDetails.MainTransactionEnum.POAReturnCharge
-            case models.hipPenaltyDetails.MainTransactionEnum.POAReturnChargeFirstLPP => models.getFinancialDetails.MainTransactionEnum.POAReturnChargeFirstLPP
-            case models.hipPenaltyDetails.MainTransactionEnum.POAReturnChargeSecondLPP => models.getFinancialDetails.MainTransactionEnum.POAReturnChargeSecondLPP
-            case models.hipPenaltyDetails.MainTransactionEnum.AAReturnCharge => models.getFinancialDetails.MainTransactionEnum.AAReturnCharge
-            case models.hipPenaltyDetails.MainTransactionEnum.AAReturnChargeFirstLPP => models.getFinancialDetails.MainTransactionEnum.AAReturnChargeFirstLPP
-            case models.hipPenaltyDetails.MainTransactionEnum.AAReturnChargeSecondLPP => models.getFinancialDetails.MainTransactionEnum.AAReturnChargeSecondLPP
-            case models.hipPenaltyDetails.MainTransactionEnum.VATOverpaymentFromTax => models.getFinancialDetails.MainTransactionEnum.VATOverpaymentForTax
-            case models.hipPenaltyDetails.MainTransactionEnum.ManualLPP => models.getFinancialDetails.MainTransactionEnum.ManualLPP
-          },
+          principalChargeMainTransaction = MainTransactionEnum.WithValue(hipLPP.principalChargeMainTr),
           principalChargeBillingFrom = hipLPP.principalChargeBillingFrom,
           principalChargeBillingTo = hipLPP.principalChargeBillingTo,
           principalChargeDueDate = hipLPP.principalChargeDueDate,
@@ -321,19 +294,11 @@ class PenaltyDetailsService @Inject() (getPenaltyDetailsConnector: RegimePenalty
     )
   }
 
-  def getDataFromPenaltyService(enrolmentKey: AgnosticEnrolmentKey)(implicit hc: HeaderCarrier): Future[GetPenaltyDetailsResponse] = {
-    val startOfLogMsg: String = s"[PenaltyDetailsService][getDataFromPenaltyService][${enrolmentKey.regime.value}]"
-
-    getPenaltyDetailsConnector.getPenaltyDetails(enrolmentKey).map {
-      handleConnectorResponse(_)(startOfLogMsg, enrolmentKey)
-    }
-  }
-
   private def handleConnectorResponse(connectorResponse: GetPenaltyDetailsResponse)(implicit
       startOfLogMsg: String,
       enrolmentKeyInfo: AgnosticEnrolmentKey): GetPenaltyDetailsResponse =
     connectorResponse match {
-      case res @ Right(_ @GetPenaltyDetailsSuccessResponse(penaltyDetails)) =>
+      case _ @ Right(_ @GetPenaltyDetailsSuccessResponse(penaltyDetails)) =>
         implicit val loggingContext: LoggingContext = LoggingContext(
           callingClass = "PenaltiesDetailsService",
           function = "handleConnectorResponse",

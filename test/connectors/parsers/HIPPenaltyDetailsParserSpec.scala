@@ -18,8 +18,13 @@ package connectors.parsers
 
 import base.LogCapturing
 import connectors.parsers.getPenaltyDetails.HIPPenaltyDetailsParser
-import connectors.parsers.getPenaltyDetails.HIPPenaltyDetailsParser.{HIPPenaltyDetailsFailureResponse, HIPPenaltyDetailsMalformed, HIPPenaltyDetailsNoContent, HIPPenaltyDetailsSuccessResponse}
-import models.hipPenaltyDetails.{MainTransactionEnum, PenaltyDetails}
+import connectors.parsers.getPenaltyDetails.HIPPenaltyDetailsParser.{
+  HIPPenaltyDetailsFailureResponse,
+  HIPPenaltyDetailsMalformed,
+  HIPPenaltyDetailsNoContent,
+  HIPPenaltyDetailsSuccessResponse
+}
+import models.hipPenaltyDetails.PenaltyDetails
 import models.hipPenaltyDetails.latePayment.{LPPDetails, LPPPenaltyCategoryEnum, LPPPenaltyStatusEnum, LatePaymentPenalty}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
@@ -27,7 +32,6 @@ import play.api.http.Status
 import play.api.http.Status.{IM_A_TEAPOT, INTERNAL_SERVER_ERROR}
 import play.api.libs.json.Json
 import uk.gov.hmrc.http.HttpResponse
-
 
 import java.time.{Instant, LocalDate}
 
@@ -65,7 +69,7 @@ class HIPPenaltyDetailsParserSpec extends AnyWordSpec with Matchers with LogCapt
     penaltyChargeDueDate = None,
     appealInformation = None,
     principalChargeDocNumber = Some("DOC1"),
-    principalChargeMainTr = MainTransactionEnum.VATReturnCharge,
+    principalChargeMainTr = "4700",
     principalChargeSubTr = Some("SUB1"),
     principalChargeBillingFrom = LocalDate.now(),
     principalChargeBillingTo = LocalDate.now(),
@@ -75,8 +79,8 @@ class HIPPenaltyDetailsParserSpec extends AnyWordSpec with Matchers with LogCapt
   )
 
   val hipLpp2Details: LPPDetails = hipLpp1Details.copy(
-    penaltyCategory = LPPPenaltyCategoryEnum.SecondPenalty, 
-    penaltyChargeReference = Some("123456790"), 
+    penaltyCategory = LPPPenaltyCategoryEnum.SecondPenalty,
+    penaltyChargeReference = Some("123456790"),
     principalChargeLatestClearing = Some(LocalDate.now())
   )
 
@@ -102,11 +106,11 @@ class HIPPenaltyDetailsParserSpec extends AnyWordSpec with Matchers with LogCapt
     lateSubmissionPenalty = None,
     latePaymentPenalty = Some(LatePaymentPenalty(
       Some(Seq(
-        hipLpp1Details, 
-        hipLpp2Details, 
-        hipLpp1Details.copy(penaltyChargeReference = Some("123456791"), principalChargeReference = "1000002"), 
+        hipLpp1Details,
+        hipLpp2Details,
+        hipLpp1Details.copy(penaltyChargeReference = Some("123456791"), principalChargeReference = "1000002"),
         hipLpp2Details.copy(penaltyChargeReference = Some("123456792"), principalChargeReference = "1000002", principalChargeLatestClearing = Some(LocalDate.now().plusDays(1)))
-      )), 
+      )),
       manualLPPIndicator = false
     )),
     breathingSpace = None
@@ -118,9 +122,9 @@ class HIPPenaltyDetailsParserSpec extends AnyWordSpec with Matchers with LogCapt
     lateSubmissionPenalty = None,
     latePaymentPenalty = Some(LatePaymentPenalty(
       Some(Seq(
-        hipLpp1Details.copy(penaltyStatus = Some(LPPPenaltyStatusEnum.Accruing)), 
+        hipLpp1Details.copy(penaltyStatus = Some(LPPPenaltyStatusEnum.Accruing)),
         hipLpp2Details
-      )), 
+      )),
       manualLPPIndicator = false
     )),
     breathingSpace = None
@@ -190,7 +194,7 @@ class HIPPenaltyDetailsParserSpec extends AnyWordSpec with Matchers with LogCapt
       |     "reason": "HIP system temporarily unavailable"
       |   },
       |   {
-      |     "type": "Validation Error", 
+      |     "type": "Validation Error",
       |     "reason": "Invalid request format"
       |   }
       | ]
@@ -249,7 +253,7 @@ class HIPPenaltyDetailsParserSpec extends AnyWordSpec with Matchers with LogCapt
         val penaltyDetails = result.toOption.get.asInstanceOf[HIPPenaltyDetailsSuccessResponse].penaltyDetails
         val lpp1First = penaltyDetails.latePaymentPenalty.get.lppDetails.get.filter(_.penaltyChargeReference.contains("123456789")).head
         val lpp1Second = penaltyDetails.latePaymentPenalty.get.lppDetails.get.filter(_.penaltyChargeReference.contains("123456791")).head
-        
+
         lpp1First.principalChargeLatestClearing.get shouldBe hipLpp2Details.principalChargeLatestClearing.get
         lpp1Second.principalChargeLatestClearing.get shouldBe hipLpp2Details.principalChargeLatestClearing.get.plusDays(1)
       }
@@ -337,4 +341,4 @@ class HIPPenaltyDetailsParserSpec extends AnyWordSpec with Matchers with LogCapt
       result.left.getOrElse(HIPPenaltyDetailsFailureResponse(IM_A_TEAPOT)) shouldBe HIPPenaltyDetailsNoContent
     }
   }
-} 
+}
