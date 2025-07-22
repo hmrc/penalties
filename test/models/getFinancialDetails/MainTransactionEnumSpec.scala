@@ -150,6 +150,11 @@ class MainTransactionEnumSpec extends SpecBase {
     result shouldBe JsString("4764")
   }
 
+  "be writable to JSON for any four digit number" in {
+    val result = Json.toJson(MainTransactionEnum.WithValue("9123"))
+    result shouldBe JsString("9123")
+  }
+
   "be readable from JSON for 'VAT Return Charge' (4700)" in {
     val result = Json.fromJson(JsString("4700"))(MainTransactionEnum.format)
     result.get shouldBe MainTransactionEnum.VATReturnCharge
@@ -280,8 +285,22 @@ class MainTransactionEnumSpec extends SpecBase {
     result.get shouldBe MainTransactionEnum.VATOverpaymentForTax
   }
 
-  "return Unknown when the enum is not recognised" in {
-    val result = Json.fromJson(JsString("5032"))(MainTransactionEnum.format)
-    result.get shouldBe MainTransactionEnum.Unknown
+  "be readable from JSON for any four digit number" in {
+    val result = Json.fromJson(JsString("1823"))(MainTransactionEnum.format)
+    result.get.toString shouldBe MainTransactionEnum.WithValue("1823").toString
+  }
+
+  "return Unknown when the value is not four digits" in {
+    val longResult = Json.fromJson(JsString("47644"))(MainTransactionEnum.format)
+    val shortResult = Json.fromJson(JsString("476"))(MainTransactionEnum.format)
+    longResult.get shouldBe MainTransactionEnum.Unknown
+    shortResult.get shouldBe MainTransactionEnum.Unknown
+  }
+
+  "return Unknown when the value is not an Int" in {
+    val stringResult = Json.fromJson(JsString("47o0"))(MainTransactionEnum.format)
+    val decimalResult = Json.fromJson(JsString("4700.1"))(MainTransactionEnum.format)
+    stringResult.get shouldBe MainTransactionEnum.Unknown
+    decimalResult.get shouldBe MainTransactionEnum.Unknown
   }
 }
