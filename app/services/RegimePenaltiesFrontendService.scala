@@ -45,13 +45,12 @@ class RegimePenaltiesFrontendService @Inject()(getFinancialDetailsService: Finan
 
   def handleAndCombineGetFinancialDetailsData(penaltyDetails: GetPenaltyDetails, enrolmentKey: AgnosticEnrolmentKey, arn: Option[String])
                                              (implicit request: Request[_], ec: ExecutionContext, hc: HeaderCarrier): Future[Result] = {
-   // val vrn: String = EnrolmentKey(enrolmentKey).key
     getFinancialDetailsService.getFinancialDetails(enrolmentKey, None).flatMap {
       financialDetailsResponseWithClearedItems =>
         financialDetailsResponseWithClearedItems.fold({
           errorResponse => {
             Future(handleErrorResponseFromGetFinancialDetails(errorResponse, enrolmentKey)(handleNoContent = {
-              logger.info(s"[RegimePenaltiesFrontendService][handleAndCombineGetFinancialDetailsData] - 1811 call returned 404 for ${enrolmentKey} with NO_DATA_FOUND in response body")
+              logger.info(s"[RegimePenaltiesFrontendService][handleAndCombineGetFinancialDetailsData] - 1811 call returned 404 for $enrolmentKey with NO_DATA_FOUND in response body")
               if (penaltyDetails.latePaymentPenalty.isEmpty || penaltyDetails.latePaymentPenalty.get.details.isEmpty ||
                 penaltyDetails.latePaymentPenalty.get.details.get.isEmpty) {
                 returnResponse(penaltyDetails, enrolmentKey, arn)
@@ -62,24 +61,24 @@ class RegimePenaltiesFrontendService @Inject()(getFinancialDetailsService: Finan
           }
         },
           financialDetailsSuccessWithClearedItems => { //NOTE: The decision was taken to make 2 calls to retrieve data with and without cleared items
-            logger.info(s"[RegimePenaltiesFrontendService][handleAndCombineGetFinancialDetailsData] - 1811 clearedItems=true call returned 200 for ${enrolmentKey}")
+            logger.info(s"[RegimePenaltiesFrontendService][handleAndCombineGetFinancialDetailsData] - 1811 clearedItems=true call returned 200 for $enrolmentKey")
             getFinancialDetailsService.getFinancialDetails(enrolmentKey, Some(appConfig.queryParametersForGetFinancialDetailsWithoutClearedItems)).map {
               financialDetailsResponseWithoutClearedItems =>
                 financialDetailsResponseWithoutClearedItems.fold({
                   handleErrorResponseFromGetFinancialDetails(_, enrolmentKey)(handleNoContent = {
-                    logger.info(s"[RegimePenaltiesFrontendService][handleAndCombineGetFinancialDetailsData] - 1811 call returned 404 for ${enrolmentKey} with NO_DATA_FOUND in response body")
+                    logger.info(s"[RegimePenaltiesFrontendService][handleAndCombineGetFinancialDetailsData] - 1811 call returned 404 for $enrolmentKey with NO_DATA_FOUND in response body")
                     val newPenaltyDetails = combineAPIData(penaltyDetails,
-                      financialDetailsSuccessWithClearedItems.financialDetails,
+                      financialDetailsSuccessWithClearedItems.asInstanceOf[FinancialDetailsSuccessResponse].financialDetails,
                       FinancialDetails(None, None))
                     returnResponse(newPenaltyDetails, enrolmentKey, arn)
                   })
                 },
                   financialDetailsSuccessWithoutClearedItems => {
-                    logger.info(s"[RegimePenaltiesFrontendService][handleAndCombineGetFinancialDetailsData] - 1811 clearedItems=false call returned 200 for ${enrolmentKey}")
+                    logger.info(s"[RegimePenaltiesFrontendService][handleAndCombineGetFinancialDetailsData] - 1811 clearedItems=false call returned 200 for $enrolmentKey")
                     val newPenaltyDetails = combineAPIData(penaltyDetails,
-                      financialDetailsSuccessWithClearedItems.financialDetails,
-                      financialDetailsSuccessWithoutClearedItems.financialDetails)
-                    logger.info(s"[RegimePenaltiesFrontendService][handleAndCombineGetFinancialDetailsData] - 1811 call returned 200 for ${enrolmentKey}")
+                      financialDetailsSuccessWithClearedItems.asInstanceOf[FinancialDetailsSuccessResponse].financialDetails,
+                      financialDetailsSuccessWithoutClearedItems.asInstanceOf[FinancialDetailsSuccessResponse].financialDetails)
+                    logger.info(s"[RegimePenaltiesFrontendService][handleAndCombineGetFinancialDetailsData] - 1811 call returned 200 for $enrolmentKey")
                     returnResponse(newPenaltyDetails, enrolmentKey, arn)
                   })
             }
@@ -93,8 +92,8 @@ class RegimePenaltiesFrontendService @Inject()(getFinancialDetailsService: Finan
     financialDetailsResponseWithClearedItems match {
       case FinancialDetailsNoContent => handleNoContent
       case FinancialDetailsFailureResponse(status) if status == NOT_FOUND => {
-        logger.info(s"[RegimePenaltiesFrontendService][handleAndCombineGetFinancialDetailsData] - 1811 call returned 404 for ${enrolmentKey}")
-        NotFound(s"A downstream call returned 404 for ${enrolmentKey}")
+        logger.info(s"[RegimePenaltiesFrontendService][handleAndCombineGetFinancialDetailsData] - 1811 call returned 404 for $enrolmentKey")
+        NotFound(s"A downstream call returned 404 for $enrolmentKey")
       }
       case FinancialDetailsFailureResponse(status) => {
         logger.error(s"[RegimePenaltiesFrontendService][handleAndCombineGetFinancialDetailsData] - 1811 call returned an unexpected status: $status")

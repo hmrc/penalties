@@ -16,7 +16,7 @@
 
 package connectors.parsers.getPenaltyDetails
 
-import models.failure.{BusinessError, HipWrappedError}
+import models.failure.{BusinessError, HipWrappedError, TechnicalError}
 import models.hipPenaltyDetails.PenaltyDetails
 import models.hipPenaltyDetails.latePayment.{LPPPenaltyCategoryEnum, LPPPenaltyStatusEnum, LatePaymentPenalty}
 import play.api.http.Status._
@@ -52,7 +52,6 @@ object HIPPenaltyDetailsParser {
           extractErrorResponseBodyFrom422(response.json)
         case status @ (BAD_REQUEST | UNAUTHORIZED | FORBIDDEN | NOT_FOUND | UNSUPPORTED_MEDIA_TYPE | INTERNAL_SERVER_ERROR) =>
           PagerDutyHelper.logStatusCode("HIPPenaltyDetailsReads", status)(RECEIVED_4XX_FROM_1812_API, RECEIVED_5XX_FROM_1812_API)
-          logger.error(s"[HIPPenaltyDetailsReads][read] Received $status when trying to call PenaltyDetails - with body: ${response.body}")
           handleErrorResponse(response)
         case status =>
           PagerDutyHelper.logStatusCode("HIPPenaltyDetailsReads", status)(RECEIVED_4XX_FROM_1812_API, RECEIVED_5XX_FROM_1812_API)
@@ -63,7 +62,7 @@ object HIPPenaltyDetailsParser {
   }
 
   private def handleSuccessResponse(json: JsValue): HIPPenaltyDetailsResponse = {
-    logger.info(s"[HIPPenaltyDetailsReads][read] Success 201 response returned from API")
+    logger.info(s"[HIPPenaltyDetailsReads][read] Success 200 response returned from API#5329")
     json.validate[PenaltyDetails] match {
       case JsSuccess(penaltyDetails, _) =>
         logger.info(s"[HIPPenaltyDetailsReads][read] PenaltyDetails successfully validated from success response")
@@ -76,7 +75,7 @@ object HIPPenaltyDetailsParser {
   }
 
   private def extractErrorResponseBodyFrom422(json: JsValue): Left[HIPPenaltyDetailsFailure, Nothing] =
-    (json \ "errors").validate[BusinessError] match {
+    (json \ "errors").validate[BusinessError] match { // 422 a single error is ever returned regardless of the number of mistakes
       case JsSuccess(error, _) if error.code == "016" && error.text == "Invalid ID Number" =>
         logger.error(s"[HIPPenaltyDetailsReads][read] - Error: ID number did not match any data")
         Left(HIPPenaltyDetailsNoContent)
@@ -91,13 +90,12 @@ object HIPPenaltyDetailsParser {
 
   private def handleErrorResponse(response: HttpResponse): Left[HIPPenaltyDetailsFailure, Nothing] = {
     val status = response.status
-//    val hipWrappedErrors1Opt   = (json \ "response").validate[TechnicalError].asOpt
-//    val hipWrappedErrors1Opt   = (json \ "response").validate[Seq[HipWrappedError]].asOpt
-    val errors = (response.json \ "response" \ "failures").validate[Seq[HipWrappedError]] // 400
-    // TODO what is 500 structure?
-    val errorMsg = errors match {
-      case JsSuccess(errors, _) => errors.mkString("\n")
-      case _                    => response.json.toString()
+    val error  = (response.json \ "response" \ "error").validate[TechnicalError]          // 500 errors
+    val errors = (response.json \ "response" \ "failures").validate[Seq[HipWrappedError]] // 400 errors are always in an array
+    val errorMsg = (error, errors) match {
+      case (JsSuccess(error, _), _)  => s"${error.code} - ${error.message}"
+      case (_, JsSuccess(errors, _)) => errors.map(err => s"${err.`type`} - ${err.reason}").mkString(",\n")
+      case _                         => response.json.toString()
     }
     logger.error(s"[HIPPenaltyDetailsParser][handleErrorResponse] $status errors: $errorMsg")
     Left(HIPPenaltyDetailsFailureResponse(response.status))

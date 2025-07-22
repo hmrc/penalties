@@ -59,10 +59,11 @@ class FinancialDetailsHipConnector @Inject() (httpClient: HttpClient, appConfig:
   }
 
   private def handleErrorResponse: PartialFunction[Throwable, HIPFinancialDetailsResponse] = {
-    case e: UpstreamErrorResponse => // TODO do these make the parser errors redundant, plus confusion from 404 -> 422?
+    case e: UpstreamErrorResponse =>
       PagerDutyHelper.logStatusCode("getFinancialDetails", e.statusCode)(RECEIVED_4XX_FROM_1811_API, RECEIVED_5XX_FROM_1811_API)
       logger.error(
-        s"[FinancialDetailsConnector][getFinancialDetails] Received ${e.statusCode} from API 1811 call - returning status to caller. Error: ${e.getMessage()}")
+        s"[FinancialDetailsConnector][getFinancialDetails] Received ${e.statusCode} from API#5327 call " +
+          s"- returning status to caller. Error: ${e.getMessage()}")
       Left(HIPFinancialDetailsFailureResponse(e.statusCode))
     case e: Exception =>
       PagerDutyHelper.log("getFinancialDetails", UNKNOWN_EXCEPTION_CALLING_1811_API)
@@ -110,12 +111,14 @@ class FinancialDetailsHipConnector @Inject() (httpClient: HttpClient, appConfig:
   private def handleErrorResponseForAPICall: PartialFunction[Throwable, HttpResponse] = {
     case e: UpstreamErrorResponse =>
       logger.error(
-        s"[FinancialDetailsConnector][getFinancialDetailsForAPI] - Received ${e.statusCode} status from API 1811 call - returning status to caller")
+        s"[FinancialDetailsConnector][getFinancialDetailsForAPI] Received ${e.statusCode} from API#5327 call " +
+          s"- returning status to caller. Error: ${e.getMessage()}")
       HttpResponse(e.statusCode, e.message)
     case e: Exception =>
       PagerDutyHelper.log("getFinancialDetailsForAPI", UNKNOWN_EXCEPTION_CALLING_1811_API)
       logger.error(
-        s"[FinancialDetailsConnector][getFinancialDetailsForAPI] - An unknown exception occurred - returning 500 back to caller - message: ${e.getMessage}")
+        "[FinancialDetailsConnector][getFinancialDetailsForAPI] - An unknown exception occurred " +
+          s"- returning 500 back to caller - message: ${e.getMessage}")
       HttpResponse(INTERNAL_SERVER_ERROR, "An unknown exception occurred. Contact the Penalties team for more information.")
   }
 

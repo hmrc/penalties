@@ -244,20 +244,10 @@ class PenaltyDetailsServiceISpec extends IntegrationSpecCommonBase with RegimeET
           }
         }
 
-        s"return $GetPenaltyDetailsNoContent when the HIP response body contains NO_DATA_FOUND for 404 response" in {
+        s"return $GetPenaltyDetailsNoContent when the HIP response body contains 'Invalid ID Number' for 422 response" in {
           withFeature(CallAPI1812HIP -> FEATURE_SWITCH_ON) {
-            val noDataFoundBody =
-              """
-                |{
-                | "failures": [
-                |   {
-                |     "code": "NO_DATA_FOUND",
-                |     "reason": "This is a reason"
-                |   }
-                | ]
-                |}
-                |""".stripMargin
-            mockResponseForHIPPenaltyDetails(Status.NOT_FOUND, regime, idType, id, body = Some(noDataFoundBody))
+            val noDataFoundBody = """{"errors":{"processingDate":"2025-03-03", "code":"016", "text":"Invalid ID Number"}}"""
+            mockResponseForHIPPenaltyDetails(Status.UNPROCESSABLE_ENTITY, regime, idType, id, body = Some(noDataFoundBody))
             val result = await(service.getPenaltyDetails(enrolmentKey))
             result.isLeft shouldBe true
             result.left.getOrElse(GetPenaltyDetailsFailureResponse(IM_A_TEAPOT)) shouldBe GetPenaltyDetailsNoContent

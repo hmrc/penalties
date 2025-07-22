@@ -347,6 +347,24 @@ class RegimeAPIControllerISpec extends IntegrationSpecCommonBase with RegimeETMP
             }
           }
 
+          s"return a NO_CONTENT 204" when {
+            "a 422 response with 'Invalid ID Number' is returned" in {
+              setSummaryFeatureSwitch
+              mockStubResponseForAuthorisedUser
+
+              val notFoundResponseBody = """{"errors":{"processingDate":"2025-03-03", "code":"016", "text":"Invalid ID Number"}}"""
+
+              if (upstreamService == "HIP") {
+                mockResponseForHIPPenaltyDetails(UNPROCESSABLE_ENTITY, regime, idType, id, body = Some(notFoundResponseBody))
+              } else {
+                mockIFSummary(UNPROCESSABLE_ENTITY, Some(notFoundResponseBody))
+              }
+
+              val result = await(buildClientForRequestToApp(uri = uriToSummaryController).get())
+              result.status shouldBe NO_CONTENT
+            }
+          }
+
           s"return the status from $upstreamService" when {
             "a 404 response is returned" in {
               setSummaryFeatureSwitch
@@ -374,31 +392,6 @@ class RegimeAPIControllerISpec extends IntegrationSpecCommonBase with RegimeETMP
 
               val result = await(buildClientForRequestToApp(uri = uriToSummaryController).get())
               result.status shouldBe INTERNAL_SERVER_ERROR
-            }
-
-            "a 404 response with NO_DATA_FOUND is returned" in {
-              setSummaryFeatureSwitch
-              mockStubResponseForAuthorisedUser
-              
-              val notFoundResponseBody = """
-                |{
-                |  "failures": [
-                |    {
-                |      "code": "NO_DATA_FOUND",
-                |      "reason": "The remote endpoint has indicated that no penalty data found for provided ID number."
-                |    }
-                |  ]
-                |}
-                |""".stripMargin
-
-              if (upstreamService == "HIP") {
-                mockResponseForHIPPenaltyDetails(NOT_FOUND, regime, idType, id, body = Some(notFoundResponseBody))
-              } else {
-                mockIFSummary(NOT_FOUND, Some(notFoundResponseBody))
-              }
-
-              val result = await(buildClientForRequestToApp(uri = uriToSummaryController).get())
-              result.status shouldBe NO_CONTENT
             }
 
             "a 200 response with empty body is returned" in {

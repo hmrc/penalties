@@ -280,21 +280,11 @@ class HIPPenaltyDetailsConnectorISpec
           .status shouldBe Status.NOT_FOUND
       }
 
-      s"return a $HIPPenaltyDetailsNoContent when the response status is NOT FOUND (${Status.NOT_FOUND}) but with NO_DATA_FOUND in JSON body" in new Setup {
+      s"return a $HIPPenaltyDetailsNoContent when the response status is UNPROCESSABLE_ENTITY FOUND (${Status.UNPROCESSABLE_ENTITY}) but with NO_DATA_FOUND in JSON body" in new Setup {
         enableFeatureSwitch(CallAPI1812HIP)
-        val noDataFoundBody: String =
-          """
-            |{
-            | "failures": [
-            |   {
-            |     "code": "NO_DATA_FOUND",
-            |     "reason": "Some reason"
-            |   }
-            | ]
-            |}
-            |""".stripMargin
+        val noDataFoundBody: String = """{"errors":{"processingDate":"2025-03-03", "code":"016", "text":"Invalid ID Number"}}"""
         mockResponseForHIPPenaltyDetails(
-          Status.NOT_FOUND,
+          Status.UNPROCESSABLE_ENTITY,
           regime,
           aKey.idType,
           aKey.id,
@@ -308,7 +298,7 @@ class HIPPenaltyDetailsConnectorISpec
         ) shouldBe HIPPenaltyDetailsNoContent
       }
 
-      s"return a $HIPPenaltyDetailsNoContent when the response status is NO CONTENT (${Status.NO_CONTENT})" in new Setup {
+      s"return a $HIPPenaltyDetailsFailureResponse when the response status is NO CONTENT (${Status.NO_CONTENT})" in new Setup {
         enableFeatureSwitch(CallAPI1812HIP)
         mockResponseForHIPPenaltyDetails(
           Status.NO_CONTENT,
@@ -320,8 +310,9 @@ class HIPPenaltyDetailsConnectorISpec
           await(connector.getPenaltyDetails(aKey))
         result.isLeft shouldBe true
         result.left.getOrElse(
-          HIPPenaltyDetailsFailureResponse(IM_A_TEAPOT)
-        ) shouldBe HIPPenaltyDetailsNoContent
+          HIPPenaltyDetailsFailureResponse(IM_A_TEAPOT))
+            .asInstanceOf[HIPPenaltyDetailsFailureResponse]
+            .status shouldBe Status.NO_CONTENT
       }
 
       s"return a $HIPPenaltyDetailsFailureResponse when the response status is CONFLICT (${Status.CONFLICT})" in new Setup {

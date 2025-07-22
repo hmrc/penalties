@@ -34,63 +34,62 @@ import java.util.UUID
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class HIPPenaltyDetailsConnector @Inject() (httpClient: HttpClient, appConfig: AppConfig)(implicit ec: ExecutionContext, val config: Configuration) extends FeatureSwitching {
-
-  implicit val throwingReads: HttpReads[HttpResponse] = (_: String, _: String, response: HttpResponse) => if (response.status >= 400) throw UpstreamErrorResponse(response.body, response.status) else response
+class HIPPenaltyDetailsConnector @Inject() (httpClient: HttpClient, appConfig: AppConfig)(implicit ec: ExecutionContext, val config: Configuration)
+    extends FeatureSwitching {
 
   def getPenaltyDetails(enrolmentKey: AgnosticEnrolmentKey)(implicit hc: HeaderCarrier): Future[HIPPenaltyDetailsResponse] = {
     val url           = appConfig.getHIPPenaltyDetailsUrl(enrolmentKey)
     val hcWithoutAuth = hc.copy(authorization = None)
     val headers       = buildHeadersV1
 
-    logger.info(s"[HIPPenaltiesDetailsConnector][getPenaltyDetails][$enrolmentKey]- Calling GET $url \nHeaders: $headers")
+    logger.info(s"[HIPPenaltiesDetailsConnector][getPenaltyDetails][$enrolmentKey]- Calling GET $url\nHeaders: $headers")
 
     httpClient
-      .GET[HIPPenaltyDetailsResponse](url, headers)(implicitly, hcWithoutAuth, implicitly)
-      .map { response =>
-        logger.info(s"[getPenaltyDetails] Successful call to 1812 API")
-        response // TODO are these responses going to the map/recover or handled by the parser?
-      }
+      .GET[HIPPenaltyDetailsResponse](url, Seq.empty, headers)(implicitly, hcWithoutAuth, implicitly)
       .recover {
         case e: UpstreamErrorResponse =>
           PagerDutyHelper.logStatusCode("getPenaltyDetails", e.statusCode)(RECEIVED_4XX_FROM_1812_API, RECEIVED_5XX_FROM_1812_API)
-          logger.error(s"[HIPPenaltiesDetailsConnector][getPenaltyDetails] - Received ${e.statusCode} status from API 1812 call - returning status to caller")
+          logger.error(
+            s"[HIPPenaltiesDetailsConnector][getPenaltyDetails] - Received ${e.statusCode} status from API#5329 call " +
+              s"- returning status to caller. Error: ${e.getMessage()}")
           Left(HIPPenaltyDetailsFailureResponse(e.statusCode))
         case e: Exception =>
           PagerDutyHelper.log("getPenaltyDetails", UNKNOWN_EXCEPTION_CALLING_1812_API)
-          logger.error(s"[HIPPenaltiesDetailsConnector][getPenaltyDetails] - An unknown exception occurred - returning 500 back to caller - message: ${e.getMessage}")
+          logger.error(
+            "[HIPPenaltiesDetailsConnector][getPenaltyDetails] - An unknown exception occurred " +
+              s"- returning 500 back to caller - message: ${e.getMessage}")
           Left(HIPPenaltyDetailsFailureResponse(INTERNAL_SERVER_ERROR))
       }
   }
 
   def getPenaltyDetailsForAPI(enrolmentKey: AgnosticEnrolmentKey, dateLimit: Option[String])(implicit hc: HeaderCarrier): Future[HttpResponse] = {
 
-    val url = appConfig.getHIPPenaltyDetailsUrl(enrolmentKey, dateLimit)
+    val url           = appConfig.getHIPPenaltyDetailsUrl(enrolmentKey, dateLimit)
     val hcWithoutAuth = hc.copy(authorization = None)
     val headers       = buildHeadersV1
 
-    logger.info(s"[getPenaltyDetailsForAPI] Resolved URL: ${Option(url).getOrElse("null")}")
-    logger.info(s"[getPenaltyDetailsForAPI] Headers: $buildHeadersV1")
+    val throwingReads: HttpReads[HttpResponse] =
+      (_: String, _: String, response: HttpResponse) =>
+        if (response.status >= 400) throw UpstreamErrorResponse(response.body, response.status) else response
 
-    httpClient.GET[HttpResponse](url, headers)(throwingReads, hcWithoutAuth, implicitly).recover { // TODO what is throwingReads doing here?
-        case e: UpstreamErrorResponse =>
-          logger.error(
-            s"[HIPPenaltiesDetailsConnector][getPenaltyDetailsForAPI] -" +
-              s" Received ${e.statusCode} status from API 1812 call - returning status to caller"
-          )
-          HttpResponse(e.statusCode, e.message)
-        case e: Exception =>
-          PagerDutyHelper
-            .log("getPenaltyDetailsForAPI", UNKNOWN_EXCEPTION_CALLING_1812_API)
-          logger.error(
-            s"[HIPPenaltiesDetailsConnector][getPenaltyDetailsForAPI] -" +
-              s" An unknown exception occurred - returning 500 back to caller - message: ${e.getMessage}"
-          )
-          HttpResponse(
-            INTERNAL_SERVER_ERROR,
-            "An unknown exception occurred. Contact the Penalties team for more information."
-          )
-      }
+    logger.info(s"[HIPPenaltiesDetailsConnector][getPenaltyDetails][$enrolmentKey]- Calling GET $url\nHeaders: $headers")
+
+    httpClient.GET[HttpResponse](url, Seq.empty, headers)(throwingReads, hcWithoutAuth, implicitly).recover {
+      case e: UpstreamErrorResponse =>
+        logger.error(
+          s"[HIPPenaltiesDetailsConnector][getPenaltyDetailsForAPI] - Received ${e.statusCode} status from API#5329 call " +
+            s"- returning status to caller. Error: ${e.getMessage()}")
+        HttpResponse(e.statusCode, e.message)
+      case e: Exception =>
+        PagerDutyHelper.log("getPenaltyDetailsForAPI", UNKNOWN_EXCEPTION_CALLING_1812_API)
+        logger.error(
+          "[HIPPenaltiesDetailsConnector][getPenaltyDetailsForAPI] - An unknown exception occurred " +
+            s"- returning 500 back to caller - message: ${e.getMessage}")
+        HttpResponse(
+          INTERNAL_SERVER_ERROR,
+          "An unknown exception occurred. Contact the Penalties team for more information."
+        )
+    }
   }
 
   private val CorrelationIdHeader: String       = "correlationid"

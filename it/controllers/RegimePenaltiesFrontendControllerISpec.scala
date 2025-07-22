@@ -28,7 +28,8 @@ import utils.{AuthMock, IntegrationSpecCommonBase, RegimeETMPWiremock, HIPPenalt
 import java.time.LocalDate
 import scala.jdk.CollectionConverters._
 
-class RegimePenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with RegimeETMPWiremock with HIPPenaltiesWiremock with FeatureSwitching with TableDrivenPropertyChecks with AuthMock {
+class RegimePenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with RegimeETMPWiremock
+  with HIPPenaltiesWiremock with FeatureSwitching with TableDrivenPropertyChecks with AuthMock {
   setEnabledFeatureSwitches()
   val controller: RegimePenaltiesFrontendController = injector.instanceOf[RegimePenaltiesFrontendController]
   val financialDataQueryParamWithClearedItems: String = {
@@ -948,381 +949,6 @@ class RegimePenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase w
       |}
       |""".stripMargin)
 
-  val hipPenaltyDetailsJsonWithBlankAppealLevel: JsValue = Json.parse(
-    s"""
-      |{
-      |  "success": {
-      |    "processingDate": "$mockInstant",
-      |    "penaltyData": {
-      |      "totalisations": {
-      |        "lspTotalValue": 200,
-      |        "penalisedPrincipalTotal": 2000,
-      |        "lppPostedTotal": 165.25,
-      |        "lppEstimatedTotal": 15.26
-      |      },
-      |      "lsp": {
-      |        "lspSummary": {
-      |          "activePenaltyPoints": 1,
-      |          "inactivePenaltyPoints": 0,
-      |          "regimeThreshold": 5,
-      |          "penaltyChargeAmount": 200.00,
-      |          "pocAchievementDate": "2022-01-01"
-      |        },
-      |        "lspDetails": [
-      |          {
-      |            "penaltyNumber": "12345678901234",
-      |            "penaltyOrder": "01",
-      |            "penaltyCategory": "P",
-      |            "penaltyStatus": "ACTIVE",
-      |            "penaltyCreationDate": "2022-10-30",
-      |            "penaltyExpiryDate": "2022-10-30",
-      |            "communicationsDate": "2022-10-30",
-      |            "triggeringProcess": "P123",
-      |            "lateSubmissions": [
-      |              {
-      |                "lateSubmissionID": "001",
-      |                "taxPeriod":  "23AA",
-      |                "taxPeriodStartDate": "2022-01-01",
-      |                "taxPeriodEndDate": "2022-12-31",
-      |                "taxPeriodDueDate": "2023-02-07",
-      |                "returnReceiptDate": "2023-02-01",
-      |                "taxReturnStatus": "Fulfilled"
-      |              }
-      |            ],
-      |            "appealInformation": [
-      |              {
-      |                "appealStatus": "99",
-      |                "appealLevel": "01",
-      |                "appealDescription": "Some value"
-      |              }
-      |            ]
-      |          }
-      |        ]
-      |      },
-      |      "lpp": {
-      |        "manualLPPIndicator": false,
-      |        "lppDetails": [
-      |          {
-      |            "principalChargeDueDate": "2022-10-30",
-      |            "principalChargeBillingTo": "2022-10-30",
-      |            "lpp1LRPercentage": 2,
-      |            "lpp1HRDays": "31",
-      |            "penaltyChargeDueDate": "2022-10-30",
-      |            "lpp2Days": "31",
-      |            "penaltyAmountPosted": 0,
-      |            "penaltyChargeCreationDate": "2022-10-30",
-      |            "lpp1HRPercentage": 2,
-      |            "lpp1LRDays": "15",
-      |            "timeToPay": [
-      |              {
-      |                "ttpStartDate": "2022-01-01",
-      |                "ttpEndDate": "2022-12-31"
-      |              }
-      |            ],
-      |            "lpp1HRCalculationAmt": 99.99,
-      |            "penaltyCategory": "LPP1",
-      |            "principalChargeReference": "XM002610011594",
-      |            "principalChargeBillingFrom": "2022-10-30",
-      |            "penaltyStatus": "A",
-      |            "mainTransaction": "4703",
-      |            "lpp2Percentage": 4,
-      |            "lpp1LRCalculationAmt": 99.99,
-      |            "principalChargeMainTr": "4700",
-      |            "penaltyAmountAccruing": 99.99,
-      |            "principalChargeDocNumber": "DOC1",
-      |            "principalChargeSubTr": "SUB1"
-      |          }
-      |        ]
-      |      },
-      |      "breathingSpace": null
-      |    }
-      |  }
-      |}
-      |""".stripMargin)
-
-  val hipPenaltyDetailsJsonWithRemovedExpiryReasonAndDefaultedAppealLevel: JsValue = Json.parse(
-    s"""
-      |{
-      |  "success": {
-      |    "processingDate": "$mockInstant",
-      |    "penaltyData": {
-      |      "totalisations": {
-      |        "lspTotalValue": 200,
-      |        "penalisedPrincipalTotal": 2000,
-      |        "lppPostedTotal": 165.25,
-      |        "lppEstimatedTotal": 15.26,
-      |        "totalAccountOverdue": 1000.0,
-      |        "totalAccountPostedInterest": 12.34,
-      |        "totalAccountAccruingInterest": 43.21
-      |      },
-      |      "lsp": {
-      |        "lspSummary": {
-      |          "activePenaltyPoints": 1,
-      |          "inactivePenaltyPoints": 0,
-      |          "regimeThreshold": 5,
-      |          "penaltyChargeAmount": 200.00,
-      |          "pocAchievementDate": "2022-01-01"
-      |        },
-      |        "lspDetails": [
-      |          {
-      |            "penaltyNumber": "12345678901234",
-      |            "penaltyOrder": "01",
-      |            "penaltyCategory": "P",
-      |            "penaltyStatus": "ACTIVE",
-      |            "penaltyCreationDate": "2022-10-30",
-      |            "penaltyExpiryDate": "2022-10-30",
-      |            "communicationsDate": "2022-10-30",
-      |            "triggeringProcess": "P123",
-      |            "lateSubmissions": [
-      |              {
-      |                "lateSubmissionID": "001",
-      |                "taxPeriod":  "23AA",
-      |                "taxPeriodStartDate": "2022-01-01",
-      |                "taxPeriodEndDate": "2022-12-31",
-      |                "taxPeriodDueDate": "2023-02-07",
-      |                "returnReceiptDate": "2023-02-01",
-      |                "taxReturnStatus": "Fulfilled"
-      |              }
-      |            ],
-      |            "appealInformation": [
-      |              {
-      |                "appealStatus": "99",
-      |                "appealLevel": "01",
-      |                "appealDescription": "Some value"
-      |              }
-      |            ]
-      |          }
-      |        ]
-      |      },
-      |      "lpp": {
-      |        "manualLPPIndicator": false,
-      |        "lppDetails": [
-      |          {
-      |            "penaltyCategory": "LPP1",
-      |            "principalChargeReference": "XM002610011594",
-      |            "penaltyChargeCreationDate": "2022-10-30",
-      |            "penaltyStatus": "A",
-      |            "principalChargeBillingFrom": "2022-10-30",
-      |            "principalChargeBillingTo": "2022-10-30",
-      |            "principalChargeDueDate": "2022-10-30",
-      |            "penaltyAmountPosted": 0,
-      |            "lpp1LRDays": "15",
-      |            "lpp1HRDays": "31",
-      |            "lpp2Days": "31",
-      |            "lpp1HRCalculationAmt": 99.99,
-      |            "lpp1LRCalculationAmt": 99.99,
-      |            "timeToPay": [
-      |              {
-      |                "ttpStartDate": "2022-01-01",
-      |                "ttpEndDate": "2022-12-31"
-      |              }
-      |            ],
-      |            "lpp2Percentage": 4,
-      |            "lpp1LRPercentage": 2,
-      |            "lpp1HRPercentage": 2,
-      |            "penaltyChargeDueDate": "2022-10-30",
-      |            "penaltyAmountAccruing": 99.99,
-      |            "principalChargeMainTr": "4700",
-      |            "vatOutstandingAmount": 543.21,
-      |            "principalChargeDocNumber": "DOC1",
-      |            "principalChargeSubTr": "SUB1"
-      |          }
-      |        ]
-      |      },
-      |      "breathingSpace": null
-      |    }
-      |  }
-      |}
-      |""".stripMargin)
-
-  val combinedHIPPenaltyAndFinancialData: JsValue = Json.parse(
-    s"""
-      |{
-      |  "success": {
-      |    "processingDate": "$mockInstant",
-      |    "penaltyData": {
-      |      "totalisations": {
-      |        "lspTotalValue": 200,
-      |        "penalisedPrincipalTotal": 2000,
-      |        "lppPostedTotal": 165.25,
-      |        "lppEstimatedTotal": 15.26,
-      |        "totalAccountOverdue": 1000,
-      |        "totalAccountPostedInterest": 12.34,
-      |        "totalAccountAccruingInterest": 43.21
-      |      },
-      |      "lsp": {
-      |        "lspSummary": {
-      |          "activePenaltyPoints": 0,
-      |          "inactivePenaltyPoints": 0,
-      |          "regimeThreshold": 5,
-      |          "penaltyChargeAmount": 200,
-      |          "pocAchievementDate": "2022-01-01"
-      |        },
-      |        "lspDetails": []
-      |      },
-      |      "lpp": {
-      |        "lppDetails": [
-      |          {
-      |            "principalChargeReference": "XM002610011594",
-      |            "penaltyCategory": "LPP1",
-      |            "penaltyStatus": "A",
-      |            "penaltyAmountAccruing": 99.99,
-      |            "penaltyAmountPosted": 0,
-      |            "lpp1LRCalculationAmt": 99.99,
-      |            "lpp1LRDays": "15",
-      |            "lpp1LRPercentage": 2,
-      |            "lpp1HRCalculationAmt": 99.99,
-      |            "lpp1HRDays": "31",
-      |            "lpp1HRPercentage": 2,
-      |            "lpp2Days": "31",
-      |            "lpp2Percentage": 4,
-      |            "penaltyChargeCreationDate": "2022-10-30",
-      |            "penaltyChargeDueDate": "2022-10-30",
-      |            "principalChargeDocNumber": "DOC1",
-      |            "principalChargeMainTr": "4700",
-      |            "principalChargeSubTr": "SUB1",
-      |            "principalChargeBillingFrom": "2022-10-30",
-      |            "principalChargeBillingTo": "2022-10-30",
-      |            "principalChargeDueDate": "2022-10-30",
-      |            "timeToPay": [
-      |              {
-      |                "ttpStartDate": "2022-01-01",
-      |                "ttpEndDate": "2022-12-31"
-      |              }
-      |            ]
-      |          }
-      |        ],
-      |        "manualLPPIndicator": false
-      |      },
-      |      "breathingSpace": null
-      |    }
-      |  }
-      |}
-      |""".stripMargin)
-
-  val combinedHIPPenaltyAndFinancialDataWithout1811Totalisations: JsValue = Json.parse(
-    s"""
-      |{
-      |  "success": {
-      |    "processingDate": "$mockInstant",
-      |    "penaltyData": {
-      |      "totalisations": {
-      |        "lspTotalValue": 200,
-      |        "penalisedPrincipalTotal": 2000,
-      |        "lppPostedTotal": 165.25,
-      |        "lppEstimatedTotal": 15.26
-      |      },
-      |      "lsp": {
-      |        "lspSummary": {
-      |          "activePenaltyPoints": 0,
-      |          "inactivePenaltyPoints": 0,
-      |          "regimeThreshold": 5,
-      |          "penaltyChargeAmount": 200,
-      |          "pocAchievementDate": "2022-01-01"
-      |        },
-      |        "lspDetails": []
-      |      },
-      |      "lpp": {
-      |        "manualLPPIndicator": false,
-      |        "lppDetails": [
-      |          {
-      |            "penaltyCategory": "LPP1",
-      |            "principalChargeReference": "XM002610011594",
-      |            "penaltyChargeCreationDate": "2022-10-30",
-      |            "penaltyStatus": "A",
-      |            "principalChargeBillingFrom": "2022-10-30",
-      |            "principalChargeBillingTo": "2022-10-30",
-      |            "principalChargeDueDate": "2022-10-30",
-      |            "penaltyAmountPosted": 0,
-      |            "lpp1LRDays": "15",
-      |            "lpp1HRDays": "31",
-      |            "lpp2Days": "31",
-      |            "lpp1HRCalculationAmt": 99.99,
-      |            "lpp1LRCalculationAmt": 99.99,
-      |            "timeToPay": [
-      |              {
-      |                "ttpStartDate": "2022-01-01",
-      |                "ttpEndDate": "2022-12-31"
-      |              }
-      |            ],
-      |            "lpp2Percentage": 4,
-      |            "lpp1LRPercentage": 2,
-      |            "lpp1HRPercentage": 2,
-      |            "penaltyChargeDueDate": "2022-10-30",
-      |            "penaltyAmountAccruing": 99.99,
-      |            "principalChargeMainTr": "4700",
-      |            "vatOutstandingAmount": 543.21,
-      |            "principalChargeDocNumber": "DOC1",
-      |            "principalChargeSubTr": "SUB1"
-      |          }
-      |        ]
-      |      },
-      |      "breathingSpace": null
-      |    }
-      |  }
-      |}
-      |""".stripMargin)
-
-  val combinedHIPPenaltyAndFinancialDataWithManualLPP: JsValue = Json.parse(
-    s"""
-      |{
-      |  "success": {
-      |    "processingDate": "$mockInstant",
-      |    "penaltyData": {
-      |      "totalisations": {
-      |        "lspTotalValue": 200,
-      |        "penalisedPrincipalTotal": 2000,
-      |        "lppPostedTotal": 220.25,
-      |        "lppEstimatedTotal": 15.26
-      |      },
-      |      "lsp": null,
-      |      "lpp": {
-      |        "manualLPPIndicator": false,
-      |        "lppDetails": [
-      |          {
-      |            "penaltyCategory": "MANUAL",
-      |            "principalChargeReference": "PENALTY1234",
-      |            "penaltyChargeCreationDate": "2023-04-01",
-      |            "penaltyStatus": "P",
-      |            "principalChargeBillingFrom": "2023-04-01",
-      |            "principalChargeBillingTo": "2023-04-01",
-      |            "principalChargeDueDate": "2023-04-01",
-      |            "penaltyAmountOutstanding": 55,
-      |            "penaltyAmountPosted": 100,
-      |            "penaltyAmountPaid": 45,
-      |            "penaltyAmountAccruing": 0,
-      |            "principalChargeMainTr": "4787"
-      |          }
-      |        ]
-      |      },
-      |      "breathingSpace": null
-      |    }
-      |  }
-      |}
-      |""".stripMargin)
-
-  val hipPenaltyDetailsWithNoPointsAsJson: JsValue = Json.parse(
-    s"""
-      |{
-      |  "success": {
-      |    "processingDate": "$mockInstant",
-      |    "penaltyData": {
-      |      "totalisations": {
-      |        "lspTotalValue": 0,
-      |        "penalisedPrincipalTotal": 0,
-      |        "lppPostedTotal": 0.00,
-      |        "totalAccountOverdue": 1000,
-      |        "totalAccountPostedInterest": 12.34,
-      |        "totalAccountAccruingInterest": 43.21
-      |      },
-      |      "lsp": null,
-      |      "lpp": { "lppDetails": [], "manualLPPIndicator": false },
-      |      "breathingSpace": null
-      |    }
-      |  }
-      |}
-      |""".stripMargin)
-
     Table(
       ("Regime", "IdType", "Id"),
       (Regime("VATC"), IdType("VRN"), Id("123456789")),
@@ -1417,13 +1043,24 @@ class RegimePenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase w
             result.status shouldBe INTERNAL_SERVER_ERROR
           }
         }
+        "the get HIP penalty details call returns 422 without incorrect ID number message" in {
+          withFeature(CallAPI1812HIP -> FEATURE_SWITCH_ON) {
+            mockStubResponseForAuthorisedUser
+            mockResponseForHIPPenaltyDetails(Status.UNPROCESSABLE_ENTITY, regime, idType, id,
+              body = Some("""{"errors":{"processingDate":"2025-03-03"}}"""))
+
+            val result = await(buildClientForRequestToApp(uri = etmpUri).get())
+            result.status shouldBe INTERNAL_SERVER_ERROR
+          }
+        }
       }
 
       s"return NOT_FOUND (${Status.NOT_FOUND}) for $regime when using HIP API" when {
         "the get HIP penalty details call returns 404" in {
           withFeature(CallAPI1812HIP -> FEATURE_SWITCH_ON) {
             mockStubResponseForAuthorisedUser
-            mockResponseForHIPPenaltyDetails(Status.NOT_FOUND, regime, idType, id, body = Some(""))
+            mockResponseForHIPPenaltyDetails(Status.NOT_FOUND, regime, idType, id,
+              body = Some("""{"response":{"error":{"code":"404","message":"NOT_FOUND","logId":"errorLogId"}}}"""))
 
             val result = await(buildClientForRequestToApp(uri = etmpUri).get())
             result.status shouldBe NOT_FOUND
@@ -1432,21 +1069,11 @@ class RegimePenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase w
       }
 
       s"return NO_CONTENT (${Status.NO_CONTENT}) for $regime when using HIP API" when {
-        "the get HIP penalty details call returns 404 with NO_DATA_FOUND in body" in {
+        "the get HIP penalty details call returns 422 with 'Invalid ID Number' in body" in {
           withFeature(CallAPI1812HIP -> FEATURE_SWITCH_ON) {
-            val noDataFoundBody =
-              """
-                |{
-                | "failures": [
-                |   {
-                |     "code": "NO_DATA_FOUND",
-                |     "reason": "This is a reason"
-                |   }
-                | ]
-                |}
-                |""".stripMargin
+            val noDataFoundBody = """{"errors":{"processingDate":"2025-03-03", "code":"016", "text":"Invalid ID Number"}}"""
             mockStubResponseForAuthorisedUser
-            mockResponseForHIPPenaltyDetails(Status.NOT_FOUND, regime, idType, id, body = Some(noDataFoundBody))
+            mockResponseForHIPPenaltyDetails(Status.UNPROCESSABLE_ENTITY, regime, idType, id, body = Some(noDataFoundBody))
 
             val result = await(buildClientForRequestToApp(uri = etmpUri).get())
             result.status shouldBe NO_CONTENT

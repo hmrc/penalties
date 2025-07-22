@@ -20,6 +20,13 @@ import base.{LogCapturing, SpecBase}
 import config.featureSwitches.{CallAPI1811HIP, FeatureSwitching}
 import connectors.getFinancialDetails.{FinancialDetailsConnector, FinancialDetailsHipConnector}
 import connectors.parsers.getFinancialDetails.FinancialDetailsParser._
+import connectors.parsers.getFinancialDetails.HIPFinancialDetailsParser.{
+  HIPFinancialDetailsFailureResponse,
+  HIPFinancialDetailsMalformed,
+  HIPFinancialDetailsNoContent,
+  HIPFinancialDetailsResponse,
+  HIPFinancialDetailsSuccessResponse
+}
 import models._
 import models.getFinancialDetails.FinancialDetails
 import models.getFinancialDetails.totalisation.{FinancialDetailsTotalisation, InterestTotalisation, RegimeTotalisation}
@@ -47,16 +54,16 @@ class FinancialDetailsServiceSpec extends SpecBase with FeatureSwitching with Lo
   val mockGetFinancialDetailsConnector: FinancialDetailsConnector       = mock(classOf[FinancialDetailsConnector])
   val mockGetFinancialDetailsHipConnector: FinancialDetailsHipConnector = mock(classOf[FinancialDetailsHipConnector])
 
-  def buildGetFinancialDetailsMock(enrolmentKey: AgnosticEnrolmentKey,
-                                   upstreamService: String,
-                                   mockedResponse: Future[FinancialDetailsResponse]): OngoingStubbing[Future[FinancialDetailsResponse]] =
-    if (upstreamService == "HIP") {
-      when(mockGetFinancialDetailsHipConnector.getFinancialDetails(ArgumentMatchers.eq(enrolmentKey), ArgumentMatchers.any())(any()))
-        .thenReturn(mockedResponse)
-    } else {
-      when(mockGetFinancialDetailsConnector.getFinancialDetails(ArgumentMatchers.eq(enrolmentKey), ArgumentMatchers.any())(any()))
-        .thenReturn(mockedResponse)
-    }
+  def buildGetFinancialDetailsHIPMock(enrolmentKey: AgnosticEnrolmentKey,
+                                      mockedResponse: Future[HIPFinancialDetailsResponse]): OngoingStubbing[Future[HIPFinancialDetailsResponse]] =
+    when(mockGetFinancialDetailsHipConnector.getFinancialDetails(ArgumentMatchers.eq(enrolmentKey), ArgumentMatchers.any())(any()))
+      .thenReturn(mockedResponse)
+
+  def buildGetFinancialDetailsIFMock(enrolmentKey: AgnosticEnrolmentKey,
+                                     mockedResponse: Future[FinancialDetailsResponse]): OngoingStubbing[Future[FinancialDetailsResponse]] =
+    when(mockGetFinancialDetailsConnector.getFinancialDetails(ArgumentMatchers.eq(enrolmentKey), ArgumentMatchers.any())(any()))
+      .thenReturn(mockedResponse)
+
   def buildGetFinancialDetailsForApiMock(enrolmentKey: AgnosticEnrolmentKey,
                                          upstreamService: String,
                                          mockedResponse: Future[HttpResponse]): OngoingStubbing[Future[HttpResponse]] =
@@ -125,34 +132,27 @@ class FinancialDetailsServiceSpec extends SpecBase with FeatureSwitching with Lo
       ))
   )
 
-  private val testCases = Seq(
-//    ("IF", vatcEnrolmentKey),
-    ("HIP", vatcEnrolmentKey)
-//    ("HIP", itsaEnrolmentKey)
-  )
-
   "getFinancialDetails" when {
-    testCases.foreach { case (upstreamService, enrolmentKey) =>
-      val errorLogPrefix = s"[FinancialDetailsService][getFinancialDetails][$enrolmentKey]"
+    def getErrorLogPrefix(enrolmentKey: AgnosticEnrolmentKey) = s"[FinancialDetailsService][getFinancialDetails][$enrolmentKey]"
+    Seq(vatcEnrolmentKey, itsaEnrolmentKey).foreach { enrolmentKey =>
+      s"calling the HIP service for ${enrolmentKey.regime} regime" should {
+        val errorLogPrefix = getErrorLogPrefix(enrolmentKey)
 
-      s"calling the $upstreamService service for ${enrolmentKey.regime} regime" should {
-        s"return a $FinancialDetailsSuccessResponse from the connector when successful" in new Setup(upstreamService) {
-          buildGetFinancialDetailsMock(
+        s"return a $FinancialDetailsSuccessResponse from the connector when successful" in new Setup("HIP") {
+          buildGetFinancialDetailsHIPMock(
             enrolmentKey,
-            upstreamService,
-            Future.successful(Right(FinancialDetailsSuccessResponse(mockGetFinancialDetailsResponseAsModel))))
+            Future.successful(Right(HIPFinancialDetailsSuccessResponse(mockGetFinancialDetailsResponseAsModel))))
 
           val result: FinancialDetailsResponse = await(service.getFinancialDetails(enrolmentKey, None))
 
           result shouldBe Right(FinancialDetailsSuccessResponse(mockGetFinancialDetailsResponseAsModel))
         }
 
-        s"return a $FinancialDetailsSuccessResponse from the connector when successful (with the time machine date)" in new Setup(upstreamService) {
+        s"return a $FinancialDetailsSuccessResponse from the connector when successful (with the time machine date)" in new Setup("HIP") {
           setTimeMachineDate(Some(LocalDateTime.of(2024, 1, 1, 0, 0, 0)))
-          buildGetFinancialDetailsMock(
+          buildGetFinancialDetailsHIPMock(
             enrolmentKey,
-            upstreamService,
-            Future.successful(Right(FinancialDetailsSuccessResponse(mockGetFinancialDetailsResponseAsModel))))
+            Future.successful(Right(HIPFinancialDetailsSuccessResponse(mockGetFinancialDetailsResponseAsModel))))
 
           val result: FinancialDetailsResponse = await(service.getFinancialDetails(enrolmentKey, None))
 
@@ -160,41 +160,41 @@ class FinancialDetailsServiceSpec extends SpecBase with FeatureSwitching with Lo
           result.toOption.get shouldBe FinancialDetailsSuccessResponse(mockGetFinancialDetailsResponseAsModel)
         }
 
-        s"return $FinancialDetailsNoContent from the connector when the response body contains NO_DATA_FOUND" in new Setup(upstreamService) {
-          buildGetFinancialDetailsMock(enrolmentKey, upstreamService, Future.successful(Left(FinancialDetailsNoContent)))
+        s"return $FinancialDetailsNoContent from the connector when the response from the API is no data was found" in new Setup("HIP") {
+          buildGetFinancialDetailsHIPMock(enrolmentKey, Future.successful(Left(HIPFinancialDetailsNoContent)))
 
           withCaptureOfLoggingFrom(logger) { logs =>
             val result: FinancialDetailsResponse = await(service.getFinancialDetails(enrolmentKey, None))
 
             result shouldBe Left(FinancialDetailsNoContent)
-            logs.map(_.getMessage) should contain(s"$errorLogPrefix - Got a 404 response and no data was found for GetFinancialDetails call")
+            logs.map(_.getMessage) should contain(s"$errorLogPrefix - No data found for ID")
           }
         }
 
-        s"return $FinancialDetailsMalformed from the connector when the response body is malformed" in new Setup(upstreamService) {
-          buildGetFinancialDetailsMock(enrolmentKey, upstreamService, Future.successful(Left(FinancialDetailsMalformed)))
+        s"return $FinancialDetailsMalformed from the connector when the response body is malformed" in new Setup("HIP") {
+          buildGetFinancialDetailsHIPMock(enrolmentKey, Future.successful(Left(HIPFinancialDetailsMalformed)))
 
           withCaptureOfLoggingFrom(logger) { logs =>
             val result: FinancialDetailsResponse = await(service.getFinancialDetails(enrolmentKey, None))
 
             result shouldBe Left(FinancialDetailsMalformed)
-            logs.map(_.getMessage) should contain(s"$errorLogPrefix - Failed to parse HTTP response into model for $enrolmentKey")
+            logs.map(_.getMessage) should contain(s"$errorLogPrefix - Failed to parse HTTP response into model for ID")
           }
         }
 
-        s"return $FinancialDetailsFailureResponse from the connector when an unknown status is returned" in new Setup(upstreamService) {
-          buildGetFinancialDetailsMock(enrolmentKey, upstreamService, Future.successful(Left(FinancialDetailsFailureResponse(IM_A_TEAPOT))))
+        s"return $FinancialDetailsFailureResponse from the connector when an unknown status is returned" in new Setup("HIP") {
+          buildGetFinancialDetailsHIPMock(enrolmentKey, Future.successful(Left(HIPFinancialDetailsFailureResponse(IM_A_TEAPOT))))
 
           withCaptureOfLoggingFrom(logger) { logs =>
             val result: FinancialDetailsResponse = await(service.getFinancialDetails(enrolmentKey, None))
 
             result shouldBe Left(FinancialDetailsFailureResponse(IM_A_TEAPOT))
-            logs.map(_.getMessage) should contain(s"$errorLogPrefix - Unknown status returned from connector for $enrolmentKey")
+            logs.map(_.getMessage) should contain(s"$errorLogPrefix - Unknown status returned from connector for ID")
           }
         }
 
-        s"throw an exception from the connector when something unknown has happened" in new Setup(upstreamService) {
-          buildGetFinancialDetailsMock(enrolmentKey, upstreamService, Future.failed(new Exception("Something has gone wrong.")))
+        s"throw an exception from the connector when something unknown has happened" in new Setup("HIP") {
+          buildGetFinancialDetailsHIPMock(enrolmentKey, Future.failed(new Exception("Something has gone wrong.")))
 
           val result: Exception = intercept[Exception](await(service.getFinancialDetails(enrolmentKey, None)))
 
@@ -202,41 +202,133 @@ class FinancialDetailsServiceSpec extends SpecBase with FeatureSwitching with Lo
         }
       }
     }
+
+    s"calling the IF service for VATC regime" should {
+      val errorLogPrefix = getErrorLogPrefix(vatcEnrolmentKey)
+      s"return a $FinancialDetailsSuccessResponse from the connector when successful" in new Setup("IF") {
+        buildGetFinancialDetailsIFMock(
+          vatcEnrolmentKey,
+          Future.successful(Right(FinancialDetailsSuccessResponse(mockGetFinancialDetailsResponseAsModel))))
+
+        val result: FinancialDetailsResponse = await(service.getFinancialDetails(vatcEnrolmentKey, None))
+
+        result shouldBe Right(FinancialDetailsSuccessResponse(mockGetFinancialDetailsResponseAsModel))
+      }
+
+      s"return a $FinancialDetailsSuccessResponse from the connector when successful (with the time machine date)" in new Setup("IF") {
+        buildGetFinancialDetailsIFMock(
+          vatcEnrolmentKey,
+          Future.successful(Right(FinancialDetailsSuccessResponse(mockGetFinancialDetailsResponseAsModel))))
+
+        val result: FinancialDetailsResponse = await(service.getFinancialDetails(vatcEnrolmentKey, None))
+
+        result.isRight shouldBe true
+        result.toOption.get shouldBe FinancialDetailsSuccessResponse(mockGetFinancialDetailsResponseAsModel)
+      }
+
+      s"return $FinancialDetailsNoContent from the connector when the response from the API is no data was found" in new Setup("IF") {
+        buildGetFinancialDetailsIFMock(vatcEnrolmentKey, Future.successful(Left(FinancialDetailsNoContent)))
+
+        withCaptureOfLoggingFrom(logger) { logs =>
+          val result: FinancialDetailsResponse = await(service.getFinancialDetails(vatcEnrolmentKey, None))
+
+          result shouldBe Left(FinancialDetailsNoContent)
+          logs.map(_.getMessage) should contain(s"$errorLogPrefix - No data found for ID")
+        }
+      }
+
+      s"return $FinancialDetailsMalformed from the connector when the response body is malformed" in new Setup("IF") {
+        buildGetFinancialDetailsIFMock(vatcEnrolmentKey, Future.successful(Left(FinancialDetailsMalformed)))
+
+        withCaptureOfLoggingFrom(logger) { logs =>
+          val result: FinancialDetailsResponse = await(service.getFinancialDetails(vatcEnrolmentKey, None))
+
+          result shouldBe Left(FinancialDetailsMalformed)
+          logs.map(_.getMessage) should contain(s"$errorLogPrefix - Failed to parse HTTP response into model for ID")
+        }
+      }
+
+      s"return $FinancialDetailsFailureResponse from the connector when an unknown status is returned" in new Setup("IF") {
+        buildGetFinancialDetailsIFMock(vatcEnrolmentKey, Future.successful(Left(FinancialDetailsFailureResponse(IM_A_TEAPOT))))
+
+        withCaptureOfLoggingFrom(logger) { logs =>
+          val result: FinancialDetailsResponse = await(service.getFinancialDetails(vatcEnrolmentKey, None))
+
+          result shouldBe Left(FinancialDetailsFailureResponse(IM_A_TEAPOT))
+          logs.map(_.getMessage) should contain(s"$errorLogPrefix - Unknown status returned from connector for ID")
+        }
+      }
+
+      s"throw an exception from the connector when something unknown has happened" in new Setup("IF") {
+        buildGetFinancialDetailsIFMock(vatcEnrolmentKey, Future.failed(new Exception("Something has gone wrong.")))
+
+        val result: Exception = intercept[Exception](await(service.getFinancialDetails(vatcEnrolmentKey, None)))
+
+        result.getMessage shouldBe "Something has gone wrong."
+      }
+    }
   }
 
   "getFinancialDetailsForAPI" when {
-    testCases.foreach { case (upstreamService, enrolmentKey) =>
-      val errorLogPrefix = s"[FinancialDetailsService][getFinancialDetailsForAPI][$enrolmentKey]"
+    "calling the HIP service" should {
+      "return 200 HttpResponse from the connector when call is successful" in new Setup("HIP") {
+        buildGetFinancialDetailsForApiMock(vatcEnrolmentKey, "HIP", Future.successful(HttpResponse(200, "")))
 
-      s"calling the $upstreamService service for ${enrolmentKey.regime} regime" should {
-        "return 200 HttpResponse from the connector when call is successful" in new Setup(upstreamService) {
-          buildGetFinancialDetailsForApiMock(enrolmentKey, upstreamService, Future.successful(HttpResponse(200, "")))
+        val result: HttpResponse =
+          await(service.getFinancialDetailsForAPI(vatcEnrolmentKey, None, None, None, None, None, None, None, None, None, None, None, None, None))
+
+        result.status shouldBe 200
+      }
+
+      Seq(BAD_REQUEST, UNAUTHORIZED, NOT_FOUND, INTERNAL_SERVER_ERROR).foreach { errorStatus =>
+        s"return $errorStatus HttpResponse from connector when $errorStatus error is returned" in new Setup("HIP") {
+          buildGetFinancialDetailsForApiMock(vatcEnrolmentKey, "HIP", Future.successful(HttpResponse(errorStatus, "")))
 
           val result: HttpResponse =
-            await(service.getFinancialDetailsForAPI(enrolmentKey, None, None, None, None, None, None, None, None, None, None, None, None, None))
+            await(service.getFinancialDetailsForAPI(vatcEnrolmentKey, None, None, None, None, None, None, None, None, None, None, None, None, None))
 
-          result.status shouldBe 200
+          result.status shouldBe errorStatus
         }
+      }
 
-        Seq(BAD_REQUEST, UNAUTHORIZED, NOT_FOUND, INTERNAL_SERVER_ERROR).foreach { errorStatus =>
-          s"return $errorStatus HttpResponse from connector when $errorStatus error is returned" in new Setup(upstreamService) {
-            buildGetFinancialDetailsForApiMock(enrolmentKey, upstreamService, Future.successful(HttpResponse(errorStatus, "")))
+      s"throw an exception from the connector when something unknown has happened" in new Setup("HIP") {
+        buildGetFinancialDetailsForApiMock(vatcEnrolmentKey, "HIP", Future.failed(new Exception("Something has gone wrong.")))
 
-            val result: HttpResponse =
-              await(service.getFinancialDetailsForAPI(enrolmentKey, None, None, None, None, None, None, None, None, None, None, None, None, None))
+        val result: Exception = intercept[Exception](
+          await(service.getFinancialDetailsForAPI(vatcEnrolmentKey, None, None, None, None, None, None, None, None, None, None, None, None, None)))
 
-            result.status shouldBe errorStatus
-          }
+        result.getMessage shouldBe "Something has gone wrong."
+      }
+    }
+
+    "calling the IF service" should {
+      "return 200 HttpResponse from the connector when call is successful" in new Setup("IF") {
+        buildGetFinancialDetailsForApiMock(vatcEnrolmentKey, "IF", Future.successful(HttpResponse(200, "")))
+
+        val result: HttpResponse =
+          await(service.getFinancialDetailsForAPI(vatcEnrolmentKey, None, None, None, None, None, None, None, None, None, None, None, None, None))
+
+        result.status shouldBe 200
+      }
+
+      Seq(BAD_REQUEST, UNAUTHORIZED, NOT_FOUND, INTERNAL_SERVER_ERROR).foreach { errorStatus =>
+        s"return $errorStatus HttpResponse from connector when $errorStatus error is returned" in new Setup("IF") {
+          buildGetFinancialDetailsForApiMock(vatcEnrolmentKey, "IF", Future.successful(HttpResponse(errorStatus, "")))
+
+          val result: HttpResponse =
+            await(service.getFinancialDetailsForAPI(vatcEnrolmentKey, None, None, None, None, None, None, None, None, None, None, None, None, None))
+
+          result.status shouldBe errorStatus
         }
+      }
 
-        s"throw an exception from the connector when something unknown has happened" in new Setup(upstreamService) {
-          buildGetFinancialDetailsForApiMock(enrolmentKey, upstreamService, Future.failed(new Exception("Something has gone wrong.")))
+      s"throw an exception from the connector when something unknown has happened" in new Setup("IF") {
+        buildGetFinancialDetailsForApiMock(vatcEnrolmentKey, "IF", Future.failed(new Exception("Something has gone wrong.")))
 
-          val result: Exception = intercept[Exception](
-            await(service.getFinancialDetailsForAPI(enrolmentKey, None, None, None, None, None, None, None, None, None, None, None, None, None)))
+        val result: Exception = intercept[Exception](
+          await(service.getFinancialDetailsForAPI(vatcEnrolmentKey, None, None, None, None, None, None, None, None, None, None, None, None, None)))
 
-          result.getMessage shouldBe "Something has gone wrong."
-        }
+        result.getMessage shouldBe "Something has gone wrong."
       }
     }
   }

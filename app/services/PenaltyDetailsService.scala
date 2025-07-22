@@ -37,7 +37,6 @@ class PenaltyDetailsService @Inject() (getPenaltyDetailsConnector: RegimePenalty
 
   def getPenaltyDetails(enrolmentKey: AgnosticEnrolmentKey)(implicit hc: HeaderCarrier): Future[GetPenaltyDetailsResponse] = {
     if (isEnabled(CallAPI1812HIP)) {
-      val startOfLogMsg: String = s"[PenaltyDetailsService][getPenaltyDetails][${enrolmentKey.regime.value}]"
       hipPenaltyDetailsConnector.getPenaltyDetails(enrolmentKey).map { hipResponse =>
         hipResponse.fold(
           failure => convertHIPFailureToRegular(failure, enrolmentKey),
@@ -66,7 +65,7 @@ class PenaltyDetailsService @Inject() (getPenaltyDetailsConnector: RegimePenalty
     val startOfLogMsg: String = s"[PenaltyDetailsService][getPenaltyDetails][${enrolmentKey.regime.value}]"
     failure match {
       case HIPPenaltyDetailsNoContent => 
-        logger.info(s"$startOfLogMsg - Got a 404 response and no data was found for GetPenaltyDetails call")
+        logger.info(s"$startOfLogMsg - No data was found for GetPenaltyDetails call")
         Left(GetPenaltyDetailsNoContent)
       case HIPPenaltyDetailsMalformed => 
         logger.info(s"$startOfLogMsg - Failed to parse HTTP response into HIP model for $enrolmentKey")
@@ -307,7 +306,7 @@ class PenaltyDetailsService @Inject() (getPenaltyDetailsConnector: RegimePenalty
         ManualLPPIndicator = Some(hipLPPContainer.manualLPPIndicator)
       )
     }
-    // TODO this is where HIP gets converted to IF structure. Need to apply this to the API call
+
     models.getPenaltyDetails.GetPenaltyDetails(
       totalisations = regularTotalisations,
       lateSubmissionPenalty = regularLSP,
@@ -321,19 +320,11 @@ class PenaltyDetailsService @Inject() (getPenaltyDetailsConnector: RegimePenalty
     )
   }
 
-  def getDataFromPenaltyService(enrolmentKey: AgnosticEnrolmentKey)(implicit hc: HeaderCarrier): Future[GetPenaltyDetailsResponse] = {
-    val startOfLogMsg: String = s"[PenaltyDetailsService][getDataFromPenaltyService][${enrolmentKey.regime.value}]"
-
-    getPenaltyDetailsConnector.getPenaltyDetails(enrolmentKey).map {
-      handleConnectorResponse(_)(startOfLogMsg, enrolmentKey)
-    }
-  }
-
   private def handleConnectorResponse(connectorResponse: GetPenaltyDetailsResponse)(implicit
       startOfLogMsg: String,
       enrolmentKeyInfo: AgnosticEnrolmentKey): GetPenaltyDetailsResponse =
     connectorResponse match {
-      case res @ Right(_ @GetPenaltyDetailsSuccessResponse(penaltyDetails)) =>
+      case _ @ Right(_ @GetPenaltyDetailsSuccessResponse(penaltyDetails)) =>
         implicit val loggingContext: LoggingContext = LoggingContext(
           callingClass = "PenaltiesDetailsService",
           function = "handleConnectorResponse",

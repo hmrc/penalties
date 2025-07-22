@@ -69,7 +69,6 @@ object HIPFinancialDetailsParser {
           extractErrorResponseBodyFrom422(response.json)
         case status @ (BAD_REQUEST | UNAUTHORIZED | FORBIDDEN | NOT_FOUND | UNSUPPORTED_MEDIA_TYPE | INTERNAL_SERVER_ERROR) =>
           PagerDutyHelper.logStatusCode("HIPFinancialDetailsReads", status)(RECEIVED_4XX_FROM_1812_API, RECEIVED_5XX_FROM_1812_API)
-          logger.error(s"[HIPFinancialDetailsReads][read] Received $status when trying to call FinancialDetails - with body: ${response.body}")
           handleErrorResponse(response)
         case status =>
           PagerDutyHelper.logStatusCode("HIPFinancialDetailsReads", status)(RECEIVED_4XX_FROM_1811_API, RECEIVED_5XX_FROM_1811_API)
@@ -80,7 +79,7 @@ object HIPFinancialDetailsParser {
   }
 
   private def handleSuccessResponse(json: JsValue): HIPFinancialDetailsResponse = {
-    logger.info(s"[HIPFinancialDetailsReads][read] Success 201 response returned from API")
+    logger.info(s"[HIPFinancialDetailsReads][read] Success 201 response returned from API#5327")
     json.validate[FinancialDetailsHIP] match {
       case JsSuccess(financialDetails, _) =>
         logger.info(s"[HIPFinancialDetailsReads][read] FinancialDetails successfully validated from success response")
@@ -93,7 +92,7 @@ object HIPFinancialDetailsParser {
   }
 
   private def extractErrorResponseBodyFrom422(json: JsValue): Left[HIPFinancialDetailsFailure, Nothing] =
-    (json \ "errors").validate[BusinessError] match {
+    (json \ "errors").validate[BusinessError] match { // 422 a single error is ever returned regardless of the number of mistakes
       case JsSuccess(error, _) if error.code == "016" && error.text == "Invalid ID Number" =>
         logger.error(s"[HIPFinancialDetailsReads][read] - Error: ID number did not match any data")
         Left(HIPFinancialDetailsNoContent)
@@ -108,33 +107,15 @@ object HIPFinancialDetailsParser {
 
   private def handleErrorResponse(response: HttpResponse): Left[HIPFinancialDetailsFailure, Nothing] = {
     val status = response.status
-    val error  = (response.json \ "response" \ "error").validate[TechnicalError] // 400 or 500 errors
-    val errorMsg = error match {
-      case JsSuccess(error, _) => s"${error.code} - ${error.message}"
-      case _                   => response.json.toString()
+    val error  = (response.json \ "response" \ "error").validate[TechnicalError]          // 400 and 500 errors can be singular
+    val errors = (response.json \ "response" \ "failures").validate[Seq[HipWrappedError]] // 400 errors can be multiple
+    val errorMsg = (error, errors) match {
+      case (JsSuccess(error, _), _)  => s"${error.code} - ${error.message}"
+      case (_, JsSuccess(errors, _)) => errors.map(err => s"${err.`type`} - ${err.reason}").mkString(",\n")
+      case _                         => response.json.toString()
     }
-    logger.error(s"[HIPFinancialDetailsParser][handleErrorResponse] $status error: $errorMsg")
-    Left(HIPFinancialDetailsFailureResponse(response.status))
+    logger.error(s"[HIPFinancialDetailsParser][read] $status error: $errorMsg")
+    Left(HIPFinancialDetailsFailureResponse(status))
   }
-//  private def handleErrorResponse(response: HttpResponse): Left[HIPFinancialDetailsFailure, Nothing] = {
-//    val status = response.status
-//    val json                  = Try(response.json).getOrElse(play.api.libs.json.Json.obj())
-////    val errorOpt              = (json \ "error").validate[TechnicalError].asOpt
-////    val errorsOpt             = (json \ "errors").validate[Seq[BusinessError]].asOpt // TODO are these only for 422?
-//    val error1   = (json \ "response" \ "error").validate[TechnicalError].asOpt // 400 or 500 error
-//    val error2   = (json \ "response").validate[Seq[HipWrappedError]].asOpt
-//    val error3   = (json \ "response" \ "failures").validate[Seq[HipWrappedError]].asOpt // 400
-//
-//    val errorMsg = (error1, error2.orElse(error3)) match {
-//      case (Some(error), _) =>
-//        s"Technical error returned: ${error.code} - ${error.message}"
-//      case (_, Some(errors)) =>
-//        val errorMessages = errors.map(err => s"${err.`type`} - ${err.reason}").mkString(",\n")
-//        s"HIP wrapped errors returned: $errorMessages"
-//      case (None, None) => json.toString()
-//    }
-//    logger.warn(s"[HIPFinancialDetailsParser][handleErrorResponse] $status error: $errorMsg")
-//    Left(HIPFinancialDetailsFailureResponse(response.status))
-//  }
 
 }

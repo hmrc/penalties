@@ -20,7 +20,7 @@ import com.github.tomakehurst.wiremock.client.MappingBuilder
 import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, post, stubFor, urlEqualTo}
 import com.github.tomakehurst.wiremock.http.Fault
 import config.featureSwitches.{CallAPI1811HIP, FeatureSwitching}
-import connectors.parsers.getFinancialDetails.FinancialDetailsParser._
+import connectors.parsers.getFinancialDetails.HIPFinancialDetailsParser._
 import models.getFinancialDetails.FinancialDetailsRequestModel
 import models.{AgnosticEnrolmentKey, Id, IdType, Regime}
 import play.api.http.Status._
@@ -68,39 +68,39 @@ class FinancialDetailsHipConnectorISpec extends IntegrationSpecCommonBase with E
               financialDetailsRequestWithoutTargetedSearch.copy(includeClearedItems = Some(true)).toJsonRequest(enrolmentKey).toString()
             mockGetFinancialDetailsHIP(CREATED, requestBody, successResponseBody)
 
-            val result: FinancialDetailsResponse = await(connector.getFinancialDetails(enrolmentKey, includeClearedItems = true)(hc))
+            val result: HIPFinancialDetailsResponse = await(connector.getFinancialDetails(enrolmentKey, includeClearedItems = true)(hc))
 
             result.isRight shouldBe true
-            result.getOrElse(FinancialDetailsNoContent) shouldBe a[FinancialDetailsHipSuccessResponse]
+            result.getOrElse(HIPFinancialDetailsNoContent) shouldBe a[HIPFinancialDetailsSuccessResponse]
           }
           "'includeClearedItems' query parameter is 'false'" in {
             val requestBody: String =
               financialDetailsRequestWithoutTargetedSearch.copy(includeClearedItems = Some(false)).toJsonRequest(enrolmentKey).toString()
             mockGetFinancialDetailsHIP(CREATED, requestBody, successResponseBody)
 
-            val result: FinancialDetailsResponse = await(connector.getFinancialDetails(enrolmentKey, includeClearedItems = false)(hc))
+            val result: HIPFinancialDetailsResponse = await(connector.getFinancialDetails(enrolmentKey, includeClearedItems = false)(hc))
 
             result.isRight shouldBe true
-            result.getOrElse(FinancialDetailsNoContent) shouldBe a[FinancialDetailsHipSuccessResponse]
+            result.getOrElse(HIPFinancialDetailsNoContent) shouldBe a[HIPFinancialDetailsSuccessResponse]
           }
         }
 
         "return a failure response" which {
           val requestBody: String = financialDetailsRequestWithoutTargetedSearch.toJsonRequest(enrolmentKey).toString()
-          s"is a $FinancialDetailsMalformed when a malformed response body is returned" in {
+          s"is a $HIPFinancialDetailsMalformed when a malformed response body is returned" in {
             val malformedResponseBody: String = """{"documentDetails": [{ "documentOutstandingAmount": "xyz"}]}"""
             mockGetFinancialDetailsHIP(CREATED, requestBody, malformedResponseBody)
 
-            val result: FinancialDetailsResponse = await(connector.getFinancialDetails(enrolmentKey, includeClearedItems = true)(hc))
+            val result: HIPFinancialDetailsResponse = await(connector.getFinancialDetails(enrolmentKey, includeClearedItems = true)(hc))
 
-            result shouldBe Left(FinancialDetailsMalformed)
+            result shouldBe Left(HIPFinancialDetailsMalformed)
           }
           Seq(BAD_REQUEST, NOT_FOUND, UNPROCESSABLE_ENTITY, INTERNAL_SERVER_ERROR, SERVICE_UNAVAILABLE).foreach { errorStatus =>
-            s"is a $FinancialDetailsFailureResponse when a $errorStatus response body is returned" in {
+            s"is a $HIPFinancialDetailsFailureResponse when a $errorStatus response body is returned" in {
               mockGetFinancialDetailsHIP(errorStatus, requestBody, "{}")
-              val result: FinancialDetailsResponse = await(connector.getFinancialDetails(enrolmentKey, includeClearedItems = true)(hc))
+              val result: HIPFinancialDetailsResponse = await(connector.getFinancialDetails(enrolmentKey, includeClearedItems = true)(hc))
 
-              result shouldBe Left(FinancialDetailsFailureResponse(errorStatus))
+              result shouldBe Left(HIPFinancialDetailsFailureResponse(errorStatus))
             }
           }
         }
