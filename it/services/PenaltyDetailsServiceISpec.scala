@@ -263,6 +263,30 @@ class PenaltyDetailsServiceISpec extends IntegrationSpecCommonBase with RegimeET
             result.left.getOrElse(GetPenaltyDetailsFailureResponse(INTERNAL_SERVER_ERROR)) shouldBe GetPenaltyDetailsFailureResponse(Status.IM_A_TEAPOT)
           }
         }
+
+        s"successfully handle HIP response with incomeSource as null" in {
+          withFeature(CallAPI1812HIP -> FEATURE_SWITCH_ON) {
+            mockResponseForHIPPenaltyDetailsWithIncomeSourceNone(Status.OK, regime, idType, id)
+            val result = await(service.getPenaltyDetails(enrolmentKey))
+            result.isRight shouldBe true
+            result.toOption.get.isInstanceOf[GetPenaltyDetailsSuccessResponse] shouldBe true
+            
+            // Verify that the converted data has incomeSource as None
+            val successResponse = result.toOption.get.asInstanceOf[GetPenaltyDetailsSuccessResponse]
+            val penaltyDetails = successResponse.penaltyDetails
+            penaltyDetails.lateSubmissionPenalty.isDefined shouldBe true
+            
+            val lspDetails = penaltyDetails.lateSubmissionPenalty.get.details
+            lspDetails.nonEmpty shouldBe true
+            
+            val lateSubmissions = lspDetails.head.lateSubmissions
+            lateSubmissions.isDefined shouldBe true
+            lateSubmissions.get.nonEmpty shouldBe true
+            
+            // Check that incomeSource is None
+            lateSubmissions.get.head.incomeSource shouldBe None
+          }
+        }
       }
     }
   }

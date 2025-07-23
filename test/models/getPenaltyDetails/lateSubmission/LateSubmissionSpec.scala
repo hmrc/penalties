@@ -26,6 +26,7 @@ class LateSubmissionSpec extends SpecBase {
     """
       |{
       | "lateSubmissionID": "001",
+      | "incomeSource": "IT",
       | "taxPeriod":  "23AA",
       | "taxPeriodStartDate": "2022-01-01",
       | "taxPeriodEndDate": "2022-12-31",
@@ -66,5 +67,63 @@ class LateSubmissionSpec extends SpecBase {
   "be writable to JSON" in {
     val result: JsValue = Json.toJson(model)(LateSubmission.writes)
     result shouldBe jsonRepresentingModel
+  }
+
+  "incomeSource field" should {
+    "parse correctly when field is present with a value" in {
+      val json = Json.parse("""
+        {
+          "lateSubmissionID": "123456789",
+          "incomeSource": "ITSA",
+          "taxPeriod": "2022-01-01",
+          "taxPeriodStartDate": "2022-01-01",
+          "taxPeriodEndDate": "2022-12-31",
+          "taxPeriodDueDate": "2023-02-07",
+          "returnReceiptDate": "2022-02-01",
+          "taxReturnStatus": "Fulfilled"
+        }
+      """)
+      
+      val result = json.validate[LateSubmission]
+      result.isSuccess shouldBe true
+      result.get.incomeSource shouldBe Some("ITSA")
+    }
+
+    "parse correctly when field is null" in {
+      val json = Json.parse("""
+        {
+          "lateSubmissionID": "123456789",
+          "incomeSource": null,
+          "taxPeriod": "2022-01-01",
+          "taxPeriodStartDate": "2022-01-01",
+          "taxPeriodEndDate": "2022-12-31",
+          "taxPeriodDueDate": "2023-02-07",
+          "returnReceiptDate": "2022-02-01",
+          "taxReturnStatus": "Fulfilled"
+        }
+      """)
+      
+      val result = json.validate[LateSubmission]
+      result.isSuccess shouldBe true
+      result.get.incomeSource shouldBe None
+    }
+
+    "parse correctly when field is missing" in {
+      val json = Json.parse("""
+        {
+          "lateSubmissionID": "123456789",
+          "taxPeriod": "2022-01-01",
+          "taxPeriodStartDate": "2022-01-01",
+          "taxPeriodEndDate": "2022-12-31",
+          "taxPeriodDueDate": "2023-02-07",
+          "returnReceiptDate": "2022-02-01",
+          "taxReturnStatus": "Fulfilled"
+        }
+      """)
+      
+      val result = json.validate[LateSubmission]
+      result.isSuccess shouldBe true
+      result.get.incomeSource shouldBe None
+    }
   }
 }

@@ -49,6 +49,7 @@ class LateSubmissionPenaltySpec extends SpecBase {
       |     "lateSubmissions": [
       |       {
       |         "lateSubmissionID": "001",
+      |         "incomeSource": "IT",
       |         "taxPeriod":  "23AA",
       |         "taxPeriodStartDate": "2022-01-01",
       |         "taxPeriodEndDate": "2022-12-31",
@@ -98,6 +99,7 @@ class LateSubmissionPenaltySpec extends SpecBase {
       |     "lateSubmissions": [
       |       {
       |         "lateSubmissionID": "001",
+      |         "incomeSource": "IT",
       |         "taxPeriod": "23AA",
       |         "taxPeriodStartDate": "2022-01-01",
       |         "taxPeriodEndDate": "2022-12-31",

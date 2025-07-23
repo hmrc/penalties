@@ -139,12 +139,82 @@ val getHIPPenaltyDetailsWithLSPAndLPPAsJson: JsValue = Json.parse(
      |}
      |""".stripMargin)
 
+  val getHIPPenaltyDetailsWithIncomeSourceNoneAsJson: JsValue = Json.parse(
+    s"""
+       |{
+       |  "success": {
+       |    "processingDate": "$mockInstant",
+       |    "penaltyData": {
+       |      "totalisations": {
+       |        "lspTotalValue": 100,
+       |        "penalisedPrincipalTotal": 1000,
+       |        "lppPostedTotal": 0,
+       |        "lppEstimatedTotal": 0
+       |      },
+       |      "lsp": {
+       |        "lspSummary": {
+       |          "activePenaltyPoints": 1,
+       |          "inactivePenaltyPoints": 0,
+       |          "regimeThreshold": 5,
+       |          "penaltyChargeAmount": 100,
+       |          "pocAchievementDate": "2022-01-01"
+       |        },
+       |        "lspDetails": [
+       |          {
+       |            "penaltyNumber": "123456787",
+       |            "penaltyOrder": "01",
+       |            "penaltyCategory": "P",
+       |            "penaltyStatus": "ACTIVE",
+       |            "penaltyCreationDate": "2022-04-01",
+       |            "penaltyExpiryDate": "2022-04-01",
+       |            "communicationsDate": "2022-05-08",
+       |            "lateSubmissions": [
+       |              {
+       |                "lateSubmissionID": "001",
+       |                "incomeSource": null,
+       |                "taxPeriod": "23AA",
+       |                "taxPeriodStartDate": "2022-01-01",
+       |                "taxPeriodEndDate": "2022-12-31",
+       |                "taxPeriodDueDate": "2023-02-07",
+       |                "returnReceiptDate": "2023-02-01",
+       |                "taxReturnStatus": "Fulfilled"
+       |              }
+       |            ],
+       |            "appealInformation": [],
+       |            "chargeDueDate": "2022-04-01",
+       |            "chargeOutstandingAmount": 100,
+       |            "chargeAmount": 100,
+       |            "triggeringProcess": "P123",
+       |            "chargeReference": "CHARGEREF1"
+       |          }
+       |        ]
+       |      },
+       |      "lpp": {
+       |        "manualLPPIndicator": false,
+       |        "lppDetails": []
+       |      },
+       |      "breathingSpace": []
+       |    }
+       |  }
+       |}
+       |""".stripMargin)
+
   def mockResponseForHIPPenaltyDetails(status: Int, apiRegime: Regime, idType: IdType, id: Id, dateLimit: Option[String] = None, body: Option[String] = None): StubMapping = {
     val dateLimitParam = dateLimit.map(d => s"&dateLimit=$d").getOrElse("")
     stubFor(get(urlEqualTo(s"/etmp/RESTAdapter/cross-regime/taxpayer/penalties?taxRegime=${apiRegime.value}&idType=${idType.value}&idNumber=${id.value}$dateLimitParam"))
       .willReturn(
         aResponse()
           .withBody(body.fold(getHIPPenaltyDetailsWithLSPAndLPPAsJson.toString())(identity))
+          .withStatus(status)
+      ))
+  }
+
+  def mockResponseForHIPPenaltyDetailsWithIncomeSourceNone(status: Int, apiRegime: Regime, idType: IdType, id: Id, dateLimit: Option[String] = None): StubMapping = {
+    val dateLimitParam = dateLimit.map(d => s"&dateLimit=$d").getOrElse("")
+    stubFor(get(urlEqualTo(s"/etmp/RESTAdapter/cross-regime/taxpayer/penalties?taxRegime=${apiRegime.value}&idType=${idType.value}&idNumber=${id.value}$dateLimitParam"))
+      .willReturn(
+        aResponse()
+          .withBody(getHIPPenaltyDetailsWithIncomeSourceNoneAsJson.toString())
           .withStatus(status)
       ))
   }
