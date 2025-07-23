@@ -117,11 +117,12 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
                   Seq(
                     LateSubmission(
                       lateSubmissionID = "001",
+                      incomeSource = Some("IT"),
                       taxPeriod = Some("23AA"),
                       taxPeriodStartDate = Some(LocalDate.of(2022, 1, 1)),
-                      taxPeriodEndDate = Some(LocalDate.of(2022, 3, 31)),
-                      taxPeriodDueDate = Some(LocalDate.of(2022, 5, 7)),
-                      returnReceiptDate = Some(LocalDate.of(2022, 5, 9)),
+                      taxPeriodEndDate = Some(LocalDate.of(2022, 12, 31)),
+                      taxPeriodDueDate = Some(LocalDate.of(2023, 2, 7)),
+                      returnReceiptDate = Some(LocalDate.of(2023, 2, 1)),
                       taxReturnStatus = Some(TaxReturnStatusEnum.Fulfilled)
                     )
                   )
@@ -147,6 +148,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
                   Seq(
                     LateSubmission(
                       lateSubmissionID = "001",
+                      incomeSource = Some("IT"),
                       taxPeriod = Some("23AA"),
                       taxPeriodStartDate = Some(LocalDate.of(2022, 4, 1)),
                       taxPeriodEndDate = Some(LocalDate.of(2022, 6, 30)),
@@ -196,11 +198,12 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
                   Seq(
                     LateSubmission(
                       lateSubmissionID = "001",
+                      incomeSource = Some("IT"),
                       taxPeriod = Some("23AA"),
                       taxPeriodStartDate = Some(LocalDate.of(2022, 1, 1)),
-                      taxPeriodEndDate = Some(LocalDate.of(2022, 3, 31)),
-                      taxPeriodDueDate = Some(LocalDate.of(2022, 5, 7)),
-                      returnReceiptDate = Some(LocalDate.of(2022, 5, 9)),
+                      taxPeriodEndDate = Some(LocalDate.of(2022, 12, 31)),
+                      taxPeriodDueDate = Some(LocalDate.of(2023, 2, 7)),
+                      returnReceiptDate = Some(LocalDate.of(2023, 2, 1)),
                       taxReturnStatus = Some(TaxReturnStatusEnum.Fulfilled)
                     )
                   )
@@ -226,6 +229,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
                   Seq(
                     LateSubmission(
                       lateSubmissionID = "001",
+                      incomeSource = Some("IT"),
                       taxPeriod = Some("23AA"),
                       taxPeriodStartDate = Some(LocalDate.of(2022, 4, 1)),
                       taxPeriodEndDate = Some(LocalDate.of(2022, 6, 30)),
@@ -309,8 +313,8 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
         val appealDataToReturn: AppealData = AppealData(
           Late_Submission,
           startDate = LocalDate.of(2022, 1, 1),
-          endDate = LocalDate.of(2022, 3, 31),
-          dueDate = LocalDate.of(2022, 5, 7),
+          endDate = LocalDate.of(2022, 12, 31),
+          dueDate = LocalDate.of(2023, 2, 7),
           dateCommunicationSent = LocalDate.now
         )
         contentAsString(result) shouldBe Json.toJson(appealDataToReturn).toString()
@@ -328,8 +332,8 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
         val appealDataToReturn: AppealData = AppealData(
           Late_Submission,
           startDate = LocalDate.of(2022, 1, 1),
-          endDate = LocalDate.of(2022, 3, 31),
-          dueDate = LocalDate.of(2022, 5, 7),
+          endDate = LocalDate.of(2022, 12, 31),
+          dueDate = LocalDate.of(2023, 2, 7),
           dateCommunicationSent = LocalDate.of(2022, 5, 8)
         )
         contentAsString(result) shouldBe Json.toJson(appealDataToReturn).toString()
@@ -584,8 +588,8 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
         val appealDataToReturn: AppealData = AppealData(
           `type` = Late_Payment,
           startDate = LocalDate.of(2022, 1, 1),
-          endDate = LocalDate.of(2022, 3, 31),
-          dueDate = LocalDate.of(2022, 5, 7),
+          endDate = LocalDate.of(2022, 12, 31),
+          dueDate = LocalDate.of(2023, 2, 7),
           dateCommunicationSent = LocalDate.now
         )
         contentAsString(result) shouldBe Json.toJson(appealDataToReturn).toString()

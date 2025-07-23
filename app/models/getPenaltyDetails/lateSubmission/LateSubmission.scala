@@ -22,6 +22,7 @@ import java.time.LocalDate
 
 case class LateSubmission(
                            lateSubmissionID: String,
+                           incomeSource: Option[String],
                            taxPeriod: Option[String],
                            taxPeriodStartDate: Option[LocalDate],
                            taxPeriodEndDate: Option[LocalDate],
@@ -33,6 +34,7 @@ case class LateSubmission(
 object LateSubmission {
   implicit val reads: Reads[LateSubmission] = (json: JsValue) => for {
     lateSubmissionID <- (json \ "lateSubmissionID").validate[String]
+    incomeSource <- (json \ "incomeSource").validateOpt[String]
     taxPeriod <- (json \ "taxPeriod").validateOpt[String]
     taxPeriodStartDate <- (json \ "taxPeriodStartDate").validateOpt[LocalDate]
     taxPeriodEndDate <- (json \ "taxPeriodEndDate").validateOpt[LocalDate]
@@ -40,7 +42,7 @@ object LateSubmission {
     returnReceiptDate <- (json \ "returnReceiptDate").validateOpt[LocalDate]
     optTaxReturnStatus <- (json \ "taxReturnStatus").validateOpt[TaxReturnStatusEnum.Value]
   } yield {
-    LateSubmission(lateSubmissionID, taxPeriod, taxPeriodStartDate, taxPeriodEndDate, taxPeriodDueDate, returnReceiptDate, optTaxReturnStatus)
+    LateSubmission(lateSubmissionID, incomeSource, taxPeriod, taxPeriodStartDate, taxPeriodEndDate, taxPeriodDueDate, returnReceiptDate, optTaxReturnStatus)
   }
 
   implicit val writes: Writes[LateSubmission] = Json.writes[LateSubmission]

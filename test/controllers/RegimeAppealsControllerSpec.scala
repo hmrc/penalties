@@ -128,11 +128,12 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
                 Seq(
                   LateSubmission(
                     lateSubmissionID = "001",
+                    incomeSource = Some("IT"),
                     taxPeriod = Some("23AA"),
                     taxPeriodStartDate = Some(LocalDate.of(2022, 1, 1)),
-                    taxPeriodEndDate = Some(LocalDate.of(2022, 3, 31)),
-                    taxPeriodDueDate = Some(LocalDate.of(2022, 5, 7)),
-                    returnReceiptDate = Some(LocalDate.of(2022, 5, 9)),
+                    taxPeriodEndDate = Some(LocalDate.of(2022, 12, 31)),
+                    taxPeriodDueDate = Some(LocalDate.of(2023, 2, 7)),
+                    returnReceiptDate = Some(LocalDate.of(2023, 2, 1)),
                     taxReturnStatus = Some(TaxReturnStatusEnum.Fulfilled)
                   )
                 )
@@ -158,6 +159,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
                 Seq(
                   LateSubmission(
                     lateSubmissionID = "001",
+                    incomeSource = Some("IT"),
                     taxPeriod = Some("23AA"),
                     taxPeriodStartDate = Some(LocalDate.of(2022, 4, 1)),
                     taxPeriodEndDate = Some(LocalDate.of(2022, 6, 30)),
@@ -207,11 +209,12 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
                 Seq(
                   LateSubmission(
                     lateSubmissionID = "001",
+                    incomeSource = Some("IT"),
                     taxPeriod = Some("23AA"),
                     taxPeriodStartDate = Some(LocalDate.of(2022, 1, 1)),
-                    taxPeriodEndDate = Some(LocalDate.of(2022, 3, 31)),
-                    taxPeriodDueDate = Some(LocalDate.of(2022, 5, 7)),
-                    returnReceiptDate = Some(LocalDate.of(2022, 5, 9)),
+                    taxPeriodEndDate = Some(LocalDate.of(2022, 12, 31)),
+                    taxPeriodDueDate = Some(LocalDate.of(2023, 2, 7)),
+                    returnReceiptDate = Some(LocalDate.of(2023, 2, 1)),
                     taxReturnStatus = Some(TaxReturnStatusEnum.Fulfilled)
                   )
                 )
@@ -237,11 +240,62 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
                 Seq(
                   LateSubmission(
                     lateSubmissionID = "001",
+                    incomeSource = Some("IT"),
                     taxPeriod = Some("23AA"),
                     taxPeriodStartDate = Some(LocalDate.of(2022, 4, 1)),
                     taxPeriodEndDate = Some(LocalDate.of(2022, 6, 30)),
                     taxPeriodDueDate = Some(LocalDate.of(2022, 8, 7)),
                     returnReceiptDate = Some(LocalDate.of(2022, 8, 9)),
+                    taxReturnStatus = Some(TaxReturnStatusEnum.Fulfilled)
+                  )
+                )
+              ),
+              expiryReason = None,
+              appealInformation = None,
+              chargeDueDate = None,
+              chargeOutstandingAmount = None,
+              chargeAmount = None,
+              triggeringProcess = None,
+              chargeReference = None
+            )
+          )
+        )
+      ),
+      latePaymentPenalty = None,
+      breathingSpace = None
+    )
+
+    val getPenaltyDetailsWithIncomeSourceNone: GetPenaltyDetails = GetPenaltyDetails(
+      totalisations = None,
+      lateSubmissionPenalty = Some(
+        LateSubmissionPenalty(
+          summary = LSPSummary(
+            activePenaltyPoints = 1,
+            inactivePenaltyPoints = 0,
+            regimeThreshold = 5,
+            penaltyChargeAmount = 100,
+            PoCAchievementDate = Some(LocalDate.of(2022, 1, 1))
+          ),
+          details = Seq(
+            LSPDetails(
+              penaltyNumber = "123456787",
+              penaltyOrder = Some("1"),
+              penaltyCategory = Some(LSPPenaltyCategoryEnum.Point),
+              penaltyStatus = LSPPenaltyStatusEnum.Active,
+              penaltyCreationDate = LocalDate.of(2022, 4, 1),
+              penaltyExpiryDate = LocalDate.of(2022, 4, 1),
+              communicationsDate = Some(LocalDate.of(2022, 5, 8)),
+              FAPIndicator = None,
+              lateSubmissions = Some(
+                Seq(
+                  LateSubmission(
+                    lateSubmissionID = "001",
+                    incomeSource = None,
+                    taxPeriod = Some("23AA"),
+                    taxPeriodStartDate = Some(LocalDate.of(2022, 1, 1)),
+                    taxPeriodEndDate = Some(LocalDate.of(2022, 12, 31)),
+                    taxPeriodDueDate = Some(LocalDate.of(2023, 2, 7)),
+                    returnReceiptDate = Some(LocalDate.of(2023, 2, 1)),
                     taxReturnStatus = Some(TaxReturnStatusEnum.Fulfilled)
                   )
                 )
@@ -340,10 +394,10 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
       val result: Future[Result] = controller.getAppealsDataForLateSubmissionPenalty(samplePenaltyId, regime, idType, id)(fakeRequest)
       status(result) shouldBe Status.OK
       val appealDataToReturn: AppealData = AppealData(
-        Late_Submission,
+        `type` = Late_Submission,
         startDate = LocalDate.of(2022, 1, 1),
-        endDate = LocalDate.of(2022, 3, 31),
-        dueDate = LocalDate.of(2022, 5, 7),
+        endDate = LocalDate.of(2022, 12, 31),
+        dueDate = LocalDate.of(2023, 2, 7),
         dateCommunicationSent = LocalDate.now
       )
       contentAsString(result) shouldBe Json.toJson(appealDataToReturn).toString()
@@ -363,10 +417,33 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
       val result: Future[Result] = controller.getAppealsDataForLateSubmissionPenalty(samplePenaltyId, regime, idType, id)(fakeRequest)
       status(result) shouldBe Status.OK
       val appealDataToReturn: AppealData = AppealData(
-        Late_Submission,
+        `type` = Late_Submission,
         startDate = LocalDate.of(2022, 1, 1),
-        endDate = LocalDate.of(2022, 3, 31),
-        dueDate = LocalDate.of(2022, 5, 7),
+        endDate = LocalDate.of(2022, 12, 31),
+        dueDate = LocalDate.of(2023, 2, 7),
+        dateCommunicationSent = LocalDate.of(2022, 5, 8)
+      )
+      contentAsString(result) shouldBe Json.toJson(appealDataToReturn).toString()
+    }
+
+    s"return OK (${Status.OK}) when the call to ETMP succeeds and the penalty ID matches with incomeSource as None" in new Setup {
+      val samplePenaltyId: String = "123456787"
+
+      val vrn: AgnosticEnrolmentKey = AgnosticEnrolmentKey(
+        Regime("VATC"), 
+        IdType("VRN"),
+        Id("123456789")
+      )
+      when(mockGetPenaltyDetailsService.getPenaltyDetails(ArgumentMatchers.eq(vrn))(ArgumentMatchers.any()))
+        .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetailsWithIncomeSourceNone))))
+
+      val result: Future[Result] = controller.getAppealsDataForLateSubmissionPenalty(samplePenaltyId, regime, idType, id)(fakeRequest)
+      status(result) shouldBe Status.OK
+      val appealDataToReturn: AppealData = AppealData(
+        `type` = Late_Submission,
+        startDate = LocalDate.of(2022, 1, 1),
+        endDate = LocalDate.of(2022, 12, 31),
+        dueDate = LocalDate.of(2023, 2, 7),
         dateCommunicationSent = LocalDate.of(2022, 5, 8)
       )
       contentAsString(result) shouldBe Json.toJson(appealDataToReturn).toString()

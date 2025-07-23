@@ -33,6 +33,7 @@ trait LSPDetailsBase {
     FAPIndicator = None,
     lateSubmissions = Some(Seq(LateSubmission(
       lateSubmissionID = "001",
+      incomeSource = Some("IT"),
       taxPeriod = Some("23AA"),
       taxPeriodStartDate = Some(LocalDate.now()),
       taxPeriodEndDate = Some(LocalDate.now()),

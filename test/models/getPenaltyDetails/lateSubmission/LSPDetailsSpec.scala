@@ -38,6 +38,7 @@ class LSPDetailsSpec extends SpecBase {
       |   "lateSubmissions": [
       |      {
       |        "lateSubmissionID": "001",
+      |        "incomeSource": "IT",
       |        "taxPeriod":  "23AA",
       |        "taxPeriodStartDate": "2022-01-01",
       |        "taxPeriodEndDate": "2022-12-31",
@@ -75,6 +76,7 @@ class LSPDetailsSpec extends SpecBase {
       |   "lateSubmissions": [
       |      {
       |        "lateSubmissionID": "001",
+      |        "incomeSource": "IT",
       |        "taxPeriod":  "23AA",
       |        "taxPeriodStartDate": "2022-01-01",
       |        "taxPeriodEndDate": "2022-12-31",
@@ -112,6 +114,7 @@ class LSPDetailsSpec extends SpecBase {
       |   "lateSubmissions": [
       |      {
       |        "lateSubmissionID": "001",
+      |        "incomeSource": "IT",
       |        "taxPeriod":  "23AA",
       |        "taxPeriodStartDate": "2022-01-01",
       |        "taxPeriodEndDate": "2022-12-31",
@@ -149,6 +152,7 @@ class LSPDetailsSpec extends SpecBase {
       Seq(
         LateSubmission(
           lateSubmissionID = "001",
+          incomeSource = Some("IT"),
           taxPeriod = Some("23AA"),
           taxPeriodStartDate = Some(LocalDate.of(2022, 1, 1)),
           taxPeriodEndDate = Some(LocalDate.of(2022, 12, 31)),
@@ -184,6 +188,7 @@ class LSPDetailsSpec extends SpecBase {
       Seq(
         LateSubmission(
           lateSubmissionID = "001",
+          incomeSource = Some("IT"),
           taxPeriod = Some("23AA"),
           taxPeriodStartDate = Some(LocalDate.of(2022, 1, 1)),
           taxPeriodEndDate = Some(LocalDate.of(2022, 12, 31)),
@@ -215,6 +220,7 @@ class LSPDetailsSpec extends SpecBase {
       Seq(
         LateSubmission(
           lateSubmissionID = "001",
+          incomeSource = Some("IT"),
           taxPeriod = Some("23AA"),
           taxPeriodStartDate = Some(LocalDate.of(2022, 1, 1)),
           taxPeriodEndDate = Some(LocalDate.of(2022, 12, 31)),
@@ -275,6 +281,7 @@ class LSPDetailsSpec extends SpecBase {
         |   "lateSubmissions": [
         |      {
         |        "lateSubmissionID": "001",
+        |        "incomeSource": "IT",
         |        "taxPeriod":  "23AA",
         |        "taxPeriodStartDate": "2022-01-01",
         |        "taxPeriodEndDate": "2022-12-31",
@@ -309,6 +316,7 @@ class LSPDetailsSpec extends SpecBase {
         |   "lateSubmissions": [
         |      {
         |        "lateSubmissionID": "001",
+        |        "incomeSource": "IT",
         |        "taxPeriod":  "23AA",
         |        "taxPeriodStartDate": "2022-01-01",
         |        "taxPeriodEndDate": "2022-12-31",

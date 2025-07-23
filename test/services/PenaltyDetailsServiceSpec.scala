@@ -112,6 +112,7 @@ class PenaltyDetailsServiceSpec extends SpecBase with LogCapturing with LPPDetai
                 Seq(
                   LateSubmission(
                     lateSubmissionID = "001",
+                    incomeSource = Some("IT"),
                     taxPeriod = Some("23AA"),
                     taxPeriodStartDate = Some(LocalDate.of(2022, 1, 1)),
                     taxPeriodEndDate = Some(LocalDate.of(2022, 12, 31)),
@@ -239,7 +240,7 @@ class PenaltyDetailsServiceSpec extends SpecBase with LogCapturing with LPPDetai
                   Seq(
                     models.hipPenaltyDetails.lateSubmission.LateSubmission(
                       lateSubmissionID = "001",
-                      incomeSource = None,
+                      incomeSource = Some("IT"),
                       taxPeriod = Some("23AA"),
                       taxPeriodStartDate = Some(LocalDate.of(2022, 1, 1)),
                       taxPeriodEndDate = Some(LocalDate.of(2022, 12, 31)),
