@@ -19,6 +19,7 @@ package services
 import config.featureSwitches.{CallAPI1811HIP, FeatureSwitching}
 import connectors.getFinancialDetails.{FinancialDetailsConnector, FinancialDetailsHipConnector}
 import connectors.parsers.getFinancialDetails.FinancialDetailsParser._
+import connectors.parsers.getFinancialDetails.HIPFinancialDetailsParser.HIPFinancialDetailsResponse
 import models.AgnosticEnrolmentKey
 import play.api.Configuration
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
@@ -37,35 +38,34 @@ class FinancialDetailsService @Inject() (
 
     def callHipConnector: Future[FinancialDetailsResponse] = {
       val includeClearedItems: Boolean = optionalParameters.isEmpty
-      financialDetailsHipConnector.getFinancialDetails(enrolmentKey, includeClearedItems).map(handleConnectorResponse(_, enrolmentKey))
+      financialDetailsHipConnector
+        .getFinancialDetails(enrolmentKey, includeClearedItems)
+        .map(mapHipToIfResponse)
+        .map(logResponse(_, enrolmentKey))
     }
 
     def callIfConnector: Future[FinancialDetailsResponse] =
-      getFinancialDetailsConnector.getFinancialDetails(enrolmentKey, optionalParameters).map(handleConnectorResponse(_, enrolmentKey))
+      getFinancialDetailsConnector.getFinancialDetails(enrolmentKey, optionalParameters).map(logResponse(_, enrolmentKey))
 
     if (isEnabled(CallAPI1811HIP)) callHipConnector else callIfConnector
   }
 
-  private def handleConnectorResponse(connectorResponse: FinancialDetailsResponse,
-                                      enrolmentKey: AgnosticEnrolmentKey): FinancialDetailsResponse = {
+  private def mapHipToIfResponse(response: HIPFinancialDetailsResponse): FinancialDetailsResponse =
+    response.left.map(_.toIFFailureResponse).map(_.toIFSuccessResponse)
+
+  private def logResponse(connectorResponse: FinancialDetailsResponse, enrolmentKey: AgnosticEnrolmentKey): FinancialDetailsResponse = {
     val startOfLogMsg: String = s"[FinancialDetailsService][getFinancialDetails][$enrolmentKey]"
     connectorResponse match {
-      case res @ Right(_ @FinancialDetailsSuccessResponse(financialDetails)) =>
-        logger.info(s"$startOfLogMsg - Success response returned from connector.")
-        res
-      case res @ Right(_ @FinancialDetailsHipSuccessResponse(financialData)) =>
-        logger.info(s"$startOfLogMsg - Success response returned from connector.")
-        res
-      case res @ Left(FinancialDetailsNoContent) =>
-        logger.info(s"$startOfLogMsg - Got a 404 response and no data was found for GetFinancialDetails call")
-        res
-      case res @ Left(FinancialDetailsMalformed) =>
-        logger.error(s"$startOfLogMsg - Failed to parse HTTP response into model for ${enrolmentKey}")
-        res
-      case res @ Left(FinancialDetailsFailureResponse(_)) =>
-        logger.error(s"$startOfLogMsg - Unknown status returned from connector for ${enrolmentKey}")
-        res
+      case _ @Right(_ @FinancialDetailsSuccessResponse(_)) =>
+        logger.info(s"$startOfLogMsg - Success response with data returned from connector")
+      case _ @Left(FinancialDetailsNoContent) =>
+        logger.info(s"$startOfLogMsg - No data found for ID")
+      case _ @Left(FinancialDetailsMalformed) =>
+        logger.error(s"$startOfLogMsg - Failed to parse HTTP response into model for ID")
+      case _ @Left(FinancialDetailsFailureResponse(_)) =>
+        logger.error(s"$startOfLogMsg - Unknown status returned from connector for ID")
     }
+    connectorResponse
   }
 
   def getFinancialDetailsForAPI(enrolmentKey: AgnosticEnrolmentKey,

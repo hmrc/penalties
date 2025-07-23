@@ -34,122 +34,80 @@ import java.util.UUID
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class HIPPenaltyDetailsConnector @Inject() (
-    httpClient: HttpClient,
-    appConfig: AppConfig
-)(implicit ec: ExecutionContext, val config: Configuration)
+class HIPPenaltyDetailsConnector @Inject() (httpClient: HttpClient, appConfig: AppConfig)(implicit ec: ExecutionContext, val config: Configuration)
     extends FeatureSwitching {
 
-implicit val throwingReads: HttpReads[HttpResponse] = new HttpReads[HttpResponse] {
-  override def read(method: String, url: String, response: HttpResponse): HttpResponse = {
-    if (response.status >= 400) throw UpstreamErrorResponse(response.body, response.status)
-    else response
-  }
-}
+  def getPenaltyDetails(enrolmentKey: AgnosticEnrolmentKey)(implicit hc: HeaderCarrier): Future[HIPPenaltyDetailsResponse] = {
+    val url           = appConfig.getHIPPenaltyDetailsUrl(enrolmentKey)
+    val hcWithoutAuth = hc.copy(authorization = None)
+    val headers       = buildHeadersV1
 
-  def getPenaltyDetails(
-      enrolmentKey: AgnosticEnrolmentKey
-  )(implicit hc: HeaderCarrier): Future[HIPPenaltyDetailsResponse] = {
-    val url = appConfig.getHIPPenaltyDetailsUrl(enrolmentKey)
-    val headerCarrier = hc.copy(authorization = None)
-    val headers = buildHeadersV1
-
-    logger.info(
-      s"[HIPPenaltiesDetailsConnector][getPenaltyDetails][appConfig.getHIPPenaltyDetailsUrl($enrolmentKey)]- Calling GET $url \nHeaders: $headers"
-    )
+    logger.info(s"[HIPPenaltiesDetailsConnector][getPenaltyDetails][$enrolmentKey]- Calling GET $url\nHeaders: $headers")
 
     httpClient
-      .GET[HIPPenaltyDetailsResponse](
-        url,
-        headers = headers
-      ).map { response =>
-         logger.info(s"[getPenaltyDetails] Successful call to 1812 API")
-         response
-      }
+      .GET[HIPPenaltyDetailsResponse](url, Seq.empty, headers)(implicitly, hcWithoutAuth, implicitly)
       .recover {
-        case e: UpstreamErrorResponse => {
-          PagerDutyHelper.logStatusCode("getPenaltyDetails", e.statusCode)(
-            RECEIVED_4XX_FROM_1812_API,
-            RECEIVED_5XX_FROM_1812_API
-          )
+        case e: UpstreamErrorResponse =>
+          PagerDutyHelper.logStatusCode("getPenaltyDetails", e.statusCode)(RECEIVED_4XX_FROM_1812_API, RECEIVED_5XX_FROM_1812_API)
           logger.error(
-            s"[HIPPenaltiesDetailsConnector][getPenaltyDetails] -" +
-              s" Received ${e.statusCode} status from API 1812 call - returning status to caller"
-          )
+            s"[HIPPenaltiesDetailsConnector][getPenaltyDetails] - Received ${e.statusCode} status from API#5329 call " +
+              s"- returning status to caller. Error: ${e.getMessage()}")
           Left(HIPPenaltyDetailsFailureResponse(e.statusCode))
-        }
-        case e: Exception => {
-          PagerDutyHelper.log(
-            "getPenaltyDetails",
-            UNKNOWN_EXCEPTION_CALLING_1812_API
-          )
+        case e: Exception =>
+          PagerDutyHelper.log("getPenaltyDetails", UNKNOWN_EXCEPTION_CALLING_1812_API)
           logger.error(
-            s"[HIPPenaltiesDetailsConnector][getPenaltyDetails] -" +
-              s" An unknown exception occurred - returning 500 back to caller - message: ${e.getMessage}"
-          )
+            "[HIPPenaltiesDetailsConnector][getPenaltyDetails] - An unknown exception occurred " +
+              s"- returning 500 back to caller - message: ${e.getMessage}")
           Left(HIPPenaltyDetailsFailureResponse(INTERNAL_SERVER_ERROR))
-        }
       }
   }
 
-  def getPenaltyDetailsForAPI(
-      enrolmentKey: AgnosticEnrolmentKey,
-      dateLimit: Option[String]
-  )(implicit hc: HeaderCarrier): Future[HttpResponse] = {
-    val headerCarrier = hc.copy(authorization = None)
+  def getPenaltyDetailsForAPI(enrolmentKey: AgnosticEnrolmentKey, dateLimit: Option[String])(implicit hc: HeaderCarrier): Future[HttpResponse] = {
 
-    val url =
-      appConfig.getHIPPenaltyDetailsUrl(enrolmentKey, dateLimit)
+    val url           = appConfig.getHIPPenaltyDetailsUrl(enrolmentKey, dateLimit)
+    val hcWithoutAuth = hc.copy(authorization = None)
+    val headers       = buildHeadersV1
 
-    logger.info(s"[getPenaltyDetailsForAPI] Resolved URL: ${Option(url).getOrElse("null")}")
-    logger.info(s"[getPenaltyDetailsForAPI] Headers: ${buildHeadersV1}")
+    val throwingReads: HttpReads[HttpResponse] =
+      (_: String, _: String, response: HttpResponse) =>
+        if (response.status >= 400) throw UpstreamErrorResponse(response.body, response.status) else response
 
-    httpClient.GET[HttpResponse](
-      url, headers = buildHeadersV1
-      )(throwingReads, implicitly, implicitly).recover {
-      case e: UpstreamErrorResponse => {
+    logger.info(s"[HIPPenaltiesDetailsConnector][getPenaltyDetails][$enrolmentKey]- Calling GET $url\nHeaders: $headers")
+
+    httpClient.GET[HttpResponse](url, Seq.empty, headers)(throwingReads, hcWithoutAuth, implicitly).recover {
+      case e: UpstreamErrorResponse =>
         logger.error(
-          s"[HIPPenaltiesDetailsConnector][getPenaltyDetailsForAPI] -" +
-            s" Received ${e.statusCode} status from API 1812 call - returning status to caller"
-        )
+          s"[HIPPenaltiesDetailsConnector][getPenaltyDetailsForAPI] - Received ${e.statusCode} status from API#5329 call " +
+            s"- returning status to caller. Error: ${e.getMessage()}")
         HttpResponse(e.statusCode, e.message)
-      }
-      case e: Exception => {
-        PagerDutyHelper
-          .log("getPenaltyDetailsForAPI", UNKNOWN_EXCEPTION_CALLING_1812_API)
+      case e: Exception =>
+        PagerDutyHelper.log("getPenaltyDetailsForAPI", UNKNOWN_EXCEPTION_CALLING_1812_API)
         logger.error(
-          s"[HIPPenaltiesDetailsConnector][getPenaltyDetailsForAPI] -" +
-            s" An unknown exception occurred - returning 500 back to caller - message: ${e.getMessage}"
-        )
+          "[HIPPenaltiesDetailsConnector][getPenaltyDetailsForAPI] - An unknown exception occurred " +
+            s"- returning 500 back to caller - message: ${e.getMessage}")
         HttpResponse(
           INTERNAL_SERVER_ERROR,
           "An unknown exception occurred. Contact the Penalties team for more information."
         )
-      }
     }
   }
 
-  private val requestIdPattern =
-    """.*([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}).*""".r
-
-  private val CorrelationIdHeader: String = "correlationid"
-  private val AuthorizationHeader: String = "Authorization"
-  private val xOriginatingSystemHeader: String = "X-Originating-System"
-  private val xReceiptDateHeader: String = "X-Receipt-Date"
+  private val CorrelationIdHeader: String       = "correlationid"
+  private val AuthorizationHeader: String       = "Authorization"
+  private val xOriginatingSystemHeader: String  = "X-Originating-System"
+  private val xReceiptDateHeader: String        = "X-Receipt-Date"
   private val xTransmittingSystemHeader: String = "X-Transmitting-System"
-  private val EnvironmentHeader: String = "Environment"
+  private val EnvironmentHeader: String         = "Environment"
 
-  private def buildHeadersV1(implicit
-      hc: HeaderCarrier
-  ): Seq[(String, String)] =
+  private def buildHeadersV1: Seq[(String, String)] =
     Seq(
       appConfig.hipServiceOriginatorIdKeyV1 -> appConfig.hipServiceOriginatorIdV1,
-      CorrelationIdHeader -> UUID.randomUUID().toString,
-      AuthorizationHeader -> s"Basic ${appConfig.hipAuthorisationToken}",
-      EnvironmentHeader -> appConfig.hipEnvironment,
-      xOriginatingSystemHeader -> "MDTP",
+      CorrelationIdHeader                   -> UUID.randomUUID().toString,
+      AuthorizationHeader                   -> s"Basic ${appConfig.hipAuthorisationToken}",
+      EnvironmentHeader                     -> appConfig.hipEnvironment,
+      xOriginatingSystemHeader              -> "MDTP",
       xReceiptDateHeader -> {
-        val instant = Instant.now().truncatedTo(ChronoUnit.SECONDS)
+        val instant       = Instant.now().truncatedTo(ChronoUnit.SECONDS)
         val localDateTime = java.time.LocalDateTime.ofInstant(instant, java.time.ZoneOffset.UTC)
         DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss").format(localDateTime) + "Z"
       },

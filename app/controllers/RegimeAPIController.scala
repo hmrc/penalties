@@ -65,27 +65,21 @@ class RegimeAPIController @Inject()(auditService: AuditService,
 
   private def handlePenaltyDetailsResponse(response: GetPenaltyDetailsResponse, agnosticEnrolmenKey: AgnosticEnrolmentKey)(implicit request: Request[_], hc: HeaderCarrier): Future[Result] = {
     response.fold({
-      case PenaltyDetailsParser.GetPenaltyDetailsFailureResponse(status) if status == BAD_REQUEST => {
+      case PenaltyDetailsParser.GetPenaltyDetailsFailureResponse(status) if status == BAD_REQUEST =>
         Future(NotFound(s"A downstream call returned 400 for ${agnosticEnrolmenKey.idType.value}: ${agnosticEnrolmenKey.id.value}"))
-      }
-      case PenaltyDetailsParser.GetPenaltyDetailsFailureResponse(status) if status == NOT_FOUND => {
+      case PenaltyDetailsParser.GetPenaltyDetailsFailureResponse(status) if status == NOT_FOUND =>
         Future(NotFound(s"A downstream call returned 404 for ${agnosticEnrolmenKey.idType.value}: ${agnosticEnrolmenKey.id.value}"))
-      }
-      case PenaltyDetailsParser.GetPenaltyDetailsFailureResponse(status) if status == UNPROCESSABLE_ENTITY => {
+      case PenaltyDetailsParser.GetPenaltyDetailsFailureResponse(status) if status == UNPROCESSABLE_ENTITY =>
         val responsePayload = GetPenaltyDetailsSuccessResponse(GetPenaltyDetails(totalisations = None, lateSubmissionPenalty = None, latePaymentPenalty = None, breathingSpace = None))
         Future(returnResponseForAPI(responsePayload.penaltyDetails, agnosticEnrolmenKey))
-      }
-      case PenaltyDetailsParser.GetPenaltyDetailsFailureResponse(status) => {
+      case PenaltyDetailsParser.GetPenaltyDetailsFailureResponse(status) =>
         Future(InternalServerError(s"A downstream call returned an unexpected status: $status for $agnosticEnrolmenKey"))
-      }
-      case PenaltyDetailsParser.GetPenaltyDetailsMalformed => {
+      case PenaltyDetailsParser.GetPenaltyDetailsMalformed =>
         PagerDutyHelper.log("getSummaryDataForVRN", MALFORMED_RESPONSE_FROM_1812_API)
         Future(InternalServerError(s"We were unable to parse penalty data."))
-      }
-      case PenaltyDetailsParser.GetPenaltyDetailsNoContent => {
+      case PenaltyDetailsParser.GetPenaltyDetailsNoContent =>
         logger.info(s"[RegimeAPIController][getSummaryDataForVRN] - API call returned no content for $agnosticEnrolmenKey")
         Future(NoContent)
-      }
     },
     success => {
       logger.info(s"[RegimeAPIController][getSummaryDataForVRN] - API call returned 200 for $agnosticEnrolmenKey")
@@ -116,14 +110,14 @@ class RegimeAPIController @Inject()(auditService: AuditService,
           case FinancialDetailsParser.FinancialDetailsMalformed =>
             PagerDutyHelper.log("callFinancialDetailsForManualLPPs", MALFORMED_RESPONSE_FROM_1811_API)
             logger.error(s"[RegimeAPIController][callFinancialDetailsForManualLPPs] - 1811 call (VATVC/BTA API)" +
-              s" returned invalid body - failed to parse penalty details response for ${enrolmentKey}, returning None")
+              s" returned invalid body - failed to parse penalty details response for $enrolmentKey, returning None")
             None
           case FinancialDetailsParser.FinancialDetailsNoContent =>
-            logger.info(s"[RegimeAPIController][callFinancialDetailsForManualLPPs] - 1811 call (VATVC/BTA API) returned no content for ${enrolmentKey}, returning None")
+            logger.info(s"[RegimeAPIController][callFinancialDetailsForManualLPPs] - 1811 call (VATVC/BTA API) returned no content for $enrolmentKey, returning None")
             None
         },
           financialDetailsResponseWithoutClearedItems => {
-            logger.info(s"[RegimeAPIController][callFinancialDetailsForManualLPPs] - 1811 call (VATVC/BTA API) returned 200 for ${enrolmentKey}" )
+            logger.info(s"[RegimeAPIController][callFinancialDetailsForManualLPPs] - 1811 call (VATVC/BTA API) returned 200 for $enrolmentKey" )
             Some(financialDetailsResponseWithoutClearedItems.asInstanceOf[FinancialDetailsSuccessResponse].financialDetails)
           })
     }
@@ -197,7 +191,7 @@ class RegimeAPIController @Inject()(auditService: AuditService,
             auditService.audit(auditToSend)
             res.status match {
               case OK =>
-                logger.info(s"[RegimeAPIController][getFinancialDetails] - 1811 call (3rd party API) returned 200 for ${enrolmentKey}")
+                logger.info(s"[RegimeAPIController][getFinancialDetails] - 1811 call (3rd party API) returned 200 for $enrolmentKey")
                 Ok(res.json)
               case NOT_FOUND =>
                 logger.error("[RegimeAPIController][getFinancialDetails] - 1811 call (3rd party API) returned 404 - error received: " + res)
@@ -231,7 +225,7 @@ class RegimeAPIController @Inject()(auditService: AuditService,
             if (isEnabled(CallAPI1812HIP)) {
               processedResBody // Return HIP responses as-is
             } else {
-              filterResponseBody(processedResBody, enrolmentKey, "getPenaltyDetails")
+              filterResponseBody(processedResBody, enrolmentKey)
             }
           } else {
             processedResBody
@@ -240,7 +234,7 @@ class RegimeAPIController @Inject()(auditService: AuditService,
           auditService.audit(auditToSend)
           res.status match {
             case OK =>
-              logger.info(s"[RegimeAPIController][getPenaltyDetails] - API call (3rd party API) returned 200 for ${enrolmentKey}")
+              logger.info(s"[RegimeAPIController][getPenaltyDetails] - API call (3rd party API) returned 200 for $enrolmentKey")
               Ok(filteredResBody)
             case NOT_FOUND =>
               logger.error("[RegimeAPIController][getPenaltyDetails] - API call (3rd party API) returned 404 - error received: " + res)
@@ -255,11 +249,11 @@ class RegimeAPIController @Inject()(auditService: AuditService,
     }
   }
 
-  private def filterResponseBody(resBody: JsValue, enrolmentKey: AgnosticEnrolmentKey, method: String): JsValue = {
+  private def filterResponseBody(resBody: JsValue, enrolmentKey: AgnosticEnrolmentKey): JsValue = {
     val penaltiesDetails = GetPenaltyDetails.format.reads(resBody)
-    implicit val loggingContext = LoggingContext(
-     "APIConnector",
-      method,
+    implicit val loggingContext: LoggingContext = LoggingContext(
+      "APIConnector",
+      "getPenaltyDetails",
       enrolmentKey.toString
     )
     GetPenaltyDetails.format.writes(filterService.filterEstimatedLPP1DuringPeriodOfFamiliarisation(

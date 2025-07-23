@@ -66,7 +66,7 @@ class PenaltyDetailsService @Inject() (getPenaltyDetailsConnector: RegimePenalty
     val startOfLogMsg: String = s"[PenaltyDetailsService][getPenaltyDetails][${enrolmentKey.regime.value}]"
     failure match {
       case HIPPenaltyDetailsNoContent => 
-        logger.info(s"$startOfLogMsg - Got a 404 response and no data was found for GetPenaltyDetails call")
+        logger.info(s"$startOfLogMsg - No data was found for GetPenaltyDetails call")
         Left(GetPenaltyDetailsNoContent)
       case HIPPenaltyDetailsMalformed => 
         logger.info(s"$startOfLogMsg - Failed to parse HTTP response into HIP model for $enrolmentKey")
@@ -280,7 +280,7 @@ class PenaltyDetailsService @Inject() (getPenaltyDetailsConnector: RegimePenalty
         ManualLPPIndicator = Some(hipLPPContainer.manualLPPIndicator)
       )
     }
-    
+
     models.getPenaltyDetails.GetPenaltyDetails(
       totalisations = regularTotalisations,
       lateSubmissionPenalty = regularLSP,

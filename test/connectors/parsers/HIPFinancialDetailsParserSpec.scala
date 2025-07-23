@@ -17,8 +17,8 @@
 package connectors.parsers
 
 import base.LogCapturing
-import connectors.parsers.getFinancialDetails.FinancialDetailsParser
-import connectors.parsers.getFinancialDetails.FinancialDetailsParser._
+import connectors.parsers.getFinancialDetails.HIPFinancialDetailsParser
+import connectors.parsers.getFinancialDetails.HIPFinancialDetailsParser._
 import models.getFinancialDetails.totalisation.{FinancialDetailsTotalisation, InterestTotalisation, RegimeTotalisation}
 import models.getFinancialDetails.{DocumentDetails, FinancialDetails, GetFinancialData, LineItemDetails}
 import org.scalatest.matchers.should.Matchers
@@ -31,7 +31,7 @@ import utils.PagerDutyHelper.PagerDutyKeys
 
 import java.time.LocalDate
 
-class FinancialDetailsParserSpec extends AnyWordSpec with Matchers with LogCapturing {
+class HIPFinancialDetailsParserSpec extends AnyWordSpec with Matchers with LogCapturing {
 
   val mockGetFinancialDetailsModelAPI1811: GetFinancialData = GetFinancialData(
     FinancialDetails(
@@ -127,135 +127,123 @@ class FinancialDetailsParserSpec extends AnyWordSpec with Matchers with LogCaptu
       |""".stripMargin
   )
 
-  def financialDetailsParserReads(httpResponse: HttpResponse): FinancialDetailsResponse =
-    FinancialDetailsParser.FinancialDetailsReads.read("GET", "/", httpResponse)
+  def financialDetailsParserReads(httpResponse: HttpResponse): HIPFinancialDetailsResponse =
+    HIPFinancialDetailsParser.HIPFinancialDetailsReads.read("GET", "/", httpResponse)
 
   "FinancialDetailsReads" when {
-    "parsing an OK response" should {
-      "return a FinancialDetailsMalformed when HIP body is provided (since OK should only be non-HIP)" in {
-        val validHipResponse = HttpResponse(status = OK, json = getHipFinancialDetailsAsJson, headers = Map.empty)
-
-        withCaptureOfLoggingFrom(logger) { logs =>
-          val result = financialDetailsParserReads(validHipResponse)
-          logs.exists(_.getMessage.contains("Unable to validate non-HIP response with OK status")) shouldBe true
-          result shouldBe Left(FinancialDetailsMalformed)
-        }
-      }
-      "return the body in a FinancialDetailsSuccessResponse when non-HIP body is valid" in {
-        val validNonHipResponse = HttpResponse(status = OK, json = getFinancialDetailsAsJson, headers = Map.empty)
-        val result              = financialDetailsParserReads(validNonHipResponse)
+    "parsing a CREATED response" should {
+      "return the body in a HIPFinancialDetailsSuccessResponse when HIP body is valid" in {
+        val validHipResponse = HttpResponse(status = CREATED, json = getHipFinancialDetailsAsJson, headers = Map.empty)
+        val result           = financialDetailsParserReads(validHipResponse)
 
         result.isRight shouldBe true
         result.toOption.get
-          .asInstanceOf[FinancialDetailsSuccessResponse]
+          .asInstanceOf[HIPFinancialDetailsSuccessResponse]
           .financialDetails shouldBe mockGetFinancialDetailsModelAPI1811.financialDetails
       }
-      "return a FinancialDetailsMalformed when body is invalid" in {
+      "return a HIPFinancialDetailsMalformed when body is invalid" in {
         val invalidBody         = Json.parse("""{"documentDetails": [{"documentOutstandingAmount": "xyz"}]}""")
-        val invalidBodyResponse = HttpResponse(status = OK, json = invalidBody, headers = Map.empty)
+        val invalidBodyResponse = HttpResponse(status = CREATED, json = invalidBody, headers = Map.empty)
 
         withCaptureOfLoggingFrom(logger) { logs =>
           val result = financialDetailsParserReads(invalidBodyResponse)
-          logs.exists(_.getMessage.contains("Unable to validate non-HIP response with OK status")) shouldBe true
-          result shouldBe Left(FinancialDetailsMalformed)
+          logs.exists(_.getMessage.contains("Json validation of 201 body failed with errors")) shouldBe true
+          result shouldBe Left(HIPFinancialDetailsMalformed)
         }
       }
     }
 
-    "parsing a NOT_FOUND response with body" should {
-      def notFoundHttpResponseWithBody(responseBody: String): HttpResponse = HttpResponse.apply(status = NOT_FOUND, responseBody)
-      "return a FinancialDetailsNoContent response" when {
-        "able to validate an IF FailureResponse body with a 'NO_DATA_FOUND' failure code" in {
-          val noDataFailureResponseBody = """{"failures":[{"code": "NO_DATA_FOUND", "reason": "No data returned found for ID"}]}"""
-          val notFoundHttpResponse      = notFoundHttpResponseWithBody(noDataFailureResponseBody)
+    "parsing an UNPROCESSABLE_ENTITY response" should {
+      def errorResponse(responseBody: String): HttpResponse = HttpResponse.apply(status = UNPROCESSABLE_ENTITY, responseBody)
+      "return a HIPFinancialDetailsNoContent response" when {
+        "able to validate a HIP BusinessError body with a '016' failure code and text" in {
+          val noDataFailureResponseBody = """{"errors":{"processingDate":"2025-03-03", "code":"016", "text":"Invalid ID Number"}}"""
+          val notFoundHttpResponse      = errorResponse(noDataFailureResponseBody)
 
           val result = financialDetailsParserReads(notFoundHttpResponse)
-          result shouldBe Left(FinancialDetailsNoContent)
+          result shouldBe Left(HIPFinancialDetailsNoContent)
+        }
+        "able to validate a HIP BusinessError body with a '018' failure code and text" in {
+          val noDataFailureResponseBody = """{"errors":{"processingDate":"2025-03-03", "code":"018", "text":"No Data Identified"}}"""
+          val notFoundHttpResponse      = errorResponse(noDataFailureResponseBody)
+
+          val result = financialDetailsParserReads(notFoundHttpResponse)
+          result shouldBe Left(HIPFinancialDetailsNoContent)
         }
       }
-      "return a 404 FinancialDetailsFailureResponse" when {
+      "return a 422 HIPFinancialDetailsFailureResponse" when {
         "HIP BusinessError body does not have correct '016' failure code" in {
           val bodyWithInvalidCode        = """{"errors":{"processingDate":"2025-03-03", "code":"16", "text":"Invalid ID Number"}}"""
-          val notFoundNoBodyHttpResponse = notFoundHttpResponseWithBody(bodyWithInvalidCode)
+          val notFoundNoBodyHttpResponse = errorResponse(bodyWithInvalidCode)
 
           withCaptureOfLoggingFrom(logger) { logs =>
-            val result = financialDetailsParserReads(notFoundNoBodyHttpResponse)
-            val expectedLog =
-              """Error response body: {"errors":{"processingDate":"2025-03-03","code":"16","text":"Invalid ID Number"}}"""
+            val result      = financialDetailsParserReads(notFoundNoBodyHttpResponse)
+            val expectedLog = "422 Error with code: 16 - Invalid ID Number"
             logs.exists(_.getMessage.contains(expectedLog)) shouldBe true
-            result shouldBe Left(FinancialDetailsFailureResponse(NOT_FOUND))
+            result shouldBe Left(HIPFinancialDetailsFailureResponse(UNPROCESSABLE_ENTITY))
           }
         }
         "HIP BusinessError body does not have correct '016' failure text" in {
           val bodyWithInvalidText        = """{"errors":{"processingDate":"2025-03-03", "code":"016", "text":"Invalid id num."}}"""
-          val notFoundNoBodyHttpResponse = notFoundHttpResponseWithBody(bodyWithInvalidText)
+          val notFoundNoBodyHttpResponse = errorResponse(bodyWithInvalidText)
 
           withCaptureOfLoggingFrom(logger) { logs =>
-            val result = financialDetailsParserReads(notFoundNoBodyHttpResponse)
-            val expectedLog =
-              """Error response body: {"errors":{"processingDate":"2025-03-03","code":"016","text":"Invalid id num."}}"""
+            val result      = financialDetailsParserReads(notFoundNoBodyHttpResponse)
+            val expectedLog = "422 Error with code: 016 - Invalid id num"
             logs.exists(_.getMessage.contains(expectedLog)) shouldBe true
-            result shouldBe Left(FinancialDetailsFailureResponse(NOT_FOUND))
+            result shouldBe Left(HIPFinancialDetailsFailureResponse(UNPROCESSABLE_ENTITY))
           }
         }
-        "IF FailureResponse body does not have correct 'NO_DATA_FOUND' failure code" in {
-          val bodyWithInvalidCode        = """{"failures":[{"code": "NOT_FOUND", "reason": "No data returned found for ID"}]}"""
-          val notFoundNoBodyHttpResponse = notFoundHttpResponseWithBody(bodyWithInvalidCode)
+        "response body cannot be validated as a BusinessError" in {
+          val invalidBody          = """{"notGood":"isWrong"}"""
+          val notFoundHttpResponse = HttpResponse.apply(status = UNPROCESSABLE_ENTITY, body = invalidBody)
 
           withCaptureOfLoggingFrom(logger) { logs =>
-            val result = financialDetailsParserReads(notFoundNoBodyHttpResponse)
-            val expectedLog =
-              """Error response body: {"failures":[{"code":"NOT_FOUND","reason":"No data returned found for ID"}]}"""
+            val result      = financialDetailsParserReads(notFoundHttpResponse)
+            val expectedLog = s"Unable to parse 422 error body to expected format. Error: $invalidBody"
             logs.exists(_.getMessage.contains(expectedLog)) shouldBe true
-            result shouldBe Left(FinancialDetailsFailureResponse(NOT_FOUND))
-          }
-        }
-        "response body cannot be validated as BusinessError nor FailureResponse" in {
-          val invalidBody          = "{Not good}"
-          val notFoundHttpResponse = HttpResponse.apply(status = NOT_FOUND, body = invalidBody)
-
-          withCaptureOfLoggingFrom(logger) { logs =>
-            val result = financialDetailsParserReads(notFoundHttpResponse)
-            logs.exists(_.getMessage.contains(invalidBody)) shouldBe true
-            result shouldBe Left(FinancialDetailsFailureResponse(NOT_FOUND))
+            result shouldBe Left(HIPFinancialDetailsFailureResponse(UNPROCESSABLE_ENTITY))
           }
         }
       }
     }
 
-    "parsing a NO_CONTENT response should return a FinancialDetailsNoContent" in {
-      val mockNoContentHttpResponse = HttpResponse.apply(status = NO_CONTENT, body = "")
-
-      withCaptureOfLoggingFrom(logger) { logs =>
-        val result = financialDetailsParserReads(mockNoContentHttpResponse)
-        logs.exists(_.getMessage.contains("Received no content from 1811 call")) shouldBe true
-        result shouldBe Left(FinancialDetailsNoContent)
-      }
-    }
-
-    "will return a FinancialDetailsFailureResponse" when {
+    "will return a HIPFinancialDetailsFailureResponse" when {
       "parsing an error with a TechnicalError response body" in {
-        val error                  = """{"error":{"code": "errorCode", "message": "errorMessage", "logId": "errorLogId"}}"""
-        val technicalErrorResponse = HttpResponse(status = SERVICE_UNAVAILABLE, body = error)
+        val technicalError         = """{"response":{"error":{"code":"errorCode","message":"errorMessage","logId":"errorLogId"}}}"""
+        val technicalErrorResponse = HttpResponse(status = INTERNAL_SERVER_ERROR, body = technicalError)
 
         withCaptureOfLoggingFrom(logger) { logs =>
-          val result = financialDetailsParserReads(technicalErrorResponse)
-          logs.exists(_.getMessage.contains("Technical error returned: errorCode - errorMessage")) shouldBe true
-          result shouldBe Left(FinancialDetailsFailureResponse(SERVICE_UNAVAILABLE))
+          val result      = financialDetailsParserReads(technicalErrorResponse)
+          val expectedLog = s"$INTERNAL_SERVER_ERROR error: errorCode - errorMessage"
+          logs.exists(_.getMessage.contains(expectedLog)) shouldBe true
+          result shouldBe Left(HIPFinancialDetailsFailureResponse(INTERNAL_SERVER_ERROR))
         }
       }
-      "parsing an error with a BusinessError response body" in {
-        val errors =
-          """{"errors": [
-            |   {"processingDate": "errorDate", "code": "errorCode", "text": "errorText"},
-            |   {"processingDate": "errorDate2", "code": "errorCode2", "text": "errorText2"}
-            |]}""".stripMargin
-        val businessErrorResponse = HttpResponse(status = UNPROCESSABLE_ENTITY, body = errors)
+      "parsing an error with an array of HipWrappedError response body" in {
+        val hipWrappedError =
+          """{"response":{"failures":[
+            |{"type": "errorType", "reason": "errorReason"},
+            |{"type": "errorType2", "reason": "errorReason2"}
+            |]}}""".stripMargin
+        val technicalErrorResponse = HttpResponse(status = BAD_REQUEST, body = hipWrappedError)
 
         withCaptureOfLoggingFrom(logger) { logs =>
-          val result = financialDetailsParserReads(businessErrorResponse)
-          logs.exists(_.getMessage.contains("Business errors returned:")) shouldBe true
-          result shouldBe Left(FinancialDetailsFailureResponse(UNPROCESSABLE_ENTITY))
+          val result      = financialDetailsParserReads(technicalErrorResponse)
+          val expectedLog = "400 error: errorType - errorReason,\nerrorType2 - errorReason"
+          logs.exists(_.getMessage.contains(expectedLog)) shouldBe true
+          result shouldBe Left(HIPFinancialDetailsFailureResponse(BAD_REQUEST))
+        }
+      }
+      "response body cannot be parsed as expected error format" in {
+        val invalidBody          = """{"notGood":"isWrong"}"""
+        val notFoundHttpResponse = HttpResponse.apply(status = CONFLICT, body = invalidBody)
+
+        withCaptureOfLoggingFrom(logger) { logs =>
+          val result      = financialDetailsParserReads(notFoundHttpResponse)
+          val expectedLog = s"Received unexpected response from FinancialDetails, status code: $CONFLICT and body: $invalidBody"
+          logs.exists(_.getMessage.contains(expectedLog)) shouldBe true
+          result shouldBe Left(HIPFinancialDetailsFailureResponse(CONFLICT))
         }
       }
     }
@@ -266,7 +254,7 @@ class FinancialDetailsParserSpec extends AnyWordSpec with Matchers with LogCaptu
       withCaptureOfLoggingFrom(logger) { logs =>
         val result = financialDetailsParserReads(imATeapotHttpResponse)
         logs.exists(_.getMessage.contains(PagerDutyKeys.RECEIVED_4XX_FROM_1811_API.toString)) shouldBe true
-        result shouldBe Left(FinancialDetailsFailureResponse(IM_A_TEAPOT))
+        result shouldBe Left(HIPFinancialDetailsFailureResponse(IM_A_TEAPOT))
       }
     }
   }
