@@ -37,6 +37,7 @@ class LateSubmissionSpec extends SpecBase {
 
   val model: LateSubmission = LateSubmission(
     lateSubmissionID = "001",
+    incomeSource = Some("IT"),
     taxPeriod = Some("23AA"),
     taxPeriodStartDate = Some(LocalDate.of(2022, 1, 1)),
     taxPeriodEndDate = Some(LocalDate.of(2022, 12, 31)),
@@ -47,6 +48,7 @@ class LateSubmissionSpec extends SpecBase {
 
   val modelWithEmptyTaxReturnStatus: LateSubmission = LateSubmission(
     lateSubmissionID = "001",
+    incomeSource = Some("IT"),
     taxPeriod = Some("23AA"),
     taxPeriodStartDate = Some(LocalDate.of(2022, 1, 1)),
     taxPeriodEndDate = Some(LocalDate.of(2022, 12, 31)),

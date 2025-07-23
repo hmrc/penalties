@@ -27,13 +27,23 @@ class PenaltyPeriodHelperSpec extends SpecBase {
     "return -1 when the first period is earlier than the second period" in {
       val earlierSubmission = LateSubmission(
         lateSubmissionID = "001",
+        incomeSource = Some("IT"),
         taxPeriod = Some("23AA"),
-        taxPeriodStartDate = Some(LocalDate.of(2022, 1, 1)), taxPeriodEndDate = None, taxPeriodDueDate = None, returnReceiptDate = None, taxReturnStatus = Some(TaxReturnStatusEnum.Open)
+        taxPeriodStartDate = Some(LocalDate.of(2022, 1, 1)),
+        taxPeriodEndDate = Some(LocalDate.of(2022, 12, 31)),
+        taxPeriodDueDate = Some(LocalDate.of(2023, 2, 7)),
+        returnReceiptDate = Some(LocalDate.of(2023, 2, 1)),
+        taxReturnStatus = Some(TaxReturnStatusEnum.Fulfilled)
       )
       val laterSubmission = LateSubmission(
-        lateSubmissionID = "001",
-        taxPeriod = Some("23AA"),
-        taxPeriodStartDate = Some(LocalDate.of(2022, 1, 2)), taxPeriodEndDate = None, taxPeriodDueDate = None, returnReceiptDate = None, taxReturnStatus = Some(TaxReturnStatusEnum.Open)
+        lateSubmissionID = "002",
+        incomeSource = Some("IT"),
+        taxPeriod = Some("23AB"),
+        taxPeriodStartDate = Some(LocalDate.of(2023, 1, 1)),
+        taxPeriodEndDate = Some(LocalDate.of(2023, 12, 31)),
+        taxPeriodDueDate = Some(LocalDate.of(2024, 2, 7)),
+        returnReceiptDate = Some(LocalDate.of(2024, 2, 1)),
+        taxReturnStatus = Some(TaxReturnStatusEnum.Fulfilled)
       )
       val result = PenaltyPeriodHelper.sortByPenaltyStartDate(earlierSubmission, laterSubmission)
       result shouldBe -1
@@ -42,8 +52,13 @@ class PenaltyPeriodHelperSpec extends SpecBase {
     "return 0 when the first period is equal to the second period" in {
       val submission = LateSubmission(
         lateSubmissionID = "001",
+        incomeSource = Some("IT"),
         taxPeriod = Some("23AA"),
-        taxPeriodStartDate = Some(LocalDate.of(2022, 1, 1)), taxPeriodEndDate = None, taxPeriodDueDate = None, returnReceiptDate = None, taxReturnStatus = Some(TaxReturnStatusEnum.Open)
+        taxPeriodStartDate = Some(LocalDate.of(2022, 1, 1)),
+        taxPeriodEndDate = Some(LocalDate.of(2022, 12, 31)),
+        taxPeriodDueDate = Some(LocalDate.of(2023, 2, 7)),
+        returnReceiptDate = Some(LocalDate.of(2023, 2, 1)),
+        taxReturnStatus = Some(TaxReturnStatusEnum.Fulfilled)
       )
       val result = PenaltyPeriodHelper.sortByPenaltyStartDate(submission, submission)
       result shouldBe 0
@@ -52,13 +67,23 @@ class PenaltyPeriodHelperSpec extends SpecBase {
     "return 1 when the first period is later than the second period" in {
       val earlierSubmission = LateSubmission(
         lateSubmissionID = "001",
+        incomeSource = Some("IT"),
         taxPeriod = Some("23AA"),
-        taxPeriodStartDate = Some(LocalDate.of(2022, 1, 1)), taxPeriodEndDate = None, taxPeriodDueDate = None, returnReceiptDate = None, taxReturnStatus = Some(TaxReturnStatusEnum.Open)
+        taxPeriodStartDate = Some(LocalDate.of(2022, 1, 1)),
+        taxPeriodEndDate = Some(LocalDate.of(2022, 12, 31)),
+        taxPeriodDueDate = Some(LocalDate.of(2023, 2, 7)),
+        returnReceiptDate = Some(LocalDate.of(2023, 2, 1)),
+        taxReturnStatus = Some(TaxReturnStatusEnum.Fulfilled)
       )
       val laterSubmission = LateSubmission(
         lateSubmissionID = "001",
+        incomeSource = Some("IT"),
         taxPeriod = Some("23AA"),
-        taxPeriodStartDate = Some(LocalDate.of(2022, 1, 2)), taxPeriodEndDate = None, taxPeriodDueDate = None, returnReceiptDate = None, taxReturnStatus = Some(TaxReturnStatusEnum.Open)
+        taxPeriodStartDate = Some(LocalDate.of(2022, 1, 2)),
+        taxPeriodEndDate = Some(LocalDate.of(2022, 12, 31)),
+        taxPeriodDueDate = Some(LocalDate.of(2023, 2, 7)),
+        returnReceiptDate = Some(LocalDate.of(2023, 2, 1)),
+        taxReturnStatus = Some(TaxReturnStatusEnum.Fulfilled)
       )
       val result = PenaltyPeriodHelper.sortByPenaltyStartDate(laterSubmission, earlierSubmission)
       result shouldBe 1

@@ -93,6 +93,7 @@ class RegimePenaltyDetailsConnectorISpec extends IntegrationSpecCommonBase with 
             |          "lateSubmissions": [
             |            {
             |              "lateSubmissionID": "001",
+            |              "incomeSource": "IT",
             |              "taxPeriod":  "23AA",
             |              "taxPeriodStartDate": "2021-04-23",
             |              "taxPeriodEndDate": "2021-04-23",
@@ -131,6 +132,7 @@ class RegimePenaltyDetailsConnectorISpec extends IntegrationSpecCommonBase with 
                   Seq(
                     LateSubmission(
                       lateSubmissionID = "001",
+                      incomeSource = Some("IT"),
                       taxPeriod = Some("23AA"),
                       taxPeriodStartDate = Some(LocalDate.of(2021, 4, 23)),
                       taxPeriodEndDate = Some(LocalDate.of(2021, 4, 23)),

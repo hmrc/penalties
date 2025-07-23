@@ -21,9 +21,9 @@ import connectors.getPenaltyDetails.{HIPPenaltyDetailsConnector, RegimePenaltyDe
 import connectors.parsers.getPenaltyDetails.HIPPenaltyDetailsParser._
 import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser._
 import models.AgnosticEnrolmentKey
-import models.getFinancialDetails.MainTransactionEnum
 import play.api.Configuration
 import uk.gov.hmrc.http.HeaderCarrier
+import utils.{Logger, PenaltyDetailsConverter}
 import utils.Logger.logger
 
 import javax.inject.Inject
@@ -31,42 +31,59 @@ import scala.concurrent.{ExecutionContext, Future}
 
 case class LoggingContext(callingClass: String, function: String, enrolmentKey: String)
 
-class PenaltyDetailsService @Inject() (getPenaltyDetailsConnector: RegimePenaltyDetailsConnector,
-                                       hipPenaltyDetailsConnector: HIPPenaltyDetailsConnector,
-                                       filterService: RegimeFilterService)(implicit ec: ExecutionContext, val config: Configuration)
-    extends FeatureSwitching {
+class PenaltyDetailsService @Inject() (
+  getPenaltyDetailsConnector: RegimePenaltyDetailsConnector,
+  hipPenaltyDetailsConnector: HIPPenaltyDetailsConnector,
+  filterService: RegimeFilterService
+)(implicit ec: ExecutionContext, val config: Configuration) extends FeatureSwitching {
 
   def getPenaltyDetails(enrolmentKey: AgnosticEnrolmentKey)(implicit hc: HeaderCarrier): Future[GetPenaltyDetailsResponse] = {
     if (isEnabled(CallAPI1812HIP)) {
-      hipPenaltyDetailsConnector.getPenaltyDetails(enrolmentKey).map { hipResponse =>
-        hipResponse.fold(
-          failure => convertHIPFailureToRegular(failure, enrolmentKey),
-          success => {
-            implicit val loggingContext: LoggingContext = LoggingContext(
-              callingClass = "PenaltiesDetailsService",
-              function = "handleConnectorResponse", 
-              enrolmentKey = enrolmentKey.toString
-            )
-            val convertedPenaltyDetails = convertHIPToGetPenaltyDetails(success.asInstanceOf[HIPPenaltyDetailsSuccessResponse].penaltyDetails)
-            val penaltiesWithAppealStatusFiltered = filterService.filterPenaltiesWith9xAppealStatus(convertedPenaltyDetails)
-            val filteredPenaltyDetails = filterService.filterEstimatedLPP1DuringPeriodOfFamiliarisation(penaltiesWithAppealStatusFiltered)
-            Right(GetPenaltyDetailsSuccessResponse(filteredPenaltyDetails))
-          }
-        )
-      }
+      handleHIPResponse(enrolmentKey)
     } else {
-      val startOfLogMsg: String = s"[PenaltyDetailsService][getPenaltyDetails][${enrolmentKey.regime.value}]"
-      getPenaltyDetailsConnector.getPenaltyDetails(enrolmentKey).map {
-        handleConnectorResponse(_)(startOfLogMsg, enrolmentKey)
-      }
+      handleRegularResponse(enrolmentKey)
     }
   }
 
-  private def convertHIPFailureToRegular(failure: HIPPenaltyDetailsFailure, enrolmentKey: AgnosticEnrolmentKey): GetPenaltyDetailsResponse = {
-    val startOfLogMsg: String = s"[PenaltyDetailsService][getPenaltyDetails][${enrolmentKey.regime.value}]"
+  private def handleHIPResponse(enrolmentKey: AgnosticEnrolmentKey)(implicit hc: HeaderCarrier): Future[GetPenaltyDetailsResponse] = {
+    val startOfLogMsg = s"[PenaltyDetailsService][getPenaltyDetails][${enrolmentKey.regime.value}]"
+    
+    hipPenaltyDetailsConnector.getPenaltyDetails(enrolmentKey).map { hipResponse =>
+      hipResponse.fold(
+        failure => convertHIPFailureToRegular(failure, enrolmentKey, startOfLogMsg),
+        success => {
+          implicit val loggingContext: LoggingContext = LoggingContext(
+            callingClass = "PenaltiesDetailsService",
+            function = "handleHIPResponse", 
+            enrolmentKey = enrolmentKey.toString
+          )
+          
+          val convertedPenaltyDetails = PenaltyDetailsConverter.convertHIPToGetPenaltyDetails(
+            success.asInstanceOf[HIPPenaltyDetailsSuccessResponse].penaltyDetails
+          )
+          val filteredPenaltyDetails = applyFilters(convertedPenaltyDetails)
+          Right(GetPenaltyDetailsSuccessResponse(filteredPenaltyDetails))
+        }
+      )
+    }
+  }
+
+  private def handleRegularResponse(enrolmentKey: AgnosticEnrolmentKey)(implicit hc: HeaderCarrier): Future[GetPenaltyDetailsResponse] = {
+    val startOfLogMsg = s"[PenaltyDetailsService][getPenaltyDetails][${enrolmentKey.regime.value}]"
+    
+    getPenaltyDetailsConnector.getPenaltyDetails(enrolmentKey).map { connectorResponse =>
+      handleConnectorResponse(connectorResponse)(startOfLogMsg, enrolmentKey)
+    }
+  }
+
+  private def convertHIPFailureToRegular(
+    failure: HIPPenaltyDetailsFailure, 
+    enrolmentKey: AgnosticEnrolmentKey, 
+    startOfLogMsg: String
+  ): GetPenaltyDetailsResponse = {
     failure match {
       case HIPPenaltyDetailsNoContent => 
-        logger.info(s"$startOfLogMsg - No data was found for GetPenaltyDetails call")
+        logger.info(s"$startOfLogMsg - Got a 404 response and no data was found for GetPenaltyDetails call")
         Left(GetPenaltyDetailsNoContent)
       case HIPPenaltyDetailsMalformed => 
         logger.info(s"$startOfLogMsg - Failed to parse HTTP response into HIP model for $enrolmentKey")
@@ -77,228 +94,17 @@ class PenaltyDetailsService @Inject() (getPenaltyDetailsConnector: RegimePenalty
     }
   }
 
-  private def convertHIPToGetPenaltyDetails(hipPenaltyDetails: models.hipPenaltyDetails.PenaltyDetails): models.getPenaltyDetails.GetPenaltyDetails = {
-    val regularTotalisations = hipPenaltyDetails.totalisations.map { hipTot =>
-      models.getPenaltyDetails.Totalisations(
-        LSPTotalValue = hipTot.lspTotalValue,
-        penalisedPrincipalTotal = hipTot.penalisedPrincipalTotal,
-        LPPPostedTotal = hipTot.lppPostedTotal,
-        LPPEstimatedTotal = hipTot.lppEstimatedTotal,
-        totalAccountOverdue = hipTot.totalAccountOverdue,
-        totalAccountPostedInterest = hipTot.totalAccountPostedInterest,
-        totalAccountAccruingInterest = hipTot.totalAccountAccruingInterest
-      )
-    }
-    
-    val regularLSP = hipPenaltyDetails.lateSubmissionPenalty.map { hipLSP =>
-      val regularDetails = hipLSP.details.map { hipDetail =>
-        val hasUpheldAppeal = hipDetail.appealInformation.exists(_.exists(appeal => 
-          appeal.appealStatus.exists(status => 
-            status == models.hipPenaltyDetails.appealInfo.AppealStatusEnum.Upheld ||
-            status == models.hipPenaltyDetails.appealInfo.AppealStatusEnum.AppealUpheldPointAlreadyRemoved ||
-            status == models.hipPenaltyDetails.appealInfo.AppealStatusEnum.AppealUpheldChargeAlreadyReversed
-          )
-        ))
-        
-        val correctedPenaltyStatus = if (hasUpheldAppeal) {
-          models.getPenaltyDetails.lateSubmission.LSPPenaltyStatusEnum.Inactive
-        } else {
-          hipDetail.penaltyStatus match {
-            case models.hipPenaltyDetails.lateSubmission.LSPPenaltyStatusEnum.Active => models.getPenaltyDetails.lateSubmission.LSPPenaltyStatusEnum.Active
-            case models.hipPenaltyDetails.lateSubmission.LSPPenaltyStatusEnum.Inactive => models.getPenaltyDetails.lateSubmission.LSPPenaltyStatusEnum.Inactive
-          }
-        }
-        
-        models.getPenaltyDetails.lateSubmission.LSPDetails(
-          penaltyNumber = hipDetail.penaltyNumber,
-          penaltyOrder = hipDetail.penaltyOrder,
-          penaltyCategory = hipDetail.penaltyCategory.map {
-            case models.hipPenaltyDetails.lateSubmission.LSPPenaltyCategoryEnum.Point => models.getPenaltyDetails.lateSubmission.LSPPenaltyCategoryEnum.Point
-            case models.hipPenaltyDetails.lateSubmission.LSPPenaltyCategoryEnum.Threshold => models.getPenaltyDetails.lateSubmission.LSPPenaltyCategoryEnum.Threshold
-            case models.hipPenaltyDetails.lateSubmission.LSPPenaltyCategoryEnum.Charge => models.getPenaltyDetails.lateSubmission.LSPPenaltyCategoryEnum.Charge
-          },
-          penaltyStatus = correctedPenaltyStatus,
-          penaltyCreationDate = hipDetail.penaltyCreationDate,
-          penaltyExpiryDate = hipDetail.penaltyExpiryDate,
-          communicationsDate = hipDetail.communicationsDate,
-          FAPIndicator = hipDetail.fapIndicator,
-          lateSubmissions = hipDetail.lateSubmissions.map(_.map { hipSub =>
-            models.getPenaltyDetails.lateSubmission.LateSubmission(
-              lateSubmissionID = hipSub.lateSubmissionID,
-              taxPeriod = hipSub.taxPeriod,
-              taxPeriodStartDate = hipSub.taxPeriodStartDate,
-              taxPeriodEndDate = hipSub.taxPeriodEndDate,
-              taxPeriodDueDate = hipSub.taxPeriodDueDate,
-              returnReceiptDate = hipSub.returnReceiptDate,
-              taxReturnStatus = hipSub.taxReturnStatus.map {
-                case models.hipPenaltyDetails.lateSubmission.TaxReturnStatusEnum.Fulfilled => models.getPenaltyDetails.lateSubmission.TaxReturnStatusEnum.Fulfilled
-                case models.hipPenaltyDetails.lateSubmission.TaxReturnStatusEnum.Open => models.getPenaltyDetails.lateSubmission.TaxReturnStatusEnum.Open
-              }
-            )
-          }),
-          expiryReason = hipDetail.expiryReason.map {
-            case models.hipPenaltyDetails.lateSubmission.ExpiryReasonEnum.Appeal => models.getPenaltyDetails.lateSubmission.ExpiryReasonEnum.Appeal
-            case models.hipPenaltyDetails.lateSubmission.ExpiryReasonEnum.SubmissionOnTime => models.getPenaltyDetails.lateSubmission.ExpiryReasonEnum.SubmissionOnTime
-            case models.hipPenaltyDetails.lateSubmission.ExpiryReasonEnum.Compliance => models.getPenaltyDetails.lateSubmission.ExpiryReasonEnum.Compliance
-            case models.hipPenaltyDetails.lateSubmission.ExpiryReasonEnum.NaturalExpiration => models.getPenaltyDetails.lateSubmission.ExpiryReasonEnum.NaturalExpiration
-            case models.hipPenaltyDetails.lateSubmission.ExpiryReasonEnum.Adjustment => models.getPenaltyDetails.lateSubmission.ExpiryReasonEnum.Adjustment
-            case models.hipPenaltyDetails.lateSubmission.ExpiryReasonEnum.Reversal => models.getPenaltyDetails.lateSubmission.ExpiryReasonEnum.Reversal
-            case models.hipPenaltyDetails.lateSubmission.ExpiryReasonEnum.Manual => models.getPenaltyDetails.lateSubmission.ExpiryReasonEnum.Manual
-            case models.hipPenaltyDetails.lateSubmission.ExpiryReasonEnum.Reset => models.getPenaltyDetails.lateSubmission.ExpiryReasonEnum.Reset
-            case _ => models.getPenaltyDetails.lateSubmission.ExpiryReasonEnum.NaturalExpiration 
-          },
-          appealInformation = hipDetail.appealInformation.map(_.map { hipAppeal =>
-            models.getPenaltyDetails.appealInfo.AppealInformationType(
-              appealStatus = hipAppeal.appealStatus.map {
-                case models.hipPenaltyDetails.appealInfo.AppealStatusEnum.Under_Appeal => models.getPenaltyDetails.appealInfo.AppealStatusEnum.Under_Appeal
-                case models.hipPenaltyDetails.appealInfo.AppealStatusEnum.Upheld => models.getPenaltyDetails.appealInfo.AppealStatusEnum.Upheld
-                case models.hipPenaltyDetails.appealInfo.AppealStatusEnum.Rejected => models.getPenaltyDetails.appealInfo.AppealStatusEnum.Rejected
-                case models.hipPenaltyDetails.appealInfo.AppealStatusEnum.Unappealable => models.getPenaltyDetails.appealInfo.AppealStatusEnum.Unappealable
-                case models.hipPenaltyDetails.appealInfo.AppealStatusEnum.AppealRejectedChargeAlreadyReversed => models.getPenaltyDetails.appealInfo.AppealStatusEnum.AppealRejectedChargeAlreadyReversed
-                case models.hipPenaltyDetails.appealInfo.AppealStatusEnum.AppealUpheldPointAlreadyRemoved => models.getPenaltyDetails.appealInfo.AppealStatusEnum.AppealUpheldPointAlreadyRemoved
-                case models.hipPenaltyDetails.appealInfo.AppealStatusEnum.AppealUpheldChargeAlreadyReversed => models.getPenaltyDetails.appealInfo.AppealStatusEnum.AppealUpheldChargeAlreadyReversed
-                case models.hipPenaltyDetails.appealInfo.AppealStatusEnum.AppealRejectedPointAlreadyRemoved => models.getPenaltyDetails.appealInfo.AppealStatusEnum.AppealRejectedPointAlreadyRemoved
-                case _ => models.getPenaltyDetails.appealInfo.AppealStatusEnum.Unappealable
-              },
-              appealLevel = hipAppeal.appealLevel.map {
-                case models.hipPenaltyDetails.appealInfo.AppealLevelEnum.HMRC => models.getPenaltyDetails.appealInfo.AppealLevelEnum.HMRC
-                case models.hipPenaltyDetails.appealInfo.AppealLevelEnum.TribunalOrSecond => models.getPenaltyDetails.appealInfo.AppealLevelEnum.TribunalOrSecond
-                case models.hipPenaltyDetails.appealInfo.AppealLevelEnum.Tribunal => models.getPenaltyDetails.appealInfo.AppealLevelEnum.Tribunal
-                case _ => models.getPenaltyDetails.appealInfo.AppealLevelEnum.HMRC
-              },
-              appealDescription = hipAppeal.appealDescription
-            )
-          }),
-          chargeDueDate = hipDetail.chargeDueDate,
-          chargeOutstandingAmount = hipDetail.chargeOutstandingAmount,
-          chargeAmount = hipDetail.chargeAmount,
-          triggeringProcess = hipDetail.triggeringProcess,
-          chargeReference = hipDetail.chargeReference
-        )
-      }
-      
-      // Use the counts from regularDetails if they exist, otherwise use the HIP summary values
-      val actualActivePenaltyPoints = if (regularDetails.nonEmpty) {
-        regularDetails.count(detail => 
-          detail.penaltyStatus == models.getPenaltyDetails.lateSubmission.LSPPenaltyStatusEnum.Active
-        )
-      } else {
-        hipLSP.summary.activePenaltyPoints
-      }
-      
-      val actualInactivePenaltyPoints = if (regularDetails.nonEmpty) {
-        regularDetails.count(detail => 
-          detail.penaltyStatus == models.getPenaltyDetails.lateSubmission.LSPPenaltyStatusEnum.Inactive
-        )
-      } else {
-        hipLSP.summary.inactivePenaltyPoints
-      }
-      
-      val correctedSummary = models.getPenaltyDetails.lateSubmission.LSPSummary(
-        activePenaltyPoints = actualActivePenaltyPoints,
-        inactivePenaltyPoints = actualInactivePenaltyPoints,
-        regimeThreshold = hipLSP.summary.regimeThreshold,
-        penaltyChargeAmount = hipLSP.summary.penaltyChargeAmount,
-        PoCAchievementDate = hipLSP.summary.pocAchievementDate
-      )
-      
-      models.getPenaltyDetails.lateSubmission.LateSubmissionPenalty(correctedSummary, regularDetails)
-    }
-    
-    val regularLPP = hipPenaltyDetails.latePaymentPenalty.map { hipLPPContainer =>
-      val regularLPPDetails = hipLPPContainer.lppDetails.map(_.map { hipLPP =>
-        models.getPenaltyDetails.latePayment.LPPDetails(
-          principalChargeReference = hipLPP.principalChargeReference,
-          penaltyCategory = hipLPP.penaltyCategory match {
-            case models.hipPenaltyDetails.latePayment.LPPPenaltyCategoryEnum.FirstPenalty => models.getPenaltyDetails.latePayment.LPPPenaltyCategoryEnum.FirstPenalty
-            case models.hipPenaltyDetails.latePayment.LPPPenaltyCategoryEnum.SecondPenalty => models.getPenaltyDetails.latePayment.LPPPenaltyCategoryEnum.SecondPenalty
-            case models.hipPenaltyDetails.latePayment.LPPPenaltyCategoryEnum.ManualLPP => models.getPenaltyDetails.latePayment.LPPPenaltyCategoryEnum.ManualLPP
-          },
-          penaltyStatus = hipLPP.penaltyStatus.getOrElse(models.hipPenaltyDetails.latePayment.LPPPenaltyStatusEnum.Posted) match {
-            case models.hipPenaltyDetails.latePayment.LPPPenaltyStatusEnum.Accruing => models.getPenaltyDetails.latePayment.LPPPenaltyStatusEnum.Accruing
-            case models.hipPenaltyDetails.latePayment.LPPPenaltyStatusEnum.Posted => models.getPenaltyDetails.latePayment.LPPPenaltyStatusEnum.Posted
-          },
-          penaltyAmountAccruing = hipLPP.penaltyAmountAccruing,
-          penaltyAmountPosted = hipLPP.penaltyAmountPosted,
-          penaltyAmountPaid = hipLPP.penaltyAmountPaid,
-          penaltyAmountOutstanding = hipLPP.penaltyAmountOutstanding,
-          LPP1LRCalculationAmount = hipLPP.lpp1LRCalculationAmt,
-          LPP1LRDays = hipLPP.lpp1LRDays,
-          LPP1LRPercentage = hipLPP.lpp1LRPercentage,
-          LPP1HRCalculationAmount = hipLPP.lpp1HRCalculationAmt,
-          LPP1HRDays = hipLPP.lpp1HRDays,
-          LPP1HRPercentage = hipLPP.lpp1HRPercentage,
-          LPP2Days = hipLPP.lpp2Days,
-          LPP2Percentage = hipLPP.lpp2Percentage,
-          penaltyChargeCreationDate = hipLPP.penaltyChargeCreationDate,
-          communicationsDate = hipLPP.communicationsDate,
-          penaltyChargeReference = hipLPP.penaltyChargeReference,
-          principalChargeMainTransaction = MainTransactionEnum.WithValue(hipLPP.principalChargeMainTr),
-          principalChargeBillingFrom = hipLPP.principalChargeBillingFrom,
-          principalChargeBillingTo = hipLPP.principalChargeBillingTo,
-          principalChargeDueDate = hipLPP.principalChargeDueDate,
-          principalChargeLatestClearing = hipLPP.principalChargeLatestClearing,
-          vatOutstandingAmount = None,
-          penaltyChargeDueDate = hipLPP.penaltyChargeDueDate,
-          appealInformation = hipLPP.appealInformation.map(_.map { hipAppeal =>
-            models.getPenaltyDetails.appealInfo.AppealInformationType(
-              appealStatus = hipAppeal.appealStatus.map {
-                case models.hipPenaltyDetails.appealInfo.AppealStatusEnum.Under_Appeal => models.getPenaltyDetails.appealInfo.AppealStatusEnum.Under_Appeal
-                case models.hipPenaltyDetails.appealInfo.AppealStatusEnum.Upheld => models.getPenaltyDetails.appealInfo.AppealStatusEnum.Upheld
-                case models.hipPenaltyDetails.appealInfo.AppealStatusEnum.Rejected => models.getPenaltyDetails.appealInfo.AppealStatusEnum.Rejected
-                case models.hipPenaltyDetails.appealInfo.AppealStatusEnum.Unappealable => models.getPenaltyDetails.appealInfo.AppealStatusEnum.Unappealable
-                case models.hipPenaltyDetails.appealInfo.AppealStatusEnum.AppealRejectedChargeAlreadyReversed => models.getPenaltyDetails.appealInfo.AppealStatusEnum.AppealRejectedChargeAlreadyReversed
-                case models.hipPenaltyDetails.appealInfo.AppealStatusEnum.AppealUpheldPointAlreadyRemoved => models.getPenaltyDetails.appealInfo.AppealStatusEnum.AppealUpheldPointAlreadyRemoved
-                case models.hipPenaltyDetails.appealInfo.AppealStatusEnum.AppealUpheldChargeAlreadyReversed => models.getPenaltyDetails.appealInfo.AppealStatusEnum.AppealUpheldChargeAlreadyReversed
-                case models.hipPenaltyDetails.appealInfo.AppealStatusEnum.AppealRejectedPointAlreadyRemoved => models.getPenaltyDetails.appealInfo.AppealStatusEnum.AppealRejectedPointAlreadyRemoved
-                case _ => models.getPenaltyDetails.appealInfo.AppealStatusEnum.Unappealable 
-              },
-              appealLevel = hipAppeal.appealLevel.map {
-                case models.hipPenaltyDetails.appealInfo.AppealLevelEnum.HMRC => models.getPenaltyDetails.appealInfo.AppealLevelEnum.HMRC
-                case models.hipPenaltyDetails.appealInfo.AppealLevelEnum.TribunalOrSecond => models.getPenaltyDetails.appealInfo.AppealLevelEnum.TribunalOrSecond
-                case models.hipPenaltyDetails.appealInfo.AppealLevelEnum.Tribunal => models.getPenaltyDetails.appealInfo.AppealLevelEnum.Tribunal
-                case _ => models.getPenaltyDetails.appealInfo.AppealLevelEnum.HMRC 
-              },
-              appealDescription = hipAppeal.appealDescription
-            )
-          }),
-          metadata = models.getPenaltyDetails.latePayment.LPPDetailsMetadata(
-            principalChargeSubTransaction = hipLPP.principalChargeSubTr,
-            principalChargeDocNumber = hipLPP.principalChargeDocNumber,
-            timeToPay = hipLPP.timeToPay.map(_.map { ttp =>
-              models.getPenaltyDetails.latePayment.TimeToPay(
-                TTPStartDate = ttp.ttpStartDate,
-                TTPEndDate = ttp.ttpEndDate
-              )
-            })
-          )
-        )
-      })
-      
-      models.getPenaltyDetails.latePayment.LatePaymentPenalty(
-        details = regularLPPDetails,
-        ManualLPPIndicator = Some(hipLPPContainer.manualLPPIndicator)
-      )
-    }
-
-    models.getPenaltyDetails.GetPenaltyDetails(
-      totalisations = regularTotalisations,
-      lateSubmissionPenalty = regularLSP,
-      latePaymentPenalty = regularLPP,
-      breathingSpace = hipPenaltyDetails.breathingSpace.map(_.map { hipBS =>
-        models.getPenaltyDetails.breathingSpace.BreathingSpace(
-          BSStartDate = hipBS.bsStartDate,
-          BSEndDate = hipBS.bsEndDate
-        )
-      })
-    )
+  private def applyFilters(penaltyDetails: models.getPenaltyDetails.GetPenaltyDetails)(implicit loggingContext: LoggingContext): models.getPenaltyDetails.GetPenaltyDetails = {
+    val penaltiesWithAppealStatusFiltered = filterService.filterPenaltiesWith9xAppealStatus(penaltyDetails)
+    filterService.filterEstimatedLPP1DuringPeriodOfFamiliarisation(penaltiesWithAppealStatusFiltered)
   }
 
   private def handleConnectorResponse(connectorResponse: GetPenaltyDetailsResponse)(implicit
-      startOfLogMsg: String,
-      enrolmentKeyInfo: AgnosticEnrolmentKey): GetPenaltyDetailsResponse =
+    startOfLogMsg: String,
+    enrolmentKeyInfo: AgnosticEnrolmentKey): GetPenaltyDetailsResponse = {
+    
     connectorResponse match {
-      case _ @ Right(_ @GetPenaltyDetailsSuccessResponse(penaltyDetails)) =>
+      case Right(GetPenaltyDetailsSuccessResponse(penaltyDetails)) =>
         implicit val loggingContext: LoggingContext = LoggingContext(
           callingClass = "PenaltiesDetailsService",
           function = "handleConnectorResponse",
@@ -306,18 +112,21 @@ class PenaltyDetailsService @Inject() (getPenaltyDetailsConnector: RegimePenalty
         )
 
         logger.info(s"$startOfLogMsg - Got a success response from the connector. Parsed model")
-        val penaltiesWithAppealStatusFiltered = filterService.filterPenaltiesWith9xAppealStatus(penaltyDetails)
-        val filteredPenaltyDetails = filterService.filterEstimatedLPP1DuringPeriodOfFamiliarisation(penaltiesWithAppealStatusFiltered)
+        val filteredPenaltyDetails = applyFilters(penaltyDetails)
         Right(GetPenaltyDetailsSuccessResponse(filteredPenaltyDetails))
-      case res @ Left(GetPenaltyDetailsNoContent) =>
+        
+      case Left(GetPenaltyDetailsNoContent) =>
         logger.info(s"$startOfLogMsg - Got a 404 response and no data was found for GetPenaltyDetails call")
-        res
-      case res @ Left(GetPenaltyDetailsMalformed) =>
+        connectorResponse
+        
+      case Left(GetPenaltyDetailsMalformed) =>
         logger.info(s"$startOfLogMsg - Failed to parse HTTP response into model for $enrolmentKeyInfo")
-        res
-      case res @ Left(GetPenaltyDetailsFailureResponse(_)) =>
+        connectorResponse
+        
+      case Left(GetPenaltyDetailsFailureResponse(_)) =>
         logger.error(s"$startOfLogMsg - Unknown status returned from connector for $enrolmentKeyInfo")
-        res
+        connectorResponse
     }
+  }
 }
 
