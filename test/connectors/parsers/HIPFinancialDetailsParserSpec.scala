@@ -163,6 +163,13 @@ class HIPFinancialDetailsParserSpec extends AnyWordSpec with Matchers with LogCa
           val result = financialDetailsParserReads(notFoundHttpResponse)
           result shouldBe Left(HIPFinancialDetailsNoContent)
         }
+        "able to validate a HIP BusinessError body with a '018' failure code and text" in {
+          val noDataFailureResponseBody = """{"errors":{"processingDate":"2025-03-03", "code":"018", "text":"No Data Identified"}}"""
+          val notFoundHttpResponse      = errorResponse(noDataFailureResponseBody)
+
+          val result = financialDetailsParserReads(notFoundHttpResponse)
+          result shouldBe Left(HIPFinancialDetailsNoContent)
+        }
       }
       "return a 422 HIPFinancialDetailsFailureResponse" when {
         "HIP BusinessError body does not have correct '016' failure code" in {

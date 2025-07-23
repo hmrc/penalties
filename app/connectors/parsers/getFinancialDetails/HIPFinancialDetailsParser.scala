@@ -91,9 +91,11 @@ object HIPFinancialDetailsParser {
     }
   }
 
-  private def extractErrorResponseBodyFrom422(json: JsValue): Left[HIPFinancialDetailsFailure, Nothing] =
+  private def extractErrorResponseBodyFrom422(json: JsValue): Left[HIPFinancialDetailsFailure, Nothing] = {
+    def noDataFound(error: BusinessError): Boolean =
+      (error.code == "016" && error.text == "Invalid ID Number") || (error.code == "018" && error.text == "No Data Identified")
     (json \ "errors").validate[BusinessError] match { // 422 a single error is ever returned regardless of the number of mistakes
-      case JsSuccess(error, _) if error.code == "016" && error.text == "Invalid ID Number" =>
+      case JsSuccess(error, _) if noDataFound(error) =>
         logger.error(s"[HIPFinancialDetailsReads][read] - Error: ID number did not match any data")
         Left(HIPFinancialDetailsNoContent)
       case JsSuccess(error, _) =>
@@ -104,6 +106,7 @@ object HIPFinancialDetailsParser {
         logger.error(s"[HIPFinancialDetailsReads][read] - Unable to parse 422 error body to expected format. Error: $json")
         Left(HIPFinancialDetailsFailureResponse(UNPROCESSABLE_ENTITY))
     }
+  }
 
   private def handleErrorResponse(response: HttpResponse): Left[HIPFinancialDetailsFailure, Nothing] = {
     val status = response.status
