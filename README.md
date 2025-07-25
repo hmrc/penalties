@@ -12,10 +12,10 @@ The backend for the penalties services such as `penalties-frontend` and `penalti
 This services requires MongoDB to be running.
 
 The service manager configuration name for this service is `PENALTIES`. 
-But it can be started with`sm --start PENALTIES_ALL` along with dependent services such as `penalties-stub` and more. 
-It can also be started specifically with `sm --start PENALTIES`. 
+But it can be started with`sm2 --start PENALTIES_ALL` along with dependent services such as `penalties-stub` and more. 
+It can also be started specifically with `sm2 --start PENALTIES`. 
 
-To run local changes you will have to stop the service in service manager using `sm --stop PENALTIES` then run the script mentioned below.
+To run local changes you will have to stop the service in service manager using `sm2 --stop PENALTIES` then run the script mentioned below.
 
 This application runs on port 9182 .
 
