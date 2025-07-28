@@ -19,8 +19,8 @@ package connectors.parsers
 import connectors.parsers.AppealsParser.{AppealSubmissionResponse, BadRequest, DuplicateAppeal, InvalidJson, UnexpectedFailure}
 import models.appeals.AppealResponseModel
 import play.api.http.Status.{CONFLICT, CREATED}
-import play.api.libs.json.{Format, JsError, JsResult, JsString, JsSuccess, JsValue, Json}
-import uk.gov.hmrc.http.HttpReads.{is4xx, is5xx}
+import play.api.libs.json._
+import uk.gov.hmrc.http.HttpErrorFunctions.{is4xx, is5xx}
 import uk.gov.hmrc.http.{HttpReads, HttpResponse}
 import utils.Logger.logger
 import utils.PagerDutyHelper
