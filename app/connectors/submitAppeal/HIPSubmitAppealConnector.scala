@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package connectors
+package connectors.submitAppeal
 
 import config.AppConfig
-import connectors.parsers.AppealsParser.{AppealSubmissionResponse, UnexpectedFailure}
-import connectors.parsers.HIPAppealParser.HIPAppealSubmissionResponseReads
+import connectors.parsers.submitAppeal.AppealsParser.{AppealSubmissionResponse, UnexpectedFailure}
+import connectors.parsers.submitAppeal.HIPAppealParser.HIPAppealSubmissionResponseReads
 import models.appeals.{AppealSubmission, AppealSubmissionRequest}
 import play.api.http.Status.INTERNAL_SERVER_ERROR
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, UpstreamErrorResponse}
@@ -29,8 +29,8 @@ import utils.PagerDutyHelper.PagerDutyKeys.{RECEIVED_4XX_FROM_1808_API, RECEIVED
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class HIPConnector @Inject()(httpClient: HttpClient,
-                             appConfig: AppConfig)(implicit ec: ExecutionContext) {
+class HIPSubmitAppealConnector @Inject()(httpClient: HttpClient,
+                                         appConfig: AppConfig)(implicit ec: ExecutionContext) {
 
 
   def submitAppeal(appealSubmission: AppealSubmission,
@@ -42,7 +42,7 @@ class HIPConnector @Inject()(httpClient: HttpClient,
     val appealSubmissionRequest = AppealSubmissionRequest(appealSubmission, penaltyNumber)
 
     httpClient.POST[AppealSubmissionRequest, AppealSubmissionResponse](
-        appConfig.hipSubmitUrl,
+        appConfig.getAppealSubmissionHipUrl,
         appealSubmissionRequest,
         hc.otherHeaders
       )(AppealSubmissionRequest.apiWrites, HIPAppealSubmissionResponseReads, hc, ec)

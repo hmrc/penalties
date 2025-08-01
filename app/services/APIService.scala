@@ -23,7 +23,7 @@ import models.getPenaltyDetails.GetPenaltyDetails
 import models.getPenaltyDetails.latePayment.{LPPDetails, LPPPenaltyStatusEnum}
 
 @Singleton
-class APIService @Inject()() {
+class APIService @Inject() {
   def getNumberOfEstimatedPenalties(penaltyDetails: GetPenaltyDetails): Int = {
     penaltyDetails.latePaymentPenalty.flatMap(_.details.map(_.count(_.penaltyStatus.equals(LPPPenaltyStatusEnum.Accruing)))).getOrElse(0)
   }

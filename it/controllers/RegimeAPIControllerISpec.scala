@@ -286,7 +286,7 @@ class RegimeAPIControllerISpec extends IntegrationSpecCommonBase with RegimeETMP
           id,
           body = Some(getHIPPenaltyDetailsJson.toString()))
 
-        def mockIFSummary(responseStatus: Int, body: Option[String] = None): StubMapping = mockResponseForGetPenaltyDetails(
+        def mockIFSummary(responseStatus: Int, body: Option[String]): StubMapping = mockResponseForGetPenaltyDetails(
           responseStatus,
           regime,
           idType,
@@ -321,7 +321,7 @@ class RegimeAPIControllerISpec extends IntegrationSpecCommonBase with RegimeETMP
 
         val uriToSummaryController = s"/${regime.value}/summary/${idType.value}/${id.value}"
 
-        def setSummaryFeatureSwitch: Unit =
+        def setSummaryFeatureSwitch(): Unit =
           if (upstreamService == "HIP") {
             setEnabledFeatureSwitches(CallAPI1812HIP)
           } else {
@@ -331,7 +331,7 @@ class RegimeAPIControllerISpec extends IntegrationSpecCommonBase with RegimeETMP
         s"calling $upstreamService" should {
           s"return OK (${Status.OK})" when {
             "the get penalty summary call succeeds" in {
-              setSummaryFeatureSwitch
+              setSummaryFeatureSwitch()
               mockStubResponseForAuthorisedUser
               
               if (upstreamService == "HIP") {
@@ -349,7 +349,7 @@ class RegimeAPIControllerISpec extends IntegrationSpecCommonBase with RegimeETMP
 
           s"return a NO_CONTENT 204" when {
             "a 422 response with 'Invalid ID Number' is returned" in {
-              setSummaryFeatureSwitch
+              setSummaryFeatureSwitch()
               mockStubResponseForAuthorisedUser
 
               val notFoundResponseBody = """{"errors":{"processingDate":"2025-03-03", "code":"016", "text":"Invalid ID Number"}}"""
@@ -367,7 +367,7 @@ class RegimeAPIControllerISpec extends IntegrationSpecCommonBase with RegimeETMP
 
           s"return the status from $upstreamService" when {
             "a 404 response is returned" in {
-              setSummaryFeatureSwitch
+              setSummaryFeatureSwitch()
               mockStubResponseForAuthorisedUser
               
               if (upstreamService == "HIP") {
@@ -381,7 +381,7 @@ class RegimeAPIControllerISpec extends IntegrationSpecCommonBase with RegimeETMP
             }
 
             "an error response is returned" in {
-              setSummaryFeatureSwitch
+              setSummaryFeatureSwitch()
               mockStubResponseForAuthorisedUser
               
               if (upstreamService == "HIP") {
@@ -395,7 +395,7 @@ class RegimeAPIControllerISpec extends IntegrationSpecCommonBase with RegimeETMP
             }
 
             "a 200 response with empty body is returned" in {
-              setSummaryFeatureSwitch
+              setSummaryFeatureSwitch()
               mockStubResponseForAuthorisedUser
               
               val emptyResponseBody = if (upstreamService == "HIP") {
@@ -443,13 +443,13 @@ class RegimeAPIControllerISpec extends IntegrationSpecCommonBase with RegimeETMP
         val expectedResponse = if (upstreamService == "HIP") getFinancialDetailsHipResponseAsJson else financialDataIfResponse
         val uriToController = s"/${regime.value}/penalty/financial-data/${idType.value}/${id.value}$financialDetailsQueryParams"
 
-        def setFeatureSwitch: Unit =
+        def setFeatureSwitch(): Unit =
           if (upstreamService == "HIP") setEnabledFeatureSwitches(CallAPI1811HIP) else setEnabledFeatureSwitches(CallAPI1811ETMP)
 
         s"calling $upstreamService" should {
           s"return OK (${Status.OK})" when {
             "the get Financial Details call succeeds" in {
-              setFeatureSwitch
+              setFeatureSwitch()
               mockStubResponseForAuthorisedUser
               buildMockApiCall(OK)
 
@@ -467,7 +467,7 @@ class RegimeAPIControllerISpec extends IntegrationSpecCommonBase with RegimeETMP
 
           s"return the status from $upstreamService" when {
             "a 404 response is returned" in {
-              setFeatureSwitch
+              setFeatureSwitch()
               mockStubResponseForAuthorisedUser
               buildMockApiCall(NOT_FOUND)
 
@@ -481,7 +481,7 @@ class RegimeAPIControllerISpec extends IntegrationSpecCommonBase with RegimeETMP
             }
 
             "an error response is returned" in {
-              setFeatureSwitch
+              setFeatureSwitch()
               mockStubResponseForAuthorisedUser
               buildMockApiCall(BAD_REQUEST)
 
