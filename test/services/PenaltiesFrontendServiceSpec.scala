@@ -18,15 +18,15 @@ package services
 
 import base.{LPPDetailsBase, LSPDetailsBase, LogCapturing, SpecBase}
 import config.AppConfig
-import connectors.parsers.getFinancialDetails.GetFinancialDetailsParser._
+import connectors.parsers.getFinancialDetails.FinancialDetailsParser._
 import models.getFinancialDetails.MainTransactionEnum.ManualLPP
 import models.getFinancialDetails.totalisation.{FinancialDetailsTotalisation, InterestTotalisation, RegimeTotalisation}
 import models.getFinancialDetails.{DocumentDetails, FinancialDetails, LineItemDetails, MainTransactionEnum}
 import models.getPenaltyDetails.appealInfo.{AppealInformationType, AppealLevelEnum, AppealStatusEnum}
 import models.getPenaltyDetails.latePayment._
 import models.getPenaltyDetails.{GetPenaltyDetails, Totalisations}
+import models.{AgnosticEnrolmentKey, Id, IdType, Regime}
 import org.mockito.ArgumentMatchers
-
 import org.mockito.Mockito.{mock, reset, when}
 import play.api.http.Status
 import play.api.http.Status.INTERNAL_SERVER_ERROR
@@ -48,9 +48,8 @@ class PenaltiesFrontendServiceSpec extends SpecBase with LogCapturing with LPPDe
   implicit val ec: ExecutionContext = injector.instanceOf[ExecutionContext]
   implicit val hc: HeaderCarrier = HeaderCarrier()
   val mockAppConfig: AppConfig = mock(classOf[AppConfig])
-  val mockAppealService: AppealService = mock(classOf[AppealService])
   val mockAuditService: AuditService = mock(classOf[AuditService])
-  val mockGetFinancialDetailsService: GetFinancialDetailsService = mock(classOf[GetFinancialDetailsService])
+  val mockFinancialDetailsService: FinancialDetailsService = mock(classOf[FinancialDetailsService])
   val dateHelper: DateHelper = injector.instanceOf[DateHelper]
 
   val manualLPP: LPPDetails = LPPDetails(
@@ -88,9 +87,8 @@ class PenaltiesFrontendServiceSpec extends SpecBase with LogCapturing with LPPDe
 
   class Setup {
     reset(mockAppConfig)
-    reset(mockAppealService)
     reset(mockAuditService)
-    reset(mockGetFinancialDetailsService)
+    reset(mockFinancialDetailsService)
     val sampleFinancialDetails: FinancialDetails = FinancialDetails(
       documentDetails = Some(Seq(
         DocumentDetails(
@@ -108,8 +106,10 @@ class PenaltiesFrontendServiceSpec extends SpecBase with LogCapturing with LPPDe
       )),
       totalisation = None
     )
-    val penaltiesFrontendService: PenaltiesFrontendService = new PenaltiesFrontendService(mockGetFinancialDetailsService, mockAppConfig, dateHelper, mockAuditService)
+    val penaltiesFrontendService: RegimePenaltiesFrontendService = new RegimePenaltiesFrontendService(mockFinancialDetailsService, mockAppConfig, dateHelper, mockAuditService)
   }
+
+  private val enrolmentKey = AgnosticEnrolmentKey(Regime("VATC"), IdType("VRN"), Id("123456789"))
 
   "combineAPIData" should {
     "combine the financial details totalisations - if totalisations already present" in new Setup {
@@ -715,17 +715,17 @@ class PenaltiesFrontendServiceSpec extends SpecBase with LogCapturing with LPPDe
   "handleAndCombineGetFinancialDetailsData" should {
 
     s"return ISE (${Status.INTERNAL_SERVER_ERROR}) when the first API 1811 call fails" in new Setup {
-      when(mockGetFinancialDetailsService.getFinancialDetails(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(Left(GetFinancialDetailsFailureResponse(INTERNAL_SERVER_ERROR))))
-      val result = penaltiesFrontendService.handleAndCombineGetFinancialDetailsData(getPenaltyDetails, "123456789", None)(fakeRequest, implicitly, implicitly)
+      when(mockFinancialDetailsService.getFinancialDetails(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(Left(FinancialDetailsFailureResponse(INTERNAL_SERVER_ERROR))))
+      val result = penaltiesFrontendService.handleAndCombineGetFinancialDetailsData(getPenaltyDetails, enrolmentKey, None)(fakeRequest, implicitly, implicitly)
       status(result) shouldBe Status.INTERNAL_SERVER_ERROR
     }
 
     s"return ISE (${Status.INTERNAL_SERVER_ERROR}) when the first API 1811 call response body is malformed" in new Setup {
-      when(mockGetFinancialDetailsService.getFinancialDetails(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(Left(GetFinancialDetailsMalformed)))
-        .thenReturn(Future.successful(Left(GetFinancialDetailsMalformed)))
+      when(mockFinancialDetailsService.getFinancialDetails(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(Left(FinancialDetailsMalformed)))
+        .thenReturn(Future.successful(Left(FinancialDetailsMalformed)))
       withCaptureOfLoggingFrom(logger) {
         logs => {
-          val result = await(penaltiesFrontendService.handleAndCombineGetFinancialDetailsData(getPenaltyDetails, "123456789", None)(fakeRequest, implicitly, implicitly))
+          val result = await(penaltiesFrontendService.handleAndCombineGetFinancialDetailsData(getPenaltyDetails, enrolmentKey, None)(fakeRequest, implicitly, implicitly))
           result.header.status shouldBe Status.INTERNAL_SERVER_ERROR
           logs.exists(_.getMessage.contains(PagerDutyKeys.MALFORMED_RESPONSE_FROM_1811_API.toString)) shouldBe true
         }
@@ -733,36 +733,36 @@ class PenaltiesFrontendServiceSpec extends SpecBase with LogCapturing with LPPDe
     }
 
     s"return NOT_FOUND (${Status.NOT_FOUND}) when the first API 1811 call returns no data" in new Setup {
-      when(mockGetFinancialDetailsService.getFinancialDetails(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any()))
-        .thenReturn(Future.successful(Left(GetFinancialDetailsFailureResponse(Status.NOT_FOUND))))
-      val result = penaltiesFrontendService.handleAndCombineGetFinancialDetailsData(getPenaltyDetails, "123456789", Some(""))(fakeRequest, implicitly, implicitly)
+      when(mockFinancialDetailsService.getFinancialDetails(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any()))
+        .thenReturn(Future.successful(Left(FinancialDetailsFailureResponse(Status.NOT_FOUND))))
+      val result = penaltiesFrontendService.handleAndCombineGetFinancialDetailsData(getPenaltyDetails, enrolmentKey, Some(""))(fakeRequest, implicitly, implicitly)
       status(result) shouldBe Status.NOT_FOUND
     }
 
     s"return NO_CONTENT (${Status.NO_CONTENT}) when the first API 1811 call returns no data (DATA_NOT_FOUND response)" in new Setup {
-      when(mockGetFinancialDetailsService.getFinancialDetails(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any()))
-        .thenReturn(Future.successful(Left(GetFinancialDetailsNoContent)))
-      val result = penaltiesFrontendService.handleAndCombineGetFinancialDetailsData(getPenaltyDetails, "123456789", Some(""))(fakeRequest, implicitly, implicitly)
+      when(mockFinancialDetailsService.getFinancialDetails(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any()))
+        .thenReturn(Future.successful(Left(FinancialDetailsNoContent)))
+      val result = penaltiesFrontendService.handleAndCombineGetFinancialDetailsData(getPenaltyDetails, enrolmentKey, Some(""))(fakeRequest, implicitly, implicitly)
       status(result) shouldBe Status.NO_CONTENT
     }
 
     s"return ISE (${Status.INTERNAL_SERVER_ERROR}) when the second API 1811 call fails" in new Setup {
-      when(mockGetFinancialDetailsService.getFinancialDetails(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(
-        Future.successful(Right(GetFinancialDetailsSuccessResponse(sampleFinancialDetails))),
-        Future.successful(Left(GetFinancialDetailsFailureResponse(INTERNAL_SERVER_ERROR)))
+      when(mockFinancialDetailsService.getFinancialDetails(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(
+        Future.successful(Right(FinancialDetailsSuccessResponse(sampleFinancialDetails))),
+        Future.successful(Left(FinancialDetailsFailureResponse(INTERNAL_SERVER_ERROR)))
       )
-      val result = penaltiesFrontendService.handleAndCombineGetFinancialDetailsData(getPenaltyDetails, "123456789", None)(fakeRequest, implicitly, implicitly)
+      val result = penaltiesFrontendService.handleAndCombineGetFinancialDetailsData(getPenaltyDetails, enrolmentKey, None)(fakeRequest, implicitly, implicitly)
       status(result) shouldBe Status.INTERNAL_SERVER_ERROR
     }
 
     s"return ISE (${Status.INTERNAL_SERVER_ERROR}) when the second API 1811 call response body is malformed" in new Setup {
-      when(mockGetFinancialDetailsService.getFinancialDetails(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(
-        Future.successful(Right(GetFinancialDetailsSuccessResponse(sampleFinancialDetails))),
-        Future.successful(Left(GetFinancialDetailsMalformed))
+      when(mockFinancialDetailsService.getFinancialDetails(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(
+        Future.successful(Right(FinancialDetailsSuccessResponse(sampleFinancialDetails))),
+        Future.successful(Left(FinancialDetailsMalformed))
       )
       withCaptureOfLoggingFrom(logger) {
         logs => {
-          val result = await(penaltiesFrontendService.handleAndCombineGetFinancialDetailsData(getPenaltyDetails, "123456789", None)(fakeRequest, implicitly, implicitly))
+          val result = await(penaltiesFrontendService.handleAndCombineGetFinancialDetailsData(getPenaltyDetails, enrolmentKey, None)(fakeRequest, implicitly, implicitly))
           result.header.status shouldBe Status.INTERNAL_SERVER_ERROR
           logs.exists(_.getMessage.contains(PagerDutyKeys.MALFORMED_RESPONSE_FROM_1811_API.toString)) shouldBe true
         }
@@ -770,54 +770,54 @@ class PenaltiesFrontendServiceSpec extends SpecBase with LogCapturing with LPPDe
     }
 
     s"return NOT_FOUND (${Status.NOT_FOUND}) when the second API 1811 call returns no data" in new Setup {
-      when(mockGetFinancialDetailsService.getFinancialDetails(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(
-        Future.successful(Right(GetFinancialDetailsSuccessResponse(sampleFinancialDetails))),
-        Future.successful(Left(GetFinancialDetailsFailureResponse(Status.NOT_FOUND)))
+      when(mockFinancialDetailsService.getFinancialDetails(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(
+        Future.successful(Right(FinancialDetailsSuccessResponse(sampleFinancialDetails))),
+        Future.successful(Left(FinancialDetailsFailureResponse(Status.NOT_FOUND)))
       )
-      val result = penaltiesFrontendService.handleAndCombineGetFinancialDetailsData(getPenaltyDetails, "123456789", Some(""))(fakeRequest, implicitly, implicitly)
+      val result = penaltiesFrontendService.handleAndCombineGetFinancialDetailsData(getPenaltyDetails, enrolmentKey, Some(""))(fakeRequest, implicitly, implicitly)
       status(result) shouldBe Status.NOT_FOUND
     }
 
     s"return OK (${Status.OK}) when the second API 1811 call returns no data (DATA_NOT_FOUND response) - default totalisations field" in new Setup {
-      when(mockGetFinancialDetailsService.getFinancialDetails(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any()))
+      when(mockFinancialDetailsService.getFinancialDetails(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any()))
         .thenReturn(
-          Future.successful(Right(GetFinancialDetailsSuccessResponse(sampleFinancialDetails))),
-          Future.successful(Left(GetFinancialDetailsNoContent))
+          Future.successful(Right(FinancialDetailsSuccessResponse(sampleFinancialDetails))),
+          Future.successful(Left(FinancialDetailsNoContent))
         )
-      val result = penaltiesFrontendService.handleAndCombineGetFinancialDetailsData(getPenaltyDetails, "123456789", Some(""))(fakeRequest, implicitly, implicitly)
+      val result = penaltiesFrontendService.handleAndCombineGetFinancialDetailsData(getPenaltyDetails, enrolmentKey, Some(""))(fakeRequest, implicitly, implicitly)
       status(result) shouldBe Status.OK
     }
 
     s"return OK (${Status.OK}) when the first 1811 call returns no data (if penalty data contains no LPPs)" in new Setup {
       val penaltyDetails: GetPenaltyDetails = getPenaltyDetails.copy(latePaymentPenalty = None)
-      when(mockGetFinancialDetailsService.getFinancialDetails(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any()))
-        .thenReturn(Future.successful(Left(GetFinancialDetailsNoContent)))
-      val result = penaltiesFrontendService.handleAndCombineGetFinancialDetailsData(penaltyDetails, "123456789", Some(""))(fakeRequest, implicitly, implicitly)
+      when(mockFinancialDetailsService.getFinancialDetails(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any()))
+        .thenReturn(Future.successful(Left(FinancialDetailsNoContent)))
+      val result = penaltiesFrontendService.handleAndCombineGetFinancialDetailsData(penaltyDetails, enrolmentKey, Some(""))(fakeRequest, implicitly, implicitly)
       status(result) shouldBe Status.OK
       contentAsJson(result) shouldBe Json.toJson(penaltyDetails)
     }
   }
 
-  "handleErrorResponseFromGetFinancialDetails" should {
+  "handleErrorResponseFromFinancialDetails" should {
     s"return NOT_FOUND (${Status.NOT_FOUND})" when {
       "the status returned from the call is NOT_FOUND" in new Setup {
-        val response: GetFinancialDetailsFailureResponse = GetFinancialDetailsFailureResponse(NOT_FOUND)
-        val result: Result = penaltiesFrontendService.handleErrorResponseFromGetFinancialDetails(response, "123456789")(Ok(""))
+        val response: FinancialDetailsFailureResponse = FinancialDetailsFailureResponse(NOT_FOUND)
+        val result: Result = penaltiesFrontendService.handleErrorResponseFromGetFinancialDetails(response, enrolmentKey)(Ok(""))
         result.header.status shouldBe NOT_FOUND
       }
     }
 
     s"return INTERNAL_SERVER_ERROR (${Status.INTERNAL_SERVER_ERROR})" when {
       "the status returned from the call is not matched" in new Setup {
-        val response: GetFinancialDetailsFailureResponse = GetFinancialDetailsFailureResponse(IM_A_TEAPOT)
-        val result: Result = penaltiesFrontendService.handleErrorResponseFromGetFinancialDetails(response, "123456789")(Ok(""))
+        val response: FinancialDetailsFailureResponse = FinancialDetailsFailureResponse(IM_A_TEAPOT)
+        val result: Result = penaltiesFrontendService.handleErrorResponseFromGetFinancialDetails(response, enrolmentKey)(Ok(""))
         result.header.status shouldBe INTERNAL_SERVER_ERROR
       }
 
       "the response body is malformed - logging a PagerDuty" in new Setup {
-        val response: GetFinancialDetailsFailure = GetFinancialDetailsMalformed
+        val response: FinancialDetailsFailure = FinancialDetailsMalformed
         withCaptureOfLoggingFrom(logger) { logs =>
-          val result: Result = penaltiesFrontendService.handleErrorResponseFromGetFinancialDetails(response, "123456789")(Ok(""))
+          val result: Result = penaltiesFrontendService.handleErrorResponseFromGetFinancialDetails(response, enrolmentKey)(Ok(""))
           result.header.status shouldBe INTERNAL_SERVER_ERROR
           logs.exists(_.getMessage.contains(MALFORMED_RESPONSE_FROM_1811_API.toString)) shouldBe true
         }
@@ -825,9 +825,9 @@ class PenaltiesFrontendServiceSpec extends SpecBase with LogCapturing with LPPDe
     }
 
     "return a custom response" when {
-      s"$GetFinancialDetailsNoContent is returned from the call" in new Setup {
-        val response: GetFinancialDetailsFailure = GetFinancialDetailsNoContent
-        val result: Result = penaltiesFrontendService.handleErrorResponseFromGetFinancialDetails(response, "123456789")(Gone(""))
+      s"$FinancialDetailsNoContent is returned from the call" in new Setup {
+        val response: FinancialDetailsFailure = FinancialDetailsNoContent
+        val result: Result = penaltiesFrontendService.handleErrorResponseFromGetFinancialDetails(response, enrolmentKey)(Gone(""))
         result.header.status shouldBe GONE
       }
     }

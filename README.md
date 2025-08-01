@@ -49,11 +49,15 @@ Example payload:
 | Invalid VRN format    | 400    |
 | No data found for VRN | 404    |
 
-#### `GET        /penalties/etmp/penalties/:enrolmentKey`
-Get data for penalties belonging to an enrolment key. 
+#### `GET        /penalties/:regime/etmp/penalties/:idType/:id`
+Get data for penalties belonging to an ITSA or VATC ID.
 
-Example enrolmentKey format: `HMRC-MTD-VAT~VRN~123456789`
- 
+| TaxRegime | IdType    | Example ID        |
+|-----------|-----------|-------------------|
+| `VATC`    | `VRN`     | `711224466`       |
+| `ITSA`    | `nino`    | `AA803080A`       |
+| `ITSA`    | `mtditid` | `012345678912345` |
+
 | Scenario              | Status |
 |-----------------------|--------|
 | Successful retrieval  | 200    |

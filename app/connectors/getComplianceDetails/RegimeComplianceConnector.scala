@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
-package connectors
+package connectors.getComplianceDetails
 
 import config.AppConfig
-import connectors.parsers.ComplianceParser.{CompliancePayloadFailureResponse, CompliancePayloadResponse}
+import connectors.parsers.getComplianceDetails.ComplianceParser.{CompliancePayloadFailureResponse, CompliancePayloadResponse}
+import models.AgnosticEnrolmentKey
 import play.api.http.Status.INTERNAL_SERVER_ERROR
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, UpstreamErrorResponse}
 import utils.Logger.logger
@@ -27,27 +28,28 @@ import utils.PagerDutyHelper.PagerDutyKeys._
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class ComplianceConnector @Inject()(httpClient: HttpClient,
-                                   appConfig: AppConfig)
+class RegimeComplianceConnector @Inject()(httpClient: HttpClient,
+                                    appConfig: AppConfig)
                                    (implicit ec: ExecutionContext){
-  def getComplianceData(identifier: String, fromDate: String, toDate: String)(implicit hc: HeaderCarrier): Future[CompliancePayloadResponse] = {
+  def getComplianceData(enrolmentKey: AgnosticEnrolmentKey, fromDate: String, toDate: String)(implicit hc: HeaderCarrier): Future[CompliancePayloadResponse] = {
     val environmentHeader: String = appConfig.eisEnvironment
     val desHeaders: Seq[(String, String)] = Seq(
       "Environment" -> environmentHeader,
       "Authorization" -> s"Bearer ${appConfig.desBearerToken}"
     )
-    val url: String = appConfig.getComplianceData(identifier, fromDate, toDate)
-    logger.info(s"[ComplianceConnector][getComplianceData] - Calling GET $url with headers: $desHeaders")
+    val url = appConfig.getComplianceDataUrl(enrolmentKey, fromDate, toDate)
+ 
+    logger.info(s"[RegimeComplianceConnector][getComplianceData] - Calling GET $url with headers: $desHeaders")
     httpClient.GET[CompliancePayloadResponse](url, headers = desHeaders).recover {
       case e: UpstreamErrorResponse => {
         PagerDutyHelper.logStatusCode("getComplianceData", e.statusCode)(RECEIVED_4XX_FROM_1330_API, RECEIVED_5XX_FROM_1330_API)
-        logger.error(s"[ComplianceConnector][] -" +
+        logger.error(s"[RegimeComplianceConnector][] -" +
           s" Received ${e.statusCode} status from API 1330 call - returning status to caller")
         Left(CompliancePayloadFailureResponse(e.statusCode))
       }
       case e: Exception => {
         PagerDutyHelper.log("getComplianceData", UNKNOWN_EXCEPTION_CALLING_1330_API)
-        logger.error(s"[ComplianceConnector][getComplianceData] -" +
+        logger.error(s"[RegimeComplianceConnector][getComplianceData] -" +
           s" An unknown exception occurred - returning 500 back to caller - message: ${e.getMessage}")
         Left(CompliancePayloadFailureResponse(INTERNAL_SERVER_ERROR))
       }
