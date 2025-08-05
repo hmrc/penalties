@@ -32,7 +32,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class RegimeComplianceConnectorSpec extends SpecBase with LogCapturing {
   implicit val ec: ExecutionContext = ExecutionContext.Implicits.global
-  val mockHttpClient: HttpClient = mock(classOf[HttpClient])
+  val mockHttpClient: HttpClientV2 = mock(classOf[HttpClientV2])
   val mockAppConfig: AppConfig = mock(classOf[AppConfig])
   val testStartDate: LocalDateTime = LocalDateTime.of(
     2021,1,1,1,0,0)

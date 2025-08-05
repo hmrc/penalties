@@ -21,9 +21,9 @@ import connectors.parsers.getFinancialDetails.HIPFinancialDetailsParser.{HIPFina
 import models.AgnosticEnrolmentKey
 import models.getFinancialDetails.FinancialDetailsRequestModel
 import play.api.http.Status.INTERNAL_SERVER_ERROR
-import play.api.libs.json.JsObject
 import uk.gov.hmrc.http.HttpReads.Implicits._
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse, UpstreamErrorResponse}
+import uk.gov.hmrc.http.client.HttpClientV2
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps, UpstreamErrorResponse}
 import utils.Logger.logger
 import utils.PagerDutyHelper
 import utils.PagerDutyHelper.PagerDutyKeys._
@@ -35,7 +35,7 @@ import java.util.UUID
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class FinancialDetailsHipConnector @Inject() (httpClient: HttpClient, appConfig: AppConfig)(implicit ec: ExecutionContext) {
+class FinancialDetailsHipConnector @Inject() (httpClient: HttpClientV2, appConfig: AppConfig)(implicit ec: ExecutionContext) {
 
   private def headers: Seq[(String, String)] = Seq(
     "Authorization"                       -> s"Basic ${appConfig.hipAuthorisationToken}",
@@ -54,7 +54,10 @@ class FinancialDetailsHipConnector @Inject() (httpClient: HttpClient, appConfig:
     val hcWithoutAuth = hc.copy(authorization = None)
 
     httpClient
-      .POST[JsObject, HIPFinancialDetailsResponse](url, body, headers)(implicitly, implicitly, hcWithoutAuth, implicitly)
+      .post(url"$url")(hcWithoutAuth)
+      .withBody(body)
+      .setHeader(headers: _*)
+      .execute[HIPFinancialDetailsResponse]
       .recover(handleErrorResponse)
   }
 
@@ -63,7 +66,7 @@ class FinancialDetailsHipConnector @Inject() (httpClient: HttpClient, appConfig:
       PagerDutyHelper.logStatusCode("getFinancialDetails", e.statusCode)(RECEIVED_4XX_FROM_1811_API, RECEIVED_5XX_FROM_1811_API)
       logger.error(
         s"[FinancialDetailsConnector][getFinancialDetails] Received ${e.statusCode} from API#5327 call " +
-          s"- returning status to caller. Error: ${e.getMessage()}")
+          s"- returning status to caller. Error: ${e.getMessage}")
       Left(HIPFinancialDetailsFailureResponse(e.statusCode))
     case e: Exception =>
       PagerDutyHelper.log("getFinancialDetails", UNKNOWN_EXCEPTION_CALLING_1811_API)
@@ -104,7 +107,10 @@ class FinancialDetailsHipConnector @Inject() (httpClient: HttpClient, appConfig:
     val hcWithoutAuth = hc.copy(authorization = None)
 
     httpClient
-      .POST[JsObject, HttpResponse](url, body, headers)(implicitly, implicitly, hcWithoutAuth, implicitly)
+      .post(url"$url")(hcWithoutAuth)
+      .withBody(body)
+      .setHeader(headers: _*)
+      .execute[HttpResponse]
       .recover(handleErrorResponseForAPICall)
   }
 
@@ -112,7 +118,7 @@ class FinancialDetailsHipConnector @Inject() (httpClient: HttpClient, appConfig:
     case e: UpstreamErrorResponse =>
       logger.error(
         s"[FinancialDetailsConnector][getFinancialDetailsForAPI] Received ${e.statusCode} from API#5327 call " +
-          s"- returning status to caller. Error: ${e.getMessage()}")
+          s"- returning status to caller. Error: ${e.getMessage}")
       HttpResponse(e.statusCode, e.message)
     case e: Exception =>
       PagerDutyHelper.log("getFinancialDetailsForAPI", UNKNOWN_EXCEPTION_CALLING_1811_API)

@@ -18,17 +18,16 @@ package connectors
 
 import config.AppConfig
 import models.notification.SDESNotification
+import play.api.libs.json.Json
 import uk.gov.hmrc.http.HttpReads.Implicits._
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse}
+import uk.gov.hmrc.http.client.HttpClientV2
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps}
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class FileNotificationOrchestratorConnector @Inject()(httpClient: HttpClient,
-                                                      appConfig: AppConfig)
-                                                     (implicit ec: ExecutionContext) {
+class FileNotificationOrchestratorConnector @Inject() (httpClient: HttpClientV2, appConfig: AppConfig)(implicit ec: ExecutionContext) {
 
-  def postFileNotifications(notifications: Seq[SDESNotification])(implicit hc: HeaderCarrier): Future[HttpResponse] = {
-    httpClient.POST[Seq[SDESNotification], HttpResponse](url = appConfig.postFileNotificationUrl, notifications)
-  }
+  def postFileNotifications(notifications: Seq[SDESNotification])(implicit hc: HeaderCarrier): Future[HttpResponse] =
+    httpClient.post(url"${appConfig.postFileNotificationUrl}").withBody(Json.toJson(notifications)).execute[HttpResponse]
 }

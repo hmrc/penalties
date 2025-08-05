@@ -21,7 +21,8 @@ import connectors.parsers.AppealsParser.{AppealSubmissionResponse, UnexpectedFai
 import connectors.parsers.HIPAppealParser.HIPAppealSubmissionResponseReads
 import models.appeals.{AppealSubmission, AppealSubmissionRequest}
 import play.api.http.Status.INTERNAL_SERVER_ERROR
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, UpstreamErrorResponse}
+import uk.gov.hmrc.http.client.HttpClientV2
+import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, StringContextOps, UpstreamErrorResponse}
 import utils.Logger.logger
 import utils.PagerDutyHelper
 import utils.PagerDutyHelper.PagerDutyKeys.{RECEIVED_4XX_FROM_1808_API, RECEIVED_5XX_FROM_1808_API, UNKNOWN_EXCEPTION_CALLING_1808_API}
@@ -29,7 +30,7 @@ import utils.PagerDutyHelper.PagerDutyKeys.{RECEIVED_4XX_FROM_1808_API, RECEIVED
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class HIPConnector @Inject()(httpClient: HttpClient,
+class HIPConnector @Inject()(httpClient: HttpClientV2,
                              appConfig: AppConfig)(implicit ec: ExecutionContext) {
 
 
@@ -41,11 +42,16 @@ class HIPConnector @Inject()(httpClient: HttpClient,
     val hc: HeaderCarrier = headersForHIP(correlationId)
     val appealSubmissionRequest = AppealSubmissionRequest(appealSubmission, penaltyNumber)
 
-    httpClient.POST[AppealSubmissionRequest, AppealSubmissionResponse](
-        appConfig.hipSubmitUrl,
-        appealSubmissionRequest,
-        hc.otherHeaders
-      )(AppealSubmissionRequest.apiWrites, HIPAppealSubmissionResponseReads, hc, ec)
+    httpClient
+      .post(url"$appConfig.hipSubmitUrl")
+      .withBody(appealSubmissionRequest)
+      .setHeader(hc.otherHeaders: _*)
+      .execute[AppealSubmissionResponse]
+//    httpClient.POST[AppealSubmissionRequest, AppealSubmissionResponse](
+//        appConfig.hipSubmitUrl,
+//        appealSubmissionRequest,
+//        hc.otherHeaders
+//      )(AppealSubmissionRequest.apiWrites, HIPAppealSubmissionResponseReads, hc, ec)
       .recover {
         case e: UpstreamErrorResponse =>
           PagerDutyHelper.logStatusCode("submitAppeal", e.statusCode)(RECEIVED_4XX_FROM_1808_API, RECEIVED_5XX_FROM_1808_API)

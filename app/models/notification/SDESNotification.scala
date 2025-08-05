@@ -18,22 +18,17 @@ package models.notification
 
 import play.api.libs.json.{Json, Writes}
 
-case class SDESNotification(
-                             informationType: String,
-                             file: SDESNotificationFile,
-                             audit: SDESAudit
-                           )
+case class SDESNotification(informationType: String, file: SDESNotificationFile, audit: SDESAudit)
 
 object SDESNotification {
-  implicit val writes: Writes[SDESNotification] = Json.writes[SDESNotification]
-  val seqOfWrites: Writes[Seq[SDESNotification]] = Writes.seq
-  val auditSeqWrites: Writes[Seq[SDESNotification]] = (notification: Seq[SDESNotification]) =>
-    Json.toJson(notification)(Writes.seq(auditWrites))
-  private val auditWrites: Writes[SDESNotification] = (notification: SDESNotification) => Json.obj(
-    "informationType" -> notification.informationType,
-    "file" -> Json.toJson(notification.file)(SDESNotificationFile.auditWrites),
-    "audit" -> notification.audit
-  )
+  implicit val writes: Writes[SDESNotification]     = Json.writes[SDESNotification]
+  val auditSeqWrites: Writes[Seq[SDESNotification]] = (notification: Seq[SDESNotification]) => Json.toJson(notification)(Writes.seq(auditWrites))
+  private val auditWrites: Writes[SDESNotification] = (notification: SDESNotification) =>
+    Json.obj(
+      "informationType" -> notification.informationType,
+      "file"            -> Json.toJson(notification.file)(SDESNotificationFile.auditWrites),
+      "audit"           -> notification.audit
+    )
 }
 
 case class SDESAudit(correlationID: String)

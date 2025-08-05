@@ -19,11 +19,12 @@ package connectors.getPenaltyDetails
 import config.AppConfig
 import config.featureSwitches.FeatureSwitching
 import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser.{GetPenaltyDetailsFailureResponse, GetPenaltyDetailsResponse}
-import models.{AgnosticEnrolmentKey}
+import models.AgnosticEnrolmentKey
 import play.api.Configuration
 import play.api.http.Status.INTERNAL_SERVER_ERROR
 import uk.gov.hmrc.http.HttpReads.Implicits._
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse, UpstreamErrorResponse}
+import uk.gov.hmrc.http.client.HttpClientV2
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps, UpstreamErrorResponse}
 import utils.Logger.logger
 import utils.PagerDutyHelper.PagerDutyKeys._
 import utils.{DateHelper, PagerDutyHelper}
@@ -33,56 +34,67 @@ import java.util.UUID.randomUUID
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class RegimePenaltyDetailsConnector @Inject()(httpClient: HttpClient,
-                                        appConfig: AppConfig)
-                                       (implicit ec: ExecutionContext, val config: Configuration) extends FeatureSwitching {
+class RegimePenaltyDetailsConnector @Inject() (httpClient: HttpClientV2, appConfig: AppConfig)(implicit
+    ec: ExecutionContext,
+    val config: Configuration)
+    extends FeatureSwitching {
 
   private def headers: Seq[(String, String)] = {
     val timeMachineDateAsDateTime: LocalDateTime = getTimeMachineDateTime
     Seq(
       "Authorization" -> s"Bearer ${appConfig.eiOutboundBearerToken}",
       "CorrelationId" -> randomUUID().toString,
-      "Environment" -> appConfig.eisEnvironment,
-      "ReceiptDate" -> timeMachineDateAsDateTime.format(DateHelper.dateTimeFormatter)
+      "Environment"   -> appConfig.eisEnvironment,
+      "ReceiptDate"   -> timeMachineDateAsDateTime.format(DateHelper.dateTimeFormatter)
     ).filter(_._1.nonEmpty)
   }
 
   def getPenaltyDetails(enrolmentKey: AgnosticEnrolmentKey)(implicit hc: HeaderCarrier): Future[GetPenaltyDetailsResponse] = {
     val url = appConfig.getRegimeAgnosticPenaltyDetailsUrl(enrolmentKey)
 
-    logger.info(s"[RegimePenaltyDetailsConnector][getPenaltyDetails][appConfig.getRegimeAgnosticPenaltyDetailsUrl($enrolmentKey)]- Calling GET $url \nHeaders: $headers")
+    logger.info(
+      s"[RegimePenaltyDetailsConnector][getPenaltyDetails][appConfig.getRegimeAgnosticPenaltyDetailsUrl($enrolmentKey)]- Calling GET $url \nHeaders: $headers")
 
-    httpClient.GET[GetPenaltyDetailsResponse](url, Seq.empty[(String, String)], headers).recover {
-      case e: UpstreamErrorResponse => {
-        PagerDutyHelper.logStatusCode("getPenaltyDetails", e.statusCode)(RECEIVED_4XX_FROM_1812_API, RECEIVED_5XX_FROM_1812_API)
-        logger.error(s"[RegimePenaltyDetailsConnector][getPenaltyDetails] -" +
-          s" Received ${e.statusCode} status from API 1812 call - returning status to caller")
-        Left(GetPenaltyDetailsFailureResponse(e.statusCode))
+    httpClient
+      .get(url"$url")
+      .setHeader(headers: _*)
+      .execute[GetPenaltyDetailsResponse]
+      .recover {
+        case e: UpstreamErrorResponse =>
+          PagerDutyHelper.logStatusCode("getPenaltyDetails", e.statusCode)(RECEIVED_4XX_FROM_1812_API, RECEIVED_5XX_FROM_1812_API)
+          logger.error(
+            s"[RegimePenaltyDetailsConnector][getPenaltyDetails] -" +
+              s" Received ${e.statusCode} status from API 1812 call - returning status to caller")
+          Left(GetPenaltyDetailsFailureResponse(e.statusCode))
+        case e: Exception =>
+          PagerDutyHelper.log("getPenaltyDetails", UNKNOWN_EXCEPTION_CALLING_1812_API)
+          logger.error(
+            s"[RegimePenaltyDetailsConnector][getPenaltyDetails] -" +
+              s" An unknown exception occurred - returning 500 back to caller - message: ${e.getMessage}")
+          Left(GetPenaltyDetailsFailureResponse(INTERNAL_SERVER_ERROR))
       }
-      case e: Exception => {
-        PagerDutyHelper.log("getPenaltyDetails", UNKNOWN_EXCEPTION_CALLING_1812_API)
-        logger.error(s"[RegimePenaltyDetailsConnector][getPenaltyDetails] -" +
-          s" An unknown exception occurred - returning 500 back to caller - message: ${e.getMessage}")
-        Left(GetPenaltyDetailsFailureResponse(INTERNAL_SERVER_ERROR))
-      }
-    }
   }
 
   def getPenaltyDetailsForAPI(enrolmentKey: AgnosticEnrolmentKey, dateLimit: Option[String])(implicit hc: HeaderCarrier): Future[HttpResponse] = {
     val queryParam: String = s"${dateLimit.fold("")(dateLimit => s"?dateLimit=$dateLimit")}"
-    val url = appConfig.getRegimeAgnosticPenaltyDetailsUrl(enrolmentKey) + queryParam 
-    httpClient.GET[HttpResponse](url, headers = headers).recover {
-      case e: UpstreamErrorResponse => {
-        logger.error(s"[RegimePenaltyDetailsConnector][getPenaltyDetailsForAPI] -" +
-          s" Received ${e.statusCode} status from API 1812 call - returning status to caller")
-        HttpResponse(e.statusCode, e.message)
+    val url                = appConfig.getRegimeAgnosticPenaltyDetailsUrl(enrolmentKey) + queryParam
+
+    httpClient
+      .get(url"$url")
+      .setHeader(headers: _*)
+      .execute[HttpResponse]
+      .recover {
+        case e: UpstreamErrorResponse =>
+          logger.error(
+            s"[RegimePenaltyDetailsConnector][getPenaltyDetailsForAPI] -" +
+              s" Received ${e.statusCode} status from API 1812 call - returning status to caller")
+          HttpResponse(e.statusCode, e.message)
+        case e: Exception =>
+          PagerDutyHelper.log("getPenaltyDetailsForAPI", UNKNOWN_EXCEPTION_CALLING_1812_API)
+          logger.error(
+            s"[RegimePenaltyDetailsConnector][getPenaltyDetailsForAPI] -" +
+              s" An unknown exception occurred - returning 500 back to caller - message: ${e.getMessage}")
+          HttpResponse(INTERNAL_SERVER_ERROR, "An unknown exception occurred. Contact the Penalties team for more information.")
       }
-      case e: Exception => {
-        PagerDutyHelper.log("getPenaltyDetailsForAPI", UNKNOWN_EXCEPTION_CALLING_1812_API)
-        logger.error(s"[RegimePenaltyDetailsConnector][getPenaltyDetailsForAPI] -" +
-          s" An unknown exception occurred - returning 500 back to caller - message: ${e.getMessage}")
-        HttpResponse(INTERNAL_SERVER_ERROR, "An unknown exception occurred. Contact the Penalties team for more information.")
-      }
-    }
   }
 }

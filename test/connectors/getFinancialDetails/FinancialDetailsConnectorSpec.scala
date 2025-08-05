@@ -35,7 +35,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class FinancialDetailsConnectorSpec extends SpecBase with LogCapturing {
   implicit val ec: ExecutionContext = ExecutionContext.Implicits.global
-  val mockHttpClient: HttpClient = mock(classOf[HttpClient])
+  val mockHttpClient: HttpClientV2 = mock(classOf[HttpClientV2])
   val mockAppConfig: AppConfig = mock(classOf[AppConfig])
 
   val regime = Regime("VATC") 
