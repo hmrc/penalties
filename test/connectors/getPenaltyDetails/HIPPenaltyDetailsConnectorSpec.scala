@@ -48,7 +48,7 @@ class HIPPenaltyDetailsConnectorSpec
 
   implicit val ec: ExecutionContext = ExecutionContext.Implicits.global
   implicit val hc: HeaderCarrier = HeaderCarrier()
-  val mockHttpClient: HttpClient = mock(classOf[HttpClient])
+  val mockHttpClient: HttpClientV2 = mock(classOf[HttpClientV2])
   val mockAppConfig: AppConfig = mock(classOf[AppConfig])
   implicit val mockConfiguration: Configuration = mock(classOf[Configuration])
   val instant = Instant.now()

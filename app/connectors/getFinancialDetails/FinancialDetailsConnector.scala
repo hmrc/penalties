@@ -18,9 +18,11 @@ package connectors.getFinancialDetails
 
 import config.AppConfig
 import connectors.parsers.getFinancialDetails.FinancialDetailsParser.{FinancialDetailsFailureResponse, FinancialDetailsResponse}
+import models.AgnosticEnrolmentKey
 import play.api.http.Status.INTERNAL_SERVER_ERROR
 import uk.gov.hmrc.http.HttpReads.Implicits._
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse, UpstreamErrorResponse}
+import uk.gov.hmrc.http.client.HttpClientV2
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps, UpstreamErrorResponse}
 import utils.Logger.logger
 import utils.PagerDutyHelper
 import utils.PagerDutyHelper.PagerDutyKeys._
@@ -28,33 +30,37 @@ import utils.PagerDutyHelper.PagerDutyKeys._
 import java.util.UUID.randomUUID
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
-import models.AgnosticEnrolmentKey
 
-class FinancialDetailsConnector @Inject()(httpClient: HttpClient,
-                                          appConfig: AppConfig)
-                                         (implicit ec: ExecutionContext) {
+class FinancialDetailsConnector @Inject() (httpClient: HttpClientV2, appConfig: AppConfig)(implicit ec: ExecutionContext) {
 
   private def headers: Seq[(String, String)] = Seq(
     "Authorization" -> s"Bearer ${appConfig.eiOutboundBearerToken}",
     "CorrelationId" -> randomUUID().toString,
-    "Environment" -> appConfig.eisEnvironment
+    "Environment"   -> appConfig.eisEnvironment
   )
 
-  def getFinancialDetails(enrolmentKey: AgnosticEnrolmentKey, overridingParameters: Option[String])(implicit hc: HeaderCarrier): Future[FinancialDetailsResponse] = {
-    val parameters = overridingParameters.fold(appConfig.queryParametersForGetFinancialDetails + appConfig.addDateRangeQueryParameters())(_ + appConfig.addDateRangeQueryParameters())
-    val url = appConfig.getRegimeFinancialDetailsUrl(enrolmentKey)
-    httpClient.GET[FinancialDetailsResponse](url = url + parameters, headers = headers).recover {
-      case e: UpstreamErrorResponse => {
-        PagerDutyHelper.logStatusCode("getFinancialDetails", e.statusCode)(RECEIVED_4XX_FROM_1811_API, RECEIVED_5XX_FROM_1811_API)
-        logger.error(s"[FinancialDetailsConnector][getFinancialDetails] - Received ${e.statusCode} status from API 1811 call - returning status to caller")
-        Left(FinancialDetailsFailureResponse(e.statusCode))
+  def getFinancialDetails(enrolmentKey: AgnosticEnrolmentKey, overridingParameters: Option[String])(implicit
+      hc: HeaderCarrier): Future[FinancialDetailsResponse] = {
+    val parameters = overridingParameters.fold(appConfig.queryParametersForGetFinancialDetails + appConfig.addDateRangeQueryParameters())(
+      _ + appConfig.addDateRangeQueryParameters())
+    val url = appConfig.getRegimeFinancialDetailsUrl(enrolmentKey) + parameters
+
+    httpClient
+      .get(url"$url")
+      .setHeader(headers: _*)
+      .execute[FinancialDetailsResponse]
+      .recover {
+        case e: UpstreamErrorResponse =>
+          PagerDutyHelper.logStatusCode("getFinancialDetails", e.statusCode)(RECEIVED_4XX_FROM_1811_API, RECEIVED_5XX_FROM_1811_API)
+          logger.error(
+            s"[FinancialDetailsConnector][getFinancialDetails] - Received ${e.statusCode} status from API 1811 call - returning status to caller")
+          Left(FinancialDetailsFailureResponse(e.statusCode))
+        case e: Exception =>
+          PagerDutyHelper.log("getFinancialDetails", UNKNOWN_EXCEPTION_CALLING_1811_API)
+          logger.error(
+            s"[FinancialDetailsConnector][getFinancialDetails] - An unknown exception occurred - returning 500 back to caller - message: ${e.getMessage}")
+          Left(FinancialDetailsFailureResponse(INTERNAL_SERVER_ERROR))
       }
-      case e: Exception => {
-        PagerDutyHelper.log("getFinancialDetails", UNKNOWN_EXCEPTION_CALLING_1811_API)
-        logger.error(s"[FinancialDetailsConnector][getFinancialDetails] - An unknown exception occurred - returning 500 back to caller - message: ${e.getMessage}")
-        Left(FinancialDetailsFailureResponse(INTERNAL_SERVER_ERROR))
-      }
-    }
   }
 
   def getFinancialDetailsForAPI(enrolmentKey: AgnosticEnrolmentKey,
@@ -71,20 +77,39 @@ class FinancialDetailsConnector @Inject()(httpClient: HttpClient,
                                 addPenaltyDetails: Option[Boolean],
                                 addPostedInterestDetails: Option[Boolean],
                                 addAccruingInterestDetails: Option[Boolean])(implicit hc: HeaderCarrier): Future[HttpResponse] = {
-    val params = Seq("searchType" -> searchType, "searchItem" -> searchItem, "dateType" -> dateType, "dateFrom" -> dateFrom, "dateTo" -> dateTo, "includeClearedItems" -> includeClearedItems, "includeStatisticalItems" -> includeStatisticalItems, "includePaymentOnAccount" -> includePaymentOnAccount, "addRegimeTotalisation" -> addRegimeTotalisation,
-      "addLockInformation" -> addLockInformation, "addPenaltyDetails" -> addPenaltyDetails, "addPostedInterestDetails" -> addPostedInterestDetails, "addAccruingInterestDetails" -> addAccruingInterestDetails)
-    val queryParams: String = params.foldLeft("?")((prevString, paramToValue) => prevString + paramToValue._2.fold("")(param => s"${paramToValue._1}=$param&")).dropRight(1)
-    val url = appConfig.getRegimeFinancialDetailsUrl(enrolmentKey)
-    httpClient.GET[HttpResponse](url + queryParams, headers = headers).recover {
-      case e: UpstreamErrorResponse => {
-        logger.error(s"[FinancialDetailsConnector][getFinancialDetailsForAPI] - Received ${e.statusCode} status from API 1811 call - returning status to caller")
-        HttpResponse(e.statusCode, e.message)
+    val params = Seq(
+      "searchType"                 -> searchType,
+      "searchItem"                 -> searchItem,
+      "dateType"                   -> dateType,
+      "dateFrom"                   -> dateFrom,
+      "dateTo"                     -> dateTo,
+      "includeClearedItems"        -> includeClearedItems,
+      "includeStatisticalItems"    -> includeStatisticalItems,
+      "includePaymentOnAccount"    -> includePaymentOnAccount,
+      "addRegimeTotalisation"      -> addRegimeTotalisation,
+      "addLockInformation"         -> addLockInformation,
+      "addPenaltyDetails"          -> addPenaltyDetails,
+      "addPostedInterestDetails"   -> addPostedInterestDetails,
+      "addAccruingInterestDetails" -> addAccruingInterestDetails
+    )
+    val queryParams: String =
+      params.foldLeft("?")((prevString, paramToValue) => prevString + paramToValue._2.fold("")(param => s"${paramToValue._1}=$param&")).dropRight(1)
+    val url = appConfig.getRegimeFinancialDetailsUrl(enrolmentKey) + queryParams
+
+    httpClient
+      .get(url"$url")
+      .setHeader(headers: _*)
+      .execute[HttpResponse]
+      .recover {
+        case e: UpstreamErrorResponse =>
+          logger.error(
+            s"[FinancialDetailsConnector][getFinancialDetailsForAPI] - Received ${e.statusCode} status from API 1811 call - returning status to caller")
+          HttpResponse(e.statusCode, e.message)
+        case e: Exception =>
+          PagerDutyHelper.log("getFinancialDetailsForAPI", UNKNOWN_EXCEPTION_CALLING_1811_API)
+          logger.error(
+            s"[FinancialDetailsConnector][getFinancialDetailsForAPI] - An unknown exception occurred - returning 500 back to caller - message: ${e.getMessage}")
+          HttpResponse(INTERNAL_SERVER_ERROR, "An unknown exception occurred. Contact the Penalties team for more information.")
       }
-      case e: Exception => {
-        PagerDutyHelper.log("getFinancialDetailsForAPI", UNKNOWN_EXCEPTION_CALLING_1811_API)
-        logger.error(s"[FinancialDetailsConnector][getFinancialDetailsForAPI] - An unknown exception occurred - returning 500 back to caller - message: ${e.getMessage}")
-        HttpResponse(INTERNAL_SERVER_ERROR, "An unknown exception occurred. Contact the Penalties team for more information.")
-      }
-    }
   }
 }
