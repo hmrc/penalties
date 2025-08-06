@@ -17,7 +17,8 @@
 package connectors.parsers
 
 import base.{LogCapturing, SpecBase}
-import connectors.parsers.AppealsParser.{BadRequest, DuplicateAppeal, InvalidJson, UnexpectedFailure}
+import connectors.parsers.submitAppeal.AppealsParser
+import connectors.parsers.submitAppeal.AppealsParser.{BadRequest, DuplicateAppeal, InvalidJson, UnexpectedFailure}
 import models.appeals.AppealResponseModel
 import play.api.http.Status
 import play.api.libs.json.{JsString, JsValue, Json}
