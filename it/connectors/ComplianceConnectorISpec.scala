@@ -17,26 +17,26 @@
 package connectors
 
 import config.featureSwitches.{CallDES, FeatureSwitching}
-import connectors.getComplianceDetails.RegimeComplianceConnector
+import connectors.getComplianceDetails.ComplianceConnector
 import connectors.parsers.getComplianceDetails.ComplianceParser._
 import models.compliance.{CompliancePayload, ComplianceStatusEnum, ObligationDetail, ObligationIdentification}
 import org.scalatest.prop.TableDrivenPropertyChecks
 import play.api.http.Status
 import play.api.test.Helpers._
-import utils.{IntegrationSpecCommonBase, RegimeComplianceWiremock}
+import utils.{IntegrationSpecCommonBase, ComplianceWiremock}
 import models.{AgnosticEnrolmentKey, Id, IdType, Regime}
 
 import java.time.{LocalDate, LocalDateTime}
 import scala.concurrent.ExecutionContext
 
-class RegimeComplianceConnectorISpec extends IntegrationSpecCommonBase with RegimeComplianceWiremock with FeatureSwitching with TableDrivenPropertyChecks{
+class ComplianceConnectorISpec extends IntegrationSpecCommonBase with ComplianceWiremock with FeatureSwitching with TableDrivenPropertyChecks{
 
   implicit val ec: ExecutionContext = ExecutionContext.Implicits.global
   val testStartDate: LocalDateTime = LocalDateTime.of(2021,1,1, 1,0,0)
   val testEndDate: LocalDateTime = LocalDateTime.of(2021,1,8,1,0,0)
 
   class Setup {
-    val connector: RegimeComplianceConnector = injector.instanceOf[RegimeComplianceConnector]
+    val connector: ComplianceConnector = injector.instanceOf[ComplianceConnector]
     enableFeatureSwitch(CallDES)
   }
 

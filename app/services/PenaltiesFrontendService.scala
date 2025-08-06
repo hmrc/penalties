@@ -38,7 +38,7 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class RegimePenaltiesFrontendService @Inject()(getFinancialDetailsService: FinancialDetailsService,
+class PenaltiesFrontendService @Inject()(getFinancialDetailsService: FinancialDetailsService,
                                          appConfig: AppConfig,
                                          dateHelper: DateHelper,
                                          auditService: AuditService) {

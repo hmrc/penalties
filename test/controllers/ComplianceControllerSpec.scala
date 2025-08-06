@@ -24,19 +24,19 @@ import org.mockito.Mockito._
 import play.api.libs.json.Json
 import play.api.mvc.Result
 import play.api.test.Helpers._
-import services.RegimeComplianceService
+import services.ComplianceService
 import utils.AuthActionMock
 import models.{Regime, IdType, Id}
 import java.time.LocalDate
 import scala.concurrent.{ExecutionContext, Future}
 
-class RegimeComplianceControllerSpec extends SpecBase {
-  val mockService: RegimeComplianceService = mock(classOf[RegimeComplianceService])
+class ComplianceControllerSpec extends SpecBase {
+  val mockService: ComplianceService = mock(classOf[ComplianceService])
   val mockAuthAction: AuthAction = injector.instanceOf(classOf[AuthActionMock])
   implicit val ec: ExecutionContext = ExecutionContext.Implicits.global
 
   class Setup {
-    val controller: RegimeComplianceController = new RegimeComplianceController(mockService, stubControllerComponents(), mockAuthAction)
+    val controller: ComplianceController = new ComplianceController(mockService, stubControllerComponents(), mockAuthAction)
 
     reset(mockService)
   }

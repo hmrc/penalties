@@ -16,12 +16,12 @@
 
 package controllers
 
-import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser.{GetPenaltyDetailsSuccessResponse, GetPenaltyDetailsResponse, _}
+import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser._
 import controllers.auth.AuthAction
 import models.{AgnosticEnrolmentKey, Id, IdType, Regime}
 import play.api.Configuration
 import play.api.mvc._
-import services.{PenaltyDetailsService, RegimePenaltiesFrontendService}
+import services.{PenaltyDetailsService, PenaltiesFrontendService}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import utils.Logger.logger
@@ -31,9 +31,9 @@ import utils.PagerDutyHelper
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class RegimePenaltiesFrontendController @Inject()(
+class PenaltiesFrontendController @Inject()(
                                              getPenaltyDetailsService: PenaltyDetailsService,
-                                             penaltiesFrontendService: RegimePenaltiesFrontendService,
+                                             penaltiesFrontendService: PenaltiesFrontendService,
                                              cc: ControllerComponents,
                                              authAction: AuthAction
                                            )(implicit ec: ExecutionContext, val config: Configuration) extends BackendController(cc) {

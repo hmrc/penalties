@@ -22,13 +22,13 @@ import models.compliance.{CompliancePayload, ComplianceStatusEnum, ObligationDet
 import org.scalatest.prop.TableDrivenPropertyChecks
 import play.api.libs.json.{JsValue, Json}
 import play.api.test.Helpers._
-import utils.{RegimeComplianceWiremock, IntegrationSpecCommonBase}
+import utils.{ComplianceWiremock, IntegrationSpecCommonBase}
 import models.{AgnosticEnrolmentKey, Regime, IdType, Id}
 import java.time.LocalDate
 import scala.concurrent.ExecutionContext
 
-class RegimeComplianceServiceISpec extends IntegrationSpecCommonBase with RegimeComplianceWiremock with FeatureSwitching with TableDrivenPropertyChecks {
-  val complianceService: RegimeComplianceService = injector.instanceOf[RegimeComplianceService]
+class ComplianceServiceISpec extends IntegrationSpecCommonBase with ComplianceWiremock with FeatureSwitching with TableDrivenPropertyChecks {
+  val complianceService: ComplianceService = injector.instanceOf[ComplianceService]
   implicit val ec: ExecutionContext = ExecutionContext.Implicits.global
   implicit val startOfLogMsg: String = ""
 

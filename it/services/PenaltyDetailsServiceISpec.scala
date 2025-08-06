@@ -29,11 +29,11 @@ import org.scalatest.prop.TableDrivenPropertyChecks
 import play.api.http.Status
 import play.api.http.Status.{IM_A_TEAPOT, INTERNAL_SERVER_ERROR}
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
-import utils.{HIPPenaltiesWiremock, IntegrationSpecCommonBase, RegimeETMPWiremock}
+import utils.{HIPPenaltiesWiremock, IntegrationSpecCommonBase, ETMPWiremock}
 
 import java.time.LocalDate
 
-class PenaltyDetailsServiceISpec extends IntegrationSpecCommonBase with RegimeETMPWiremock with HIPPenaltiesWiremock with FeatureSwitching with TableDrivenPropertyChecks {
+class PenaltyDetailsServiceISpec extends IntegrationSpecCommonBase with ETMPWiremock with HIPPenaltiesWiremock with FeatureSwitching with TableDrivenPropertyChecks {
   setEnabledFeatureSwitches()
   val service: PenaltyDetailsService = injector.instanceOf[PenaltyDetailsService]
 

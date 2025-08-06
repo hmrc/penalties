@@ -18,20 +18,31 @@ package connectors.getFinancialDetails
 
 import config.featureSwitches.{CallAPI1811ETMP, FeatureSwitching}
 import connectors.parsers.getFinancialDetails.FinancialDetailsParser._
+import models.{AgnosticEnrolmentKey, Id, IdType, Regime}
 import play.api.http.Status
 import play.api.http.Status.IM_A_TEAPOT
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
-import utils.{ETMPWiremock, IntegrationSpecCommonBase}
-import models.{AgnosticEnrolmentKey, Regime, IdType, Id}
+import utils.{IntegrationSpecCommonBase, ETMPWiremock}
+
 import java.time.LocalDate
 
 class FinancialDetailsConnectorISpec extends IntegrationSpecCommonBase with ETMPWiremock with FeatureSwitching {
 
-  val regime = Regime("VATC") 
-  val idType = IdType("VRN")
-  val id = Id("123456789")
+  private val regime = Regime("VATC")
+  private val idType = IdType("VRN")
+  private val id = Id("123456789")
 
+  private val dateQueryParams = s"&dateType=POSTING" +
+    s"&dateFrom=${LocalDate.now().minusYears(2)}" +
+    s"&dateTo=${LocalDate.now()}"
+  private val fullQueryParams = s"?includeClearedItems=true&includeStatisticalItems=true&" +
+    s"includePaymentOnAccount=true&addRegimeTotalisation=true&addLockInformation=true&addPenaltyDetails=true&" +
+    s"addPostedInterestDetails=true&addAccruingInterestDetails=true" + dateQueryParams
+  private val fullQueryParamsForThirdPartyCall = "?searchType=CHGREF&searchItem=XC00178236592&" +
+    "dateType=BILLING&dateFrom=2020-10-03&dateTo=2021-07-12&includeClearedItems=false&includeStatisticalItems=true&" +
+    "includePaymentOnAccount=true&addRegimeTotalisation=false&addLockInformation=true&addPenaltyDetails=true&" +
+    "addPostedInterestDetails=true&addAccruingInterestDetails=true"
 
   val vrn123456789: AgnosticEnrolmentKey = AgnosticEnrolmentKey(
     regime,
@@ -42,25 +53,21 @@ class FinancialDetailsConnectorISpec extends IntegrationSpecCommonBase with ETMP
   class Setup {
     val connector: FinancialDetailsConnector = injector.instanceOf[FinancialDetailsConnector]
     implicit val hc: HeaderCarrier = HeaderCarrier()
-    val dateQueryParams: String = s"&dateType=POSTING" +
-      s"&dateFrom=${LocalDate.now().minusYears(2)}" +
-      s"&dateTo=${LocalDate.now()}"
   }
 
   "getFinancialDetails" should {
     "return a successful response when called" in new Setup {
       enableFeatureSwitch(CallAPI1811ETMP)
-      mockResponseForGetFinancialDetails(Status.OK,
-        s"VRN/123456789/VATC?includeClearedItems=true&includeStatisticalItems=true&includePaymentOnAccount=true&addRegimeTotalisation=true&addLockInformation=true&addPenaltyDetails=true&addPostedInterestDetails=true&addAccruingInterestDetails=true" + dateQueryParams)
+      mockResponseForGetFinancialDetails(Status.OK, regime, idType, id, fullQueryParams)
       val result: FinancialDetailsResponse = await(connector.getFinancialDetails(vrn123456789, None)(hc))
       result.isRight shouldBe true
     }
 
     "return a successful response when called (using custom params)" in new Setup {
       enableFeatureSwitch(CallAPI1811ETMP)
-      mockResponseForGetFinancialDetails(Status.OK,
-        s"VRN/123456789/VATC?foo=bar" + dateQueryParams)
-      val result: FinancialDetailsResponse = await(connector.getFinancialDetails(vrn123456789, Some("?foo=bar"))(hc))
+      val customParams = "?foo=bar"
+      mockResponseForGetFinancialDetails(Status.OK, regime, idType, id, customParams + dateQueryParams)
+      val result: FinancialDetailsResponse = await(connector.getFinancialDetails(vrn123456789, Some(customParams))(hc))
       result.isRight shouldBe true
     }
 
@@ -73,7 +80,7 @@ class FinancialDetailsConnectorISpec extends IntegrationSpecCommonBase with ETMP
              }]
            }
           """
-      mockResponseForGetFinancialDetails(Status.OK, s"VRN/123456789/VATC?includeClearedItems=true&includeStatisticalItems=true&includePaymentOnAccount=true&addRegimeTotalisation=true&addLockInformation=true&addPenaltyDetails=true&addPostedInterestDetails=true&addAccruingInterestDetails=true" + dateQueryParams, body = Some(malformedBody))
+      mockResponseForGetFinancialDetails(Status.OK, regime, idType, id, fullQueryParams, body = Some(malformedBody))
       val result: FinancialDetailsResponse = await(connector.getFinancialDetails(vrn123456789, None))
       result.isLeft shouldBe true
       result.left.getOrElse(FinancialDetailsFailureResponse(IM_A_TEAPOT)) shouldBe FinancialDetailsMalformed
@@ -81,7 +88,7 @@ class FinancialDetailsConnectorISpec extends IntegrationSpecCommonBase with ETMP
 
     s"return a $FinancialDetailsFailureResponse when the response status is ISE (${Status.INTERNAL_SERVER_ERROR})" in new Setup {
       enableFeatureSwitch(CallAPI1811ETMP)
-      mockResponseForGetFinancialDetails(Status.INTERNAL_SERVER_ERROR, s"VRN/123456789/VATC?includeClearedItems=true&includeStatisticalItems=true&includePaymentOnAccount=true&addRegimeTotalisation=true&addLockInformation=true&addPenaltyDetails=true&addPostedInterestDetails=true&addAccruingInterestDetails=true" + dateQueryParams)
+      mockResponseForGetFinancialDetails(Status.INTERNAL_SERVER_ERROR, regime, idType, id, fullQueryParams)
       val result: FinancialDetailsResponse = await(connector.getFinancialDetails(vrn123456789, None))
       result.isLeft shouldBe true
       result.left.getOrElse(FinancialDetailsFailureResponse(IM_A_TEAPOT)).asInstanceOf[FinancialDetailsFailureResponse].status shouldBe Status.INTERNAL_SERVER_ERROR
@@ -89,7 +96,7 @@ class FinancialDetailsConnectorISpec extends IntegrationSpecCommonBase with ETMP
 
     s"return a $FinancialDetailsFailureResponse when the response status is ISE (${Status.SERVICE_UNAVAILABLE})" in new Setup {
       enableFeatureSwitch(CallAPI1811ETMP)
-      mockResponseForGetFinancialDetails(Status.SERVICE_UNAVAILABLE, s"VRN/123456789/VATC?includeClearedItems=true&includeStatisticalItems=true&includePaymentOnAccount=true&addRegimeTotalisation=true&addLockInformation=true&addPenaltyDetails=true&addPostedInterestDetails=true&addAccruingInterestDetails=true" + dateQueryParams)
+      mockResponseForGetFinancialDetails(Status.SERVICE_UNAVAILABLE, regime, idType, id, fullQueryParams)
       val result: FinancialDetailsResponse = await(connector.getFinancialDetails(vrn123456789, None))
       result.isLeft shouldBe true
       result.left.getOrElse(FinancialDetailsFailureResponse(IM_A_TEAPOT)).asInstanceOf[FinancialDetailsFailureResponse].status shouldBe Status.SERVICE_UNAVAILABLE
@@ -97,7 +104,7 @@ class FinancialDetailsConnectorISpec extends IntegrationSpecCommonBase with ETMP
 
     s"return a $FinancialDetailsFailureResponse when the response status is NOT FOUND (${Status.NOT_FOUND})" in new Setup {
       enableFeatureSwitch(CallAPI1811ETMP)
-      mockResponseForGetFinancialDetails(Status.NOT_FOUND, s"VRN/123456789/VATC?includeClearedItems=true&includeStatisticalItems=true&includePaymentOnAccount=true&addRegimeTotalisation=true&addLockInformation=true&addPenaltyDetails=true&addPostedInterestDetails=true&addAccruingInterestDetails=true" + dateQueryParams)
+      mockResponseForGetFinancialDetails(Status.NOT_FOUND, regime, idType, id, fullQueryParams)
       val result: FinancialDetailsResponse = await(connector.getFinancialDetails(vrn123456789, None))
       result.isLeft shouldBe true
       result.left.getOrElse(FinancialDetailsFailureResponse(IM_A_TEAPOT)).asInstanceOf[FinancialDetailsFailureResponse].status shouldBe Status.NOT_FOUND
@@ -105,7 +112,7 @@ class FinancialDetailsConnectorISpec extends IntegrationSpecCommonBase with ETMP
 
     s"return a $FinancialDetailsFailureResponse when the response status is CONFLICT (${Status.CONFLICT})" in new Setup {
       enableFeatureSwitch(CallAPI1811ETMP)
-      mockResponseForGetFinancialDetails(Status.CONFLICT, s"VRN/123456789/VATC?includeClearedItems=true&includeStatisticalItems=true&includePaymentOnAccount=true&addRegimeTotalisation=true&addLockInformation=true&addPenaltyDetails=true&addPostedInterestDetails=true&addAccruingInterestDetails=true" + dateQueryParams)
+      mockResponseForGetFinancialDetails(Status.CONFLICT, regime, idType, id, fullQueryParams)
       val result: FinancialDetailsResponse = await(connector.getFinancialDetails(vrn123456789, None))
       result.isLeft shouldBe true
       result.left.getOrElse(FinancialDetailsFailureResponse(IM_A_TEAPOT)).asInstanceOf[FinancialDetailsFailureResponse].status shouldBe Status.CONFLICT
@@ -113,7 +120,7 @@ class FinancialDetailsConnectorISpec extends IntegrationSpecCommonBase with ETMP
 
     s"return a $FinancialDetailsFailureResponse when the response status is UNPROCESSABLE ENTITY (${Status.UNPROCESSABLE_ENTITY})" in new Setup {
       enableFeatureSwitch(CallAPI1811ETMP)
-      mockResponseForGetFinancialDetails(Status.UNPROCESSABLE_ENTITY, s"VRN/123456789/VATC?includeClearedItems=true&includeStatisticalItems=true&includePaymentOnAccount=true&addRegimeTotalisation=true&addLockInformation=true&addPenaltyDetails=true&addPostedInterestDetails=true&addAccruingInterestDetails=true" + dateQueryParams)
+      mockResponseForGetFinancialDetails(Status.UNPROCESSABLE_ENTITY, regime, idType, id, fullQueryParams)
       val result: FinancialDetailsResponse = await(connector.getFinancialDetails(vrn123456789, None))
       result.isLeft shouldBe true
       result.left.getOrElse(FinancialDetailsFailureResponse(IM_A_TEAPOT)).asInstanceOf[FinancialDetailsFailureResponse].status shouldBe Status.UNPROCESSABLE_ENTITY
@@ -121,7 +128,7 @@ class FinancialDetailsConnectorISpec extends IntegrationSpecCommonBase with ETMP
 
     s"return a $FinancialDetailsFailureResponse when the response status is BAD REQUEST (${Status.BAD_REQUEST})" in new Setup {
       enableFeatureSwitch(CallAPI1811ETMP)
-      mockResponseForGetFinancialDetails(Status.BAD_REQUEST, s"VRN/123456789/VATC?includeClearedItems=true&includeStatisticalItems=true&includePaymentOnAccount=true&addRegimeTotalisation=true&addLockInformation=true&addPenaltyDetails=true&addPostedInterestDetails=true&addAccruingInterestDetails=true" + dateQueryParams)
+      mockResponseForGetFinancialDetails(Status.BAD_REQUEST, regime, idType, id, fullQueryParams)
       val result: FinancialDetailsResponse = await(connector.getFinancialDetails(vrn123456789, None))
       result.isLeft shouldBe true
       result.left.getOrElse(FinancialDetailsFailureResponse(IM_A_TEAPOT)).asInstanceOf[FinancialDetailsFailureResponse].status shouldBe Status.BAD_REQUEST
@@ -129,7 +136,7 @@ class FinancialDetailsConnectorISpec extends IntegrationSpecCommonBase with ETMP
 
     s"return a $FinancialDetailsFailureResponse when the response status is FORBIDDEN (${Status.FORBIDDEN})" in new Setup {
       enableFeatureSwitch(CallAPI1811ETMP)
-      mockResponseForGetFinancialDetails(Status.FORBIDDEN, s"VRN/123456789/VATC?includeClearedItems=true&includeStatisticalItems=true&includePaymentOnAccount=true&addRegimeTotalisation=true&addLockInformation=true&addPenaltyDetails=true&addPostedInterestDetails=true&addAccruingInterestDetails=true" + dateQueryParams)
+      mockResponseForGetFinancialDetails(Status.FORBIDDEN, regime, idType, id, fullQueryParams)
       val result: FinancialDetailsResponse = await(connector.getFinancialDetails(vrn123456789, None))
       result.isLeft shouldBe true
       result.left.getOrElse(FinancialDetailsFailureResponse(IM_A_TEAPOT)).asInstanceOf[FinancialDetailsFailureResponse].status shouldBe Status.FORBIDDEN
@@ -139,9 +146,7 @@ class FinancialDetailsConnectorISpec extends IntegrationSpecCommonBase with ETMP
   "getFinancialDetailsForAPI" should {
     "return a 200 response" in new Setup {
       enableFeatureSwitch(CallAPI1811ETMP)
-      mockResponseForGetFinancialDetails(Status.OK, s"VRN/123456789/VATC?searchType=CHGREF&searchItem=XC00178236592&dateType=BILLING&dateFrom=2020-10-03&dateTo=2021-07-12&includeClearedItems=false" +
-        s"&includeStatisticalItems=true&includePaymentOnAccount=true&addRegimeTotalisation=false&addLockInformation=true&addPenaltyDetails=true" +
-        s"&addPostedInterestDetails=true&addAccruingInterestDetails=true")
+      mockResponseForGetFinancialDetails(Status.OK, regime, idType, id, fullQueryParamsForThirdPartyCall)
 
       val result: HttpResponse = await(connector.getFinancialDetailsForAPI(
         enrolmentKey = vrn123456789,
@@ -165,9 +170,7 @@ class FinancialDetailsConnectorISpec extends IntegrationSpecCommonBase with ETMP
     "handle a UpstreamErrorResponse" when {
       "a 4xx error is returned" in new Setup {
         enableFeatureSwitch(CallAPI1811ETMP)
-        mockResponseForGetFinancialDetails(Status.FORBIDDEN, s"VRN/123456789/VATC?searchType=CHGREF&searchItem=XC00178236592&dateType=BILLING&dateFrom=2020-10-03&dateTo=2021-07-12&includeClearedItems=false" +
-          s"&includeStatisticalItems=true&includePaymentOnAccount=true&addRegimeTotalisation=false&addLockInformation=true&addPenaltyDetails=true" +
-          s"&addPostedInterestDetails=true&addAccruingInterestDetails=true")
+        mockResponseForGetFinancialDetails(Status.FORBIDDEN, regime, idType, id, fullQueryParamsForThirdPartyCall)
 
         val result: HttpResponse = await(connector.getFinancialDetailsForAPI(
           enrolmentKey = vrn123456789,
@@ -190,9 +193,7 @@ class FinancialDetailsConnectorISpec extends IntegrationSpecCommonBase with ETMP
 
       "a 5xx error is returned" in new Setup {
         enableFeatureSwitch(CallAPI1811ETMP)
-        mockResponseForGetFinancialDetails(Status.BAD_GATEWAY, s"VRN/123456789/VATC?searchType=CHGREF&searchItem=XC00178236592&dateType=BILLING&dateFrom=2020-10-03&dateTo=2021-07-12&includeClearedItems=false" +
-          s"&includeStatisticalItems=true&includePaymentOnAccount=true&addRegimeTotalisation=false&addLockInformation=true&addPenaltyDetails=true" +
-          s"&addPostedInterestDetails=true&addAccruingInterestDetails=true")
+        mockResponseForGetFinancialDetails(Status.BAD_GATEWAY, regime, idType, id, fullQueryParamsForThirdPartyCall)
 
         val result: HttpResponse = await(connector.getFinancialDetailsForAPI(
           enrolmentKey = vrn123456789,

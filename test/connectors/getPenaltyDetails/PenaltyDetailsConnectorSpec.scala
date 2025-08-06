@@ -36,7 +36,7 @@ import utils.PagerDutyHelper.PagerDutyKeys
 import java.time.{LocalDate, LocalDateTime}
 import scala.concurrent.{ExecutionContext, Future}
 
-class RegimePenaltyDetailsConnectorSpec extends SpecBase with LogCapturing with FeatureSwitching {
+class PenaltyDetailsConnectorSpec extends SpecBase with LogCapturing with FeatureSwitching {
   override implicit val config: Configuration = injector.instanceOf[Configuration]
 
   implicit val ec: ExecutionContext = ExecutionContext.Implicits.global
@@ -61,7 +61,7 @@ class RegimePenaltyDetailsConnectorSpec extends SpecBase with LogCapturing with 
     reset(mockAppConfig)
     reset(mockConfiguration)
 
-    val connector = new RegimePenaltyDetailsConnector(mockHttpClient, mockAppConfig)(implicitly, mockConfiguration)
+    val connector = new PenaltyDetailsConnector(mockHttpClient, mockAppConfig)(implicitly, mockConfiguration)
     when(mockAppConfig.getPenaltyDetailsUrl(vrn123456789)).thenReturn("/penalty/details/VATC/VRN/123456789")
     when(mockAppConfig.eisEnvironment).thenReturn("env")
     when(mockAppConfig.eiOutboundBearerToken).thenReturn("token")
@@ -101,7 +101,7 @@ class RegimePenaltyDetailsConnectorSpec extends SpecBase with LogCapturing with 
           ArgumentMatchers.any()))
         .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(mockGetPenaltyDetailsModelAPI1812))))
       setTimeMachineDate(Some(LocalDateTime.parse("2023-01-01T01:01:01Z", DateHelper.dateTimeFormatter)))
-      val connectorForTest = new RegimePenaltyDetailsConnector(mockHttpClient, mockAppConfig)(implicitly, config)
+      val connectorForTest = new PenaltyDetailsConnector(mockHttpClient, mockAppConfig)(implicitly, config)
       val result: GetPenaltyDetailsResponse = await(connectorForTest.getPenaltyDetails(vrn123456789))
       result.isRight shouldBe true
       argumentCaptorForHeaders.getValue.find(_._1 == "ReceiptDate").get._2 shouldBe "2023-01-01T01:01:01Z"
@@ -132,7 +132,7 @@ class RegimePenaltyDetailsConnectorSpec extends SpecBase with LogCapturing with 
           ArgumentMatchers.any(),
           ArgumentMatchers.any()))
         .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(mockGetPenaltyDetailsModelAPI1812))))
-      val connectorForTest = new RegimePenaltyDetailsConnector(mockHttpClient, mockAppConfig)(implicitly, config)
+      val connectorForTest = new PenaltyDetailsConnector(mockHttpClient, mockAppConfig)(implicitly, config)
       val result: GetPenaltyDetailsResponse = await(connectorForTest.getPenaltyDetails(vrn123456789))
       result.isRight shouldBe true
       val receiptDateValue: String = argumentCaptorForHeaders.getValue.find(_._1 == "ReceiptDate").get._2

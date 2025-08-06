@@ -33,7 +33,7 @@ import java.util.UUID.randomUUID
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class RegimePenaltyDetailsConnector @Inject()(httpClient: HttpClient,
+class PenaltyDetailsConnector @Inject()(httpClient: HttpClient,
                                         appConfig: AppConfig)
                                        (implicit ec: ExecutionContext, val config: Configuration) extends FeatureSwitching {
 

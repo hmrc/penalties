@@ -23,15 +23,15 @@ import org.scalatest.prop.TableDrivenPropertyChecks
 import play.api.http.Status
 import play.api.libs.json.{JsValue, Json}
 import play.api.test.Helpers._
-import utils.{AuthMock, HIPPenaltiesWiremock, IntegrationSpecCommonBase, RegimeETMPWiremock}
+import utils.{AuthMock, HIPPenaltiesWiremock, IntegrationSpecCommonBase, ETMPWiremock}
 
 import java.time.LocalDate
 import scala.jdk.CollectionConverters._
 
-class RegimePenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with RegimeETMPWiremock
+class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
   with HIPPenaltiesWiremock with FeatureSwitching with TableDrivenPropertyChecks with AuthMock {
   setEnabledFeatureSwitches()
-  val controller: RegimePenaltiesFrontendController = injector.instanceOf[RegimePenaltiesFrontendController]
+  val controller: PenaltiesFrontendController = injector.instanceOf[PenaltiesFrontendController]
   val financialDataQueryParamWithClearedItems: String = {
     s"includeClearedItems=true&includeStatisticalItems=true&includePaymentOnAccount=true" +
       s"&addRegimeTotalisation=true&addLockInformation=true&addPenaltyDetails=true&addPostedInterestDetails=true&addAccruingInterestDetails=true" +

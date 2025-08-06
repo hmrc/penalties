@@ -28,10 +28,10 @@ import play.api.libs.json.{JsString, Json}
 
 import java.time.LocalDate
 
-class RegimeFilterServiceSpec extends SpecBase with MockitoSugar {
+class FilterServiceSpec extends SpecBase with MockitoSugar {
 
   val mockAppConfig: AppConfig = mock[AppConfig]
-  implicit val filterService: RegimeFilterService = new RegimeFilterService()(mockAppConfig)
+  implicit val filterService: FilterService = new FilterService()(mockAppConfig)
   implicit val loggingContext: LoggingContext = LoggingContext("TestService", "testMethod", "VATC~VRN~123456789")
 
   val pastDate: LocalDate = LocalDate.of(2020, 1, 1)

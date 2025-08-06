@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,10 +18,10 @@ package utils
 
 import com.github.tomakehurst.wiremock.client.WireMock._
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
-import helpers.WiremockHelper
 import play.api.libs.json.{JsValue, Json}
+import models.{Regime, IdType, Id}
 
-trait ETMPWiremock extends WiremockHelper{
+trait ETMPWiremock {
   val getPenaltyDetailsWithLSPAndLPPAsJson: JsValue = Json.parse(
     """
       |{
@@ -409,18 +409,117 @@ trait ETMPWiremock extends WiremockHelper{
       |}
       |""".stripMargin
   )
+  val getFinancialDetailsHipResponseAsJson: JsValue = Json.parse(
+    """
+      |{
+      | "success": {
+      | "processingDate": "2025-05-06",
+      |   "financialData":{
+      |     "totalisation": {
+      |       "regimeTotalisation": {
+      |         "totalAccountOverdue": 1000.0,
+      |         "totalAccountNotYetDue": 250.0,
+      |         "totalAccountCredit": 40.0,
+      |         "totalAccountBalance": 1210
+      |       },
+      |       "targetedSearch_SelectionCriteriaTotalisation": {
+      |         "totalOverdue": 100.0,
+      |         "totalNotYetDue": 0.0,
+      |         "totalBalance": 100.0,
+      |         "totalCredit": 10.0,
+      |         "totalCleared": 50
+      |       },
+      |       "additionalReceivableTotalisations": {
+      |         "totalAccountPostedInterest": 12.34,
+      |         "totalAccountAccruingInterest": 43.21
+      |       }
+      |     },
+      |     "documentDetails": [
+      |     {
+      |      "documentNumber": "187346702498",
+      |      "documentType": "TRM New Charge",
+      |      "chargeReferenceNumber": "XM002610011594",
+      |      "businessPartnerNumber": "100893731",
+      |      "contractAccountNumber": "900726630",
+      |      "contractAccountCategory": "VAT",
+      |      "contractObjectNumber": "104920928302302",
+      |      "contractObjectType": "ZVAT",
+      |      "postingDate": "2022-01-01",
+      |      "issueDate": "2022-01-01",
+      |      "documentTotalAmount": "100.0",
+      |      "documentClearedAmount": "100.0",
+      |      "documentOutstandingAmount": "543.21",
+      |      "documentLockDetails": {
+      |        "lockType": "Payment",
+      |        "lockStartDate": "2022-01-01",
+      |        "lockEndDate": "2022-01-01"
+      |      },
+      |      "documentInterestTotals": {
+      |        "interestPostedAmount": "13.12",
+      |        "interestPostedChargeRef": "XB001286323438",
+      |        "interestAccruingAmount": 12.1
+      |      },
+      |      "documentPenaltyTotals": [
+      |        {
+      |          "penaltyType": "LPP1",
+      |          "penaltyStatus": "POSTED",
+      |          "penaltyAmount": "10.01",
+      |          "postedChargeReference": "XR00123933492"
+      |        }
+      |      ],
+      |      "lineItemDetails": [
+      |        {
+      |          "itemNumber": "0001",
+      |          "subItemNumber": "003",
+      |          "mainTransaction": "4703",
+      |          "subTransaction": "1000",
+      |          "chargeDescription": "VAT Return",
+      |          "periodFromDate": "2022-01-01",
+      |          "periodToDate": "2022-01-31",
+      |          "periodKey": "22A1",
+      |          "netDueDate": "2022-02-08",
+      |          "formBundleNumber": "125435934761",
+      |          "statisticalKey": "1",
+      |          "amount": "3420.0",
+      |          "clearingDate": "2022-02-09",
+      |          "clearingReason": "Payment at External Payment Collector Reported",
+      |          "clearingDocument": "719283701921",
+      |          "outgoingPaymentMethod": "B",
+      |          "ddCollectionInProgress": "true",
+      |          "lineItemLockDetails": [
+      |            {
+      |              "lockType": "Payment",
+      |              "lockStartDate": "2022-01-01",
+      |              "lockEndDate": "2022-01-01"
+      |            }
+      |          ],
+      |          "lineItemInterestDetails": {
+      |            "interestKey": "String",
+      |            "currentInterestRate": "-999.999999",
+      |            "interestStartDate": "1920-02-29",
+      |            "interestPostedAmount": "-99999999999.99",
+      |            "interestAccruingAmount": -99999999999.99
+      |          }
+      |      }]
+      |    }
+      |  ]
+      |}
+      |}
+      |}
+      |""".stripMargin
+  )
 
-  def mockStubResponseForGetPenaltyDetails(status: Int, vrn: String, body: Option[String] = None): StubMapping = {
-    stubFor(get(urlEqualTo(s"/penalties-stub/penalty/details/VATC/VRN/$vrn"))
-    .willReturn(
-      aResponse()
-        .withBody(body.fold(getPenaltyDetailsWithLSPAndLPPAsJson.toString())(identity))
-        .withStatus(status)
-    ))
+  def mockStubResponseForGetPenaltyDetails(status: Int, apiRegime: Regime, idType: IdType, id: Id, body: Option[String] = None): StubMapping = {
+    stubFor(get(urlEqualTo(s"/penalties-stub/penalty/details/${apiRegime.value}/${idType.value}/${id.value}"))
+      .willReturn(
+        aResponse()
+          .withBody(body.fold(getPenaltyDetailsWithLSPAndLPPAsJson.toString())(identity))
+          .withStatus(status)
+      ))
   }
 
-  def mockResponseForGetPenaltyDetails(status: Int, vatcUrl: String, body: Option[String] = None): StubMapping = {
-    stubFor(get(urlEqualTo(s"/penalty/details/VATC/VRN/$vatcUrl"))
+  def mockResponseForGetPenaltyDetails(status: Int, apiRegime: Regime, idType: IdType, vatcUrl: String, body: Option[String] = None): StubMapping = {
+    stubFor(get(urlEqualTo(s"/penalty/details/${apiRegime.value}/${idType.value}/$vatcUrl"))
       .willReturn(
         aResponse()
           .withBody(body.fold(getPenaltyDetailsWithLSPAndLPPAsJson.toString())(identity))
@@ -437,8 +536,8 @@ trait ETMPWiremock extends WiremockHelper{
       ))
   }
 
-  def mockResponseForGetFinancialDetails(status: Int, vatcUrl: String, body: Option[String] = None): StubMapping = {
-    stubFor(get(urlEqualTo(s"/penalty/financial-data/$vatcUrl"))
+  def mockResponseForGetFinancialDetails(status: Int, regime: Regime, idType: IdType, id: Id, params: String, body: Option[String] = None): StubMapping = {
+    stubFor(get(urlEqualTo(s"/penalty/financial-data/${idType.value}/${id.value}/${regime.value}$params"))
       .willReturn(
         aResponse()
           .withBody(body.fold(getFinancialDetailsWithoutTotalisationsAsJson.toString())(identity))

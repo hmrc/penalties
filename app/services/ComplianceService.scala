@@ -17,7 +17,7 @@
 package services
 
 import config.featureSwitches.FeatureSwitching
-import connectors.getComplianceDetails.RegimeComplianceConnector
+import connectors.getComplianceDetails.ComplianceConnector
 import connectors.parsers.getComplianceDetails.ComplianceParser
 
 import models.compliance.CompliancePayload
@@ -29,7 +29,7 @@ import models.AgnosticEnrolmentKey
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class RegimeComplianceService @Inject()(complianceConnector: RegimeComplianceConnector)(implicit val config: Configuration) extends FeatureSwitching {
+class ComplianceService @Inject()(complianceConnector: ComplianceConnector)(implicit val config: Configuration) extends FeatureSwitching {
 
   def getComplianceData(enrolmentKey: AgnosticEnrolmentKey, startDate: String, endDate: String)
                        (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Either[Int, CompliancePayload]] = {

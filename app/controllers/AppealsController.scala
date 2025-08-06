@@ -34,7 +34,7 @@ import play.api.Configuration
 import play.api.libs.json.Json
 import play.api.mvc._
 import services.auditing.AuditService
-import services.{PenaltyDetailsService, RegimeAppealService}
+import services.{PenaltyDetailsService, AppealService}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import utils.Logger.logger
@@ -45,8 +45,8 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class RegimeAppealsController @Inject()(val appConfig: AppConfig,
-                                  appealService: RegimeAppealService,
+class AppealsController @Inject()(val appConfig: AppConfig,
+                                  appealService: AppealService,
                                   getPenaltyDetailsService: PenaltyDetailsService,
                                   fileNotificationOrchestratorConnector: FileNotificationOrchestratorConnector,
                                   auditService: AuditService,
