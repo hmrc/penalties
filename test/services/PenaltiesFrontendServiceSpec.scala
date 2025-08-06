@@ -106,7 +106,7 @@ class PenaltiesFrontendServiceSpec extends SpecBase with LogCapturing with LPPDe
       )),
       totalisation = None
     )
-    val penaltiesFrontendService: RegimePenaltiesFrontendService = new RegimePenaltiesFrontendService(mockFinancialDetailsService, mockAppConfig, dateHelper, mockAuditService)
+    val penaltiesFrontendService: PenaltiesFrontendService = new PenaltiesFrontendService(mockFinancialDetailsService, mockAppConfig, dateHelper, mockAuditService)
   }
 
   private val enrolmentKey = AgnosticEnrolmentKey(Regime("VATC"), IdType("VRN"), Id("123456789"))

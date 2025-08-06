@@ -28,7 +28,7 @@ import utils.Logger.logger
 import javax.inject.Inject
 import scala.util.Try
 
-class RegimeFilterService @Inject()()(implicit appConfig: AppConfig) {
+class FilterService @Inject()()(implicit appConfig: AppConfig) {
 
   def tryJsonParseOrJsString(body: String): JsValue = {
     Try(Json.parse(body)).getOrElse(JsString(body))

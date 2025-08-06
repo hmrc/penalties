@@ -43,7 +43,7 @@ import java.time.{LocalDate, LocalDateTime}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Random
 
-class RegimeAppealServiceSpec extends SpecBase with LogCapturing with FeatureSwitching {
+class AppealServiceSpec extends SpecBase with LogCapturing with FeatureSwitching {
   implicit val ec: ExecutionContext = ExecutionContext.Implicits.global
   implicit val hc: HeaderCarrier = HeaderCarrier(otherHeaders = Seq("CorrelationId" -> "id"))
   val mockAppealsConnector: SubmitAppealConnector = mock(classOf[SubmitAppealConnector])
@@ -59,7 +59,7 @@ class RegimeAppealServiceSpec extends SpecBase with LogCapturing with FeatureSwi
     } else {
       disableFeatureSwitch(CallAPI1808HIP)
     }
-    val service = new RegimeAppealService(
+    val service = new AppealService(
       mockAppealsConnector, mockHIPConnector, mockAppConfig, mockUUIDGenerator
     )
     reset(mockAppealsConnector)

@@ -19,19 +19,19 @@ package controllers
 import controllers.auth.AuthAction
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
-import services.RegimeComplianceService
+import services.ComplianceService
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import utils.Logger.logger
 import models.{AgnosticEnrolmentKey, Regime, IdType, Id}
 import javax.inject.Inject
 import scala.concurrent.ExecutionContext
 
-class RegimeComplianceController @Inject()(complianceService: RegimeComplianceService,
+class ComplianceController @Inject()(complianceService: ComplianceService,
                                      cc: ControllerComponents,
-                                         authAction: AuthAction)(implicit ec: ExecutionContext) extends BackendController(cc) {
+                                     authAction: AuthAction)(implicit ec: ExecutionContext) extends BackendController(cc) {
 
   def redirectLegacyGetComplianceData(regime: Regime, idType: IdType, id: Id, fromDate: String, toDate: String): Action[AnyContent] = Action {
-    Redirect(routes.RegimeComplianceController.getComplianceData(regime, idType, id, fromDate, toDate))
+    Redirect(routes.ComplianceController.getComplianceData(regime, idType, id, fromDate, toDate))
   }
 
   def getComplianceData(regime: Regime, idType: IdType, id: Id, fromDate: String, toDate: String): Action[AnyContent] = authAction.async {

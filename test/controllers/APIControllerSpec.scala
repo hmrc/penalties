@@ -19,7 +19,7 @@ package controllers
 import base.{LogCapturing, SpecBase}
 import config.featureSwitches.{CallAPI1812HIP, FeatureSwitching}
 import connectors.getFinancialDetails.FinancialDetailsConnector
-import connectors.getPenaltyDetails.{HIPPenaltyDetailsConnector, RegimePenaltyDetailsConnector}
+import connectors.getPenaltyDetails.{HIPPenaltyDetailsConnector, PenaltyDetailsConnector}
 import connectors.parsers.getFinancialDetails.FinancialDetailsParser.{
   FinancialDetailsFailureResponse,
   FinancialDetailsMalformed,
@@ -51,21 +51,21 @@ import java.time.LocalDate
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class RegimeAPIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing {
-  val mockAppealsService: RegimeAppealService = mock(classOf[RegimeAppealService])
+class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing {
+  val mockAppealsService: AppealService = mock(classOf[AppealService])
   val mockAuditService: AuditService = mock(classOf[AuditService])
   val dateHelper: DateHelper = injector.instanceOf(classOf[DateHelper])
   val mockAPIService: APIService = mock(classOf[APIService])
   val mockGetPenaltyDetailsService: PenaltyDetailsService = mock(classOf[PenaltyDetailsService])
   val mockGetFinancialDetailsService: FinancialDetailsService = mock(classOf[FinancialDetailsService])
   val mockGetFinancialDetailsConnector: FinancialDetailsConnector = mock(classOf[FinancialDetailsConnector])
-  val mockGetPenaltyDetailsConnector: RegimePenaltyDetailsConnector = mock(classOf[RegimePenaltyDetailsConnector])
+  val mockGetPenaltyDetailsConnector: PenaltyDetailsConnector = mock(classOf[PenaltyDetailsConnector])
   val mockHIPPenaltyDetailsConnector: HIPPenaltyDetailsConnector = mock(classOf[HIPPenaltyDetailsConnector])
 
   val controllerComponents: ControllerComponents = injector.instanceOf[ControllerComponents]
   implicit val config: Configuration = appConfig.config
   implicit val hc: HeaderCarrier = HeaderCarrier()
-  val filterService: RegimeFilterService = injector.instanceOf(classOf[RegimeFilterService])
+  val filterService: FilterService = injector.instanceOf(classOf[FilterService])
   val mockAuthAction: AuthAction = injector.instanceOf(classOf[AuthActionMock])
 
   val vrn123456789: AgnosticEnrolmentKey = AgnosticEnrolmentKey(
@@ -84,7 +84,7 @@ class RegimeAPIControllerSpec extends SpecBase with FeatureSwitching with LogCap
 
     disableFeatureSwitch(CallAPI1812HIP)
 
-    val controller = new RegimeAPIController(
+    val controller = new APIController(
       mockAuditService,
       mockAPIService,
       mockGetPenaltyDetailsService,

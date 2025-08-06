@@ -18,7 +18,7 @@ package connectors
 
 import base.{LogCapturing, SpecBase}
 import config.AppConfig
-import connectors.getComplianceDetails.RegimeComplianceConnector
+import connectors.getComplianceDetails.ComplianceConnector
 import connectors.parsers.getComplianceDetails.ComplianceParser._
 import models.compliance.{CompliancePayload, ComplianceStatusEnum, ObligationDetail, ObligationIdentification}
 import org.mockito.Mockito._
@@ -32,7 +32,7 @@ import models.{AgnosticEnrolmentKey, Id, IdType, Regime}
 import java.time.{LocalDate, LocalDateTime}
 import scala.concurrent.{ExecutionContext, Future}
 
-class RegimeComplianceConnectorSpec extends SpecBase with LogCapturing {
+class ComplianceConnectorSpec extends SpecBase with LogCapturing {
   implicit val ec: ExecutionContext = ExecutionContext.Implicits.global
   val mockHttpClient: HttpClient = mock(classOf[HttpClient])
   val mockAppConfig: AppConfig = mock(classOf[AppConfig])
@@ -61,7 +61,7 @@ class RegimeComplianceConnectorSpec extends SpecBase with LogCapturing {
     reset(mockHttpClient)
     reset(mockAppConfig)
 
-    val connector = new RegimeComplianceConnector(mockHttpClient, mockAppConfig)
+    val connector = new ComplianceConnector(mockHttpClient, mockAppConfig)
   }
 
   "getComplianceData" should {
