@@ -42,7 +42,7 @@ class FinancialDetailsConnector @Inject()(httpClient: HttpClient,
 
   def getFinancialDetails(enrolmentKey: AgnosticEnrolmentKey, overridingParameters: Option[String])(implicit hc: HeaderCarrier): Future[FinancialDetailsResponse] = {
     val parameters = overridingParameters.fold(appConfig.queryParametersForGetFinancialDetails + appConfig.addDateRangeQueryParameters())(_ + appConfig.addDateRangeQueryParameters())
-    val url = appConfig.getFinancialDetailsIfUrl(enrolmentKey)
+    val url = appConfig.getRegimeFinancialDetailsUrl(enrolmentKey)
     httpClient.GET[FinancialDetailsResponse](url = url + parameters, headers = headers).recover {
       case e: UpstreamErrorResponse => {
         PagerDutyHelper.logStatusCode("getFinancialDetails", e.statusCode)(RECEIVED_4XX_FROM_1811_API, RECEIVED_5XX_FROM_1811_API)
@@ -74,7 +74,7 @@ class FinancialDetailsConnector @Inject()(httpClient: HttpClient,
     val params = Seq("searchType" -> searchType, "searchItem" -> searchItem, "dateType" -> dateType, "dateFrom" -> dateFrom, "dateTo" -> dateTo, "includeClearedItems" -> includeClearedItems, "includeStatisticalItems" -> includeStatisticalItems, "includePaymentOnAccount" -> includePaymentOnAccount, "addRegimeTotalisation" -> addRegimeTotalisation,
       "addLockInformation" -> addLockInformation, "addPenaltyDetails" -> addPenaltyDetails, "addPostedInterestDetails" -> addPostedInterestDetails, "addAccruingInterestDetails" -> addAccruingInterestDetails)
     val queryParams: String = params.foldLeft("?")((prevString, paramToValue) => prevString + paramToValue._2.fold("")(param => s"${paramToValue._1}=$param&")).dropRight(1)
-    val url = appConfig.getFinancialDetailsIfUrl(enrolmentKey)
+    val url = appConfig.getRegimeFinancialDetailsUrl(enrolmentKey)
     httpClient.GET[HttpResponse](url + queryParams, headers = headers).recover {
       case e: UpstreamErrorResponse => {
         logger.error(s"[FinancialDetailsConnector][getFinancialDetailsForAPI] - Received ${e.statusCode} status from API 1811 call - returning status to caller")

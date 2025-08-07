@@ -18,8 +18,8 @@ package services
 
 import config.AppConfig
 import config.featureSwitches.{CallAPI1808HIP, FeatureSwitching, SanitiseFileName}
-import connectors.parsers.submitAppeal.AppealsParser
-import connectors.submitAppeal.{HIPSubmitAppealConnector, SubmitAppealConnector}
+import connectors.parsers.AppealsParser
+import connectors.{HIPConnector, RegimePEGAConnector}
 import models.AgnosticEnrolmentKey
 import models.appeals.{AppealResponseModel, AppealSubmission, MultiplePenaltiesData}
 import models.getPenaltyDetails.GetPenaltyDetails
@@ -34,8 +34,8 @@ import utils.{DateHelper, FileHelper, UUIDGenerator}
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class RegimeAppealService @Inject()(appealsConnector: SubmitAppealConnector,
-                                    hipAppealsConnector: HIPSubmitAppealConnector,
+class RegimeAppealService @Inject()(appealsConnector: RegimePEGAConnector,
+                                    hipAppealsConnector: HIPConnector,
                                     appConfig: AppConfig,
                                     idGenerator: UUIDGenerator)(implicit ec: ExecutionContext, val config: Configuration) extends FeatureSwitching {
 

@@ -391,47 +391,46 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
       }
     }
 
-    def reasonableExcuses(regime: Regime): JsValue = Json.parse(
-      s"""
-        |{
-        |  "excuses": [
-        |    {
-        |      "type": "bereavement",
-        |      "descriptionKey": "reasonableExcuses.bereavementReason"
-        |    },
-        |    {
-        |      "type": "crime",
-        |      "descriptionKey": "reasonableExcuses.crimeReason"
-        |    },
-        |    {
-        |      "type": "fireOrFlood",
-        |      "descriptionKey": "reasonableExcuses.fireOrFloodReason"
-        |    },
-        |    {
-        |      "type": "health",
-        |      "descriptionKey": "reasonableExcuses.healthReason"
-        |    },
-        |    ${if (regime.value == "VATC")"""{
-        |      "type": "lossOfStaff",
-        |      "descriptionKey": "reasonableExcuses.lossOfStaffReason"
-        |    },""" else ""}
-        |    {
-        |      "type": "technicalIssues",
-        |      "descriptionKey": "reasonableExcuses.technicalIssuesReason"
-        |    },
-        |    {
-        |      "type": "other",
-        |      "descriptionKey": "reasonableExcuses.otherReason"
-        |    }
-        |  ]
-        |}
-        |""".stripMargin)
-
     s"getReasonableExcuses for $regime with $idType" should {
       "return all active reasonable excuses" in {
-        val result = await(buildClientForRequestToApp(uri = s"/${regime.value}/appeals-data/reasonable-excuses").get())
+        val jsonExpectedToReturn: JsValue = Json.parse(
+          """
+            |{
+            |  "excuses": [
+            |    {
+            |      "type": "bereavement",
+            |      "descriptionKey": "reasonableExcuses.bereavementReason"
+            |    },
+            |    {
+            |      "type": "crime",
+            |      "descriptionKey": "reasonableExcuses.crimeReason"
+            |    },
+            |    {
+            |      "type": "fireOrFlood",
+            |      "descriptionKey": "reasonableExcuses.fireOrFloodReason"
+            |    },
+            |    {
+            |      "type": "health",
+            |      "descriptionKey": "reasonableExcuses.healthReason"
+            |    },
+            |    {
+            |      "type": "lossOfStaff",
+            |      "descriptionKey": "reasonableExcuses.lossOfStaffReason"
+            |    },
+            |    {
+            |      "type": "technicalIssues",
+            |      "descriptionKey": "reasonableExcuses.technicalIssuesReason"
+            |    },
+            |    {
+            |      "type": "other",
+            |      "descriptionKey": "reasonableExcuses.otherReason"
+            |    }
+            |  ]
+            |}
+            |""".stripMargin)
+        val result = await(buildClientForRequestToApp(uri = "/appeals-data/reasonable-excuses").get())
         result.status shouldBe OK
-        Json.parse(result.body) shouldBe reasonableExcuses(regime)
+        Json.parse(result.body) shouldBe jsonExpectedToReturn
       }
     }
 

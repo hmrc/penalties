@@ -17,7 +17,6 @@
 package config
 
 import config.featureSwitches._
-import models.{AgnosticEnrolmentKey, Id, IdType, Regime}
 import org.mockito.ArgumentMatchers
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
@@ -26,21 +25,18 @@ import org.scalatest.wordspec.AnyWordSpec
 import play.api.Configuration
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
-import java.time.{LocalDate, LocalDateTime}
+import java.time.{LocalDateTime, LocalDate}
 
 class AppConfigSpec extends AnyWordSpec with ShouldMatchers with FeatureSwitching {
-  val mockConfiguration: Configuration   = mock(classOf[Configuration])
+  val mockConfiguration: Configuration = mock(classOf[Configuration])
   val mockServicesConfig: ServicesConfig = mock(classOf[ServicesConfig])
-  implicit val config: Configuration     = mockConfiguration
+  implicit val config: Configuration = mockConfiguration
 
   class Setup {
     reset(mockConfiguration)
     reset(mockServicesConfig)
     val config: AppConfig = new AppConfig(mockConfiguration, mockServicesConfig)
-    when(mockServicesConfig.baseUrl(ArgumentMatchers.any())).thenReturn("localhost:0000")
   }
-
-  private val enrolmentKey = AgnosticEnrolmentKey(Regime("VATC"), IdType("VRN"), Id("123456789"))
 
   "addDateRangeQueryParameters" should {
     "set the correct dateTo and dateFrom" in new Setup {
@@ -58,49 +54,35 @@ class AppConfigSpec extends AnyWordSpec with ShouldMatchers with FeatureSwitchin
   "getPenaltyDetailsUrl" should {
     "call API1812 when the feature switch is enabled" in new Setup {
       enableFeatureSwitch(CallAPI1812ETMP)
-
-      val result: String = this.config.getPenaltyDetailsUrl(enrolmentKey)
-      result shouldBe "localhost:0000/penalty/details/VATC/VRN/123456789"
+      when(mockServicesConfig.baseUrl(ArgumentMatchers.any()))
+        .thenReturn("localhost:0000")
+      val result: String = this.config.getPenaltyDetailsUrl
+      result shouldBe "localhost:0000/penalty/details/VATC/VRN/"
     }
 
     "call API1812 stub when the feature switch is disabled" in new Setup {
       disableFeatureSwitch(CallAPI1812ETMP)
-
-      val result: String = this.config.getPenaltyDetailsUrl(enrolmentKey)
-      result shouldBe "localhost:0000/penalties-stub/penalty/details/VATC/VRN/123456789"
+      when(mockServicesConfig.baseUrl(ArgumentMatchers.any()))
+        .thenReturn("localhost:0000")
+      val result: String = this.config.getPenaltyDetailsUrl
+      result shouldBe "localhost:0000/penalties-stub/penalty/details/VATC/VRN/"
     }
   }
 
-  "getHIPPenaltyDetailsUrl" should {
-    "call API5329 when the 'CallAPI1812HIP' feature switch is enabled" in new Setup {
-      enableFeatureSwitch(CallAPI1812HIP)
-      when(mockServicesConfig.baseUrl(ArgumentMatchers.eq("hip"))).thenReturn("localhost:HIP")
-
-      val result: String = this.config.getHIPPenaltyDetailsUrl(enrolmentKey)
-      result shouldBe "localhost:HIP/etmp/RESTAdapter/cross-regime/taxpayer/penalties?taxRegime=VATC&idType=VRN&idNumber=123456789"
-    }
-
-    "call API5329 stub when the 'CallAPI1812HIP' feature switch is disabled" in new Setup {
-      disableFeatureSwitch(CallAPI1812HIP)
-      when(mockServicesConfig.baseUrl(ArgumentMatchers.eq("penalties-stub"))).thenReturn("localhost:STUB")
-
-      val result: String = this.config.getHIPPenaltyDetailsUrl(enrolmentKey)
-      result shouldBe "localhost:STUB/etmp/RESTAdapter/cross-regime/taxpayer/penalties?taxRegime=VATC&idType=VRN&idNumber=123456789"
-    }
-  }
-
-  "getFinancialDetailsIfUrl" should {
+  "getFinancialDetailsUrl" should {
     "call API1811 when the feature switch is enabled" in new Setup {
       enableFeatureSwitch(CallAPI1811ETMP)
-
-      val result: String = this.config.getFinancialDetailsIfUrl(enrolmentKey)
+      when(mockServicesConfig.baseUrl(ArgumentMatchers.any()))
+        .thenReturn("localhost:0000")
+      val result: String = this.config.getFinancialDetailsUrl("123456789")
       result shouldBe "localhost:0000/penalty/financial-data/VRN/123456789/VATC"
     }
 
     "call API1811 stub when the feature switch is disabled" in new Setup {
       disableFeatureSwitch(CallAPI1811ETMP)
-
-      val result: String = this.config.getFinancialDetailsIfUrl(enrolmentKey)
+      when(mockServicesConfig.baseUrl(ArgumentMatchers.any()))
+        .thenReturn("localhost:0000")
+      val result: String = this.config.getFinancialDetailsUrl("123456789")
       result shouldBe "localhost:0000/penalties-stub/penalty/financial-data/VRN/123456789/VATC"
     }
   }
@@ -108,67 +90,53 @@ class AppConfigSpec extends AnyWordSpec with ShouldMatchers with FeatureSwitchin
   "getFinancialDetailsHipUrl" should {
     "call API 5327 when the stub feature switch is disabled" in new Setup {
       disableFeatureSwitch(CallAPI1811Stub)
-      when(mockServicesConfig.baseUrl(ArgumentMatchers.eq("hip"))).thenReturn("localhost:HIP")
+      when(mockServicesConfig.baseUrl(ArgumentMatchers.eq("hip"))).thenReturn("localhost:0000")
 
       val result: String = this.config.getFinancialDetailsHipUrl
-      result shouldBe "localhost:HIP/etmp/RESTAdapter/cross-regime/taxpayer/financial-data/query"
+      result shouldBe "localhost:0000/etmp/RESTAdapter/cross-regime/taxpayer/financial-data/query"
     }
     "call the API 5327 stub when the stub feature switch is enabled" in new Setup {
       enableFeatureSwitch(CallAPI1811Stub)
-      when(mockServicesConfig.baseUrl(ArgumentMatchers.eq("penalties-stub"))).thenReturn("localhost:STUB")
+      when(mockServicesConfig.baseUrl(ArgumentMatchers.eq("penalties-stub"))).thenReturn("localhost:0000/stubbed")
 
       val result: String = this.config.getFinancialDetailsHipUrl
-      result shouldBe "localhost:STUB/etmp/RESTAdapter/cross-regime/taxpayer/financial-data/query"
+      result shouldBe "localhost:0000/stubbed/etmp/RESTAdapter/cross-regime/taxpayer/financial-data/query"
     }
   }
 
-  "getAppealSubmissionIfUrl" should {
-    "call PEGA when the 'CallPEGA' feature switch is enabled" in new Setup {
+  "getAppealSubmissionURL" should {
+    "call PEGA when the feature switch is enabled" in new Setup {
       enableFeatureSwitch(CallPEGA)
-
-      val result: String = this.config.getAppealSubmissionIfUrl(penaltyNumber = "0000001")
+      when(mockServicesConfig.baseUrl(ArgumentMatchers.any()))
+        .thenReturn("localhost:0000")
+      val result: String = this.config.getAppealSubmissionURL(penaltyNumber = "0000001")
       result shouldBe "localhost:0000/penalty/first-stage-appeal/0000001"
     }
 
-    "call the stub when the 'CallPEGA' feature switch is disabled" in new Setup {
+    "call the stub when the feature switch is disabled" in new Setup {
       disableFeatureSwitch(CallPEGA)
-
-      val result: String = this.config.getAppealSubmissionIfUrl(penaltyNumber = "0000001")
+      when(mockServicesConfig.baseUrl(ArgumentMatchers.any()))
+        .thenReturn("localhost:0000")
+      val result: String = this.config.getAppealSubmissionURL(penaltyNumber = "0000001")
       result shouldBe "localhost:0000/penalties-stub/penalty/first-stage-appeal/0000001"
     }
   }
 
-  "getAppealSubmissionHipUrl" should {
-    "call the HIP PEGA API when the 'CallPEGA' feature switch is enabled" in new Setup {
-      enableFeatureSwitch(CallPEGA)
-      when(mockServicesConfig.baseUrl(ArgumentMatchers.eq("hip"))).thenReturn("localhost:HIP")
-
-      val result: String = this.config.getAppealSubmissionHipUrl
-      result shouldBe "localhost:HIP/pegacms/v1/penalty/appeal"
-    }
-
-    "call the stub endpoint when the 'CallPEGA' feature switch is disabled" in new Setup {
-      disableFeatureSwitch(CallPEGA)
-      when(mockServicesConfig.baseUrl(ArgumentMatchers.eq("penalties-stub"))).thenReturn("localhost:STUB")
-
-      val result: String = this.config.getAppealSubmissionHipUrl
-      result shouldBe "localhost:STUB/pegacms/v1/penalty/appeal"
-    }
-  }
-
-  "getComplianceDataUrl" should {
-    "call the DES API when the 'CallDES' feature switch is enabled" in new Setup {
-      enableFeatureSwitch(CallDES)
-
-      val result: String = this.config.getComplianceDataUrl(enrolmentKey, "2020-01-01", "2020-12-31")
-      result shouldBe "localhost:0000/enterprise/obligation-data/VRN/123456789/VATC?from=2020-01-01&to=2020-12-31"
-    }
-
-    "call the stub endpoint when the 'CallDES' feature switch is disabled" in new Setup {
+  "getComplianceData" should {
+    "call the stub when the feature switch is disabled" in new Setup {
       disableFeatureSwitch(CallDES)
+      when(mockServicesConfig.baseUrl(ArgumentMatchers.any()))
+        .thenReturn("localhost:0000")
+      val result: String = this.config.getComplianceData("123456789", "2020-01-01", "2020-12-31")
+      result shouldBe "localhost:0000/penalties-stub/enterprise/obligation-data/vrn/123456789/VATC?from=2020-01-01&to=2020-12-31"
+    }
 
-      val result: String = this.config.getComplianceDataUrl(enrolmentKey, "2020-01-01", "2020-12-31")
-      result shouldBe "localhost:0000/penalties-stub/enterprise/obligation-data/VRN/123456789/VATC?from=2020-01-01&to=2020-12-31"
+    "call the stub when the feature switch is enabled" in new Setup {
+      enableFeatureSwitch(CallDES)
+      when(mockServicesConfig.baseUrl(ArgumentMatchers.any()))
+        .thenReturn("localhost:0000")
+      val result: String = this.config.getComplianceData("123456789", "2020-01-01", "2020-12-31")
+      result shouldBe "localhost:0000/enterprise/obligation-data/vrn/123456789/VATC?from=2020-01-01&to=2020-12-31"
     }
   }
 
@@ -190,5 +158,4 @@ class AppConfigSpec extends AnyWordSpec with ShouldMatchers with FeatureSwitchin
       }
     }
   }
-
 }

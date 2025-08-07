@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package connectors.parsers.submitAppeal
+package connectors.parsers
 
-import connectors.parsers.submitAppeal.AppealsParser.{AppealSubmissionResponse, BadRequest, DuplicateAppeal, InvalidJson, UnexpectedFailure}
+import connectors.parsers.AppealsParser.{AppealSubmissionResponse, BadRequest, DuplicateAppeal, InvalidJson, UnexpectedFailure}
 import models.appeals.AppealResponseModel
 import play.api.http.Status.{CONFLICT, CREATED}
 import play.api.libs.json._
@@ -30,7 +30,7 @@ object HIPAppealParser {
 
   implicit object HIPAppealSubmissionResponseReads extends HttpReads[AppealSubmissionResponse] {
 
-    def read(method: String, url: String, response: HttpResponse): AppealSubmissionResponse =
+    def read(method: String, url: String, response: HttpResponse): AppealSubmissionResponse = {
       response.status match {
         case CREATED =>
           response.json.validate[AppealResponseModel](AppealResponseModel.format) match {
@@ -61,16 +61,18 @@ object HIPAppealParser {
           logger.error(s"[HIPAppealSubmissionResponseReads][read]: Unexpected response, status $status returned with body: ${response.body}")
           Left(UnexpectedFailure(status, s"Unexpected response, status $status returned on submission to HIP"))
       }
+    }
 
-    private def extractResponse(response: HttpResponse): (Int, String) =
+    private def extractResponse(response: HttpResponse): (Int, String) = {
       response.json.validate[HIPErrorResponse] match {
         case JsSuccess(model, _) =>
           model.failures.headOption match {
             case Some(failure) if failure.originatedFrom == ETMP => (failure.dependentSystemHTTPCode, failure.reason)
-            case _                                               => (response.status, response.body)
+            case _ => (response.status, response.body)
           }
         case _ => (response.status, response.body)
       }
+    }
   }
 
   sealed trait HIPFailureOrigin
@@ -80,12 +82,11 @@ object HIPAppealParser {
   object HIPFailureOrigin {
     implicit val format: Format[HIPFailureOrigin] = new Format[HIPFailureOrigin] {
       override def reads(json: JsValue): JsResult[HIPFailureOrigin] = json.validate[String] match {
-        case JsSuccess(value, _) =>
-          value match {
-            case "pegacms" => JsSuccess(PEGA)
-            case "etmp"    => JsSuccess(ETMP)
-          }
-        case e: JsError => e
+        case JsSuccess(value, _) => value match {
+          case "pegacms" => JsSuccess(PEGA)
+          case "etmp" => JsSuccess(ETMP)
+        }
+        case e: JsError          => e
       }
 
       override def writes(o: HIPFailureOrigin): JsValue = o match {
@@ -95,13 +96,13 @@ object HIPAppealParser {
     }
   }
 
-  case class HIPFailureResponse(dependentSystemHTTPCode: Int, originatedFrom: HIPFailureOrigin, code: String, reason: String)
+  case class HIPFailureResponse(dependentSystemHTTPCode:Int, originatedFrom:HIPFailureOrigin, code:String, reason:String)
   object HIPFailureResponse {
-    implicit val format: Format[HIPFailureResponse] = Json.format[HIPFailureResponse]
+    implicit val format:Format[HIPFailureResponse] = Json.format[HIPFailureResponse]
   }
 
-  case class HIPErrorResponse(failures: Seq[HIPFailureResponse])
+  case class HIPErrorResponse(failures:Seq[HIPFailureResponse])
   object HIPErrorResponse {
-    implicit val format: Format[HIPErrorResponse] = Json.format[HIPErrorResponse]
+    implicit val format:Format[HIPErrorResponse] = Json.format[HIPErrorResponse]
   }
 }

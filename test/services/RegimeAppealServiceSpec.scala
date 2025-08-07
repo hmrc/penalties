@@ -19,9 +19,9 @@ package services
 import base.{LogCapturing, SpecBase}
 import config.AppConfig
 import config.featureSwitches.{CallAPI1808HIP, FeatureSwitching, SanitiseFileName}
-import connectors.parsers.submitAppeal.AppealsParser.UnexpectedFailure
-import connectors.parsers.submitAppeal.AppealsParser
-import connectors.submitAppeal.{HIPSubmitAppealConnector, SubmitAppealConnector}
+import connectors.parsers.AppealsParser
+import connectors.parsers.AppealsParser.UnexpectedFailure
+import connectors.{HIPConnector, RegimePEGAConnector}
 import models.appeals.AppealLevel.FirstStageAppeal
 import models.appeals.{AppealResponseModel, AppealSubmission, CrimeAppealInformation, MultiplePenaltiesData}
 import models.getFinancialDetails.MainTransactionEnum
@@ -46,8 +46,8 @@ import scala.util.Random
 class RegimeAppealServiceSpec extends SpecBase with LogCapturing with FeatureSwitching {
   implicit val ec: ExecutionContext = ExecutionContext.Implicits.global
   implicit val hc: HeaderCarrier = HeaderCarrier(otherHeaders = Seq("CorrelationId" -> "id"))
-  val mockAppealsConnector: SubmitAppealConnector = mock(classOf[SubmitAppealConnector])
-  val mockHIPConnector: HIPSubmitAppealConnector = mock(classOf[HIPSubmitAppealConnector])
+  val mockAppealsConnector: RegimePEGAConnector = mock(classOf[RegimePEGAConnector])
+  val mockHIPConnector: HIPConnector = mock(classOf[HIPConnector])
   val correlationId: String = "correlationId"
   val mockAppConfig: AppConfig = mock(classOf[AppConfig])
   val mockUUIDGenerator: UUIDGenerator = mock(classOf[UUIDGenerator])

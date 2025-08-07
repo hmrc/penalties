@@ -17,7 +17,6 @@
 package connectors
 
 import config.featureSwitches.{CallPEGA, FeatureSwitching}
-import connectors.submitAppeal.SubmitAppealConnector
 import models.appeals.AppealLevel.FirstStageAppeal
 import models.appeals.{AppealSubmission, CrimeAppealInformation}
 import play.api.http.Status
@@ -28,11 +27,11 @@ import models.{AgnosticEnrolmentKey, Id, IdType, Regime}
 import java.time.LocalDateTime
 import scala.concurrent.ExecutionContext
 
-class SubmitAppealConnectorISpec extends IntegrationSpecCommonBase with RegimeAppealWiremock with FeatureSwitching {
+class RegimePEGAConnectorISpec extends IntegrationSpecCommonBase with RegimeAppealWiremock with FeatureSwitching {
   implicit val ec: ExecutionContext = ExecutionContext.Implicits.global
 
   class Setup {
-    val connector: SubmitAppealConnector = injector.instanceOf[SubmitAppealConnector]
+    val connector: RegimePEGAConnector = injector.instanceOf[RegimePEGAConnector]
     val correlationId: String = "corId"
   }
 

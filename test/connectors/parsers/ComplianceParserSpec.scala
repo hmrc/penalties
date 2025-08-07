@@ -17,7 +17,7 @@
 package connectors.parsers
 
 import base.LogCapturing
-import connectors.parsers.getComplianceDetails.ComplianceParser._
+import connectors.parsers.ComplianceParser._
 import models.compliance.{CompliancePayload, ComplianceStatusEnum, ObligationDetail, ObligationIdentification}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
