@@ -17,15 +17,15 @@
 package connectors
 
 import config.featureSwitches.{CallDES, FeatureSwitching}
-import connectors.parsers.ComplianceParser._
-
-
+import connectors.getComplianceDetails.RegimeComplianceConnector
+import connectors.parsers.getComplianceDetails.ComplianceParser._
 import models.compliance.{CompliancePayload, ComplianceStatusEnum, ObligationDetail, ObligationIdentification}
 import org.scalatest.prop.TableDrivenPropertyChecks
 import play.api.http.Status
 import play.api.test.Helpers._
-import utils.{RegimeComplianceWiremock, IntegrationSpecCommonBase}
-import models.{AgnosticEnrolmentKey, Regime, IdType, Id}
+import utils.{IntegrationSpecCommonBase, RegimeComplianceWiremock}
+import models.{AgnosticEnrolmentKey, Id, IdType, Regime}
+
 import java.time.{LocalDate, LocalDateTime}
 import scala.concurrent.ExecutionContext
 

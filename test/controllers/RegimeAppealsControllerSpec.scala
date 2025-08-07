@@ -20,7 +20,7 @@ import base.{LogCapturing, SpecBase}
 import config.AppConfig
 import config.featureSwitches.{FeatureSwitching, CallAPI1812HIP}
 import connectors.FileNotificationOrchestratorConnector
-import connectors.parsers.AppealsParser.UnexpectedFailure
+import connectors.parsers.submitAppeal.AppealsParser.UnexpectedFailure
 import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser.{
   GetPenaltyDetailsFailureResponse,
   GetPenaltyDetailsMalformed,

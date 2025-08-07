@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2023 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,10 +18,10 @@ package connectors
 
 import base.{LogCapturing, SpecBase}
 import config.featureSwitches.{CallPEGA, FeatureSwitching}
-import connectors.parsers.AppealsParser.{AppealSubmissionResponse, UnexpectedFailure}
+import connectors.parsers.submitAppeal.AppealsParser.{AppealSubmissionResponse, UnexpectedFailure}
+import connectors.submitAppeal.SubmitAppealConnector
 import models.appeals.AppealLevel.FirstStageAppeal
 import models.appeals.{AgentDetails, AppealSubmission, CrimeAppealInformation}
-import models.{Id, IdType, Regime}
 import org.mockito.Mockito._
 import org.mockito.{ArgumentCaptor, ArgumentMatchers}
 import play.api.Configuration
@@ -33,24 +33,19 @@ import utils.PagerDutyHelper.PagerDutyKeys
 import java.time.LocalDateTime
 import scala.concurrent.{ExecutionContext, Future}
 
-class RegimePEGAConnectorSpec extends SpecBase with FeatureSwitching with LogCapturing {
+class SubmitAppealConnectorSpec extends SpecBase with FeatureSwitching with LogCapturing {
   val mockHttpClient: HttpClient = mock(classOf[HttpClient])
   implicit val hc: HeaderCarrier = HeaderCarrier(otherHeaders = Seq("CorrelationId" -> "id"))
   implicit val config: Configuration = appConfig.config
 
   class Setup {
-    val connector = new RegimePEGAConnector(
+    val connector = new SubmitAppealConnector(
       mockHttpClient,
       appConfig
     )(ExecutionContext.Implicits.global)
 
     reset(mockHttpClient)
   }
-
-
-  val regime = Regime("VATC") 
-  val idType = IdType("VRN")
-  val id = Id("123456789")
 
   "submitAppeal with headers" should {
     "return the response of the call - including extra headers" in new Setup {
@@ -109,7 +104,7 @@ class RegimePEGAConnectorSpec extends SpecBase with FeatureSwitching with LogCap
         appealLevel = FirstStageAppeal,
         customerReferenceNo = "123456789",
         dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
-        isLPP = true,
+        isLPP = false,
         appealSubmittedBy = "client",
         agentDetails = Some(AgentDetails(agentReferenceNo = "AGENT1", isExcuseRelatedToAgent = true)),
         appealInformation = CrimeAppealInformation(
@@ -144,7 +139,7 @@ class RegimePEGAConnectorSpec extends SpecBase with FeatureSwitching with LogCap
         appealLevel = FirstStageAppeal,
         customerReferenceNo = "123456789",
         dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
-        isLPP = true,
+        isLPP = false,
         appealSubmittedBy = "client",
         agentDetails = Some(AgentDetails(agentReferenceNo = "AGENT1", isExcuseRelatedToAgent = true)),
         appealInformation = CrimeAppealInformation(
@@ -184,7 +179,7 @@ class RegimePEGAConnectorSpec extends SpecBase with FeatureSwitching with LogCap
         appealLevel = FirstStageAppeal,
         customerReferenceNo = "123456789",
         dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
-        isLPP = true,
+        isLPP = false,
         appealSubmittedBy = "client",
         agentDetails = Some(AgentDetails(agentReferenceNo = "AGENT1", isExcuseRelatedToAgent = true)),
         appealInformation = CrimeAppealInformation(
@@ -224,7 +219,7 @@ class RegimePEGAConnectorSpec extends SpecBase with FeatureSwitching with LogCap
         appealLevel = FirstStageAppeal,
         customerReferenceNo = "123456789",
         dateOfAppeal = LocalDateTime.of(2020, 1, 1, 0, 0, 0),
-        isLPP = true,
+        isLPP = false,
         appealSubmittedBy = "client",
         agentDetails = Some(AgentDetails(agentReferenceNo = "AGENT1", isExcuseRelatedToAgent = true)),
         appealInformation = CrimeAppealInformation(
