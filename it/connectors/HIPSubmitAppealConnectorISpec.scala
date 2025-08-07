@@ -17,7 +17,8 @@
 package connectors
 
 import config.featureSwitches.FeatureSwitching
-import connectors.parsers.AppealsParser.{BadRequest, DuplicateAppeal, UnexpectedFailure}
+import connectors.parsers.submitAppeal.AppealsParser.{BadRequest, DuplicateAppeal, UnexpectedFailure}
+import connectors.submitAppeal.HIPSubmitAppealConnector
 import models.appeals.AppealLevel.FirstStageAppeal
 import models.appeals.{AppealSubmission, CrimeAppealInformation}
 import play.api.test.Helpers._
@@ -26,11 +27,11 @@ import utils.{HIPWiremock, IntegrationSpecCommonBase}
 import java.time.LocalDateTime
 import scala.concurrent.ExecutionContext
 
-class HIPConnectorISpec extends IntegrationSpecCommonBase with HIPWiremock with FeatureSwitching {
+class HIPSubmitAppealConnectorISpec extends IntegrationSpecCommonBase with HIPWiremock with FeatureSwitching {
   implicit val ec: ExecutionContext = ExecutionContext.Implicits.global
 
   class Setup {
-    val connector: HIPConnector = injector.instanceOf[HIPConnector]
+    val connector: HIPSubmitAppealConnector = injector.instanceOf[HIPSubmitAppealConnector]
     val correlationId: String = "corId"
   }
 

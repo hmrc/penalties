@@ -17,8 +17,8 @@
 package services
 
 import base.SpecBase
-import connectors.{RegimeComplianceConnector}
-import connectors.parsers.ComplianceParser._
+import connectors.getComplianceDetails.RegimeComplianceConnector
+import connectors.parsers.getComplianceDetails.ComplianceParser._
 import models.compliance.CompliancePayload
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._

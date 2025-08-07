@@ -85,6 +85,8 @@ class AppConfig @Inject() (val config: Configuration, servicesConfig: ServicesCo
 
   private lazy val desBase: String = servicesConfig.baseUrl("des")
 
+  private lazy val hipBase: String = servicesConfig.baseUrl("hip")
+
   private lazy val fileNotificationOrchestrator: String = servicesConfig.baseUrl("penalties-file-notification-orchestrator")
 
   lazy val maximumFilenameLength: Int = config.get[Int]("sdes.maximumFilenameLength")
@@ -96,91 +98,68 @@ class AppConfig @Inject() (val config: Configuration, servicesConfig: ServicesCo
   lazy val SDESNotificationInfoType: String      = config.get[String]("SDESNotification.informationType")
   lazy val SDESNotificationFileRecipient: String = config.get[String]("SDESNotification.file.recipient")
 
-  def getPenaltyDetailsUrl: String =
-    if (!isEnabled(CallAPI1812ETMP)) stubBase + "/penalties-stub/penalty/details/VATC/VRN/"
-    else etmpBase + "/penalty/details/VATC/VRN/"
-
-  def getFinancialDetailsUrl(vrn: String): String =
-    if (!isEnabled(CallAPI1811ETMP)) stubBase + s"/penalties-stub/penalty/financial-data/VRN/$vrn/VATC"
-    else etmpBase + s"/penalty/financial-data/VRN/$vrn/VATC"
-
-  def getAppealSubmissionURL(penaltyNumber: String): String =
-    if (!isEnabled(CallPEGA)) stubBase + s"/penalties-stub/penalty/first-stage-appeal/$penaltyNumber"
-    else pegaBase + s"/penalty/first-stage-appeal/$penaltyNumber"
-
-  def getRegimeAgnosticAppealSubmissionUrl(penaltyNumber: String): String =
-    if (!isEnabled(CallPEGA)) stubBase + s"/penalties-stub/penalty/first-stage-appeal/$penaltyNumber"
-    else pegaBase + s"/penalty/first-stage-appeal/$penaltyNumber"
-
   def isReasonableExcuseEnabled(excuseName: String): Boolean =
     config.get[Boolean](s"reasonableExcuses.$excuseName.enabled")
 
-  def getComplianceData(vrn: String, fromDate: String, toDate: String): String =
-    if (isEnabled(CallDES)) {
-      desBase + s"/enterprise/obligation-data/vrn/$vrn/VATC?from=$fromDate&to=$toDate"
-    } else {
-      stubBase + s"/penalties-stub/enterprise/obligation-data/vrn/$vrn/VATC?from=$fromDate&to=$toDate"
-    }
-
   def getMimeType(mimeType: String): Option[String] = config.getOptional[String](s"files.extensions.$mimeType")
 
-  def getRegimeFinancialDetailsUrl(enrolmentKey: AgnosticEnrolmentKey): String = {
+  def getAppealSubmissionIfUrl(penaltyNumber: String): String = {
+    val baseUrl = if (isEnabled(CallPEGA)) pegaBase else s"$stubBase/penalties-stub"
+    s"$baseUrl/penalty/first-stage-appeal/$penaltyNumber"
+  }
+
+  def getAppealSubmissionHipUrl: String = {
+    val baseUrl = if (isEnabled(CallPEGA)) hipBase else stubBase
+    s"$baseUrl/pegacms/v1/penalty/appeal"
+  }
+
+  def getFinancialDetailsIfUrl(enrolmentKey: AgnosticEnrolmentKey): String = {
     val taxRegime = enrolmentKey.regime.value
     val id        = enrolmentKey.idType.value
     val idValue   = enrolmentKey.id.value
-    if (!isEnabled(CallAPI1811ETMP)) stubBase + s"/penalties-stub/penalty/financial-data/$id/$idValue/$taxRegime"
-    else etmpBase + s"/penalty/financial-data/$id/$idValue/$taxRegime"
+    val baseUrl   = if (isEnabled(CallAPI1811ETMP)) etmpBase else s"$stubBase/penalties-stub"
+    s"$baseUrl/penalty/financial-data/$id/$idValue/$taxRegime"
   }
 
   def getFinancialDetailsHipUrl: String = {
-    val urlBase = if (isEnabled(CallAPI1811Stub)) stubBase else hipBase
-    s"$urlBase/etmp/RESTAdapter/cross-regime/taxpayer/financial-data/query"
+    val baseUrl = if (isEnabled(CallAPI1811Stub)) stubBase else hipBase
+    s"$baseUrl/etmp/RESTAdapter/cross-regime/taxpayer/financial-data/query"
   }
 
-  def getRegimeAgnosticPenaltyDetailsUrl(agnosticEnrolmentKey: AgnosticEnrolmentKey): String = {
+  def getPenaltyDetailsUrl(agnosticEnrolmentKey: AgnosticEnrolmentKey): String = {
     val regime  = agnosticEnrolmentKey.regime.value
     val idType  = agnosticEnrolmentKey.idType.value
     val idValue = agnosticEnrolmentKey.id.value
-    if (!isEnabled(CallAPI1812ETMP)) stubBase + s"/penalties-stub/penalty/details/$regime/$idType/$idValue"
-    else etmpBase + s"/penalty/details/$regime/$idType/$idValue"
+    val baseUrl = if (isEnabled(CallAPI1812ETMP)) etmpBase else s"$stubBase/penalties-stub"
+    s"$baseUrl/penalty/details/$regime/$idType/$idValue"
   }
 
-  private def getComplianceDataUrl: String =
-    if (isEnabled(CallDES)) {
-      desBase + s"/enterprise/obligation-data/"
-    } else {
-      stubBase + s"/penalties-stub/enterprise/obligation-data/"
-    }
-
-  def getRegimeAgnosticComplianceDataUrl(agnosticEnrolmentKey: AgnosticEnrolmentKey, fromDate: String, toDate: String): String = {
-    val regime  = agnosticEnrolmentKey.regime.value
-    val idType  = agnosticEnrolmentKey.idType.value
-    val idValue = agnosticEnrolmentKey.id.value
-    getComplianceDataUrl + s"$idType/$idValue/$regime?from=$fromDate&to=$toDate"
-  }
-
-  private lazy val hipBase: String = servicesConfig.baseUrl("hip")
-  def hipSubmitUrl: String         = hipBase + "/pegacms/v1/penalty/appeal"
-
-  def getHIPPenaltyDetailsUrl(agnosticEnrolmenKey: AgnosticEnrolmentKey, dateLimit: Option[String] = None): String = {
-    val regime = agnosticEnrolmenKey.regime.value
-    val idType = agnosticEnrolmenKey.idType.value
-    val idValue = agnosticEnrolmenKey.id.value
+  def getHIPPenaltyDetailsUrl(agnosticEnrolmentKey: AgnosticEnrolmentKey, dateLimit: Option[String] = None): String = {
+    val regime                 = agnosticEnrolmentKey.regime.value
+    val idType                 = agnosticEnrolmentKey.idType.value
+    val idValue                = agnosticEnrolmentKey.id.value
     val dateLimitParam: String = dateLimit.map(dateLimit => s"&dateLimit=$dateLimit").getOrElse("")
     val penaltiesHipUrl = s"/etmp/RESTAdapter/cross-regime/taxpayer/penalties?taxRegime=$regime&idType=$idType&idNumber=$idValue$dateLimitParam"
     if (isEnabled(CallAPI1812HIP)) hipBase + penaltiesHipUrl
     else stubBase + penaltiesHipUrl
   }
 
-  private val clientIdV1: String = getString("microservice.services.hip.client-id")
-  private val secretV1: String   = getString("microservice.services.hip.client-secret")
+  def getComplianceDataUrl(agnosticEnrolmentKey: AgnosticEnrolmentKey, fromDate: String, toDate: String): String = {
+    val regime  = agnosticEnrolmentKey.regime.value
+    val idType  = agnosticEnrolmentKey.idType.value
+    val idValue = agnosticEnrolmentKey.id.value
+    val baseUrl =
+      if (isEnabled(CallDES)) desBase + s"/enterprise/obligation-data/" else stubBase + s"/penalties-stub/enterprise/obligation-data/"
+    s"$baseUrl$idType/$idValue/$regime?from=$fromDate&to=$toDate"
+  }
+
+  private val clientIdV1: String    = getString("microservice.services.hip.client-id")
+  private val secretV1: String      = getString("microservice.services.hip.client-secret")
   def hipAuthorisationToken: String = Base64.getEncoder.encodeToString(s"$clientIdV1:$secretV1".getBytes("UTF-8"))
 
   val hipServiceOriginatorIdKeyV1: String = getString("microservice.services.hip.originator-id-key")
   val hipServiceOriginatorIdV1: String    = getString("microservice.services.hip.originator-id-value")
 
-
   lazy val hipEnvironment: String = getString("microservice.services.hip.environment")
-
 
 }

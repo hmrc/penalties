@@ -17,8 +17,8 @@
 package services
 
 import config.featureSwitches.FeatureSwitching
-import connectors. RegimeComplianceConnector
-import connectors.parsers.ComplianceParser
+import connectors.getComplianceDetails.RegimeComplianceConnector
+import connectors.parsers.getComplianceDetails.ComplianceParser
 
 import models.compliance.CompliancePayload
 import play.api.Configuration
