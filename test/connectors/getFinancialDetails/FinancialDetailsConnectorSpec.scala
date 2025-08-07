@@ -56,7 +56,7 @@ class FinancialDetailsConnectorSpec extends SpecBase with LogCapturing {
 
     val connector = new FinancialDetailsConnector(mockHttpClient, mockAppConfig)
   
-    when(mockAppConfig.getFinancialDetailsIfUrl(
+    when(mockAppConfig.getRegimeFinancialDetailsUrl(
       ArgumentMatchers.any()
     )).thenReturn("/VATC/penalty/financial-data/VRN/123456789")
 

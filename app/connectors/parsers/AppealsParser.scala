@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package connectors.parsers.submitAppeal
+package connectors.parsers
 
 import models.appeals.AppealResponseModel
 import play.api.http.Status.{BAD_REQUEST, CONFLICT, OK}

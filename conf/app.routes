@@ -1,4 +1,27 @@
 # microservice specific routes
+
+GET         /etmp/penalties/:enrolmentKey                               controllers.PenaltiesFrontendController.getPenaltiesData(enrolmentKey: String, arn: Option[String] ?= None)
+
+# Appeals
+GET         /appeals-data/late-submissions                              controllers.AppealsController.getAppealsDataForLateSubmissionPenalty(penaltyId: String, enrolmentKey: String)
+GET         /appeals-data/late-payments                                 controllers.AppealsController.getAppealsDataForLatePaymentPenalty(penaltyId: String, enrolmentKey: String, isAdditional: Boolean)
+GET         /appeals-data/reasonable-excuses                            controllers.AppealsController.getReasonableExcuses()
+POST        /appeals/submit-appeal                                      controllers.AppealsController.submitAppeal(enrolmentKey: String, isLPP: Boolean, penaltyNumber: String, correlationId: String, isMultiAppeal: Boolean ?= false)
+GET         /appeals-data/multiple-penalties                            controllers.AppealsController.getMultiplePenaltyData(penaltyId: String, enrolmentKey: String)
+
+# Compliance
+GET         /compliance/des/compliance-data                             controllers.ComplianceController.getComplianceData(vrn: String, fromDate: String, toDate: String)
+
+# External API
+GET         /vat/penalties/summary/:vrn                                 controllers.APIController.getSummaryDataForVRN(vrn: String)
+
+# 3rd Party API Endpoints
+GET         /penalty/financial-data/VRN/:vrn/VATC                       controllers.APIController.getFinancialDetails(vrn: String, searchType: Option[String], searchItem: Option[String], dateType: Option[String], dateFrom: Option[String], dateTo: Option[String], includeClearedItems: Option[Boolean], includeStatisticalItems: Option[Boolean], includePaymentOnAccount: Option[Boolean], addRegimeTotalisation: Option[Boolean], addLockInformation: Option[Boolean], addPenaltyDetails: Option[Boolean], addPostedInterestDetails: Option[Boolean], addAccruingInterestDetails: Option[Boolean])
+GET         /penalty-details/VAT/VRN/:vrn                               controllers.APIController.getPenaltyDetails(vrn: String, dateLimit: Option[String])
+
+
+# microservice specific routes
+
 GET         /:regime/etmp/penalties/:idType/:id                         controllers.RegimePenaltiesFrontendController.getPenaltiesData(regime: models.Regime, idType: models.IdType, id: models.Id, arn: Option[String] ?= None)
 
 # Appeals
@@ -11,7 +34,10 @@ GET         /:regime/appeals-data/multiple-penalties/:idType/:id        controll
 # Compliance
 GET         /:regime/compliance/data/:idType/:id                        controllers.RegimeComplianceController.getComplianceData(regime: models.Regime, idType: models.IdType, id: models.Id, fromDate: String, toDate: String)
 
-# 3rd Party API Endpoints
+# External API
 GET         /:regime/summary/:idType/:id                                controllers.RegimeAPIController.getSummaryData(regime: models.Regime, idType: models.IdType, id: models.Id)
+
+# 3rd Party API Endpoints
+
 GET         /:regime/penalty/financial-data/:idType/:id                 controllers.RegimeAPIController.getFinancialDetails(regime: models.Regime, idType: models.IdType, id: models.Id, searchType: Option[String], searchItem: Option[String], dateType: Option[String], dateFrom: Option[String], dateTo: Option[String], includeClearedItems: Option[Boolean], includeStatisticalItems: Option[Boolean], includePaymentOnAccount: Option[Boolean], addRegimeTotalisation: Option[Boolean], addLockInformation: Option[Boolean], addPenaltyDetails: Option[Boolean], addPostedInterestDetails: Option[Boolean], addAccruingInterestDetails: Option[Boolean])
 GET         /:regime/penalty-details/:idType/:id                        controllers.RegimeAPIController.getPenaltyDetails(regime: models.Regime, idType: models.IdType, id: models.Id, dateLimit: Option[String])

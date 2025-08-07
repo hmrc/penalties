@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package connectors.parsers.getComplianceDetails
+package connectors.parsers
 
 import models.compliance.CompliancePayload
 import play.api.http.Status._
