@@ -28,7 +28,7 @@ import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse}
 import scala.concurrent.{ExecutionContext, Future}
 
 class FileNotificationOrchestratorConnectorSpec extends SpecBase {
-   val mockHttpClient: HttpClient = mock(classOf[HttpClient])
+   val mockHttpClient: HttpClientV2 = mock(classOf[HttpClientV2])
    val mockAppConfig: AppConfig = mock(classOf[AppConfig])
   implicit val hc: HeaderCarrier = HeaderCarrier()
   implicit val ec: ExecutionContext = ExecutionContext.Implicits.global
