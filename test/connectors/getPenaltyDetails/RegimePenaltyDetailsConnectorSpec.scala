@@ -62,7 +62,7 @@ class RegimePenaltyDetailsConnectorSpec extends SpecBase with LogCapturing with 
     reset(mockConfiguration)
 
     val connector = new RegimePenaltyDetailsConnector(mockHttpClient, mockAppConfig)(implicitly, mockConfiguration)
-    when(mockAppConfig.getRegimeAgnosticPenaltyDetailsUrl(vrn123456789)).thenReturn("/penalty/details/VATC/VRN/123456789")
+    when(mockAppConfig.getPenaltyDetailsUrl(vrn123456789)).thenReturn("/penalty/details/VATC/VRN/123456789")
     when(mockAppConfig.eisEnvironment).thenReturn("env")
     when(mockAppConfig.eiOutboundBearerToken).thenReturn("token")
     when(mockConfiguration.getOptional[String](ArgumentMatchers.eq("feature.switch.time-machine-now"))(ArgumentMatchers.any()))

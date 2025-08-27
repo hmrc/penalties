@@ -23,8 +23,8 @@ import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser._
 import models.AgnosticEnrolmentKey
 import play.api.Configuration
 import uk.gov.hmrc.http.HeaderCarrier
-import utils.{Logger, PenaltyDetailsConverter}
 import utils.Logger.logger
+import utils.PenaltyDetailsConverter
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
