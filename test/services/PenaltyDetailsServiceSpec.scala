@@ -19,7 +19,7 @@ package services
 import base.{LPPDetailsBase, LogCapturing, SpecBase}
 import config.AppConfig
 import config.featureSwitches.{CallAPI1812HIP, FeatureSwitching}
-import connectors.getPenaltyDetails.{HIPPenaltyDetailsConnector, RegimePenaltyDetailsConnector}
+import connectors.getPenaltyDetails.{HIPPenaltyDetailsConnector, PenaltyDetailsConnector}
 import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser.{
   GetPenaltyDetailsFailureResponse,
   GetPenaltyDetailsMalformed,
@@ -50,7 +50,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class PenaltyDetailsServiceSpec extends SpecBase with LogCapturing with LPPDetailsBase {
   implicit val ec: ExecutionContext = ExecutionContext.Implicits.global
   implicit val hc: HeaderCarrier = HeaderCarrier()
-  val mockGetPenaltyDetailsConnector: RegimePenaltyDetailsConnector = mock(classOf[RegimePenaltyDetailsConnector])
+  val mockGetPenaltyDetailsConnector: PenaltyDetailsConnector = mock(classOf[PenaltyDetailsConnector])
   val mockHIPPenaltyDetailsConnector: HIPPenaltyDetailsConnector = mock(classOf[HIPPenaltyDetailsConnector])
   val vrn123456789: AgnosticEnrolmentKey = AgnosticEnrolmentKey(
     Regime("VATC"), 
@@ -61,7 +61,7 @@ class PenaltyDetailsServiceSpec extends SpecBase with LogCapturing with LPPDetai
   class Setup extends FeatureSwitching {
     val mockConfig: Configuration = mock(classOf[Configuration])
     val mockServicesConfig: ServicesConfig = mock(classOf[ServicesConfig])
-    val filterService: RegimeFilterService = injector.instanceOf(classOf[RegimeFilterService])
+    val filterService: FilterService = injector.instanceOf(classOf[FilterService])
     override implicit val config: Configuration = mockConfig
 
     sys.props -= TIME_MACHINE_NOW

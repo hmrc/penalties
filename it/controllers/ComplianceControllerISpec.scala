@@ -21,9 +21,9 @@ import models.{Id, IdType, Regime}
 import org.scalatest.prop.TableDrivenPropertyChecks
 import play.api.libs.json.Json
 import play.api.test.Helpers._
-import utils.{AuthMock, IntegrationSpecCommonBase, RegimeComplianceWiremock}
+import utils.{AuthMock, IntegrationSpecCommonBase, ComplianceWiremock}
 
-class RegimeComplianceControllerISpec extends IntegrationSpecCommonBase with RegimeComplianceWiremock with FeatureSwitching with TableDrivenPropertyChecks with AuthMock{
+class ComplianceControllerISpec extends IntegrationSpecCommonBase with ComplianceWiremock with FeatureSwitching with TableDrivenPropertyChecks with AuthMock{
   class Setup {
     enableFeatureSwitch(CallDES)
   }

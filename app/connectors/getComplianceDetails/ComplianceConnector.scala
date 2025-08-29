@@ -28,7 +28,7 @@ import utils.PagerDutyHelper.PagerDutyKeys._
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class RegimeComplianceConnector @Inject()(httpClient: HttpClient,
+class ComplianceConnector @Inject()(httpClient: HttpClient,
                                     appConfig: AppConfig)
                                    (implicit ec: ExecutionContext){
   def getComplianceData(enrolmentKey: AgnosticEnrolmentKey, fromDate: String, toDate: String)(implicit hc: HeaderCarrier): Future[CompliancePayloadResponse] = {

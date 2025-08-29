@@ -17,7 +17,7 @@
 package services
 
 import config.featureSwitches.{CallAPI1812HIP, FeatureSwitching}
-import connectors.getPenaltyDetails.{HIPPenaltyDetailsConnector, RegimePenaltyDetailsConnector}
+import connectors.getPenaltyDetails.{HIPPenaltyDetailsConnector, PenaltyDetailsConnector}
 import connectors.parsers.getPenaltyDetails.HIPPenaltyDetailsParser._
 import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser._
 import models.AgnosticEnrolmentKey
@@ -32,9 +32,9 @@ import scala.concurrent.{ExecutionContext, Future}
 case class LoggingContext(callingClass: String, function: String, enrolmentKey: String)
 
 class PenaltyDetailsService @Inject() (
-  getPenaltyDetailsConnector: RegimePenaltyDetailsConnector,
-  hipPenaltyDetailsConnector: HIPPenaltyDetailsConnector,
-  filterService: RegimeFilterService
+                                        getPenaltyDetailsConnector: PenaltyDetailsConnector,
+                                        hipPenaltyDetailsConnector: HIPPenaltyDetailsConnector,
+                                        filterService: FilterService
 )(implicit ec: ExecutionContext, val config: Configuration) extends FeatureSwitching {
 
   def getPenaltyDetails(enrolmentKey: AgnosticEnrolmentKey)(implicit hc: HeaderCarrier): Future[GetPenaltyDetailsResponse] = {

@@ -46,7 +46,7 @@ import play.api.libs.json.{JsObject, JsValue, Json}
 import play.api.mvc.Result
 import play.api.test.Helpers._
 import services.auditing.AuditService
-import services.{PenaltyDetailsService, RegimeAppealService}
+import services.{PenaltyDetailsService, AppealService}
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import utils.AuthActionMock
 import utils.Logger.logger
@@ -56,9 +56,9 @@ import java.time.{LocalDate, LocalDateTime}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with LogCapturing {
+class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCapturing {
   implicit val config: Configuration = appConfig.config
-  val mockAppealsService: RegimeAppealService = mock(classOf[RegimeAppealService])
+  val mockAppealsService: AppealService = mock(classOf[AppealService])
   val mockAppConfig: AppConfig = mock(classOf[AppConfig])
   val mockAuditService: AuditService = mock(classOf[AuditService])
   val mockGetPenaltyDetailsService: PenaltyDetailsService = mock(classOf[PenaltyDetailsService])
@@ -94,7 +94,7 @@ class RegimeAppealsControllerSpec extends SpecBase with FeatureSwitching with Lo
     reset(mockFileNotificationConnector)
     reset(mockAuditService)
 
-    val controller = new RegimeAppealsController(if (withRealAppConfig) appConfig
+    val controller = new AppealsController(if (withRealAppConfig) appConfig
     else mockAppConfig, mockAppealsService, mockGetPenaltyDetailsService, mockFileNotificationConnector, mockAuditService, stubControllerComponents(), mockAuthAction)
 
     disableFeatureSwitch(CallAPI1812HIP)

@@ -17,7 +17,7 @@
 package controllers
 
 import config.featureSwitches.{CallAPI1812HIP, FeatureSwitching}
-import connectors.getPenaltyDetails.{HIPPenaltyDetailsConnector, RegimePenaltyDetailsConnector}
+import connectors.getPenaltyDetails.{HIPPenaltyDetailsConnector, PenaltyDetailsConnector}
 import connectors.parsers.getFinancialDetails.FinancialDetailsParser
 import connectors.parsers.getFinancialDetails.FinancialDetailsParser.FinancialDetailsSuccessResponse
 import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser
@@ -42,16 +42,16 @@ import utils.{DateHelper, PagerDutyHelper}
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class RegimeAPIController @Inject()(auditService: AuditService,
-                                    apiService: APIService,
-                                    getPenaltyDetailsService: PenaltyDetailsService,
-                                    getFinancialDetailsService: FinancialDetailsService,
-                                    getPenaltyDetailsConnector: RegimePenaltyDetailsConnector,
-                                    hipPenaltyDetailsConnector: HIPPenaltyDetailsConnector,
-                                    dateHelper: DateHelper,
-                                    cc: ControllerComponents,
-                                    filterService: RegimeFilterService,
-                                    authAction: AuthAction)(implicit ec: ExecutionContext, val config: Configuration) extends BackendController(cc) with FeatureSwitching {
+class APIController @Inject()(auditService: AuditService,
+                              apiService: APIService,
+                              getPenaltyDetailsService: PenaltyDetailsService,
+                              getFinancialDetailsService: FinancialDetailsService,
+                              getPenaltyDetailsConnector: PenaltyDetailsConnector,
+                              hipPenaltyDetailsConnector: HIPPenaltyDetailsConnector,
+                              dateHelper: DateHelper,
+                              cc: ControllerComponents,
+                              filterService: FilterService,
+                              authAction: AuthAction)(implicit ec: ExecutionContext, val config: Configuration) extends BackendController(cc) with FeatureSwitching {
 
   def getSummaryData(regime: Regime, idType: IdType, id: Id): Action[AnyContent] = authAction.async {
     implicit request => {
