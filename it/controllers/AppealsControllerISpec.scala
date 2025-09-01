@@ -31,8 +31,8 @@ import utils._
 import java.time.LocalDate
 import scala.jdk.CollectionConverters._
 
-class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with RegimeETMPWiremock with HIPWiremock
-  with RegimeAppealWiremock
+class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock with HIPWiremock
+  with AppealWiremock
   with FileNotificationOrchestratorWiremock
   with FeatureSwitching
   with TableDrivenPropertyChecks
@@ -40,7 +40,7 @@ class RegimeAppealsControllerISpec extends IntegrationSpecCommonBase with Regime
 
   setEnabledFeatureSwitches()
 
-  val controller: RegimeAppealsController = injector.instanceOf[RegimeAppealsController]
+  val controller: AppealsController = injector.instanceOf[AppealsController]
 
   val appealJson: JsValue = Json.parse(
     """

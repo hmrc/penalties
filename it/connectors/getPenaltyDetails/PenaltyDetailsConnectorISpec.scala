@@ -33,14 +33,14 @@ import play.api.http.Status
 import play.api.http.Status.IM_A_TEAPOT
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
-import utils.{IntegrationSpecCommonBase, RegimeETMPWiremock}
+import utils.{IntegrationSpecCommonBase, ETMPWiremock}
 
 import java.time.LocalDate
 
-class RegimePenaltyDetailsConnectorISpec extends IntegrationSpecCommonBase with RegimeETMPWiremock with FeatureSwitching with TableDrivenPropertyChecks {
+class PenaltyDetailsConnectorISpec extends IntegrationSpecCommonBase with ETMPWiremock with FeatureSwitching with TableDrivenPropertyChecks {
 
   class Setup {
-    val connector: RegimePenaltyDetailsConnector = injector.instanceOf[RegimePenaltyDetailsConnector]
+    val connector: PenaltyDetailsConnector = injector.instanceOf[PenaltyDetailsConnector]
     implicit val hc: HeaderCarrier = HeaderCarrier()
 
   }

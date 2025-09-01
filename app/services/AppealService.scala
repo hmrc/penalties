@@ -34,10 +34,10 @@ import utils.{DateHelper, FileHelper, UUIDGenerator}
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class RegimeAppealService @Inject()(appealsConnector: SubmitAppealConnector,
-                                    hipAppealsConnector: HIPSubmitAppealConnector,
-                                    appConfig: AppConfig,
-                                    idGenerator: UUIDGenerator)(implicit ec: ExecutionContext, val config: Configuration) extends FeatureSwitching {
+class AppealService @Inject()(appealsConnector: SubmitAppealConnector,
+                              hipAppealsConnector: HIPSubmitAppealConnector,
+                              appConfig: AppConfig,
+                              idGenerator: UUIDGenerator)(implicit ec: ExecutionContext, val config: Configuration) extends FeatureSwitching {
 
   private val regexToSanitiseFileName: String = "[\\\\\\/:*?<>|\"‘’“”]"
 

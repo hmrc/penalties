@@ -26,7 +26,7 @@ import models.{AgnosticEnrolmentKey, Id, IdType, Regime}
 import play.api.http.Status._
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.http.HttpResponse
-import utils.{ETMPWiremock, IntegrationSpecCommonBase}
+import utils.{IntegrationSpecCommonBase, ETMPWiremock}
 
 import java.time.LocalDate
 

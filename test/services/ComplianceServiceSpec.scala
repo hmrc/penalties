@@ -17,7 +17,7 @@
 package services
 
 import base.SpecBase
-import connectors.getComplianceDetails.RegimeComplianceConnector
+import connectors.getComplianceDetails.ComplianceConnector
 import connectors.parsers.getComplianceDetails.ComplianceParser._
 import models.compliance.CompliancePayload
 import org.mockito.ArgumentMatchers
@@ -27,8 +27,8 @@ import uk.gov.hmrc.http.HeaderCarrier
 import models.{AgnosticEnrolmentKey, Regime, IdType, Id}
 import scala.concurrent.{ExecutionContext, Future}
 
-class RegimeComplianceServiceSpec extends SpecBase {
-  val mockComplianceConnector: RegimeComplianceConnector = mock(classOf[RegimeComplianceConnector])
+class ComplianceServiceSpec extends SpecBase {
+  val mockComplianceConnector: ComplianceConnector = mock(classOf[ComplianceConnector])
   implicit val ec: ExecutionContext = ExecutionContext.Implicits.global
   implicit val hc: HeaderCarrier = HeaderCarrier()
   
@@ -40,7 +40,7 @@ class RegimeComplianceServiceSpec extends SpecBase {
   )
 
   class Setup {
-    val service = new RegimeComplianceService(mockComplianceConnector)(appConfig.config)
+    val service = new ComplianceService(mockComplianceConnector)(appConfig.config)
     reset(mockComplianceConnector)
   }
 

@@ -22,13 +22,13 @@ import models.appeals.AppealLevel.FirstStageAppeal
 import models.appeals.{AppealSubmission, CrimeAppealInformation}
 import play.api.http.Status
 import play.api.test.Helpers._
-import utils.{IntegrationSpecCommonBase, RegimeAppealWiremock}
+import utils.{IntegrationSpecCommonBase, AppealWiremock}
 import models.{AgnosticEnrolmentKey, Id, IdType, Regime}
 
 import java.time.LocalDateTime
 import scala.concurrent.ExecutionContext
 
-class SubmitAppealConnectorISpec extends IntegrationSpecCommonBase with RegimeAppealWiremock with FeatureSwitching {
+class SubmitAppealConnectorISpec extends IntegrationSpecCommonBase with AppealWiremock with FeatureSwitching {
   implicit val ec: ExecutionContext = ExecutionContext.Implicits.global
 
   class Setup {

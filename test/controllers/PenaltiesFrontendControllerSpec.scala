@@ -29,7 +29,7 @@ import play.api.http.Status
 import play.api.libs.json.Json
 import play.api.mvc.Results.{InternalServerError, Ok}
 import play.api.test.Helpers._
-import services.{PenaltyDetailsService, RegimePenaltiesFrontendService}
+import services.{PenaltyDetailsService, PenaltiesFrontendService}
 import utils.AuthActionMock
 import utils.Logger.logger
 import utils.PagerDutyHelper.PagerDutyKeys
@@ -39,9 +39,9 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import models.{AgnosticEnrolmentKey, Id, IdType, Regime}
 
-class RegimePenaltiesFrontendControllerSpec extends SpecBase with LogCapturing with LPPDetailsBase with LSPDetailsBase with FeatureSwitching {
+class PenaltiesFrontendControllerSpec extends SpecBase with LogCapturing with LPPDetailsBase with LSPDetailsBase with FeatureSwitching {
   val mockGetPenaltyDetailsService: PenaltyDetailsService = mock(classOf[PenaltyDetailsService])
-  val mockPenaltiesFrontendService: RegimePenaltiesFrontendService = mock(classOf[RegimePenaltiesFrontendService])
+  val mockPenaltiesFrontendService: PenaltiesFrontendService = mock(classOf[PenaltiesFrontendService])
   val mockAuthAction: AuthAction = injector.instanceOf(classOf[AuthActionMock])
   
   implicit val config: play.api.Configuration = appConfig.config
@@ -63,7 +63,7 @@ class RegimePenaltiesFrontendControllerSpec extends SpecBase with LogCapturing w
     disableFeatureSwitch(CallAPI1812HIP)
     
     implicit val config: play.api.Configuration = appConfig.config
-    val controller: RegimePenaltiesFrontendController = new RegimePenaltiesFrontendController(
+    val controller: PenaltiesFrontendController = new PenaltiesFrontendController(
       mockGetPenaltyDetailsService,
       mockPenaltiesFrontendService,
       stubControllerComponents(),
