@@ -78,8 +78,29 @@ class FinancialDetailsSpec extends SpecBase {
     """
       |{
       |  "success": {
-      |    "processingDate": "2025-09-03T12:22:40Z",
+      |    "processingDate": "2025-09-04T08:09:34Z",
       |    "financialData": {
+      |      "totalisation": {
+      |        "regimeTotalisation": {
+      |          "totalAccountOverdue": 5272.64,
+      |          "totalAccountNotYetDue": 0,
+      |          "totalAccountCredit": 0,
+      |          "totalAccountBalance": 5272.64
+      |        },
+      |        "targetedSearch_SelectionCriteriaTotalisation": {
+      |          "totalOverdue": 217.94,
+      |          "totalNotYetDue": 0,
+      |          "totalBalance": 217.94,
+      |          "totalCredit": 0,
+      |          "totalCleared": 0
+      |        },
+      |        "additionalReceivableTotalisations": [
+      |          {
+      |            "totalAccountPostedInterest": 0,
+      |            "totalAccountAccruingInterest": 0
+      |          }
+      |        ]
+      |      },
       |      "documentDetails": [
       |        {
       |          "documentNumber": "221000000198",
@@ -106,8 +127,15 @@ class FinancialDetailsSpec extends SpecBase {
       |              "periodKey": "23P0",
       |              "netDueDate": "2025-04-18",
       |              "amount": 2.86,
+      |              "lineItemLockDetails": [
+      |                {
+      |                  "lockType": "DUNNING",
+      |                  "lockStartDate": "0001-01-01",
+      |                  "lockEndDate": "9999-12-31"
+      |                }
+      |              ],
       |              "lineItemInterestDetails": {
-      |                "interestKey": "365/SAIN (LPI)",
+      |                "interestKey": "365\/SAIN (LPI)",
       |                "interestStartDate": "2025-04-19"
       |              }
       |            },
@@ -122,8 +150,15 @@ class FinancialDetailsSpec extends SpecBase {
       |              "periodKey": "23P0",
       |              "netDueDate": "2025-04-18",
       |              "amount": 5.73,
+      |              "lineItemLockDetails": [
+      |                {
+      |                  "lockType": "DUNNING",
+      |                  "lockStartDate": "0001-01-01",
+      |                  "lockEndDate": "9999-12-31"
+      |                }
+      |              ],
       |              "lineItemInterestDetails": {
-      |                "interestKey": "365/SAIN (LPI)",
+      |                "interestKey": "365\/SAIN (LPI)",
       |                "interestStartDate": "2025-04-19"
       |              }
       |            }
@@ -154,8 +189,15 @@ class FinancialDetailsSpec extends SpecBase {
       |              "periodKey": "23P0",
       |              "netDueDate": "2025-04-05",
       |              "amount": 69.91,
+      |              "lineItemLockDetails": [
+      |                {
+      |                  "lockType": "DUNNING",
+      |                  "lockStartDate": "0001-01-01",
+      |                  "lockEndDate": "9999-12-31"
+      |                }
+      |              ],
       |              "lineItemInterestDetails": {
-      |                "interestKey": "365/SAIN (LPI)",
+      |                "interestKey": "365\/SAIN (LPI)",
       |                "interestStartDate": "2025-04-06"
       |              }
       |            },
@@ -170,113 +212,21 @@ class FinancialDetailsSpec extends SpecBase {
       |              "periodKey": "23P0",
       |              "netDueDate": "2025-04-05",
       |              "amount": 139.44,
+      |              "lineItemLockDetails": [
+      |                {
+      |                  "lockType": "DUNNING",
+      |                  "lockStartDate": "0001-01-01",
+      |                  "lockEndDate": "9999-12-31"
+      |                }
+      |              ],
       |              "lineItemInterestDetails": {
-      |                "interestKey": "365/SAIN (LPI)",
+      |                "interestKey": "365\/SAIN (LPI)",
       |                "interestStartDate": "2025-04-06"
       |              }
       |            }
       |          ]
-      |        },
-      |        {
-      |          "documentNumber": "522000000064",
-      |          "documentType": "ITSA- POA 1",
-      |          "chargeReferenceNumber": "XB002610234503",
-      |          "businessPartnerNumber": "0100468984",
-      |          "contractAccountNumber": "000960031075",
-      |          "contractAccountCategory": "Income Tax",
-      |          "contractObjectNumber": "00000160000000022665",
-      |          "contractObjectType": "ITSA",
-      |          "postingDate": "2025-08-07",
-      |          "documentTotalAmount": 2527.35,
-      |          "documentOutstandingAmount": 2527.35,
-      |          "lineItemDetails": [
-      |            {
-      |              "itemNumber": "0001",
-      |              "subItemNumber": "000",
-      |              "mainTransaction": "4920",
-      |              "subTransaction": "1005",
-      |              "chargeDescription": "ITSA England & NI",
-      |              "periodFromDate": "2024-04-06",
-      |              "periodToDate": "2025-04-05",
-      |              "periodKey": "25M0",
-      |              "netDueDate": "2025-01-31",
-      |              "formBundleNumber": "122000001950",
-      |              "amount": 1743,
-      |              "lineItemInterestDetails": {
-      |                "interestKey": "365/SAIN (LPI)",
-      |                "interestStartDate": "2025-02-01"
-      |              }
-      |            },
-      |            {
-      |              "itemNumber": "0002",
-      |              "subItemNumber": "000",
-      |              "mainTransaction": "4920",
-      |              "subTransaction": "1010",
-      |              "chargeDescription": "NIC4-GB",
-      |              "periodFromDate": "2024-04-06",
-      |              "periodToDate": "2025-04-05",
-      |              "periodKey": "25M0",
-      |              "netDueDate": "2025-01-31",
-      |              "formBundleNumber": "122000001950",
-      |              "amount": 784.35,
-      |              "lineItemInterestDetails": {
-      |                "interestKey": "365/SAIN (LPI)",
-      |                "interestStartDate": "2025-02-01"
-      |              }
-      |            }
-      |          ]
-      |        },
-      |        {
-      |          "documentNumber": "523000000065",
-      |          "documentType": "ITSA - POA 2",
-      |          "chargeReferenceNumber": "XD002610234504",
-      |          "businessPartnerNumber": "0100468984",
-      |          "contractAccountNumber": "000960031075",
-      |          "contractAccountCategory": "Income Tax",
-      |          "contractObjectNumber": "00000160000000022665",
-      |          "contractObjectType": "ITSA",
-      |          "postingDate": "2025-08-07",
-      |          "documentTotalAmount": 2527.35,
-      |          "documentOutstandingAmount": 2527.35,
-      |          "lineItemDetails": [
-      |            {
-      |              "itemNumber": "0001",
-      |              "subItemNumber": "000",
-      |              "mainTransaction": "4930",
-      |              "subTransaction": "1005",
-      |              "chargeDescription": "ITSA England & NI",
-      |              "periodFromDate": "2024-04-06",
-      |              "periodToDate": "2025-04-05",
-      |              "periodKey": "25M0",
-      |              "netDueDate": "2025-07-31",
-      |              "formBundleNumber": "122000001950",
-      |              "amount": 1743,
-      |              "lineItemInterestDetails": {
-      |                "interestKey": "365/SAIN (LPI)",
-      |                "interestStartDate": "2025-08-01"
-      |              }
-      |            },
-      |            {
-      |              "itemNumber": "0002",
-      |              "subItemNumber": "000",
-      |              "mainTransaction": "4930",
-      |              "subTransaction": "1010",
-      |              "chargeDescription": "NIC4-GB",
-      |              "periodFromDate": "2024-04-06",
-      |              "periodToDate": "2025-04-05",
-      |              "periodKey": "25M0",
-      |              "netDueDate": "2025-07-31",
-      |              "formBundleNumber": "122000001950",
-      |              "amount": 784.35,
-      |              "lineItemInterestDetails": {
-      |                "interestKey": "365/SAIN (LPI)",
-      |                "interestStartDate": "2025-08-01"
-      |              }
-      |            }
-      |          ]
       |        }
-      |      ],
-      |      "totalon": 1
+      |      ]
       |    }
       |  }
       |}

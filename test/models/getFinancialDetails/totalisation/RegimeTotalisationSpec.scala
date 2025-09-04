@@ -42,13 +42,13 @@ class RegimeTotalisationSpec extends SpecBase {
   )
 
   "be readable from JSON" in {
-    val result = Json.fromJson(modelAsJson)(RegimeTotalisation.format)
+    val result = Json.fromJson(modelAsJson)(RegimeTotalisation.reads)
     result.isSuccess shouldBe true
     result.get shouldBe model
   }
 
   "be writable to JSON" in {
-    val result = Json.toJson(model)(RegimeTotalisation.format)
+    val result = Json.toJson(model)(RegimeTotalisation.writes)
     result shouldBe parsedModelAsJson
   }
 }

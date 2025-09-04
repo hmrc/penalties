@@ -16,12 +16,18 @@
 
 package models.getFinancialDetails.totalisation
 
-import play.api.libs.json.{Format, Json}
+import play.api.libs.json.{JsValue, Json, Reads, Writes}
 
 case class RegimeTotalisation(
-                               totalAccountOverdue: Option[BigDecimal]
-                             )
+    totalAccountOverdue: Option[BigDecimal]
+)
 
 object RegimeTotalisation {
-  implicit val format: Format[RegimeTotalisation] = Json.format[RegimeTotalisation]
+
+  implicit val writes: Writes[RegimeTotalisation] = Json.writes[RegimeTotalisation]
+
+  implicit val reads: Reads[RegimeTotalisation] = (json: JsValue) =>
+    for {
+      totalAccountOverdue <- (json \ "totalAccountOverdue").validateOpt[BigDecimal]
+    } yield new RegimeTotalisation(totalAccountOverdue)
 }

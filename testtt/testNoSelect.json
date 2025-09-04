@@ -1,0 +1,154 @@
+{
+  "success": {
+    "processingDate": "2025-09-04T08:09:34Z",
+    "financialData": {
+      "totalisation": {
+        "regimeTotalisation": {
+          "totalAccountOverdue": 5272.64,
+          "totalAccountNotYetDue": 0,
+          "totalAccountCredit": 0,
+          "totalAccountBalance": 5272.64
+        },
+        "targetedSearch_SelectionCriteriaTotalisation": {
+          "totalOverdue": 217.94,
+          "totalNotYetDue": 0,
+          "totalBalance": 217.94,
+          "totalCredit": 0,
+          "totalCleared": 0
+        },
+        "additionalReceivableTotalisations": [
+          {
+            "totalAccountPostedInterest": 0,
+            "totalAccountAccruingInterest": 0
+          }
+        ]
+      },
+      "documentDetails": [
+        {
+          "documentNumber": "221000000198",
+          "documentType": "New Charge",
+          "chargeReferenceNumber": "XD002616075855",
+          "businessPartnerNumber": "0100468984",
+          "contractAccountNumber": "000960031075",
+          "contractAccountCategory": "Income Tax",
+          "contractObjectNumber": "00000160000000022665",
+          "contractObjectType": "ITSA",
+          "postingDate": "2025-03-17",
+          "issueDate": "2025-03-19",
+          "documentTotalAmount": 8.59,
+          "documentOutstandingAmount": 8.59,
+          "lineItemDetails": [
+            {
+              "itemNumber": "0001",
+              "subItemNumber": "000",
+              "mainTransaction": "4029",
+              "subTransaction": "1095",
+              "chargeDescription": "TG PEN NIC NEW GB",
+              "periodFromDate": "2023-04-06",
+              "periodToDate": "2024-04-05",
+              "periodKey": "23P0",
+              "netDueDate": "2025-04-18",
+              "amount": 2.86,
+              "lineItemLockDetails": [
+                {
+                  "lockType": "DUNNING",
+                  "lockStartDate": "0001-01-01",
+                  "lockEndDate": "9999-12-31"
+                }
+              ],
+              "lineItemInterestDetails": {
+                "interestKey": "365\/SAIN (LPI)",
+                "interestStartDate": "2025-04-19"
+              }
+            },
+            {
+              "itemNumber": "0002",
+              "subItemNumber": "000",
+              "mainTransaction": "4029",
+              "subTransaction": "1090",
+              "chargeDescription": "TG PEN",
+              "periodFromDate": "2023-04-06",
+              "periodToDate": "2024-04-05",
+              "periodKey": "23P0",
+              "netDueDate": "2025-04-18",
+              "amount": 5.73,
+              "lineItemLockDetails": [
+                {
+                  "lockType": "DUNNING",
+                  "lockStartDate": "0001-01-01",
+                  "lockEndDate": "9999-12-31"
+                }
+              ],
+              "lineItemInterestDetails": {
+                "interestKey": "365\/SAIN (LPI)",
+                "interestStartDate": "2025-04-19"
+              }
+            }
+          ]
+        },
+        {
+          "documentNumber": "241000000174",
+          "documentType": "New Charge",
+          "chargeReferenceNumber": "XW002616075853",
+          "businessPartnerNumber": "0100468984",
+          "contractAccountNumber": "000960031075",
+          "contractAccountCategory": "Income Tax",
+          "contractObjectNumber": "00000160000000022665",
+          "contractObjectType": "ITSA",
+          "postingDate": "2025-03-04",
+          "issueDate": "2025-03-06",
+          "documentTotalAmount": 209.35,
+          "documentOutstandingAmount": 209.35,
+          "lineItemDetails": [
+            {
+              "itemNumber": "0001",
+              "subItemNumber": "000",
+              "mainTransaction": "4028",
+              "subTransaction": "1095",
+              "chargeDescription": "TG PEN NIC NEW GB",
+              "periodFromDate": "2023-04-06",
+              "periodToDate": "2024-04-05",
+              "periodKey": "23P0",
+              "netDueDate": "2025-04-05",
+              "amount": 69.91,
+              "lineItemLockDetails": [
+                {
+                  "lockType": "DUNNING",
+                  "lockStartDate": "0001-01-01",
+                  "lockEndDate": "9999-12-31"
+                }
+              ],
+              "lineItemInterestDetails": {
+                "interestKey": "365\/SAIN (LPI)",
+                "interestStartDate": "2025-04-06"
+              }
+            },
+            {
+              "itemNumber": "0002",
+              "subItemNumber": "000",
+              "mainTransaction": "4028",
+              "subTransaction": "1090",
+              "chargeDescription": "TG PEN",
+              "periodFromDate": "2023-04-06",
+              "periodToDate": "2024-04-05",
+              "periodKey": "23P0",
+              "netDueDate": "2025-04-05",
+              "amount": 139.44,
+              "lineItemLockDetails": [
+                {
+                  "lockType": "DUNNING",
+                  "lockStartDate": "0001-01-01",
+                  "lockEndDate": "9999-12-31"
+                }
+              ],
+              "lineItemInterestDetails": {
+                "interestKey": "365\/SAIN (LPI)",
+                "interestStartDate": "2025-04-06"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
