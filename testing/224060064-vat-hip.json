@@ -1,0 +1,59 @@
+{
+  "totalisations": {
+    "lateSubmissionPenaltyTotalValue": 200,
+    "penalisedPrincipalTotal": 2000,
+    "latePaymentPenaltyPostedTotal": 165.25,
+    "latePaymentPenaltyEstimateTotal": 144.21
+  },
+  "lateSubmissionPenalty": {
+    "summary": {
+      "activePenaltyPoints": 1,
+      "inactivePenaltyPoints": 0,
+      "periodOfComplianceAchievement": "9999-12-31",
+      "regimeThreshold": 4,
+      "penaltyChargeAmount": 200
+    },
+    "details": [
+      {
+        "penaltyNumber": "1234567891",
+        "penaltyOrder": "1",
+        "penaltyCategory": "point",
+        "penaltyStatus": "active",
+        "penaltyCreationDate": "2026-05-08",
+        "penaltyExpiryDate": "2026-05-08",
+        "communicationsDate": "2024-05-08",
+        "lateSubmissions": [
+          {
+            "lateSubmissionID": "001",
+            "taxReturnStatus": "Fulfilled",
+            "taxPeriodStartDate": "2026-01-01",
+            "taxPeriodEndDate": "2026-03-31",
+            "taxPeriodDueDate": "2026-05-07",
+            "returnReceiptDate": "2026-05-12"
+          }
+        ]
+      }
+    ]
+  },
+  "latePaymentPenalty": {
+    "details": [
+      {
+        "principalChargeReference": "XJ002616061027",
+        "principalChargeBillingTo": "2026-03-31",
+        "principalChargeDueDate": "2026-05-07",
+        "penaltyCategory": "LPP1",
+        "penaltyAmountPosted": 0,
+        "principalChargeBillingFrom": "2026-03-01",
+        "penaltyStatus": "accruing",
+        "latePaymentPenalty1LowerRatePercentage": 2,
+        "penaltyAmountAccruing": 32.61,
+        "timeToPay": [
+          {
+            "timeToPayEndDate": "2026-03-31"
+          }
+        ],
+        "principalChargeDocNumber": "DOC1"
+      }
+    ]
+  }
+}

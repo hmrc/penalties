@@ -27,16 +27,19 @@ import models.api.APIModel
 import models.auditing.{ThirdParty1812APIRetrievalRegimeAuditModel, ThirdPartyAPI1811RetrievalRegimeAuditModel, UserHasPenaltyRegimeAuditModel}
 import models.getFinancialDetails.FinancialDetails
 import models.getPenaltyDetails.GetPenaltyDetails
+import models.hipPenaltyDetails.PenaltyDetails
 import models.{AgnosticEnrolmentKey, Id, IdType, Regime}
 import play.api.Configuration
-import play.api.libs.json.{JsString, JsValue, Json}
+import play.api.libs.json._
 import play.api.mvc._
+import services.RegimeFilterService.tryJsonParseOrJsString
 import services._
 import services.auditing.AuditService
-import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import utils.Logger.logger
 import utils.PagerDutyHelper.PagerDutyKeys._
+import utils.PenaltyDetailsConverter.convertHIPToGetPenaltyDetails
 import utils.{DateHelper, PagerDutyHelper}
 
 import javax.inject.Inject
@@ -168,96 +171,225 @@ class APIController @Inject()(auditService: AuditService,
                           addPostedInterestDetails: Option[Boolean],
                           addAccruingInterestDetails: Option[Boolean]): Action[AnyContent] = authAction.async {
     implicit request => {
-        val enrolmentKey = AgnosticEnrolmentKey(regime, idType, id)
-        val response = getFinancialDetailsService.getFinancialDetailsForAPI(enrolmentKey,
-          searchType,
-          searchItem,
-          dateType,
-          dateFrom,
-          dateTo,
-          includeClearedItems,
-          includeStatisticalItems,
-          includePaymentOnAccount,
-          addRegimeTotalisation,
-          addLockInformation,
-          addPenaltyDetails,
-          addPostedInterestDetails,
-          addAccruingInterestDetails
-        )
+      val enrolmentKey = AgnosticEnrolmentKey(regime, idType, id)
+      val response = getFinancialDetailsService.getFinancialDetailsForAPI(enrolmentKey,
+        searchType,
+        searchItem,
+        dateType,
+        dateFrom,
+        dateTo,
+        includeClearedItems,
+        includeStatisticalItems,
+        includePaymentOnAccount,
+        addRegimeTotalisation,
+        addLockInformation,
+        addPenaltyDetails,
+        addPostedInterestDetails,
+        addAccruingInterestDetails
+      )
 
-        response.map(
-          res => {
-            val auditToSend = ThirdPartyAPI1811RetrievalRegimeAuditModel(enrolmentKey, res.status, res.body)
-            auditService.audit(auditToSend)
-            res.status match {
-              case OK =>
-                logger.info(s"[RegimeAPIController][getFinancialDetails] - 1811 call (3rd party API) returned 200 for $enrolmentKey")
-                Ok(res.json)
-              case NOT_FOUND =>
-                logger.error("[RegimeAPIController][getFinancialDetails] - 1811 call (3rd party API) returned 404 - error received: " + res)
-                Status(res.status)(filterService.tryJsonParseOrJsString(res.body))
-              case status =>
-                PagerDutyHelper.logStatusCode("getFinancialDetails", status)(RECEIVED_4XX_FROM_1811_API, RECEIVED_5XX_FROM_1811_API)
-                logger.error(s"[RegimeAPIController][getFinancialDetails] - 1811 call (3rd party API) returned an unknown error - status ${res.status} returned from EIS")
-                Status(res.status)(filterService.tryJsonParseOrJsString(res.body))
-            }
-          })
+      response.map(
+        res => {
+          sendFinancialAudit(res, enrolmentKey)
+
+          res.status match {
+            case OK | CREATED =>
+              logger.info(s"[RegimeAPIController][getFinancialDetails] - 1811 call (3rd party API) returned ${res.status} for $enrolmentKey")
+              Ok(res.json)
+            case NOT_FOUND =>
+              logFinancialErrorMessage(s"returned 404: ${res.body}")
+              returnErrorResult(NOT_FOUND, res.body)
+            case UNPROCESSABLE_ENTITY if res.body.contains("016") =>
+              logFinancialErrorMessage(s"returned HIP error 422-016 Invalid ID Number: ${res.body}")
+              returnErrorResult(NOT_FOUND, res.body)
+            case UNPROCESSABLE_ENTITY if res.body.contains("018") =>
+              logFinancialErrorMessage(s"returned HIP error 422-018 No Data Identified: ${res.body}")
+              returnErrorResult(NOT_FOUND, res.body)
+            case status =>
+              PagerDutyHelper.logStatusCode("getFinancialDetails", status)(RECEIVED_4XX_FROM_1811_API, RECEIVED_5XX_FROM_1811_API)
+              logFinancialErrorMessage(s"returned an unknown ${res.status} error: ${res.body}")
+              returnErrorResult(status, res.body)
+          }
+        })
     }
   }
+
+  private def sendFinancialAudit(response: HttpResponse, enrolmentKey: AgnosticEnrolmentKey)
+                                (implicit hc: HeaderCarrier, request: Request[_]): Unit = {
+    val auditToSend = ThirdPartyAPI1811RetrievalRegimeAuditModel(enrolmentKey, response.status, response.body)
+    auditService.audit(auditToSend)
+  }
+
+  private def logFinancialErrorMessage(message: String): Unit =
+    logger.error(s"[RegimeAPIController][getFinancialDetails] - 1811 call (3rd party API) $message")
 
   def getPenaltyDetails(regime: Regime, idType: IdType, id: Id, dateLimit: Option[String]): Action[AnyContent] = authAction.async {
     implicit request => {
       val enrolmentKey = AgnosticEnrolmentKey(regime, idType, id)
 
-      val response = if (isEnabled(CallAPI1812HIP)) {
-        logger.info(s"[RegimeAPIController][getPenaltyDetails] - Using HIP connector due to CallAPI1812HIP feature switch")
+      val connectorResponse = if (isEnabled(CallAPI1812HIP)) {
+        logger.info(s"[RegimeAPIController][getPenaltyDetails] - Calling HIP connector - CallAPI1812HIP switch is on")
         hipPenaltyDetailsConnector.getPenaltyDetailsForAPI(enrolmentKey, dateLimit)
       } else {
-        logger.info(s"[RegimeAPIController][getPenaltyDetails] - Using regular connector")
+        logger.info(s"[RegimeAPIController][getPenaltyDetails] - Calling IF connector - CallAPI1812HIP switch is off")
         getPenaltyDetailsConnector.getPenaltyDetailsForAPI(enrolmentKey, dateLimit)
       }
 
-      response.map(
-        res => {
-          val processedResBody = filterService.tryJsonParseOrJsString(res.body)
-          val filteredResBody = if (res.status.equals(OK) || !processedResBody.isInstanceOf[JsString]) {
-            // Only apply filtering to regular responses, not HIP responses
-            if (isEnabled(CallAPI1812HIP)) {
-              processedResBody // Return HIP responses as-is
-            } else {
-              filterResponseBody(processedResBody, enrolmentKey)
-            }
-          } else {
-            processedResBody
-          }
-          val auditToSend = ThirdParty1812APIRetrievalRegimeAuditModel(enrolmentKey, res.status, filteredResBody)
-          auditService.audit(auditToSend)
-          res.status match {
+      connectorResponse.map(
+        response => {
+          sendPenaltiesAudit(response, enrolmentKey)
+
+          response.status match {
             case OK =>
               logger.info(s"[RegimeAPIController][getPenaltyDetails] - API call (3rd party API) returned 200 for $enrolmentKey")
-              Ok(filteredResBody)
+              processSuccessResponse(response, enrolmentKey)
             case NOT_FOUND =>
-              logger.error("[RegimeAPIController][getPenaltyDetails] - API call (3rd party API) returned 404 - error received: " + res)
-              Status(res.status)(filterService.tryJsonParseOrJsString(res.body))
+              logPenaltiesErrorMessage(s"returned 404: ${response.body}")
+              returnErrorResult(NOT_FOUND, response.body)
+            case UNPROCESSABLE_ENTITY if response.body.contains("016") =>
+              logPenaltiesErrorMessage(s"returned HIP error 422-016 Invalid ID Number: ${response.body}")
+              returnErrorResult(NOT_FOUND, response.body)
             case status =>
               PagerDutyHelper.logStatusCode("getPenaltyDetails", status)(RECEIVED_4XX_FROM_1812_API, RECEIVED_5XX_FROM_1812_API)
-              logger.error(s"[RegimeAPIController][getPenaltyDetails] - API call (3rd party API) returned an unknown error - status ${res.status} returned from EIS")
-              Status(res.status)(filterService.tryJsonParseOrJsString(res.body))
+              logPenaltiesErrorMessage(s"returned an unknown ${response.status} error: ${response.body}")
+              returnErrorResult(status, response.body)
           }
         }
       )
     }
   }
 
-  private def filterResponseBody(resBody: JsValue, enrolmentKey: AgnosticEnrolmentKey): JsValue = {
-    val penaltiesDetails = GetPenaltyDetails.format.reads(resBody)
+  private def processSuccessResponse(response: HttpResponse, enrolmentKey: AgnosticEnrolmentKey): Result = {
+    val jsonBody: JsValue = tryJsonParseOrJsString(response.body)
+    val validateBody: JsResult[GetPenaltyDetails] = if (isEnabled(CallAPI1812HIP)) {
+      convertHipResponseToGetPenaltyDetails(jsonBody)
+    } else {
+      jsonBody.validate[GetPenaltyDetails]
+    }
+    validateBody match {
+      case JsSuccess(getPenaltyDetails, _) =>
+        logger.info(s"[RegimeAPIController][getPenaltyDetails] - API call (3rd party API) - Successfully parsed 200 response body")
+        Ok(filterPenaltiesResponseBody(getPenaltyDetails, enrolmentKey))
+      case JsError(errors) =>
+        logPenaltiesErrorMessage(s"Unable to validate 200 response body with errors: ${errors.mkString(", ")}")
+        returnErrorResult(INTERNAL_SERVER_ERROR, errors.mkString(", "))
+    }
+  }
+
+  private def filterPenaltiesResponseBody(getPenaltyDetailsBody: GetPenaltyDetails, enrolmentKey: AgnosticEnrolmentKey): JsValue = {
     implicit val loggingContext: LoggingContext = LoggingContext(
       "APIConnector",
       "getPenaltyDetails",
       enrolmentKey.toString
     )
     GetPenaltyDetails.format.writes(filterService.filterEstimatedLPP1DuringPeriodOfFamiliarisation(
-      filterService.filterPenaltiesWith9xAppealStatus(penaltiesDetails.get)
+      filterService.filterPenaltiesWith9xAppealStatus(getPenaltyDetailsBody)
     ))
   }
+
+  private def convertHipResponseToGetPenaltyDetails(responseBody: JsValue): JsResult[GetPenaltyDetails] =
+    responseBody.validate[PenaltyDetails].map(convertHIPToGetPenaltyDetails)
+
+  private def sendPenaltiesAudit(response: HttpResponse, enrolmentKey: AgnosticEnrolmentKey)
+                                (implicit hc: HeaderCarrier, request: Request[_]): Unit = {
+    val jsonBody: JsValue = tryJsonParseOrJsString(response.body)
+    val auditToSend = ThirdParty1812APIRetrievalRegimeAuditModel(enrolmentKey, response.status, jsonBody)
+    auditService.audit(auditToSend)
+  }
+
+  private def logPenaltiesErrorMessage(message: String): Unit =
+    logger.error(s"[RegimeAPIController][getPenaltyDetails] - API call (3rd party API) $message")
+
+  private def returnErrorResult(status: Int, responseBody: String): Result = Status(status)(tryJsonParseOrJsString(responseBody))
+
+  val sampleAPI1812ResponseWithoutWrapper: JsValue = Json.parse(
+    """
+      |{
+      | "totalisations": {
+      |   "LSPTotalValue": 200,
+      |   "penalisedPrincipalTotal": 2000,
+      |   "LPPPostedTotal": 165.25,
+      |   "LPPEstimatedTotal": 15.26
+      | },
+      | "lateSubmissionPenalty": {
+      |   "summary": {
+      |     "activePenaltyPoints": 10,
+      |     "inactivePenaltyPoints": 12,
+      |     "regimeThreshold": 10,
+      |     "penaltyChargeAmount": 684.25,
+      |     "PoCAchievementDate": "2022-10-30"
+      |   },
+      |   "details": [
+      |     {
+      |       "penaltyNumber": "12345678901234",
+      |       "penaltyOrder": "01",
+      |       "penaltyCategory": "P",
+      |       "penaltyStatus": "ACTIVE",
+      |       "penaltyCreationDate": "2022-10-30",
+      |       "penaltyExpiryDate": "2022-10-30",
+      |       "communicationsDate": "2022-10-30",
+      |       "FAPIndicator": "X",
+      |       "lateSubmissions": [
+      |         {
+      |           "lateSubmissionID": "001",
+      |           "taxPeriod":  "23AA",
+      |           "taxPeriodStartDate": "2022-01-01",
+      |           "taxPeriodEndDate": "2022-12-31",
+      |           "taxPeriodDueDate": "2023-02-07",
+      |           "returnReceiptDate": "2023-02-01",
+      |           "taxReturnStatus": "Fulfilled"
+      |         }
+      |       ],
+      |       "expiryReason": "FAP",
+      |       "appealInformation": [
+      |         {
+      |           "appealStatus": "99",
+      |           "appealLevel": "01",
+      |         "appealDescription": "Some value"
+      |         }
+      |       ],
+      |       "chargeDueDate": "2022-10-30",
+      |       "chargeOutstandingAmount": 200,
+      |       "chargeAmount": 200,
+      |       "triggeringProcess": "P123",
+      |       "chargeReference": "CHARGEREF1"
+      |   }]
+      | },
+      | "latePaymentPenalty": {
+      |     "details": [{
+      |       "penaltyCategory": "LPP1",
+      |       "penaltyChargeReference": "1234567890",
+      |       "principalChargeReference":"1234567890",
+      |       "penaltyChargeCreationDate":"2022-10-30",
+      |       "penaltyStatus": "A",
+      |       "appealInformation":
+      |       [{
+      |         "appealStatus": "99",
+      |         "appealLevel": "01",
+      |         "appealDescription": "Some value"
+      |       }],
+      |       "principalChargeBillingFrom": "2022-10-30",
+      |       "principalChargeBillingTo": "2022-10-30",
+      |       "principalChargeDueDate": "2022-10-30",
+      |       "communicationsDate": "2022-10-30",
+      |       "penaltyAmountAccruing": 1.11,
+      |       "principalChargeMainTransaction": "4700",
+      |       "penaltyAmountOutstanding": 99.99,
+      |       "penaltyAmountPosted": 0.00,
+      |       "penaltyAmountPaid": 1001.45,
+      |       "LPP1LRDays": "15",
+      |       "LPP1HRDays": "31",
+      |       "LPP2Days": "31",
+      |       "LPP1HRCalculationAmount": 99.99,
+      |       "LPP1LRCalculationAmount": 99.99,
+      |       "LPP2Percentage": 4.00,
+      |       "LPP1LRPercentage": 2.00,
+      |       "LPP1HRPercentage": 2.00,
+      |       "penaltyChargeDueDate": "2022-10-30",
+      |       "principalChargeDocNumber": "DOC1",
+      |       "principalChargeSubTransaction": "SUB1"
+      |   }]
+      | }
+      |}
+      |""".stripMargin)
 }

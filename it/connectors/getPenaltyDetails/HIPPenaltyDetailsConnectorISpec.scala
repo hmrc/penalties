@@ -16,7 +16,6 @@
 
 package connectors.getPenaltyDetails
 
-import java.time.LocalDate
 import config.featureSwitches.{CallAPI1812HIP, FeatureSwitching}
 import connectors.parsers.getPenaltyDetails.HIPPenaltyDetailsParser.{
   HIPPenaltyDetailsFailureResponse,
@@ -25,22 +24,18 @@ import connectors.parsers.getPenaltyDetails.HIPPenaltyDetailsParser.{
   HIPPenaltyDetailsResponse,
   HIPPenaltyDetailsSuccessResponse
 }
-import models.{AgnosticEnrolmentKey, Regime, IdType, Id}
 import models.hipPenaltyDetails.PenaltyDetails
-import models.hipPenaltyDetails.appealInfo.{
-  AppealStatusEnum,
-}
+import models.hipPenaltyDetails.appealInfo.{AppealInformationType, AppealStatusEnum}
+import models.hipPenaltyDetails.lateSubmission._
+import models.{AgnosticEnrolmentKey, Id, IdType, Regime}
 import org.scalatest.prop.TableDrivenPropertyChecks
 import play.api.http.Status
 import play.api.http.Status.IM_A_TEAPOT
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
-import uk.gov.hmrc.http.{HeaderCarrier}
-import utils.{IntegrationSpecCommonBase}
-import utils.HIPPenaltiesWiremock
-import models.hipPenaltyDetails.lateSubmission.{LateSubmissionPenalty, LSPSummary, LateSubmission, LSPDetails}
-import models.hipPenaltyDetails.lateSubmission.{LSPPenaltyCategoryEnum, LSPPenaltyStatusEnum, TaxReturnStatusEnum}
-import models.hipPenaltyDetails.appealInfo.AppealInformationType
-import java.time.Instant
+import uk.gov.hmrc.http.HeaderCarrier
+import utils.{HIPPenaltiesWiremock, IntegrationSpecCommonBase}
+
+import java.time.{Instant, LocalDate}
 
 class HIPPenaltyDetailsConnectorISpec
     extends IntegrationSpecCommonBase

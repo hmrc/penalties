@@ -30,10 +30,6 @@ import scala.util.Try
 
 class FilterService @Inject()()(implicit appConfig: AppConfig) {
 
-  def tryJsonParseOrJsString(body: String): JsValue = {
-    Try(Json.parse(body)).getOrElse(JsString(body))
-  }
-
   def filterEstimatedLPP1DuringPeriodOfFamiliarisation(penaltiesDetails: GetPenaltyDetails)(implicit loggingContext: LoggingContext): GetPenaltyDetails = {
     if (penaltiesDetails.latePaymentPenalty.nonEmpty) {
       val filteredLPPs: Option[Seq[LPPDetails]] = findEstimatedLPP1DuringPeriodOfFamiliarisation(penaltiesDetails)
@@ -63,7 +59,7 @@ class FilterService @Inject()()(implicit appConfig: AppConfig) {
     )
   }
 
-  def filterPenaltiesWith9xAppealStatus(penaltiesDetails: GetPenaltyDetails)(implicit logingContext: LoggingContext): GetPenaltyDetails = {
+  def filterPenaltiesWith9xAppealStatus(penaltiesDetails: GetPenaltyDetails)(implicit loggingContext: LoggingContext): GetPenaltyDetails = {
     val filteredLSPs: Option[Seq[LSPDetails]] = filterLSPWith9xAppealStatus(penaltiesDetails)
     val numberOfFilteredLSPs: Int = countNumberOfFilteredLSPs(filteredLSPs, penaltiesDetails)
     val filteredLPPs: Option[Seq[LPPDetails]] = findLPPWith9xAppealStatus(penaltiesDetails)
@@ -141,5 +137,12 @@ class FilterService @Inject()()(implicit appConfig: AppConfig) {
     } else {
       0
     }
+  }
+}
+
+object RegimeFilterService {
+
+  def tryJsonParseOrJsString(body: String): JsValue = {
+    Try(Json.parse(body)).getOrElse(JsString(body))
   }
 }
