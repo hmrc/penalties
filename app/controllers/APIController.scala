@@ -199,10 +199,10 @@ class APIController @Inject()(auditService: AuditService,
             case NOT_FOUND =>
               logFinancialErrorMessage(s"returned 404: ${res.body}")
               returnErrorResult(NOT_FOUND, res.body)
-            case UNPROCESSABLE_ENTITY if res.body.contains("016") =>
+            case UNPROCESSABLE_ENTITY if res.body.contains("Invalid ID Number") =>
               logFinancialErrorMessage(s"returned HIP error 422-016 Invalid ID Number: ${res.body}")
               returnErrorResult(NOT_FOUND, res.body)
-            case UNPROCESSABLE_ENTITY if res.body.contains("018") =>
+            case UNPROCESSABLE_ENTITY if res.body.contains("No Data Identified") =>
               logFinancialErrorMessage(s"returned HIP error 422-018 No Data Identified: ${res.body}")
               returnErrorResult(NOT_FOUND, res.body)
             case status =>
@@ -246,7 +246,7 @@ class APIController @Inject()(auditService: AuditService,
             case NOT_FOUND =>
               logPenaltiesErrorMessage(s"returned 404: ${response.body}")
               returnErrorResult(NOT_FOUND, response.body)
-            case UNPROCESSABLE_ENTITY if response.body.contains("016") =>
+            case UNPROCESSABLE_ENTITY if response.body.contains("Invalid ID Number") =>
               logPenaltiesErrorMessage(s"returned HIP error 422-016 Invalid ID Number: ${response.body}")
               returnErrorResult(NOT_FOUND, response.body)
             case status =>
