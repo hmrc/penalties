@@ -544,7 +544,7 @@ class APIControllerISpec
 
       penaltyUpstreamServices.foreach { upstreamService =>
         def mockHIPPenaltyDetails(responseStatus: Int): StubMapping =
-          mockResponseForHIPPenaltyDetails(responseStatus, regime, idType, id, body = Some(getHIPPenaltyDetailsJson.toString()))
+          mockResponseForHIPPenaltyDetails(responseStatus, regime, idType, id, body = Some(getHIPPenaltyDetailsJson.toString()), dateLimit = Some("09"))
 
         def mockIFPenaltyDetails(responseStatus: Int, body: Option[String]): StubMapping =
           mockResponseForGetPenaltyDetails(responseStatus, regime, idType, s"${id.value}?dateLimit=09", body)
@@ -563,7 +563,7 @@ class APIControllerISpec
             |     "activePenaltyPoints": 2,
             |     "inactivePenaltyPoints": 0,
             |     "regimeThreshold": 5,
-            |     "penaltyChargeAmount": 200.00,
+            |     "penaltyChargeAmount": 200,
             |     "PoCAchievementDate": "2022-01-01"
             |   },
             |   "details": []
@@ -572,50 +572,49 @@ class APIControllerISpec
             |   "details": [
             |     {
             |       "penaltyCategory": "LPP2",
-            |       "penaltyStatus": "A",
-            |       "penaltyAmountPosted": 0,
-            |       "LPP1LRCalculationAmount": 123.45,
-            |       "LPP1LRDays": "15",
-            |       "LPP1LRPercentage": 2.00,
-            |       "LPP1HRCalculationAmount": 123.45,
-            |       "LPP1HRDays": "31",
-            |       "LPP1HRPercentage": 2.00,
-            |       "LPP2Days": "31",
-            |       "LPP2Percentage": 4.00,
-            |       "penaltyChargeCreationDate": "2022-10-30",
-            |       "communicationsDate": "2022-10-30",
-            |       "penaltyAmountAccruing": 246.9,
-            |       "principalChargeMainTransaction": "4700",
-            |       "penaltyChargeDueDate": "2022-10-30",
             |       "principalChargeReference": "1234567890",
+            |       "penaltyChargeCreationDate": "2022-10-30",
+            |       "penaltyStatus": "A",
             |       "principalChargeBillingFrom": "2022-10-30",
             |       "principalChargeBillingTo": "2022-10-30",
-            |       "principalChargeDueDate": "2022-10-30"
+            |       "principalChargeDueDate": "2022-10-30",
+            |       "communicationsDate": "2022-10-30",
+            |       "penaltyAmountPosted": 0,
+            |       "LPP1LRDays": "15",
+            |       "LPP1HRDays": "31",
+            |       "LPP2Days": "31",
+            |       "LPP1HRCalculationAmount": 123.45,
+            |       "LPP1LRCalculationAmount": 123.45,
+            |       "LPP2Percentage": 4,
+            |       "LPP1LRPercentage": 2,
+            |       "LPP1HRPercentage": 2,
+            |       "penaltyChargeDueDate": "2022-10-30",
+            |       "penaltyAmountAccruing": 246.9,
+            |       "principalChargeMainTransaction": "4700"
             |     },
             |     {
             |       "penaltyCategory": "LPP1",
-            |       "penaltyStatus": "P",
-            |       "penaltyAmountPaid": 0,
-            |       "penaltyAmountPosted": 144.0,
-            |       "penaltyAmountOutstanding": 144.00,
-            |       "penaltyAmountAccruing": 0,
-            |       "LPP1LRCalculationAmount": 99.99,
-            |       "LPP1LRDays": "15",
-            |       "LPP1LRPercentage": 2.00,
-            |       "LPP1HRCalculationAmount": 99.99,
-            |       "LPP1HRDays": "31",
-            |       "LPP1HRPercentage": 2.00,
-            |       "LPP2Days": "31",
-            |       "LPP2Percentage": 4.00,
+            |       "principalChargeReference": "1234567891",
             |       "penaltyChargeCreationDate": "2022-10-30",
-            |       "communicationsDate": "2022-10-30",
-            |       "penaltyAmountAccruing": 0.00,
-            |       "principalChargeMainTransaction": "4700",
-            |       "penaltyChargeDueDate": "2022-10-30",
-            |       "principalChargeReference": "1234567890",
+            |       "penaltyStatus": "P",
             |       "principalChargeBillingFrom": "2022-10-30",
             |       "principalChargeBillingTo": "2022-10-30",
-            |       "principalChargeDueDate": "2022-10-30"
+            |       "principalChargeDueDate": "2022-10-30",
+            |       "communicationsDate": "2022-10-30",
+            |       "penaltyAmountOutstanding": 144,
+            |       "penaltyAmountPosted": 144,
+            |       "penaltyAmountPaid": 0,
+            |       "LPP1LRDays": "15",
+            |       "LPP1HRDays": "31",
+            |       "LPP2Days": "31",
+            |       "LPP1HRCalculationAmount": 99.99,
+            |       "LPP1LRCalculationAmount": 99.99,
+            |       "LPP2Percentage": 4,
+            |       "LPP1LRPercentage": 2,
+            |       "LPP1HRPercentage": 2,
+            |       "penaltyChargeDueDate": "2022-10-30",
+            |       "penaltyAmountAccruing": 0,
+            |       "principalChargeMainTransaction": "4700"
             |     }
             |   ],
             |   "ManualLPPIndicator": true
@@ -685,7 +684,7 @@ class APIControllerISpec
                 mockStubResponseForAuthorisedUser
 
                 val hipInvalidIdError = """{ "errors": { "processingDate": "2025-03-03", "code": "016", "text": "Invalid ID Number" } }"""
-                mockResponseForHIPPenaltyDetails(UNPROCESSABLE_ENTITY, regime, idType, id, body = Some(hipInvalidIdError))
+                mockResponseForHIPPenaltyDetails(UNPROCESSABLE_ENTITY, regime, idType, id, dateLimit = Some("09"), body = Some(hipInvalidIdError))
 
                 val result = await(buildClientForRequestToApp(uri = uriToPenaltyController).get())
                 result.status shouldBe NOT_FOUND
