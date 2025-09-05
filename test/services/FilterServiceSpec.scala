@@ -18,13 +18,14 @@ package services
 
 import base.SpecBase
 import config.AppConfig
+import models.getPenaltyDetails.GetPenaltyDetails
 import models.getPenaltyDetails.appealInfo.{AppealInformationType, AppealLevelEnum, AppealStatusEnum}
 import models.getPenaltyDetails.latePayment._
-import models.getPenaltyDetails.GetPenaltyDetails
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.libs.json.{JsString, Json}
+import services.RegimeFilterService.tryJsonParseOrJsString
 
 import java.time.LocalDate
 
@@ -200,13 +201,13 @@ class FilterServiceSpec extends SpecBase with MockitoSugar {
     "tryJsonParseOrJsString" should {
       "parse valid JSON" in {
         val validJson = """{"test": "value"}"""
-        val result = filterService.tryJsonParseOrJsString(validJson)
+        val result = tryJsonParseOrJsString(validJson)
         result shouldBe Json.parse(validJson)
       }
 
       "return JsString for invalid JSON" in {
         val invalidJson = "invalid json"
-        val result = filterService.tryJsonParseOrJsString(invalidJson)
+        val result = tryJsonParseOrJsString(invalidJson)
         result shouldBe JsString(invalidJson)
       }
     }
