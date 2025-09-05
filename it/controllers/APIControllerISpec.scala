@@ -346,11 +346,7 @@ class APIControllerISpec
               setSummaryFeatureSwitch()
               mockStubResponseForAuthorisedUser
 
-              val notFoundResponseBody = if (upstreamService == "HIP") {
-                """{ "errors": { "processingDate": "2025-03-03", "code": "016", "text": "Invalid ID Number" } }"""
-              } else {
-                """{"errors":{"processingDate":"2025-03-03", "code":"016", "text":"Invalid ID Number"}}"""
-              }
+              val notFoundResponseBody = """{ "errors": { "processingDate": "2025-03-03", "code": "016", "text": "Invalid ID Number" } }"""
 
               if (upstreamService == "HIP") {
                 mockResponseForHIPPenaltyDetails(UNPROCESSABLE_ENTITY, regime, idType, id, body = Some(notFoundResponseBody))
