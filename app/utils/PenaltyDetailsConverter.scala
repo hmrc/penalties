@@ -198,7 +198,8 @@ object PenaltyDetailsConverter {
 
   private def convertAppealStatus(hipStatus: models.hipPenaltyDetails.appealInfo.AppealStatusEnum.Value): models.getPenaltyDetails.appealInfo.AppealStatusEnum.Value = {
     hipStatus match {
-      case models.hipPenaltyDetails.appealInfo.AppealStatusEnum.Under_Appeal => models.getPenaltyDetails.appealInfo.AppealStatusEnum.Under_Appeal
+      case models.hipPenaltyDetails.appealInfo.AppealStatusEnum.Under_Appeal =>
+          models.getPenaltyDetails.appealInfo.AppealStatusEnum.Under_Appeal
       case models.hipPenaltyDetails.appealInfo.AppealStatusEnum.Upheld => models.getPenaltyDetails.appealInfo.AppealStatusEnum.Upheld
       case models.hipPenaltyDetails.appealInfo.AppealStatusEnum.Rejected => models.getPenaltyDetails.appealInfo.AppealStatusEnum.Rejected
       case models.hipPenaltyDetails.appealInfo.AppealStatusEnum.Unappealable => models.getPenaltyDetails.appealInfo.AppealStatusEnum.Unappealable

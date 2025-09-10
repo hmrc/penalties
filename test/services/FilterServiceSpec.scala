@@ -198,6 +198,70 @@ class FilterServiceSpec extends SpecBase with MockitoSugar {
       }
     }
 
+    "filterPenaltiesWith92AppealStatus" should {
+      "filter out penalties with 92 appeal status" in {
+        val appealInfoToFilter = Seq(AppealInformationType(
+          appealStatus = Some(AppealStatusEnum.AppealUpheldPointAlreadyRemoved),
+          appealLevel = Some(AppealLevelEnum.HMRC),
+          appealDescription = Some("Test appeal with appeal status 92")
+        ),AppealInformationType(
+          appealStatus = Some(AppealStatusEnum.Under_Appeal),
+          appealLevel = Some(AppealLevelEnum.HMRC),
+          appealDescription = Some("Test appeal with appeal status Under_Appeal-A")
+        ))
+
+        val lppToFilter = LPPDetails(
+          penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
+          penaltyChargeReference = Some("REF123"),
+          principalChargeReference = "123456789",
+          penaltyChargeCreationDate = Some(pastDate),
+          penaltyStatus = LPPPenaltyStatusEnum.Posted,
+          penaltyAmountAccruing = BigDecimal(0),
+          penaltyAmountPosted = BigDecimal(100),
+          penaltyAmountOutstanding = Some(BigDecimal(100)),
+          penaltyAmountPaid = None,
+          principalChargeMainTransaction = models.getFinancialDetails.MainTransactionEnum.VATReturnCharge,
+          principalChargeBillingFrom = pastDate,
+          principalChargeBillingTo = pastDate,
+          principalChargeDueDate = pastDate,
+          LPP1LRDays = None,
+          LPP1HRDays = None,
+          LPP2Days = None,
+          LPP1HRCalculationAmount = None,
+          LPP1LRCalculationAmount = None,
+          LPP2Percentage = None,
+          LPP1LRPercentage = None,
+          LPP1HRPercentage = None,
+          communicationsDate = Some(pastDate),
+          penaltyChargeDueDate = Some(futureDate),
+          appealInformation = Some(appealInfoToFilter),
+          principalChargeLatestClearing = None,
+          vatOutstandingAmount = None,
+          metadata = LPPDetailsMetadata()
+        )
+
+        val lppToKeep = lppToFilter.copy(appealInformation = Some(Seq(AppealInformationType(
+          appealStatus = Some(AppealStatusEnum.Under_Appeal),
+          appealLevel = Some(AppealLevelEnum.HMRC),
+          appealDescription = Some("Test appeal with appeal status Under_Appeal-A")
+        ))))
+
+        val penaltyDetails = GetPenaltyDetails(
+          totalisations = None,
+          lateSubmissionPenalty = None,
+          latePaymentPenalty = Some(LatePaymentPenalty(
+            details = Some(Seq(lppToFilter, lppToKeep)),
+            ManualLPPIndicator = Some(false)
+          )),
+          breathingSpace = None
+        )
+
+        val result = filterService.filterPenaltiesWith9xAppealStatus(penaltyDetails)
+
+        result.latePaymentPenalty.get.details.get should contain only lppToKeep
+      }
+    }
+
     "tryJsonParseOrJsString" should {
       "parse valid JSON" in {
         val validJson = """{"test": "value"}"""

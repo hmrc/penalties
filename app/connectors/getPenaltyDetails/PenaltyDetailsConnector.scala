@@ -19,7 +19,7 @@ package connectors.getPenaltyDetails
 import config.AppConfig
 import config.featureSwitches.FeatureSwitching
 import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser.{GetPenaltyDetailsFailureResponse, GetPenaltyDetailsResponse}
-import models.{AgnosticEnrolmentKey}
+import models.AgnosticEnrolmentKey
 import play.api.Configuration
 import play.api.http.Status.INTERNAL_SERVER_ERROR
 import uk.gov.hmrc.http.HttpReads.Implicits._
