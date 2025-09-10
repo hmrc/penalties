@@ -106,7 +106,11 @@ class FilterService @Inject()()(implicit appConfig: AppConfig) {
     penaltiesDetails.latePaymentPenalty.flatMap(
       _.details.map(latePaymentPenalties => latePaymentPenalties.filterNot(lpp => {
         // Only filter out rejected 9x appeal statuses - keep upheld ones (92,93) as they should show as "accepted"
-        lpp.appealInformation.nonEmpty && lpp.appealInformation.get.exists(appealInfo => appealInfo.appealStatus.nonEmpty && (appealInfo.appealStatus.get.equals(AppealStatusEnum.AppealRejectedChargeAlreadyReversed) || appealInfo.appealStatus.get.equals(AppealStatusEnum.AppealRejectedPointAlreadyRemoved)))
+        lpp.appealInformation.nonEmpty && lpp.appealInformation.get.exists(appealInfo => appealInfo.appealStatus.nonEmpty &&
+            (appealInfo.appealStatus.get.equals(AppealStatusEnum.AppealRejectedChargeAlreadyReversed) ||
+              appealInfo.appealStatus.get.equals(AppealStatusEnum.AppealRejectedPointAlreadyRemoved) ||
+              appealInfo.appealStatus.get.equals(AppealStatusEnum.AppealUpheldPointAlreadyRemoved) ||
+              appealInfo.appealStatus.get.equals(AppealStatusEnum.AppealUpheldChargeAlreadyReversed)))
       })
       )
     )
