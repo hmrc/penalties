@@ -69,7 +69,6 @@ class PenaltiesFrontendController @Inject()(
       },
       success => {
         val penaltyDetails = success.asInstanceOf[GetPenaltyDetailsSuccessResponse].penaltyDetails
-        println(s"penalties Details from backend**************==========>$penaltyDetails")
         logger.info(s"[RegimePenaltiesFrontendController][getPenaltiesData] - call returned 200 for $agnosticEnrolmenKey")
         penaltiesFrontendService.handleAndCombineGetFinancialDetailsData(
           penaltyDetails,

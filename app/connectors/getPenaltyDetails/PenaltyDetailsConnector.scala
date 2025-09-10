@@ -32,7 +32,6 @@ import java.time.LocalDateTime
 import java.util.UUID.randomUUID
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.{Failure, Success}
 
 class PenaltyDetailsConnector @Inject()(httpClient: HttpClient,
                                         appConfig: AppConfig)
@@ -53,7 +52,7 @@ class PenaltyDetailsConnector @Inject()(httpClient: HttpClient,
 
     logger.info(s"[RegimePenaltyDetailsConnector][getPenaltyDetails][appConfig.getRegimeAgnosticPenaltyDetailsUrl($enrolmentKey)]- Calling GET $url \nHeaders: $headers")
 
-    val res = httpClient.GET[GetPenaltyDetailsResponse](url, Seq.empty[(String, String)], headers).recover {
+    httpClient.GET[GetPenaltyDetailsResponse](url, Seq.empty[(String, String)], headers).recover {
       case e: UpstreamErrorResponse => {
         PagerDutyHelper.logStatusCode("getPenaltyDetails", e.statusCode)(RECEIVED_4XX_FROM_1812_API, RECEIVED_5XX_FROM_1812_API)
         logger.error(s"[RegimePenaltyDetailsConnector][getPenaltyDetails] -" +
@@ -67,11 +66,6 @@ class PenaltyDetailsConnector @Inject()(httpClient: HttpClient,
         Left(GetPenaltyDetailsFailureResponse(INTERNAL_SERVER_ERROR))
       }
     }
-    res.onComplete{
-      case Success(res) => println(s"**** Response from PenaltyDetailsConnector ****** $res")
-      case Failure(ex)=> println(s"^^^^^^issue in getting PenaltyDetailsConnector ^^^^ $ex")
-    }
-    res
   }
 
   def getPenaltyDetailsForAPI(enrolmentKey: AgnosticEnrolmentKey, dateLimit: Option[String])(implicit hc: HeaderCarrier): Future[HttpResponse] = {
