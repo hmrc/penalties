@@ -17,9 +17,8 @@
 package services
 
 import config.AppConfig
-
 import models.getPenaltyDetails.GetPenaltyDetails
-import models.getPenaltyDetails.appealInfo.AppealStatusEnum
+import models.getPenaltyDetails.appealInfo.{AppealInformationType, AppealStatusEnum}
 import models.getPenaltyDetails.latePayment.{LPPDetails, LPPPenaltyCategoryEnum, LPPPenaltyStatusEnum, LatePaymentPenalty}
 import models.getPenaltyDetails.lateSubmission.{LSPDetails, LateSubmissionPenalty}
 import play.api.libs.json.{JsString, JsValue, Json}
@@ -60,9 +59,9 @@ class FilterService @Inject()()(implicit appConfig: AppConfig) {
   }
 
   def filterPenaltiesWith9xAppealStatus(penaltiesDetails: GetPenaltyDetails)(implicit loggingContext: LoggingContext): GetPenaltyDetails = {
-    val filteredLSPs: Option[Seq[LSPDetails]] = filterLSPWith9xAppealStatus(penaltiesDetails)
+    val filteredLSPs: Seq[LSPDetails] = filterLSPWith9xAppealStatus(penaltiesDetails)
     val numberOfFilteredLSPs: Int = countNumberOfFilteredLSPs(filteredLSPs, penaltiesDetails)
-    val filteredLPPs: Option[Seq[LPPDetails]] = findLPPWith9xAppealStatus(penaltiesDetails)
+    val filteredLPPs: Option[Seq[LPPDetails]] = filterLPPWith9xAppealStatus(penaltiesDetails)
     val numberOfFilteredLPPs: Int = countNumberOfFilteredLPPs(filteredLPPs, penaltiesDetails)
 
     penaltiesDetails.copy(
@@ -71,12 +70,12 @@ class FilterService @Inject()()(implicit appConfig: AppConfig) {
     )
   }
 
-  private def prepareLateSubmissionPenaltiesAfterFilter(penaltiesDetails: GetPenaltyDetails, filteredLSPs: Option[Seq[LSPDetails]], noOfFilteredLSPs: Int)(implicit loggingContext: LoggingContext): Option[LateSubmissionPenalty] = {
-    if (filteredLSPs.nonEmpty && filteredLSPs.get.nonEmpty && noOfFilteredLSPs > 0) {
+  private def prepareLateSubmissionPenaltiesAfterFilter(penaltiesDetails: GetPenaltyDetails, filteredLSPs: Seq[LSPDetails], noOfFilteredLSPs: Int)(implicit loggingContext: LoggingContext): Option[LateSubmissionPenalty] = {
+    if (filteredLSPs.nonEmpty && noOfFilteredLSPs > 0) {
       logger.info(s"[RegimeFilterService][filterPenaltiesWith9xAppealStatus] Filtering for [${loggingContext.callingClass}][${loggingContext.function}] -" +
         s" Filtered $noOfFilteredLSPs LSP(s) from payload for ${loggingContext.enrolmentKey}")
       val summary = penaltiesDetails.lateSubmissionPenalty.map(lateSubmissionPenalty => lateSubmissionPenalty.summary)
-      Some(LateSubmissionPenalty(summary = summary.get, details = filteredLSPs.getOrElse(Seq.empty[LSPDetails])))
+      Some(LateSubmissionPenalty(summary = summary.get, details = filteredLSPs))
     } else if (noOfFilteredLSPs == 0) {
       logger.info(s"[RegimeFilterService][prepareLateSubmissionPenaltiesAfterFilter] Filtering for [${loggingContext.callingClass}][${loggingContext.function}] -" +
         s" No LSPs to filter from payload for ${loggingContext.enrolmentKey}")
@@ -102,8 +101,8 @@ class FilterService @Inject()()(implicit appConfig: AppConfig) {
     }
   }
 
-  private def findLPPWith9xAppealStatus(penaltiesDetails: GetPenaltyDetails): Option[Seq[LPPDetails]] = {
-    penaltiesDetails.latePaymentPenalty.flatMap(
+  private def filterLPPWith9xAppealStatus(penaltiesDetails: GetPenaltyDetails): Option[Seq[LPPDetails]] = {
+    /*penaltiesDetails.latePaymentPenalty.flatMap(
       _.details.map(latePaymentPenalties => latePaymentPenalties.filterNot(lpp => {
         // Only filter out rejected 9x appeal statuses - keep upheld ones (92,93) as they should show as "accepted"
         lpp.appealInformation.nonEmpty && lpp.appealInformation.get.exists(appealInfo => appealInfo.appealStatus.nonEmpty &&
@@ -113,19 +112,22 @@ class FilterService @Inject()()(implicit appConfig: AppConfig) {
               appealInfo.appealStatus.get.equals(AppealStatusEnum.AppealUpheldChargeAlreadyReversed)))
       })
       )
-    )
+    )*/
+
+    val lppDetails: Option[Seq[LPPDetails]] = penaltiesDetails.latePaymentPenalty.flatMap(_.details)
+    lppDetails.map(latePaymentPenalties =>
+        latePaymentPenalties.filterNot(lpp => appealInformationHas9xAppealStatus(lpp.appealInformation)))
   }
 
-  private def filterLSPWith9xAppealStatus(penaltiesDetails: GetPenaltyDetails): Option[Seq[LSPDetails]] = {
-    penaltiesDetails.lateSubmissionPenalty.map(_.details.filterNot(lsp =>
-      // Filter out rejected 9x appeal statuses (91,94) and "point already removed" status (92)
-      lsp.appealInformation.nonEmpty && lsp.appealInformation.get.exists(appealInfo => appealInfo.appealStatus.nonEmpty && (
-        appealInfo.appealStatus.get.equals(AppealStatusEnum.AppealRejectedChargeAlreadyReversed) || 
-        appealInfo.appealStatus.get.equals(AppealStatusEnum.AppealRejectedPointAlreadyRemoved) ||
-        appealInfo.appealStatus.get.equals(AppealStatusEnum.AppealUpheldPointAlreadyRemoved)
-      ))))
+  private def filterLSPWith9xAppealStatus(penaltiesDetails: GetPenaltyDetails): Seq[LSPDetails] = {
+    val lspDetails: Seq[LSPDetails] = penaltiesDetails.lateSubmissionPenalty.map(_.details).getOrElse(Seq.empty[LSPDetails])
+    lspDetails.filterNot(details => appealInformationHas9xAppealStatus(details.appealInformation))
   }
 
+  private def appealInformationHas9xAppealStatus(appealInformation: Option[Seq[AppealInformationType]]): Boolean = {
+    // 91-94 appeal statuses are not displayed or accepted by the frontend and so are filtered out
+    appealInformation.getOrElse(Seq.empty).exists(_.appealStatus.exists(status => AppealStatusEnum.ignoredStatuses.contains(status)))
+  }
 
   private def countNumberOfFilteredLPPs(filteredLPPs: Option[Seq[LPPDetails]], penaltiesDetails: GetPenaltyDetails): Int = {
     if (penaltiesDetails.latePaymentPenalty.nonEmpty) {
@@ -135,12 +137,9 @@ class FilterService @Inject()()(implicit appConfig: AppConfig) {
     }
   }
 
-  private def countNumberOfFilteredLSPs(filteredLSPs: Option[Seq[LSPDetails]], penaltiesDetails: GetPenaltyDetails): Int = {
-    if (penaltiesDetails.lateSubmissionPenalty.nonEmpty) {
-      penaltiesDetails.lateSubmissionPenalty.get.details.size - filteredLSPs.get.size
-    } else {
-      0
-    }
+  private def countNumberOfFilteredLSPs(filteredLSPs: Seq[LSPDetails], penaltiesDetails: GetPenaltyDetails): Int = {
+    val allLSPs = penaltiesDetails.lateSubmissionPenalty.map(_.details.size).getOrElse(0)
+    allLSPs - filteredLSPs.size
   }
 }
 
