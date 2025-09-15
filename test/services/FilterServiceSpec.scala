@@ -96,89 +96,91 @@ class FilterServiceSpec extends SpecBase with MockitoSugar {
       "not filter LPP1 penalties that are not within filter window" in {
         when(mockAppConfig.withinLPP1FilterWindow(any[LocalDate])).thenReturn(false)
 
-                 val lppToKeep = LPPDetails(
-           penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
-           penaltyChargeReference = Some("REF123"),
-           principalChargeReference = "123456789",
-           penaltyChargeCreationDate = Some(pastDate),
-           penaltyStatus = LPPPenaltyStatusEnum.Accruing,
-           penaltyAmountAccruing = BigDecimal(100),
-           penaltyAmountPosted = BigDecimal(0),
-           penaltyAmountOutstanding = None,
-           penaltyAmountPaid = None,
-           principalChargeMainTransaction = models.getFinancialDetails.MainTransactionEnum.VATReturnCharge,
-           principalChargeBillingFrom = pastDate,
-           principalChargeBillingTo = pastDate,
-           principalChargeDueDate = pastDate,
-           LPP1LRDays = None,
-           LPP1HRDays = None,
-           LPP2Days = None,
-           LPP1HRCalculationAmount = None,
-           LPP1LRCalculationAmount = None,
-           LPP2Percentage = None,
-           LPP1LRPercentage = None,
-           LPP1HRPercentage = None,
-           communicationsDate = Some(pastDate),
-           penaltyChargeDueDate = Some(futureDate),
-           appealInformation = None,
-           principalChargeLatestClearing = None,
-           vatOutstandingAmount = None,
-           metadata = LPPDetailsMetadata()
-         )
+          val lppToKeep = LPPDetails(
+             penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
+             penaltyChargeReference = Some("REF123"),
+             principalChargeReference = "123456789",
+             penaltyChargeCreationDate = Some(pastDate),
+             penaltyStatus = LPPPenaltyStatusEnum.Accruing,
+             penaltyAmountAccruing = BigDecimal(100),
+             penaltyAmountPosted = BigDecimal(0),
+             penaltyAmountOutstanding = None,
+             penaltyAmountPaid = None,
+             principalChargeMainTransaction = models.getFinancialDetails.MainTransactionEnum.VATReturnCharge,
+             principalChargeBillingFrom = pastDate,
+             principalChargeBillingTo = pastDate,
+             principalChargeDueDate = pastDate,
+             LPP1LRDays = None,
+             LPP1HRDays = None,
+             LPP2Days = None,
+             LPP1HRCalculationAmount = None,
+             LPP1LRCalculationAmount = None,
+             LPP2Percentage = None,
+             LPP1LRPercentage = None,
+             LPP1HRPercentage = None,
+             communicationsDate = Some(pastDate),
+             penaltyChargeDueDate = Some(futureDate),
+             appealInformation = None,
+             principalChargeLatestClearing = None,
+             vatOutstandingAmount = None,
+             metadata = LPPDetailsMetadata()
+           )
 
-        val penaltyDetails = GetPenaltyDetails(
-          totalisations = None,
-          lateSubmissionPenalty = None,
-          latePaymentPenalty = Some(LatePaymentPenalty(
-            details = Some(Seq(lppToKeep)),
-            ManualLPPIndicator = Some(false)
-          )),
-          breathingSpace = None
-        )
+          val penaltyDetails = GetPenaltyDetails(
+            totalisations = None,
+            lateSubmissionPenalty = None,
+            latePaymentPenalty = Some(LatePaymentPenalty(
+              details = Some(Seq(lppToKeep)),
+              ManualLPPIndicator = Some(false)
+            )),
+            breathingSpace = None
+          )
 
-        val result = filterService.filterEstimatedLPP1DuringPeriodOfFamiliarisation(penaltyDetails)
+          val result = filterService.filterEstimatedLPP1DuringPeriodOfFamiliarisation(penaltyDetails)
 
-        result.latePaymentPenalty.get.details.get should contain(lppToKeep)
+          result.latePaymentPenalty.get.details.get should contain(lppToKeep)
       }
     }
 
     "filterPenaltiesWith9xAppealStatus" should {
       "filter out penalties with 9x appeal status" in {
-        val appealInfoToFilter = Seq(AppealInformationType(
-          appealStatus = Some(AppealStatusEnum.AppealRejectedChargeAlreadyReversed),
-          appealLevel = Some(AppealLevelEnum.HMRC),
-          appealDescription = Some("Test appeal")
-        ))
+        val appealInfoToFilter = Seq(
+          AppealInformationType(
+            appealStatus = Some(AppealStatusEnum.AppealRejectedChargeAlreadyReversed),
+            appealLevel = Some(AppealLevelEnum.HMRC),
+            appealDescription = Some("Test appeal 91 status")
+          )
+        )
 
-                 val lppToFilter = LPPDetails(
-           penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
-           penaltyChargeReference = Some("REF123"),
-           principalChargeReference = "123456789",
-           penaltyChargeCreationDate = Some(pastDate),
-           penaltyStatus = LPPPenaltyStatusEnum.Posted,
-           penaltyAmountAccruing = BigDecimal(0),
-           penaltyAmountPosted = BigDecimal(100),
-           penaltyAmountOutstanding = Some(BigDecimal(100)),
-           penaltyAmountPaid = None,
-           principalChargeMainTransaction = models.getFinancialDetails.MainTransactionEnum.VATReturnCharge,
-           principalChargeBillingFrom = pastDate,
-           principalChargeBillingTo = pastDate,
-           principalChargeDueDate = pastDate,
-           LPP1LRDays = None,
-           LPP1HRDays = None,
-           LPP2Days = None,
-           LPP1HRCalculationAmount = None,
-           LPP1LRCalculationAmount = None,
-           LPP2Percentage = None,
-           LPP1LRPercentage = None,
-           LPP1HRPercentage = None,
-           communicationsDate = Some(pastDate),
-           penaltyChargeDueDate = Some(futureDate),
-           appealInformation = Some(appealInfoToFilter),
-           principalChargeLatestClearing = None,
-           vatOutstandingAmount = None,
-           metadata = LPPDetailsMetadata()
-         )
+        val lppToFilter = LPPDetails(
+          penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
+          penaltyChargeReference = Some("REF123"),
+          principalChargeReference = "123456789",
+          penaltyChargeCreationDate = Some(pastDate),
+          penaltyStatus = LPPPenaltyStatusEnum.Posted,
+          penaltyAmountAccruing = BigDecimal(0),
+          penaltyAmountPosted = BigDecimal(100),
+          penaltyAmountOutstanding = Some(BigDecimal(100)),
+          penaltyAmountPaid = None,
+          principalChargeMainTransaction = models.getFinancialDetails.MainTransactionEnum.VATReturnCharge,
+          principalChargeBillingFrom = pastDate,
+          principalChargeBillingTo = pastDate,
+          principalChargeDueDate = pastDate,
+          LPP1LRDays = None,
+          LPP1HRDays = None,
+          LPP2Days = None,
+          LPP1HRCalculationAmount = None,
+          LPP1LRCalculationAmount = None,
+          LPP2Percentage = None,
+          LPP1LRPercentage = None,
+          LPP1HRPercentage = None,
+          communicationsDate = Some(pastDate),
+          penaltyChargeDueDate = Some(futureDate),
+          appealInformation = Some(appealInfoToFilter),
+          principalChargeLatestClearing = None,
+          vatOutstandingAmount = None,
+          metadata = LPPDetailsMetadata()
+        )
 
         val lppToKeep = lppToFilter.copy(appealInformation = None)
 
@@ -195,6 +197,40 @@ class FilterServiceSpec extends SpecBase with MockitoSugar {
         val result = filterService.filterPenaltiesWith9xAppealStatus(penaltyDetails)
 
         result.latePaymentPenalty.get.details.get should contain only lppToKeep
+      }
+
+      "validate the ignored status against appealInfoType values" in {
+        val appealInfoToFilter = Seq(
+          AppealInformationType(
+            appealStatus = Some(AppealStatusEnum.AppealRejectedChargeAlreadyReversed),
+            appealLevel = Some(AppealLevelEnum.HMRC),
+            appealDescription = Some("Test appeal 91 status")
+          ),
+          AppealInformationType(
+            appealStatus = Some(AppealStatusEnum.AppealUpheldPointAlreadyRemoved),
+            appealLevel = Some(AppealLevelEnum.HMRC),
+            appealDescription = Some("Test appeal 92 status")
+          ),
+          AppealInformationType(
+            appealStatus = Some(AppealStatusEnum.AppealUpheldChargeAlreadyReversed),
+            appealLevel = Some(AppealLevelEnum.HMRC),
+            appealDescription = Some("Test appeal 93 status")
+          ),
+          AppealInformationType(
+            appealStatus = Some(AppealStatusEnum.AppealRejectedPointAlreadyRemoved),
+            appealLevel = Some(AppealLevelEnum.HMRC),
+            appealDescription = Some("Test appeal 94 status")
+          ),
+          AppealInformationType(
+            appealStatus = Some(AppealStatusEnum.Upheld),
+            appealLevel = Some(AppealLevelEnum.HMRC),
+            appealDescription = Some("Test appeal B status")
+          ),
+        )
+        val expectedIgnoreStatusCount: Int = 4
+        val actualIgnoreStatusCount: Int = appealInfoToFilter.count(appealInfoToFilter =>
+                                          AppealStatusEnum.ignoredStatuses.contains(appealInfoToFilter.appealStatus.get))
+        assert(expectedIgnoreStatusCount == actualIgnoreStatusCount)
       }
     }
 
