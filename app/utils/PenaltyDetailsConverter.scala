@@ -171,6 +171,7 @@ object PenaltyDetailsConverter {
     hipStatus match {
       case models.hipPenaltyDetails.lateSubmission.TaxReturnStatusEnum.Fulfilled => models.getPenaltyDetails.lateSubmission.TaxReturnStatusEnum.Fulfilled
       case models.hipPenaltyDetails.lateSubmission.TaxReturnStatusEnum.Open => models.getPenaltyDetails.lateSubmission.TaxReturnStatusEnum.Open
+      case models.hipPenaltyDetails.lateSubmission.TaxReturnStatusEnum.Reversed => models.getPenaltyDetails.lateSubmission.TaxReturnStatusEnum.Reversed
     }
   }
 
