@@ -146,7 +146,7 @@ class FilterServiceSpec extends SpecBase with MockitoSugar {
       "filter out penalties with 9x appeal status" in {
         val appealInfoToFilter = Seq(
           AppealInformationType(
-            appealStatus = Some(AppealStatusEnum.AppealRejectedChargeAlreadyReversed),
+            appealStatus = Some(AppealStatusEnum.AppealUpheldChargeAlreadyReversed),
             appealLevel = Some(AppealLevelEnum.HMRC),
             appealDescription = Some("Test appeal 91 status")
           )
@@ -202,22 +202,22 @@ class FilterServiceSpec extends SpecBase with MockitoSugar {
       "validate the ignored status against appealInfoType values" in {
         val appealInfoToFilter = Seq(
           AppealInformationType(
-            appealStatus = Some(AppealStatusEnum.AppealRejectedChargeAlreadyReversed),
+            appealStatus = Some(AppealStatusEnum.AppealUpheldChargeAlreadyReversed),
             appealLevel = Some(AppealLevelEnum.HMRC),
             appealDescription = Some("Test appeal 91 status")
           ),
           AppealInformationType(
-            appealStatus = Some(AppealStatusEnum.AppealUpheldPointAlreadyRemoved),
+            appealStatus = Some(AppealStatusEnum.AppealCancelledPointAlreadyRemoved),
             appealLevel = Some(AppealLevelEnum.HMRC),
             appealDescription = Some("Test appeal 92 status")
           ),
           AppealInformationType(
-            appealStatus = Some(AppealStatusEnum.AppealUpheldChargeAlreadyReversed),
+            appealStatus = Some(AppealStatusEnum.AppealCancelledChargeAlreadyReversed),
             appealLevel = Some(AppealLevelEnum.HMRC),
             appealDescription = Some("Test appeal 93 status")
           ),
           AppealInformationType(
-            appealStatus = Some(AppealStatusEnum.AppealRejectedPointAlreadyRemoved),
+            appealStatus = Some(AppealStatusEnum.AppealUpheldPointAlreadyRemoved),
             appealLevel = Some(AppealLevelEnum.HMRC),
             appealDescription = Some("Test appeal 94 status")
           ),

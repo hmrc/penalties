@@ -204,10 +204,10 @@ object PenaltyDetailsConverter {
       case models.hipPenaltyDetails.appealInfo.AppealStatusEnum.Upheld => models.getPenaltyDetails.appealInfo.AppealStatusEnum.Upheld
       case models.hipPenaltyDetails.appealInfo.AppealStatusEnum.Rejected => models.getPenaltyDetails.appealInfo.AppealStatusEnum.Rejected
       case models.hipPenaltyDetails.appealInfo.AppealStatusEnum.Unappealable => models.getPenaltyDetails.appealInfo.AppealStatusEnum.Unappealable
-      case models.hipPenaltyDetails.appealInfo.AppealStatusEnum.AppealRejectedChargeAlreadyReversed => models.getPenaltyDetails.appealInfo.AppealStatusEnum.AppealRejectedChargeAlreadyReversed
-      case models.hipPenaltyDetails.appealInfo.AppealStatusEnum.AppealUpheldPointAlreadyRemoved => models.getPenaltyDetails.appealInfo.AppealStatusEnum.AppealUpheldPointAlreadyRemoved
-      case models.hipPenaltyDetails.appealInfo.AppealStatusEnum.AppealUpheldChargeAlreadyReversed => models.getPenaltyDetails.appealInfo.AppealStatusEnum.AppealUpheldChargeAlreadyReversed
-      case models.hipPenaltyDetails.appealInfo.AppealStatusEnum.AppealRejectedPointAlreadyRemoved => models.getPenaltyDetails.appealInfo.AppealStatusEnum.AppealRejectedPointAlreadyRemoved
+      case models.hipPenaltyDetails.appealInfo.AppealStatusEnum.AppealRejectedChargeAlreadyReversed => models.getPenaltyDetails.appealInfo.AppealStatusEnum.AppealUpheldChargeAlreadyReversed
+      case models.hipPenaltyDetails.appealInfo.AppealStatusEnum.AppealUpheldPointAlreadyRemoved => models.getPenaltyDetails.appealInfo.AppealStatusEnum.AppealCancelledPointAlreadyRemoved
+      case models.hipPenaltyDetails.appealInfo.AppealStatusEnum.AppealUpheldChargeAlreadyReversed => models.getPenaltyDetails.appealInfo.AppealStatusEnum.AppealCancelledChargeAlreadyReversed
+      case models.hipPenaltyDetails.appealInfo.AppealStatusEnum.AppealRejectedPointAlreadyRemoved => models.getPenaltyDetails.appealInfo.AppealStatusEnum.AppealUpheldPointAlreadyRemoved
       case _ => models.getPenaltyDetails.appealInfo.AppealStatusEnum.Unappealable
     }
   }
