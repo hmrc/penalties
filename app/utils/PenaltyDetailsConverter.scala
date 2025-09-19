@@ -17,8 +17,8 @@
 package utils
 
 import models.getFinancialDetails.MainTransactionEnum
-import models.hipPenaltyDetails.{PenaltyDetails => HIPPenaltyDetails}
 import models.getPenaltyDetails.GetPenaltyDetails
+import models.hipPenaltyDetails.{PenaltyDetails => HIPPenaltyDetails}
 
 object PenaltyDetailsConverter {
 
@@ -191,25 +191,10 @@ object PenaltyDetailsConverter {
 
   private def convertAppealInformation(hipAppeal: models.hipPenaltyDetails.appealInfo.AppealInformationType): models.getPenaltyDetails.appealInfo.AppealInformationType = {
     models.getPenaltyDetails.appealInfo.AppealInformationType(
-      appealStatus = hipAppeal.appealStatus.map(convertAppealStatus),
+      appealStatus = hipAppeal.appealStatus,
       appealLevel = hipAppeal.appealLevel.map(convertAppealLevel),
       appealDescription = hipAppeal.appealDescription
     )
-  }
-
-  private def convertAppealStatus(hipStatus: models.hipPenaltyDetails.appealInfo.AppealStatusEnum.Value): models.getPenaltyDetails.appealInfo.AppealStatusEnum.Value = {
-    hipStatus match {
-      case models.hipPenaltyDetails.appealInfo.AppealStatusEnum.Under_Appeal =>
-          models.getPenaltyDetails.appealInfo.AppealStatusEnum.Under_Appeal
-      case models.hipPenaltyDetails.appealInfo.AppealStatusEnum.Upheld => models.getPenaltyDetails.appealInfo.AppealStatusEnum.Upheld
-      case models.hipPenaltyDetails.appealInfo.AppealStatusEnum.Rejected => models.getPenaltyDetails.appealInfo.AppealStatusEnum.Rejected
-      case models.hipPenaltyDetails.appealInfo.AppealStatusEnum.Unappealable => models.getPenaltyDetails.appealInfo.AppealStatusEnum.Unappealable
-      case models.hipPenaltyDetails.appealInfo.AppealStatusEnum.AppealRejectedChargeAlreadyReversed => models.getPenaltyDetails.appealInfo.AppealStatusEnum.AppealUpheldChargeAlreadyReversed
-      case models.hipPenaltyDetails.appealInfo.AppealStatusEnum.AppealUpheldPointAlreadyRemoved => models.getPenaltyDetails.appealInfo.AppealStatusEnum.AppealCancelledPointAlreadyRemoved
-      case models.hipPenaltyDetails.appealInfo.AppealStatusEnum.AppealUpheldChargeAlreadyReversed => models.getPenaltyDetails.appealInfo.AppealStatusEnum.AppealCancelledChargeAlreadyReversed
-      case models.hipPenaltyDetails.appealInfo.AppealStatusEnum.AppealRejectedPointAlreadyRemoved => models.getPenaltyDetails.appealInfo.AppealStatusEnum.AppealUpheldPointAlreadyRemoved
-      case _ => models.getPenaltyDetails.appealInfo.AppealStatusEnum.Unappealable
-    }
   }
 
   private def convertAppealLevel(hipLevel: models.hipPenaltyDetails.appealInfo.AppealLevelEnum.Value): models.getPenaltyDetails.appealInfo.AppealLevelEnum.Value = {
@@ -244,8 +229,8 @@ object PenaltyDetailsConverter {
   }
 
   private def hasUpheldAppealInDetails(hipDetail: models.hipPenaltyDetails.lateSubmission.LSPDetails): Boolean = {
-    hipDetail.appealInformation.exists(_.exists(appeal => 
-      appeal.appealStatus.exists(status => 
+    hipDetail.appealInformation.exists(_.exists(appeal =>
+      appeal.appealStatus.exists(status =>
         status == models.hipPenaltyDetails.appealInfo.AppealStatusEnum.Upheld ||
         status == models.hipPenaltyDetails.appealInfo.AppealStatusEnum.AppealUpheldPointAlreadyRemoved ||
         status == models.hipPenaltyDetails.appealInfo.AppealStatusEnum.AppealUpheldChargeAlreadyReversed
@@ -262,13 +247,13 @@ object PenaltyDetailsConverter {
     } else {
       hipSummary.activePenaltyPoints
     }
-    
+
     val actualInactivePenaltyPoints = if (regularDetails.nonEmpty) {
       regularDetails.count(_.penaltyStatus == models.getPenaltyDetails.lateSubmission.LSPPenaltyStatusEnum.Inactive)
     } else {
       hipSummary.inactivePenaltyPoints
     }
-    
+
     models.getPenaltyDetails.lateSubmission.LSPSummary(
       activePenaltyPoints = actualActivePenaltyPoints,
       inactivePenaltyPoints = actualInactivePenaltyPoints,
@@ -277,4 +262,4 @@ object PenaltyDetailsConverter {
       PoCAchievementDate = hipSummary.pocAchievementDate
     )
   }
-} 
+}

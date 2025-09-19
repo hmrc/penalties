@@ -19,8 +19,9 @@ package services
 import base.SpecBase
 import config.AppConfig
 import models.getPenaltyDetails.GetPenaltyDetails
-import models.getPenaltyDetails.appealInfo.{AppealInformationType, AppealLevelEnum, AppealStatusEnum}
+import models.getPenaltyDetails.appealInfo.{AppealInformationType, AppealLevelEnum}
 import models.getPenaltyDetails.latePayment._
+import models.hipPenaltyDetails.appealInfo.AppealStatusEnum
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import org.scalatestplus.mockito.MockitoSugar

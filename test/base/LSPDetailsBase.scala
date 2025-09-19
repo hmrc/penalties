@@ -16,8 +16,9 @@
 
 package base
 
-import models.getPenaltyDetails.appealInfo.{AppealInformationType, AppealLevelEnum, AppealStatusEnum}
-import models.getPenaltyDetails.lateSubmission.{ExpiryReasonEnum, LSPDetails, LSPPenaltyCategoryEnum, LSPPenaltyStatusEnum, LateSubmission, TaxReturnStatusEnum}
+import models.getPenaltyDetails.appealInfo.{AppealInformationType, AppealLevelEnum}
+import models.getPenaltyDetails.lateSubmission._
+import models.hipPenaltyDetails.appealInfo.AppealStatusEnum
 
 import java.time.LocalDate
 

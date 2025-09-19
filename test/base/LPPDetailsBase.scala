@@ -17,8 +17,9 @@
 package base
 
 import models.getFinancialDetails.MainTransactionEnum
-import models.getPenaltyDetails.appealInfo.{AppealInformationType, AppealLevelEnum, AppealStatusEnum}
+import models.getPenaltyDetails.appealInfo.{AppealInformationType, AppealLevelEnum}
 import models.getPenaltyDetails.latePayment._
+import models.hipPenaltyDetails.appealInfo.AppealStatusEnum
 
 import java.time.LocalDate
 

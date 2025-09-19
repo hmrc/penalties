@@ -18,10 +18,11 @@ package models.getPenaltyDetails
 
 import base.SpecBase
 import models.getFinancialDetails.MainTransactionEnum
-import models.getPenaltyDetails.appealInfo.{AppealInformationType, AppealLevelEnum, AppealStatusEnum}
+import models.getPenaltyDetails.appealInfo.{AppealInformationType, AppealLevelEnum}
 import models.getPenaltyDetails.breathingSpace.BreathingSpace
 import models.getPenaltyDetails.latePayment._
 import models.getPenaltyDetails.lateSubmission._
+import models.hipPenaltyDetails.appealInfo.AppealStatusEnum
 import play.api.libs.json.{JsResult, JsValue, Json}
 
 import java.time.LocalDate

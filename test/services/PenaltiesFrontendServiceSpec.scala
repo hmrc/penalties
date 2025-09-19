@@ -22,9 +22,10 @@ import connectors.parsers.getFinancialDetails.FinancialDetailsParser._
 import models.getFinancialDetails.MainTransactionEnum.ManualLPP
 import models.getFinancialDetails.totalisation.{FinancialDetailsTotalisation, InterestTotalisation, RegimeTotalisation}
 import models.getFinancialDetails.{DocumentDetails, FinancialDetails, LineItemDetails, MainTransactionEnum}
-import models.getPenaltyDetails.appealInfo.{AppealInformationType, AppealLevelEnum, AppealStatusEnum}
+import models.getPenaltyDetails.appealInfo.{AppealInformationType, AppealLevelEnum}
 import models.getPenaltyDetails.latePayment._
 import models.getPenaltyDetails.{GetPenaltyDetails, Totalisations}
+import models.hipPenaltyDetails.appealInfo.AppealStatusEnum
 import models.{AgnosticEnrolmentKey, Id, IdType, Regime}
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito.{mock, reset, when}

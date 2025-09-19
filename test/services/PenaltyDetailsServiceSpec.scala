@@ -28,11 +28,12 @@ import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser.{
   GetPenaltyDetailsSuccessResponse
 }
 import models.getFinancialDetails.MainTransactionEnum
-import models.getPenaltyDetails.appealInfo.{AppealInformationType, AppealLevelEnum, AppealStatusEnum}
+import models.getPenaltyDetails.appealInfo.{AppealInformationType, AppealLevelEnum}
 import models.getPenaltyDetails.breathingSpace.BreathingSpace
 import models.getPenaltyDetails.latePayment._
 import models.getPenaltyDetails.lateSubmission._
 import models.getPenaltyDetails.{GetPenaltyDetails, Totalisations}
+import models.hipPenaltyDetails.appealInfo.AppealStatusEnum
 import models.{AgnosticEnrolmentKey, Id, IdType, Regime}
 import org.mockito.ArgumentMatchers
 import org.mockito.ArgumentMatchers.any

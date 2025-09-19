@@ -19,15 +19,16 @@ package services
 import base.{LogCapturing, SpecBase}
 import config.AppConfig
 import config.featureSwitches.{CallAPI1808HIP, FeatureSwitching, SanitiseFileName}
-import connectors.parsers.submitAppeal.AppealsParser.UnexpectedFailure
 import connectors.parsers.submitAppeal.AppealsParser
+import connectors.parsers.submitAppeal.AppealsParser.UnexpectedFailure
 import connectors.submitAppeal.{HIPSubmitAppealConnector, SubmitAppealConnector}
 import models.appeals.AppealLevel.FirstStageAppeal
 import models.appeals.{AppealResponseModel, AppealSubmission, CrimeAppealInformation, MultiplePenaltiesData}
 import models.getFinancialDetails.MainTransactionEnum
 import models.getPenaltyDetails.GetPenaltyDetails
-import models.getPenaltyDetails.appealInfo.{AppealInformationType, AppealLevelEnum, AppealStatusEnum}
+import models.getPenaltyDetails.appealInfo.{AppealInformationType, AppealLevelEnum}
 import models.getPenaltyDetails.latePayment._
+import models.hipPenaltyDetails.appealInfo.AppealStatusEnum
 import models.notification._
 import models.upload.{UploadDetails, UploadJourney, UploadStatusEnum}
 import models.{AgnosticEnrolmentKey, Id, IdType, Regime}
