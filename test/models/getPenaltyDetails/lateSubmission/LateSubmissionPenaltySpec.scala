@@ -17,7 +17,8 @@
 package models.getPenaltyDetails.lateSubmission
 
 import base.SpecBase
-import models.getPenaltyDetails.appealInfo.{AppealInformationType, AppealLevelEnum, AppealStatusEnum}
+import models.getPenaltyDetails.appealInfo.{AppealInformationType, AppealLevelEnum}
+import models.hipPenaltyDetails.appealInfo.AppealStatusEnum
 import play.api.libs.json.{JsResult, JsValue, Json}
 
 import java.time.LocalDate

@@ -17,23 +17,18 @@
 package connectors.getPenaltyDetails
 
 import config.featureSwitches.{CallAPI1812ETMP, FeatureSwitching}
-import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser.{
-  GetPenaltyDetailsFailureResponse,
-  GetPenaltyDetailsMalformed,
-  GetPenaltyDetailsNoContent,
-  GetPenaltyDetailsResponse,
-  GetPenaltyDetailsSuccessResponse
-}
+import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser.{GetPenaltyDetailsFailureResponse, GetPenaltyDetailsMalformed, GetPenaltyDetailsNoContent, GetPenaltyDetailsResponse, GetPenaltyDetailsSuccessResponse}
 import models.getPenaltyDetails.GetPenaltyDetails
-import models.getPenaltyDetails.appealInfo.{AppealInformationType, AppealStatusEnum}
+import models.getPenaltyDetails.appealInfo.AppealInformationType
 import models.getPenaltyDetails.lateSubmission._
+import models.hipPenaltyDetails.appealInfo.AppealStatusEnum
 import models.{AgnosticEnrolmentKey, Id, IdType, Regime}
 import org.scalatest.prop.TableDrivenPropertyChecks
 import play.api.http.Status
 import play.api.http.Status.IM_A_TEAPOT
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
-import utils.{IntegrationSpecCommonBase, ETMPWiremock}
+import utils.{ETMPWiremock, IntegrationSpecCommonBase}
 
 import java.time.LocalDate
 

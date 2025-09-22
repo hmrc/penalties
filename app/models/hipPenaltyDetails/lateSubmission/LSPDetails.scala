@@ -17,7 +17,7 @@
 package models.hipPenaltyDetails.lateSubmission
 
 import models.hipPenaltyDetails.appealInfo.AppealInformationType
-import play.api.libs.json.{Format, Json, Reads, Writes, JsValue}
+import play.api.libs.json._
 
 import java.time.LocalDate
 
@@ -43,18 +43,29 @@ case class LSPDetails(
 )
 
 object LSPDetails {
+
+  // TODO: DL-17378 - when ETMP have merged their fix we can revert to just checking for a String
+  private val penaltyOrderOptionalStringReads: Reads[Option[String]] =
+    Reads[Option[String]] {
+      case JsString(s) => JsSuccess(Some(s))
+      case JsNumber(n) => JsSuccess(Some(n.toInt.toString))
+      case JsNull      => JsSuccess(None)
+      case _           => JsError("penaltyOrder must be a JsString or JsNumber")
+    }
+
   implicit val reads: Reads[LSPDetails] = (json: JsValue) =>
     for {
       penaltyNumber <- (json \ "penaltyNumber").validate[String]
-      penaltyOrder <- (json \ "penaltyOrder").validateOpt[String]
+      penaltyOrder  <- (json \ "penaltyOrder").validate(penaltyOrderOptionalStringReads)
+//      penaltyOrder <- (json \ "penaltyOrder").validateOpt[String]// TODO: DL-17378
       penaltyCategory <- (json \ "penaltyCategory")
         .validateOpt[LSPPenaltyCategoryEnum.Value]
       penaltyStatus <- (json \ "penaltyStatus")
         .validate[LSPPenaltyStatusEnum.Value]
       penaltyCreationDate <- (json \ "penaltyCreationDate").validate[LocalDate]
-      penaltyExpiryDate <- (json \ "penaltyExpiryDate").validate[LocalDate]
-      communicationsDate <- (json \ "communicationsDate").validateOpt[LocalDate]
-      fapIndicator <- (json \ "fapIndicator").validateOpt[String]
+      penaltyExpiryDate   <- (json \ "penaltyExpiryDate").validate[LocalDate]
+      communicationsDate  <- (json \ "communicationsDate").validateOpt[LocalDate]
+      fapIndicator        <- (json \ "fapIndicator").validateOpt[String]
       lateSubmissions <- (json \ "lateSubmissions")
         .validateOpt[Seq[LateSubmission]]
       expiryReason <- (json \ "expiryReason")
@@ -64,29 +75,27 @@ object LSPDetails {
       chargeDueDate <- (json \ "chargeDueDate").validateOpt[LocalDate]
       chargeOutstandingAmount <- (json \ "chargeOutstandingAmount")
         .validateOpt[BigDecimal]
-      chargeAmount <- (json \ "chargeAmount").validateOpt[BigDecimal]
+      chargeAmount      <- (json \ "chargeAmount").validateOpt[BigDecimal]
       triggeringProcess <- (json \ "triggeringProcess").validateOpt[String]
-      chargeReference <- (json \ "chargeReference").validateOpt[String]
-    } yield {
-      LSPDetails(
-        penaltyNumber,
-        penaltyOrder,
-        penaltyCategory,
-        penaltyStatus,
-        penaltyCreationDate,
-        penaltyExpiryDate,
-        communicationsDate,
-        fapIndicator,
-        lateSubmissions,
-        expiryReason,
-        appealInformation,
-        chargeDueDate,
-        chargeOutstandingAmount,
-        chargeAmount,
-        triggeringProcess,
-        chargeReference
-      )
-    }
+      chargeReference   <- (json \ "chargeReference").validateOpt[String]
+    } yield LSPDetails(
+      penaltyNumber,
+      penaltyOrder,
+      penaltyCategory,
+      penaltyStatus,
+      penaltyCreationDate,
+      penaltyExpiryDate,
+      communicationsDate,
+      fapIndicator,
+      lateSubmissions,
+      expiryReason,
+      appealInformation,
+      chargeDueDate,
+      chargeOutstandingAmount,
+      chargeAmount,
+      triggeringProcess,
+      chargeReference
+    )
 
   implicit val writes: Writes[LSPDetails] = Json.writes[LSPDetails]
   implicit val format: Format[LSPDetails] = Format(reads, writes)

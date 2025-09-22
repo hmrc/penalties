@@ -17,6 +17,7 @@
 package models.getPenaltyDetails.appealInfo
 
 import base.SpecBase
+import models.hipPenaltyDetails.appealInfo.AppealStatusEnum
 import play.api.libs.json.{JsValue, Json}
 
 class AppealInformationTypeSpec extends SpecBase {

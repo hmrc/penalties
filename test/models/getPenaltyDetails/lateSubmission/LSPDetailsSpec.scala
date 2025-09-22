@@ -14,23 +14,22 @@
  * limitations under the License.
  */
 
-package models.getPenaltyDetails.lateSubmission
+package models.hipPenaltyDetails.lateSubmission
 
 import base.SpecBase
-import models.getPenaltyDetails.appealInfo.{AppealInformationType, AppealLevelEnum, AppealStatusEnum}
+import models.hipPenaltyDetails.appealInfo.{AppealInformationType, AppealLevelEnum, AppealStatusEnum}
 import play.api.libs.json.{JsResult, JsValue, Json}
 
 import java.time.LocalDate
 
 class LSPDetailsSpec extends SpecBase {
-  val jsonRepresentingModel: JsValue = Json.parse(
-    """
+  val jsonRepresentingModel: JsValue = Json.parse("""
       |{
       |   "penaltyNumber": "12345678901234",
       |   "penaltyOrder": "01",
       |   "penaltyCategory": "P",
       |   "penaltyStatus": "ACTIVE",
-      |   "FAPIndicator": "X",
+      |   "fapIndicator": "X",
       |   "penaltyCreationDate": "2022-10-30",
       |   "penaltyExpiryDate": "2022-10-30",
       |   "expiryReason": "FAP",
@@ -62,14 +61,13 @@ class LSPDetailsSpec extends SpecBase {
       |}
       |""".stripMargin)
 
-  val jsonRepresentingModelWithNoAppealLevel: JsValue = Json.parse(
-    """
+  val jsonRepresentingModelWithNoAppealLevel: JsValue = Json.parse("""
       |{
       |   "penaltyNumber": "12345678901234",
       |   "penaltyOrder": "01",
       |   "penaltyCategory": "P",
       |   "penaltyStatus": "ACTIVE",
-      |   "FAPIndicator": "X",
+      |   "fapIndicator": "X",
       |   "penaltyCreationDate": "2022-10-30",
       |   "penaltyExpiryDate": "2022-10-30",
       |   "communicationsDate": "2022-10-30",
@@ -99,14 +97,14 @@ class LSPDetailsSpec extends SpecBase {
       |}
       |""".stripMargin)
 
-  val jsonRespresentingModelWithBlankCategory: JsValue = Json.parse(
+  val jsonRepresentingModelWithBlankCategory: JsValue = Json.parse(
     """
       |{
       |   "penaltyNumber": "12345678901234",
       |   "penaltyOrder": "01",
       |   "penaltyCategory": " ",
       |   "penaltyStatus": "ACTIVE",
-      |   "FAPIndicator": "X",
+      |   "fapIndicator": "X",
       |   "penaltyCreationDate": "2022-10-30",
       |   "penaltyExpiryDate": "2022-10-30",
       |   "expiryReason": "FAP",
@@ -147,7 +145,7 @@ class LSPDetailsSpec extends SpecBase {
     penaltyCreationDate = LocalDate.of(2022, 10, 30),
     penaltyExpiryDate = LocalDate.of(2022, 10, 30),
     communicationsDate = Some(LocalDate.of(2022, 10, 30)),
-    FAPIndicator = Some("X"),
+    fapIndicator = Some("X"),
     lateSubmissions = Some(
       Seq(
         LateSubmission(
@@ -165,7 +163,48 @@ class LSPDetailsSpec extends SpecBase {
     expiryReason = Some(ExpiryReasonEnum.Adjustment),
     appealInformation = Some(
       Seq(
-        AppealInformationType(appealStatus = Some(AppealStatusEnum.Under_Appeal), appealLevel = Some(AppealLevelEnum.HMRC), appealDescription = Some("Some value"))
+        AppealInformationType(
+          appealStatus = Some(AppealStatusEnum.Under_Appeal),
+          appealLevel = Some(AppealLevelEnum.HMRC),
+          appealDescription = Some("Some value"))
+      )
+    ),
+    chargeDueDate = Some(LocalDate.of(2022, 10, 30)),
+    chargeOutstandingAmount = Some(200),
+    chargeAmount = Some(200),
+    triggeringProcess = Some("P123"),
+    chargeReference = Some("CHARGEREF1")
+  )
+  val modelForTestingPenaltyOrderJsNumber: LSPDetails = LSPDetails(
+    penaltyNumber = "12345678901234",
+    penaltyOrder = Some("11"),
+    penaltyCategory = Some(LSPPenaltyCategoryEnum.Point),
+    penaltyStatus = LSPPenaltyStatusEnum.Active,
+    penaltyCreationDate = LocalDate.of(2022, 10, 30),
+    penaltyExpiryDate = LocalDate.of(2022, 10, 30),
+    communicationsDate = Some(LocalDate.of(2022, 10, 30)),
+    fapIndicator = Some("X"),
+    lateSubmissions = Some(
+      Seq(
+        LateSubmission(
+          lateSubmissionID = "001",
+          incomeSource = Some("IT"),
+          taxPeriod = Some("23AA"),
+          taxPeriodStartDate = Some(LocalDate.of(2022, 1, 1)),
+          taxPeriodEndDate = Some(LocalDate.of(2022, 12, 31)),
+          taxPeriodDueDate = Some(LocalDate.of(2023, 2, 7)),
+          returnReceiptDate = Some(LocalDate.of(2023, 2, 1)),
+          taxReturnStatus = Some(TaxReturnStatusEnum.Fulfilled)
+        )
+      )
+    ),
+    expiryReason = Some(ExpiryReasonEnum.Adjustment),
+    appealInformation = Some(
+      Seq(
+        AppealInformationType(
+          appealStatus = Some(AppealStatusEnum.Under_Appeal),
+          appealLevel = Some(AppealLevelEnum.HMRC),
+          appealDescription = Some("Some value"))
       )
     ),
     chargeDueDate = Some(LocalDate.of(2022, 10, 30)),
@@ -183,7 +222,7 @@ class LSPDetailsSpec extends SpecBase {
     penaltyCreationDate = LocalDate.of(2022, 10, 30),
     penaltyExpiryDate = LocalDate.of(2022, 10, 30),
     communicationsDate = Some(LocalDate.of(2022, 10, 30)),
-    FAPIndicator = Some("X"),
+    fapIndicator = Some("X"),
     lateSubmissions = Some(
       Seq(
         LateSubmission(
@@ -215,7 +254,7 @@ class LSPDetailsSpec extends SpecBase {
     penaltyCreationDate = LocalDate.of(2022, 10, 30),
     penaltyExpiryDate = LocalDate.of(2022, 10, 30),
     communicationsDate = Some(LocalDate.of(2022, 10, 30)),
-    FAPIndicator = Some("X"),
+    fapIndicator = Some("X"),
     lateSubmissions = Some(
       Seq(
         LateSubmission(
@@ -249,6 +288,51 @@ class LSPDetailsSpec extends SpecBase {
     result.get shouldBe model
   }
 
+  val jsNumberPenaltyOrderJson: JsValue = Json.parse("""
+      |{
+      |   "penaltyNumber": "12345678901234",
+      |   "penaltyOrder": 11,
+      |   "penaltyCategory": "P",
+      |   "penaltyStatus": "ACTIVE",
+      |   "fapIndicator": "X",
+      |   "penaltyCreationDate": "2022-10-30",
+      |   "penaltyExpiryDate": "2022-10-30",
+      |   "expiryReason": "FAP",
+      |   "communicationsDate": "2022-10-30",
+      |   "lateSubmissions": [
+      |      {
+      |        "lateSubmissionID": "001",
+      |        "incomeSource": "IT",
+      |        "taxPeriod":  "23AA",
+      |        "taxPeriodStartDate": "2022-01-01",
+      |        "taxPeriodEndDate": "2022-12-31",
+      |        "taxPeriodDueDate": "2023-02-07",
+      |        "returnReceiptDate": "2023-02-01",
+      |        "taxReturnStatus": "Fulfilled"
+      |      }
+      |   ],
+      |   "appealInformation": [
+      |      {
+      |        "appealStatus": "A",
+      |        "appealLevel": "01",
+      |        "appealDescription": "Some value"
+      |      }
+      |   ],
+      |   "chargeDueDate": "2022-10-30",
+      |   "chargeOutstandingAmount": 200,
+      |   "chargeAmount": 200,
+      |   "triggeringProcess": "P123",
+      |   "chargeReference": "CHARGEREF1"
+      |}
+      |""".stripMargin)
+
+  "be readable from JSON when penaltyOrder is a JsNumber not a JsString" in {
+    val result: JsResult[LSPDetails] = Json.fromJson(jsNumberPenaltyOrderJson)(LSPDetails.reads)
+    println("result: " + result)
+    result.isSuccess shouldBe true
+    result.get shouldBe modelForTestingPenaltyOrderJsNumber
+  }
+
   "be readable from JSON when appealLevel is missing" in {
     val result: JsResult[LSPDetails] = Json.fromJson(jsonRepresentingModelWithNoAppealLevel)(LSPDetails.reads)
     result.isSuccess shouldBe true
@@ -256,7 +340,7 @@ class LSPDetailsSpec extends SpecBase {
   }
 
   "be readable from JSON when the penaltyCategory is ' '" in {
-    val result = Json.fromJson(jsonRespresentingModelWithBlankCategory)(LSPDetails.reads)
+    val result = Json.fromJson(jsonRepresentingModelWithBlankCategory)(LSPDetails.reads)
     result.isSuccess shouldBe true
     result.get shouldBe model
   }
@@ -267,14 +351,13 @@ class LSPDetailsSpec extends SpecBase {
   }
 
   "be writable to JSON - removing the expiryReason if it is blank" in {
-    val jsonRepresentingModel: JsValue = Json.parse(
-      """
+    val jsonRepresentingModel: JsValue = Json.parse("""
         |{
         |   "penaltyNumber": "12345678901234",
         |   "penaltyOrder": "01",
         |   "penaltyCategory": "P",
         |   "penaltyStatus": "ACTIVE",
-        |   "FAPIndicator": "X",
+        |   "fapIndicator": "X",
         |   "penaltyCreationDate": "2022-10-30",
         |   "penaltyExpiryDate": "2022-10-30",
         |   "communicationsDate": "2022-10-30",
@@ -302,14 +385,13 @@ class LSPDetailsSpec extends SpecBase {
   }
 
   "be writable to JSON - changing the appealLevel from ' ' to '01' when the appealStatus is 99 (UNAPPEALABLE)" in {
-    val jsonRepresentingModel: JsValue = Json.parse(
-      """
+    val jsonRepresentingModel: JsValue = Json.parse("""
         |{
         |   "penaltyNumber": "12345678901234",
         |   "penaltyOrder": "01",
         |   "penaltyCategory": "P",
         |   "penaltyStatus": "ACTIVE",
-        |   "FAPIndicator": "X",
+        |   "fapIndicator": "X",
         |   "penaltyCreationDate": "2022-10-30",
         |   "penaltyExpiryDate": "2022-10-30",
         |   "communicationsDate": "2022-10-30",

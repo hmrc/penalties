@@ -18,7 +18,8 @@ package models.getPenaltyDetails.latePayment
 
 import base.SpecBase
 import models.getFinancialDetails.MainTransactionEnum
-import models.getPenaltyDetails.appealInfo.{AppealInformationType, AppealLevelEnum, AppealStatusEnum}
+import models.getPenaltyDetails.appealInfo.{AppealInformationType, AppealLevelEnum}
+import models.hipPenaltyDetails.appealInfo.AppealStatusEnum
 import play.api.libs.json.{JsResult, JsValue, Json}
 
 import java.time.LocalDate
@@ -175,7 +176,12 @@ class LatePaymentPenaltySpec extends SpecBase {
           penaltyChargeReference = Some("12345678901235"),
           penaltyChargeCreationDate = Some(LocalDate.of(2022, 10, 30)),
           penaltyStatus = LPPPenaltyStatusEnum.Accruing,
-          appealInformation = Some(Seq(AppealInformationType(appealStatus = Some(AppealStatusEnum.Unappealable), appealLevel = Some(AppealLevelEnum.HMRC), appealDescription = Some("Some value")))),
+          appealInformation = Some(
+            Seq(
+              AppealInformationType(
+                appealStatus = Some(AppealStatusEnum.Unappealable),
+                appealLevel = Some(AppealLevelEnum.HMRC),
+                appealDescription = Some("Some value")))),
           principalChargeBillingFrom = LocalDate.of(2022, 10, 30),
           principalChargeBillingTo = LocalDate.of(2022, 10, 30),
           principalChargeDueDate = LocalDate.of(2022, 10, 30),
@@ -207,7 +213,12 @@ class LatePaymentPenaltySpec extends SpecBase {
           penaltyChargeReference = Some("12345678901234"),
           penaltyChargeCreationDate = Some(LocalDate.of(2022, 10, 30)),
           penaltyStatus = LPPPenaltyStatusEnum.Accruing,
-          appealInformation = Some(Seq(AppealInformationType(appealStatus = Some(AppealStatusEnum.Unappealable), appealLevel = Some(AppealLevelEnum.HMRC), appealDescription = Some("Some value")))),
+          appealInformation = Some(
+            Seq(
+              AppealInformationType(
+                appealStatus = Some(AppealStatusEnum.Unappealable),
+                appealLevel = Some(AppealLevelEnum.HMRC),
+                appealDescription = Some("Some value")))),
           principalChargeBillingFrom = LocalDate.of(2022, 10, 30),
           principalChargeBillingTo = LocalDate.of(2022, 10, 30),
           principalChargeDueDate = LocalDate.of(2022, 10, 30),

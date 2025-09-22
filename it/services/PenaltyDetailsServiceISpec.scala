@@ -19,17 +19,18 @@ package services
 import config.featureSwitches.{CallAPI1812HIP, FeatureSwitching}
 import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser._
 import models.getFinancialDetails.MainTransactionEnum
-import models.getPenaltyDetails.appealInfo.{AppealInformationType, AppealLevelEnum, AppealStatusEnum}
+import models.getPenaltyDetails.appealInfo.{AppealInformationType, AppealLevelEnum}
 import models.getPenaltyDetails.breathingSpace.BreathingSpace
 import models.getPenaltyDetails.latePayment._
 import models.getPenaltyDetails.lateSubmission._
 import models.getPenaltyDetails.{GetPenaltyDetails, Totalisations}
+import models.hipPenaltyDetails.appealInfo.AppealStatusEnum
 import models.{AgnosticEnrolmentKey, Id, IdType, Regime}
 import org.scalatest.prop.TableDrivenPropertyChecks
 import play.api.http.Status
 import play.api.http.Status.{IM_A_TEAPOT, INTERNAL_SERVER_ERROR}
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
-import utils.{HIPPenaltiesWiremock, IntegrationSpecCommonBase, ETMPWiremock}
+import utils.{ETMPWiremock, HIPPenaltiesWiremock, IntegrationSpecCommonBase}
 
 import java.time.LocalDate
 
