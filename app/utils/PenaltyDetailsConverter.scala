@@ -16,7 +16,6 @@
 
 package utils
 
-import models.getFinancialDetails.MainTransactionEnum
 import models.getPenaltyDetails.GetPenaltyDetails
 import models.hipPenaltyDetails.{PenaltyDetails => HIPPenaltyDetails}
 
@@ -126,7 +125,7 @@ object PenaltyDetailsConverter {
       penaltyChargeCreationDate = hipLPP.penaltyChargeCreationDate,
       communicationsDate = hipLPP.communicationsDate,
       penaltyChargeReference = hipLPP.penaltyChargeReference,
-      principalChargeMainTransaction = MainTransactionEnum.WithValue(hipLPP.principalChargeMainTr),
+      principalChargeMainTransaction = hipLPP.principalChargeMainTr,
       principalChargeBillingFrom = hipLPP.principalChargeBillingFrom,
       principalChargeBillingTo = hipLPP.principalChargeBillingTo,
       principalChargeDueDate = hipLPP.principalChargeDueDate,

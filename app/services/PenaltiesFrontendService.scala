@@ -139,6 +139,7 @@ class PenaltiesFrontendService @Inject()(getFinancialDetailsService: FinancialDe
         val principalChargeReference = manualLPPDetails.chargeReferenceNumber.get //Set to penaltyChargeReference because Manual LPP's do not have principal charges and we don't use this in Manual LPP cases
         val penaltyAmountPaid = manualLPPDetails.documentTotalAmount.get - manualLPPDetails.documentOutstandingAmount.getOrElse(manualLPPDetails.documentTotalAmount.get)
         val penaltyChargeCreationDate = manualLPPDetails.issueDate.get
+        val manualLPPValue = "4787"
         LPPDetails(
           penaltyCategory = LPPPenaltyCategoryEnum.ManualLPP,
           penaltyChargeReference = None,
@@ -149,12 +150,12 @@ class PenaltiesFrontendService @Inject()(getFinancialDetailsService: FinancialDe
           penaltyAmountPosted = manualLPPDetails.documentTotalAmount.get,
           penaltyAmountOutstanding = manualLPPDetails.documentOutstandingAmount,
           penaltyAmountPaid = Some(penaltyAmountPaid),
-          principalChargeMainTransaction = ManualLPP,
+          principalChargeMainTransaction = manualLPPValue,
           principalChargeBillingFrom = penaltyChargeCreationDate,
           principalChargeBillingTo = penaltyChargeCreationDate,
           principalChargeDueDate = penaltyChargeCreationDate,
           None, None, None, None, None, None, None, None, None, None, None, None, None, LPPDetailsMetadata(
-            mainTransaction = Some(ManualLPP)
+            mainTransaction = Some(manualLPPValue)
           )
         )
       }
