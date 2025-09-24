@@ -273,7 +273,7 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
                 principalChargeLatestClearing = None,
                 metadata = LPPDetailsMetadata(),
                 penaltyAmountAccruing = BigDecimal(100.00),
-                principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
+                principalChargeMainTransaction = "4700",
                 vatOutstandingAmount = Some(BigDecimal(123.45))
               ),
               LPPDetails(
@@ -302,7 +302,7 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
                 principalChargeLatestClearing = None,
                 metadata = LPPDetailsMetadata(),
                 penaltyAmountAccruing = BigDecimal(100.00),
-                principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
+                principalChargeMainTransaction = "4700",
                 vatOutstandingAmount = Some(BigDecimal(123.45))
               ),
               LPPDetails(
@@ -331,7 +331,7 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
                 principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
                 metadata = LPPDetailsMetadata(),
                 penaltyAmountAccruing = BigDecimal(0),
-                principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
+                principalChargeMainTransaction = "4700",
                 vatOutstandingAmount = Some(BigDecimal(123.45))
               ),
               LPPDetails(
@@ -360,7 +360,7 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
                 principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
                 metadata = LPPDetailsMetadata(),
                 penaltyAmountAccruing = BigDecimal(0),
-                principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
+                principalChargeMainTransaction = "4700",
                 vatOutstandingAmount = Some(BigDecimal(123.45))
               )
             )
@@ -1376,7 +1376,7 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
                 penaltyChargeReference = Some("1234567890"),
                 penaltyChargeDueDate = Some(LocalDate.of(2022, 1, 1)),
                 appealInformation = None,
-                principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
+                principalChargeMainTransaction = "4700",
                 principalChargeBillingFrom = LocalDate.of(2022, 1, 1),
                 principalChargeBillingTo = LocalDate.of(2022, 1, 1),
                 principalChargeDueDate = LocalDate.of(2022, 1, 1),

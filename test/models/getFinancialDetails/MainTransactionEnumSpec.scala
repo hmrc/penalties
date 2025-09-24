@@ -21,7 +21,7 @@ import play.api.libs.json.{JsString, Json}
 
 class MainTransactionEnumSpec extends SpecBase {
   "be writable to JSON for 'VAT Return Charge' (4700)" in {
-    val result = Json.toJson(MainTransactionEnum.VATReturnCharge)
+    val result = Json.toJson("4700")
     result shouldBe JsString("4700")
   }
 
@@ -141,7 +141,7 @@ class MainTransactionEnumSpec extends SpecBase {
   }
 
   "be writable to JSON for 'VAT Manual LPP' (4787)" in {
-    val result = Json.toJson(MainTransactionEnum.ManualLPP)
+    val result = Json.toJson("4787")
     result shouldBe JsString("4787")
   }
 

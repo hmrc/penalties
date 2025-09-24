@@ -169,7 +169,7 @@ class LPPDetailsSpec extends SpecBase {
       principalChargeSubTransaction = Some("SUB1")
     ),
     penaltyAmountAccruing = BigDecimal(144.21),
-    principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
+    principalChargeMainTransaction = "4700",
     vatOutstandingAmount = None
   )
 
@@ -202,7 +202,7 @@ class LPPDetailsSpec extends SpecBase {
       principalChargeSubTransaction = Some("SUB1")
     ),
     penaltyAmountAccruing = BigDecimal(144.21),
-    principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
+    principalChargeMainTransaction = "4700",
     vatOutstandingAmount = None
   )
 

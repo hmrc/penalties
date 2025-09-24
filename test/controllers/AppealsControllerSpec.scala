@@ -484,7 +484,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
                 principalChargeLatestClearing = None,
                 metadata = LPPDetailsMetadata(),
                 penaltyAmountAccruing = BigDecimal(100),
-                principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
+                principalChargeMainTransaction = "4700",
                 vatOutstandingAmount = Some(BigDecimal(123.45))
               ),
               LPPDetails(
@@ -513,7 +513,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
                 principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
                 metadata = LPPDetailsMetadata(),
                 penaltyAmountAccruing = BigDecimal(0),
-                principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
+                principalChargeMainTransaction = "4700",
                 vatOutstandingAmount = Some(BigDecimal(123.45))
               )
             )
@@ -556,7 +556,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
                 principalChargeLatestClearing = None,
                 metadata = LPPDetailsMetadata(),
                 penaltyAmountAccruing = BigDecimal(100),
-                principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
+                principalChargeMainTransaction = "4700",
                 vatOutstandingAmount = Some(BigDecimal(123.45))
               ),
               LPPDetails(
@@ -585,7 +585,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
                 principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
                 metadata = LPPDetailsMetadata(),
                 penaltyAmountAccruing = BigDecimal(0),
-                principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
+                principalChargeMainTransaction = "4700",
                 vatOutstandingAmount = Some(BigDecimal(123.45))
               )
             )
@@ -1526,7 +1526,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
       principalChargeLatestClearing = Some(LocalDate.of(2022, 10, 1)),
       metadata = LPPDetailsMetadata(),
       penaltyAmountAccruing = BigDecimal(0),
-      principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
+      principalChargeMainTransaction = "4700",
       vatOutstandingAmount = Some(BigDecimal(123.45))
     )
 
@@ -1556,7 +1556,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
       principalChargeLatestClearing = Some(LocalDate.of(2022, 10, 1)),
       metadata = LPPDetailsMetadata(),
       penaltyAmountAccruing = BigDecimal(0),
-      principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
+      principalChargeMainTransaction = "4700",
       vatOutstandingAmount = Some(BigDecimal(123.45))
     )
 
