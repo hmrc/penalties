@@ -18,20 +18,20 @@ package controllers
 
 import base.{LogCapturing, SpecBase}
 import config.AppConfig
-import config.featureSwitches.{FeatureSwitching, CallAPI1812HIP}
+import config.featureSwitches.{CallAPI1812HIP, FeatureSwitching}
 import connectors.FileNotificationOrchestratorConnector
-import connectors.parsers.submitAppeal.AppealsParser.UnexpectedFailure
 import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser.{
   GetPenaltyDetailsFailureResponse,
   GetPenaltyDetailsMalformed,
   GetPenaltyDetailsSuccessResponse
 }
+import connectors.parsers.submitAppeal.AppealsParser.UnexpectedFailure
 import controllers.auth.AuthAction
 import models.appeals.AppealTypeEnum.{Additional, Late_Payment, Late_Submission}
 import models.appeals.{AppealData, MultiplePenaltiesData}
 import models.auditing.PenaltyAppealFileNotificationStorageFailureModel
-import models.getFinancialDetails.MainTransactionEnum
 import models.getPenaltyDetails.GetPenaltyDetails
+import models.getPenaltyDetails.latePayment.PrincipalChargeMainTr.VATReturnCharge
 import models.getPenaltyDetails.latePayment._
 import models.getPenaltyDetails.lateSubmission._
 import models.notification._
@@ -46,7 +46,7 @@ import play.api.libs.json.{JsObject, JsValue, Json}
 import play.api.mvc.Result
 import play.api.test.Helpers._
 import services.auditing.AuditService
-import services.{PenaltyDetailsService, AppealService}
+import services.{AppealService, PenaltyDetailsService}
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import utils.AuthActionMock
 import utils.Logger.logger
@@ -484,7 +484,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
                 principalChargeLatestClearing = None,
                 metadata = LPPDetailsMetadata(),
                 penaltyAmountAccruing = BigDecimal(100),
-                principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
+                principalChargeMainTransaction = VATReturnCharge,
                 vatOutstandingAmount = Some(BigDecimal(123.45))
               ),
               LPPDetails(
@@ -513,7 +513,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
                 principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
                 metadata = LPPDetailsMetadata(),
                 penaltyAmountAccruing = BigDecimal(0),
-                principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
+                principalChargeMainTransaction = VATReturnCharge,
                 vatOutstandingAmount = Some(BigDecimal(123.45))
               )
             )
@@ -556,7 +556,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
                 principalChargeLatestClearing = None,
                 metadata = LPPDetailsMetadata(),
                 penaltyAmountAccruing = BigDecimal(100),
-                principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
+                principalChargeMainTransaction = VATReturnCharge,
                 vatOutstandingAmount = Some(BigDecimal(123.45))
               ),
               LPPDetails(
@@ -585,7 +585,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
                 principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
                 metadata = LPPDetailsMetadata(),
                 penaltyAmountAccruing = BigDecimal(0),
-                principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
+                principalChargeMainTransaction = VATReturnCharge,
                 vatOutstandingAmount = Some(BigDecimal(123.45))
               )
             )
@@ -1526,7 +1526,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
       principalChargeLatestClearing = Some(LocalDate.of(2022, 10, 1)),
       metadata = LPPDetailsMetadata(),
       penaltyAmountAccruing = BigDecimal(0),
-      principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
+      principalChargeMainTransaction = VATReturnCharge,
       vatOutstandingAmount = Some(BigDecimal(123.45))
     )
 
@@ -1556,7 +1556,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
       principalChargeLatestClearing = Some(LocalDate.of(2022, 10, 1)),
       metadata = LPPDetailsMetadata(),
       penaltyAmountAccruing = BigDecimal(0),
-      principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
+      principalChargeMainTransaction = VATReturnCharge,
       vatOutstandingAmount = Some(BigDecimal(123.45))
     )
 

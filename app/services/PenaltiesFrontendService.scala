@@ -20,8 +20,8 @@ import config.AppConfig
 import connectors.parsers.getFinancialDetails.FinancialDetailsParser._
 import models.AgnosticEnrolmentKey
 import models.auditing.UserHasPenaltyRegimeAuditModel
-import models.getFinancialDetails.MainTransactionEnum.ManualLPP
 import models.getFinancialDetails.{DocumentDetails, FinancialDetails}
+import models.getPenaltyDetails.latePayment.PrincipalChargeMainTr.ManualLPP
 import models.getPenaltyDetails.latePayment._
 import models.getPenaltyDetails.{GetPenaltyDetails, Totalisations}
 import play.api.http.Status.NOT_FOUND
@@ -140,7 +140,7 @@ class PenaltiesFrontendService @Inject()(getFinancialDetailsService: FinancialDe
         val penaltyAmountPaid = manualLPPDetails.documentTotalAmount.get - manualLPPDetails.documentOutstandingAmount.getOrElse(manualLPPDetails.documentTotalAmount.get)
         val penaltyChargeCreationDate = manualLPPDetails.issueDate.get
         LPPDetails(
-          penaltyCategory = LPPPenaltyCategoryEnum.ManualLPP,
+          penaltyCategory = LPPPenaltyCategoryEnum.ManualLPPenalty,
           penaltyChargeReference = None,
           principalChargeReference = principalChargeReference,
           penaltyChargeCreationDate = Some(penaltyChargeCreationDate),

@@ -17,6 +17,7 @@
 package models
 
 import models.getFinancialDetails.totalisation.{FinancialDetailsTotalisation, InterestTotalisation, RegimeTotalisation}
+import models.getPenaltyDetails.latePayment.PrincipalChargeMainTr.VATReturnFirstLPP
 import play.api.libs.json.{JsValue, Json}
 
 import java.time.LocalDate
@@ -108,7 +109,7 @@ package object getFinancialDetails {
           documentOutstandingAmount = Some(123.45),
           lineItemDetails = Some(
             Seq(
-              LineItemDetails(Some(MainTransactionEnum.VATReturnFirstLPP))
+              LineItemDetails(Some(VATReturnFirstLPP))
             )
           ),
           documentTotalAmount = Some(100.0),

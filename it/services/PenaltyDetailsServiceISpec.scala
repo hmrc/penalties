@@ -18,9 +18,9 @@ package services
 
 import config.featureSwitches.{CallAPI1812HIP, FeatureSwitching}
 import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser._
-import models.getFinancialDetails.MainTransactionEnum
 import models.getPenaltyDetails.appealInfo.{AppealInformationType, AppealLevelEnum}
 import models.getPenaltyDetails.breathingSpace.BreathingSpace
+import models.getPenaltyDetails.latePayment.PrincipalChargeMainTr.VATReturnCharge
 import models.getPenaltyDetails.latePayment._
 import models.getPenaltyDetails.lateSubmission._
 import models.getPenaltyDetails.{GetPenaltyDetails, Totalisations}
@@ -145,7 +145,7 @@ class PenaltyDetailsServiceISpec extends IntegrationSpecCommonBase with ETMPWire
                   principalChargeSubTransaction = Some("SUB1")
                 ),
                 penaltyAmountAccruing = BigDecimal(99.99),
-                principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
+                principalChargeMainTransaction = VATReturnCharge,
                 vatOutstandingAmount = None
               )
             )

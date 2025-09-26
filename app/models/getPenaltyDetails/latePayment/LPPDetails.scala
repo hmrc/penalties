@@ -16,7 +16,6 @@
 
 package models.getPenaltyDetails.latePayment
 
-import models.getFinancialDetails.MainTransactionEnum
 import models.getPenaltyDetails.appealInfo.AppealInformationType
 import play.api.libs.json._
 import utils.JsonUtils
@@ -33,7 +32,7 @@ case class LPPDetails(
                        penaltyAmountPosted: BigDecimal,
                        penaltyAmountOutstanding: Option[BigDecimal],
                        penaltyAmountPaid: Option[BigDecimal],
-                       principalChargeMainTransaction: MainTransactionEnum.Value,
+                       principalChargeMainTransaction: String,
                        principalChargeBillingFrom: LocalDate,
                        principalChargeBillingTo: LocalDate,
                        principalChargeDueDate: LocalDate,
@@ -81,7 +80,7 @@ object LPPDetails extends JsonUtils {
         penaltyChargeDueDate <- (json \ "penaltyChargeDueDate").validateOpt[LocalDate]
         principalChargeLatestClearing <- (json \ "principalChargeLatestClearing").validateOpt[LocalDate]
         penaltyAmountAccruing <- (json \ "penaltyAmountAccruing").validate[BigDecimal]
-        principalChargeMainTransaction <- (json \ "principalChargeMainTransaction").validate[MainTransactionEnum.Value]
+        principalChargeMainTransaction <- (json \ "principalChargeMainTransaction").validate[String]
         vatOutstandingAmount <- (json \ "vatOutstandingAmount").validateOpt[BigDecimal]
         metadata <- Json.fromJson(json)(LPPDetailsMetadata.format)
       } yield {
@@ -152,7 +151,7 @@ object LPPDetails extends JsonUtils {
 }
 
 case class LPPDetailsMetadata(
-                               mainTransaction: Option[MainTransactionEnum.Value] = None,
+                               mainTransaction: Option[String] = None,
                                timeToPay: Option[Seq[TimeToPay]] = None,
                                //NOTE: these fields are required in 1812 spec but have been set to optional as they are only used by 3rd party APIs - START
                                principalChargeDocNumber: Option[String] = None,

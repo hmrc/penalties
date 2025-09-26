@@ -17,9 +17,9 @@
 package models.getPenaltyDetails
 
 import base.SpecBase
-import models.getFinancialDetails.MainTransactionEnum
 import models.getPenaltyDetails.appealInfo.{AppealInformationType, AppealLevelEnum}
 import models.getPenaltyDetails.breathingSpace.BreathingSpace
+import models.getPenaltyDetails.latePayment.PrincipalChargeMainTr.VATReturnCharge
 import models.getPenaltyDetails.latePayment._
 import models.getPenaltyDetails.lateSubmission._
 import models.hipPenaltyDetails.appealInfo.AppealStatusEnum
@@ -318,7 +318,7 @@ class GetPenaltyDetailsSpec extends SpecBase {
               principalChargeSubTransaction = Some("SUB1")
             ),
             penaltyAmountAccruing = BigDecimal(99.99),
-            principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
+            principalChargeMainTransaction = VATReturnCharge,
             vatOutstandingAmount = None
           )
         )

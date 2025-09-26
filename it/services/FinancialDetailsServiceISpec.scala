@@ -20,12 +20,13 @@ import config.featureSwitches.FeatureSwitching
 import connectors.parsers.getFinancialDetails.FinancialDetailsParser._
 import models.getFinancialDetails._
 import models.getFinancialDetails.totalisation._
+import models.getPenaltyDetails.latePayment.PrincipalChargeMainTr.VATReturnFirstLPP
 import models.{AgnosticEnrolmentKey, Id, IdType, Regime}
 import org.scalatest.prop.TableDrivenPropertyChecks
 import play.api.http.Status
 import play.api.http.Status.{IM_A_TEAPOT, INTERNAL_SERVER_ERROR}
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
-import utils.{IntegrationSpecCommonBase, ETMPWiremock}
+import utils.{ETMPWiremock, IntegrationSpecCommonBase}
 
 import java.time.LocalDate
 
@@ -51,7 +52,7 @@ class FinancialDetailsServiceISpec extends IntegrationSpecCommonBase with ETMPWi
         documentDetails = Some(Seq(DocumentDetails(
           chargeReferenceNumber = Some("XM002610011594"),
           documentOutstandingAmount = Some(543.21),
-          lineItemDetails = Some(Seq(LineItemDetails(Some(MainTransactionEnum.VATReturnFirstLPP)))),
+          lineItemDetails = Some(Seq(LineItemDetails(Some(VATReturnFirstLPP)))),
           documentTotalAmount = Some(100.00),
           issueDate = Some(LocalDate.of(2022, 1, 1)))
         )),

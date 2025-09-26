@@ -17,19 +17,24 @@
 package controllers
 
 import base.{LPPDetailsBase, LSPDetailsBase, LogCapturing, SpecBase}
-import config.featureSwitches.{FeatureSwitching, CallAPI1812HIP}
-import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser.{GetPenaltyDetailsFailureResponse, GetPenaltyDetailsMalformed, GetPenaltyDetailsSuccessResponse}
+import config.featureSwitches.{CallAPI1812HIP, FeatureSwitching}
+import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser.{
+  GetPenaltyDetailsFailureResponse,
+  GetPenaltyDetailsMalformed,
+  GetPenaltyDetailsSuccessResponse
+}
 import controllers.auth.AuthAction
-import models.getFinancialDetails.MainTransactionEnum.{VATReturnFirstLPP, VATReturnSecondLPP}
+import models.getPenaltyDetails.latePayment.PrincipalChargeMainTr.{VATReturnCharge, VATReturnFirstLPP, VATReturnSecondLPP}
 import models.getPenaltyDetails.latePayment._
 import models.getPenaltyDetails.{GetPenaltyDetails, Totalisations}
+import models.{AgnosticEnrolmentKey, Id, IdType, Regime}
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
 import play.api.http.Status
 import play.api.libs.json.Json
 import play.api.mvc.Results.{InternalServerError, Ok}
 import play.api.test.Helpers._
-import services.{PenaltyDetailsService, PenaltiesFrontendService}
+import services.{PenaltiesFrontendService, PenaltyDetailsService}
 import utils.AuthActionMock
 import utils.Logger.logger
 import utils.PagerDutyHelper.PagerDutyKeys
@@ -37,7 +42,6 @@ import utils.PagerDutyHelper.PagerDutyKeys
 import java.time.LocalDate
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-import models.{AgnosticEnrolmentKey, Id, IdType, Regime}
 
 class PenaltiesFrontendControllerSpec extends SpecBase with LogCapturing with LPPDetailsBase with LSPDetailsBase with FeatureSwitching {
   val mockGetPenaltyDetailsService: PenaltyDetailsService = mock(classOf[PenaltyDetailsService])
@@ -238,7 +242,7 @@ class PenaltiesFrontendControllerSpec extends SpecBase with LogCapturing with LP
               penaltyChargeReference = Some("1234567890"),
               penaltyChargeDueDate = Some(LocalDate.of(2022, 1, 1)),
               appealInformation = None,
-              principalChargeMainTransaction = models.getFinancialDetails.MainTransactionEnum.VATReturnCharge,
+              principalChargeMainTransaction = VATReturnCharge,
               principalChargeBillingFrom = LocalDate.of(2022, 1, 1),
               principalChargeBillingTo = LocalDate.of(2022, 1, 1),
               principalChargeDueDate = LocalDate.of(2022, 1, 1),

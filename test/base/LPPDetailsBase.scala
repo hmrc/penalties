@@ -16,8 +16,8 @@
 
 package base
 
-import models.getFinancialDetails.MainTransactionEnum
 import models.getPenaltyDetails.appealInfo.{AppealInformationType, AppealLevelEnum}
+import models.getPenaltyDetails.latePayment.PrincipalChargeMainTr.VATReturnCharge
 import models.getPenaltyDetails.latePayment._
 import models.hipPenaltyDetails.appealInfo.AppealStatusEnum
 
@@ -55,7 +55,7 @@ trait LPPDetailsBase {
       )))
     ),
     penaltyAmountAccruing = BigDecimal(144.21),
-    principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
+    principalChargeMainTransaction = VATReturnCharge,
     vatOutstandingAmount = Some(BigDecimal(123.45))
   )
 
@@ -90,7 +90,7 @@ trait LPPDetailsBase {
       )))
     ),
     penaltyAmountAccruing = BigDecimal(144.21),
-    principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
+    principalChargeMainTransaction = VATReturnCharge,
     vatOutstandingAmount = Some(BigDecimal(123.45))
   )
 

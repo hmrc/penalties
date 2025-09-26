@@ -16,7 +16,6 @@
 
 package utils
 
-import models.getFinancialDetails.MainTransactionEnum
 import models.getPenaltyDetails.GetPenaltyDetails
 import models.hipPenaltyDetails.{PenaltyDetails => HIPPenaltyDetails}
 
@@ -126,7 +125,7 @@ object PenaltyDetailsConverter {
       penaltyChargeCreationDate = hipLPP.penaltyChargeCreationDate,
       communicationsDate = hipLPP.communicationsDate,
       penaltyChargeReference = hipLPP.penaltyChargeReference,
-      principalChargeMainTransaction = MainTransactionEnum.WithValue(hipLPP.principalChargeMainTr),
+      principalChargeMainTransaction = hipLPP.principalChargeMainTr,
       principalChargeBillingFrom = hipLPP.principalChargeBillingFrom,
       principalChargeBillingTo = hipLPP.principalChargeBillingTo,
       principalChargeDueDate = hipLPP.principalChargeDueDate,
@@ -210,7 +209,7 @@ object PenaltyDetailsConverter {
     hipCategory match {
       case models.hipPenaltyDetails.latePayment.LPPPenaltyCategoryEnum.FirstPenalty => models.getPenaltyDetails.latePayment.LPPPenaltyCategoryEnum.FirstPenalty
       case models.hipPenaltyDetails.latePayment.LPPPenaltyCategoryEnum.SecondPenalty => models.getPenaltyDetails.latePayment.LPPPenaltyCategoryEnum.SecondPenalty
-      case models.hipPenaltyDetails.latePayment.LPPPenaltyCategoryEnum.ManualLPP => models.getPenaltyDetails.latePayment.LPPPenaltyCategoryEnum.ManualLPP
+      case models.hipPenaltyDetails.latePayment.LPPPenaltyCategoryEnum.ManualLPPenalty => models.getPenaltyDetails.latePayment.LPPPenaltyCategoryEnum.ManualLPPenalty
     }
   }
 

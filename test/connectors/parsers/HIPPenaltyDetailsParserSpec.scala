@@ -19,6 +19,7 @@ package connectors.parsers
 import base.LogCapturing
 import connectors.parsers.getPenaltyDetails.HIPPenaltyDetailsParser
 import connectors.parsers.getPenaltyDetails.HIPPenaltyDetailsParser._
+import models.getPenaltyDetails.latePayment.PrincipalChargeMainTr.VATReturnCharge
 import models.hipPenaltyDetails.PenaltyDetails
 import models.hipPenaltyDetails.latePayment.{LPPDetails, LPPPenaltyCategoryEnum, LPPPenaltyStatusEnum, LatePaymentPenalty}
 import org.scalatest.matchers.should.Matchers
@@ -66,7 +67,7 @@ class HIPPenaltyDetailsParserSpec extends AnyWordSpec with Matchers with LogCapt
     penaltyChargeDueDate = None,
     appealInformation = None,
     principalChargeDocNumber = Some("DOC1"),
-    principalChargeMainTr = "4700",
+    principalChargeMainTr = VATReturnCharge,
     principalChargeSubTr = Some("SUB1"),
     principalChargeBillingFrom = LocalDate.now(),
     principalChargeBillingTo = LocalDate.now(),
