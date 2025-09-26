@@ -45,6 +45,5 @@ package object latePayment {
     val AAReturnChargeSecondLPP       = "4719"
     val ManualLPP                     = "4787"
     val VATOverpaymentForTax          = "4764"
-    val Unknown                       = "UNKNOWN"
   }
 }
