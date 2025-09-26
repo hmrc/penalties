@@ -17,15 +17,15 @@
 package utils
 
 import base.SpecBase
-import models.hipPenaltyDetails.{PenaltyDetails => HIPPenaltyDetails}
 import models.getPenaltyDetails.GetPenaltyDetails
-import models.hipPenaltyDetails.lateSubmission._
-import models.hipPenaltyDetails.latePayment._
+import models.getPenaltyDetails.latePayment.PrincipalChargeMainTr.VATReturnCharge
 import models.hipPenaltyDetails.appealInfo._
 import models.hipPenaltyDetails.breathingSpace.BreathingSpace
-import models.hipPenaltyDetails.Totalisations
+import models.hipPenaltyDetails.latePayment._
+import models.hipPenaltyDetails.lateSubmission._
+import models.hipPenaltyDetails.{Totalisations, PenaltyDetails => HIPPenaltyDetails}
 
-import java.time.{LocalDate, Instant}
+import java.time.{Instant, LocalDate}
 
 class PenaltyDetailsConverterSpec extends SpecBase {
 
@@ -119,7 +119,7 @@ class PenaltyDetailsConverterSpec extends SpecBase {
                 )
               )),
               principalChargeDocNumber = Some("DOC123"),
-              principalChargeMainTr = VATReturnChargeMainTransaction,
+              principalChargeMainTr = VATReturnCharge,
               principalChargeSubTr = Some("1174"),
               principalChargeBillingFrom = LocalDate.of(2022, 1, 1),
               principalChargeBillingTo = LocalDate.of(2022, 12, 31),

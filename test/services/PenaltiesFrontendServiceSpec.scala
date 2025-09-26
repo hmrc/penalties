@@ -22,6 +22,7 @@ import connectors.parsers.getFinancialDetails.FinancialDetailsParser._
 import models.getFinancialDetails.totalisation.{FinancialDetailsTotalisation, InterestTotalisation, RegimeTotalisation}
 import models.getFinancialDetails.{DocumentDetails, FinancialDetails, LineItemDetails}
 import models.getPenaltyDetails.appealInfo.{AppealInformationType, AppealLevelEnum}
+import models.getPenaltyDetails.latePayment.PrincipalChargeMainTr.{ManualLPP, VATReturnCharge, VATReturnFirstLPP, VATReturnSecondLPP}
 import models.getPenaltyDetails.latePayment._
 import models.getPenaltyDetails.{GetPenaltyDetails, Totalisations}
 import models.hipPenaltyDetails.appealInfo.AppealStatusEnum
@@ -53,7 +54,7 @@ class PenaltiesFrontendServiceSpec extends SpecBase with LogCapturing with LPPDe
   val dateHelper: DateHelper = injector.instanceOf[DateHelper]
 
   val manualLPP: LPPDetails = LPPDetails(
-    penaltyCategory = LPPPenaltyCategoryEnum.ManualLPP,
+    penaltyCategory = LPPPenaltyCategoryEnum.ManualLPPenalty,
     penaltyChargeReference = None,
     principalChargeReference = "penalty123456",
     penaltyChargeCreationDate = Some(LocalDate.of(2023, 4, 1)),
@@ -62,11 +63,11 @@ class PenaltiesFrontendServiceSpec extends SpecBase with LogCapturing with LPPDe
     penaltyAmountPosted = BigDecimal(100),
     penaltyAmountOutstanding = Some(BigDecimal(45)),
     penaltyAmountPaid = Some(BigDecimal(55)),
-    principalChargeMainTransaction = ManualLppMainTransaction,
+    principalChargeMainTransaction = ManualLPP,
     principalChargeBillingFrom = LocalDate.of(2023, 4, 1),
     principalChargeBillingTo = LocalDate.of(2023, 4, 1),
     principalChargeDueDate = LocalDate.of(2023, 4, 1),
-    None, None, None, None, None, None, None, None, None, None, None, None, None, LPPDetailsMetadata(mainTransaction = Some(ManualLppMainTransaction))
+    None, None, None, None, None, None, None, None, None, None, None, None, None, LPPDetailsMetadata(mainTransaction = Some(ManualLPP))
   )
 
   val getPenaltyDetails: GetPenaltyDetails = GetPenaltyDetails(
@@ -94,13 +95,13 @@ class PenaltiesFrontendServiceSpec extends SpecBase with LogCapturing with LPPDe
         DocumentDetails(
           chargeReferenceNumber = Some("1234567890"),
           documentOutstandingAmount = Some(123.45),
-          lineItemDetails = Some(Seq(LineItemDetails(Some("4704")))),
+          lineItemDetails = Some(Seq(LineItemDetails(Some(VATReturnSecondLPP)))),
           documentTotalAmount = Some(100.00),
           issueDate = Some(LocalDate.now())),
         DocumentDetails(
           chargeReferenceNumber = Some("123456789"),
           documentOutstandingAmount = Some(123.45),
-          lineItemDetails = Some(Seq(LineItemDetails(Some(VATReturnFirstLppMainTransaction)))),
+          lineItemDetails = Some(Seq(LineItemDetails(Some(VATReturnFirstLPP)))),
           documentTotalAmount = Some(100.00),
           issueDate = Some(LocalDate.now()))
       )),
@@ -309,7 +310,7 @@ class PenaltiesFrontendServiceSpec extends SpecBase with LogCapturing with LPPDe
                   principalChargeLatestClearing = None,
                   metadata = LPPDetailsMetadata(),
                   penaltyAmountAccruing = BigDecimal(99.9),
-                  principalChargeMainTransaction = VATReturnChargeMainTransaction,
+                  principalChargeMainTransaction = VATReturnCharge,
                   vatOutstandingAmount = Some(BigDecimal(123.45))
                 ),
                 LPPDetails(
@@ -338,7 +339,7 @@ class PenaltiesFrontendServiceSpec extends SpecBase with LogCapturing with LPPDe
                   principalChargeLatestClearing = None,
                   metadata = LPPDetailsMetadata(),
                   penaltyAmountAccruing = BigDecimal(99.9),
-                  principalChargeMainTransaction = VATReturnChargeMainTransaction,
+                  principalChargeMainTransaction = VATReturnCharge,
                   vatOutstandingAmount = Some(BigDecimal(123.45))
                 )
               )
@@ -352,19 +353,19 @@ class PenaltiesFrontendServiceSpec extends SpecBase with LogCapturing with LPPDe
             DocumentDetails(
               chargeReferenceNumber = Some("1234567890"),
               documentOutstandingAmount = Some(123.45),
-              lineItemDetails = Some(Seq(LineItemDetails(Some("4704")))),
+              lineItemDetails = Some(Seq(LineItemDetails(Some(VATReturnSecondLPP)))),
               documentTotalAmount = Some(100),
               issueDate = Some(LocalDate.of(2022, 1, 1))),
             DocumentDetails(
               chargeReferenceNumber = Some("1234567890"),
               documentOutstandingAmount = Some(123.45),
-              lineItemDetails = Some(Seq(LineItemDetails(Some(VATReturnFirstLppMainTransaction)))),
+              lineItemDetails = Some(Seq(LineItemDetails(Some(VATReturnFirstLPP)))),
               documentTotalAmount = Some(100),
               issueDate = Some(LocalDate.of(2022, 1, 1))),
             DocumentDetails(
               chargeReferenceNumber = Some("penalty123456"),
               documentOutstandingAmount = Some(BigDecimal(45)),
-              lineItemDetails = Some(Seq(LineItemDetails(Some(ManualLppMainTransaction)))),
+              lineItemDetails = Some(Seq(LineItemDetails(Some(ManualLPP)))),
               documentTotalAmount = Some(BigDecimal(100)),
               issueDate = Some(LocalDate.of(2023, 4, 1)))
           )),
@@ -399,10 +400,10 @@ class PenaltiesFrontendServiceSpec extends SpecBase with LogCapturing with LPPDe
                 penaltyChargeDueDate = Some(LocalDate.of(2022, 10, 30)),
                 principalChargeLatestClearing = None,
                 metadata = LPPDetailsMetadata(
-                  mainTransaction = Some(VATReturnChargeMainTransaction),
+                  mainTransaction = Some(VATReturnCharge),
                 ),
                 penaltyAmountAccruing = BigDecimal(99.9),
-                principalChargeMainTransaction = VATReturnChargeMainTransaction,
+                principalChargeMainTransaction = VATReturnCharge,
                 vatOutstandingAmount = Some(BigDecimal(123.45))
               ),
               LPPDetails(
@@ -430,10 +431,10 @@ class PenaltiesFrontendServiceSpec extends SpecBase with LogCapturing with LPPDe
                 penaltyChargeDueDate = Some(LocalDate.of(2022, 10, 30)),
                 principalChargeLatestClearing = None,
                 metadata = LPPDetailsMetadata(
-                  mainTransaction = Some(VATReturnChargeMainTransaction),
+                  mainTransaction = Some(VATReturnCharge),
                 ),
                 penaltyAmountAccruing = BigDecimal(99.9),
-                principalChargeMainTransaction = VATReturnChargeMainTransaction,
+                principalChargeMainTransaction = VATReturnCharge,
                 vatOutstandingAmount = Some(BigDecimal(123.45))
               ),
               manualLPP
@@ -478,7 +479,7 @@ class PenaltiesFrontendServiceSpec extends SpecBase with LogCapturing with LPPDe
                 principalChargeLatestClearing = None,
                 metadata = LPPDetailsMetadata(),
                 penaltyAmountAccruing = BigDecimal(99.9),
-                principalChargeMainTransaction = VATReturnChargeMainTransaction,
+                principalChargeMainTransaction = VATReturnCharge,
                 vatOutstandingAmount = Some(BigDecimal(123.45))
               ),
               LPPDetails(
@@ -507,7 +508,7 @@ class PenaltiesFrontendServiceSpec extends SpecBase with LogCapturing with LPPDe
                 principalChargeLatestClearing = None,
                 metadata = LPPDetailsMetadata(),
                 penaltyAmountAccruing = BigDecimal(99.9),
-                principalChargeMainTransaction = VATReturnChargeMainTransaction,
+                principalChargeMainTransaction = VATReturnCharge,
                 vatOutstandingAmount = Some(BigDecimal(123.45))
               )
             )
@@ -521,19 +522,19 @@ class PenaltiesFrontendServiceSpec extends SpecBase with LogCapturing with LPPDe
           DocumentDetails(
             chargeReferenceNumber = Some("1234567890"),
             documentOutstandingAmount = Some(123.45),
-            lineItemDetails = Some(Seq(LineItemDetails(Some("4704")))),
+            lineItemDetails = Some(Seq(LineItemDetails(Some(VATReturnSecondLPP)))),
             documentTotalAmount = Some(100),
             issueDate = Some(LocalDate.of(2022, 1, 1))),
           DocumentDetails(
             chargeReferenceNumber = Some("1234567890"),
             documentOutstandingAmount = Some(123.45),
-            lineItemDetails = Some(Seq(LineItemDetails(Some(VATReturnFirstLppMainTransaction)))),
+            lineItemDetails = Some(Seq(LineItemDetails(Some(VATReturnFirstLPP)))),
             documentTotalAmount = Some(100),
             issueDate = Some(LocalDate.of(2022, 1, 1))),
           DocumentDetails(
             chargeReferenceNumber = Some("penalty123456"),
             documentOutstandingAmount = Some(BigDecimal(100)),
-            lineItemDetails = Some(Seq(LineItemDetails(Some(ManualLppMainTransaction)))),
+            lineItemDetails = Some(Seq(LineItemDetails(Some(ManualLPP)))),
             documentTotalAmount = Some(BigDecimal(100)),
             issueDate = Some(LocalDate.of(2023, 4, 1)))
         )),
@@ -568,10 +569,10 @@ class PenaltiesFrontendServiceSpec extends SpecBase with LogCapturing with LPPDe
               penaltyChargeDueDate = Some(LocalDate.of(2022, 10, 30)),
               principalChargeLatestClearing = None,
               metadata = LPPDetailsMetadata(
-                mainTransaction = Some(VATReturnChargeMainTransaction),
+                mainTransaction = Some(VATReturnCharge),
               ),
               penaltyAmountAccruing = BigDecimal(99.9),
-              principalChargeMainTransaction = VATReturnChargeMainTransaction,
+              principalChargeMainTransaction = VATReturnCharge,
               vatOutstandingAmount = Some(BigDecimal(123.45))
             ),
             LPPDetails(
@@ -599,10 +600,10 @@ class PenaltiesFrontendServiceSpec extends SpecBase with LogCapturing with LPPDe
               penaltyChargeDueDate = Some(LocalDate.of(2022, 10, 30)),
               principalChargeLatestClearing = None,
               metadata = LPPDetailsMetadata(
-                mainTransaction = Some(VATReturnChargeMainTransaction),
+                mainTransaction = Some(VATReturnCharge),
               ),
               penaltyAmountAccruing = BigDecimal(99.9),
-              principalChargeMainTransaction = VATReturnChargeMainTransaction,
+              principalChargeMainTransaction = VATReturnCharge,
               vatOutstandingAmount = Some(BigDecimal(123.45))
             ),
             manualLPP.copy(penaltyAmountPaid = Some(0), penaltyAmountOutstanding = Some(BigDecimal(100)))
@@ -647,7 +648,7 @@ class PenaltiesFrontendServiceSpec extends SpecBase with LogCapturing with LPPDe
                 principalChargeLatestClearing = None,
                 metadata = LPPDetailsMetadata(),
                 penaltyAmountAccruing = BigDecimal(99.9),
-                principalChargeMainTransaction = VATReturnChargeMainTransaction,
+                principalChargeMainTransaction = VATReturnCharge,
                 vatOutstandingAmount = None
               )
             )
@@ -661,7 +662,7 @@ class PenaltiesFrontendServiceSpec extends SpecBase with LogCapturing with LPPDe
           DocumentDetails(
             chargeReferenceNumber = Some("1234567890"),
             documentOutstandingAmount = None,
-            lineItemDetails = Some(Seq(LineItemDetails(Some(VATReturnFirstLppMainTransaction)))),
+            lineItemDetails = Some(Seq(LineItemDetails(Some(VATReturnFirstLPP)))),
             documentTotalAmount = Some(100.00),
             issueDate = Some(LocalDate.now()))
         )),
@@ -696,10 +697,10 @@ class PenaltiesFrontendServiceSpec extends SpecBase with LogCapturing with LPPDe
               penaltyChargeDueDate = Some(LocalDate.of(2022, 10, 30)),
               principalChargeLatestClearing = None,
               metadata = LPPDetailsMetadata(
-                mainTransaction = Some(VATReturnChargeMainTransaction),
+                mainTransaction = Some(VATReturnCharge),
               ),
               penaltyAmountAccruing = BigDecimal(99.9),
-              principalChargeMainTransaction = VATReturnChargeMainTransaction,
+              principalChargeMainTransaction = VATReturnCharge,
               vatOutstandingAmount = None
             )
           )

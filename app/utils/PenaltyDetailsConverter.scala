@@ -209,7 +209,7 @@ object PenaltyDetailsConverter {
     hipCategory match {
       case models.hipPenaltyDetails.latePayment.LPPPenaltyCategoryEnum.FirstPenalty => models.getPenaltyDetails.latePayment.LPPPenaltyCategoryEnum.FirstPenalty
       case models.hipPenaltyDetails.latePayment.LPPPenaltyCategoryEnum.SecondPenalty => models.getPenaltyDetails.latePayment.LPPPenaltyCategoryEnum.SecondPenalty
-      case models.hipPenaltyDetails.latePayment.LPPPenaltyCategoryEnum.ManualLPP => models.getPenaltyDetails.latePayment.LPPPenaltyCategoryEnum.ManualLPP
+      case models.hipPenaltyDetails.latePayment.LPPPenaltyCategoryEnum.ManualLPPenalty => models.getPenaltyDetails.latePayment.LPPPenaltyCategoryEnum.ManualLPPenalty
     }
   }
 

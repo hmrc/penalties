@@ -20,8 +20,8 @@ import config.AppConfig
 import connectors.parsers.getFinancialDetails.FinancialDetailsParser._
 import models.AgnosticEnrolmentKey
 import models.auditing.UserHasPenaltyRegimeAuditModel
-import .ManualLPP
 import models.getFinancialDetails.{DocumentDetails, FinancialDetails}
+import models.getPenaltyDetails.latePayment.PrincipalChargeMainTr.ManualLPP
 import models.getPenaltyDetails.latePayment._
 import models.getPenaltyDetails.{GetPenaltyDetails, Totalisations}
 import play.api.http.Status.NOT_FOUND
@@ -140,7 +140,7 @@ class PenaltiesFrontendService @Inject()(getFinancialDetailsService: FinancialDe
         val penaltyAmountPaid = manualLPPDetails.documentTotalAmount.get - manualLPPDetails.documentOutstandingAmount.getOrElse(manualLPPDetails.documentTotalAmount.get)
         val penaltyChargeCreationDate = manualLPPDetails.issueDate.get
         LPPDetails(
-          penaltyCategory = LPPPenaltyCategoryEnum.ManualLPP,
+          penaltyCategory = LPPPenaltyCategoryEnum.ManualLPPenalty,
           penaltyChargeReference = None,
           principalChargeReference = principalChargeReference,
           penaltyChargeCreationDate = Some(penaltyChargeCreationDate),
@@ -149,12 +149,12 @@ class PenaltiesFrontendService @Inject()(getFinancialDetailsService: FinancialDe
           penaltyAmountPosted = manualLPPDetails.documentTotalAmount.get,
           penaltyAmountOutstanding = manualLPPDetails.documentOutstandingAmount,
           penaltyAmountPaid = Some(penaltyAmountPaid),
-          principalChargeMainTransaction = manualLPPValue,
+          principalChargeMainTransaction = ManualLPP,
           principalChargeBillingFrom = penaltyChargeCreationDate,
           principalChargeBillingTo = penaltyChargeCreationDate,
           principalChargeDueDate = penaltyChargeCreationDate,
           None, None, None, None, None, None, None, None, None, None, None, None, None, LPPDetailsMetadata(
-            mainTransaction = Some(manualLPPValue)
+            mainTransaction = Some(ManualLPP)
           )
         )
       }

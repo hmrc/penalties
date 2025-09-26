@@ -24,6 +24,7 @@ import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser.{
   GetPenaltyDetailsSuccessResponse
 }
 import controllers.auth.AuthAction
+import models.getPenaltyDetails.latePayment.PrincipalChargeMainTr.{VATReturnCharge, VATReturnFirstLPP, VATReturnSecondLPP}
 import models.getPenaltyDetails.latePayment._
 import models.getPenaltyDetails.{GetPenaltyDetails, Totalisations}
 import models.{AgnosticEnrolmentKey, Id, IdType, Regime}
@@ -162,7 +163,7 @@ class PenaltiesFrontendControllerSpec extends SpecBase with LogCapturing with LP
                 lpp2.copy(penaltyStatus = LPPPenaltyStatusEnum.Posted,
                   penaltyChargeReference = Some("123456790"),
                   metadata = LPPDetailsMetadata(
-                    mainTransaction = Some("4704"),
+                    mainTransaction = Some(VATReturnSecondLPP),
                     timeToPay = Some(Seq(TimeToPay(
                       TTPStartDate = Some(LocalDate.of(2022, 1, 1)),
                       TTPEndDate = Some(LocalDate.of(2022, 12, 31))
@@ -172,7 +173,7 @@ class PenaltiesFrontendControllerSpec extends SpecBase with LogCapturing with LP
                 lpp1PrincipalChargeDueToday.copy(penaltyStatus = LPPPenaltyStatusEnum.Posted,
                   penaltyChargeReference = Some("123456789"),
                   metadata = LPPDetailsMetadata(
-                    mainTransaction = Some(VATReturnFirstLppMainTransaction),
+                    mainTransaction = Some(VATReturnFirstLPP),
                     timeToPay = Some(Seq(TimeToPay(
                       TTPStartDate = Some(LocalDate.of(2022, 1, 1)),
                       TTPEndDate = Some(LocalDate.of(2022, 12, 31))
@@ -241,7 +242,7 @@ class PenaltiesFrontendControllerSpec extends SpecBase with LogCapturing with LP
               penaltyChargeReference = Some("1234567890"),
               penaltyChargeDueDate = Some(LocalDate.of(2022, 1, 1)),
               appealInformation = None,
-              principalChargeMainTransaction = VATReturnChargeMainTransaction,
+              principalChargeMainTransaction = VATReturnCharge,
               principalChargeBillingFrom = LocalDate.of(2022, 1, 1),
               principalChargeBillingTo = LocalDate.of(2022, 1, 1),
               principalChargeDueDate = LocalDate.of(2022, 1, 1),

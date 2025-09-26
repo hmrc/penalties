@@ -18,9 +18,7 @@ package models.getFinancialDetails
 
 import play.api.libs.json.{Format, Json}
 
-case class LineItemDetails(
-                            mainTransaction: Option[MainTransactionEnum.Value]
-                     )
+case class LineItemDetails(mainTransaction: Option[String])
 
 object LineItemDetails {
   implicit val format: Format[LineItemDetails] = Json.format[LineItemDetails]

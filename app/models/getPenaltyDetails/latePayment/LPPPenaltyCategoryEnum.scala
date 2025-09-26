@@ -21,7 +21,7 @@ import play.api.libs.json._
 object LPPPenaltyCategoryEnum extends Enumeration {
   val FirstPenalty: LPPPenaltyCategoryEnum.Value = Value("LPP1")
   val SecondPenalty: LPPPenaltyCategoryEnum.Value = Value("LPP2")
-  val ManualLPP: LPPPenaltyCategoryEnum.Value = Value("MANUAL") //Only for use by penalties-frontend
+  val ManualLPPenalty: LPPPenaltyCategoryEnum.Value = Value("MANUAL") //Only for use by penalties-frontend
 
   implicit val format: Format[LPPPenaltyCategoryEnum.Value] = new Format[LPPPenaltyCategoryEnum.Value] {
     override def writes(o: LPPPenaltyCategoryEnum.Value): JsValue = {

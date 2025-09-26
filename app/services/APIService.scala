@@ -18,7 +18,8 @@ package services
 
 import models.getFinancialDetails.FinancialDetails
 import models.getPenaltyDetails.GetPenaltyDetails
-import models.getPenaltyDetails.latePayment.{LPPDetails, LPPPenaltyStatusEnum, ManualLppMainTransaction}
+import models.getPenaltyDetails.latePayment.PrincipalChargeMainTr.ManualLPP
+import models.getPenaltyDetails.latePayment.{LPPDetails, LPPPenaltyStatusEnum}
 
 import javax.inject.{Inject, Singleton}
 
@@ -66,11 +67,11 @@ class APIService @Inject() {
   }
 
   private def countManualLPPs(financialDetails: FinancialDetails): Int = {
-    financialDetails.documentDetails.map(_.count(_.lineItemDetails.exists(_.exists(_.mainTransaction.contains(ManualLppMainTransaction))))).getOrElse(0)
+    financialDetails.documentDetails.map(_.count(_.lineItemDetails.exists(_.exists(_.mainTransaction.contains(ManualLPP))))).getOrElse(0)
   }
 
   private def manualLPPTotals(financialDetails: FinancialDetails): BigDecimal = {
-    val manualLPPs = financialDetails.documentDetails.map(_.filter(_.lineItemDetails.exists(_.exists(_.mainTransaction.contains(ManualLppMainTransaction)))))
+    val manualLPPs = financialDetails.documentDetails.map(_.filter(_.lineItemDetails.exists(_.exists(_.mainTransaction.contains(ManualLPP)))))
     manualLPPs.get.map(_.documentOutstandingAmount.getOrElse(BigDecimal(0))).sum
   }
 }

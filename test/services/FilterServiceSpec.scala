@@ -20,6 +20,7 @@ import base.SpecBase
 import config.AppConfig
 import models.getPenaltyDetails.GetPenaltyDetails
 import models.getPenaltyDetails.appealInfo.{AppealInformationType, AppealLevelEnum}
+import models.getPenaltyDetails.latePayment.PrincipalChargeMainTr.VATReturnCharge
 import models.getPenaltyDetails.latePayment._
 import models.hipPenaltyDetails.appealInfo.AppealStatusEnum
 import org.mockito.ArgumentMatchers.any
@@ -55,7 +56,7 @@ class FilterServiceSpec extends SpecBase with MockitoSugar {
            penaltyAmountPosted = BigDecimal(0),
            penaltyAmountOutstanding = None,
            penaltyAmountPaid = None,
-           principalChargeMainTransaction = VATReturnChargeMainTransaction,
+           principalChargeMainTransaction = VATReturnCharge,
            principalChargeBillingFrom = pastDate,
            principalChargeBillingTo = pastDate,
            principalChargeDueDate = pastDate,
@@ -107,7 +108,7 @@ class FilterServiceSpec extends SpecBase with MockitoSugar {
              penaltyAmountPosted = BigDecimal(0),
              penaltyAmountOutstanding = None,
              penaltyAmountPaid = None,
-             principalChargeMainTransaction = VATReturnChargeMainTransaction,
+             principalChargeMainTransaction = VATReturnCharge,
              principalChargeBillingFrom = pastDate,
              principalChargeBillingTo = pastDate,
              principalChargeDueDate = pastDate,
@@ -163,7 +164,7 @@ class FilterServiceSpec extends SpecBase with MockitoSugar {
           penaltyAmountPosted = BigDecimal(100),
           penaltyAmountOutstanding = Some(BigDecimal(100)),
           penaltyAmountPaid = None,
-          principalChargeMainTransaction = VATReturnChargeMainTransaction,
+          principalChargeMainTransaction = VATReturnCharge,
           principalChargeBillingFrom = pastDate,
           principalChargeBillingTo = pastDate,
           principalChargeDueDate = pastDate,

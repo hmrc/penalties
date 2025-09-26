@@ -17,6 +17,7 @@
 package models.getFinancialDetails
 
 import base.SpecBase
+import models.getPenaltyDetails.latePayment.PrincipalChargeMainTr.VATReturnFirstLPP
 import play.api.libs.json.{JsValue, Json}
 
 import java.time.LocalDate
@@ -49,7 +50,7 @@ class FinancialDetailsSpec extends SpecBase {
           documentOutstandingAmount = Some(123.45),
           lineItemDetails = Some(
             Seq(
-              LineItemDetails(Some(VATReturnFirstLppMainTransaction))
+              LineItemDetails(Some(VATReturnFirstLPP))
             )
           ),
           documentTotalAmount = Some(100.00),

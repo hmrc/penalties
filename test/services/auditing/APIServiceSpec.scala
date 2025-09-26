@@ -19,9 +19,11 @@ package services.auditing
 import base.SpecBase
 import models.getFinancialDetails.{DocumentDetails, FinancialDetails, LineItemDetails}
 import models.getPenaltyDetails.GetPenaltyDetails
+import models.getPenaltyDetails.latePayment.PrincipalChargeMainTr.{ManualLPP, VATReturnCharge}
 import models.getPenaltyDetails.latePayment._
 import models.getPenaltyDetails.lateSubmission._
 import services.APIService
+
 import java.time.LocalDate
 
 class APIServiceSpec extends SpecBase {
@@ -66,7 +68,7 @@ class APIServiceSpec extends SpecBase {
                     principalChargeLatestClearing = None,
                     metadata = LPPDetailsMetadata(),
                     penaltyAmountAccruing = BigDecimal(10.21),
-                    principalChargeMainTransaction = VATReturnChargeMainTransaction,
+                    principalChargeMainTransaction = VATReturnCharge,
                     vatOutstandingAmount = Some(BigDecimal(123.45))
                   ),
                   LPPDetails(
@@ -95,7 +97,7 @@ class APIServiceSpec extends SpecBase {
                     principalChargeLatestClearing = None,
                     metadata = LPPDetailsMetadata(),
                     penaltyAmountAccruing = BigDecimal(10.21),
-                    principalChargeMainTransaction = VATReturnChargeMainTransaction,
+                    principalChargeMainTransaction = VATReturnCharge,
                     vatOutstandingAmount = Some(BigDecimal(123.45))
                   )
                 )
@@ -143,7 +145,7 @@ class APIServiceSpec extends SpecBase {
                     principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
                     metadata = LPPDetailsMetadata(),
                     penaltyAmountAccruing = BigDecimal(0),
-                    principalChargeMainTransaction = VATReturnChargeMainTransaction,
+                    principalChargeMainTransaction = VATReturnCharge,
                     vatOutstandingAmount = Some(BigDecimal(123.45))
                   ),
                   LPPDetails(
@@ -172,7 +174,7 @@ class APIServiceSpec extends SpecBase {
                     principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
                     metadata = LPPDetailsMetadata(),
                     penaltyAmountAccruing = BigDecimal(0),
-                    principalChargeMainTransaction = VATReturnChargeMainTransaction,
+                    principalChargeMainTransaction = VATReturnCharge,
                     vatOutstandingAmount = Some(BigDecimal(123.45))
                   )
                 )
@@ -222,7 +224,7 @@ class APIServiceSpec extends SpecBase {
                   principalChargeLatestClearing = None,
                   metadata = LPPDetailsMetadata(),
                   penaltyAmountAccruing = BigDecimal(10.22),
-                  principalChargeMainTransaction = VATReturnChargeMainTransaction,
+                  principalChargeMainTransaction = VATReturnCharge,
                   vatOutstandingAmount = Some(BigDecimal(123.45))
                 ),
                 LPPDetails(
@@ -251,7 +253,7 @@ class APIServiceSpec extends SpecBase {
                   principalChargeLatestClearing = None,
                   metadata = LPPDetailsMetadata(),
                   penaltyAmountAccruing = BigDecimal(10.21),
-                  principalChargeMainTransaction = VATReturnChargeMainTransaction,
+                  principalChargeMainTransaction = VATReturnCharge,
                   vatOutstandingAmount = Some(BigDecimal(123.45))
                 )
               )
@@ -309,7 +311,7 @@ class APIServiceSpec extends SpecBase {
                   principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
                   metadata = LPPDetailsMetadata(),
                   penaltyAmountAccruing = BigDecimal(0),
-                  principalChargeMainTransaction = VATReturnChargeMainTransaction,
+                  principalChargeMainTransaction = VATReturnCharge,
                   vatOutstandingAmount = Some(BigDecimal(123.45))
                 )
               )
@@ -390,7 +392,7 @@ class APIServiceSpec extends SpecBase {
                     principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
                     metadata = LPPDetailsMetadata(),
                     penaltyAmountAccruing = BigDecimal(0),
-                    principalChargeMainTransaction = VATReturnChargeMainTransaction,
+                    principalChargeMainTransaction = VATReturnCharge,
                     vatOutstandingAmount = Some(BigDecimal(123.45))
                   )
                 )
@@ -476,7 +478,7 @@ class APIServiceSpec extends SpecBase {
                     principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
                     metadata = LPPDetailsMetadata(),
                     penaltyAmountAccruing = BigDecimal(0),
-                    principalChargeMainTransaction = VATReturnChargeMainTransaction,
+                    principalChargeMainTransaction = VATReturnCharge,
                     vatOutstandingAmount = Some(BigDecimal(123.45))
                   )
                 )
@@ -534,7 +536,7 @@ class APIServiceSpec extends SpecBase {
                 principalChargeLatestClearing = None,
                 metadata = LPPDetailsMetadata(),
                 penaltyAmountAccruing = BigDecimal(10.21),
-                principalChargeMainTransaction = VATReturnChargeMainTransaction,
+                principalChargeMainTransaction = VATReturnCharge,
                 vatOutstandingAmount = Some(BigDecimal(123.45))
               ),
               LPPDetails(
@@ -563,7 +565,7 @@ class APIServiceSpec extends SpecBase {
                 principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
                 metadata = LPPDetailsMetadata(),
                 penaltyAmountAccruing = BigDecimal(0),
-                principalChargeMainTransaction = VATReturnChargeMainTransaction,
+                principalChargeMainTransaction = VATReturnCharge,
                 vatOutstandingAmount = Some(BigDecimal(123.45))
               )
             )
@@ -586,7 +588,7 @@ class APIServiceSpec extends SpecBase {
           documentOutstandingAmount = Some(100.00),
           documentTotalAmount = Some(200.00),
           lineItemDetails = Some(Seq(LineItemDetails(
-            mainTransaction = Some(ManualLppMainTransaction)
+            mainTransaction = Some(ManualLPP)
           ))),
           issueDate = Some(LocalDate.of(2023,1,1))
         )))
@@ -628,7 +630,7 @@ class APIServiceSpec extends SpecBase {
                 principalChargeLatestClearing = None,
                 metadata = LPPDetailsMetadata(),
                 penaltyAmountAccruing = BigDecimal(10.21),
-                principalChargeMainTransaction = VATReturnChargeMainTransaction,
+                principalChargeMainTransaction = VATReturnCharge,
                 vatOutstandingAmount = Some(BigDecimal(123.45))
               ),
               LPPDetails(
@@ -657,7 +659,7 @@ class APIServiceSpec extends SpecBase {
                 principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
                 metadata = LPPDetailsMetadata(),
                 penaltyAmountAccruing = BigDecimal(10.21),
-                principalChargeMainTransaction = VATReturnChargeMainTransaction,
+                principalChargeMainTransaction = VATReturnCharge,
                 vatOutstandingAmount = Some(BigDecimal(123.45))
               )
             )
@@ -772,7 +774,7 @@ class APIServiceSpec extends SpecBase {
                 principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
                 metadata = LPPDetailsMetadata(),
                 penaltyAmountAccruing = BigDecimal(0),
-                principalChargeMainTransaction = VATReturnChargeMainTransaction,
+                principalChargeMainTransaction = VATReturnCharge,
                 vatOutstandingAmount = Some(BigDecimal(123.45))
               )
             )
@@ -795,7 +797,7 @@ class APIServiceSpec extends SpecBase {
           documentOutstandingAmount = Some(100.00),
           documentTotalAmount = Some(200.00),
           lineItemDetails = Some(Seq(LineItemDetails(
-            mainTransaction = Some(ManualLppMainTransaction)
+            mainTransaction = Some(ManualLPP)
           ))),
           issueDate = Some(LocalDate.of(2023,1,1))
         )))
@@ -885,7 +887,7 @@ class APIServiceSpec extends SpecBase {
                 principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
                 metadata = LPPDetailsMetadata(),
                 penaltyAmountAccruing = BigDecimal(10.21),
-                principalChargeMainTransaction = VATReturnChargeMainTransaction,
+                principalChargeMainTransaction = VATReturnCharge,
                 vatOutstandingAmount = Some(BigDecimal(123.45))
               )
             )

@@ -17,7 +17,7 @@
 package models.getFinancialDetails
 
 import base.SpecBase
-import models.getPenaltyDetails.latePayment.VATReturnFirstLppMainTransaction
+import models.getPenaltyDetails.latePayment.PrincipalChargeMainTr.VATReturnFirstLPP
 import play.api.libs.json.{JsValue, Json}
 
 class LineItemDetailsSpec extends SpecBase {
@@ -29,7 +29,7 @@ class LineItemDetailsSpec extends SpecBase {
       |""".stripMargin)
 
   val model: LineItemDetails = LineItemDetails(
-    Some(VATReturnFirstLppMainTransaction)
+    Some(VATReturnFirstLPP)
   )
 
   "be readable from JSON" in {
