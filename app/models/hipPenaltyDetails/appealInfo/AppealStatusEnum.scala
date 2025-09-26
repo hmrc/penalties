@@ -36,39 +36,17 @@ object AppealStatusEnum extends Enumeration {
 
     override def writes(o: AppealStatusEnum.Value): JsValue = JsString(o.toString)
 
-    // TODO: DL-17378 - when ETMP have merged their fix we can revert to just checking for a String
-
-    //    override def reads(json: JsValue): JsResult[AppealStatusEnum.Value] = json.as[String].toUpperCase match {
-    //      case "A"  => JsSuccess(Under_Appeal)
-    //      case "B"  => JsSuccess(Upheld)
-    //      case "C"  => JsSuccess(Rejected)
-    //      case "99" => JsSuccess(Unappealable)
-    //      case "91" => JsSuccess(AppealUpheldChargeAlreadyReversed)
-    //      case "92" => JsSuccess(AppealCancelledPointAlreadyRemoved)
-    //      case "93" => JsSuccess(AppealCancelledChargeAlreadyReversed)
-    //      case "94" => JsSuccess(AppealUpheldPointAlreadyRemoved)
-    //      case e    => JsError(s"$e not recognised")
-    //    }
-    //  }
-
-    override def reads(json: JsValue): JsResult[AppealStatusEnum.Value] = {
-      val code: String = json match {
-        case JsString(s) => s
-        case JsNumber(n) => n.toInt.toString
-        case other       => return JsError(s"Unexpected JSON type: $other")
-      }
-
-      code match {
-        case "A"  => JsSuccess(Under_Appeal)
-        case "B"  => JsSuccess(Upheld)
-        case "C"  => JsSuccess(Rejected)
-        case "99" => JsSuccess(Unappealable)
-        case "91" => JsSuccess(AppealUpheldChargeAlreadyReversed)
-        case "92" => JsSuccess(AppealCancelledPointAlreadyRemoved)
-        case "93" => JsSuccess(AppealCancelledChargeAlreadyReversed)
-        case "94" => JsSuccess(AppealUpheldPointAlreadyRemoved)
-        case e    => JsError(s"$e not recognised")
-      }
+    override def reads(json: JsValue): JsResult[AppealStatusEnum.Value] = json.as[String].toUpperCase match {
+      case "A"  => JsSuccess(Under_Appeal)
+      case "B"  => JsSuccess(Upheld)
+      case "C"  => JsSuccess(Rejected)
+      case "99" => JsSuccess(Unappealable)
+      case "91" => JsSuccess(AppealUpheldChargeAlreadyReversed)
+      case "92" => JsSuccess(AppealCancelledPointAlreadyRemoved)
+      case "93" => JsSuccess(AppealCancelledChargeAlreadyReversed)
+      case "94" => JsSuccess(AppealUpheldPointAlreadyRemoved)
+      case e    => JsError(s"$e not recognised")
     }
+
   }
 }

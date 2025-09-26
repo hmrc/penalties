@@ -44,20 +44,10 @@ case class LSPDetails(
 
 object LSPDetails {
 
-  // TODO: DL-17378 - when ETMP have merged their fix we can revert to just checking for a String
-  private val penaltyOrderOptionalStringReads: Reads[Option[String]] =
-    Reads[Option[String]] {
-      case JsString(s) => JsSuccess(Some(s))
-      case JsNumber(n) => JsSuccess(Some(n.toInt.toString))
-      case JsNull      => JsSuccess(None)
-      case _           => JsError("penaltyOrder must be a JsString or JsNumber")
-    }
-
   implicit val reads: Reads[LSPDetails] = (json: JsValue) =>
     for {
       penaltyNumber <- (json \ "penaltyNumber").validate[String]
-      penaltyOrder  <- (json \ "penaltyOrder").validate(penaltyOrderOptionalStringReads)
-//      penaltyOrder <- (json \ "penaltyOrder").validateOpt[String]// TODO: DL-17378
+      penaltyOrder  <- (json \ "penaltyOrder").validateOpt[String]
       penaltyCategory <- (json \ "penaltyCategory")
         .validateOpt[LSPPenaltyCategoryEnum.Value]
       penaltyStatus <- (json \ "penaltyStatus")

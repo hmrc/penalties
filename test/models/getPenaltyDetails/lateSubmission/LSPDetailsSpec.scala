@@ -23,10 +23,48 @@ import play.api.libs.json.{JsResult, JsValue, Json}
 import java.time.LocalDate
 
 class LSPDetailsSpec extends SpecBase {
+
   val jsonRepresentingModel: JsValue = Json.parse("""
       |{
       |   "penaltyNumber": "12345678901234",
       |   "penaltyOrder": "01",
+      |   "penaltyCategory": "P",
+      |   "penaltyStatus": "ACTIVE",
+      |   "fapIndicator": "X",
+      |   "penaltyCreationDate": "2022-10-30",
+      |   "penaltyExpiryDate": "2022-10-30",
+      |   "expiryReason": "FAP",
+      |   "communicationsDate": "2022-10-30",
+      |   "lateSubmissions": [
+      |      {
+      |        "lateSubmissionID": "001",
+      |        "incomeSource": "IT",
+      |        "taxPeriod":  "23AA",
+      |        "taxPeriodStartDate": "2022-01-01",
+      |        "taxPeriodEndDate": "2022-12-31",
+      |        "taxPeriodDueDate": "2023-02-07",
+      |        "returnReceiptDate": "2023-02-01",
+      |        "taxReturnStatus": "Fulfilled"
+      |      }
+      |   ],
+      |   "appealInformation": [
+      |      {
+      |        "appealStatus": "A",
+      |        "appealLevel": "01",
+      |        "appealDescription": "Some value"
+      |      }
+      |   ],
+      |   "chargeDueDate": "2022-10-30",
+      |   "chargeOutstandingAmount": 200,
+      |   "chargeAmount": 200,
+      |   "triggeringProcess": "P123",
+      |   "chargeReference": "CHARGEREF1"
+      |}
+      |""".stripMargin)
+
+  val jsonRepresentingModelWithNoPenaltyOrder: JsValue = Json.parse("""
+      |{
+      |   "penaltyNumber": "12345678901234",
       |   "penaltyCategory": "P",
       |   "penaltyStatus": "ACTIVE",
       |   "fapIndicator": "X",
@@ -282,55 +320,55 @@ class LSPDetailsSpec extends SpecBase {
     chargeReference = Some("CHARGEREF1")
   )
 
+  val modelWithBlankPenaltyOrder: LSPDetails = LSPDetails(
+    penaltyNumber = "12345678901234",
+    penaltyOrder = None,
+    penaltyCategory = Some(LSPPenaltyCategoryEnum.Point),
+    penaltyStatus = LSPPenaltyStatusEnum.Active,
+    penaltyCreationDate = LocalDate.of(2022, 10, 30),
+    penaltyExpiryDate = LocalDate.of(2022, 10, 30),
+    communicationsDate = Some(LocalDate.of(2022, 10, 30)),
+    fapIndicator = Some("X"),
+    lateSubmissions = Some(
+      Seq(
+        LateSubmission(
+          lateSubmissionID = "001",
+          incomeSource = Some("IT"),
+          taxPeriod = Some("23AA"),
+          taxPeriodStartDate = Some(LocalDate.of(2022, 1, 1)),
+          taxPeriodEndDate = Some(LocalDate.of(2022, 12, 31)),
+          taxPeriodDueDate = Some(LocalDate.of(2023, 2, 7)),
+          returnReceiptDate = Some(LocalDate.of(2023, 2, 1)),
+          taxReturnStatus = Some(TaxReturnStatusEnum.Fulfilled)
+        )
+      )
+    ),
+    expiryReason = Some(ExpiryReasonEnum.Adjustment),
+    appealInformation = Some(
+      Seq(
+        AppealInformationType(
+          appealStatus = Some(AppealStatusEnum.Under_Appeal),
+          appealLevel = Some(AppealLevelEnum.HMRC),
+          appealDescription = Some("Some value"))
+      )
+    ),
+    chargeDueDate = Some(LocalDate.of(2022, 10, 30)),
+    chargeOutstandingAmount = Some(200),
+    chargeAmount = Some(200),
+    triggeringProcess = Some("P123"),
+    chargeReference = Some("CHARGEREF1")
+  )
+
   "be readable from JSON" in {
     val result: JsResult[LSPDetails] = Json.fromJson(jsonRepresentingModel)(LSPDetails.reads)
     result.isSuccess shouldBe true
     result.get shouldBe model
   }
 
-  val jsNumberPenaltyOrderJson: JsValue = Json.parse("""
-      |{
-      |   "penaltyNumber": "12345678901234",
-      |   "penaltyOrder": 11,
-      |   "penaltyCategory": "P",
-      |   "penaltyStatus": "ACTIVE",
-      |   "fapIndicator": "X",
-      |   "penaltyCreationDate": "2022-10-30",
-      |   "penaltyExpiryDate": "2022-10-30",
-      |   "expiryReason": "FAP",
-      |   "communicationsDate": "2022-10-30",
-      |   "lateSubmissions": [
-      |      {
-      |        "lateSubmissionID": "001",
-      |        "incomeSource": "IT",
-      |        "taxPeriod":  "23AA",
-      |        "taxPeriodStartDate": "2022-01-01",
-      |        "taxPeriodEndDate": "2022-12-31",
-      |        "taxPeriodDueDate": "2023-02-07",
-      |        "returnReceiptDate": "2023-02-01",
-      |        "taxReturnStatus": "Fulfilled"
-      |      }
-      |   ],
-      |   "appealInformation": [
-      |      {
-      |        "appealStatus": "A",
-      |        "appealLevel": "01",
-      |        "appealDescription": "Some value"
-      |      }
-      |   ],
-      |   "chargeDueDate": "2022-10-30",
-      |   "chargeOutstandingAmount": 200,
-      |   "chargeAmount": 200,
-      |   "triggeringProcess": "P123",
-      |   "chargeReference": "CHARGEREF1"
-      |}
-      |""".stripMargin)
-
-  "be readable from JSON when penaltyOrder is a JsNumber not a JsString" in {
-    val result: JsResult[LSPDetails] = Json.fromJson(jsNumberPenaltyOrderJson)(LSPDetails.reads)
-    println("result: " + result)
+  "be readable from JSON when penaltyOrder is missing" in {
+    val result: JsResult[LSPDetails] = Json.fromJson(jsonRepresentingModelWithNoPenaltyOrder)(LSPDetails.reads)
     result.isSuccess shouldBe true
-    result.get shouldBe modelForTestingPenaltyOrderJsNumber
+    result.get shouldBe modelWithBlankPenaltyOrder
   }
 
   "be readable from JSON when appealLevel is missing" in {
