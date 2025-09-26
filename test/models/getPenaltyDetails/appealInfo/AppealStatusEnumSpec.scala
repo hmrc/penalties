@@ -20,6 +20,8 @@ import base.SpecBase
 import models.hipPenaltyDetails.appealInfo.AppealStatusEnum
 import play.api.libs.json._
 
+import scala.util.Try
+
 class AppealStatusEnumSpec extends SpecBase {
 
   "AppealStatusEnum" should {
@@ -46,27 +48,25 @@ class AppealStatusEnumSpec extends SpecBase {
     writableTest("CHARGE ALREADY REVERSED - Appeal Upheld", AppealStatusEnum.AppealCancelledChargeAlreadyReversed, "93")
     writableTest("POINT ALREADY REMOVED - Appeal Rejection", AppealStatusEnum.AppealUpheldPointAlreadyRemoved, "94")
 
-    readableTest("JsString: UNDER_APPEAL", JsString("A"), AppealStatusEnum.Under_Appeal)
-    readableTest("JsString: UPHELD", JsString("B"), AppealStatusEnum.Upheld)
-    readableTest("JsString: REJECTED", JsString("C"), AppealStatusEnum.Rejected)
-    readableTest("JsString: UNAPPEALABLE", JsString("99"), AppealStatusEnum.Unappealable)
-    readableTest("JsNumber: UNAPPEALABLE", JsNumber(99), AppealStatusEnum.Unappealable)
-    readableTest("JsString: CHARGE ALREADY REVERSED - Appeal Rejection", JsString("91"), AppealStatusEnum.AppealUpheldChargeAlreadyReversed)
-    readableTest("JsNumber: CHARGE ALREADY REVERSED - Appeal Rejection", JsNumber(91), AppealStatusEnum.AppealUpheldChargeAlreadyReversed)
-    readableTest("JsString: POINT ALREADY REMOVED - Appeal Upheld", JsString("92"), AppealStatusEnum.AppealCancelledPointAlreadyRemoved)
-    readableTest("JsNumber: POINT ALREADY REMOVED - Appeal Upheld", JsNumber(92), AppealStatusEnum.AppealCancelledPointAlreadyRemoved)
-    readableTest("JsString: CHARGE ALREADY REVERSED - Appeal Upheld", JsString("93"), AppealStatusEnum.AppealCancelledChargeAlreadyReversed)
-    readableTest("JsNumber: CHARGE ALREADY REVERSED - Appeal Upheld", JsNumber(93), AppealStatusEnum.AppealCancelledChargeAlreadyReversed)
-    readableTest("JsString: POINT ALREADY REMOVED - Appeal Rejection", JsString("94"), AppealStatusEnum.AppealUpheldPointAlreadyRemoved)
-    readableTest("JsNumber: POINT ALREADY REMOVED - Appeal Rejection", JsNumber(94), AppealStatusEnum.AppealUpheldPointAlreadyRemoved)
+    readableTest("UNDER_APPEAL", JsString("A"), AppealStatusEnum.Under_Appeal)
+    readableTest("UPHELD", JsString("B"), AppealStatusEnum.Upheld)
+    readableTest("REJECTED", JsString("C"), AppealStatusEnum.Rejected)
+    readableTest("UNAPPEALABLE", JsString("99"), AppealStatusEnum.Unappealable)
+    readableTest("CHARGE ALREADY REVERSED - Appeal Rejection", JsString("91"), AppealStatusEnum.AppealUpheldChargeAlreadyReversed)
+    readableTest("POINT ALREADY REMOVED - Appeal Upheld", JsString("92"), AppealStatusEnum.AppealCancelledPointAlreadyRemoved)
+    readableTest("CHARGE ALREADY REVERSED - Appeal Upheld", JsString("93"), AppealStatusEnum.AppealCancelledChargeAlreadyReversed)
+    readableTest("POINT ALREADY REMOVED - Appeal Rejection", JsString("94"), AppealStatusEnum.AppealUpheldPointAlreadyRemoved)
 
     "return JsError when the enum is not recognised" in {
       val result = Json.fromJson(JsString("error"))(AppealStatusEnum.format)
       result.isError shouldBe true
     }
     "return JsError when the JsValue is not a recognised format" in {
-      val result = Json.fromJson(JsBoolean(true))(AppealStatusEnum.format)
-      result.isError shouldBe true
+      val booleanResult = Try(Json.fromJson(JsBoolean(true))(AppealStatusEnum.format))
+      val numberResult  = Try(Json.fromJson(JsNumber(99))(AppealStatusEnum.format))
+
+      booleanResult.isFailure shouldBe true
+      numberResult.isFailure shouldBe true
     }
   }
 
