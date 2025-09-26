@@ -54,7 +54,7 @@ trait LPPDetailsBase {
       )))
     ),
     penaltyAmountAccruing = BigDecimal(144.21),
-    principalChargeMainTransaction = "4700",
+    principalChargeMainTransaction = VATReturnChargeMainTransaction,
     vatOutstandingAmount = Some(BigDecimal(123.45))
   )
 
@@ -89,7 +89,7 @@ trait LPPDetailsBase {
       )))
     ),
     penaltyAmountAccruing = BigDecimal(144.21),
-    principalChargeMainTransaction = "4700",
+    principalChargeMainTransaction = VATReturnChargeMainTransaction,
     vatOutstandingAmount = Some(BigDecimal(123.45))
   )
 

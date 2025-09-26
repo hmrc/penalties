@@ -20,7 +20,7 @@ import config.AppConfig
 import connectors.parsers.getFinancialDetails.FinancialDetailsParser._
 import models.AgnosticEnrolmentKey
 import models.auditing.UserHasPenaltyRegimeAuditModel
-import models.getFinancialDetails.MainTransactionEnum.ManualLPP
+import .ManualLPP
 import models.getFinancialDetails.{DocumentDetails, FinancialDetails}
 import models.getPenaltyDetails.latePayment._
 import models.getPenaltyDetails.{GetPenaltyDetails, Totalisations}
@@ -139,7 +139,6 @@ class PenaltiesFrontendService @Inject()(getFinancialDetailsService: FinancialDe
         val principalChargeReference = manualLPPDetails.chargeReferenceNumber.get //Set to penaltyChargeReference because Manual LPP's do not have principal charges and we don't use this in Manual LPP cases
         val penaltyAmountPaid = manualLPPDetails.documentTotalAmount.get - manualLPPDetails.documentOutstandingAmount.getOrElse(manualLPPDetails.documentTotalAmount.get)
         val penaltyChargeCreationDate = manualLPPDetails.issueDate.get
-        val manualLPPValue = "4787"
         LPPDetails(
           penaltyCategory = LPPPenaltyCategoryEnum.ManualLPP,
           penaltyChargeReference = None,

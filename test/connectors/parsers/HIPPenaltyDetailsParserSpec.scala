@@ -66,7 +66,7 @@ class HIPPenaltyDetailsParserSpec extends AnyWordSpec with Matchers with LogCapt
     penaltyChargeDueDate = None,
     appealInformation = None,
     principalChargeDocNumber = Some("DOC1"),
-    principalChargeMainTr = "4700",
+    principalChargeMainTr = VATReturnChargeMainTransaction,
     principalChargeSubTr = Some("SUB1"),
     principalChargeBillingFrom = LocalDate.now(),
     principalChargeBillingTo = LocalDate.now(),

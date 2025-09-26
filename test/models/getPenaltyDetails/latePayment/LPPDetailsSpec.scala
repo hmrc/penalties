@@ -17,7 +17,6 @@
 package models.getPenaltyDetails.latePayment
 
 import base.SpecBase
-import models.getFinancialDetails.MainTransactionEnum
 import models.getPenaltyDetails.appealInfo.{AppealInformationType, AppealLevelEnum}
 import models.hipPenaltyDetails.appealInfo.AppealStatusEnum
 import play.api.libs.json.{JsResult, JsValue, Json}
@@ -169,7 +168,7 @@ class LPPDetailsSpec extends SpecBase {
       principalChargeSubTransaction = Some("SUB1")
     ),
     penaltyAmountAccruing = BigDecimal(144.21),
-    principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
+    principalChargeMainTransaction = VATReturnChargeMainTransaction,
     vatOutstandingAmount = None
   )
 
@@ -202,7 +201,7 @@ class LPPDetailsSpec extends SpecBase {
       principalChargeSubTransaction = Some("SUB1")
     ),
     penaltyAmountAccruing = BigDecimal(144.21),
-    principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
+    principalChargeMainTransaction = VATReturnChargeMainTransaction,
     vatOutstandingAmount = None
   )
 

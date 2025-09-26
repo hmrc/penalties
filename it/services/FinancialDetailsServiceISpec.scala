@@ -51,7 +51,7 @@ class FinancialDetailsServiceISpec extends IntegrationSpecCommonBase with ETMPWi
         documentDetails = Some(Seq(DocumentDetails(
           chargeReferenceNumber = Some("XM002610011594"),
           documentOutstandingAmount = Some(543.21),
-          lineItemDetails = Some(Seq(LineItemDetails(Some(MainTransactionEnum.VATReturnFirstLPP)))),
+          lineItemDetails = Some(Seq(LineItemDetails(Some(VATReturnFirstLppMainTransaction)))),
           documentTotalAmount = Some(100.00),
           issueDate = Some(LocalDate.of(2022, 1, 1)))
         )),

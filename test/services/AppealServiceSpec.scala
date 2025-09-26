@@ -24,7 +24,6 @@ import connectors.parsers.submitAppeal.AppealsParser.UnexpectedFailure
 import connectors.submitAppeal.{HIPSubmitAppealConnector, SubmitAppealConnector}
 import models.appeals.AppealLevel.FirstStageAppeal
 import models.appeals.{AppealResponseModel, AppealSubmission, CrimeAppealInformation, MultiplePenaltiesData}
-import models.getFinancialDetails.MainTransactionEnum
 import models.getPenaltyDetails.GetPenaltyDetails
 import models.getPenaltyDetails.appealInfo.{AppealInformationType, AppealLevelEnum}
 import models.getPenaltyDetails.latePayment._
@@ -473,7 +472,7 @@ class AppealServiceSpec extends SpecBase with LogCapturing with FeatureSwitching
       principalChargeLatestClearing = Some(LocalDate.of(2022, 10, 1)),
       metadata = LPPDetailsMetadata(),
       penaltyAmountAccruing = BigDecimal(0),
-      principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
+      principalChargeMainTransaction = VATReturnChargeMainTransaction,
       vatOutstandingAmount = Some(BigDecimal(123.45))
     )
 
@@ -503,7 +502,7 @@ class AppealServiceSpec extends SpecBase with LogCapturing with FeatureSwitching
       principalChargeLatestClearing = Some(LocalDate.of(2022, 10, 1)),
       metadata = LPPDetailsMetadata(),
       penaltyAmountAccruing = BigDecimal(0),
-      principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
+      principalChargeMainTransaction = VATReturnChargeMainTransaction,
       vatOutstandingAmount = Some(BigDecimal(123.45))
     )
 

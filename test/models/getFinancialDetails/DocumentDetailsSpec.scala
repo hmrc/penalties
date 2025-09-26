@@ -42,7 +42,7 @@ class DocumentDetailsSpec extends SpecBase {
     documentOutstandingAmount = Some(123.45),
     lineItemDetails = Some(
       Seq(
-        LineItemDetails(Some(MainTransactionEnum.VATReturnFirstLPP))
+        LineItemDetails(Some(VATReturnFirstLppMainTransaction))
       )
     ),
     documentTotalAmount = Some(100.00),

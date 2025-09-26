@@ -119,7 +119,7 @@ class PenaltyDetailsConverterSpec extends SpecBase {
                 )
               )),
               principalChargeDocNumber = Some("DOC123"),
-              principalChargeMainTr = "4700",
+              principalChargeMainTr = VATReturnChargeMainTransaction,
               principalChargeSubTr = Some("1174"),
               principalChargeBillingFrom = LocalDate.of(2022, 1, 1),
               principalChargeBillingTo = LocalDate.of(2022, 12, 31),

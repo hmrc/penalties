@@ -27,7 +27,6 @@ import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser.{
   GetPenaltyDetailsResponse,
   GetPenaltyDetailsSuccessResponse
 }
-import models.getFinancialDetails.MainTransactionEnum
 import models.getPenaltyDetails.appealInfo.{AppealInformationType, AppealLevelEnum}
 import models.getPenaltyDetails.breathingSpace.BreathingSpace
 import models.getPenaltyDetails.latePayment._
@@ -172,7 +171,7 @@ class PenaltyDetailsServiceSpec extends SpecBase with LogCapturing with LPPDetai
                 )))
               ),
               penaltyAmountAccruing = BigDecimal(144.21),
-              principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
+              principalChargeMainTransaction = VATReturnChargeMainTransaction,
               vatOutstandingAmount = Some(BigDecimal(123.45))
             )
           )
@@ -291,7 +290,7 @@ class PenaltyDetailsServiceSpec extends SpecBase with LogCapturing with LPPDetai
                 penaltyChargeDueDate = Some(LocalDate.of(2022, 10, 30)),
                 appealInformation = Some(Seq(models.hipPenaltyDetails.appealInfo.AppealInformationType(appealStatus = Some(models.hipPenaltyDetails.appealInfo.AppealStatusEnum.Unappealable), appealLevel = Some(models.hipPenaltyDetails.appealInfo.AppealLevelEnum.HMRC), appealDescription = Some("Some value")))),
                 principalChargeDocNumber = Some("DOC1"),
-                principalChargeMainTr = "4700",
+                principalChargeMainTr = VATReturnChargeMainTransaction,
                 principalChargeSubTr = Some("SUB1"),
                 principalChargeBillingFrom = LocalDate.of(2022, 10, 30),
                 principalChargeBillingTo = LocalDate.of(2022, 10, 30),
