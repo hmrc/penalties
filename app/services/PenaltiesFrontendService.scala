@@ -139,6 +139,10 @@ class PenaltiesFrontendService @Inject()(getFinancialDetailsService: FinancialDe
         val principalChargeReference = manualLPPDetails.chargeReferenceNumber.get //Set to penaltyChargeReference because Manual LPP's do not have principal charges and we don't use this in Manual LPP cases
         val penaltyAmountPaid = manualLPPDetails.documentTotalAmount.get - manualLPPDetails.documentOutstandingAmount.getOrElse(manualLPPDetails.documentTotalAmount.get)
         val penaltyChargeCreationDate = manualLPPDetails.issueDate.get
+        val matchingPenalty: Option[LPPDetails] =
+          penaltyDetails.latePaymentPenalty.flatMap(_.details.map(_.filter(_.principalChargeReference == principalChargeReference))).getOrElse(Seq.empty).headOption
+        val matchingSupplement: Option[Boolean] = matchingPenalty.flatMap(_.supplement)
+
         LPPDetails(
           penaltyCategory = LPPPenaltyCategoryEnum.ManualLPPenalty,
           penaltyChargeReference = None,
@@ -155,7 +159,11 @@ class PenaltiesFrontendService @Inject()(getFinancialDetailsService: FinancialDe
           principalChargeDueDate = penaltyChargeCreationDate,
           None, None, None, None, None, None, None, None, None, None, None, None, None, LPPDetailsMetadata(
             mainTransaction = Some(ManualLPP)
-          )
+          ),
+          supplement = matchingSupplement // TODO unsure if this is correct...
+          // Testing this in PenaltiesFrontendServiceSpec L456 is causing duplications of outputs e.g.
+//            Expected :List(Some(true), None)
+//            Actual   :List(Some(true), None, Some(true), None)
         )
       }
     })

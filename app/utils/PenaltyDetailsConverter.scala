@@ -137,7 +137,8 @@ object PenaltyDetailsConverter {
         principalChargeSubTransaction = hipLPP.principalChargeSubTr,
         principalChargeDocNumber = hipLPP.principalChargeDocNumber,
         timeToPay = hipLPP.timeToPay.map(_.map(convertTimeToPay))
-      )
+      ),
+      supplement = hipLPP.supplement
     )
   }
 
