@@ -69,7 +69,7 @@ class PenaltiesFrontendServiceSpec extends SpecBase with LogCapturing with LPPDe
     principalChargeDueDate = LocalDate.of(2023, 4, 1),
     None, None, None, None, None, None, None, None, None, None, None, None, None,
     LPPDetailsMetadata(mainTransaction = Some(ManualLPP)),
-    supplement = None
+    supplement = Some(false)
   )
 
   val getPenaltyDetails: GetPenaltyDetails = GetPenaltyDetails(
@@ -451,109 +451,6 @@ class PenaltiesFrontendServiceSpec extends SpecBase with LogCapturing with LPPDe
         val result = penaltiesFrontendService.combineAPIData(penaltyDetailsWithFirstAndSecondPenalty, financialDetails, FinancialDetails(None, None))
         result.latePaymentPenalty.isDefined shouldBe true
         result.latePaymentPenalty.get shouldBe expectedResult
-      }
-
-      "append the new data - extracting the Manual LPP 'supplement' value from the penalty/financial data with matching reference number" in new Setup {
-        val firstManualLppSupplementValue: Option[Boolean] = Some(true)
-        val secondManualLppSupplementValue: Option[Boolean] = None
-        val penaltyDetailsWithManualLPPs: GetPenaltyDetails = GetPenaltyDetails(
-          totalisations = None, lateSubmissionPenalty = None,
-          latePaymentPenalty = Some(LatePaymentPenalty(
-            details = Some(
-              Seq(
-                LPPDetails(
-                  penaltyCategory = LPPPenaltyCategoryEnum.ManualLPPenalty,
-                  principalChargeReference = "refWithTrueSupplement",
-                  penaltyChargeReference = Some("refWithTrueSupplement"),
-                  penaltyChargeCreationDate = Some(LocalDate.of(2022, 10, 30)),
-                  penaltyStatus = LPPPenaltyStatusEnum.Accruing,
-                  appealInformation = Some(Seq(AppealInformationType(appealStatus = Some(AppealStatusEnum.Unappealable), appealLevel = Some(AppealLevelEnum.HMRC), appealDescription = Some("Some value")))),
-                  principalChargeBillingFrom = LocalDate.of(2022, 10, 30),
-                  principalChargeBillingTo = LocalDate.of(2022, 10, 30),
-                  principalChargeDueDate = LocalDate.of(2022, 10, 30),
-                  communicationsDate = Some(LocalDate.of(2022, 10, 30)),
-                  penaltyAmountOutstanding = None,
-                  penaltyAmountPaid = None,
-                  penaltyAmountPosted = 0,
-                  LPP1LRDays = Some("15"),
-                  LPP1HRDays = Some("31"),
-                  LPP2Days = Some("31"),
-                  LPP1HRCalculationAmount = Some(99.99),
-                  LPP1LRCalculationAmount = Some(99.99),
-                  LPP2Percentage = Some(BigDecimal(4.00).setScale(2)),
-                  LPP1LRPercentage = Some(BigDecimal(2.00).setScale(2)),
-                  LPP1HRPercentage = Some(BigDecimal(2.00).setScale(2)),
-                  penaltyChargeDueDate = Some(LocalDate.of(2022, 10, 30)),
-                  principalChargeLatestClearing = None,
-                  metadata = LPPDetailsMetadata(),
-                  penaltyAmountAccruing = BigDecimal(99.9),
-                  principalChargeMainTransaction = VATReturnCharge,
-                  vatOutstandingAmount = Some(BigDecimal(123.45)),
-                  supplement = firstManualLppSupplementValue
-                ),
-                LPPDetails(
-                  penaltyCategory = LPPPenaltyCategoryEnum.ManualLPPenalty,
-                  principalChargeReference = "refWithNoSupplement",
-                  penaltyChargeReference = Some("refWithNoSupplement"),
-                  penaltyChargeCreationDate = Some(LocalDate.of(2022, 10, 30)),
-                  penaltyStatus = LPPPenaltyStatusEnum.Accruing,
-                  appealInformation = Some(Seq(AppealInformationType(appealStatus = Some(AppealStatusEnum.Unappealable), appealLevel = Some(AppealLevelEnum.HMRC), appealDescription = Some("Some value")))),
-                  principalChargeBillingFrom = LocalDate.of(2022, 10, 30),
-                  principalChargeBillingTo = LocalDate.of(2022, 10, 30),
-                  principalChargeDueDate = LocalDate.of(2022, 10, 30),
-                  communicationsDate = Some(LocalDate.of(2022, 10, 30)),
-                  penaltyAmountOutstanding = None,
-                  penaltyAmountPaid = None,
-                  penaltyAmountPosted = 0,
-                  LPP1LRDays = Some("15"),
-                  LPP1HRDays = Some("31"),
-                  LPP2Days = Some("31"),
-                  LPP1HRCalculationAmount = Some(99.99),
-                  LPP1LRCalculationAmount = Some(99.99),
-                  LPP2Percentage = Some(BigDecimal(4.00).setScale(2)),
-                  LPP1LRPercentage = Some(BigDecimal(2.00).setScale(2)),
-                  LPP1HRPercentage = Some(BigDecimal(2.00).setScale(2)),
-                  penaltyChargeDueDate = Some(LocalDate.of(2022, 10, 30)),
-                  principalChargeLatestClearing = None,
-                  metadata = LPPDetailsMetadata(),
-                  penaltyAmountAccruing = BigDecimal(99.9),
-                  principalChargeMainTransaction = VATReturnCharge,
-                  vatOutstandingAmount = Some(BigDecimal(123.45)),
-                  supplement = secondManualLppSupplementValue
-                )
-              )
-            )
-          )),
-          breathingSpace = None
-        )
-
-        val financialDetailsWithManualLPPs: FinancialDetails = FinancialDetails(
-          documentDetails = Some(Seq(
-            DocumentDetails(
-              chargeReferenceNumber = Some("refWithTrueSupplement"),
-              documentOutstandingAmount = Some(123.45),
-              lineItemDetails = Some(Seq(LineItemDetails(Some(ManualLPP)))),
-              documentTotalAmount = Some(100),
-              issueDate = Some(LocalDate.of(2022, 1, 1))),
-            DocumentDetails(
-              chargeReferenceNumber = Some("refWithNoSupplement"),
-              documentOutstandingAmount = Some(123.45),
-              lineItemDetails = Some(Seq(LineItemDetails(Some(ManualLPP)))),
-              documentTotalAmount = Some(100),
-              issueDate = Some(LocalDate.of(2022, 1, 1)))
-          )),
-          totalisation = None
-        )
-
-        val combinedDataResult: GetPenaltyDetails = penaltiesFrontendService.combineAPIData(penaltyDetailsWithManualLPPs, financialDetailsWithManualLPPs, FinancialDetails(None, None))
-        val lppDetailsResult: Seq[LPPDetails] = combinedDataResult.latePaymentPenalty.flatMap(_.details).getOrElse(Seq.empty[LPPDetails])
-        val supplementValuesResult: Seq[Option[Boolean]] = lppDetailsResult.map(_.supplement)
-
-        // TODO this test set up may not be correct.
-        //  We need confirmation of how these manual LPPs are set up
-        //  and if they would appear in both 1811 and 1812 responses
-
-        supplementValuesResult shouldBe Seq(firstManualLppSupplementValue, secondManualLppSupplementValue)
       }
 
       "append the new data - defaulting the penaltyAmountOutstanding to documentTotalAmount when not present for penaltyAmountPaid" in new Setup {

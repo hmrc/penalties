@@ -160,10 +160,7 @@ class PenaltiesFrontendService @Inject()(getFinancialDetailsService: FinancialDe
           None, None, None, None, None, None, None, None, None, None, None, None, None, LPPDetailsMetadata(
             mainTransaction = Some(ManualLPP)
           ),
-          supplement = matchingSupplement // TODO unsure if this is correct...
-          // Testing this in PenaltiesFrontendServiceSpec L456 is causing duplications of outputs e.g.
-//            Expected :List(Some(true), None)
-//            Actual   :List(Some(true), None, Some(true), None)
+          supplement = Some(false) // Manual LPPs can only ever be 'supplement = false'
         )
       }
     })
