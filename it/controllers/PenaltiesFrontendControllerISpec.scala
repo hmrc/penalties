@@ -437,7 +437,8 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
       |               "principalChargeBillingTo": "2023-04-01",
       |               "principalChargeBillingFrom": "2023-04-01",
       |               "mainTransaction": "4787",
-      |               "principalChargeMainTransaction": "4787"
+      |               "principalChargeMainTransaction": "4787",
+      |               "supplement": false
       |            }
       |        ]
       |    }

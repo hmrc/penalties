@@ -49,7 +49,8 @@ case class LPPDetails(
                        appealInformation: Option[Seq[AppealInformationType]],
                        principalChargeLatestClearing: Option[LocalDate],
                        vatOutstandingAmount: Option[BigDecimal],
-                       metadata: LPPDetailsMetadata
+                       metadata: LPPDetailsMetadata,
+                       supplement: Option[Boolean] = None
                      )
 
 object LPPDetails extends JsonUtils {
@@ -83,6 +84,7 @@ object LPPDetails extends JsonUtils {
         principalChargeMainTransaction <- (json \ "principalChargeMainTransaction").validate[String]
         vatOutstandingAmount <- (json \ "vatOutstandingAmount").validateOpt[BigDecimal]
         metadata <- Json.fromJson(json)(LPPDetailsMetadata.format)
+        supplement <- (json \ "supplement").validateOpt[Boolean]
       } yield {
         LPPDetails(
           penaltyCategory = penaltyCategory,
@@ -111,7 +113,8 @@ object LPPDetails extends JsonUtils {
           appealInformation = appealInformation,
           principalChargeLatestClearing = principalChargeLatestClearing,
           vatOutstandingAmount = vatOutstandingAmount,
-          metadata = metadata
+          metadata = metadata,
+          supplement = supplement
         )
       }
     }
@@ -144,7 +147,8 @@ object LPPDetails extends JsonUtils {
         "principalChargeLatestClearing" -> o.principalChargeLatestClearing,
         "penaltyAmountAccruing" -> o.penaltyAmountAccruing,
         "principalChargeMainTransaction" -> o.principalChargeMainTransaction,
-        "vatOutstandingAmount" -> o.vatOutstandingAmount
+        "vatOutstandingAmount" -> o.vatOutstandingAmount,
+        "supplement" -> o.supplement
       ).deepMerge(Json.toJsObject(o.metadata)(LPPDetailsMetadata.format))
     }
   }

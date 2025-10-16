@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,7 +50,8 @@ case class LPPDetails(
   principalChargeBillingTo: LocalDate,
   principalChargeDueDate: LocalDate,
   principalChargeLatestClearing: Option[LocalDate],
-  timeToPay: Option[Seq[TimeToPay]] = None
+  timeToPay: Option[Seq[TimeToPay]] = None,
+  supplement: Option[Boolean] = None // DL-17577: Make this field mandatory once API change is live in Dec '25
 )
 
 object LPPDetails extends JsonUtils {
@@ -85,6 +86,7 @@ object LPPDetails extends JsonUtils {
         principalChargeDueDate <- (json \ "principalChargeDueDate").validate[LocalDate]
         principalChargeLatestClearing <- (json \ "principalChargeLatestClearing").validateOpt[LocalDate]
         timeToPay <- (json \ "timeToPay").validateOpt[Seq[TimeToPay]]
+        supplement <- (json \ "supplement").validateOpt[Boolean]
       } yield {
         LPPDetails(
           principalChargeReference = principalChargeReference,
@@ -114,7 +116,8 @@ object LPPDetails extends JsonUtils {
           principalChargeBillingTo = principalChargeBillingTo,
           principalChargeDueDate = principalChargeDueDate,
           principalChargeLatestClearing = principalChargeLatestClearing,
-          timeToPay = timeToPay
+          timeToPay = timeToPay,
+          supplement = supplement
         )
       }
     }
@@ -148,7 +151,8 @@ object LPPDetails extends JsonUtils {
         "principalChargeBillingTo" -> o.principalChargeBillingTo,
         "principalChargeDueDate" -> o.principalChargeDueDate,
         "principalChargeLatestClearing" -> o.principalChargeLatestClearing,
-        "timeToPay" -> o.timeToPay
+        "timeToPay" -> o.timeToPay,
+        "supplement" -> o.supplement
       )
     }
   }
