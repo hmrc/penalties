@@ -19,7 +19,6 @@ package connectors
 import base.{LogCapturing, SpecBase}
 import config.featureSwitches.{CallPEGA, FeatureSwitching}
 import connectors.parsers.submitAppeal.AppealsParser.{AppealSubmissionResponse, UnexpectedFailure}
-import connectors.submitAppeal.SubmitAppealConnector
 import models.appeals.AppealLevel.FirstStageAppeal
 import models.appeals.{AgentDetails, AppealSubmission, CrimeAppealInformation}
 import org.mockito.Mockito._
@@ -39,7 +38,7 @@ class SubmitAppealConnectorSpec extends SpecBase with FeatureSwitching with LogC
   implicit val config: Configuration = appConfig.config
 
   class Setup {
-    val connector = new SubmitAppealConnector(
+    val connector = new HIPSubmitAppealConnector(
       mockHttpClient,
       appConfig
     )(ExecutionContext.Implicits.global)

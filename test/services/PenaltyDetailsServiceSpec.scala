@@ -19,7 +19,7 @@ package services
 import base.{LPPDetailsBase, LogCapturing, SpecBase}
 import config.AppConfig
 import config.featureSwitches.{CallAPI1812HIP, FeatureSwitching}
-import connectors.getPenaltyDetails.{HIPPenaltyDetailsConnector, PenaltyDetailsConnector}
+import connectors.getPenaltyDetails.HIPPenaltyDetailsConnector
 import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser.{
   GetPenaltyDetailsFailureResponse,
   GetPenaltyDetailsMalformed,
@@ -51,7 +51,6 @@ import scala.concurrent.{ExecutionContext, Future}
 class PenaltyDetailsServiceSpec extends SpecBase with LogCapturing with LPPDetailsBase {
   implicit val ec: ExecutionContext = ExecutionContext.Implicits.global
   implicit val hc: HeaderCarrier = HeaderCarrier()
-  val mockGetPenaltyDetailsConnector: PenaltyDetailsConnector = mock(classOf[PenaltyDetailsConnector])
   val mockHIPPenaltyDetailsConnector: HIPPenaltyDetailsConnector = mock(classOf[HIPPenaltyDetailsConnector])
   val vrn123456789: AgnosticEnrolmentKey = AgnosticEnrolmentKey(
     Regime("VATC"), 
@@ -69,9 +68,8 @@ class PenaltyDetailsServiceSpec extends SpecBase with LogCapturing with LPPDetai
     sys.props -= ESTIMATED_LPP1_FILTER_END_DATE
 
     val mockAppConfig: AppConfig = new AppConfig(mockConfig, mockServicesConfig)
-    val service = new PenaltyDetailsService(mockGetPenaltyDetailsConnector, mockHIPPenaltyDetailsConnector, filterService)
+    val service = new PenaltyDetailsService(mockHIPPenaltyDetailsConnector, filterService)
 
-    reset(mockGetPenaltyDetailsConnector)
     reset(mockHIPPenaltyDetailsConnector)
     reset(mockConfig)
     reset(mockServicesConfig)
@@ -183,20 +181,6 @@ class PenaltyDetailsServiceSpec extends SpecBase with LogCapturing with LPPDetai
         BreathingSpace(BSStartDate = LocalDate.of(2023, 1, 1), BSEndDate = LocalDate.of(2023, 12, 31))
       ))
     )
-
-    "call the regular connector when CallAPI1812HIP feature switch is disabled" in new Setup {
-      disableFeatureSwitch(CallAPI1812HIP)
-      
-      when(mockGetPenaltyDetailsConnector.getPenaltyDetails(ArgumentMatchers.eq(vrn123456789))(any()))
-        .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(mockGetPenaltyDetailsResponseAsModel))))
-
-      setEstimatedLPP1FilterEndDate(Some(LocalDate.of(2022, 10, 28)))
-
-      val result: GetPenaltyDetailsResponse = await(service.getPenaltyDetails(vrn123456789))
-
-      result.isRight shouldBe true
-      result.toOption.get shouldBe GetPenaltyDetailsSuccessResponse(mockGetPenaltyDetailsResponseAsModel)
-    }
 
     "call the HIP connector when CallAPI1812HIP feature switch is enabled" in new Setup {
       enableFeatureSwitch(CallAPI1812HIP)
@@ -320,8 +304,6 @@ class PenaltyDetailsServiceSpec extends SpecBase with LogCapturing with LPPDetai
     }
 
     s"return $GetPenaltyDetailsMalformed when the regular connector response body is malformed" in new Setup {
-      disableFeatureSwitch(CallAPI1812HIP)
-      
       when(mockGetPenaltyDetailsConnector.getPenaltyDetails(ArgumentMatchers.eq(vrn123456789))(any()))
         .thenReturn(Future.successful(Left(GetPenaltyDetailsMalformed)))
       

@@ -17,7 +17,6 @@
 package connectors
 
 import config.featureSwitches.{CallPEGA, FeatureSwitching}
-import connectors.submitAppeal.SubmitAppealConnector
 import models.appeals.AppealLevel.FirstStageAppeal
 import models.appeals.{AppealSubmission, CrimeAppealInformation}
 import play.api.http.Status

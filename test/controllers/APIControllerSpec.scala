@@ -18,8 +18,7 @@ package controllers
 
 import base.{LogCapturing, SpecBase}
 import config.featureSwitches.{CallAPI1811HIP, CallAPI1812HIP, FeatureSwitching}
-import connectors.getFinancialDetails.FinancialDetailsConnector
-import connectors.getPenaltyDetails.{HIPPenaltyDetailsConnector, PenaltyDetailsConnector}
+import connectors.getPenaltyDetails.HIPPenaltyDetailsConnector
 import connectors.parsers.getFinancialDetails.FinancialDetailsParser.{
   FinancialDetailsFailureResponse,
   FinancialDetailsMalformed,
