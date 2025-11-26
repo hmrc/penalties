@@ -281,4 +281,21 @@ class LPPDetailsSpec extends SpecBase {
     }
   }
 
+  ".hasNoAppeals" should {
+    "return 'true'" when {
+      "'appealInformation' is None" in {
+        fullModel.copy(appealInformation = None).hasNoAppeals shouldBe true
+      }
+      "'appealInformation' is an empty Seq" in {
+        fullModel.copy(appealInformation = Some(Seq.empty)).hasNoAppeals shouldBe true
+      }
+    }
+
+    "return 'false'" when {
+      "'appealInformation' contains any data" in {
+        fullModel.copy(appealInformation = Some(Seq(firstStageRejectedAppeal))).hasNoAppeals shouldBe false
+      }
+    }
+  }
+
 }

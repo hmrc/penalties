@@ -79,7 +79,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
     ), audit = SDESAudit(correlationId)
   ))
 
-  val regime = Regime("VATC") 
+  val regime = Regime("VATC")
   val idType = IdType("VRN")
   val id = Id("123456789")
   val vrn123456789: AgnosticEnrolmentKey = AgnosticEnrolmentKey(
@@ -318,7 +318,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
     s"return NOT_FOUND (${Status.NOT_FOUND}) when ETMP can not find the data for the given enrolment key" in new Setup(true) {
 
       val vrn: AgnosticEnrolmentKey = AgnosticEnrolmentKey(
-        Regime("VATC"), 
+        Regime("VATC"),
         IdType("VRN"),
         Id("123456789")
       )
@@ -334,11 +334,11 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
       val samplePenaltyId: String = "1234"
 
         val vrn: AgnosticEnrolmentKey = AgnosticEnrolmentKey(
-          Regime("VATC"), 
+          Regime("VATC"),
           IdType("VRN"),
           Id("123456789")
         )
-      val regime = Regime("VATC") 
+      val regime = Regime("VATC")
       val idType = IdType("VRN")
       val id = Id("123456789")
       when(mockGetPenaltyDetailsService.getPenaltyDetails(ArgumentMatchers.eq(vrn))(ArgumentMatchers.any()))
@@ -352,7 +352,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
     s"return ISE (${Status.INTERNAL_SERVER_ERROR}) when the call to ETMP fails for some reason" in new Setup {
 
         val vrn: AgnosticEnrolmentKey = AgnosticEnrolmentKey(
-          Regime("VATC"), 
+          Regime("VATC"),
           IdType("VRN"),
           Id("123456789")
         )
@@ -366,7 +366,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
     s"return ISE (${Status.INTERNAL_SERVER_ERROR}) when API 1812 call returns malformed data" in new Setup {
 
         val vrn: AgnosticEnrolmentKey = AgnosticEnrolmentKey(
-          Regime("VATC"), 
+          Regime("VATC"),
           IdType("VRN"),
           Id("123456789")
         )
@@ -384,7 +384,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
     s"return OK (${Status.OK}) when the call to ETMP succeeds and the penalty ID matches (defaulting comms date if not present)" in new Setup {
       val samplePenaltyId: String = "123456789"
       val sampleEnrolmentKey: AgnosticEnrolmentKey = AgnosticEnrolmentKey(
-        Regime("VATC"), 
+        Regime("VATC"),
         IdType("VRN"),
         Id("123456789")
       )
@@ -407,7 +407,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
       val samplePenaltyId: String = "123456789"
 
              val vrn: AgnosticEnrolmentKey = AgnosticEnrolmentKey(
-          Regime("VATC"), 
+          Regime("VATC"),
           IdType("VRN"),
           Id("123456789")
         )
@@ -430,7 +430,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
       val samplePenaltyId: String = "123456787"
 
       val vrn: AgnosticEnrolmentKey = AgnosticEnrolmentKey(
-        Regime("VATC"), 
+        Regime("VATC"),
         IdType("VRN"),
         Id("123456789")
       )
@@ -598,7 +598,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
     s"return NOT_FOUND (${Status.NOT_FOUND}) when ETMP can not find the data for the given enrolment key" in new Setup {
 
       val vrn: AgnosticEnrolmentKey = AgnosticEnrolmentKey(
-        Regime("VATC"), 
+        Regime("VATC"),
         IdType("VRN"),
         Id("123456789")
       )
@@ -615,7 +615,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
       val samplePenaltyId: String = "1234"
 
       val vrn: AgnosticEnrolmentKey = AgnosticEnrolmentKey(
-        Regime("VATC"), 
+        Regime("VATC"),
         IdType("VRN"),
         Id("123456789")
       )
@@ -631,7 +631,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
     s"return ISE (${Status.INTERNAL_SERVER_ERROR}) when the call to ETMP fails for some reason" in new Setup {
 
               val vrn: AgnosticEnrolmentKey = AgnosticEnrolmentKey(
-          Regime("VATC"), 
+          Regime("VATC"),
           IdType("VRN"),
           Id("123456789")
         )
@@ -646,7 +646,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
     s"return ISE (${Status.INTERNAL_SERVER_ERROR}) when API 1812 call returns malformed data" in new Setup {
 
               val vrn: AgnosticEnrolmentKey = AgnosticEnrolmentKey(
-          Regime("VATC"), 
+          Regime("VATC"),
           IdType("VRN"),
           Id("123456789")
         )
@@ -665,7 +665,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
       val samplePenaltyId: String = "1234567890"
 
         val vrn: AgnosticEnrolmentKey = AgnosticEnrolmentKey(
-          Regime("VATC"), 
+          Regime("VATC"),
           IdType("VRN"),
           Id("123456789")
         )
@@ -689,7 +689,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
       val samplePenaltyId: String = "1234567891"
 
       val vrn: AgnosticEnrolmentKey = AgnosticEnrolmentKey(
-          Regime("VATC"), 
+          Regime("VATC"),
           IdType("VRN"),
           Id("123456789")
         )
@@ -713,7 +713,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
       val samplePenaltyId: String = "1234567890"
 
         val vrn: AgnosticEnrolmentKey = AgnosticEnrolmentKey(
-          Regime("VATC"), 
+          Regime("VATC"),
           IdType("VRN"),
           Id("123456789")
         )
@@ -738,7 +738,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
       val samplePenaltyId: String = "1234567891"
 
         val vrn: AgnosticEnrolmentKey = AgnosticEnrolmentKey(
-          Regime("VATC"), 
+          Regime("VATC"),
           IdType("VRN"),
           Id("123456789")
         )
@@ -850,7 +850,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
     "return BAD_REQUEST (400)" when {
       "the request body is not valid JSON" in new Setup {
         val result: Future[Result] = controller.submitAppeal(regime, idType, id, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = false)(fakeRequest)
-        status(result) shouldBe BAD_REQUEST 
+        status(result) shouldBe BAD_REQUEST
         contentAsString(result) shouldBe "Invalid body received i.e. could not be parsed to JSON"
       }
 
@@ -1486,7 +1486,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
           logs => {
             val result: Result = await(controller.submitAppeal(regime, idType, id, penaltyNumber = "123456789", correlationId = correlationId, isMultiAppeal = true)(fakeRequest.withJsonBody(appealsJson)))
             result.header.status shouldBe MULTI_STATUS
-            logs.map(_.getMessage) should contain (s"[RegimeAppealsController][submitAppeal] Unable to store file notification for user with enrolment: VATC~VRN~123456789 penalty 123456789 (correlation ID: $correlationId) - An unknown exception occurred when attempting to store file notifications, with error: failed") 
+            logs.map(_.getMessage) should contain (s"[RegimeAppealsController][submitAppeal] Unable to store file notification for user with enrolment: VATC~VRN~123456789 penalty 123456789 (correlation ID: $correlationId) - An unknown exception occurred when attempting to store file notifications, with error: failed")
             contentAsJson(Future(result)) shouldBe expectedJsonResponse
             eventually {
               verify(mockAuditService, times(1)).audit(argumentCaptorForAuditModel.capture())(any(), any(), any())
@@ -1576,15 +1576,15 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
 
     s"return NO_CONTENT (${Status.NO_CONTENT})" when {
       "the appeal service returns None" in new Setup {
-  
+
         val vrn: AgnosticEnrolmentKey = AgnosticEnrolmentKey(
-          Regime("VATC"), 
+          Regime("VATC"),
           IdType("VRN"),
           Id("123456789")
         )
         when(mockGetPenaltyDetailsService.getPenaltyDetails(ArgumentMatchers.eq(vrn))(ArgumentMatchers.any()))
           .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetailsOnePenalty))))
-        when(mockAppealsService.findMultiplePenalties(any(), any())).thenReturn(None)
+        when(mockAppealsService.findMultiplePenalties(any(), any(), any())).thenReturn(None)
         val result: Future[Result] = controller.getMultiplePenaltyData("1234567891", regime, idType, id)(fakeRequest)
         status(result) shouldBe Status.NO_CONTENT
       }
@@ -1592,9 +1592,9 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
 
     s"return OK (${Status.OK})" when {
       "the appeal service returns Some" in new Setup {
-  
+
         val vrn: AgnosticEnrolmentKey = AgnosticEnrolmentKey(
-          Regime("VATC"), 
+          Regime("VATC"),
           IdType("VRN"),
           Id("123456789")
         )
@@ -1609,7 +1609,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
         when(mockAppConfig.getTimeMachineDateTime).thenReturn(LocalDateTime.now)
         when(mockGetPenaltyDetailsService.getPenaltyDetails(ArgumentMatchers.eq(vrn))(ArgumentMatchers.any()))
           .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetailsTwoPenalties))))
-        when(mockAppealsService.findMultiplePenalties(any(), any())).thenReturn(Some(expectedReturnModel))
+        when(mockAppealsService.findMultiplePenalties(any(), any(), any())).thenReturn(Some(expectedReturnModel))
         val result: Future[Result] = controller.getMultiplePenaltyData("1234567892", regime, idType, id)(fakeRequest)
         status(result) shouldBe Status.OK
         contentAsJson(result) shouldBe Json.toJson(expectedReturnModel)
@@ -1618,9 +1618,9 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
 
     s"return ISE (${Status.INTERNAL_SERVER_ERROR})" when {
       "API 1812 call returns malformed data" in new Setup {
-  
+
         val vrn: AgnosticEnrolmentKey = AgnosticEnrolmentKey(
-          Regime("VATC"), 
+          Regime("VATC"),
           IdType("VRN"),
           Id("123456789")
         )
@@ -1636,13 +1636,13 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
       }
 
       "the call to ETMP fails for some reason" in new Setup {
-  
+
         val vrn: AgnosticEnrolmentKey = AgnosticEnrolmentKey(
-          Regime("VATC"), 
+          Regime("VATC"),
           IdType("VRN"),
           Id("123456789")
         )
-          val regime = Regime("VATC") 
+          val regime = Regime("VATC")
   val idType = IdType("VRN")
   val id = Id("123456789")
         when(mockGetPenaltyDetailsService.getPenaltyDetails(ArgumentMatchers.eq(vrn))(ArgumentMatchers.any()))
@@ -1655,11 +1655,11 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
     s"return NOT_FOUND (${Status.NOT_FOUND}) when ETMP can not find the data for the given enrolment key" in new Setup {
 
         val vrn: AgnosticEnrolmentKey = AgnosticEnrolmentKey(
-          Regime("VATC"), 
+          Regime("VATC"),
           IdType("VRN"),
           Id("123456789")
         )
-          val regime = Regime("VATC") 
+          val regime = Regime("VATC")
   val idType = IdType("VRN")
   val id = Id("123456789")
       when(mockGetPenaltyDetailsService.getPenaltyDetails(ArgumentMatchers.eq(vrn))(ArgumentMatchers.any()))

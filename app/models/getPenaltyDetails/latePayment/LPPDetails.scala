@@ -52,6 +52,7 @@ case class LPPDetails(penaltyCategory: LPPPenaltyCategoryEnum.Value,
                       supplement: Option[Boolean] = None) {
 
   def hasNoAppealsOrOnlyFirstStageRejectedAppeals: Boolean = appealInformation.getOrElse(Seq.empty).forall(_.isFirstAppealAndRejected)
+  def hasNoAppeals: Boolean = appealInformation.forall(_.isEmpty)
 
 }
 
