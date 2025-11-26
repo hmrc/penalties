@@ -103,12 +103,12 @@ class AppealService @Inject()(appealsConnector: SubmitAppealConnector,
     }
     val principalChargeReference: String = lppPenaltyIdInPenaltyDetailsPayload.get.principalChargeReference
     val penaltiesForPrincipalCharge: Seq[LPPDetails] = penaltyDetails.latePaymentPenalty.flatMap(_.details.map(_.filter(_.principalChargeReference.equals(principalChargeReference)))).get
-    val underAppeal = penaltiesForPrincipalCharge.exists(_.appealInformation.isDefined)
+    val allLppsAreAppealable = penaltiesForPrincipalCharge.forall(_.hasNoAppealsOrOnlyFirstStageRejectedAppeals)
     val areBothPenaltiesPostedAndVATPaid: Boolean = penaltiesForPrincipalCharge.forall(penalty => {
       penalty.penaltyStatus == LPPPenaltyStatusEnum.Posted && penalty.principalChargeLatestClearing.isDefined
     })
 
-    if (penaltiesForPrincipalCharge.size == 2 && !underAppeal && areBothPenaltiesPostedAndVATPaid) {
+    if (penaltiesForPrincipalCharge.size == 2 && allLppsAreAppealable && areBothPenaltiesPostedAndVATPaid) {
       val secondPenalty = penaltiesForPrincipalCharge.find(_.penaltyCategory.equals(LPPPenaltyCategoryEnum.SecondPenalty)).get
       val firstPenalty = penaltiesForPrincipalCharge.find(_.penaltyCategory.equals(LPPPenaltyCategoryEnum.FirstPenalty)).get
       val returnModel = MultiplePenaltiesData(

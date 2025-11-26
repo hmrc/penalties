@@ -32,6 +32,8 @@ object AppealStatusEnum extends Enumeration {
   val ignoredStatuses: Seq[Value] =
     Seq(AppealUpheldChargeAlreadyReversed, AppealCancelledPointAlreadyRemoved, AppealCancelledChargeAlreadyReversed, AppealUpheldPointAlreadyRemoved)
 
+  val allStatuses: Seq[Value] = ignoredStatuses ++ Seq(Under_Appeal, Upheld, Rejected, Unappealable)
+
   implicit val format: Format[AppealStatusEnum.Value] = new Format[AppealStatusEnum.Value] {
 
     override def writes(o: AppealStatusEnum.Value): JsValue = JsString(o.toString)
