@@ -229,4 +229,73 @@ class LPPDetailsSpec extends SpecBase {
     val result: JsValue = Json.toJson(modelAsPaidPenalty)(LPPDetails.format)
     result shouldBe jsonRepresentingModelAsPaidPenalty
   }
+
+  private val firstStageRejectedAppeal = AppealInformationType(
+    appealStatus = Some(AppealStatusEnum.Rejected),
+    appealLevel = Some(AppealLevelEnum.HMRC),
+    appealDescription = Some("Some value")
+  )
+  private val secondStageRejectedAppeal = AppealInformationType(
+    appealStatus = Some(AppealStatusEnum.Rejected),
+    appealLevel = Some(AppealLevelEnum.TribunalOrSecond),
+    appealDescription = Some("Some value")
+  )
+  private def firstStageAppealWithStatus(status: AppealStatusEnum.Value) = AppealInformationType(
+    appealStatus = Some(status),
+    appealLevel = Some(AppealLevelEnum.HMRC),
+    appealDescription = Some("Some value")
+  )
+
+  ".hasNoAppealsOrOnlyFirstStageRejectedAppeals" should {
+    "return 'true'" when {
+      "'appealInformation' is None" in {
+        fullModel.copy(appealInformation = None).hasNoAppealsOrOnlyFirstStageRejectedAppeals shouldBe true
+      }
+      "'appealInformation' is an empty Seq" in {
+        fullModel.copy(appealInformation = Some(Seq.empty)).hasNoAppealsOrOnlyFirstStageRejectedAppeals shouldBe true
+      }
+      "'appealInformation' contains a first stage appeal that was rejected" in {
+        fullModel.copy(appealInformation = Some(Seq(firstStageRejectedAppeal))).hasNoAppealsOrOnlyFirstStageRejectedAppeals shouldBe true
+      }
+      "'appealInformation' contains multiple first stage appeals that were all rejected" in {
+        fullModel
+          .copy(appealInformation = Some(Seq(firstStageRejectedAppeal, firstStageRejectedAppeal)))
+          .hasNoAppealsOrOnlyFirstStageRejectedAppeals shouldBe true
+      }
+    }
+
+    "return 'false'" when {
+      "'appealInformation' contains a non-first stage appeal that was rejected" in {
+        fullModel
+          .copy(appealInformation = Some(Seq(firstStageRejectedAppeal, secondStageRejectedAppeal)))
+          .hasNoAppealsOrOnlyFirstStageRejectedAppeals shouldBe false
+      }
+      val unappealableStatuses = AppealStatusEnum.allStatuses.filterNot(_ == AppealStatusEnum.Rejected)
+      unappealableStatuses.foreach { status =>
+        s"'appealInformation' contains a first stage appeal with status '$status' (a non-rejected status)" in {
+          fullModel
+            .copy(appealInformation = Some(Seq(firstStageAppealWithStatus(status), firstStageRejectedAppeal)))
+            .hasNoAppealsOrOnlyFirstStageRejectedAppeals shouldBe false
+        }
+      }
+    }
+  }
+
+  ".hasNoAppeals" should {
+    "return 'true'" when {
+      "'appealInformation' is None" in {
+        fullModel.copy(appealInformation = None).hasNoAppeals shouldBe true
+      }
+      "'appealInformation' is an empty Seq" in {
+        fullModel.copy(appealInformation = Some(Seq.empty)).hasNoAppeals shouldBe true
+      }
+    }
+
+    "return 'false'" when {
+      "'appealInformation' contains any data" in {
+        fullModel.copy(appealInformation = Some(Seq(firstStageRejectedAppeal))).hasNoAppeals shouldBe false
+      }
+    }
+  }
+
 }

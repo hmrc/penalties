@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,26 +17,28 @@
 package models.getPenaltyDetails.appealInfo
 
 import models.hipPenaltyDetails.appealInfo.AppealStatusEnum
-import play.api.libs.json.{JsValue, Json, Reads, Writes}
+import play.api.libs.json.{Json, Reads, Writes}
 
 case class AppealInformationType(
     appealStatus: Option[AppealStatusEnum.Value],
     appealLevel: Option[AppealLevelEnum.Value],
     appealDescription: Option[String] // NOTE: this field is required in 1812 spec but has been set to optional as it is only used by 3rd party APIs
-)
+) {
+
+  def isFirstAppealAndRejected: Boolean = appealLevel.contains(AppealLevelEnum.HMRC) && appealStatus.contains(AppealStatusEnum.Rejected)
+
+}
 
 object AppealInformationType {
   implicit val reads: Reads[AppealInformationType] = Json.reads[AppealInformationType]
 
-  implicit val writes: Writes[AppealInformationType] = new Writes[AppealInformationType] {
-    override def writes(appealInformation: AppealInformationType): JsValue = {
-      val newAppealLevel: Option[AppealLevelEnum.Value] = parseAppealLevel(appealInformation)
-      Json.obj(
-        "appealStatus"      -> appealInformation.appealStatus,
-        "appealLevel"       -> newAppealLevel,
-        "appealDescription" -> appealInformation.appealDescription
-      )
-    }
+  implicit val writes: Writes[AppealInformationType] = (appealInformation: AppealInformationType) => {
+    val newAppealLevel: Option[AppealLevelEnum.Value] = parseAppealLevel(appealInformation)
+    Json.obj(
+      "appealStatus"      -> appealInformation.appealStatus,
+      "appealLevel"       -> newAppealLevel,
+      "appealDescription" -> appealInformation.appealDescription
+    )
   }
 
   private def parseAppealLevel(appealInformation: AppealInformationType): Option[AppealLevelEnum.Value] =

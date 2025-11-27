@@ -20,12 +20,12 @@ import config.AppConfig
 import config.featureSwitches.{CallAPI1808HIP, FeatureSwitching, SanitiseFileName}
 import connectors.parsers.submitAppeal.AppealsParser
 import connectors.submitAppeal.{HIPSubmitAppealConnector, SubmitAppealConnector}
-import models.AgnosticEnrolmentKey
 import models.appeals.{AppealResponseModel, AppealSubmission, MultiplePenaltiesData}
 import models.getPenaltyDetails.GetPenaltyDetails
 import models.getPenaltyDetails.latePayment.{LPPDetails, LPPPenaltyCategoryEnum, LPPPenaltyStatusEnum}
 import models.notification._
 import models.upload.UploadJourney
+import models.{AgnosticEnrolmentKey, Regime}
 import play.api.Configuration
 import uk.gov.hmrc.http.HeaderCarrier
 import utils.Logger.logger
@@ -97,18 +97,20 @@ class AppealService @Inject()(appealsConnector: SubmitAppealConnector,
     }
   }
 
-  def findMultiplePenalties(penaltyDetails: GetPenaltyDetails, penaltyId: String): Option[MultiplePenaltiesData] = {
+  def findMultiplePenalties(penaltyDetails: GetPenaltyDetails, penaltyId: String, regime: String): Option[MultiplePenaltiesData] = {
     val lppPenaltyIdInPenaltyDetailsPayload: Option[LPPDetails] = penaltyDetails.latePaymentPenalty.flatMap {
       _.details.flatMap(_.find(_.penaltyChargeReference.contains(penaltyId)))
     }
     val principalChargeReference: String = lppPenaltyIdInPenaltyDetailsPayload.get.principalChargeReference
     val penaltiesForPrincipalCharge: Seq[LPPDetails] = penaltyDetails.latePaymentPenalty.flatMap(_.details.map(_.filter(_.principalChargeReference.equals(principalChargeReference)))).get
-    val underAppeal = penaltiesForPrincipalCharge.exists(_.appealInformation.isDefined)
+    val allLppsAreAppealable =
+      if (regime == "ITSA") penaltiesForPrincipalCharge.forall(_.hasNoAppealsOrOnlyFirstStageRejectedAppeals)
+      else penaltiesForPrincipalCharge.forall(_.hasNoAppeals)
     val areBothPenaltiesPostedAndVATPaid: Boolean = penaltiesForPrincipalCharge.forall(penalty => {
       penalty.penaltyStatus == LPPPenaltyStatusEnum.Posted && penalty.principalChargeLatestClearing.isDefined
     })
 
-    if (penaltiesForPrincipalCharge.size == 2 && !underAppeal && areBothPenaltiesPostedAndVATPaid) {
+    if (penaltiesForPrincipalCharge.size == 2 && allLppsAreAppealable && areBothPenaltiesPostedAndVATPaid) {
       val secondPenalty = penaltiesForPrincipalCharge.find(_.penaltyCategory.equals(LPPPenaltyCategoryEnum.SecondPenalty)).get
       val firstPenalty = penaltiesForPrincipalCharge.find(_.penaltyCategory.equals(LPPPenaltyCategoryEnum.FirstPenalty)).get
       val returnModel = MultiplePenaltiesData(

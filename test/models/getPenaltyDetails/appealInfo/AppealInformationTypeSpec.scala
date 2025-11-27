@@ -22,8 +22,7 @@ import play.api.libs.json.{JsValue, Json}
 
 class AppealInformationTypeSpec extends SpecBase {
 
-  val appealInfoAsJson: JsValue = Json.parse(
-    """
+  val appealInfoAsJson: JsValue = Json.parse("""
       |{
       |    "appealStatus": "A",
       |    "appealLevel": "01",
@@ -31,16 +30,14 @@ class AppealInformationTypeSpec extends SpecBase {
       |}
       |""".stripMargin)
 
-  val appealInfoAsJsonEmptyAppealLevel: JsValue = Json.parse(
-    """
+  val appealInfoAsJsonEmptyAppealLevel: JsValue = Json.parse("""
       |{
       |    "appealStatus": "99",
       |    "appealDescription": "Some value"
       |}
       |""".stripMargin)
 
-  val appealInfoAsJsonDefaultAppealLevel: JsValue = Json.parse(
-    """
+  val appealInfoAsJsonDefaultAppealLevel: JsValue = Json.parse("""
       |{
       |    "appealStatus": "99",
       |    "appealLevel": "01",
@@ -81,6 +78,36 @@ class AppealInformationTypeSpec extends SpecBase {
     "be writable to JSON - setting EMPTY appeal level to HMRC for unappealable status" in {
       val result = Json.toJson(appealInfoAsModelWithDefaultedAppealLevel)(AppealInformationType.writes)
       result shouldBe appealInfoAsJsonDefaultAppealLevel
+    }
+  }
+
+  ".isFirstAppealAndRejected" should {
+    "return 'true'" when {
+      "'appealLevel' is HMRC (first stage appeal) and 'appealStatus' is Rejected" in {
+        AppealInformationType(Some(AppealStatusEnum.Rejected), Some(AppealLevelEnum.HMRC), None).isFirstAppealAndRejected shouldBe true
+      }
+    }
+
+    "return 'false'" when {
+      "'appealLevel' and/or 'appealStatus' are None" in {
+        Seq(
+          AppealInformationType(None, None, None),
+          AppealInformationType(Some(AppealStatusEnum.Rejected), None, None),
+          AppealInformationType(None, Some(AppealLevelEnum.HMRC), None)
+        ).forall(_.isFirstAppealAndRejected) shouldBe false
+      }
+      "'appealLevel' is not first stage appeal" in {
+        Seq(
+          AppealInformationType(Some(AppealStatusEnum.Rejected), Some(AppealLevelEnum.TribunalOrSecond), None),
+          AppealInformationType(Some(AppealStatusEnum.Rejected), Some(AppealLevelEnum.Tribunal), None)
+        ).forall(_.isFirstAppealAndRejected) shouldBe false
+      }
+      val unappealableStatuses = AppealStatusEnum.allStatuses.filterNot(_ == AppealStatusEnum.Rejected)
+      unappealableStatuses.foreach { status =>
+        s"'appealStatus' is $status (not Rejected)" in {
+          AppealInformationType(Some(status), Some(AppealLevelEnum.HMRC), None).isFirstAppealAndRejected shouldBe false
+        }
+      }
     }
   }
 
