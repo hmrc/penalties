@@ -33,11 +33,11 @@ import java.time.LocalDate
 
 class FilterServiceSpec extends SpecBase with MockitoSugar {
 
-  val mockAppConfig: AppConfig = mock[AppConfig]
-  implicit val filterService: FilterService = new FilterService()(mockAppConfig)
+  val mockAppConfig: AppConfig                = mock[AppConfig]
+  implicit val filterService: FilterService   = new FilterService()(mockAppConfig)
   implicit val loggingContext: LoggingContext = LoggingContext("TestService", "testMethod", "VATC~VRN~123456789")
 
-  val pastDate: LocalDate = LocalDate.of(2020, 1, 1)
+  val pastDate: LocalDate   = LocalDate.of(2020, 1, 1)
   val futureDate: LocalDate = LocalDate.of(2030, 1, 1)
 
   "RegimeFilterService" should {
@@ -46,35 +46,35 @@ class FilterServiceSpec extends SpecBase with MockitoSugar {
       "filter out LPP1 penalties that are accruing and within filter window" in {
         when(mockAppConfig.withinLPP1FilterWindow(any[LocalDate])).thenReturn(true)
 
-                 val lppToFilter = LPPDetails(
-           penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
-           penaltyChargeReference = Some("REF123"),
-           principalChargeReference = "123456789",
-           penaltyChargeCreationDate = Some(pastDate),
-           penaltyStatus = LPPPenaltyStatusEnum.Accruing,
-           penaltyAmountAccruing = BigDecimal(100),
-           penaltyAmountPosted = BigDecimal(0),
-           penaltyAmountOutstanding = None,
-           penaltyAmountPaid = None,
-           principalChargeMainTransaction = VATReturnCharge,
-           principalChargeBillingFrom = pastDate,
-           principalChargeBillingTo = pastDate,
-           principalChargeDueDate = pastDate,
-           LPP1LRDays = None,
-           LPP1HRDays = None,
-           LPP2Days = None,
-           LPP1HRCalculationAmount = None,
-           LPP1LRCalculationAmount = None,
-           LPP2Percentage = None,
-           LPP1LRPercentage = None,
-           LPP1HRPercentage = None,
-           communicationsDate = Some(pastDate),
-           penaltyChargeDueDate = Some(futureDate),
-           appealInformation = None,
-           principalChargeLatestClearing = None,
-           vatOutstandingAmount = None,
-           metadata = LPPDetailsMetadata()
-         )
+        val lppToFilter = LPPDetails(
+          penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
+          penaltyChargeReference = Some("REF123"),
+          principalChargeReference = "123456789",
+          penaltyChargeCreationDate = Some(pastDate),
+          penaltyStatus = LPPPenaltyStatusEnum.Accruing,
+          penaltyAmountAccruing = BigDecimal(100),
+          penaltyAmountPosted = BigDecimal(0),
+          penaltyAmountOutstanding = None,
+          penaltyAmountPaid = None,
+          principalChargeMainTransaction = VATReturnCharge,
+          principalChargeBillingFrom = pastDate,
+          principalChargeBillingTo = pastDate,
+          principalChargeDueDate = pastDate,
+          LPP1LRDays = None,
+          LPP1HRDays = None,
+          LPP2Days = None,
+          LPP1HRCalculationAmount = None,
+          LPP1LRCalculationAmount = None,
+          LPP2Percentage = None,
+          LPP1LRPercentage = None,
+          LPP1HRPercentage = None,
+          communicationsDate = Some(pastDate),
+          penaltyChargeDueDate = Some(futureDate),
+          appealInformation = None,
+          principalChargeLatestClearing = None,
+          vatOutstandingAmount = None,
+          metadata = LPPDetailsMetadata()
+        )
 
         val lppToKeep = lppToFilter.copy(
           penaltyCategory = LPPPenaltyCategoryEnum.SecondPenalty
@@ -83,10 +83,11 @@ class FilterServiceSpec extends SpecBase with MockitoSugar {
         val penaltyDetails = GetPenaltyDetails(
           totalisations = None,
           lateSubmissionPenalty = None,
-          latePaymentPenalty = Some(LatePaymentPenalty(
-            details = Some(Seq(lppToFilter, lppToKeep)),
-            ManualLPPIndicator = Some(false)
-          )),
+          latePaymentPenalty = Some(
+            LatePaymentPenalty(
+              details = Some(Seq(lppToFilter, lppToKeep)),
+              ManualLPPIndicator = Some(false)
+            )),
           breathingSpace = None
         )
 
@@ -98,49 +99,50 @@ class FilterServiceSpec extends SpecBase with MockitoSugar {
       "not filter LPP1 penalties that are not within filter window" in {
         when(mockAppConfig.withinLPP1FilterWindow(any[LocalDate])).thenReturn(false)
 
-          val lppToKeep = LPPDetails(
-             penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
-             penaltyChargeReference = Some("REF123"),
-             principalChargeReference = "123456789",
-             penaltyChargeCreationDate = Some(pastDate),
-             penaltyStatus = LPPPenaltyStatusEnum.Accruing,
-             penaltyAmountAccruing = BigDecimal(100),
-             penaltyAmountPosted = BigDecimal(0),
-             penaltyAmountOutstanding = None,
-             penaltyAmountPaid = None,
-             principalChargeMainTransaction = VATReturnCharge,
-             principalChargeBillingFrom = pastDate,
-             principalChargeBillingTo = pastDate,
-             principalChargeDueDate = pastDate,
-             LPP1LRDays = None,
-             LPP1HRDays = None,
-             LPP2Days = None,
-             LPP1HRCalculationAmount = None,
-             LPP1LRCalculationAmount = None,
-             LPP2Percentage = None,
-             LPP1LRPercentage = None,
-             LPP1HRPercentage = None,
-             communicationsDate = Some(pastDate),
-             penaltyChargeDueDate = Some(futureDate),
-             appealInformation = None,
-             principalChargeLatestClearing = None,
-             vatOutstandingAmount = None,
-             metadata = LPPDetailsMetadata()
-           )
+        val lppToKeep = LPPDetails(
+          penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
+          penaltyChargeReference = Some("REF123"),
+          principalChargeReference = "123456789",
+          penaltyChargeCreationDate = Some(pastDate),
+          penaltyStatus = LPPPenaltyStatusEnum.Accruing,
+          penaltyAmountAccruing = BigDecimal(100),
+          penaltyAmountPosted = BigDecimal(0),
+          penaltyAmountOutstanding = None,
+          penaltyAmountPaid = None,
+          principalChargeMainTransaction = VATReturnCharge,
+          principalChargeBillingFrom = pastDate,
+          principalChargeBillingTo = pastDate,
+          principalChargeDueDate = pastDate,
+          LPP1LRDays = None,
+          LPP1HRDays = None,
+          LPP2Days = None,
+          LPP1HRCalculationAmount = None,
+          LPP1LRCalculationAmount = None,
+          LPP2Percentage = None,
+          LPP1LRPercentage = None,
+          LPP1HRPercentage = None,
+          communicationsDate = Some(pastDate),
+          penaltyChargeDueDate = Some(futureDate),
+          appealInformation = None,
+          principalChargeLatestClearing = None,
+          vatOutstandingAmount = None,
+          metadata = LPPDetailsMetadata()
+        )
 
-          val penaltyDetails = GetPenaltyDetails(
-            totalisations = None,
-            lateSubmissionPenalty = None,
-            latePaymentPenalty = Some(LatePaymentPenalty(
+        val penaltyDetails = GetPenaltyDetails(
+          totalisations = None,
+          lateSubmissionPenalty = None,
+          latePaymentPenalty = Some(
+            LatePaymentPenalty(
               details = Some(Seq(lppToKeep)),
               ManualLPPIndicator = Some(false)
             )),
-            breathingSpace = None
-          )
+          breathingSpace = None
+        )
 
-          val result = filterService.filterEstimatedLPP1DuringPeriodOfFamiliarisation(penaltyDetails)
+        val result = filterService.filterEstimatedLPP1DuringPeriodOfFamiliarisation(penaltyDetails)
 
-          result.latePaymentPenalty.get.details.get should contain(lppToKeep)
+        result.latePaymentPenalty.get.details.get should contain(lppToKeep)
       }
     }
 
@@ -189,10 +191,11 @@ class FilterServiceSpec extends SpecBase with MockitoSugar {
         val penaltyDetails = GetPenaltyDetails(
           totalisations = None,
           lateSubmissionPenalty = None,
-          latePaymentPenalty = Some(LatePaymentPenalty(
-            details = Some(Seq(lppToFilter, lppToKeep)),
-            ManualLPPIndicator = Some(false)
-          )),
+          latePaymentPenalty = Some(
+            LatePaymentPenalty(
+              details = Some(Seq(lppToFilter, lppToKeep)),
+              ManualLPPIndicator = Some(false)
+            )),
           breathingSpace = None
         )
 
@@ -227,11 +230,11 @@ class FilterServiceSpec extends SpecBase with MockitoSugar {
             appealStatus = Some(AppealStatusEnum.Upheld),
             appealLevel = Some(AppealLevelEnum.HMRC),
             appealDescription = Some("Test appeal B status")
-          ),
+          )
         )
         val expectedIgnoreStatusCount: Int = 4
-        val actualIgnoreStatusCount: Int = appealInfoToFilter.count(appealInfoToFilter =>
-                                          AppealStatusEnum.ignoredStatuses.contains(appealInfoToFilter.appealStatus.get))
+        val actualIgnoreStatusCount: Int =
+          appealInfoToFilter.count(appealInfoToFilter => AppealStatusEnum.ignoredStatuses.contains(appealInfoToFilter.appealStatus.get))
         assert(expectedIgnoreStatusCount == actualIgnoreStatusCount)
       }
     }
@@ -239,15 +242,15 @@ class FilterServiceSpec extends SpecBase with MockitoSugar {
     "tryJsonParseOrJsString" should {
       "parse valid JSON" in {
         val validJson = """{"test": "value"}"""
-        val result = tryJsonParseOrJsString(validJson)
+        val result    = tryJsonParseOrJsString(validJson)
         result shouldBe Json.parse(validJson)
       }
 
       "return JsString for invalid JSON" in {
         val invalidJson = "invalid json"
-        val result = tryJsonParseOrJsString(invalidJson)
+        val result      = tryJsonParseOrJsString(invalidJson)
         result shouldBe JsString(invalidJson)
       }
     }
   }
-} 
+}
