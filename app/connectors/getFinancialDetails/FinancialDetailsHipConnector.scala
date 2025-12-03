@@ -37,21 +37,16 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class FinancialDetailsHipConnector @Inject() (httpClient: HttpClient, appConfig: AppConfig)(implicit ec: ExecutionContext) {
 
-  private def headers: Seq[(String, String)] = Seq(
-    "Authorization"                       -> s"Basic ${appConfig.hipAuthorisationToken}",
-    appConfig.hipServiceOriginatorIdKeyV1 -> appConfig.hipServiceOriginatorIdV1,
-    "CorrelationId"                       -> UUID.randomUUID().toString,
-    "X-Originating-System"                -> "MDTP",
-    "X-Receipt-Date"                      -> DateTimeFormatter.ISO_INSTANT.format(Instant.now().truncatedTo(ChronoUnit.SECONDS)),
-    "X-Transmitting-System"               -> "HIP"
-  )
-
   def getFinancialDetails(enrolmentKey: AgnosticEnrolmentKey, includeClearedItems: Boolean)(implicit
       hc: HeaderCarrier): Future[HIPFinancialDetailsResponse] = {
     // Without clearedItems when from RegimePenaltiesFrontendService.handleAndCombineGetFinancialDetailsData
     val url           = appConfig.getFinancialDetailsHipUrl
     val body          = appConfig.baseFinancialDetailsRequestModel.copy(includeClearedItems = Some(includeClearedItems)).toJsonRequest(enrolmentKey)
     val hcWithoutAuth = hc.copy(authorization = None)
+    val correlationId = UUID.randomUUID().toString
+    val headers       = buildHeaders(correlationId)
+
+    logger.info(s"[FinancialDetailsHipConnector][getFinancialDetails][$enrolmentKey] - Calling GET $url\nCorrelation ID: $correlationId")
 
     httpClient
       .POST[JsObject, HIPFinancialDetailsResponse](url, body, headers)(implicitly, implicitly, hcWithoutAuth, implicitly)
@@ -63,7 +58,7 @@ class FinancialDetailsHipConnector @Inject() (httpClient: HttpClient, appConfig:
       PagerDutyHelper.logStatusCode("getFinancialDetails", e.statusCode)(RECEIVED_4XX_FROM_1811_API, RECEIVED_5XX_FROM_1811_API)
       logger.error(
         s"[FinancialDetailsConnector][getFinancialDetails] Received ${e.statusCode} from API#5327 call " +
-          s"- returning status to caller. Error: ${e.getMessage()}")
+          s"- returning status to caller. Error: ${e.getMessage}")
       Left(HIPFinancialDetailsFailureResponse(e.statusCode))
     case e: Exception =>
       PagerDutyHelper.log("getFinancialDetails", UNKNOWN_EXCEPTION_CALLING_1811_API)
@@ -102,6 +97,10 @@ class FinancialDetailsHipConnector @Inject() (httpClient: HttpClient, appConfig:
       addAccruingInterestDetails
     ).toJsonRequest(enrolmentKey)
     val hcWithoutAuth = hc.copy(authorization = None)
+    val correlationId = UUID.randomUUID().toString
+    val headers       = buildHeaders(correlationId)
+
+    logger.info(s"[FinancialDetailsHipConnector][getFinancialDetailsForAPI][$enrolmentKey] - Calling GET $url\nCorrelation ID: $correlationId")
 
     httpClient
       .POST[JsObject, HttpResponse](url, body, headers)(implicitly, implicitly, hcWithoutAuth, implicitly)
@@ -112,7 +111,7 @@ class FinancialDetailsHipConnector @Inject() (httpClient: HttpClient, appConfig:
     case e: UpstreamErrorResponse =>
       logger.error(
         s"[FinancialDetailsConnector][getFinancialDetailsForAPI] Received ${e.statusCode} from API#5327 call " +
-          s"- returning status to caller. Error: ${e.getMessage()}")
+          s"- returning status to caller. Error: ${e.getMessage}")
       HttpResponse(e.statusCode, e.message)
     case e: Exception =>
       PagerDutyHelper.log("getFinancialDetailsForAPI", UNKNOWN_EXCEPTION_CALLING_1811_API)
@@ -121,5 +120,14 @@ class FinancialDetailsHipConnector @Inject() (httpClient: HttpClient, appConfig:
           s"- returning 500 back to caller - message: ${e.getMessage}")
       HttpResponse(INTERNAL_SERVER_ERROR, "An unknown exception occurred. Contact the Penalties team for more information.")
   }
+
+  private def buildHeaders(correlationId: String): Seq[(String, String)] = Seq(
+    "Authorization"                       -> s"Basic ${appConfig.hipAuthorisationToken}",
+    appConfig.hipServiceOriginatorIdKeyV1 -> appConfig.hipServiceOriginatorIdV1,
+    "CorrelationId"                       -> correlationId,
+    "X-Originating-System"                -> "MDTP",
+    "X-Receipt-Date"                      -> DateTimeFormatter.ISO_INSTANT.format(Instant.now().truncatedTo(ChronoUnit.SECONDS)),
+    "X-Transmitting-System"               -> "HIP"
+  )
 
 }

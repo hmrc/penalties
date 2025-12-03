@@ -40,9 +40,10 @@ class HIPPenaltyDetailsConnector @Inject() (httpClient: HttpClient, appConfig: A
   def getPenaltyDetails(enrolmentKey: AgnosticEnrolmentKey)(implicit hc: HeaderCarrier): Future[HIPPenaltyDetailsResponse] = {
     val url           = appConfig.getHIPPenaltyDetailsUrl(enrolmentKey)
     val hcWithoutAuth = hc.copy(authorization = None)
-    val headers       = buildHeadersV1
+    val correlationId = UUID.randomUUID().toString
+    val headers       = buildHeadersV1(correlationId)
 
-    logger.info(s"[HIPPenaltiesDetailsConnector][getPenaltyDetails][$enrolmentKey]- Calling GET $url\nHeaders: $headers")
+    logger.info(s"[HIPPenaltiesDetailsConnector][getPenaltyDetails][$enrolmentKey] - Calling GET $url\nCorrelation ID: $correlationId")
 
     httpClient
       .GET[HIPPenaltyDetailsResponse](url, Seq.empty, headers)(implicitly, hcWithoutAuth, implicitly)
@@ -51,7 +52,7 @@ class HIPPenaltyDetailsConnector @Inject() (httpClient: HttpClient, appConfig: A
           PagerDutyHelper.logStatusCode("getPenaltyDetails", e.statusCode)(RECEIVED_4XX_FROM_1812_API, RECEIVED_5XX_FROM_1812_API)
           logger.error(
             s"[HIPPenaltiesDetailsConnector][getPenaltyDetails] - Received ${e.statusCode} status from API#5329 call " +
-              s"- returning status to caller. Error: ${e.getMessage()}")
+              s"- returning status to caller. Error: ${e.getMessage}")
           Left(HIPPenaltyDetailsFailureResponse(e.statusCode))
         case e: Exception =>
           PagerDutyHelper.log("getPenaltyDetails", UNKNOWN_EXCEPTION_CALLING_1812_API)
@@ -66,19 +67,20 @@ class HIPPenaltyDetailsConnector @Inject() (httpClient: HttpClient, appConfig: A
 
     val url           = appConfig.getHIPPenaltyDetailsUrl(enrolmentKey, dateLimit)
     val hcWithoutAuth = hc.copy(authorization = None)
-    val headers       = buildHeadersV1
+    val correlationId = UUID.randomUUID().toString
+    val headers       = buildHeadersV1(correlationId)
 
     val throwingReads: HttpReads[HttpResponse] =
       (_: String, _: String, response: HttpResponse) =>
         if (response.status >= 400) throw UpstreamErrorResponse(response.body, response.status) else response
 
-    logger.info(s"[HIPPenaltiesDetailsConnector][getPenaltyDetails][$enrolmentKey]- Calling GET $url\nHeaders: $headers")
+    logger.info(s"[HIPPenaltiesDetailsConnector][getPenaltyDetailsForAPI][$enrolmentKey]- Calling GET $url\nCorrelation ID: $correlationId")
 
     httpClient.GET[HttpResponse](url, Seq.empty, headers)(throwingReads, hcWithoutAuth, implicitly).recover {
       case e: UpstreamErrorResponse =>
         logger.error(
           s"[HIPPenaltiesDetailsConnector][getPenaltyDetailsForAPI] - Received ${e.statusCode} status from API#5329 call " +
-            s"- returning status to caller. Error: ${e.getMessage()}")
+            s"- returning status to caller. Error: ${e.getMessage}")
         HttpResponse(e.statusCode, e.message)
       case e: Exception =>
         PagerDutyHelper.log("getPenaltyDetailsForAPI", UNKNOWN_EXCEPTION_CALLING_1812_API)
@@ -99,10 +101,10 @@ class HIPPenaltyDetailsConnector @Inject() (httpClient: HttpClient, appConfig: A
   private val xTransmittingSystemHeader: String = "X-Transmitting-System"
   private val EnvironmentHeader: String         = "Environment"
 
-  private def buildHeadersV1: Seq[(String, String)] =
+  private def buildHeadersV1(correlationId: String): Seq[(String, String)] =
     Seq(
       appConfig.hipServiceOriginatorIdKeyV1 -> appConfig.hipServiceOriginatorIdV1,
-      CorrelationIdHeader                   -> UUID.randomUUID().toString,
+      CorrelationIdHeader                   -> correlationId,
       AuthorizationHeader                   -> s"Basic ${appConfig.hipAuthorisationToken}",
       EnvironmentHeader                     -> appConfig.hipEnvironment,
       xOriginatingSystemHeader              -> "MDTP",
