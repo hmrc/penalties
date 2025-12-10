@@ -20,12 +20,12 @@ import config.AppConfig
 import config.featureSwitches.{CallAPI1808HIP, FeatureSwitching, SanitiseFileName}
 import connectors.parsers.submitAppeal.AppealsParser
 import connectors.submitAppeal.{HIPSubmitAppealConnector, SubmitAppealConnector}
+import models.AgnosticEnrolmentKey
 import models.appeals.{AppealResponseModel, AppealSubmission, MultiplePenaltiesData}
 import models.getPenaltyDetails.GetPenaltyDetails
 import models.getPenaltyDetails.latePayment.{LPPDetails, LPPPenaltyCategoryEnum, LPPPenaltyStatusEnum}
 import models.notification._
 import models.upload.UploadJourney
-import models.{AgnosticEnrolmentKey, Regime}
 import play.api.Configuration
 import uk.gov.hmrc.http.HeaderCarrier
 import utils.Logger.logger

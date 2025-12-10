@@ -59,7 +59,8 @@ class LatePaymentPenaltySpec extends SpecBase {
       |   "principalChargeBillingTo": "2022-10-30",
       |   "principalChargeDueDate": "2022-10-30",
       |   "principalChargeDocNumber": "DOC1",
-      |   "principalChargeSubTransaction": "SUB1"
+      |   "principalChargeSubTransaction": "SUB1",
+      |   "supplement": false
       | },
       | {
       |   "penaltyChargeReference": "12345678901234",
@@ -92,7 +93,8 @@ class LatePaymentPenaltySpec extends SpecBase {
       |   "principalChargeBillingTo": "2022-10-30",
       |   "principalChargeDueDate": "2022-10-30",
       |   "principalChargeDocNumber": "DOC1",
-      |   "principalChargeSubTransaction": "SUB1"
+      |   "principalChargeSubTransaction": "SUB1",
+      |   "supplement": false
       | }]
       |}
       |""".stripMargin
@@ -130,7 +132,8 @@ class LatePaymentPenaltySpec extends SpecBase {
       |   "principalChargeDueDate": "2022-10-30",
       |   "principalChargeMainTransaction": "4700",
       |   "principalChargeDocNumber": "DOC1",
-      |   "principalChargeSubTransaction": "SUB1"
+      |   "principalChargeSubTransaction": "SUB1",
+      |   "supplement": false
       | },
       | {
       |   "penaltyChargeReference": "12345678901234",
@@ -161,7 +164,8 @@ class LatePaymentPenaltySpec extends SpecBase {
       |   "principalChargeDueDate": "2022-10-30",
       |   "principalChargeDocNumber": "DOC1",
       |   "principalChargeSubTransaction": "SUB1",
-      |   "principalChargeMainTransaction": "4700"
+      |   "principalChargeMainTransaction": "4700",
+      |   "supplement": false
       | }]
       |}
       |""".stripMargin
@@ -205,7 +209,8 @@ class LatePaymentPenaltySpec extends SpecBase {
           ),
           penaltyAmountAccruing = BigDecimal(144.21),
           principalChargeMainTransaction = VATReturnCharge,
-          vatOutstandingAmount = None
+          vatOutstandingAmount = None,
+          supplement = false
         ),
         LPPDetails(
           penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
@@ -242,7 +247,8 @@ class LatePaymentPenaltySpec extends SpecBase {
           ),
           penaltyAmountAccruing = BigDecimal(144.21),
           principalChargeMainTransaction = VATReturnCharge,
-          vatOutstandingAmount = None
+          vatOutstandingAmount = None,
+          supplement = false
         )
       )
     )

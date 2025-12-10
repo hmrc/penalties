@@ -160,7 +160,8 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
       |       "LPP1HRPercentage": 2.00,
       |       "penaltyChargeDueDate": "2022-10-30",
       |       "principalChargeDocNumber": "DOC1",
-      |       "principalChargeSubTransaction": "SUB1"
+      |       "principalChargeSubTransaction": "SUB1",
+      |       "supplement": false
       |   }]
       | }
       |}
@@ -275,7 +276,8 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
                 metadata = LPPDetailsMetadata(),
                 penaltyAmountAccruing = BigDecimal(100.00),
                 principalChargeMainTransaction = VATReturnCharge,
-                vatOutstandingAmount = Some(BigDecimal(123.45))
+                vatOutstandingAmount = Some(BigDecimal(123.45)),
+                supplement = false
               ),
               LPPDetails(
                 penaltyCategory = LPPPenaltyCategoryEnum.SecondPenalty,
@@ -304,7 +306,8 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
                 metadata = LPPDetailsMetadata(),
                 penaltyAmountAccruing = BigDecimal(100.00),
                 principalChargeMainTransaction = VATReturnCharge,
-                vatOutstandingAmount = Some(BigDecimal(123.45))
+                vatOutstandingAmount = Some(BigDecimal(123.45)),
+                supplement = false
               ),
               LPPDetails(
                 penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
@@ -333,7 +336,8 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
                 metadata = LPPDetailsMetadata(),
                 penaltyAmountAccruing = BigDecimal(0),
                 principalChargeMainTransaction = VATReturnCharge,
-                vatOutstandingAmount = Some(BigDecimal(123.45))
+                vatOutstandingAmount = Some(BigDecimal(123.45)),
+                supplement = false
               ),
               LPPDetails(
                 penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
@@ -362,7 +366,8 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
                 metadata = LPPDetailsMetadata(),
                 penaltyAmountAccruing = BigDecimal(0),
                 principalChargeMainTransaction = VATReturnCharge,
-                vatOutstandingAmount = Some(BigDecimal(123.45))
+                vatOutstandingAmount = Some(BigDecimal(123.45)),
+                supplement = false
               )
             )
           )
@@ -1264,7 +1269,8 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
             |            "appealStatus": "99",
             |            "appealLevel": "01",
             |            "appealDescription": "Some value"
-            |          }]
+            |          }],
+            |          "supplement": false
             |        }],
             |        "manualLPPIndicator": true
             |      }
@@ -1386,7 +1392,8 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
                 metadata = LPPDetailsMetadata(
                   principalChargeDocNumber = Some("DOC1"),
                   principalChargeSubTransaction = Some("SUB1")
-                )
+                ),
+                supplement = false
               )
             )
           ),

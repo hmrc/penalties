@@ -49,27 +49,27 @@ import java.time.LocalDate
 import scala.concurrent.{ExecutionContext, Future}
 
 class PenaltyDetailsServiceSpec extends SpecBase with LogCapturing with LPPDetailsBase {
-  implicit val ec: ExecutionContext = ExecutionContext.Implicits.global
-  implicit val hc: HeaderCarrier = HeaderCarrier()
-  val mockGetPenaltyDetailsConnector: PenaltyDetailsConnector = mock(classOf[PenaltyDetailsConnector])
+  implicit val ec: ExecutionContext                              = ExecutionContext.Implicits.global
+  implicit val hc: HeaderCarrier                                 = HeaderCarrier()
+  val mockGetPenaltyDetailsConnector: PenaltyDetailsConnector    = mock(classOf[PenaltyDetailsConnector])
   val mockHIPPenaltyDetailsConnector: HIPPenaltyDetailsConnector = mock(classOf[HIPPenaltyDetailsConnector])
   val vrn123456789: AgnosticEnrolmentKey = AgnosticEnrolmentKey(
-    Regime("VATC"), 
+    Regime("VATC"),
     IdType("VAT"),
     Id("123456789")
   )
 
   class Setup extends FeatureSwitching {
-    val mockConfig: Configuration = mock(classOf[Configuration])
-    val mockServicesConfig: ServicesConfig = mock(classOf[ServicesConfig])
-    val filterService: FilterService = injector.instanceOf(classOf[FilterService])
+    val mockConfig: Configuration               = mock(classOf[Configuration])
+    val mockServicesConfig: ServicesConfig      = mock(classOf[ServicesConfig])
+    val filterService: FilterService            = injector.instanceOf(classOf[FilterService])
     override implicit val config: Configuration = mockConfig
 
     sys.props -= TIME_MACHINE_NOW
     sys.props -= ESTIMATED_LPP1_FILTER_END_DATE
 
     val mockAppConfig: AppConfig = new AppConfig(mockConfig, mockServicesConfig)
-    val service = new PenaltyDetailsService(mockGetPenaltyDetailsConnector, mockHIPPenaltyDetailsConnector, filterService)
+    val service                  = new PenaltyDetailsService(mockGetPenaltyDetailsConnector, mockHIPPenaltyDetailsConnector, filterService)
 
     reset(mockGetPenaltyDetailsConnector)
     reset(mockHIPPenaltyDetailsConnector)
@@ -126,7 +126,10 @@ class PenaltyDetailsServiceSpec extends SpecBase with LogCapturing with LPPDetai
               expiryReason = Some(ExpiryReasonEnum.Adjustment),
               appealInformation = Some(
                 Seq(
-                  AppealInformationType(appealStatus = Some(AppealStatusEnum.Unappealable), appealLevel = Some(AppealLevelEnum.HMRC), appealDescription = Some("Some value"))
+                  AppealInformationType(
+                    appealStatus = Some(AppealStatusEnum.Unappealable),
+                    appealLevel = Some(AppealLevelEnum.HMRC),
+                    appealDescription = Some("Some value"))
                 )
               ),
               chargeDueDate = Some(LocalDate.of(2022, 10, 30)),
@@ -138,55 +141,65 @@ class PenaltyDetailsServiceSpec extends SpecBase with LogCapturing with LPPDetai
           )
         )
       ),
-      latePaymentPenalty = Some(LatePaymentPenalty(
-        details = Some(
-          Seq(
-            LPPDetails(
-              penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
-              principalChargeReference = "1234567890",
-              penaltyChargeReference = Some("123456789"),
-              penaltyChargeCreationDate = Some(LocalDate.of(2022, 10, 30)),
-              penaltyStatus = LPPPenaltyStatusEnum.Accruing,
-              appealInformation = Some(Seq(AppealInformationType(appealStatus = Some(AppealStatusEnum.Unappealable), appealLevel = Some(AppealLevelEnum.HMRC), appealDescription = Some("Some value")))),
-              principalChargeBillingFrom = LocalDate.of(2022, 10, 30),
-              principalChargeBillingTo = LocalDate.of(2022, 10, 30),
-              principalChargeDueDate = LocalDate.of(2022, 10, 30),
-              communicationsDate = Some(LocalDate.of(2022, 10, 30)),
-              penaltyAmountOutstanding = None,
-              penaltyAmountPaid = None,
-              penaltyAmountPosted = 0,
-              LPP1LRDays = Some("15"),
-              LPP1HRDays = Some("31"),
-              LPP2Days = Some("31"),
-              LPP1HRCalculationAmount = Some(99.99),
-              LPP1LRCalculationAmount = Some(99.99),
-              LPP2Percentage = Some(BigDecimal(4.00).setScale(2)),
-              LPP1LRPercentage = Some(BigDecimal(2.00).setScale(2)),
-              LPP1HRPercentage = Some(BigDecimal(2.00).setScale(2)),
-              penaltyChargeDueDate = Some(LocalDate.of(2022, 10, 30)),
-              principalChargeLatestClearing = None,
-              metadata = LPPDetailsMetadata(
-                timeToPay = Some(Seq(TimeToPay(
-                  TTPStartDate = Some(LocalDate.of(2022, 1, 1)),
-                  TTPEndDate = Some(LocalDate.of(2022, 12, 31))
-                )))
-              ),
-              penaltyAmountAccruing = BigDecimal(144.21),
-              principalChargeMainTransaction = VATReturnCharge,
-              vatOutstandingAmount = Some(BigDecimal(123.45))
+      latePaymentPenalty = Some(
+        LatePaymentPenalty(
+          details = Some(
+            Seq(
+              LPPDetails(
+                penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
+                principalChargeReference = "1234567890",
+                penaltyChargeReference = Some("123456789"),
+                penaltyChargeCreationDate = Some(LocalDate.of(2022, 10, 30)),
+                penaltyStatus = LPPPenaltyStatusEnum.Accruing,
+                appealInformation = Some(
+                  Seq(
+                    AppealInformationType(
+                      appealStatus = Some(AppealStatusEnum.Unappealable),
+                      appealLevel = Some(AppealLevelEnum.HMRC),
+                      appealDescription = Some("Some value")))),
+                principalChargeBillingFrom = LocalDate.of(2022, 10, 30),
+                principalChargeBillingTo = LocalDate.of(2022, 10, 30),
+                principalChargeDueDate = LocalDate.of(2022, 10, 30),
+                communicationsDate = Some(LocalDate.of(2022, 10, 30)),
+                penaltyAmountOutstanding = None,
+                penaltyAmountPaid = None,
+                penaltyAmountPosted = 0,
+                LPP1LRDays = Some("15"),
+                LPP1HRDays = Some("31"),
+                LPP2Days = Some("31"),
+                LPP1HRCalculationAmount = Some(99.99),
+                LPP1LRCalculationAmount = Some(99.99),
+                LPP2Percentage = Some(BigDecimal(4.00).setScale(2)),
+                LPP1LRPercentage = Some(BigDecimal(2.00).setScale(2)),
+                LPP1HRPercentage = Some(BigDecimal(2.00).setScale(2)),
+                penaltyChargeDueDate = Some(LocalDate.of(2022, 10, 30)),
+                principalChargeLatestClearing = None,
+                metadata = LPPDetailsMetadata(
+                  timeToPay = Some(
+                    Seq(
+                      TimeToPay(
+                        TTPStartDate = Some(LocalDate.of(2022, 1, 1)),
+                        TTPEndDate = Some(LocalDate.of(2022, 12, 31))
+                      )))
+                ),
+                penaltyAmountAccruing = BigDecimal(144.21),
+                principalChargeMainTransaction = VATReturnCharge,
+                vatOutstandingAmount = Some(BigDecimal(123.45)),
+                supplement = false
+              )
             )
-          )
-        ),
-        ManualLPPIndicator = None
-      )),
-      breathingSpace = Some(Seq(
-        BreathingSpace(BSStartDate = LocalDate.of(2023, 1, 1), BSEndDate = LocalDate.of(2023, 12, 31))
-      ))
+          ),
+          ManualLPPIndicator = None
+        )),
+      breathingSpace = Some(
+        Seq(
+          BreathingSpace(BSStartDate = LocalDate.of(2023, 1, 1), BSEndDate = LocalDate.of(2023, 12, 31))
+        ))
     )
 
     "call the regular connector when CallAPI1812HIP feature switch is disabled" in new Setup {
       disableFeatureSwitch(CallAPI1812HIP)
-      
+
       when(mockGetPenaltyDetailsConnector.getPenaltyDetails(ArgumentMatchers.eq(vrn123456789))(any()))
         .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(mockGetPenaltyDetailsResponseAsModel))))
 
@@ -200,7 +213,7 @@ class PenaltyDetailsServiceSpec extends SpecBase with LogCapturing with LPPDetai
 
     "call the HIP connector when CallAPI1812HIP feature switch is enabled" in new Setup {
       enableFeatureSwitch(CallAPI1812HIP)
-      
+
       import connectors.parsers.getPenaltyDetails.HIPPenaltyDetailsParser._
 
       import java.time.Instant
@@ -254,7 +267,11 @@ class PenaltyDetailsServiceSpec extends SpecBase with LogCapturing with LPPDetai
                 expiryReason = Some(models.hipPenaltyDetails.lateSubmission.ExpiryReasonEnum.Adjustment),
                 appealInformation = Some(
                   Seq(
-                    models.hipPenaltyDetails.appealInfo.AppealInformationType(appealStatus = Some(models.hipPenaltyDetails.appealInfo.AppealStatusEnum.Unappealable), appealLevel = Some(models.hipPenaltyDetails.appealInfo.AppealLevelEnum.HMRC), appealDescription = Some("Some value"))
+                    models.hipPenaltyDetails.appealInfo.AppealInformationType(
+                      appealStatus = Some(models.hipPenaltyDetails.appealInfo.AppealStatusEnum.Unappealable),
+                      appealLevel = Some(models.hipPenaltyDetails.appealInfo.AppealLevelEnum.HMRC),
+                      appealDescription = Some("Some value")
+                    )
                   )
                 ),
                 chargeDueDate = Some(LocalDate.of(2022, 10, 30)),
@@ -266,46 +283,53 @@ class PenaltyDetailsServiceSpec extends SpecBase with LogCapturing with LPPDetai
             )
           )
         ),
-        latePaymentPenalty = Some(models.hipPenaltyDetails.latePayment.LatePaymentPenalty(
-          lppDetails = Some(
-            Seq(
-              models.hipPenaltyDetails.latePayment.LPPDetails(
-                principalChargeReference = "1234567890",
-                penaltyCategory = models.hipPenaltyDetails.latePayment.LPPPenaltyCategoryEnum.FirstPenalty,
-                penaltyStatus = Some(models.hipPenaltyDetails.latePayment.LPPPenaltyStatusEnum.Accruing),
-                penaltyAmountAccruing = BigDecimal(144.21),
-                penaltyAmountPosted = 0,
-                penaltyAmountPaid = None,
-                penaltyAmountOutstanding = None,
-                lpp1LRCalculationAmt = Some(99.99),
-                lpp1LRDays = Some("15"),
-                lpp1LRPercentage = Some(BigDecimal(2.00).setScale(2)),
-                lpp1HRCalculationAmt = Some(99.99),
-                lpp1HRDays = Some("31"),
-                lpp1HRPercentage = Some(BigDecimal(2.00).setScale(2)),
-                lpp2Days = Some("31"),
-                lpp2Percentage = Some(BigDecimal(4.00).setScale(2)),
-                penaltyChargeCreationDate = Some(LocalDate.of(2022, 10, 30)),
-                communicationsDate = Some(LocalDate.of(2022, 10, 30)),
-                penaltyChargeReference = Some("123456789"),
-                penaltyChargeDueDate = Some(LocalDate.of(2022, 10, 30)),
-                appealInformation = Some(Seq(models.hipPenaltyDetails.appealInfo.AppealInformationType(appealStatus = Some(models.hipPenaltyDetails.appealInfo.AppealStatusEnum.Unappealable), appealLevel = Some(models.hipPenaltyDetails.appealInfo.AppealLevelEnum.HMRC), appealDescription = Some("Some value")))),
-                principalChargeDocNumber = Some("DOC1"),
-                principalChargeMainTr = VATReturnCharge,
-                principalChargeSubTr = Some("SUB1"),
-                principalChargeBillingFrom = LocalDate.of(2022, 10, 30),
-                principalChargeBillingTo = LocalDate.of(2022, 10, 30),
-                principalChargeDueDate = LocalDate.of(2022, 10, 30),
-                principalChargeLatestClearing = None,
-                timeToPay = None
+        latePaymentPenalty = Some(
+          models.hipPenaltyDetails.latePayment.LatePaymentPenalty(
+            lppDetails = Some(
+              Seq(
+                models.hipPenaltyDetails.latePayment.LPPDetails(
+                  principalChargeReference = "1234567890",
+                  penaltyCategory = models.hipPenaltyDetails.latePayment.LPPPenaltyCategoryEnum.FirstPenalty,
+                  penaltyStatus = Some(models.hipPenaltyDetails.latePayment.LPPPenaltyStatusEnum.Accruing),
+                  penaltyAmountAccruing = BigDecimal(144.21),
+                  penaltyAmountPosted = 0,
+                  penaltyAmountPaid = None,
+                  penaltyAmountOutstanding = None,
+                  lpp1LRCalculationAmt = Some(99.99),
+                  lpp1LRDays = Some("15"),
+                  lpp1LRPercentage = Some(BigDecimal(2.00).setScale(2)),
+                  lpp1HRCalculationAmt = Some(99.99),
+                  lpp1HRDays = Some("31"),
+                  lpp1HRPercentage = Some(BigDecimal(2.00).setScale(2)),
+                  lpp2Days = Some("31"),
+                  lpp2Percentage = Some(BigDecimal(4.00).setScale(2)),
+                  penaltyChargeCreationDate = Some(LocalDate.of(2022, 10, 30)),
+                  communicationsDate = Some(LocalDate.of(2022, 10, 30)),
+                  penaltyChargeReference = Some("123456789"),
+                  penaltyChargeDueDate = Some(LocalDate.of(2022, 10, 30)),
+                  appealInformation = Some(Seq(models.hipPenaltyDetails.appealInfo.AppealInformationType(
+                    appealStatus = Some(models.hipPenaltyDetails.appealInfo.AppealStatusEnum.Unappealable),
+                    appealLevel = Some(models.hipPenaltyDetails.appealInfo.AppealLevelEnum.HMRC),
+                    appealDescription = Some("Some value")
+                  ))),
+                  principalChargeDocNumber = Some("DOC1"),
+                  principalChargeMainTr = VATReturnCharge,
+                  principalChargeSubTr = Some("SUB1"),
+                  principalChargeBillingFrom = LocalDate.of(2022, 10, 30),
+                  principalChargeBillingTo = LocalDate.of(2022, 10, 30),
+                  principalChargeDueDate = LocalDate.of(2022, 10, 30),
+                  principalChargeLatestClearing = None,
+                  timeToPay = None,
+                  supplement = false
+                )
               )
-            )
-          ),
-          manualLPPIndicator = true
-        )),
-        breathingSpace = Some(Seq(
-          models.hipPenaltyDetails.breathingSpace.BreathingSpace(bsStartDate = LocalDate.of(2023, 1, 1), bsEndDate = LocalDate.of(2023, 12, 31))
-        ))
+            ),
+            manualLPPIndicator = true
+          )),
+        breathingSpace = Some(
+          Seq(
+            models.hipPenaltyDetails.breathingSpace.BreathingSpace(bsStartDate = LocalDate.of(2023, 1, 1), bsEndDate = LocalDate.of(2023, 12, 31))
+          ))
       )
 
       when(mockHIPPenaltyDetailsConnector.getPenaltyDetails(ArgumentMatchers.eq(vrn123456789))(any()))
@@ -315,61 +339,58 @@ class PenaltyDetailsServiceSpec extends SpecBase with LogCapturing with LPPDetai
 
       result.isRight shouldBe true
       result.toOption.get.isInstanceOf[GetPenaltyDetailsSuccessResponse] shouldBe true
-      
+
       disableFeatureSwitch(CallAPI1812HIP)
     }
 
     s"return $GetPenaltyDetailsMalformed when the regular connector response body is malformed" in new Setup {
       disableFeatureSwitch(CallAPI1812HIP)
-      
+
       when(mockGetPenaltyDetailsConnector.getPenaltyDetails(ArgumentMatchers.eq(vrn123456789))(any()))
         .thenReturn(Future.successful(Left(GetPenaltyDetailsMalformed)))
-      
-      withCaptureOfLoggingFrom(logger) {
-        logs => {
-          val result: GetPenaltyDetailsResponse = await(service.getPenaltyDetails(vrn123456789))
-          result.isLeft shouldBe true
-          result.left.getOrElse(GetPenaltyDetailsFailureResponse(INTERNAL_SERVER_ERROR)) shouldBe GetPenaltyDetailsMalformed
-          logs.map(_.getMessage) should contain ("[PenaltyDetailsService][getPenaltyDetails][VATC] - Failed to parse HTTP response into model for VATC~VAT~123456789")
-        }
+
+      withCaptureOfLoggingFrom(logger) { logs =>
+        val result: GetPenaltyDetailsResponse = await(service.getPenaltyDetails(vrn123456789))
+        result.isLeft shouldBe true
+        result.left.getOrElse(GetPenaltyDetailsFailureResponse(INTERNAL_SERVER_ERROR)) shouldBe GetPenaltyDetailsMalformed
+        logs.map(_.getMessage) should contain(
+          "[PenaltyDetailsService][getPenaltyDetails][VATC] - Failed to parse HTTP response into model for VATC~VAT~123456789")
       }
     }
 
     s"return $GetPenaltyDetailsNoContent when the regular connector response contains NO_DATA_FOUND" in new Setup {
       disableFeatureSwitch(CallAPI1812HIP)
-      
+
       when(mockGetPenaltyDetailsConnector.getPenaltyDetails(ArgumentMatchers.eq(vrn123456789))(any()))
         .thenReturn(Future.successful(Left(GetPenaltyDetailsNoContent)))
-      
-      withCaptureOfLoggingFrom(logger) {
-        logs => {
-          val result: GetPenaltyDetailsResponse = await(service.getPenaltyDetails(vrn123456789))
-          result.isLeft shouldBe true
-          result.left.getOrElse(GetPenaltyDetailsFailureResponse(INTERNAL_SERVER_ERROR)) shouldBe GetPenaltyDetailsNoContent
-          logs.map(_.getMessage) should contain ("[PenaltyDetailsService][getPenaltyDetails][VATC] - Got a 404 response and no data was found for GetPenaltyDetails call")
-        }
+
+      withCaptureOfLoggingFrom(logger) { logs =>
+        val result: GetPenaltyDetailsResponse = await(service.getPenaltyDetails(vrn123456789))
+        result.isLeft shouldBe true
+        result.left.getOrElse(GetPenaltyDetailsFailureResponse(INTERNAL_SERVER_ERROR)) shouldBe GetPenaltyDetailsNoContent
+        logs.map(_.getMessage) should contain(
+          "[PenaltyDetailsService][getPenaltyDetails][VATC] - Got a 404 response and no data was found for GetPenaltyDetails call")
       }
     }
 
     s"return $GetPenaltyDetailsFailureResponse when the regular connector receives an unmatched status code" in new Setup {
       disableFeatureSwitch(CallAPI1812HIP)
-      
+
       when(mockGetPenaltyDetailsConnector.getPenaltyDetails(ArgumentMatchers.eq(vrn123456789))(any()))
         .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(IM_A_TEAPOT))))
-      
-      withCaptureOfLoggingFrom(logger) {
-        logs => {
-          val result: GetPenaltyDetailsResponse = await(service.getPenaltyDetails(vrn123456789))
-          result.isLeft shouldBe true
-          result.left.getOrElse(GetPenaltyDetailsFailureResponse(INTERNAL_SERVER_ERROR)) shouldBe GetPenaltyDetailsFailureResponse(IM_A_TEAPOT)
-          logs.map(_.getMessage) should contain ("[PenaltyDetailsService][getPenaltyDetails][VATC] - Unknown status returned from connector for VATC~VAT~123456789")
-        }
+
+      withCaptureOfLoggingFrom(logger) { logs =>
+        val result: GetPenaltyDetailsResponse = await(service.getPenaltyDetails(vrn123456789))
+        result.isLeft shouldBe true
+        result.left.getOrElse(GetPenaltyDetailsFailureResponse(INTERNAL_SERVER_ERROR)) shouldBe GetPenaltyDetailsFailureResponse(IM_A_TEAPOT)
+        logs.map(_.getMessage) should contain(
+          "[PenaltyDetailsService][getPenaltyDetails][VATC] - Unknown status returned from connector for VATC~VAT~123456789")
       }
     }
 
     "throw an exception when the regular connector fails with an exception" in new Setup {
       disableFeatureSwitch(CallAPI1812HIP)
-      
+
       when(mockGetPenaltyDetailsConnector.getPenaltyDetails(ArgumentMatchers.eq(vrn123456789))(any()))
         .thenReturn(Future.failed(new Exception("Something has gone wrong.")))
 
@@ -379,33 +400,32 @@ class PenaltyDetailsServiceSpec extends SpecBase with LogCapturing with LPPDetai
 
     "handle HIP connector failures and convert to regular response format" in new Setup {
       enableFeatureSwitch(CallAPI1812HIP)
-      
+
       import connectors.parsers.getPenaltyDetails.HIPPenaltyDetailsParser._
-      
+
       when(mockHIPPenaltyDetailsConnector.getPenaltyDetails(ArgumentMatchers.eq(vrn123456789))(any()))
         .thenReturn(Future.successful(Left(HIPPenaltyDetailsMalformed)))
-      
-      withCaptureOfLoggingFrom(logger) {
-        logs => {
-          val result: GetPenaltyDetailsResponse = await(service.getPenaltyDetails(vrn123456789))
-          result.isLeft shouldBe true
-          result.left.getOrElse(GetPenaltyDetailsFailureResponse(INTERNAL_SERVER_ERROR)) shouldBe GetPenaltyDetailsMalformed
-          logs.map(_.getMessage) should contain ("[PenaltyDetailsService][getPenaltyDetails][VATC] - Failed to parse HTTP response into HIP model for VATC~VAT~123456789")
-        }
+
+      withCaptureOfLoggingFrom(logger) { logs =>
+        val result: GetPenaltyDetailsResponse = await(service.getPenaltyDetails(vrn123456789))
+        result.isLeft shouldBe true
+        result.left.getOrElse(GetPenaltyDetailsFailureResponse(INTERNAL_SERVER_ERROR)) shouldBe GetPenaltyDetailsMalformed
+        logs.map(_.getMessage) should contain(
+          "[PenaltyDetailsService][getPenaltyDetails][VATC] - Failed to parse HTTP response into HIP model for VATC~VAT~123456789")
       }
-      
+
       disableFeatureSwitch(CallAPI1812HIP)
     }
 
     "throw an exception when the HIP connector fails with an exception" in new Setup {
       enableFeatureSwitch(CallAPI1812HIP)
-      
+
       when(mockHIPPenaltyDetailsConnector.getPenaltyDetails(ArgumentMatchers.eq(vrn123456789))(any()))
         .thenReturn(Future.failed(new Exception("Something has gone wrong with HIP.")))
 
       val result: Exception = intercept[Exception](await(service.getPenaltyDetails(vrn123456789)))
       result.getMessage shouldBe "Something has gone wrong with HIP."
-      
+
       disableFeatureSwitch(CallAPI1812HIP)
     }
   }

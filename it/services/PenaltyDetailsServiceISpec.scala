@@ -146,7 +146,8 @@ class PenaltyDetailsServiceISpec extends IntegrationSpecCommonBase with ETMPWire
                 ),
                 penaltyAmountAccruing = BigDecimal(99.99),
                 principalChargeMainTransaction = VATReturnCharge,
-                vatOutstandingAmount = None
+                vatOutstandingAmount = None,
+                supplement = false
               )
             )
           )

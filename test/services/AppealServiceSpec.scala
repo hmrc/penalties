@@ -651,7 +651,8 @@ object AppealServiceSpec {
     metadata = LPPDetailsMetadata(),
     penaltyAmountAccruing = BigDecimal(0),
     principalChargeMainTransaction = VATReturnCharge,
-    vatOutstandingAmount = Some(BigDecimal(123.45))
+    vatOutstandingAmount = Some(BigDecimal(123.45)),
+    supplement = false
   )
 
   val sampleLPP2 = LPPDetails(
@@ -681,7 +682,8 @@ object AppealServiceSpec {
     metadata = LPPDetailsMetadata(),
     penaltyAmountAccruing = BigDecimal(0),
     principalChargeMainTransaction = VATReturnCharge,
-    vatOutstandingAmount = Some(BigDecimal(123.45))
+    vatOutstandingAmount = Some(BigDecimal(123.45)),
+    supplement = false
   )
 
   val getPenaltyDetailsOnePenalty: GetPenaltyDetails = GetPenaltyDetails(

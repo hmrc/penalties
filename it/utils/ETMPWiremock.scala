@@ -109,7 +109,8 @@ trait ETMPWiremock {
       |               "TTPStartDate": "2022-01-01",
       |               "TTPEndDate": "2022-12-31"
       |             }
-      |          ]
+      |          ],
+      |      "supplement": false
       |   }]
       | },
       | "breathingSpace": [

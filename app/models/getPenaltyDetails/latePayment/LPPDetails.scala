@@ -49,7 +49,7 @@ case class LPPDetails(penaltyCategory: LPPPenaltyCategoryEnum.Value,
                       principalChargeLatestClearing: Option[LocalDate],
                       vatOutstandingAmount: Option[BigDecimal],
                       metadata: LPPDetailsMetadata,
-                      supplement: Option[Boolean] = None) {
+                      supplement: Boolean) {
 
   def hasNoAppealsOrOnlyFirstStageRejectedAppeals: Boolean = appealInformation.getOrElse(Seq.empty).forall(_.isFirstAppealAndRejected)
   def hasNoAppeals: Boolean = appealInformation.forall(_.isEmpty)
@@ -87,7 +87,7 @@ object LPPDetails extends JsonUtils {
         principalChargeMainTransaction <- (json \ "principalChargeMainTransaction").validate[String]
         vatOutstandingAmount           <- (json \ "vatOutstandingAmount").validateOpt[BigDecimal]
         metadata                       <- Json.fromJson(json)(LPPDetailsMetadata.format)
-        supplement                     <- (json \ "supplement").validateOpt[Boolean]
+        supplement                     <- (json \ "supplement").validate[Boolean]
       } yield LPPDetails(
         penaltyCategory = penaltyCategory,
         penaltyChargeReference = penaltyChargeReference,

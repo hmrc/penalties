@@ -28,8 +28,7 @@ import play.api.libs.json.{JsResult, JsValue, Json}
 import java.time.LocalDate
 
 class GetPenaltyDetailsSpec extends SpecBase {
-  val receivedJson: JsValue = Json.parse(
-    """
+  val receivedJson: JsValue = Json.parse("""
       |{
       | "totalisations": {
       |   "LSPTotalValue": 200,
@@ -118,7 +117,8 @@ class GetPenaltyDetailsSpec extends SpecBase {
       |       "principalChargeDueDate": "2022-10-30",
       |       "principalChargeMainTransaction": "4700",
       |       "principalChargeDocNumber": "DOC1",
-      |       "principalChargeSubTransaction": "SUB1"
+      |       "principalChargeSubTransaction": "SUB1",
+      |       "supplement": false
       |   }]
       | },
       | "breathingSpace": [
@@ -130,8 +130,7 @@ class GetPenaltyDetailsSpec extends SpecBase {
       |}
       |""".stripMargin)
 
-  val jsonRepresentingModel: JsValue = Json.parse(
-    """
+  val jsonRepresentingModel: JsValue = Json.parse("""
       |{
       | "totalisations": {
       |   "LSPTotalValue": 200,
@@ -214,7 +213,8 @@ class GetPenaltyDetailsSpec extends SpecBase {
       |       "principalChargeDueDate": "2022-10-30",
       |       "principalChargeMainTransaction": "4700",
       |       "principalChargeDocNumber": "DOC1",
-      |       "principalChargeSubTransaction": "SUB1"
+      |       "principalChargeSubTransaction": "SUB1",
+      |       "supplement": false
       |   }]
       | },
       | "breathingSpace": [
@@ -274,7 +274,10 @@ class GetPenaltyDetailsSpec extends SpecBase {
             expiryReason = Some(ExpiryReasonEnum.Adjustment),
             appealInformation = Some(
               Seq(
-                AppealInformationType(appealStatus = Some(AppealStatusEnum.Unappealable), appealLevel = Some(AppealLevelEnum.HMRC), appealDescription = Some("Some value"))
+                AppealInformationType(
+                  appealStatus = Some(AppealStatusEnum.Unappealable),
+                  appealLevel = Some(AppealLevelEnum.HMRC),
+                  appealDescription = Some("Some value"))
               )
             ),
             chargeDueDate = Some(LocalDate.of(2022, 10, 30)),
@@ -286,44 +289,51 @@ class GetPenaltyDetailsSpec extends SpecBase {
         )
       )
     ),
-    latePaymentPenalty = Some(LatePaymentPenalty(
-      details = Some(
-        Seq(
-          LPPDetails(
-            penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
-            principalChargeReference = "1234567890",
-            penaltyChargeReference = Some("1234567890"),
-            penaltyChargeCreationDate = Some(LocalDate.of(2022, 10, 30)),
-            penaltyStatus = LPPPenaltyStatusEnum.Accruing,
-            appealInformation = Some(Seq(AppealInformationType(appealStatus = Some(AppealStatusEnum.Unappealable), appealLevel = Some(AppealLevelEnum.HMRC), appealDescription = Some("Some value")))),
-            principalChargeBillingFrom = LocalDate.of(2022, 10, 30),
-            principalChargeBillingTo = LocalDate.of(2022, 10, 30),
-            principalChargeDueDate = LocalDate.of(2022, 10, 30),
-            communicationsDate = Some(LocalDate.of(2022, 10, 30)),
-            penaltyAmountOutstanding = None,
-            penaltyAmountPaid = None,
-            penaltyAmountPosted = 0,
-            LPP1LRDays = Some("15"),
-            LPP1HRDays = Some("31"),
-            LPP2Days = Some("31"),
-            LPP1HRCalculationAmount = Some(99.99),
-            LPP1LRCalculationAmount = Some(99.99),
-            LPP2Percentage = Some(BigDecimal(4.00).setScale(2)),
-            LPP1LRPercentage = Some(BigDecimal(2.00).setScale(2)),
-            LPP1HRPercentage = Some(BigDecimal(2.00).setScale(2)),
-            penaltyChargeDueDate = Some(LocalDate.of(2022, 10, 30)),
-            principalChargeLatestClearing = None,
-            metadata = LPPDetailsMetadata(
-              principalChargeDocNumber = Some("DOC1"),
-              principalChargeSubTransaction = Some("SUB1")
-            ),
-            penaltyAmountAccruing = BigDecimal(99.99),
-            principalChargeMainTransaction = VATReturnCharge,
-            vatOutstandingAmount = None
+    latePaymentPenalty = Some(
+      LatePaymentPenalty(
+        details = Some(
+          Seq(
+            LPPDetails(
+              penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
+              principalChargeReference = "1234567890",
+              penaltyChargeReference = Some("1234567890"),
+              penaltyChargeCreationDate = Some(LocalDate.of(2022, 10, 30)),
+              penaltyStatus = LPPPenaltyStatusEnum.Accruing,
+              appealInformation = Some(
+                Seq(
+                  AppealInformationType(
+                    appealStatus = Some(AppealStatusEnum.Unappealable),
+                    appealLevel = Some(AppealLevelEnum.HMRC),
+                    appealDescription = Some("Some value")))),
+              principalChargeBillingFrom = LocalDate.of(2022, 10, 30),
+              principalChargeBillingTo = LocalDate.of(2022, 10, 30),
+              principalChargeDueDate = LocalDate.of(2022, 10, 30),
+              communicationsDate = Some(LocalDate.of(2022, 10, 30)),
+              penaltyAmountOutstanding = None,
+              penaltyAmountPaid = None,
+              penaltyAmountPosted = 0,
+              LPP1LRDays = Some("15"),
+              LPP1HRDays = Some("31"),
+              LPP2Days = Some("31"),
+              LPP1HRCalculationAmount = Some(99.99),
+              LPP1LRCalculationAmount = Some(99.99),
+              LPP2Percentage = Some(BigDecimal(4.00).setScale(2)),
+              LPP1LRPercentage = Some(BigDecimal(2.00).setScale(2)),
+              LPP1HRPercentage = Some(BigDecimal(2.00).setScale(2)),
+              penaltyChargeDueDate = Some(LocalDate.of(2022, 10, 30)),
+              principalChargeLatestClearing = None,
+              metadata = LPPDetailsMetadata(
+                principalChargeDocNumber = Some("DOC1"),
+                principalChargeSubTransaction = Some("SUB1")
+              ),
+              penaltyAmountAccruing = BigDecimal(99.99),
+              principalChargeMainTransaction = VATReturnCharge,
+              vatOutstandingAmount = None,
+              supplement = false
+            )
           )
         )
-      )
-    )),
+      )),
     breathingSpace = Some(Seq(BreathingSpace(BSStartDate = LocalDate.of(2023, 1, 1), BSEndDate = LocalDate.of(2023, 12, 31))))
   )
 
