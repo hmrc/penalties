@@ -101,7 +101,8 @@ class LPPDetailsSpec extends SpecBase {
       |   "principalChargeMainTransaction": "4700",
       |   "principalChargeDocNumber": "DOC1",
       |   "principalChargeSubTransaction": "SUB1",
-      |   "penaltyAmountAccruing": 144.21
+      |   "penaltyAmountAccruing": 144.21,
+      |   "supplement": false
       |}
       |""".stripMargin
   )
@@ -142,7 +143,7 @@ class LPPDetailsSpec extends SpecBase {
     penaltyAmountAccruing = BigDecimal(144.21),
     principalChargeMainTransaction = VATReturnCharge,
     vatOutstandingAmount = Some(1000),
-    supplement = Some(true)
+    supplement = true
   )
 
   val modelAsPaidPenalty: LPPDetails = LPPDetails(
@@ -181,17 +182,15 @@ class LPPDetailsSpec extends SpecBase {
     penaltyAmountAccruing = BigDecimal(144.21),
     principalChargeMainTransaction = VATReturnCharge,
     vatOutstandingAmount = None,
-    supplement = None
+    supplement = false
   )
 
-  private val modelWithNoneOptionalFields = fullModel.copy(
-    supplement = None,
+  private val modelWithOptionalFields = fullModel.copy(
     metadata = LPPDetailsMetadata(principalChargeDocNumber = None, principalChargeSubTransaction = None)
   )
   private val jsonWithMissingOptionalFields: JsValue = fullJson
     .transform(
-      (__ \ "supplement").json.prune andThen
-        (__ \ "principalChargeDocNumber").json.prune andThen
+      (__ \ "principalChargeDocNumber").json.prune andThen
         (__ \ "principalChargeSubTransaction").json.prune
     )
     .get
@@ -204,11 +203,11 @@ class LPPDetailsSpec extends SpecBase {
       result.get shouldBe fullModel
     }
 
-    "optional 'supplement', 'principalChargeDocNumber' and 'principalChargeSubTr' fields are all empty" in {
+    "optional 'principalChargeDocNumber' and 'principalChargeSubTr' fields are empty" in {
       val result: JsResult[LPPDetails] = Json.fromJson(jsonWithMissingOptionalFields)(LPPDetails.format)
 
       result.isSuccess shouldBe true
-      result.get shouldBe modelWithNoneOptionalFields
+      result.get shouldBe modelWithOptionalFields
     }
   }
 
@@ -218,8 +217,8 @@ class LPPDetailsSpec extends SpecBase {
 
       result shouldBe fullJson
     }
-    "optional 'supplement', 'principalChargeDocNumber' and 'principalChargeSubTr' fields are all empty in the model" in {
-      val result: JsValue = Json.toJson(modelWithNoneOptionalFields)(LPPDetails.format)
+    "optional 'principalChargeDocNumber' and 'principalChargeSubTr' fields are empty in the model" in {
+      val result: JsValue = Json.toJson(modelWithOptionalFields)(LPPDetails.format)
 
       result shouldBe jsonWithMissingOptionalFields
     }
