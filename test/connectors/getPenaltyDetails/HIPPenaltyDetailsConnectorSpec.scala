@@ -19,7 +19,11 @@ package connectors.getPenaltyDetails
 import base.{LogCapturing, SpecBase}
 import config.AppConfig
 import config.featureSwitches.FeatureSwitching
-import connectors.parsers.getPenaltyDetails.HIPPenaltyDetailsParser.{HIPPenaltyDetailsFailureResponse, HIPPenaltyDetailsResponse, HIPPenaltyDetailsSuccessResponse}
+import connectors.parsers.getPenaltyDetails.HIPPenaltyDetailsParser.{
+  HIPPenaltyDetailsFailureResponse,
+  HIPPenaltyDetailsResponse,
+  HIPPenaltyDetailsSuccessResponse
+}
 import models.hipPenaltyDetails.PenaltyDetails
 import models.{AgnosticEnrolmentKey, Id, IdType, Regime}
 import org.mockito.Mockito.{mock, reset, when}
@@ -28,34 +32,29 @@ import play.api.Configuration
 import play.api.http.Status
 import play.api.libs.json.Json
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
-import uk.gov.hmrc.http.{
-  HeaderCarrier,
-  HttpClient,
-  HttpResponse,
-  UpstreamErrorResponse
-}
+import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse, UpstreamErrorResponse}
+import utils.DateHelper
 import utils.Logger.logger
 import utils.PagerDutyHelper.PagerDutyKeys
+
 import java.time.Instant
 import scala.concurrent.{ExecutionContext, Future}
 
-class HIPPenaltyDetailsConnectorSpec
-    extends SpecBase
-    with LogCapturing
-    with FeatureSwitching {
+class HIPPenaltyDetailsConnectorSpec extends SpecBase with LogCapturing with FeatureSwitching {
   override implicit val config: Configuration =
     injector.instanceOf[Configuration]
 
-  implicit val ec: ExecutionContext = ExecutionContext.Implicits.global
-  implicit val hc: HeaderCarrier = HeaderCarrier()
-  val mockHttpClient: HttpClient = mock(classOf[HttpClient])
-  val mockAppConfig: AppConfig = mock(classOf[AppConfig])
+  implicit val ec: ExecutionContext             = ExecutionContext.Implicits.global
+  implicit val hc: HeaderCarrier                = HeaderCarrier()
+  private val mockHttpClient: HttpClient        = mock(classOf[HttpClient])
+  private val mockAppConfig: AppConfig          = mock(classOf[AppConfig])
+  private val mockDateHelper: DateHelper        = mock(classOf[DateHelper])
   implicit val mockConfiguration: Configuration = mock(classOf[Configuration])
-  val instant = Instant.now()
+  private val instant                           = Instant.now()
 
-  val regime = Regime("VATC")
-  val idType = IdType("VRN")
-  val id = Id("123456789")
+  private val regime = Regime("VATC")
+  private val idType = IdType("VRN")
+  private val id     = Id("123456789")
 
   val vrn123456789: AgnosticEnrolmentKey = AgnosticEnrolmentKey(
     regime,
@@ -67,8 +66,9 @@ class HIPPenaltyDetailsConnectorSpec
     reset(mockHttpClient)
     reset(mockAppConfig)
     reset(mockConfiguration)
+    reset(mockDateHelper)
 
-    val connector = new HIPPenaltyDetailsConnector(mockHttpClient, mockAppConfig)(
+    val connector = new HIPPenaltyDetailsConnector(mockHttpClient, mockAppConfig, mockDateHelper)(
       implicitly,
       mockConfiguration
     )
@@ -117,8 +117,6 @@ class HIPPenaltyDetailsConnectorSpec
       )
 
     when(mockAppConfig.hipAuthorisationToken).thenReturn("encodedToken")
-    when(mockAppConfig.hipServiceOriginatorIdKeyV1).thenReturn("OriginatorId")
-    when(mockAppConfig.hipServiceOriginatorIdV1).thenReturn("ServiceXYZ")
     when(mockAppConfig.hipEnvironment).thenReturn("env")
 
     when(
@@ -165,13 +163,12 @@ class HIPPenaltyDetailsConnectorSpec
     }
 
     "send all required headers for the penalty details request" in new Setup {
-      val headersCaptor =
+      private val headersCaptor =
         ArgumentCaptor.forClass(classOf[Seq[(String, String)]])
 
       when(mockAppConfig.hipAuthorisationToken).thenReturn("encodedToken")
-      when(mockAppConfig.hipServiceOriginatorIdKeyV1).thenReturn("OriginatorId")
-      when(mockAppConfig.hipServiceOriginatorIdV1).thenReturn("ServiceXYZ")
       when(mockAppConfig.hipEnvironment).thenReturn("env")
+      when(mockDateHelper.formattedHipReceiptTimestamp()).thenReturn("2022-03-03T14:12:11Z")
 
       when(
         mockHttpClient.GET[HIPPenaltyDetailsResponse](
@@ -194,7 +191,7 @@ class HIPPenaltyDetailsConnectorSpec
 
       await(connector.getPenaltyDetails(vrn123456789))
 
-      val headers = headersCaptor.getValue.toMap
+      private val headers = headersCaptor.getValue.toMap
 
       headers should contain key "Authorization"
       headers("Authorization") shouldBe "Basic encodedToken"
@@ -206,13 +203,10 @@ class HIPPenaltyDetailsConnectorSpec
       headers("X-Originating-System") shouldBe "MDTP"
 
       headers should contain key "X-Receipt-Date"
-      noException should be thrownBy Instant.parse(headers("X-Receipt-Date"))
+      headers("X-Receipt-Date") shouldBe "2022-03-03T14:12:11Z"
 
       headers should contain key "X-Transmitting-System"
       headers("X-Transmitting-System") shouldBe "HIP"
-
-      headers should contain key "OriginatorId"
-      headers("OriginatorId") shouldBe "ServiceXYZ"
 
       headers should contain key "Environment"
       headers("Environment") shouldBe "env"
@@ -388,16 +382,14 @@ class HIPPenaltyDetailsConnectorSpec
           )
         )
       withCaptureOfLoggingFrom(logger) { logs =>
-        {
-          val result: HIPPenaltyDetailsResponse =
-            await(connector.getPenaltyDetails(vrn123456789))
-          logs.exists(
-            _.getMessage.contains(
-              PagerDutyKeys.RECEIVED_5XX_FROM_1812_API.toString
-            )
-          ) shouldBe true
-          result.isLeft shouldBe true
-        }
+        val result: HIPPenaltyDetailsResponse =
+          await(connector.getPenaltyDetails(vrn123456789))
+        logs.exists(
+          _.getMessage.contains(
+            PagerDutyKeys.RECEIVED_5XX_FROM_1812_API.toString
+          )
+        ) shouldBe true
+        result.isLeft shouldBe true
       }
     }
 
@@ -419,16 +411,14 @@ class HIPPenaltyDetailsConnectorSpec
           Future.failed(UpstreamErrorResponse.apply("", Status.BAD_REQUEST))
         )
       withCaptureOfLoggingFrom(logger) { logs =>
-        {
-          val result: HIPPenaltyDetailsResponse =
-            await(connector.getPenaltyDetails(vrn123456789))
-          logs.exists(
-            _.getMessage.contains(
-              PagerDutyKeys.RECEIVED_4XX_FROM_1812_API.toString
-            )
-          ) shouldBe true
-          result.isLeft shouldBe true
-        }
+        val result: HIPPenaltyDetailsResponse =
+          await(connector.getPenaltyDetails(vrn123456789))
+        logs.exists(
+          _.getMessage.contains(
+            PagerDutyKeys.RECEIVED_4XX_FROM_1812_API.toString
+          )
+        ) shouldBe true
+        result.isLeft shouldBe true
       }
     }
 
@@ -448,16 +438,14 @@ class HIPPenaltyDetailsConnectorSpec
       )
         .thenReturn(Future.failed(new Exception("Something weird happened")))
       withCaptureOfLoggingFrom(logger) { logs =>
-        {
-          val result: HIPPenaltyDetailsResponse =
-            await(connector.getPenaltyDetails(vrn123456789)(HeaderCarrier()))
-          logs.exists(
-            _.getMessage.contains(
-              PagerDutyKeys.UNKNOWN_EXCEPTION_CALLING_1812_API.toString
-            )
-          ) shouldBe true
-          result.isLeft shouldBe true
-        }
+        val result: HIPPenaltyDetailsResponse =
+          await(connector.getPenaltyDetails(vrn123456789)(HeaderCarrier()))
+        logs.exists(
+          _.getMessage.contains(
+            PagerDutyKeys.UNKNOWN_EXCEPTION_CALLING_1812_API.toString
+          )
+        ) shouldBe true
+        result.isLeft shouldBe true
       }
     }
   }
@@ -621,10 +609,10 @@ class HIPPenaltyDetailsConnectorSpec
         logs.exists(log =>
           log.getMessage.contains(
             PagerDutyKeys.UNKNOWN_EXCEPTION_CALLING_1812_API.toString
-          )
-        ) shouldBe true
+          )) shouldBe true
       }
     }
 
   }
+
 }

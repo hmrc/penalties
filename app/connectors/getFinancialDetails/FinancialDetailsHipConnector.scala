@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,17 +25,14 @@ import play.api.libs.json.JsObject
 import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse, UpstreamErrorResponse}
 import utils.Logger.logger
-import utils.PagerDutyHelper
 import utils.PagerDutyHelper.PagerDutyKeys._
+import utils.{DateHelper, PagerDutyHelper}
 
-import java.time.Instant
-import java.time.format.DateTimeFormatter
-import java.time.temporal.ChronoUnit
 import java.util.UUID
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class FinancialDetailsHipConnector @Inject() (httpClient: HttpClient, appConfig: AppConfig)(implicit ec: ExecutionContext) {
+class FinancialDetailsHipConnector @Inject() (httpClient: HttpClient, appConfig: AppConfig, dateHelper: DateHelper)(implicit ec: ExecutionContext) {
 
   def getFinancialDetails(enrolmentKey: AgnosticEnrolmentKey, includeClearedItems: Boolean)(implicit
       hc: HeaderCarrier): Future[HIPFinancialDetailsResponse] = {
@@ -44,9 +41,12 @@ class FinancialDetailsHipConnector @Inject() (httpClient: HttpClient, appConfig:
     val body          = appConfig.baseFinancialDetailsRequestModel.copy(includeClearedItems = Some(includeClearedItems)).toJsonRequest(enrolmentKey)
     val hcWithoutAuth = hc.copy(authorization = None)
     val correlationId = UUID.randomUUID().toString
-    val headers       = buildHeaders(correlationId)
+    val receiptDate   = dateHelper.formattedHipReceiptTimestamp()
+    val headers       = buildHeaders(correlationId, receiptDate)
 
-    logger.info(s"[FinancialDetailsHipConnector][getFinancialDetails][$enrolmentKey] - Calling GET $url\nCorrelation ID: $correlationId")
+    logger.info(
+      s"[FinancialDetailsHipConnector][getFinancialDetails][$enrolmentKey] - " +
+        s"Calling GET $url\nCorrelation ID: $correlationId\nHeader ReceiptDate: $receiptDate")
 
     httpClient
       .POST[JsObject, HIPFinancialDetailsResponse](url, body, headers)(implicitly, implicitly, hcWithoutAuth, implicitly)
@@ -98,9 +98,12 @@ class FinancialDetailsHipConnector @Inject() (httpClient: HttpClient, appConfig:
     ).toJsonRequest(enrolmentKey)
     val hcWithoutAuth = hc.copy(authorization = None)
     val correlationId = UUID.randomUUID().toString
-    val headers       = buildHeaders(correlationId)
+    val receiptDate   = dateHelper.formattedHipReceiptTimestamp()
+    val headers       = buildHeaders(correlationId, receiptDate)
 
-    logger.info(s"[FinancialDetailsHipConnector][getFinancialDetailsForAPI][$enrolmentKey] - Calling GET $url\nCorrelation ID: $correlationId")
+    logger.info(
+      s"[FinancialDetailsHipConnector][getFinancialDetailsForAPI][$enrolmentKey] - " +
+        s"Calling GET $url\nCorrelation ID: $correlationId\nHeader ReceiptDate: $receiptDate")
 
     httpClient
       .POST[JsObject, HttpResponse](url, body, headers)(implicitly, implicitly, hcWithoutAuth, implicitly)
@@ -121,13 +124,12 @@ class FinancialDetailsHipConnector @Inject() (httpClient: HttpClient, appConfig:
       HttpResponse(INTERNAL_SERVER_ERROR, "An unknown exception occurred. Contact the Penalties team for more information.")
   }
 
-  private def buildHeaders(correlationId: String): Seq[(String, String)] = Seq(
-    "Authorization"                       -> s"Basic ${appConfig.hipAuthorisationToken}",
-    appConfig.hipServiceOriginatorIdKeyV1 -> appConfig.hipServiceOriginatorIdV1,
-    "CorrelationId"                       -> correlationId,
-    "X-Originating-System"                -> "MDTP",
-    "X-Receipt-Date"                      -> DateTimeFormatter.ISO_INSTANT.format(Instant.now().truncatedTo(ChronoUnit.SECONDS)),
-    "X-Transmitting-System"               -> "HIP"
+  private def buildHeaders(correlationId: String, receiptDate: String): Seq[(String, String)] = Seq(
+    "Authorization"         -> s"Basic ${appConfig.hipAuthorisationToken}",
+    "CorrelationId"         -> correlationId,
+    "X-Originating-System"  -> "MDTP",
+    "X-Receipt-Date"        -> receiptDate,
+    "X-Transmitting-System" -> "HIP"
   )
 
 }

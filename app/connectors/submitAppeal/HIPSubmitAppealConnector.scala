@@ -29,19 +29,16 @@ import utils.PagerDutyHelper.PagerDutyKeys.{RECEIVED_4XX_FROM_1808_API, RECEIVED
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class HIPSubmitAppealConnector @Inject()(httpClient: HttpClient,
-                                         appConfig: AppConfig)(implicit ec: ExecutionContext) {
+class HIPSubmitAppealConnector @Inject() (httpClient: HttpClient, appConfig: AppConfig)(implicit ec: ExecutionContext) {
 
+  def submitAppeal(appealSubmission: AppealSubmission, penaltyNumber: String, correlationId: String)(implicit
+      headerCarrier: HeaderCarrier): Future[AppealSubmissionResponse] = {
 
-  def submitAppeal(appealSubmission: AppealSubmission,
-                   penaltyNumber: String,
-                   correlationId: String)
-                  (implicit headerCarrier: HeaderCarrier): Future[AppealSubmissionResponse] = {
-
-    val hc: HeaderCarrier = headersForHIP(correlationId)
+    val hc: HeaderCarrier       = headersForHIP(correlationId)
     val appealSubmissionRequest = AppealSubmissionRequest(appealSubmission, penaltyNumber)
 
-    httpClient.POST[AppealSubmissionRequest, AppealSubmissionResponse](
+    httpClient
+      .POST[AppealSubmissionRequest, AppealSubmissionResponse](
         appConfig.getAppealSubmissionHipUrl,
         appealSubmissionRequest,
         hc.otherHeaders
@@ -49,13 +46,15 @@ class HIPSubmitAppealConnector @Inject()(httpClient: HttpClient,
       .recover {
         case e: UpstreamErrorResponse =>
           PagerDutyHelper.logStatusCode("submitAppeal", e.statusCode)(RECEIVED_4XX_FROM_1808_API, RECEIVED_5XX_FROM_1808_API)
-          logger.error(s"[HIPConnector][submitAppeal] -" +
-            s" Received ${e.statusCode} status from API 1808 call - returning status to caller")
+          logger.error(
+            s"[HIPConnector][submitAppeal] -" +
+              s" Received ${e.statusCode} status from API 1808 call - returning status to caller")
           Left(UnexpectedFailure(e.statusCode, e.message))
         case e: Exception =>
           PagerDutyHelper.log("submitAppeal", UNKNOWN_EXCEPTION_CALLING_1808_API)
-          logger.error(s"[HIPConnector][submitAppeal] -" +
-            s" An unknown exception occurred - returning 500 back to caller - message: ${e.getMessage}")
+          logger.error(
+            s"[HIPConnector][submitAppeal] -" +
+              s" An unknown exception occurred - returning 500 back to caller - message: ${e.getMessage}")
           Left(UnexpectedFailure(INTERNAL_SERVER_ERROR, "An unknown exception occurred. Contact the Penalties team for more information."))
       }
   }
@@ -65,8 +64,7 @@ class HIPSubmitAppealConnector @Inject()(httpClient: HttpClient,
 
   private def headersForHIP(correlationId: String)(implicit headerCarrier: HeaderCarrier): HeaderCarrier = {
     val headers = Seq(
-      appConfig.hipServiceOriginatorIdKeyV1 -> appConfig.hipServiceOriginatorIdV1,
-      CORRELATION_HEADER -> correlationId,
+      CORRELATION_HEADER   -> correlationId,
       AUTHORIZATION_HEADER -> s"Basic ${appConfig.hipAuthorisationToken}"
     )
     headerCarrier.copy(authorization = None, otherHeaders = headers)
