@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,25 +18,39 @@ package utils
 
 import config.featureSwitches.FeatureSwitching
 import play.api.Configuration
+import utils.Logger.logger
 
-import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import java.time.temporal.ChronoUnit
+import java.time.{Instant, LocalDate, LocalDateTime, ZoneId}
 import javax.inject.Inject
 
-class DateHelper @Inject()(val config: Configuration) extends FeatureSwitching {
-  def dateNow(): LocalDate = {
-    getTimeMachineDateTime.toLocalDate
+class DateHelper @Inject() (val config: Configuration) extends FeatureSwitching {
+
+  def dateNow(): LocalDate = getTimeMachineDateTime.toLocalDate
+
+  def formattedHipReceiptTimestamp(): String = {
+    val instant =
+      getTimeMachineDateTime
+        .atZone(ZoneId.systemDefault())
+        .toInstant
+        .truncatedTo(ChronoUnit.SECONDS)
+
+    val localDateNow  = DateTimeFormatter.ISO_INSTANT.format(Instant.now())
+    val formattedDate = DateTimeFormatter.ISO_INSTANT.format(instant)
+    logger.info(s"[DateHelper][formattedHipReceiptTimestamp] LocalDate.now = $localDateNow, Formatted TimeMachine date = $formattedDate")
+
+    formattedDate
   }
+
 }
 
 object DateHelper {
-  def isDateBeforeOrEqual(thisDate: LocalDate, thatDate: LocalDate): Boolean = {
+  def isDateBeforeOrEqual(thisDate: LocalDate, thatDate: LocalDate): Boolean =
     thisDate.isBefore(thatDate) || thisDate.isEqual(thatDate)
-  }
 
-  def isDateAfterOrEqual(thisDate: LocalDate, thatDate: LocalDate): Boolean = {
+  def isDateAfterOrEqual(thisDate: LocalDate, thatDate: LocalDate): Boolean =
     thisDate.isAfter(thatDate) || thisDate.isEqual(thatDate)
-  }
 
   val dateTimeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")
 }

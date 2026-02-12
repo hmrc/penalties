@@ -24,26 +24,28 @@ import play.api.Configuration
 import play.api.http.Status.INTERNAL_SERVER_ERROR
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpReads, HttpResponse, UpstreamErrorResponse}
 import utils.Logger.logger
-import utils.PagerDutyHelper
 import utils.PagerDutyHelper.PagerDutyKeys._
+import utils.{DateHelper, PagerDutyHelper}
 
-import java.time.Instant
-import java.time.format.DateTimeFormatter
-import java.time.temporal.ChronoUnit
 import java.util.UUID
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class HIPPenaltyDetailsConnector @Inject() (httpClient: HttpClient, appConfig: AppConfig)(implicit ec: ExecutionContext, val config: Configuration)
+class HIPPenaltyDetailsConnector @Inject() (httpClient: HttpClient, appConfig: AppConfig, dateHelper: DateHelper)(implicit
+    ec: ExecutionContext,
+    val config: Configuration)
     extends FeatureSwitching {
 
   def getPenaltyDetails(enrolmentKey: AgnosticEnrolmentKey)(implicit hc: HeaderCarrier): Future[HIPPenaltyDetailsResponse] = {
     val url           = appConfig.getHIPPenaltyDetailsUrl(enrolmentKey)
     val hcWithoutAuth = hc.copy(authorization = None)
     val correlationId = UUID.randomUUID().toString
-    val headers       = buildHeadersV1(correlationId)
+    val receiptDate   = dateHelper.formattedHipReceiptTimestamp()
+    val headers       = buildHeadersV1(correlationId, receiptDate)
 
-    logger.info(s"[HIPPenaltiesDetailsConnector][getPenaltyDetails][$enrolmentKey] - Calling GET $url\nCorrelation ID: $correlationId")
+    logger.info(
+      s"[HIPPenaltiesDetailsConnector][getPenaltyDetails][$enrolmentKey] - " +
+        s"Calling GET $url\nCorrelation ID: $correlationId\nHeader ReceiptDate: $receiptDate")
 
     httpClient
       .GET[HIPPenaltyDetailsResponse](url, Seq.empty, headers)(implicitly, hcWithoutAuth, implicitly)
@@ -68,13 +70,16 @@ class HIPPenaltyDetailsConnector @Inject() (httpClient: HttpClient, appConfig: A
     val url           = appConfig.getHIPPenaltyDetailsUrl(enrolmentKey, dateLimit)
     val hcWithoutAuth = hc.copy(authorization = None)
     val correlationId = UUID.randomUUID().toString
-    val headers       = buildHeadersV1(correlationId)
+    val receiptDate   = dateHelper.formattedHipReceiptTimestamp()
+    val headers       = buildHeadersV1(correlationId, receiptDate)
 
     val throwingReads: HttpReads[HttpResponse] =
       (_: String, _: String, response: HttpResponse) =>
         if (response.status >= 400) throw UpstreamErrorResponse(response.body, response.status) else response
 
-    logger.info(s"[HIPPenaltiesDetailsConnector][getPenaltyDetailsForAPI][$enrolmentKey]- Calling GET $url\nCorrelation ID: $correlationId")
+    logger.info(
+      s"[HIPPenaltiesDetailsConnector][getPenaltyDetailsForAPI][$enrolmentKey] - " +
+        s"Calling GET $url\nCorrelation ID: $correlationId\nHeader ReceiptDate: $receiptDate")
 
     httpClient.GET[HttpResponse](url, Seq.empty, headers)(throwingReads, hcWithoutAuth, implicitly).recover {
       case e: UpstreamErrorResponse =>
@@ -101,18 +106,13 @@ class HIPPenaltyDetailsConnector @Inject() (httpClient: HttpClient, appConfig: A
   private val xTransmittingSystemHeader: String = "X-Transmitting-System"
   private val EnvironmentHeader: String         = "Environment"
 
-  private def buildHeadersV1(correlationId: String): Seq[(String, String)] =
+  private def buildHeadersV1(correlationId: String, receiptDate: String): Seq[(String, String)] =
     Seq(
-      appConfig.hipServiceOriginatorIdKeyV1 -> appConfig.hipServiceOriginatorIdV1,
-      CorrelationIdHeader                   -> correlationId,
-      AuthorizationHeader                   -> s"Basic ${appConfig.hipAuthorisationToken}",
-      EnvironmentHeader                     -> appConfig.hipEnvironment,
-      xOriginatingSystemHeader              -> "MDTP",
-      xReceiptDateHeader -> {
-        val instant       = Instant.now().truncatedTo(ChronoUnit.SECONDS)
-        val localDateTime = java.time.LocalDateTime.ofInstant(instant, java.time.ZoneOffset.UTC)
-        DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss").format(localDateTime) + "Z"
-      },
+      CorrelationIdHeader       -> correlationId,
+      AuthorizationHeader       -> s"Basic ${appConfig.hipAuthorisationToken}",
+      EnvironmentHeader         -> appConfig.hipEnvironment,
+      xOriginatingSystemHeader  -> "MDTP",
+      xReceiptDateHeader        -> receiptDate,
       xTransmittingSystemHeader -> "HIP"
     )
 }
