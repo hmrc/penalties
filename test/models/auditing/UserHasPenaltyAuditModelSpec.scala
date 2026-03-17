@@ -656,7 +656,9 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
                   Seq(
                     TimeToPay(
                       TTPStartDate = Some(LocalDate.of(2022, 1, 1)),
-                      TTPEndDate = Some(LocalDate.of(2022, 12, 31))
+                      TTPEndDate = Some(LocalDate.of(2022, 12, 31)),
+                      TTPProposalDate = None,
+                      TTPAgreementDate = None
                     )))
               ),
               penaltyAmountAccruing = BigDecimal(0),
@@ -693,7 +695,9 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
                   Seq(
                     TimeToPay(
                       TTPStartDate = Some(LocalDate.of(2022, 1, 1)),
-                      TTPEndDate = Some(LocalDate.of(2022, 12, 31))
+                      TTPEndDate = Some(LocalDate.of(2022, 12, 31)),
+                      TTPProposalDate = None,
+                      TTPAgreementDate = None
                     )))
               ),
               penaltyAmountAccruing = BigDecimal(0),
@@ -752,7 +756,9 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
                   Seq(
                     TimeToPay(
                       TTPStartDate = Some(LocalDate.of(2022, 1, 1)),
-                      TTPEndDate = None
+                      TTPEndDate = None,
+                      TTPProposalDate = None,
+                      TTPAgreementDate = None
                     )))
               ),
               penaltyAmountAccruing = BigDecimal(0),
@@ -789,7 +795,9 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
                   Seq(
                     TimeToPay(
                       TTPStartDate = Some(LocalDate.of(2022, 1, 1)),
-                      TTPEndDate = None
+                      TTPEndDate = None,
+                      TTPProposalDate = None,
+                      TTPAgreementDate = None
                     )))
               ),
               penaltyAmountAccruing = BigDecimal(0),
@@ -848,7 +856,9 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
                   Seq(
                     TimeToPay(
                       TTPStartDate = Some(LocalDate.of(2022, 1, 1)),
-                      TTPEndDate = Some(LocalDate.of(2022, 12, 31))
+                      TTPEndDate = Some(LocalDate.of(2022, 12, 31)),
+                      TTPProposalDate = None,
+                      TTPAgreementDate = None
                     )))
               ),
               penaltyAmountAccruing = BigDecimal(0),

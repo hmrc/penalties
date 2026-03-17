@@ -139,7 +139,9 @@ class PenaltyDetailsServiceISpec extends IntegrationSpecCommonBase with ETMPWire
                 metadata = LPPDetailsMetadata(
                   timeToPay = Some(Seq(TimeToPay(
                     TTPStartDate = Some(LocalDate.of(2022, 1, 1)),
-                    TTPEndDate = Some(LocalDate.of(2022, 12, 31))
+                    TTPEndDate = Some(LocalDate.of(2022, 12, 31)),
+                    TTPProposalDate = None,
+                    TTPAgreementDate = None
                   ))),
                   principalChargeDocNumber = Some("DOC1"),
                   principalChargeSubTransaction = Some("SUB1")
