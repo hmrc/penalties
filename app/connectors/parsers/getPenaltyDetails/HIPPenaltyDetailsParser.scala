@@ -76,7 +76,7 @@ object HIPPenaltyDetailsParser {
 
   private def extractErrorResponseBodyFrom422(json: JsValue): Left[HIPPenaltyDetailsFailure, Nothing] =
     (json \ "errors").validate[BusinessError] match { // 422 a single error is ever returned regardless of the number of mistakes
-      case JsSuccess(error, _) if error.code == "016" && error.text == "Invalid ID Number" =>
+      case JsSuccess(error, _) if error.code == "016" => // 016: 'Invalid ID Number'
         logger.error(s"[HIPPenaltyDetailsReads][read] - Error: ID number did not match any data")
         Left(HIPPenaltyDetailsNoContent)
       case JsSuccess(error, _) =>

@@ -93,7 +93,7 @@ object HIPFinancialDetailsParser {
 
   private def extractErrorResponseBodyFrom422(json: JsValue): Left[HIPFinancialDetailsFailure, Nothing] = {
     def noDataFound(error: BusinessError): Boolean =
-      (error.code == "016" && error.text == "Invalid ID Number") || (error.code == "018" && error.text == "No Data Identified")
+      error.code == "016" || error.code == "018"      // 016: 'Invalid ID Number', 018: 'No Data Identified'
     (json \ "errors").validate[BusinessError] match { // 422 a single error is ever returned regardless of the number of mistakes
       case JsSuccess(error, _) if noDataFound(error) =>
         logger.error(s"[HIPFinancialDetailsReads][read] - Error: ID number did not match any data")

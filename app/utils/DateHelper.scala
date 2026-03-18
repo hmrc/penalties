@@ -22,7 +22,7 @@ import utils.Logger.logger
 
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
-import java.time.{Instant, LocalDate, LocalDateTime, ZoneId}
+import java.time.{Instant, LocalDate, ZoneId}
 import javax.inject.Inject
 
 class DateHelper @Inject() (val config: Configuration) extends FeatureSwitching {

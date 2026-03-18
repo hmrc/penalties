@@ -338,17 +338,6 @@ class HIPPenaltyDetailsParserSpec extends AnyWordSpec with Matchers with LogCapt
             result shouldBe Left(HIPPenaltyDetailsFailureResponse(UNPROCESSABLE_ENTITY))
           }
         }
-        "HIP BusinessError body does not have correct '016' failure text" in {
-          val bodyWithInvalidText        = """{"errors":{"processingDate":"2025-03-03", "code":"016", "text":"Invalid id num."}}"""
-          val notFoundNoBodyHttpResponse = errorResponse(bodyWithInvalidText)
-
-          withCaptureOfLoggingFrom(logger) { logs =>
-            val result      = penaltyDetailsParserReads(notFoundNoBodyHttpResponse)
-            val expectedLog = "422 Error with code: 016 - Invalid id num"
-            logs.exists(_.getMessage.contains(expectedLog)) shouldBe true
-            result shouldBe Left(HIPPenaltyDetailsFailureResponse(UNPROCESSABLE_ENTITY))
-          }
-        }
         "response body cannot be validated as a BusinessError" in {
           val invalidBody          = """{"notGood":"isWrong"}"""
           val notFoundHttpResponse = HttpResponse.apply(status = UNPROCESSABLE_ENTITY, body = invalidBody)
