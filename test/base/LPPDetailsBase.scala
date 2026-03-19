@@ -30,7 +30,12 @@ trait LPPDetailsBase {
     penaltyChargeReference = Some("123456789"),
     penaltyChargeCreationDate = Some(LocalDate.of(2022, 10, 30)),
     penaltyStatus = LPPPenaltyStatusEnum.Accruing,
-    appealInformation = Some(Seq(AppealInformationType(appealStatus = Some(AppealStatusEnum.Unappealable), appealLevel = Some(AppealLevelEnum.HMRC), appealDescription = Some("Some value")))),
+    appealInformation = Some(
+      Seq(
+        AppealInformationType(
+          appealStatus = Some(AppealStatusEnum.Unappealable),
+          appealLevel = Some(AppealLevelEnum.HMRC),
+          appealDescription = Some("Some value")))),
     principalChargeBillingFrom = LocalDate.of(2022, 10, 30),
     principalChargeBillingTo = LocalDate.of(2022, 10, 30),
     principalChargeDueDate = LocalDate.now(),
@@ -49,14 +54,17 @@ trait LPPDetailsBase {
     penaltyChargeDueDate = Some(LocalDate.of(2022, 10, 30)),
     principalChargeLatestClearing = None,
     metadata = LPPDetailsMetadata(
-      timeToPay = Some(Seq(TimeToPay(
-        TTPStartDate = Some(LocalDate.of(2022, 1, 1)),
-        TTPEndDate = Some(LocalDate.of(2022, 12, 31))
-      )))
+      timeToPay = Some(
+        Seq(
+          TimeToPay(
+            TTPStartDate = Some(LocalDate.of(2022, 1, 1)),
+            TTPEndDate = Some(LocalDate.of(2022, 12, 31))
+          )))
     ),
     penaltyAmountAccruing = BigDecimal(144.21),
     principalChargeMainTransaction = VATReturnCharge,
-    vatOutstandingAmount = Some(BigDecimal(123.45))
+    vatOutstandingAmount = Some(BigDecimal(123.45)),
+    supplement = false
   )
 
   val lpp2: LPPDetails = LPPDetails(
@@ -65,7 +73,12 @@ trait LPPDetailsBase {
     penaltyChargeReference = None,
     penaltyChargeCreationDate = Some(LocalDate.of(2022, 10, 30)),
     penaltyStatus = LPPPenaltyStatusEnum.Accruing,
-    appealInformation = Some(Seq(AppealInformationType(appealStatus = Some(AppealStatusEnum.Unappealable), appealLevel = Some(AppealLevelEnum.HMRC), appealDescription = Some("Some value")))),
+    appealInformation = Some(
+      Seq(
+        AppealInformationType(
+          appealStatus = Some(AppealStatusEnum.Unappealable),
+          appealLevel = Some(AppealLevelEnum.HMRC),
+          appealDescription = Some("Some value")))),
     principalChargeBillingFrom = LocalDate.of(2022, 10, 30),
     principalChargeBillingTo = LocalDate.of(2022, 10, 30),
     principalChargeDueDate = LocalDate.now(),
@@ -84,21 +97,35 @@ trait LPPDetailsBase {
     penaltyChargeDueDate = Some(LocalDate.of(2022, 10, 30)),
     principalChargeLatestClearing = None,
     metadata = LPPDetailsMetadata(
-      timeToPay = Some(Seq(TimeToPay(
-        TTPStartDate = Some(LocalDate.of(2022, 1, 1)),
-        TTPEndDate = Some(LocalDate.of(2022, 12, 31))
-      )))
+      timeToPay = Some(
+        Seq(
+          TimeToPay(
+            TTPStartDate = Some(LocalDate.of(2022, 1, 1)),
+            TTPEndDate = Some(LocalDate.of(2022, 12, 31))
+          )))
     ),
     penaltyAmountAccruing = BigDecimal(144.21),
     principalChargeMainTransaction = VATReturnCharge,
-    vatOutstandingAmount = Some(BigDecimal(123.45))
+    vatOutstandingAmount = Some(BigDecimal(123.45)),
+    supplement = false
   )
 
   val lpp1PrincipalChargeDueYesterday: LPPDetails = lpp1PrincipalChargeDueToday.copy(principalChargeDueDate = LocalDate.now().minusDays(1))
-  val lpp1PrincipalChargeDueYesterdayPosted: LPPDetails = lpp1PrincipalChargeDueToday.copy(principalChargeDueDate = LocalDate.now().minusDays(1), penaltyStatus = LPPPenaltyStatusEnum.Posted)
+  val lpp1PrincipalChargeDueYesterdayPosted: LPPDetails =
+    lpp1PrincipalChargeDueToday.copy(principalChargeDueDate = LocalDate.now().minusDays(1), penaltyStatus = LPPPenaltyStatusEnum.Posted)
   val lpp1PrincipalChargeDueTomorrow: LPPDetails = lpp1PrincipalChargeDueToday.copy(principalChargeDueDate = LocalDate.now().plusDays(1))
 
-  def lpp2WithAppealStatus(status: String): LPPDetails = lpp2.copy(appealInformation = Some(Seq(AppealInformationType(appealStatus = Some(AppealStatusEnum.withName(status)), appealLevel = Some(AppealLevelEnum.HMRC), appealDescription = Some("Some value")))))
+  def lpp2WithAppealStatus(status: String): LPPDetails = lpp2.copy(appealInformation = Some(
+    Seq(
+      AppealInformationType(
+        appealStatus = Some(AppealStatusEnum.withName(status)),
+        appealLevel = Some(AppealLevelEnum.HMRC),
+        appealDescription = Some("Some value")))))
 
-  def lpp1PrincipalChargeDueTodayAppealStatus(status: String): LPPDetails = lpp1PrincipalChargeDueToday.copy(appealInformation = Some(Seq(AppealInformationType(appealStatus = Some(AppealStatusEnum.withName(status)), appealLevel = Some(AppealLevelEnum.HMRC), appealDescription = Some("Some value")))))
+  def lpp1PrincipalChargeDueTodayAppealStatus(status: String): LPPDetails = lpp1PrincipalChargeDueToday.copy(appealInformation = Some(
+    Seq(
+      AppealInformationType(
+        appealStatus = Some(AppealStatusEnum.withName(status)),
+        appealLevel = Some(AppealLevelEnum.HMRC),
+        appealDescription = Some("Some value")))))
 }

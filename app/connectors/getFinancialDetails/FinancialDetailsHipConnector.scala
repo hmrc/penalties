@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,26 +25,14 @@ import play.api.libs.json.JsObject
 import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse, UpstreamErrorResponse}
 import utils.Logger.logger
-import utils.PagerDutyHelper
 import utils.PagerDutyHelper.PagerDutyKeys._
+import utils.{DateHelper, PagerDutyHelper}
 
-import java.time.Instant
-import java.time.format.DateTimeFormatter
-import java.time.temporal.ChronoUnit
 import java.util.UUID
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class FinancialDetailsHipConnector @Inject() (httpClient: HttpClient, appConfig: AppConfig)(implicit ec: ExecutionContext) {
-
-  private def headers: Seq[(String, String)] = Seq(
-    "Authorization"                       -> s"Basic ${appConfig.hipAuthorisationToken}",
-    appConfig.hipServiceOriginatorIdKeyV1 -> appConfig.hipServiceOriginatorIdV1,
-    "CorrelationId"                       -> UUID.randomUUID().toString,
-    "X-Originating-System"                -> "MDTP",
-    "X-Receipt-Date"                      -> DateTimeFormatter.ISO_INSTANT.format(Instant.now().truncatedTo(ChronoUnit.SECONDS)),
-    "X-Transmitting-System"               -> "HIP"
-  )
+class FinancialDetailsHipConnector @Inject() (httpClient: HttpClient, appConfig: AppConfig, dateHelper: DateHelper)(implicit ec: ExecutionContext) {
 
   def getFinancialDetails(enrolmentKey: AgnosticEnrolmentKey, includeClearedItems: Boolean)(implicit
       hc: HeaderCarrier): Future[HIPFinancialDetailsResponse] = {
@@ -52,6 +40,13 @@ class FinancialDetailsHipConnector @Inject() (httpClient: HttpClient, appConfig:
     val url           = appConfig.getFinancialDetailsHipUrl
     val body          = appConfig.baseFinancialDetailsRequestModel.copy(includeClearedItems = Some(includeClearedItems)).toJsonRequest(enrolmentKey)
     val hcWithoutAuth = hc.copy(authorization = None)
+    val correlationId = UUID.randomUUID().toString
+    val receiptDate   = dateHelper.formattedHipReceiptTimestamp()
+    val headers       = buildHeaders(correlationId, receiptDate)
+
+    logger.info(
+      s"[FinancialDetailsHipConnector][getFinancialDetails][$enrolmentKey] - " +
+        s"Calling GET $url\nCorrelation ID: $correlationId\nHeader ReceiptDate: $receiptDate")
 
     httpClient
       .POST[JsObject, HIPFinancialDetailsResponse](url, body, headers)(implicitly, implicitly, hcWithoutAuth, implicitly)
@@ -63,7 +58,7 @@ class FinancialDetailsHipConnector @Inject() (httpClient: HttpClient, appConfig:
       PagerDutyHelper.logStatusCode("getFinancialDetails", e.statusCode)(RECEIVED_4XX_FROM_1811_API, RECEIVED_5XX_FROM_1811_API)
       logger.error(
         s"[FinancialDetailsConnector][getFinancialDetails] Received ${e.statusCode} from API#5327 call " +
-          s"- returning status to caller. Error: ${e.getMessage()}")
+          s"- returning status to caller. Error: ${e.getMessage}")
       Left(HIPFinancialDetailsFailureResponse(e.statusCode))
     case e: Exception =>
       PagerDutyHelper.log("getFinancialDetails", UNKNOWN_EXCEPTION_CALLING_1811_API)
@@ -102,6 +97,13 @@ class FinancialDetailsHipConnector @Inject() (httpClient: HttpClient, appConfig:
       addAccruingInterestDetails
     ).toJsonRequest(enrolmentKey)
     val hcWithoutAuth = hc.copy(authorization = None)
+    val correlationId = UUID.randomUUID().toString
+    val receiptDate   = dateHelper.formattedHipReceiptTimestamp()
+    val headers       = buildHeaders(correlationId, receiptDate)
+
+    logger.info(
+      s"[FinancialDetailsHipConnector][getFinancialDetailsForAPI][$enrolmentKey] - " +
+        s"Calling GET $url\nCorrelation ID: $correlationId\nHeader ReceiptDate: $receiptDate")
 
     httpClient
       .POST[JsObject, HttpResponse](url, body, headers)(implicitly, implicitly, hcWithoutAuth, implicitly)
@@ -112,7 +114,7 @@ class FinancialDetailsHipConnector @Inject() (httpClient: HttpClient, appConfig:
     case e: UpstreamErrorResponse =>
       logger.error(
         s"[FinancialDetailsConnector][getFinancialDetailsForAPI] Received ${e.statusCode} from API#5327 call " +
-          s"- returning status to caller. Error: ${e.getMessage()}")
+          s"- returning status to caller. Error: ${e.getMessage}")
       HttpResponse(e.statusCode, e.message)
     case e: Exception =>
       PagerDutyHelper.log("getFinancialDetailsForAPI", UNKNOWN_EXCEPTION_CALLING_1811_API)
@@ -121,5 +123,13 @@ class FinancialDetailsHipConnector @Inject() (httpClient: HttpClient, appConfig:
           s"- returning 500 back to caller - message: ${e.getMessage}")
       HttpResponse(INTERNAL_SERVER_ERROR, "An unknown exception occurred. Contact the Penalties team for more information.")
   }
+
+  private def buildHeaders(correlationId: String, receiptDate: String): Seq[(String, String)] = Seq(
+    "Authorization"         -> s"Basic ${appConfig.hipAuthorisationToken}",
+    "CorrelationId"         -> correlationId,
+    "X-Originating-System"  -> "MDTP",
+    "X-Receipt-Date"        -> receiptDate,
+    "X-Transmitting-System" -> "HIP"
+  )
 
 }

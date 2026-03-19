@@ -91,7 +91,8 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
       |             }
       |          ],
       |          "principalChargeMainTransaction": "4700",
-      |          "penaltyAmountAccruing": 99.99
+      |          "penaltyAmountAccruing": 99.99,
+      |          "supplement": false
       |       }
       |   ]
       | }
@@ -181,7 +182,8 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
       |           }
       |         ],
       |         "principalChargeMainTransaction": "4700",
-      |         "penaltyAmountAccruing": 99.99
+      |         "penaltyAmountAccruing": 99.99,
+      |         "supplement": false
       |       }
       |   ]
       | }
@@ -277,7 +279,8 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
       |         ],
       |         "principalChargeMainTransaction": "4700",
       |         "penaltyAmountAccruing": 99.99,
-      |         "vatOutstandingAmount": 543.21
+      |         "vatOutstandingAmount": 543.21,
+      |         "supplement": false
       |       }
       |   ]
       | }
@@ -337,7 +340,8 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
       |                 }
       |                ],
       |                "penaltyAmountAccruing": 99.99,
-      |                "vatOutstandingAmount": 543.21
+      |                "vatOutstandingAmount": 543.21,
+      |                "supplement": false
       |            }
       |        ]
       |    }
@@ -395,7 +399,8 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
       |                 }
       |                ],
       |                "penaltyAmountAccruing": 99.99,
-      |                "vatOutstandingAmount": 543.21
+      |                "vatOutstandingAmount": 543.21,
+      |                "supplement": false
       |            }
       |        ]
       |    }
@@ -735,7 +740,8 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
           |            "principalChargeMainTransaction": "4700",
           |            "penaltyAmountOutstanding":0,
           |            "principalChargeDocNumber": "DOC1",
-          |            "principalChargeSubTransaction": "SUB1"
+          |            "principalChargeSubTransaction": "SUB1",
+          |            "supplement": false
           |         }
           |      ]
           |   }
@@ -832,7 +838,8 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
           |            ],
           |            "LPP1LRCalculationAmount":99.99,
           |            "penaltyAmountOutstanding":0,
-          |            "vatOutstandingAmount": 543.21
+          |            "vatOutstandingAmount": 543.21,
+          |            "supplement": false
           |         }
           |      ]
           |   }
@@ -940,7 +947,8 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
       |              }
       |            ],
       |            "principalChargeMainTr": "4700",
-      |            "penaltyAmountAccruing": 99.99
+      |            "penaltyAmountAccruing": 99.99,
+      |            "supplement": false
       |          }
       |        ]
       |      },
@@ -1023,7 +1031,8 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
                       }
                     ],
                     "principalChargeDocNumber": "DOC1",
-                    "principalChargeSubTransaction": "SUB1"
+                    "principalChargeSubTransaction": "SUB1",
+                    "supplement": false
                   }
                 ]
               }

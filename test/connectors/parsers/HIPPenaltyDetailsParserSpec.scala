@@ -73,7 +73,8 @@ class HIPPenaltyDetailsParserSpec extends AnyWordSpec with Matchers with LogCapt
     principalChargeBillingTo = LocalDate.now(),
     principalChargeDueDate = LocalDate.now(),
     principalChargeLatestClearing = None,
-    timeToPay = None
+    timeToPay = None,
+    supplement = false
   )
 
   val hipLpp2Details: LPPDetails = hipLpp1Details.copy(
@@ -102,15 +103,19 @@ class HIPPenaltyDetailsParserSpec extends AnyWordSpec with Matchers with LogCapt
     processingDate = Instant.now(),
     totalisations = None,
     lateSubmissionPenalty = None,
-    latePaymentPenalty = Some(LatePaymentPenalty(
-      Some(Seq(
-        hipLpp1Details,
-        hipLpp2Details,
-        hipLpp1Details.copy(penaltyChargeReference = Some("123456791"), principalChargeReference = "1000002"),
-        hipLpp2Details.copy(penaltyChargeReference = Some("123456792"), principalChargeReference = "1000002", principalChargeLatestClearing = Some(LocalDate.now().plusDays(1)))
+    latePaymentPenalty = Some(
+      LatePaymentPenalty(
+        Some(Seq(
+          hipLpp1Details,
+          hipLpp2Details,
+          hipLpp1Details.copy(penaltyChargeReference = Some("123456791"), principalChargeReference = "1000002"),
+          hipLpp2Details.copy(
+            penaltyChargeReference = Some("123456792"),
+            principalChargeReference = "1000002",
+            principalChargeLatestClearing = Some(LocalDate.now().plusDays(1)))
+        )),
+        manualLPPIndicator = false
       )),
-      manualLPPIndicator = false
-    )),
     breathingSpace = None
   )
 
@@ -118,13 +123,15 @@ class HIPPenaltyDetailsParserSpec extends AnyWordSpec with Matchers with LogCapt
     processingDate = Instant.now(),
     totalisations = None,
     lateSubmissionPenalty = None,
-    latePaymentPenalty = Some(LatePaymentPenalty(
-      Some(Seq(
-        hipLpp1Details.copy(penaltyStatus = Some(LPPPenaltyStatusEnum.Accruing)),
-        hipLpp2Details
+    latePaymentPenalty = Some(
+      LatePaymentPenalty(
+        Some(
+          Seq(
+            hipLpp1Details.copy(penaltyStatus = Some(LPPPenaltyStatusEnum.Accruing)),
+            hipLpp2Details
+          )),
+        manualLPPIndicator = false
       )),
-      manualLPPIndicator = false
-    )),
     breathingSpace = None
   )
 
@@ -290,8 +297,8 @@ class HIPPenaltyDetailsParserSpec extends AnyWordSpec with Matchers with LogCapt
 
         result.isRight shouldBe true
         val penaltyDetails = result.toOption.get.asInstanceOf[HIPPenaltyDetailsSuccessResponse].penaltyDetails
-        val lpp1First = penaltyDetails.latePaymentPenalty.get.lppDetails.get.filter(_.penaltyChargeReference.contains("123456789")).head
-        val lpp1Second = penaltyDetails.latePaymentPenalty.get.lppDetails.get.filter(_.penaltyChargeReference.contains("123456791")).head
+        val lpp1First      = penaltyDetails.latePaymentPenalty.get.lppDetails.get.filter(_.penaltyChargeReference.contains("123456789")).head
+        val lpp1Second     = penaltyDetails.latePaymentPenalty.get.lppDetails.get.filter(_.penaltyChargeReference.contains("123456791")).head
 
         lpp1First.principalChargeLatestClearing.get shouldBe hipLpp2Details.principalChargeLatestClearing.get
         lpp1Second.principalChargeLatestClearing.get shouldBe hipLpp2Details.principalChargeLatestClearing.get.plusDays(1)
