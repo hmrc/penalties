@@ -69,7 +69,8 @@ class APIServiceSpec extends SpecBase {
                     metadata = LPPDetailsMetadata(),
                     penaltyAmountAccruing = BigDecimal(10.21),
                     principalChargeMainTransaction = VATReturnCharge,
-                    vatOutstandingAmount = Some(BigDecimal(123.45))
+                    vatOutstandingAmount = Some(BigDecimal(123.45)),
+                    supplement = false
                   ),
                   LPPDetails(
                     penaltyCategory = LPPPenaltyCategoryEnum.SecondPenalty,
@@ -98,7 +99,8 @@ class APIServiceSpec extends SpecBase {
                     metadata = LPPDetailsMetadata(),
                     penaltyAmountAccruing = BigDecimal(10.21),
                     principalChargeMainTransaction = VATReturnCharge,
-                    vatOutstandingAmount = Some(BigDecimal(123.45))
+                    vatOutstandingAmount = Some(BigDecimal(123.45)),
+                    supplement = false
                   )
                 )
               )
@@ -146,7 +148,8 @@ class APIServiceSpec extends SpecBase {
                     metadata = LPPDetailsMetadata(),
                     penaltyAmountAccruing = BigDecimal(0),
                     principalChargeMainTransaction = VATReturnCharge,
-                    vatOutstandingAmount = Some(BigDecimal(123.45))
+                    vatOutstandingAmount = Some(BigDecimal(123.45)),
+                    supplement = false
                   ),
                   LPPDetails(
                     penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
@@ -175,7 +178,8 @@ class APIServiceSpec extends SpecBase {
                     metadata = LPPDetailsMetadata(),
                     penaltyAmountAccruing = BigDecimal(0),
                     principalChargeMainTransaction = VATReturnCharge,
-                    vatOutstandingAmount = Some(BigDecimal(123.45))
+                    vatOutstandingAmount = Some(BigDecimal(123.45)),
+                    supplement = false
                   )
                 )
               )
@@ -225,7 +229,8 @@ class APIServiceSpec extends SpecBase {
                   metadata = LPPDetailsMetadata(),
                   penaltyAmountAccruing = BigDecimal(10.22),
                   principalChargeMainTransaction = VATReturnCharge,
-                  vatOutstandingAmount = Some(BigDecimal(123.45))
+                  vatOutstandingAmount = Some(BigDecimal(123.45)),
+                  supplement = false
                 ),
                 LPPDetails(
                   penaltyCategory = LPPPenaltyCategoryEnum.SecondPenalty,
@@ -254,7 +259,8 @@ class APIServiceSpec extends SpecBase {
                   metadata = LPPDetailsMetadata(),
                   penaltyAmountAccruing = BigDecimal(10.21),
                   principalChargeMainTransaction = VATReturnCharge,
-                  vatOutstandingAmount = Some(BigDecimal(123.45))
+                  vatOutstandingAmount = Some(BigDecimal(123.45)),
+                  supplement = false
                 )
               )
             )
@@ -312,7 +318,8 @@ class APIServiceSpec extends SpecBase {
                   metadata = LPPDetailsMetadata(),
                   penaltyAmountAccruing = BigDecimal(0),
                   principalChargeMainTransaction = VATReturnCharge,
-                  vatOutstandingAmount = Some(BigDecimal(123.45))
+                  vatOutstandingAmount = Some(BigDecimal(123.45)),
+                  supplement = false
                 )
               )
             )
@@ -393,7 +400,8 @@ class APIServiceSpec extends SpecBase {
                     metadata = LPPDetailsMetadata(),
                     penaltyAmountAccruing = BigDecimal(0),
                     principalChargeMainTransaction = VATReturnCharge,
-                    vatOutstandingAmount = Some(BigDecimal(123.45))
+                    vatOutstandingAmount = Some(BigDecimal(123.45)),
+                    supplement = false
                   )
                 )
               )
@@ -479,7 +487,8 @@ class APIServiceSpec extends SpecBase {
                     metadata = LPPDetailsMetadata(),
                     penaltyAmountAccruing = BigDecimal(0),
                     principalChargeMainTransaction = VATReturnCharge,
-                    vatOutstandingAmount = Some(BigDecimal(123.45))
+                    vatOutstandingAmount = Some(BigDecimal(123.45)),
+                    supplement = false
                   )
                 )
               )
@@ -494,7 +503,10 @@ class APIServiceSpec extends SpecBase {
     "return false" when {
       "penalty details has NO LPP and NO LSP" in new Setup {
         val penaltyDetails: GetPenaltyDetails = GetPenaltyDetails(
-          totalisations = None, lateSubmissionPenalty = None, latePaymentPenalty = None, breathingSpace = None
+          totalisations = None,
+          lateSubmissionPenalty = None,
+          latePaymentPenalty = None,
+          breathingSpace = None
         )
         service.checkIfHasAnyPenaltyData(penaltyDetails) shouldBe false
       }
@@ -537,7 +549,8 @@ class APIServiceSpec extends SpecBase {
                 metadata = LPPDetailsMetadata(),
                 penaltyAmountAccruing = BigDecimal(10.21),
                 principalChargeMainTransaction = VATReturnCharge,
-                vatOutstandingAmount = Some(BigDecimal(123.45))
+                vatOutstandingAmount = Some(BigDecimal(123.45)),
+                supplement = false
               ),
               LPPDetails(
                 penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
@@ -566,7 +579,8 @@ class APIServiceSpec extends SpecBase {
                 metadata = LPPDetailsMetadata(),
                 penaltyAmountAccruing = BigDecimal(0),
                 principalChargeMainTransaction = VATReturnCharge,
-                vatOutstandingAmount = Some(BigDecimal(123.45))
+                vatOutstandingAmount = Some(BigDecimal(123.45)),
+                supplement = false
               )
             )
           )
@@ -583,15 +597,16 @@ class APIServiceSpec extends SpecBase {
     "return the correct amount of due penalties in a payload when FinancialDetails are included" in new Setup {
       val financialDetails = FinancialDetails(
         None,
-        documentDetails = Some(Seq(DocumentDetails(
-          chargeReferenceNumber = Some("xyz1234"),
-          documentOutstandingAmount = Some(100.00),
-          documentTotalAmount = Some(200.00),
-          lineItemDetails = Some(Seq(LineItemDetails(
-            mainTransaction = Some(ManualLPP)
-          ))),
-          issueDate = Some(LocalDate.of(2023,1,1))
-        )))
+        documentDetails = Some(
+          Seq(DocumentDetails(
+            chargeReferenceNumber = Some("xyz1234"),
+            documentOutstandingAmount = Some(100.00),
+            documentTotalAmount = Some(200.00),
+            lineItemDetails = Some(Seq(LineItemDetails(
+              mainTransaction = Some(ManualLPP)
+            ))),
+            issueDate = Some(LocalDate.of(2023, 1, 1))
+          )))
       )
       val result = service.getNumberOfCrystallisedPenalties(penaltyDetails, Some(financialDetails))
       result shouldBe 2
@@ -631,7 +646,8 @@ class APIServiceSpec extends SpecBase {
                 metadata = LPPDetailsMetadata(),
                 penaltyAmountAccruing = BigDecimal(10.21),
                 principalChargeMainTransaction = VATReturnCharge,
-                vatOutstandingAmount = Some(BigDecimal(123.45))
+                vatOutstandingAmount = Some(BigDecimal(123.45)),
+                supplement = false
               ),
               LPPDetails(
                 penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
@@ -660,7 +676,8 @@ class APIServiceSpec extends SpecBase {
                 metadata = LPPDetailsMetadata(),
                 penaltyAmountAccruing = BigDecimal(10.21),
                 principalChargeMainTransaction = VATReturnCharge,
-                vatOutstandingAmount = Some(BigDecimal(123.45))
+                vatOutstandingAmount = Some(BigDecimal(123.45)),
+                supplement = false
               )
             )
           )
@@ -677,13 +694,14 @@ class APIServiceSpec extends SpecBase {
     "return 0 when a payload has no due penalties, in penalty details and financial details" in new Setup {
       val financialDetails = FinancialDetails(
         None,
-        documentDetails = Some(Seq(DocumentDetails(
-          chargeReferenceNumber = Some("xyz1234"),
-          documentOutstandingAmount = Some(0.00),
-          documentTotalAmount = Some(200.00),
-          lineItemDetails = None,
-          issueDate = Some(LocalDate.of(2023,1,1))
-        )))
+        documentDetails = Some(
+          Seq(DocumentDetails(
+            chargeReferenceNumber = Some("xyz1234"),
+            documentOutstandingAmount = Some(0.00),
+            documentTotalAmount = Some(200.00),
+            lineItemDetails = None,
+            issueDate = Some(LocalDate.of(2023, 1, 1))
+          )))
       )
       val result: Int = service.getNumberOfCrystallisedPenalties(penaltyDetailsWithNoDuePenalties, Some(financialDetails))
       result shouldBe 0
@@ -775,7 +793,8 @@ class APIServiceSpec extends SpecBase {
                 metadata = LPPDetailsMetadata(),
                 penaltyAmountAccruing = BigDecimal(0),
                 principalChargeMainTransaction = VATReturnCharge,
-                vatOutstandingAmount = Some(BigDecimal(123.45))
+                vatOutstandingAmount = Some(BigDecimal(123.45)),
+                supplement = false
               )
             )
           )
@@ -792,15 +811,16 @@ class APIServiceSpec extends SpecBase {
     "return the correct total of due penalties in a payload when financial details are included" in new Setup {
       val financialDetails: FinancialDetails = FinancialDetails(
         None,
-        documentDetails = Some(Seq(DocumentDetails(
-          chargeReferenceNumber = Some("xyz1234"),
-          documentOutstandingAmount = Some(100.00),
-          documentTotalAmount = Some(200.00),
-          lineItemDetails = Some(Seq(LineItemDetails(
-            mainTransaction = Some(ManualLPP)
-          ))),
-          issueDate = Some(LocalDate.of(2023,1,1))
-        )))
+        documentDetails = Some(
+          Seq(DocumentDetails(
+            chargeReferenceNumber = Some("xyz1234"),
+            documentOutstandingAmount = Some(100.00),
+            documentTotalAmount = Some(200.00),
+            lineItemDetails = Some(Seq(LineItemDetails(
+              mainTransaction = Some(ManualLPP)
+            ))),
+            issueDate = Some(LocalDate.of(2023, 1, 1))
+          )))
       )
       val result: BigDecimal = service.getCrystallisedPenaltyTotal(penaltyDetails, Some(financialDetails))
       result shouldBe BigDecimal(310.21)
@@ -888,7 +908,8 @@ class APIServiceSpec extends SpecBase {
                 metadata = LPPDetailsMetadata(),
                 penaltyAmountAccruing = BigDecimal(10.21),
                 principalChargeMainTransaction = VATReturnCharge,
-                vatOutstandingAmount = Some(BigDecimal(123.45))
+                vatOutstandingAmount = Some(BigDecimal(123.45)),
+                supplement = false
               )
             )
           )
@@ -905,13 +926,14 @@ class APIServiceSpec extends SpecBase {
     "return 0 when the payload has no due penalties, in penalties details and financial details" in new Setup {
       val financialDetails = FinancialDetails(
         None,
-        documentDetails = Some(Seq(DocumentDetails(
-          chargeReferenceNumber = Some("xyz1234"),
-          documentOutstandingAmount = Some(0.00),
-          documentTotalAmount = Some(200.00),
-          lineItemDetails = None,
-          issueDate = Some(LocalDate.of(2023,1,1))
-        )))
+        documentDetails = Some(
+          Seq(DocumentDetails(
+            chargeReferenceNumber = Some("xyz1234"),
+            documentOutstandingAmount = Some(0.00),
+            documentTotalAmount = Some(200.00),
+            lineItemDetails = None,
+            issueDate = Some(LocalDate.of(2023, 1, 1))
+          )))
       )
       val result: BigDecimal = service.getCrystallisedPenaltyTotal(penaltyDetailsWithNoPenalties, Some(financialDetails))
       result shouldBe BigDecimal(0)

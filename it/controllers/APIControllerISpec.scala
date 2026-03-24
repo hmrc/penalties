@@ -26,7 +26,7 @@ import org.scalatest.prop.TableDrivenPropertyChecks
 import play.api.http.Status
 import play.api.libs.json.{JsValue, Json}
 import play.api.test.Helpers._
-import utils.{AuthMock, HIPPenaltiesWiremock, IntegrationSpecCommonBase, ETMPWiremock}
+import utils.{AuthMock, ETMPWiremock, HIPPenaltiesWiremock, IntegrationSpecCommonBase}
 
 import scala.jdk.CollectionConverters._
 
@@ -90,7 +90,8 @@ class APIControllerISpec
       |            "principalChargeBillingTo": "2022-10-30",
       |            "principalChargeDueDate": "2022-10-30",
       |            "principalChargeLatestClearing": null,
-      |            "timeToPay": null
+      |            "timeToPay": null,
+      |            "supplement": false
       |          },
       |          {
       |            "principalChargeReference": "1234567891",
@@ -120,7 +121,8 @@ class APIControllerISpec
       |            "principalChargeBillingTo": "2022-10-30",
       |            "principalChargeDueDate": "2022-10-30",
       |            "principalChargeLatestClearing": null,
-      |            "timeToPay": null
+      |            "timeToPay": null,
+      |            "supplement": false
       |          }
       |        ],
       |        "manualLPPIndicator": true
@@ -171,7 +173,8 @@ class APIControllerISpec
       |          "principalChargeBillingFrom": "2022-10-30",
       |          "principalChargeBillingTo": "2022-10-30",
       |          "principalChargeMainTransaction": "4700",
-      |          "principalChargeDueDate": "2022-10-30"
+      |          "principalChargeDueDate": "2022-10-30",
+      |          "supplement": false
       |       },
       |       {
       |          "penaltyCategory": "LPP2",
@@ -195,7 +198,8 @@ class APIControllerISpec
       |          "principalChargeBillingFrom": "2022-10-30",
       |          "principalChargeBillingTo": "2022-10-30",
       |          "principalChargeMainTransaction": "4700",
-      |          "principalChargeDueDate": "2022-10-30"
+      |          "principalChargeDueDate": "2022-10-30",
+      |          "supplement": false
       |       },
       |       {
       |          "penaltyCategory": "LPP1",
@@ -221,7 +225,8 @@ class APIControllerISpec
       |          "principalChargeBillingFrom": "2022-10-30",
       |          "principalChargeBillingTo": "2022-10-30",
       |          "principalChargeMainTransaction": "4700",
-      |          "principalChargeDueDate": "2022-10-30"
+      |          "principalChargeDueDate": "2022-10-30",
+      |          "supplement": false
       |       },
       |       {
       |          "penaltyCategory": "LPP1",
@@ -247,7 +252,8 @@ class APIControllerISpec
       |          "principalChargeBillingFrom": "2022-10-30",
       |          "principalChargeBillingTo": "2022-10-30",
       |          "principalChargeMainTransaction": "4700",
-      |          "principalChargeDueDate": "2022-10-30"
+      |          "principalChargeDueDate": "2022-10-30",
+      |          "supplement": false
       |       }
       |   ]
       | }
@@ -590,7 +596,8 @@ class APIControllerISpec
             |       "LPP1HRPercentage": 2,
             |       "penaltyChargeDueDate": "2022-10-30",
             |       "penaltyAmountAccruing": 246.9,
-            |       "principalChargeMainTransaction": "4700"
+            |       "principalChargeMainTransaction": "4700",
+            |       "supplement": false
             |     },
             |     {
             |       "penaltyCategory": "LPP1",
@@ -614,7 +621,8 @@ class APIControllerISpec
             |       "LPP1HRPercentage": 2,
             |       "penaltyChargeDueDate": "2022-10-30",
             |       "penaltyAmountAccruing": 0,
-            |       "principalChargeMainTransaction": "4700"
+            |       "principalChargeMainTransaction": "4700",
+            |       "supplement": false
             |     }
             |   ],
             |   "ManualLPPIndicator": true

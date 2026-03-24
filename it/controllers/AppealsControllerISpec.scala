@@ -217,7 +217,8 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
       |          "principalChargeBillingFrom": "2025-01-01",
       |          "principalChargeBillingTo": "2025-12-31",
       |          "principalChargeDueDate": "2026-02-07",
-      |          "principalChargeMainTransaction": "4700"
+      |          "principalChargeMainTransaction": "4700",
+      |          "supplement": false
       |       },
       |       {
       |          "penaltyChargeReference": "1234567889",
@@ -240,7 +241,8 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
       |          "principalChargeBillingFrom": "2024-01-01",
       |          "principalChargeBillingTo": "2024-12-31",
       |          "principalChargeDueDate": "2025-02-07",
-      |          "principalChargeMainTransaction": "4700"
+      |          "principalChargeMainTransaction": "4700",
+      |          "supplement": false
       |       },
       |       {
       |          "penaltyChargeReference": "1234567888",
@@ -265,7 +267,8 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
       |          "principalChargeBillingFrom": "2023-01-01",
       |          "principalChargeBillingTo": "2023-12-31",
       |          "principalChargeMainTransaction": "4700",
-      |          "principalChargeDueDate": "2024-02-07"
+      |          "principalChargeDueDate": "2024-02-07",
+      |          "supplement": false
       |       },
       |       {
       |          "penaltyChargeReference": "1234567887",
@@ -290,7 +293,8 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
       |          "principalChargeBillingFrom": "2022-01-01",
       |          "principalChargeBillingTo": "2022-12-31",
       |          "principalChargeMainTransaction": "4700",
-      |          "principalChargeDueDate": "2023-02-07"
+      |          "principalChargeDueDate": "2023-02-07",
+      |          "supplement": false
       |       }
       |   ]
       | }
@@ -1475,7 +1479,8 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
           |          "principalChargeBillingTo": "2022-12-31",
           |          "principalChargeDueDate": "2023-02-07",
           |          "principalChargeMainTransaction": "4700",
-          |          "principalChargeLatestClearing": "2023-04-01"
+          |          "principalChargeLatestClearing": "2023-04-01",
+          |          "supplement": false
           |       }
           |   ]
           | }
@@ -1518,7 +1523,8 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
           |          "principalChargeBillingFrom": "2022-01-01",
           |          "principalChargeBillingTo": "2022-12-31",
           |          "principalChargeDueDate": "2023-02-07",
-          |          "principalChargeLatestClearing": "2023-04-01"
+          |          "principalChargeLatestClearing": "2023-04-01",
+          |          "supplement": false
           |       },
           |       {
           |          "penaltyChargeReference": "1234567887",
@@ -1544,7 +1550,8 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
           |          "principalChargeBillingFrom": "2022-01-01",
           |          "principalChargeBillingTo": "2022-12-31",
           |          "principalChargeDueDate": "2023-02-07",
-          |          "principalChargeLatestClearing": "2023-04-01"
+          |          "principalChargeLatestClearing": "2023-04-01",
+          |          "supplement": false
           |       }
           |   ]
           | }
@@ -1593,7 +1600,8 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
           |             "appealLevel": "01"
           |           }
           |           ],
-          |          "principalChargeLatestClearing": "2023-04-01"
+          |          "principalChargeLatestClearing": "2023-04-01",
+          |          "supplement": false
           |       },
           |       {
           |          "penaltyChargeReference": "1234567887",
@@ -1619,7 +1627,8 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
           |          "principalChargeBillingTo": "2022-12-31",
           |          "principalChargeMainTransaction": "4700",
           |          "principalChargeDueDate": "2023-02-07",
-          |          "principalChargeLatestClearing": "2023-04-01"
+          |          "principalChargeLatestClearing": "2023-04-01",
+          |          "supplement": false
           |       }
           |   ]
           | }
@@ -1658,7 +1667,8 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
           |          "principalChargeBillingFrom": "2022-01-01",
           |          "principalChargeBillingTo": "2022-12-31",
           |          "principalChargeMainTransaction": "4700",
-          |          "principalChargeDueDate": "2023-02-07"
+          |          "principalChargeDueDate": "2023-02-07",
+          |          "supplement": false
           |       },
           |       {
           |          "penaltyChargeReference": "1234567887",
@@ -1684,7 +1694,8 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
           |          "principalChargeBillingTo": "2022-12-31",
           |          "principalChargeMainTransaction": "4700",
           |          "principalChargeDueDate": "2023-02-07",
-          |          "principalChargeLatestClearing": "2023-04-01"
+          |          "principalChargeLatestClearing": "2023-04-01",
+          |          "supplement": false
           |       }
           |   ]
           | }
@@ -1726,7 +1737,8 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
           |          "principalChargeBillingFrom": "2022-01-01",
           |          "principalChargeBillingTo": "2022-12-31",
           |          "principalChargeMainTransaction": "4700",
-          |          "principalChargeDueDate": "2023-02-07"
+          |          "principalChargeDueDate": "2023-02-07",
+          |          "supplement": false
           |       },
           |       {
           |          "penaltyChargeReference": "1234567887",
@@ -1751,7 +1763,8 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
           |          "principalChargeBillingFrom": "2022-01-01",
           |          "principalChargeBillingTo": "2022-12-31",
           |          "principalChargeMainTransaction": "4700",
-          |          "principalChargeDueDate": "2023-02-07"
+          |          "principalChargeDueDate": "2023-02-07",
+          |          "supplement": false
           |       }
           |   ]
           | }

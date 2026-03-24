@@ -227,7 +227,7 @@ class AppealsController @Inject()(val appConfig: AppConfig,
           handleFailureResponse(_, agnosticEnrolmentKey.toString)("getMultiplePenaltyData"),
           success => {
             val penaltyDetails = success.asInstanceOf[GetPenaltyDetailsSuccessResponse].penaltyDetails
-            val multiplePenaltiesData: Option[MultiplePenaltiesData] = appealService.findMultiplePenalties(penaltyDetails, penaltyId)
+            val multiplePenaltiesData: Option[MultiplePenaltiesData] = appealService.findMultiplePenalties(penaltyDetails, penaltyId, regime.value)
             multiplePenaltiesData.fold(NoContent)(data => Ok(Json.toJson(data)))
           }
         )

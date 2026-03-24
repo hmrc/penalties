@@ -139,7 +139,8 @@ class PenaltyDetailsConverterSpec extends SpecBase {
                         ttpStartDate = Some(LocalDate.of(2022, 1, 1)),
                         ttpEndDate = Some(LocalDate.of(2022, 12, 31))
                       )
-                    ))
+                    )),
+                  supplement = false
                 )
               )),
             manualLPPIndicator = false

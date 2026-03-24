@@ -73,7 +73,8 @@ class FilterServiceSpec extends SpecBase with MockitoSugar {
           appealInformation = None,
           principalChargeLatestClearing = None,
           vatOutstandingAmount = None,
-          metadata = LPPDetailsMetadata()
+          metadata = LPPDetailsMetadata(),
+          supplement = false
         )
 
         val lppToKeep = lppToFilter.copy(
@@ -126,7 +127,8 @@ class FilterServiceSpec extends SpecBase with MockitoSugar {
           appealInformation = None,
           principalChargeLatestClearing = None,
           vatOutstandingAmount = None,
-          metadata = LPPDetailsMetadata()
+          metadata = LPPDetailsMetadata(),
+          supplement = false
         )
 
         val penaltyDetails = GetPenaltyDetails(
@@ -183,7 +185,8 @@ class FilterServiceSpec extends SpecBase with MockitoSugar {
           appealInformation = Some(appealInfoToFilter),
           principalChargeLatestClearing = None,
           vatOutstandingAmount = None,
-          metadata = LPPDetailsMetadata()
+          metadata = LPPDetailsMetadata(),
+          supplement = false
         )
 
         val lppToKeep = lppToFilter.copy(appealInformation = None)

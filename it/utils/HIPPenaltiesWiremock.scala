@@ -124,7 +124,8 @@ val getHIPPenaltyDetailsWithLSPAndLPPAsJson: JsValue = Json.parse(
      |              }
      |             ],
      |            "principalChargeDocNumber": "DOC1",
-     |            "principalChargeSubTr": "SUB1"
+     |            "principalChargeSubTr": "SUB1",
+     |            "supplement": false
      |          }
      |        ]
      |      },
