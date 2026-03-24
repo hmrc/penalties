@@ -270,4 +270,8 @@ object PenaltyDetailsConverter {
       PoCAchievementDate = hipSummary.pocAchievementDate
     )
   }
+
+
+  def putSeqInsideOption[A](seq: Seq[A]): Option[Seq[A]] = if (seq.nonEmpty) Some(seq) else None
+
 }
