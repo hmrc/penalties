@@ -61,9 +61,7 @@ class PenaltyDetailsService @Inject() (
           val convertedPenaltyDetails = PenaltyDetailsConverter.convertHIPToGetPenaltyDetails(
             success.asInstanceOf[HIPPenaltyDetailsSuccessResponse].penaltyDetails
           )
-          val filteredPenaltyDetails = applyFilters(convertedPenaltyDetails) // 1
-          println("convertedPenaltyDetails " + convertedPenaltyDetails.lateSubmissionPenalty.map(_.details.map(_.appealInformation.map(_.map(_.appealStatus)))))
-          println("filteredPenaltyDetails " + filteredPenaltyDetails.lateSubmissionPenalty.map(_.details.map(_.appealInformation.map(_.map(_.appealStatus)))))
+          val filteredPenaltyDetails = applyFilters(convertedPenaltyDetails)
           Right(GetPenaltyDetailsSuccessResponse(filteredPenaltyDetails))
         }
       )
@@ -97,12 +95,8 @@ class PenaltyDetailsService @Inject() (
   }
 
   private def applyFilters(penaltyDetails: models.getPenaltyDetails.GetPenaltyDetails)(implicit loggingContext: LoggingContext): models.getPenaltyDetails.GetPenaltyDetails = {
-    val penaltiesWithAppealStatusFiltered = filterService.filterPenaltiesWith9xAppealStatus(penaltyDetails) // 2
-    val five = filterService.filterEstimatedLPP1DuringPeriodOfFamiliarisation(penaltiesWithAppealStatusFiltered) // 5
-
-    println("penaltiesWithAppealStatusFiltered " + penaltiesWithAppealStatusFiltered.lateSubmissionPenalty.map(_.details.map(_.appealInformation.map(_.map(_.appealStatus)))))
-    println("five " + five.lateSubmissionPenalty.map(_.details.map(_.appealInformation.map(_.map(_.appealStatus)))))
-    five
+    val penaltiesWithAppealStatusFiltered = filterService.filterPenaltiesWith9xAppealStatus(penaltyDetails)
+    filterService.filterEstimatedLPP1DuringPeriodOfFamiliarisation(penaltiesWithAppealStatusFiltered)
   }
 
   private def handleConnectorResponse(connectorResponse: GetPenaltyDetailsResponse)(implicit
