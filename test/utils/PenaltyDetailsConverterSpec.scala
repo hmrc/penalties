@@ -133,13 +133,14 @@ class PenaltyDetailsConverterSpec extends SpecBase {
                   principalChargeBillingTo = LocalDate.of(2022, 12, 31),
                   principalChargeDueDate = LocalDate.of(2022, 12, 31),
                   principalChargeLatestClearing = Some(LocalDate.of(2022, 12, 31)),
-                  timeToPay = Some(
-                    Seq(
-                      models.hipPenaltyDetails.latePayment.TimeToPay(
-                        ttpStartDate = Some(LocalDate.of(2022, 1, 1)),
-                        ttpEndDate = Some(LocalDate.of(2022, 12, 31))
-                      )
-                    )),
+                  timeToPay = Some(Seq(
+                    models.hipPenaltyDetails.latePayment.TimeToPay(
+                      ttpStartDate = Some(LocalDate.of(2022, 1, 1)),
+                      ttpEndDate = Some(LocalDate.of(2022, 12, 31)),
+                      ttpProposalDate = Some(LocalDate.of(2022, 1, 1)),
+                      ttpAgreementDate = Some(LocalDate.of(2022, 12, 31))
+                    )
+                  )),
                   supplement = false
                 )
               )),

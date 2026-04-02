@@ -55,11 +55,12 @@ trait LPPDetailsBase {
     principalChargeLatestClearing = None,
     metadata = LPPDetailsMetadata(
       timeToPay = Some(
-        Seq(
-          TimeToPay(
-            TTPStartDate = Some(LocalDate.of(2022, 1, 1)),
-            TTPEndDate = Some(LocalDate.of(2022, 12, 31))
-          )))
+        Seq(TimeToPay(
+          TTPStartDate = Some(LocalDate.of(2022, 1, 1)),
+          TTPEndDate = Some(LocalDate.of(2022, 12, 31)),
+          TTPProposalDate = Some(LocalDate.of(2022, 1, 1)),
+          TTPAgreementDate = Some(LocalDate.of(2022, 12, 31))
+        )))
     ),
     penaltyAmountAccruing = BigDecimal(144.21),
     principalChargeMainTransaction = VATReturnCharge,
@@ -101,7 +102,9 @@ trait LPPDetailsBase {
         Seq(
           TimeToPay(
             TTPStartDate = Some(LocalDate.of(2022, 1, 1)),
-            TTPEndDate = Some(LocalDate.of(2022, 12, 31))
+            TTPEndDate = Some(LocalDate.of(2022, 12, 31)),
+            TTPProposalDate = None,
+            TTPAgreementDate = None
           )))
     ),
     penaltyAmountAccruing = BigDecimal(144.21),

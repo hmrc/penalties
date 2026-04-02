@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,10 +20,13 @@ import play.api.libs.json.{Json, OFormat}
 
 import java.time.LocalDate
 
-case class TimeToPay(
-                      TTPStartDate: Option[LocalDate],
-                      TTPEndDate: Option[LocalDate]
-                    )
+case class TimeToPay(TTPStartDate: Option[LocalDate],
+                     TTPEndDate: Option[LocalDate],
+                     TTPProposalDate: Option[LocalDate],
+                     TTPAgreementDate: Option[LocalDate])
+// The TimeToPay object will only ever contain (start && end) || (proposal && agreement), never other combinations.
+// This relationship does not need to be enforced in our backend.
+// TTPProposalDate and TTPAgreementDate are used only by ITSA, not VAT.
 
 object TimeToPay {
   implicit val format: OFormat[TimeToPay] = Json.format[TimeToPay]
