@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,16 +21,15 @@ import models.hipPenaltyDetails.{PenaltyDetails => HIPPenaltyDetails}
 
 object PenaltyDetailsConverter {
 
-  def convertHIPToGetPenaltyDetails(hipPenaltyDetails: HIPPenaltyDetails): GetPenaltyDetails = {
+  def convertHIPToGetPenaltyDetails(hipPenaltyDetails: HIPPenaltyDetails): GetPenaltyDetails =
     GetPenaltyDetails(
       totalisations = convertTotalisations(hipPenaltyDetails.totalisations),
       lateSubmissionPenalty = convertLateSubmissionPenalty(hipPenaltyDetails.lateSubmissionPenalty),
       latePaymentPenalty = convertLatePaymentPenalty(hipPenaltyDetails.latePaymentPenalty),
       breathingSpace = convertBreathingSpace(hipPenaltyDetails.breathingSpace)
     )
-  }
 
-  private def convertTotalisations(hipTotalisations: Option[models.hipPenaltyDetails.Totalisations]): Option[models.getPenaltyDetails.Totalisations] = {
+  private def convertTotalisations(hipTotalisations: Option[models.hipPenaltyDetails.Totalisations]): Option[models.getPenaltyDetails.Totalisations] =
     hipTotalisations.map { hipTot =>
       models.getPenaltyDetails.Totalisations(
         LSPTotalValue = hipTot.lspTotalValue,
@@ -42,17 +41,17 @@ object PenaltyDetailsConverter {
         totalAccountAccruingInterest = hipTot.totalAccountAccruingInterest
       )
     }
-  }
 
-  private def convertLateSubmissionPenalty(hipLSP: Option[models.hipPenaltyDetails.lateSubmission.LateSubmissionPenalty]): Option[models.getPenaltyDetails.lateSubmission.LateSubmissionPenalty] = {
+  private def convertLateSubmissionPenalty(hipLSP: Option[models.hipPenaltyDetails.lateSubmission.LateSubmissionPenalty])
+      : Option[models.getPenaltyDetails.lateSubmission.LateSubmissionPenalty] =
     hipLSP.map { hipLSPContainer =>
-      val regularDetails = convertLSPDetails(hipLSPContainer.details)
+      val regularDetails   = convertLSPDetails(hipLSPContainer.details)
       val correctedSummary = calculateCorrectedLSPSummary(hipLSPContainer.summary, regularDetails)
       models.getPenaltyDetails.lateSubmission.LateSubmissionPenalty(correctedSummary, regularDetails)
     }
-  }
 
-  private def convertLSPDetails(hipDetails: Seq[models.hipPenaltyDetails.lateSubmission.LSPDetails]): Seq[models.getPenaltyDetails.lateSubmission.LSPDetails] = {
+  private def convertLSPDetails(
+      hipDetails: Seq[models.hipPenaltyDetails.lateSubmission.LSPDetails]): Seq[models.getPenaltyDetails.lateSubmission.LSPDetails] =
     hipDetails.map { hipDetail =>
       val hasUpheldAppeal = hasUpheldAppealInDetails(hipDetail)
       val correctedPenaltyStatus = if (hasUpheldAppeal) {
@@ -80,9 +79,9 @@ object PenaltyDetailsConverter {
         chargeReference = hipDetail.chargeReference
       )
     }
-  }
 
-  private def convertLateSubmission(hipSub: models.hipPenaltyDetails.lateSubmission.LateSubmission): models.getPenaltyDetails.lateSubmission.LateSubmission = {
+  private def convertLateSubmission(
+      hipSub: models.hipPenaltyDetails.lateSubmission.LateSubmission): models.getPenaltyDetails.lateSubmission.LateSubmission =
     models.getPenaltyDetails.lateSubmission.LateSubmission(
       lateSubmissionID = hipSub.lateSubmissionID,
       incomeSource = hipSub.incomeSource,
@@ -93,9 +92,9 @@ object PenaltyDetailsConverter {
       returnReceiptDate = hipSub.returnReceiptDate,
       taxReturnStatus = hipSub.taxReturnStatus.map(convertTaxReturnStatus)
     )
-  }
 
-  private def convertLatePaymentPenalty(hipLPP: Option[models.hipPenaltyDetails.latePayment.LatePaymentPenalty]): Option[models.getPenaltyDetails.latePayment.LatePaymentPenalty] = {
+  private def convertLatePaymentPenalty(
+      hipLPP: Option[models.hipPenaltyDetails.latePayment.LatePaymentPenalty]): Option[models.getPenaltyDetails.latePayment.LatePaymentPenalty] =
     hipLPP.map { hipLPPContainer =>
       val regularLPPDetails = hipLPPContainer.lppDetails.map(_.map(convertLPPDetails))
       models.getPenaltyDetails.latePayment.LatePaymentPenalty(
@@ -103,9 +102,8 @@ object PenaltyDetailsConverter {
         ManualLPPIndicator = Some(hipLPPContainer.manualLPPIndicator)
       )
     }
-  }
 
-  private def convertLPPDetails(hipLPP: models.hipPenaltyDetails.latePayment.LPPDetails): models.getPenaltyDetails.latePayment.LPPDetails = {
+  private def convertLPPDetails(hipLPP: models.hipPenaltyDetails.latePayment.LPPDetails): models.getPenaltyDetails.latePayment.LPPDetails =
     models.getPenaltyDetails.latePayment.LPPDetails(
       principalChargeReference = hipLPP.principalChargeReference,
       penaltyCategory = convertLPPPenaltyCategory(hipLPP.penaltyCategory),
@@ -140,107 +138,117 @@ object PenaltyDetailsConverter {
       ),
       supplement = hipLPP.supplement
     )
-  }
 
-  private def convertBreathingSpace(hipBS: Option[Seq[models.hipPenaltyDetails.breathingSpace.BreathingSpace]]): Option[Seq[models.getPenaltyDetails.breathingSpace.BreathingSpace]] = {
+  private def convertBreathingSpace(hipBS: Option[Seq[models.hipPenaltyDetails.breathingSpace.BreathingSpace]])
+      : Option[Seq[models.getPenaltyDetails.breathingSpace.BreathingSpace]] =
     hipBS.map(_.map { hipBSItem =>
       models.getPenaltyDetails.breathingSpace.BreathingSpace(
         BSStartDate = hipBSItem.bsStartDate,
         BSEndDate = hipBSItem.bsEndDate
       )
     })
-  }
 
   // Helper conversion methods
-  private def convertPenaltyStatus(hipStatus: models.hipPenaltyDetails.lateSubmission.LSPPenaltyStatusEnum.Value): models.getPenaltyDetails.lateSubmission.LSPPenaltyStatusEnum.Value = {
+  private def convertPenaltyStatus(hipStatus: models.hipPenaltyDetails.lateSubmission.LSPPenaltyStatusEnum.Value)
+      : models.getPenaltyDetails.lateSubmission.LSPPenaltyStatusEnum.Value =
     hipStatus match {
       case models.hipPenaltyDetails.lateSubmission.LSPPenaltyStatusEnum.Active => models.getPenaltyDetails.lateSubmission.LSPPenaltyStatusEnum.Active
-      case models.hipPenaltyDetails.lateSubmission.LSPPenaltyStatusEnum.Inactive => models.getPenaltyDetails.lateSubmission.LSPPenaltyStatusEnum.Inactive
+      case models.hipPenaltyDetails.lateSubmission.LSPPenaltyStatusEnum.Inactive =>
+        models.getPenaltyDetails.lateSubmission.LSPPenaltyStatusEnum.Inactive
     }
-  }
 
-  private def convertPenaltyCategory(hipCategory: models.hipPenaltyDetails.lateSubmission.LSPPenaltyCategoryEnum.Value): models.getPenaltyDetails.lateSubmission.LSPPenaltyCategoryEnum.Value = {
+  private def convertPenaltyCategory(hipCategory: models.hipPenaltyDetails.lateSubmission.LSPPenaltyCategoryEnum.Value)
+      : models.getPenaltyDetails.lateSubmission.LSPPenaltyCategoryEnum.Value =
     hipCategory match {
-      case models.hipPenaltyDetails.lateSubmission.LSPPenaltyCategoryEnum.Point => models.getPenaltyDetails.lateSubmission.LSPPenaltyCategoryEnum.Point
-      case models.hipPenaltyDetails.lateSubmission.LSPPenaltyCategoryEnum.Threshold => models.getPenaltyDetails.lateSubmission.LSPPenaltyCategoryEnum.Threshold
-      case models.hipPenaltyDetails.lateSubmission.LSPPenaltyCategoryEnum.Charge => models.getPenaltyDetails.lateSubmission.LSPPenaltyCategoryEnum.Charge
+      case models.hipPenaltyDetails.lateSubmission.LSPPenaltyCategoryEnum.Point =>
+        models.getPenaltyDetails.lateSubmission.LSPPenaltyCategoryEnum.Point
+      case models.hipPenaltyDetails.lateSubmission.LSPPenaltyCategoryEnum.Threshold =>
+        models.getPenaltyDetails.lateSubmission.LSPPenaltyCategoryEnum.Threshold
+      case models.hipPenaltyDetails.lateSubmission.LSPPenaltyCategoryEnum.Charge =>
+        models.getPenaltyDetails.lateSubmission.LSPPenaltyCategoryEnum.Charge
     }
-  }
 
-  private def convertTaxReturnStatus(hipStatus: models.hipPenaltyDetails.lateSubmission.TaxReturnStatusEnum.Value): models.getPenaltyDetails.lateSubmission.TaxReturnStatusEnum.Value = {
+  private def convertTaxReturnStatus(hipStatus: models.hipPenaltyDetails.lateSubmission.TaxReturnStatusEnum.Value)
+      : models.getPenaltyDetails.lateSubmission.TaxReturnStatusEnum.Value =
     hipStatus match {
-      case models.hipPenaltyDetails.lateSubmission.TaxReturnStatusEnum.Fulfilled => models.getPenaltyDetails.lateSubmission.TaxReturnStatusEnum.Fulfilled
+      case models.hipPenaltyDetails.lateSubmission.TaxReturnStatusEnum.Fulfilled =>
+        models.getPenaltyDetails.lateSubmission.TaxReturnStatusEnum.Fulfilled
       case models.hipPenaltyDetails.lateSubmission.TaxReturnStatusEnum.Open => models.getPenaltyDetails.lateSubmission.TaxReturnStatusEnum.Open
-      case models.hipPenaltyDetails.lateSubmission.TaxReturnStatusEnum.Reversed => models.getPenaltyDetails.lateSubmission.TaxReturnStatusEnum.Reversed
+      case models.hipPenaltyDetails.lateSubmission.TaxReturnStatusEnum.Reversed =>
+        models.getPenaltyDetails.lateSubmission.TaxReturnStatusEnum.Reversed
     }
-  }
 
-  private def convertExpiryReason(hipReason: models.hipPenaltyDetails.lateSubmission.ExpiryReasonEnum.Value): models.getPenaltyDetails.lateSubmission.ExpiryReasonEnum.Value = {
+  private def convertExpiryReason(
+      hipReason: models.hipPenaltyDetails.lateSubmission.ExpiryReasonEnum.Value): models.getPenaltyDetails.lateSubmission.ExpiryReasonEnum.Value =
     hipReason match {
       case models.hipPenaltyDetails.lateSubmission.ExpiryReasonEnum.Appeal => models.getPenaltyDetails.lateSubmission.ExpiryReasonEnum.Appeal
-      case models.hipPenaltyDetails.lateSubmission.ExpiryReasonEnum.SubmissionOnTime => models.getPenaltyDetails.lateSubmission.ExpiryReasonEnum.SubmissionOnTime
+      case models.hipPenaltyDetails.lateSubmission.ExpiryReasonEnum.SubmissionOnTime =>
+        models.getPenaltyDetails.lateSubmission.ExpiryReasonEnum.SubmissionOnTime
       case models.hipPenaltyDetails.lateSubmission.ExpiryReasonEnum.Compliance => models.getPenaltyDetails.lateSubmission.ExpiryReasonEnum.Compliance
-      case models.hipPenaltyDetails.lateSubmission.ExpiryReasonEnum.NaturalExpiration => models.getPenaltyDetails.lateSubmission.ExpiryReasonEnum.NaturalExpiration
+      case models.hipPenaltyDetails.lateSubmission.ExpiryReasonEnum.NaturalExpiration =>
+        models.getPenaltyDetails.lateSubmission.ExpiryReasonEnum.NaturalExpiration
       case models.hipPenaltyDetails.lateSubmission.ExpiryReasonEnum.Adjustment => models.getPenaltyDetails.lateSubmission.ExpiryReasonEnum.Adjustment
-      case models.hipPenaltyDetails.lateSubmission.ExpiryReasonEnum.Reversal => models.getPenaltyDetails.lateSubmission.ExpiryReasonEnum.Reversal
-      case models.hipPenaltyDetails.lateSubmission.ExpiryReasonEnum.Manual => models.getPenaltyDetails.lateSubmission.ExpiryReasonEnum.Manual
-      case models.hipPenaltyDetails.lateSubmission.ExpiryReasonEnum.Reset => models.getPenaltyDetails.lateSubmission.ExpiryReasonEnum.Reset
+      case models.hipPenaltyDetails.lateSubmission.ExpiryReasonEnum.Reversal   => models.getPenaltyDetails.lateSubmission.ExpiryReasonEnum.Reversal
+      case models.hipPenaltyDetails.lateSubmission.ExpiryReasonEnum.Manual     => models.getPenaltyDetails.lateSubmission.ExpiryReasonEnum.Manual
+      case models.hipPenaltyDetails.lateSubmission.ExpiryReasonEnum.Reset      => models.getPenaltyDetails.lateSubmission.ExpiryReasonEnum.Reset
       case _ => models.getPenaltyDetails.lateSubmission.ExpiryReasonEnum.NaturalExpiration
     }
-  }
 
-  private def convertAppealInformation(hipAppeal: models.hipPenaltyDetails.appealInfo.AppealInformationType): models.getPenaltyDetails.appealInfo.AppealInformationType = {
+  private def convertAppealInformation(
+      hipAppeal: models.hipPenaltyDetails.appealInfo.AppealInformationType): models.getPenaltyDetails.appealInfo.AppealInformationType =
     models.getPenaltyDetails.appealInfo.AppealInformationType(
       appealStatus = hipAppeal.appealStatus,
       appealLevel = hipAppeal.appealLevel.map(convertAppealLevel),
       appealDescription = hipAppeal.appealDescription
     )
-  }
 
-  private def convertAppealLevel(hipLevel: models.hipPenaltyDetails.appealInfo.AppealLevelEnum.Value): models.getPenaltyDetails.appealInfo.AppealLevelEnum.Value = {
+  private def convertAppealLevel(
+      hipLevel: models.hipPenaltyDetails.appealInfo.AppealLevelEnum.Value): models.getPenaltyDetails.appealInfo.AppealLevelEnum.Value =
     hipLevel match {
       case models.hipPenaltyDetails.appealInfo.AppealLevelEnum.HMRC => models.getPenaltyDetails.appealInfo.AppealLevelEnum.HMRC
-      case models.hipPenaltyDetails.appealInfo.AppealLevelEnum.TribunalOrSecond => models.getPenaltyDetails.appealInfo.AppealLevelEnum.TribunalOrSecond
+      case models.hipPenaltyDetails.appealInfo.AppealLevelEnum.TribunalOrSecond =>
+        models.getPenaltyDetails.appealInfo.AppealLevelEnum.TribunalOrSecond
       case models.hipPenaltyDetails.appealInfo.AppealLevelEnum.Tribunal => models.getPenaltyDetails.appealInfo.AppealLevelEnum.Tribunal
-      case _ => models.getPenaltyDetails.appealInfo.AppealLevelEnum.HMRC
+      case _                                                            => models.getPenaltyDetails.appealInfo.AppealLevelEnum.HMRC
     }
-  }
 
-  private def convertLPPPenaltyCategory(hipCategory: models.hipPenaltyDetails.latePayment.LPPPenaltyCategoryEnum.Value): models.getPenaltyDetails.latePayment.LPPPenaltyCategoryEnum.Value = {
+  private def convertLPPPenaltyCategory(hipCategory: models.hipPenaltyDetails.latePayment.LPPPenaltyCategoryEnum.Value)
+      : models.getPenaltyDetails.latePayment.LPPPenaltyCategoryEnum.Value =
     hipCategory match {
-      case models.hipPenaltyDetails.latePayment.LPPPenaltyCategoryEnum.FirstPenalty => models.getPenaltyDetails.latePayment.LPPPenaltyCategoryEnum.FirstPenalty
-      case models.hipPenaltyDetails.latePayment.LPPPenaltyCategoryEnum.SecondPenalty => models.getPenaltyDetails.latePayment.LPPPenaltyCategoryEnum.SecondPenalty
-      case models.hipPenaltyDetails.latePayment.LPPPenaltyCategoryEnum.ManualLPPenalty => models.getPenaltyDetails.latePayment.LPPPenaltyCategoryEnum.ManualLPPenalty
+      case models.hipPenaltyDetails.latePayment.LPPPenaltyCategoryEnum.FirstPenalty =>
+        models.getPenaltyDetails.latePayment.LPPPenaltyCategoryEnum.FirstPenalty
+      case models.hipPenaltyDetails.latePayment.LPPPenaltyCategoryEnum.SecondPenalty =>
+        models.getPenaltyDetails.latePayment.LPPPenaltyCategoryEnum.SecondPenalty
+      case models.hipPenaltyDetails.latePayment.LPPPenaltyCategoryEnum.ManualLPPenalty =>
+        models.getPenaltyDetails.latePayment.LPPPenaltyCategoryEnum.ManualLPPenalty
     }
-  }
 
-  private def convertLPPPenaltyStatus(hipStatus: Option[models.hipPenaltyDetails.latePayment.LPPPenaltyStatusEnum.Value]): models.getPenaltyDetails.latePayment.LPPPenaltyStatusEnum.Value = {
+  private def convertLPPPenaltyStatus(hipStatus: Option[models.hipPenaltyDetails.latePayment.LPPPenaltyStatusEnum.Value])
+      : models.getPenaltyDetails.latePayment.LPPPenaltyStatusEnum.Value =
     hipStatus.getOrElse(models.hipPenaltyDetails.latePayment.LPPPenaltyStatusEnum.Posted) match {
       case models.hipPenaltyDetails.latePayment.LPPPenaltyStatusEnum.Accruing => models.getPenaltyDetails.latePayment.LPPPenaltyStatusEnum.Accruing
-      case models.hipPenaltyDetails.latePayment.LPPPenaltyStatusEnum.Posted => models.getPenaltyDetails.latePayment.LPPPenaltyStatusEnum.Posted
+      case models.hipPenaltyDetails.latePayment.LPPPenaltyStatusEnum.Posted   => models.getPenaltyDetails.latePayment.LPPPenaltyStatusEnum.Posted
     }
-  }
 
-  private def convertTimeToPay(hipTTP: models.hipPenaltyDetails.latePayment.TimeToPay): models.getPenaltyDetails.latePayment.TimeToPay = {
+  private def convertTimeToPay(hipTTP: models.hipPenaltyDetails.latePayment.TimeToPay): models.getPenaltyDetails.latePayment.TimeToPay =
     models.getPenaltyDetails.latePayment.TimeToPay(
       TTPStartDate = hipTTP.ttpStartDate,
-      TTPEndDate = hipTTP.ttpEndDate
+      TTPEndDate = hipTTP.ttpEndDate,
+      TTPProposalDate = hipTTP.ttpProposalDate,
+      TTPAgreementDate = hipTTP.ttpAgreementDate
     )
-  }
 
-  private def hasUpheldAppealInDetails(hipDetail: models.hipPenaltyDetails.lateSubmission.LSPDetails): Boolean = {
-    hipDetail.appealInformation.exists(_.exists(appeal =>
-      appeal.appealStatus.exists(status =>
-        status == models.hipPenaltyDetails.appealInfo.AppealStatusEnum.Upheld ||
-        status == models.hipPenaltyDetails.appealInfo.AppealStatusEnum.AppealUpheldPointAlreadyRemoved ||
-        status == models.hipPenaltyDetails.appealInfo.AppealStatusEnum.AppealUpheldChargeAlreadyReversed
-      )
-    ))
-  }
+  private def hasUpheldAppealInDetails(hipDetail: models.hipPenaltyDetails.lateSubmission.LSPDetails): Boolean =
+    hipDetail.appealInformation.exists(
+      _.exists(appeal =>
+        appeal.appealStatus.exists(status =>
+          status == models.hipPenaltyDetails.appealInfo.AppealStatusEnum.Upheld ||
+            status == models.hipPenaltyDetails.appealInfo.AppealStatusEnum.AppealUpheldPointAlreadyRemoved ||
+            status == models.hipPenaltyDetails.appealInfo.AppealStatusEnum.AppealUpheldChargeAlreadyReversed)))
 
   private def calculateCorrectedLSPSummary(
-    hipSummary: models.hipPenaltyDetails.lateSubmission.LSPSummary,
-    regularDetails: Seq[models.getPenaltyDetails.lateSubmission.LSPDetails]
+      hipSummary: models.hipPenaltyDetails.lateSubmission.LSPSummary,
+      regularDetails: Seq[models.getPenaltyDetails.lateSubmission.LSPDetails]
   ): models.getPenaltyDetails.lateSubmission.LSPSummary = {
     val actualActivePenaltyPoints = if (regularDetails.nonEmpty) {
       regularDetails.count(_.penaltyStatus == models.getPenaltyDetails.lateSubmission.LSPPenaltyStatusEnum.Active)
@@ -262,4 +270,7 @@ object PenaltyDetailsConverter {
       PoCAchievementDate = hipSummary.pocAchievementDate
     )
   }
+
+  def putSeqInsideOption[A](seq: Seq[A]): Option[Seq[A]] = if (seq.nonEmpty) Some(seq) else None
+
 }

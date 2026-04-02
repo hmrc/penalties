@@ -171,7 +171,9 @@ class PenaltiesFrontendControllerSpec extends SpecBase with LogCapturing with LP
                       Seq(
                         TimeToPay(
                           TTPStartDate = Some(LocalDate.of(2022, 1, 1)),
-                          TTPEndDate = Some(LocalDate.of(2022, 12, 31))
+                          TTPEndDate = Some(LocalDate.of(2022, 12, 31)),
+                          TTPProposalDate = None,
+                          TTPAgreementDate = None
                         )))
                   )
                 ),
@@ -184,7 +186,9 @@ class PenaltiesFrontendControllerSpec extends SpecBase with LogCapturing with LP
                       Seq(
                         TimeToPay(
                           TTPStartDate = Some(LocalDate.of(2022, 1, 1)),
-                          TTPEndDate = Some(LocalDate.of(2022, 12, 31))
+                          TTPEndDate = Some(LocalDate.of(2022, 12, 31)),
+                          TTPProposalDate = None,
+                          TTPAgreementDate = None
                         )))
                   )
                 )
