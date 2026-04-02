@@ -1266,7 +1266,7 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
             |          "principalChargeDueDate": "2022-01-01",
             |          "principalChargeLatestClearing": "2022-01-01",
             |          "appealInformation": [{
-            |            "appealStatus": "99",
+            |            "appealStatus": "A",
             |            "appealLevel": "01",
             |            "appealDescription": "Some value"
             |          }],

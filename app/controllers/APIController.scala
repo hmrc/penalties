@@ -32,7 +32,7 @@ import models.{AgnosticEnrolmentKey, Id, IdType, Regime}
 import play.api.Configuration
 import play.api.libs.json._
 import play.api.mvc._
-import services.RegimeFilterService.tryJsonParseOrJsString
+import services.FilterService.tryJsonParseOrJsString
 import services._
 import services.auditing.AuditService
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}

@@ -38,7 +38,7 @@ class DateHelper @Inject() (val config: Configuration) extends FeatureSwitching 
 
     val localDateNow  = DateTimeFormatter.ISO_INSTANT.format(Instant.now())
     val formattedDate = DateTimeFormatter.ISO_INSTANT.format(instant)
-    logger.info(s"[DateHelper][formattedHipReceiptTimestamp] LocalDate.now = $localDateNow, Formatted TimeMachine date = $formattedDate")
+    logger.debug(s"[DateHelper][formattedHipReceiptTimestamp] LocalDate.now = $localDateNow, Formatted TimeMachine date = $formattedDate")
 
     formattedDate
   }
