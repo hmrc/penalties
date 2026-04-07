@@ -82,7 +82,7 @@ class FilterService @Inject() ()(implicit appConfig: AppConfig) {
 object FilterService {
 
   private[FilterService] def loggerPrefix(methodName: String)(implicit loggingContext: LoggingContext) =
-    s"[RegimeFilterService][$methodName] Filtering for [${loggingContext.callingClass}][${loggingContext.function}] -"
+    s"[FilterService][$methodName] Filtering for [${loggingContext.callingClass}][${loggingContext.function}] -"
 
   private[FilterService] def filterOutLSPsWith9xAppealStatus(penaltiesDetails: GetPenaltyDetails)(implicit
       loggingContext: LoggingContext): Seq[LSPDetails] = {
