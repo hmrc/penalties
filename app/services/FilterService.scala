@@ -104,7 +104,7 @@ object FilterService {
     lppDetailsPostFilter
   }
 
-  def doesAppealInformationHave9xAppealStatus(appealInformation: Option[Seq[AppealInformationType]]): Boolean =
+private[services] def doesAppealInformationHave9xAppealStatus(appealInformation: Option[Seq[AppealInformationType]]): Boolean =
     // 91-94 appeal statuses are not displayed or accepted by the frontend and so are filtered out
     appealInformation.getOrElse(Seq.empty).exists(_.appealStatus.exists(status => AppealStatusEnum.ignoredStatuses.contains(status)))
 
