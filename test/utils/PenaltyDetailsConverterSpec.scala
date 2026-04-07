@@ -24,6 +24,7 @@ import models.hipPenaltyDetails.breathingSpace.BreathingSpace
 import models.hipPenaltyDetails.latePayment._
 import models.hipPenaltyDetails.lateSubmission._
 import models.hipPenaltyDetails.{Totalisations, PenaltyDetails => HIPPenaltyDetails}
+import utils.PenaltyDetailsConverter.putSeqInsideOption
 
 import java.time.{Instant, LocalDate}
 
@@ -325,4 +326,14 @@ class PenaltyDetailsConverterSpec extends SpecBase {
     }
   }
 
+  "putSeqInsideOption" should {
+    "wrap a non-empty sequence inside a Some" in {
+      val nonEmptySeq = Seq(1, 2, 3)
+
+      putSeqInsideOption(nonEmptySeq) shouldBe Some(nonEmptySeq)
+    }
+    "convert an empty sequence into a None" in {
+      putSeqInsideOption(Seq.empty) shouldBe None
+    }
+  }
 }
