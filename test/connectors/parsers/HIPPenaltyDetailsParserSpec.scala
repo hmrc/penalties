@@ -363,6 +363,35 @@ class HIPPenaltyDetailsParserSpec extends AnyWordSpec with Matchers with LogCapt
       }
     }
 
+    "will return a HIPPenaltyDetailsFailureResponse for complex error body" when {
+      "parsing an error with a html response body bad gateway" in {
+        val technicalError         =  """<html> <head><title>502 Bad Gateway</title></head> <body> <center>
+                                        |<h1>502 Bad Gateway</h1></center> <hr><center>nginx/1.29.6</center> </body> </html>""".stripMargin
+        val technicalErrorResponse = HttpResponse(status = INTERNAL_SERVER_ERROR, body = technicalError)
+
+        withCaptureOfLoggingFrom(logger) { logs =>
+          val result      = penaltyDetailsParserReads(technicalErrorResponse)
+          val expectedLog = s"[HIPPenaltyDetailsParser][handleErrorResponse] 500 Non-JSON error: Bad Gateway"
+          logs.exists(_.getMessage.contains(expectedLog)) shouldBe true
+          result shouldBe Left(HIPPenaltyDetailsFailureResponse(INTERNAL_SERVER_ERROR))
+        }
+      }
+
+      "parsing an error with proper json response body but unexpected one" in {
+        val hipWrappedError =
+          """{"incidentReference":"LTM000429"}""".stripMargin
+        val technicalErrorResponse = HttpResponse(status = BAD_REQUEST, body = hipWrappedError)
+
+        withCaptureOfLoggingFrom(logger) { logs =>
+          val result      = penaltyDetailsParserReads(technicalErrorResponse)
+          val expectedLog = """[HIPPenaltyDetailsReads][handleErrorResponse] 400 Parsed downstream error: {"incidentReference":"LTM000429"}"""
+          logs.exists(_.getMessage.contains(expectedLog)) shouldBe true
+          result shouldBe Left(HIPPenaltyDetailsFailureResponse(BAD_REQUEST))
+        }
+      }
+    }
+
+
     "will return a HIPPenaltyDetailsFailureResponse" when {
       "parsing an error with a TechnicalError response body" in {
         val technicalError         = """{"response":{"error":{"code": "errorCode", "message": "errorMessage", "logId": "errorLogId"}}}"""
@@ -370,7 +399,7 @@ class HIPPenaltyDetailsParserSpec extends AnyWordSpec with Matchers with LogCapt
 
         withCaptureOfLoggingFrom(logger) { logs =>
           val result      = penaltyDetailsParserReads(technicalErrorResponse)
-          val expectedLog = s"$INTERNAL_SERVER_ERROR errors: errorCode - errorMessage"
+          val expectedLog = s"$INTERNAL_SERVER_ERROR Parsed downstream error: errorCode - errorMessage"
           logs.exists(_.getMessage.contains(expectedLog)) shouldBe true
           result shouldBe Left(HIPPenaltyDetailsFailureResponse(INTERNAL_SERVER_ERROR))
         }
@@ -385,7 +414,7 @@ class HIPPenaltyDetailsParserSpec extends AnyWordSpec with Matchers with LogCapt
 
         withCaptureOfLoggingFrom(logger) { logs =>
           val result      = penaltyDetailsParserReads(technicalErrorResponse)
-          val expectedLog = "400 errors: errorType - errorReason,\nerrorType2 - errorReason2"
+          val expectedLog = "400 Parsed downstream error: errorType - errorReason, errorType2 - errorReason2"
           logs.exists(_.getMessage.contains(expectedLog)) shouldBe true
           result shouldBe Left(HIPPenaltyDetailsFailureResponse(BAD_REQUEST))
         }

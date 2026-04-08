@@ -16,14 +16,8 @@
 
 package connectors.parsers.getFinancialDetails
 
-import connectors.parsers.getFinancialDetails.FinancialDetailsParser.{
-  FinancialDetailsFailure,
-  FinancialDetailsFailureResponse,
-  FinancialDetailsMalformed,
-  FinancialDetailsNoContent,
-  FinancialDetailsSuccess,
-  FinancialDetailsSuccessResponse
-}
+import connectors.parsers.SafeHttpReads
+import connectors.parsers.getFinancialDetails.FinancialDetailsParser.{FinancialDetailsFailure, FinancialDetailsFailureResponse, FinancialDetailsMalformed, FinancialDetailsNoContent, FinancialDetailsSuccess, FinancialDetailsSuccessResponse}
 import models.failure._
 import models.getFinancialDetails.{FinancialDetails, FinancialDetailsHIP}
 import play.api.http.Status._
@@ -34,49 +28,8 @@ import utils.PagerDutyHelper
 import utils.PagerDutyHelper.PagerDutyKeys._
 
 object HIPFinancialDetailsParser {
-  sealed trait HIPFinancialDetailsFailure {
-    val toIFFailureResponse: FinancialDetailsFailure
-  }
-
-  sealed trait HIPFinancialDetailsSuccess {
-    val toIFSuccessResponse: FinancialDetailsSuccess
-  }
-
-  case class HIPFinancialDetailsSuccessResponse(financialDetails: FinancialDetails) extends HIPFinancialDetailsSuccess {
-    override val toIFSuccessResponse: FinancialDetailsSuccess = FinancialDetailsSuccessResponse(financialDetails)
-  }
-
-  case class HIPFinancialDetailsFailureResponse(status: Int) extends HIPFinancialDetailsFailure {
-    override val toIFFailureResponse: FinancialDetailsFailureResponse = FinancialDetailsFailureResponse(status)
-  }
-
-  case object HIPFinancialDetailsMalformed extends HIPFinancialDetailsFailure {
-    override val toIFFailureResponse: FinancialDetailsFailure = FinancialDetailsMalformed
-  }
-
-  case object HIPFinancialDetailsNoContent extends HIPFinancialDetailsFailure {
-    override val toIFFailureResponse: FinancialDetailsFailure = FinancialDetailsNoContent
-  }
 
   type HIPFinancialDetailsResponse = Either[HIPFinancialDetailsFailure, HIPFinancialDetailsSuccess]
-
-  implicit object HIPFinancialDetailsReads extends HttpReads[HIPFinancialDetailsResponse] {
-    override def read(method: String, url: String, response: HttpResponse): HIPFinancialDetailsResponse =
-      response.status match {
-        case CREATED =>
-          handleSuccessResponse(response.json)
-        case UNPROCESSABLE_ENTITY =>
-          extractErrorResponseBodyFrom422(response.json)
-        case status @ (BAD_REQUEST | UNAUTHORIZED | FORBIDDEN | NOT_FOUND | UNSUPPORTED_MEDIA_TYPE | INTERNAL_SERVER_ERROR) =>
-          PagerDutyHelper.logStatusCode("HIPFinancialDetailsReads", status)(RECEIVED_4XX_FROM_1812_API, RECEIVED_5XX_FROM_1812_API)
-          handleErrorResponse(response)
-        case status =>
-          PagerDutyHelper.logStatusCode("HIPFinancialDetailsReads", status)(RECEIVED_4XX_FROM_1811_API, RECEIVED_5XX_FROM_1811_API)
-          logger.error(
-            s"[HIPFinancialDetailsReads][read] Received unexpected response from FinancialDetails, status code: $status and body: ${response.body}")
-          Left(HIPFinancialDetailsFailureResponse(status))
-      }
-  }
 
   private def handleSuccessResponse(json: JsValue): HIPFinancialDetailsResponse = {
     logger.info(s"[HIPFinancialDetailsReads][read] Success 201 response returned from API#5327")
@@ -94,6 +47,7 @@ object HIPFinancialDetailsParser {
   private def extractErrorResponseBodyFrom422(json: JsValue): Left[HIPFinancialDetailsFailure, Nothing] = {
     def noDataFound(error: BusinessError): Boolean =
       (error.code == "016" && error.text == "Invalid ID Number") || (error.code == "018" && error.text == "No Data Identified")
+
     (json \ "errors").validate[BusinessError] match { // 422 a single error is ever returned regardless of the number of mistakes
       case JsSuccess(error, _) if noDataFound(error) =>
         logger.error(s"[HIPFinancialDetailsReads][read] - Error: ID number did not match any data")
@@ -108,17 +62,88 @@ object HIPFinancialDetailsParser {
     }
   }
 
-  private def handleErrorResponse(response: HttpResponse): Left[HIPFinancialDetailsFailure, Nothing] = {
-    val status = response.status
-    val error  = (response.json \ "response" \ "error").validate[TechnicalError]          // 400 and 500 errors can be singular
-    val errors = (response.json \ "response" \ "failures").validate[Seq[HipWrappedError]] // 400 errors can be multiple
-    val errorMsg = (error, errors) match {
-      case (JsSuccess(error, _), _)  => s"${error.code} - ${error.message}"
-      case (_, JsSuccess(errors, _)) => errors.map(err => s"${err.`type`} - ${err.reason}").mkString(",\n")
-      case _                         => response.json.toString()
+  sealed trait HIPFinancialDetailsFailure {
+    val toIFFailureResponse: FinancialDetailsFailure
+  }
+
+  sealed trait HIPFinancialDetailsSuccess {
+    val toIFSuccessResponse: FinancialDetailsSuccess
+  }
+
+  case class HIPFinancialDetailsSuccessResponse(financialDetails: FinancialDetails) extends HIPFinancialDetailsSuccess {
+    override val toIFSuccessResponse: FinancialDetailsSuccess = FinancialDetailsSuccessResponse(financialDetails)
+  }
+
+  case class HIPFinancialDetailsFailureResponse(status: Int) extends HIPFinancialDetailsFailure {
+    override val toIFFailureResponse: FinancialDetailsFailureResponse = FinancialDetailsFailureResponse(status)
+  }
+
+  implicit object HIPFinancialDetailsReads extends HttpReads[HIPFinancialDetailsResponse] with SafeHttpReads {
+    override def read(method: String, url: String, response: HttpResponse): HIPFinancialDetailsResponse = {
+      val status = response.status
+      val body = Option(response.body).getOrElse("")
+      status match {
+        case CREATED =>
+          parseJson(body) match {
+            case Some(json) => handleSuccessResponse(json)
+            case None =>
+              logger.warn("[HIPFinancialDetailsReads][read] Invalid JSON in success response")
+              Left(HIPFinancialDetailsMalformed)
+          }
+        case UNPROCESSABLE_ENTITY =>
+          parseJson(body) match {
+            case Some(json) => extractErrorResponseBodyFrom422(json)
+            case None =>
+              logger.info("[HIPFinancialDetailsReads][read] Non-JSON 422 response received")
+              Left(HIPFinancialDetailsFailureResponse(UNPROCESSABLE_ENTITY))
+          }
+        case BAD_REQUEST | UNAUTHORIZED | FORBIDDEN | NOT_FOUND |
+             UNSUPPORTED_MEDIA_TYPE  =>
+          PagerDutyHelper.log("HIPFinancialDetailsReads", RECEIVED_4XX_FROM_1812_API)
+          logger.info(s"[HIPFinancialDetailsReads][read] Downstream error status=$status")
+          handleErrorResponseSafe(response)
+        case INTERNAL_SERVER_ERROR |
+             SERVICE_UNAVAILABLE | BAD_GATEWAY | GATEWAY_TIMEOUT =>
+          logger.error(s"[HIPFinancialDetailsReads][read] Downstream error status=$status")
+          handleErrorResponseSafe(response)
+        case _ =>
+          PagerDutyHelper.logStatusCode("HIPFinancialDetailsReads", status)(RECEIVED_4XX_FROM_1811_API, RECEIVED_5XX_FROM_1811_API)
+          logger.error(
+            s"[HIPFinancialDetailsReads][read] Received unexpected response from FinancialDetails, status code: $status and body: $body")
+          Left(HIPFinancialDetailsFailureResponse(status))
+      }
     }
-    logger.error(s"[HIPFinancialDetailsParser][read] $status error: $errorMsg")
-    Left(HIPFinancialDetailsFailureResponse(status))
+
+    private def handleErrorResponseSafe(response: HttpResponse): Left[HIPFinancialDetailsFailure, Nothing] = {
+      val body = Option(response.body).getOrElse("")
+      parseJson(body) match {
+        case Some(json) =>
+          val error = (json \ "response" \ "error").validate[TechnicalError]
+          val errors = (json \ "response" \ "failures").validate[Seq[HipWrappedError]]
+          val message = (error, errors) match {
+            case (JsSuccess(e, _), _) =>
+              s"${e.code} - ${e.message}"
+            case (_, JsSuccess(es, _)) =>
+              es.map(e => s"${e.`type`} - ${e.reason}").mkString(", ")
+            case _ =>
+              json.toString()
+          }
+          logger.info(s"[HIPFinancialDetailsReads][handleErrorResponseSafe] Parsed downstream error: $message")
+          Left(HIPFinancialDetailsFailureResponse(response.status))
+        case None =>
+          val fallback = classifyNonJson(body)
+          logger.info(s"[HIPFinancialDetailsReads][handleErrorResponseSafe] Non-JSON error: $fallback")
+          Left(HIPFinancialDetailsFailureResponse(response.status))
+      }
+    }
+  }
+
+  case object HIPFinancialDetailsMalformed extends HIPFinancialDetailsFailure {
+    override val toIFFailureResponse: FinancialDetailsFailure = FinancialDetailsMalformed
+  }
+
+  case object HIPFinancialDetailsNoContent extends HIPFinancialDetailsFailure {
+    override val toIFFailureResponse: FinancialDetailsFailure = FinancialDetailsNoContent
   }
 
 }
