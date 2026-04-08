@@ -33,6 +33,18 @@ object HIPPenaltyDetailsParser {
 
   type HIPPenaltyDetailsResponse = Either[HIPPenaltyDetailsFailure, HIPPenaltyDetailsSuccess]
 
+  sealed trait HIPPenaltyDetailsFailure
+
+  sealed trait HIPPenaltyDetailsSuccess
+
+  case class HIPPenaltyDetailsSuccessResponse(penaltyDetails: PenaltyDetails) extends HIPPenaltyDetailsSuccess
+
+  case class HIPPenaltyDetailsFailureResponse(status: Int) extends HIPPenaltyDetailsFailure
+
+  case object HIPPenaltyDetailsMalformed extends HIPPenaltyDetailsFailure
+
+  case object HIPPenaltyDetailsNoContent extends HIPPenaltyDetailsFailure
+  
   private def handleSuccessResponse(json: JsValue): HIPPenaltyDetailsResponse = {
     logger.info(s"[HIPPenaltyDetailsReads][read] Success 200 response returned from API#5329")
     json.validate[PenaltyDetails] match {
@@ -82,8 +94,6 @@ object HIPPenaltyDetailsParser {
         logger.error(s"[HIPPenaltyDetailsReads][read] - Unable to parse 422 error body to expected format. Error: $json")
         Left(HIPPenaltyDetailsFailureResponse(UNPROCESSABLE_ENTITY))
     }
-
-  sealed trait HIPPenaltyDetailsFailure
 
   implicit object HIPPenaltyDetailsReads extends HttpReads[HIPPenaltyDetailsResponse] with SafeHttpReads {
     override def read(method: String, url: String, response: HttpResponse): HIPPenaltyDetailsResponse = {
@@ -140,15 +150,5 @@ object HIPPenaltyDetailsParser {
     }
 
   }
-
-  sealed trait HIPPenaltyDetailsSuccess
-
-  case class HIPPenaltyDetailsSuccessResponse(penaltyDetails: PenaltyDetails) extends HIPPenaltyDetailsSuccess
-
-  case class HIPPenaltyDetailsFailureResponse(status: Int) extends HIPPenaltyDetailsFailure
-
-  case object HIPPenaltyDetailsMalformed extends HIPPenaltyDetailsFailure
-
-  case object HIPPenaltyDetailsNoContent extends HIPPenaltyDetailsFailure
 
 }
