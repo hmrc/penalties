@@ -98,10 +98,13 @@ object HIPFinancialDetailsParser {
               Left(HIPFinancialDetailsFailureResponse(UNPROCESSABLE_ENTITY))
           }
         case BAD_REQUEST | UNAUTHORIZED | FORBIDDEN | NOT_FOUND |
-             UNSUPPORTED_MEDIA_TYPE | INTERNAL_SERVER_ERROR |
-             SERVICE_UNAVAILABLE | BAD_GATEWAY | GATEWAY_TIMEOUT =>
-          PagerDutyHelper.logStatusCode("HIPFinancialDetailsReads", status)(RECEIVED_4XX_FROM_1812_API, RECEIVED_5XX_FROM_1812_API)
+             UNSUPPORTED_MEDIA_TYPE  =>
+          PagerDutyHelper.log("HIPFinancialDetailsReads", RECEIVED_4XX_FROM_1812_API)
           logger.info(s"[HIPFinancialDetailsReads][read] Downstream error status=$status")
+          handleErrorResponseSafe(response)
+        case INTERNAL_SERVER_ERROR |
+             SERVICE_UNAVAILABLE | BAD_GATEWAY | GATEWAY_TIMEOUT =>
+          logger.error(s"[HIPFinancialDetailsReads][read] Downstream error status=$status")
           handleErrorResponseSafe(response)
         case _ =>
           PagerDutyHelper.logStatusCode("HIPFinancialDetailsReads", status)(RECEIVED_4XX_FROM_1811_API, RECEIVED_5XX_FROM_1811_API)

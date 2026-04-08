@@ -44,7 +44,7 @@ object HIPPenaltyDetailsParser {
   case object HIPPenaltyDetailsMalformed extends HIPPenaltyDetailsFailure
 
   case object HIPPenaltyDetailsNoContent extends HIPPenaltyDetailsFailure
-  
+
   private def handleSuccessResponse(json: JsValue): HIPPenaltyDetailsResponse = {
     logger.info(s"[HIPPenaltyDetailsReads][read] Success 200 response returned from API#5329")
     json.validate[PenaltyDetails] match {
@@ -114,8 +114,11 @@ object HIPPenaltyDetailsParser {
               logger.info("[HIPPenaltyDetailsReads] Non-JSON 422 response received")
               Left(HIPPenaltyDetailsFailureResponse(UNPROCESSABLE_ENTITY))
           }
-        case status@(BAD_REQUEST | UNAUTHORIZED | FORBIDDEN | NOT_FOUND | UNSUPPORTED_MEDIA_TYPE | INTERNAL_SERVER_ERROR) =>
-          PagerDutyHelper.logStatusCode("HIPPenaltyDetailsReads", status)(RECEIVED_4XX_FROM_1812_API, RECEIVED_5XX_FROM_1812_API)
+        case status@(BAD_REQUEST | UNAUTHORIZED | FORBIDDEN | NOT_FOUND | UNSUPPORTED_MEDIA_TYPE) =>
+          PagerDutyHelper.log("HIPPenaltyDetailsReads", RECEIVED_4XX_FROM_1812_API)
+          handleErrorResponseSafe(response)
+        case status@(BAD_GATEWAY | INTERNAL_SERVER_ERROR) =>
+          logger.error(s"[HIPPenaltyDetailsReads][read] Downstream error status=$status")
           handleErrorResponseSafe(response)
         case status =>
           PagerDutyHelper.logStatusCode("HIPPenaltyDetailsReads", status)(RECEIVED_4XX_FROM_1812_API, RECEIVED_5XX_FROM_1812_API)
