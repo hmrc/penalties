@@ -16,6 +16,7 @@
 
 package connectors.parsers.getPenaltyDetails
 
+import connectors.parsers.SafeHttpReads
 import models.failure.{BusinessError, HipWrappedError, TechnicalError}
 import models.hipPenaltyDetails.PenaltyDetails
 import models.hipPenaltyDetails.latePayment.{LPPPenaltyCategoryEnum, LPPPenaltyStatusEnum, LatePaymentPenalty}
@@ -29,6 +30,9 @@ import utils.PagerDutyHelper.PagerDutyKeys._
 import java.time.LocalDate
 
 object HIPPenaltyDetailsParser {
+
+  type HIPPenaltyDetailsResponse = Either[HIPPenaltyDetailsFailure, HIPPenaltyDetailsSuccess]
+
   sealed trait HIPPenaltyDetailsFailure
 
   sealed trait HIPPenaltyDetailsSuccess
@@ -41,26 +45,6 @@ object HIPPenaltyDetailsParser {
 
   case object HIPPenaltyDetailsNoContent extends HIPPenaltyDetailsFailure
 
-  type HIPPenaltyDetailsResponse = Either[HIPPenaltyDetailsFailure, HIPPenaltyDetailsSuccess]
-
-  implicit object HIPPenaltyDetailsReads extends HttpReads[HIPPenaltyDetailsResponse] {
-    override def read(method: String, url: String, response: HttpResponse): HIPPenaltyDetailsResponse =
-      response.status match {
-        case OK =>
-          handleSuccessResponse(response.json)
-        case UNPROCESSABLE_ENTITY =>
-          extractErrorResponseBodyFrom422(response.json)
-        case status @ (BAD_REQUEST | UNAUTHORIZED | FORBIDDEN | NOT_FOUND | UNSUPPORTED_MEDIA_TYPE | INTERNAL_SERVER_ERROR) =>
-          PagerDutyHelper.logStatusCode("HIPPenaltyDetailsReads", status)(RECEIVED_4XX_FROM_1812_API, RECEIVED_5XX_FROM_1812_API)
-          handleErrorResponse(response)
-        case status =>
-          PagerDutyHelper.logStatusCode("HIPPenaltyDetailsReads", status)(RECEIVED_4XX_FROM_1812_API, RECEIVED_5XX_FROM_1812_API)
-          logger.error(
-            s"[HIPPenaltyDetailsReads][read] Received unexpected response from PenaltyDetails, status code: $status and body: ${response.body}")
-          Left(HIPPenaltyDetailsFailureResponse(status))
-      }
-  }
-
   private def handleSuccessResponse(json: JsValue): HIPPenaltyDetailsResponse = {
     logger.info(s"[HIPPenaltyDetailsReads][read] Success 200 response returned from API#5329")
     json.validate[PenaltyDetails] match {
@@ -72,33 +56,6 @@ object HIPPenaltyDetailsParser {
         logger.error(s"[HIPPenaltyDetailsReads][read] Json validation of 200 body failed with errors: $errors")
         Left(HIPPenaltyDetailsMalformed)
     }
-  }
-
-  private def extractErrorResponseBodyFrom422(json: JsValue): Left[HIPPenaltyDetailsFailure, Nothing] =
-    (json \ "errors").validate[BusinessError] match { // 422 a single error is ever returned regardless of the number of mistakes
-      case JsSuccess(error, _) if error.code == "016" && error.text == "Invalid ID Number" =>
-        logger.error(s"[HIPPenaltyDetailsReads][read] - Error: ID number did not match any data")
-        Left(HIPPenaltyDetailsNoContent)
-      case JsSuccess(error, _) =>
-        logger.error(s"[HIPPenaltyDetailsReads][read] - 422 Error with code: ${error.code} - ${error.text}")
-        Left(HIPPenaltyDetailsFailureResponse(UNPROCESSABLE_ENTITY))
-      case _ =>
-        PagerDutyHelper.log("HIPPenaltyDetailsReads", INVALID_JSON_RECEIVED_FROM_1812_API)
-        logger.error(s"[HIPPenaltyDetailsReads][read] - Unable to parse 422 error body to expected format. Error: $json")
-        Left(HIPPenaltyDetailsFailureResponse(UNPROCESSABLE_ENTITY))
-    }
-
-  private def handleErrorResponse(response: HttpResponse): Left[HIPPenaltyDetailsFailure, Nothing] = {
-    val status = response.status
-    val error  = (response.json \ "response" \ "error").validate[TechnicalError]          // 500 errors
-    val errors = (response.json \ "response" \ "failures").validate[Seq[HipWrappedError]] // 400 errors are always in an array
-    val errorMsg = (error, errors) match {
-      case (JsSuccess(error, _), _)  => s"${error.code} - ${error.message}"
-      case (_, JsSuccess(errors, _)) => errors.map(err => s"${err.`type`} - ${err.reason}").mkString(",\n")
-      case _                         => response.json.toString()
-    }
-    logger.error(s"[HIPPenaltyDetailsParser][handleErrorResponse] $status errors: $errorMsg")
-    Left(HIPPenaltyDetailsFailureResponse(response.status))
   }
 
   private def addMissingLPP1PrincipalChargeLatestClearing(penaltyDetails: PenaltyDetails): PenaltyDetails = {
@@ -122,6 +79,79 @@ object HIPPenaltyDetailsParser {
     } else {
       penaltyDetails
     }
+  }
+
+  private def extractErrorResponseBodyFrom422(json: JsValue): Left[HIPPenaltyDetailsFailure, Nothing] =
+    (json \ "errors").validate[BusinessError] match { // 422 a single error is ever returned regardless of the number of mistakes
+      case JsSuccess(error, _) if error.code == "016" && error.text == "Invalid ID Number" =>
+        logger.error(s"[HIPPenaltyDetailsReads][read] - Error: ID number did not match any data")
+        Left(HIPPenaltyDetailsNoContent)
+      case JsSuccess(error, _) =>
+        logger.error(s"[HIPPenaltyDetailsReads][read] - 422 Error with code: ${error.code} - ${error.text}")
+        Left(HIPPenaltyDetailsFailureResponse(UNPROCESSABLE_ENTITY))
+      case _ =>
+        PagerDutyHelper.log("HIPPenaltyDetailsReads", INVALID_JSON_RECEIVED_FROM_1812_API)
+        logger.error(s"[HIPPenaltyDetailsReads][read] - Unable to parse 422 error body to expected format. Error: $json")
+        Left(HIPPenaltyDetailsFailureResponse(UNPROCESSABLE_ENTITY))
+    }
+
+  implicit object HIPPenaltyDetailsReads extends HttpReads[HIPPenaltyDetailsResponse] with SafeHttpReads {
+    override def read(method: String, url: String, response: HttpResponse): HIPPenaltyDetailsResponse = {
+      val status = response.status
+      val body = Option(response.body).getOrElse("")
+      status match {
+        case OK =>
+          parseJson(body) match {
+            case Some(json) => handleSuccessResponse(json)
+            case None =>
+              logger.warn("[HIPPenaltyDetailsReads] Invalid JSON in success response")
+              Left(HIPPenaltyDetailsMalformed)
+          }
+        case UNPROCESSABLE_ENTITY =>
+          parseJson(body) match {
+            case Some(json) => extractErrorResponseBodyFrom422(json)
+            case None =>
+              logger.info("[HIPPenaltyDetailsReads] Non-JSON 422 response received")
+              Left(HIPPenaltyDetailsFailureResponse(UNPROCESSABLE_ENTITY))
+          }
+        case status@(BAD_REQUEST | UNAUTHORIZED | FORBIDDEN | NOT_FOUND | UNSUPPORTED_MEDIA_TYPE) =>
+          PagerDutyHelper.log("HIPPenaltyDetailsReads", RECEIVED_4XX_FROM_1812_API)
+          handleErrorResponseSafe(response)
+        case status@(BAD_GATEWAY | INTERNAL_SERVER_ERROR) =>
+          logger.error(s"[HIPPenaltyDetailsReads][read] Downstream error status=$status")
+          handleErrorResponseSafe(response)
+        case status =>
+          PagerDutyHelper.logStatusCode("HIPPenaltyDetailsReads", status)(RECEIVED_4XX_FROM_1812_API, RECEIVED_5XX_FROM_1812_API)
+          logger.error(
+            s"[HIPPenaltyDetailsReads][read] Received unexpected response from PenaltyDetails, status code: $status and body: ${body.take(MaxBodyLength)}")
+          Left(HIPPenaltyDetailsFailureResponse(status))
+      }
+    }
+
+    private def handleErrorResponseSafe(response: HttpResponse): Left[HIPPenaltyDetailsFailure, Nothing] = {
+      val body = Option(response.body).getOrElse("")
+      val status = response.status
+      parseJson(body) match {
+        case Some(json) =>
+          val error = (json \ "response" \ "error").validate[TechnicalError]
+          val errors = (json \ "response" \ "failures").validate[Seq[HipWrappedError]]
+          val message = (error, errors) match {
+            case (JsSuccess(e, _), _) =>
+              s"${e.code} - ${e.message}"
+            case (_, JsSuccess(es, _)) =>
+              es.map(e => s"${e.`type`} - ${e.reason}").mkString(", ")
+            case _ =>
+              json.toString()
+          }
+          logger.info(s"[HIPPenaltyDetailsReads][handleErrorResponse] $status Parsed downstream error: $message")
+          Left(HIPPenaltyDetailsFailureResponse(status))
+        case None =>
+          val fallbackMessage = classifyNonJson(body)
+          logger.info(s"[HIPPenaltyDetailsParser][handleErrorResponse] $status Non-JSON error: $fallbackMessage")
+          Left(HIPPenaltyDetailsFailureResponse(status))
+      }
+    }
+
   }
 
 }
