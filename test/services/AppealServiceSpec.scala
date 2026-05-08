@@ -221,6 +221,52 @@ class AppealServiceSpec extends SpecBase with LogCapturing with FeatureSwitching
         result shouldBe expectedResult
       }
 
+      "uploads with no downloadUrl are skipped (logging a warning) and the rest still produce notifications" in new Setup {
+        when(mockAppConfig.checksumAlgorithmForFileNotifications).thenReturn("SHA-256")
+        val mockDateTime: LocalDateTime = LocalDateTime.of(2020, 1, 1, 0, 0, 0)
+        val uploads = Seq(
+          UploadJourney(
+            reference = "ref-no-url",
+            fileStatus = UploadStatusEnum.READY,
+            downloadUrl = None,
+            uploadDetails = Some(
+              UploadDetails(
+                fileName = "file1",
+                fileMimeType = "text/plain",
+                uploadTimestamp = LocalDateTime.of(2018, 4, 24, 9, 30, 0),
+                checksum = "check123456789",
+                size = 1
+              )),
+            lastUpdated = mockDateTime,
+            uploadFields = None
+          ),
+          UploadJourney(
+            reference = "ref-with-url",
+            fileStatus = UploadStatusEnum.READY,
+            downloadUrl = Some("/"),
+            uploadDetails = Some(
+              UploadDetails(
+                fileName = "file2",
+                fileMimeType = "text/plain",
+                uploadTimestamp = LocalDateTime.of(2018, 4, 24, 9, 30, 0),
+                checksum = "check123456789",
+                size = 1
+              )),
+            lastUpdated = mockDateTime,
+            uploadFields = None
+          )
+        )
+        when(mockUUIDGenerator.generateUUID).thenReturn(correlationId)
+
+        withCaptureOfLoggingFrom(logger) { logs =>
+          val result = service.createSDESNotifications(Some(uploads), caseID = "PR-1234")
+          result.size shouldBe 1
+          result.head.file.name shouldBe "file2"
+          logs.exists(_.getMessage ==
+            "[RegimeAppealService][createSDESNotifications] - Upload with reference ref-no-url has no downloadUrl, skipping (case ID: PR-1234)") shouldBe true
+        }
+      }
+
       "uploads are passed through but some uploads don't have an 'uploadDetails' field" in new Setup {
         when(mockAppConfig.checksumAlgorithmForFileNotifications).thenReturn("SHA-256")
         val mockDateTime: LocalDateTime = LocalDateTime.of(2020, 1, 1, 0, 0, 0)
@@ -494,6 +540,27 @@ class AppealServiceSpec extends SpecBase with LogCapturing with FeatureSwitching
           service.findMultiplePenalties(getPenaltyDetailsTwoPenaltiesVATNotPaid, "1234567891", "VATC")
         result shouldBe None
       }
+
+      "there is no latePaymentPenalty section" in new Setup {
+        val result: Option[MultiplePenaltiesData] = service.findMultiplePenalties(getPenaltyDetailsNoLPP, "1234567891", "VATC")
+        result shouldBe None
+      }
+
+      "the latePaymentPenalty section has no details" in new Setup {
+        val result: Option[MultiplePenaltiesData] = service.findMultiplePenalties(getPenaltyDetailsLPPWithNoDetails, "1234567891", "VATC")
+        result shouldBe None
+      }
+
+      "no penalty in the payload matches the supplied penaltyId" in new Setup {
+        val result: Option[MultiplePenaltiesData] = service.findMultiplePenalties(getPenaltyDetailsTwoPenalties, "doesNotExist", "VATC")
+        result shouldBe None
+      }
+
+      "a matched penalty in the principal-charge group is missing penaltyChargeReference" in new Setup {
+        val result: Option[MultiplePenaltiesData] =
+          service.findMultiplePenalties(getPenaltyDetailsTwoPenaltiesSecondMissingChargeReference, "1234567891", "VATC")
+        result shouldBe None
+      }
     }
 
     "return Some" when {
@@ -745,6 +812,30 @@ object AppealServiceSpec {
         ),
         sampleLPP1
       )))),
+    breathingSpace = None
+  )
+
+  val getPenaltyDetailsNoLPP: GetPenaltyDetails = GetPenaltyDetails(
+    totalisations = None,
+    lateSubmissionPenalty = None,
+    latePaymentPenalty = None,
+    breathingSpace = None
+  )
+
+  val getPenaltyDetailsLPPWithNoDetails: GetPenaltyDetails = GetPenaltyDetails(
+    totalisations = None,
+    lateSubmissionPenalty = None,
+    latePaymentPenalty = Some(LatePaymentPenalty(None)),
+    breathingSpace = None
+  )
+
+  val getPenaltyDetailsTwoPenaltiesSecondMissingChargeReference: GetPenaltyDetails = GetPenaltyDetails(
+    totalisations = None,
+    lateSubmissionPenalty = None,
+    latePaymentPenalty = Some(LatePaymentPenalty(Some(Seq(
+      sampleLPP2.copy(penaltyChargeReference = None),
+      sampleLPP1
+    )))),
     breathingSpace = None
   )
 

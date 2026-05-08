@@ -74,14 +74,20 @@ class AppealService @Inject()(appealsConnector: SubmitAppealConnector,
             s" only $countOfUploadsWithUploadDetailsDefined uploads have upload details defined (possible missing files for case ID: $caseID)")
         }
         uploads.flatMap { upload =>
-          upload.uploadDetails.map { details =>
+          for {
+            details     <- upload.uploadDetails
+            downloadUrl <- upload.downloadUrl.orElse {
+              logger.warn(s"[RegimeAppealService][createSDESNotifications] - Upload with reference ${upload.reference} has no downloadUrl, skipping (case ID: $caseID)")
+              None
+            }
+          } yield {
             val uploadAlgorithm = appConfig.checksumAlgorithmForFileNotifications
             SDESNotification(
               informationType = appConfig.SDESNotificationInfoType,
               file = SDESNotificationFile(
                 recipientOrSender = appConfig.SDESNotificationFileRecipient,
                 name = sanitisedAndTruncatedFileName(details.fileName)(details.fileMimeType)(upload.reference),
-                location = upload.downloadUrl.get,
+                location = downloadUrl,
                 checksum = SDESChecksum(algorithm = uploadAlgorithm, value = details.checksum),
                 size = details.size,
                 properties = Seq(
@@ -98,32 +104,38 @@ class AppealService @Inject()(appealsConnector: SubmitAppealConnector,
   }
 
   def findMultiplePenalties(penaltyDetails: GetPenaltyDetails, penaltyId: String, regime: String): Option[MultiplePenaltiesData] = {
-    val lppPenaltyIdInPenaltyDetailsPayload: Option[LPPDetails] = penaltyDetails.latePaymentPenalty.flatMap {
-      _.details.flatMap(_.find(_.penaltyChargeReference.contains(penaltyId)))
-    }
-    val principalChargeReference: String = lppPenaltyIdInPenaltyDetailsPayload.get.principalChargeReference
-    val penaltiesForPrincipalCharge: Seq[LPPDetails] = penaltyDetails.latePaymentPenalty.flatMap(_.details.map(_.filter(_.principalChargeReference.equals(principalChargeReference)))).get
-    val allLppsAreAppealable =
-      if (regime == "ITSA") penaltiesForPrincipalCharge.forall(_.hasNoAppealsOrOnlyFirstStageRejectedAppeals)
-      else penaltiesForPrincipalCharge.forall(_.hasNoAppeals)
-    val areBothPenaltiesPostedAndVATPaid: Boolean = penaltiesForPrincipalCharge.forall(penalty => {
-      penalty.penaltyStatus == LPPPenaltyStatusEnum.Posted && penalty.principalChargeLatestClearing.isDefined
-    })
+    val allLPPDetails: Seq[LPPDetails] = penaltyDetails.latePaymentPenalty.flatMap(_.details).getOrElse(Seq.empty)
 
-    if (penaltiesForPrincipalCharge.size == 2 && allLppsAreAppealable && areBothPenaltiesPostedAndVATPaid) {
-      val secondPenalty = penaltiesForPrincipalCharge.find(_.penaltyCategory.equals(LPPPenaltyCategoryEnum.SecondPenalty)).get
-      val firstPenalty = penaltiesForPrincipalCharge.find(_.penaltyCategory.equals(LPPPenaltyCategoryEnum.FirstPenalty)).get
-      val returnModel = MultiplePenaltiesData(
-        firstPenaltyChargeReference = firstPenalty.penaltyChargeReference.get,
-        firstPenaltyAmount = firstPenalty.penaltyAmountOutstanding.getOrElse(BigDecimal(0)) + firstPenalty.penaltyAmountPaid.getOrElse(BigDecimal(0)),
-        secondPenaltyChargeReference = secondPenalty.penaltyChargeReference.get,
-        secondPenaltyAmount = secondPenalty.penaltyAmountOutstanding.getOrElse(BigDecimal(0)) + secondPenalty.penaltyAmountPaid.getOrElse(BigDecimal(0)),
-        firstPenaltyCommunicationDate = firstPenalty.communicationsDate.getOrElse(appConfig.getTimeMachineDateTime.toLocalDate),
-        secondPenaltyCommunicationDate = secondPenalty.communicationsDate.getOrElse(appConfig.getTimeMachineDateTime.toLocalDate)
-      )
-      Some(returnModel)
-    } else {
-      None
+    allLPPDetails.find(_.penaltyChargeReference.contains(penaltyId)).flatMap { matchedPenalty =>
+      val principalChargeReference = matchedPenalty.principalChargeReference
+      val penaltiesForPrincipalCharge: Seq[LPPDetails] =
+        allLPPDetails.filter(_.principalChargeReference.equals(principalChargeReference))
+
+      val allLppsAreAppealable =
+        if (regime == "ITSA") penaltiesForPrincipalCharge.forall(_.hasNoAppealsOrOnlyFirstStageRejectedAppeals)
+        else penaltiesForPrincipalCharge.forall(_.hasNoAppeals)
+      val areBothPenaltiesPostedAndVATPaid: Boolean = penaltiesForPrincipalCharge.forall { penalty =>
+        penalty.penaltyStatus == LPPPenaltyStatusEnum.Posted && penalty.principalChargeLatestClearing.isDefined
+      }
+
+      val isReturnable = penaltiesForPrincipalCharge.size == 2 && allLppsAreAppealable && areBothPenaltiesPostedAndVATPaid
+
+      if (!isReturnable) None
+      else {
+        for {
+          firstPenalty           <- penaltiesForPrincipalCharge.find(_.penaltyCategory.equals(LPPPenaltyCategoryEnum.FirstPenalty))
+          secondPenalty          <- penaltiesForPrincipalCharge.find(_.penaltyCategory.equals(LPPPenaltyCategoryEnum.SecondPenalty))
+          firstPenaltyChargeRef  <- firstPenalty.penaltyChargeReference
+          secondPenaltyChargeRef <- secondPenalty.penaltyChargeReference
+        } yield MultiplePenaltiesData(
+          firstPenaltyChargeReference = firstPenaltyChargeRef,
+          firstPenaltyAmount = firstPenalty.penaltyAmountOutstanding.getOrElse(BigDecimal(0)) + firstPenalty.penaltyAmountPaid.getOrElse(BigDecimal(0)),
+          secondPenaltyChargeReference = secondPenaltyChargeRef,
+          secondPenaltyAmount = secondPenalty.penaltyAmountOutstanding.getOrElse(BigDecimal(0)) + secondPenalty.penaltyAmountPaid.getOrElse(BigDecimal(0)),
+          firstPenaltyCommunicationDate = firstPenalty.communicationsDate.getOrElse(appConfig.getTimeMachineDateTime.toLocalDate),
+          secondPenaltyCommunicationDate = secondPenalty.communicationsDate.getOrElse(appConfig.getTimeMachineDateTime.toLocalDate)
+        )
+      }
     }
   }
 
