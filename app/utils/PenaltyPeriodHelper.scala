@@ -20,7 +20,9 @@ import models.getPenaltyDetails.lateSubmission.LateSubmission
 
 object PenaltyPeriodHelper {
 
-  def sortByPenaltyStartDate(p1: LateSubmission, p2: LateSubmission): Int = {
-    p1.taxPeriodStartDate.get.compareTo(p2.taxPeriodStartDate.get)
-  }
+  def earliestSubmissionByPenaltyStartDate(submissions: Seq[LateSubmission]): Option[LateSubmission] =
+    submissions
+      .flatMap(submission => submission.taxPeriodStartDate.map(startDate => startDate -> submission))
+      .minByOption { case (startDate, _) => startDate }
+      .map { case (_, submission) => submission }
 }

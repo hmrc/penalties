@@ -23,70 +23,39 @@ import java.time.LocalDate
 
 class PenaltyPeriodHelperSpec extends SpecBase {
 
-  "sortByPenaltyStartDate" should {
-    "return -1 when the first period is earlier than the second period" in {
-      val earlierSubmission = LateSubmission(
-        lateSubmissionID = "001",
-        incomeSource = Some("IT"),
-        taxPeriod = Some("23AA"),
-        taxPeriodStartDate = Some(LocalDate.of(2022, 1, 1)),
-        taxPeriodEndDate = Some(LocalDate.of(2022, 12, 31)),
-        taxPeriodDueDate = Some(LocalDate.of(2023, 2, 7)),
-        returnReceiptDate = Some(LocalDate.of(2023, 2, 1)),
-        taxReturnStatus = Some(TaxReturnStatusEnum.Fulfilled)
-      )
-      val laterSubmission = LateSubmission(
-        lateSubmissionID = "002",
-        incomeSource = Some("IT"),
-        taxPeriod = Some("23AB"),
-        taxPeriodStartDate = Some(LocalDate.of(2023, 1, 1)),
-        taxPeriodEndDate = Some(LocalDate.of(2023, 12, 31)),
-        taxPeriodDueDate = Some(LocalDate.of(2024, 2, 7)),
-        returnReceiptDate = Some(LocalDate.of(2024, 2, 1)),
-        taxReturnStatus = Some(TaxReturnStatusEnum.Fulfilled)
-      )
-      val result = PenaltyPeriodHelper.sortByPenaltyStartDate(earlierSubmission, laterSubmission)
-      result shouldBe -1
+  private def submission(id: String, startDate: Option[LocalDate]): LateSubmission =
+    LateSubmission(
+      lateSubmissionID = id,
+      incomeSource = Some("IT"),
+      taxPeriod = Some("23AA"),
+      taxPeriodStartDate = startDate,
+      taxPeriodEndDate = Some(LocalDate.of(2022, 12, 31)),
+      taxPeriodDueDate = Some(LocalDate.of(2023, 2, 7)),
+      returnReceiptDate = Some(LocalDate.of(2023, 2, 1)),
+      taxReturnStatus = Some(TaxReturnStatusEnum.Fulfilled)
+    )
+
+  "earliestSubmissionByPenaltyStartDate" should {
+    "return the submission with the earliest start date" in {
+      val earliest = submission("001", Some(LocalDate.of(2022, 1, 1)))
+      val latest   = submission("002", Some(LocalDate.of(2023, 1, 1)))
+
+      PenaltyPeriodHelper.earliestSubmissionByPenaltyStartDate(Seq(latest, earliest)) shouldBe Some(earliest)
     }
 
-    "return 0 when the first period is equal to the second period" in {
-      val submission = LateSubmission(
-        lateSubmissionID = "001",
-        incomeSource = Some("IT"),
-        taxPeriod = Some("23AA"),
-        taxPeriodStartDate = Some(LocalDate.of(2022, 1, 1)),
-        taxPeriodEndDate = Some(LocalDate.of(2022, 12, 31)),
-        taxPeriodDueDate = Some(LocalDate.of(2023, 2, 7)),
-        returnReceiptDate = Some(LocalDate.of(2023, 2, 1)),
-        taxReturnStatus = Some(TaxReturnStatusEnum.Fulfilled)
-      )
-      val result = PenaltyPeriodHelper.sortByPenaltyStartDate(submission, submission)
-      result shouldBe 0
+    "ignore submissions with missing start dates" in {
+      val withStart    = submission("001", Some(LocalDate.of(2022, 1, 1)))
+      val withoutStart = submission("002", None)
+
+      PenaltyPeriodHelper.earliestSubmissionByPenaltyStartDate(Seq(withoutStart, withStart)) shouldBe Some(withStart)
     }
 
-    "return 1 when the first period is later than the second period" in {
-      val earlierSubmission = LateSubmission(
-        lateSubmissionID = "001",
-        incomeSource = Some("IT"),
-        taxPeriod = Some("23AA"),
-        taxPeriodStartDate = Some(LocalDate.of(2022, 1, 1)),
-        taxPeriodEndDate = Some(LocalDate.of(2022, 12, 31)),
-        taxPeriodDueDate = Some(LocalDate.of(2023, 2, 7)),
-        returnReceiptDate = Some(LocalDate.of(2023, 2, 1)),
-        taxReturnStatus = Some(TaxReturnStatusEnum.Fulfilled)
-      )
-      val laterSubmission = LateSubmission(
-        lateSubmissionID = "001",
-        incomeSource = Some("IT"),
-        taxPeriod = Some("23AA"),
-        taxPeriodStartDate = Some(LocalDate.of(2022, 1, 2)),
-        taxPeriodEndDate = Some(LocalDate.of(2022, 12, 31)),
-        taxPeriodDueDate = Some(LocalDate.of(2023, 2, 7)),
-        returnReceiptDate = Some(LocalDate.of(2023, 2, 1)),
-        taxReturnStatus = Some(TaxReturnStatusEnum.Fulfilled)
-      )
-      val result = PenaltyPeriodHelper.sortByPenaltyStartDate(laterSubmission, earlierSubmission)
-      result shouldBe 1
+    "return None when no submissions have a start date" in {
+      PenaltyPeriodHelper.earliestSubmissionByPenaltyStartDate(Seq(submission("001", None))) shouldBe None
+    }
+
+    "return None when no submissions are supplied" in {
+      PenaltyPeriodHelper.earliestSubmissionByPenaltyStartDate(Seq.empty) shouldBe None
     }
   }
 }

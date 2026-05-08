@@ -25,8 +25,9 @@ import models.appeals.{AppealResponseModel, AppealSubmission, MultiplePenaltiesD
 import models.getPenaltyDetails.GetPenaltyDetails
 import models.getPenaltyDetails.latePayment.{LPPDetails, LPPPenaltyCategoryEnum, LPPPenaltyStatusEnum}
 import models.notification._
-import models.upload.UploadJourney
+import models.upload.{UploadDetails, UploadJourney}
 import play.api.Configuration
+import services.AppealService._
 import uk.gov.hmrc.http.HeaderCarrier
 import utils.Logger.logger
 import utils.{DateHelper, FileHelper, UUIDGenerator}
@@ -45,27 +46,25 @@ class AppealService @Inject()(appealsConnector: SubmitAppealConnector,
                    enrolmentKey: AgnosticEnrolmentKey,
                    penaltyNumber: String,
                    correlationId: String)
-                  (implicit headerCarrier:HeaderCarrier): Future[Either[AppealsParser.ErrorResponse, AppealResponseModel]] = {
+                  (implicit headerCarrier: HeaderCarrier): Future[Either[AppealsParser.ErrorResponse, AppealResponseModel]] = {
     val response: Future[AppealsParser.AppealSubmissionResponse] = if (isEnabled(CallAPI1808HIP)) {
       hipAppealsConnector.submitAppeal(appealSubmission, penaltyNumber, correlationId)
     } else {
       appealsConnector.submitAppeal(appealSubmission, penaltyNumber, correlationId)
     }
-    response.flatMap {
+    response.map {
       _.fold(
-        error => {
-          logger.error(s"[RegimeAppealService][submitAppeal] - Submit appeal call failed with error: ${error.body} and status: ${error.status} for enrolment: $enrolmentKey")
-          Future(Left(error))
-        },
+        error => Left(error),
         responseModel => {
           logger.info(s"[RegimeAppealService][submitAppeal] - Retrieving response model for penalty: $penaltyNumber")
-          Future(Right(responseModel))
+          Right(responseModel)
         }
       )
     }
   }
 
-  def createSDESNotifications(optUploadJourney: Option[Seq[UploadJourney]], caseID: String): Seq[SDESNotification] = {
+  def createSDESNotifications(optUploadJourney: Option[Seq[UploadJourney]],
+                              caseID: String): Either[SDESNotificationCreationError, Seq[SDESNotification]] = {
     optUploadJourney match {
       case Some(uploads) =>
         val countOfUploadsWithUploadDetailsDefined = uploads.count(_.uploadDetails.isDefined)
@@ -73,40 +72,19 @@ class AppealService @Inject()(appealsConnector: SubmitAppealConnector,
           logger.warn(s"[RegimeAppealService][createSDESNotifications] - There are ${uploads.size} uploads but" +
             s" only $countOfUploadsWithUploadDetailsDefined uploads have upload details defined (possible missing files for case ID: $caseID)")
         }
-        uploads.flatMap { upload =>
-          for {
-            details     <- upload.uploadDetails
-            downloadUrl <- upload.downloadUrl.orElse {
-              logger.warn(s"[RegimeAppealService][createSDESNotifications] - Upload with reference ${upload.reference} has no downloadUrl, skipping (case ID: $caseID)")
-              None
-            }
-          } yield {
-            val uploadAlgorithm = appConfig.checksumAlgorithmForFileNotifications
-            SDESNotification(
-              informationType = appConfig.SDESNotificationInfoType,
-              file = SDESNotificationFile(
-                recipientOrSender = appConfig.SDESNotificationFileRecipient,
-                name = sanitisedAndTruncatedFileName(details.fileName)(details.fileMimeType)(upload.reference),
-                location = downloadUrl,
-                checksum = SDESChecksum(algorithm = uploadAlgorithm, value = details.checksum),
-                size = details.size,
-                properties = Seq(
-                  SDESProperties(name = "CaseId", value = caseID),
-                  SDESProperties(name = "SourceFileUploadDate", value = details.uploadTimestamp.format(DateHelper.dateTimeFormatter))
-                )
-              ),
-              audit = SDESAudit(correlationID = idGenerator.generateUUID)
-            )
-          }
-        }
-      case None => Seq.empty
+        sequence(uploads.flatMap { upload =>
+          upload.uploadDetails.map(details => createSDESNotification(upload, details, caseID))
+        })
+      case None => Right(Seq.empty)
     }
   }
 
-  def findMultiplePenalties(penaltyDetails: GetPenaltyDetails, penaltyId: String, regime: String): Option[MultiplePenaltiesData] = {
+  def findMultiplePenalties(penaltyDetails: GetPenaltyDetails,
+                            penaltyId: String,
+                            regime: String): Either[MultiplePenaltiesError, Option[MultiplePenaltiesData]] = {
     val allLPPDetails: Seq[LPPDetails] = penaltyDetails.latePaymentPenalty.flatMap(_.details).getOrElse(Seq.empty)
 
-    allLPPDetails.find(_.penaltyChargeReference.contains(penaltyId)).flatMap { matchedPenalty =>
+    allLPPDetails.find(_.penaltyChargeReference.contains(penaltyId)).map { matchedPenalty =>
       val principalChargeReference = matchedPenalty.principalChargeReference
       val penaltiesForPrincipalCharge: Seq[LPPDetails] =
         allLPPDetails.filter(_.principalChargeReference.equals(principalChargeReference))
@@ -120,24 +98,64 @@ class AppealService @Inject()(appealsConnector: SubmitAppealConnector,
 
       val isReturnable = penaltiesForPrincipalCharge.size == 2 && allLppsAreAppealable && areBothPenaltiesPostedAndVATPaid
 
-      if (!isReturnable) None
-      else {
-        for {
-          firstPenalty           <- penaltiesForPrincipalCharge.find(_.penaltyCategory.equals(LPPPenaltyCategoryEnum.FirstPenalty))
-          secondPenalty          <- penaltiesForPrincipalCharge.find(_.penaltyCategory.equals(LPPPenaltyCategoryEnum.SecondPenalty))
-          firstPenaltyChargeRef  <- firstPenalty.penaltyChargeReference
-          secondPenaltyChargeRef <- secondPenalty.penaltyChargeReference
-        } yield MultiplePenaltiesData(
-          firstPenaltyChargeReference = firstPenaltyChargeRef,
-          firstPenaltyAmount = firstPenalty.penaltyAmountOutstanding.getOrElse(BigDecimal(0)) + firstPenalty.penaltyAmountPaid.getOrElse(BigDecimal(0)),
-          secondPenaltyChargeReference = secondPenaltyChargeRef,
-          secondPenaltyAmount = secondPenalty.penaltyAmountOutstanding.getOrElse(BigDecimal(0)) + secondPenalty.penaltyAmountPaid.getOrElse(BigDecimal(0)),
-          firstPenaltyCommunicationDate = firstPenalty.communicationsDate.getOrElse(appConfig.getTimeMachineDateTime.toLocalDate),
-          secondPenaltyCommunicationDate = secondPenalty.communicationsDate.getOrElse(appConfig.getTimeMachineDateTime.toLocalDate)
-        )
-      }
-    }
+      if (!isReturnable) Right(None)
+      else buildMultiplePenaltiesData(penaltiesForPrincipalCharge, principalChargeReference).map(Some(_))
+    }.getOrElse(Right(None))
   }
+
+  private def createSDESNotification(upload: UploadJourney,
+                                     details: UploadDetails,
+                                     caseID: String): Either[SDESNotificationCreationError, SDESNotification] =
+    for {
+      downloadUrl <- upload.downloadUrl.toRight(MissingDownloadUrl(upload.reference, caseID))
+      fileName    <- sanitisedAndTruncatedFileName(details.fileName)(details.fileMimeType)(upload.reference)
+    } yield SDESNotification(
+      informationType = appConfig.SDESNotificationInfoType,
+      file = SDESNotificationFile(
+        recipientOrSender = appConfig.SDESNotificationFileRecipient,
+        name = fileName,
+        location = downloadUrl,
+        checksum = SDESChecksum(algorithm = appConfig.checksumAlgorithmForFileNotifications, value = details.checksum),
+        size = details.size,
+        properties = Seq(
+          SDESProperties(name = "CaseId", value = caseID),
+          SDESProperties(name = "SourceFileUploadDate", value = details.uploadTimestamp.format(DateHelper.dateTimeFormatter))
+        )
+      ),
+      audit = SDESAudit(correlationID = idGenerator.generateUUID)
+    )
+
+  private def buildMultiplePenaltiesData(penalties: Seq[LPPDetails],
+                                         principalChargeReference: String): Either[MultiplePenaltiesError, MultiplePenaltiesData] =
+    for {
+      firstPenalty           <- penaltyByCategory(penalties, LPPPenaltyCategoryEnum.FirstPenalty, principalChargeReference)
+      secondPenalty          <- penaltyByCategory(penalties, LPPPenaltyCategoryEnum.SecondPenalty, principalChargeReference)
+      firstPenaltyChargeRef  <- chargeReference(firstPenalty)
+      secondPenaltyChargeRef <- chargeReference(secondPenalty)
+    } yield MultiplePenaltiesData(
+      firstPenaltyChargeReference = firstPenaltyChargeRef,
+      firstPenaltyAmount = firstPenalty.penaltyAmountOutstanding.getOrElse(BigDecimal(0)) + firstPenalty.penaltyAmountPaid.getOrElse(BigDecimal(0)),
+      secondPenaltyChargeReference = secondPenaltyChargeRef,
+      secondPenaltyAmount = secondPenalty.penaltyAmountOutstanding.getOrElse(BigDecimal(0)) + secondPenalty.penaltyAmountPaid.getOrElse(BigDecimal(0)),
+      firstPenaltyCommunicationDate = firstPenalty.communicationsDate.getOrElse(appConfig.getTimeMachineDateTime.toLocalDate),
+      secondPenaltyCommunicationDate = secondPenalty.communicationsDate.getOrElse(appConfig.getTimeMachineDateTime.toLocalDate)
+    )
+
+  private def penaltyByCategory(penalties: Seq[LPPDetails],
+                                category: LPPPenaltyCategoryEnum.Value,
+                                principalChargeReference: String): Either[MultiplePenaltiesError, LPPDetails] =
+    penalties.find(_.penaltyCategory == category).toRight(MissingPenaltyCategory(category, principalChargeReference))
+
+  private def chargeReference(penalty: LPPDetails): Either[MultiplePenaltiesError, String] =
+    penalty.penaltyChargeReference.toRight(MissingPenaltyChargeReference(penalty.penaltyCategory, penalty.principalChargeReference))
+
+  private def sequence[E, A](values: Seq[Either[E, A]]): Either[E, Seq[A]] =
+    values.foldRight(Right(Seq.empty[A]): Either[E, Seq[A]]) { (value, acc) =>
+      for {
+        item  <- value
+        items <- acc
+      } yield item +: items
+    }
 
   private def sanitiseFileName(fileName: String)(fileMimeType: String)(fileReference: String): String = {
     if (appConfig.isEnabled(SanitiseFileName)) {
@@ -148,24 +166,55 @@ class AppealService @Inject()(appealsConnector: SubmitAppealConnector,
     }
   }
 
-  private def sanitisedAndTruncatedFileName(fileName: String)(fileMimeType: String)(reference: String): String = {
+  private def sanitisedAndTruncatedFileName(fileName: String)(fileMimeType: String)(reference: String): Either[InvalidFileName, String] = {
     val sanitisedFileName = sanitiseFileName(fileName)(fileMimeType)(reference)
-    if (sanitisedFileName.length > appConfig.maximumFilenameLength) {
-      if (sanitisedFileName.contains(".")) {
-        val fileRegex = "^(.*)(\\.\\w{1,4})$".r
-        sanitisedFileName match {
-          case fileRegex(fileNameMain, fileExtension) =>
-            logger.info(s"[RegimeAppealService][sanitisedAndTruncatedFileName] File name length: ${fileNameMain.length} with reference of: $reference, truncating to ${appConfig.maximumFilenameLength}")
-            fileNameMain.substring(0, Math.min(fileNameMain.length(), appConfig.maximumFilenameLength)) ++ fileExtension
-          case _ => throw new Exception(s"Bad filename: $sanitisedFileName")
-        }
-      } else {
-        logger.info(s"[RegimeAppealService][sanitisedAndTruncatedFileName] File name length: ${sanitisedFileName.length} with reference of: $reference, truncating to ${appConfig.maximumFilenameLength}")
-        sanitisedFileName.substring(0, Math.min(sanitisedFileName.length(), appConfig.maximumFilenameLength))
-      }
+    if (sanitisedFileName.length <= appConfig.maximumFilenameLength) {
+      Right(sanitisedFileName)
+    } else if (!sanitisedFileName.contains(".")) {
+      logger.info(s"[RegimeAppealService][sanitisedAndTruncatedFileName] File name length: ${sanitisedFileName.length} with reference of: $reference, truncating to ${appConfig.maximumFilenameLength}")
+      Right(sanitisedFileName.substring(0, Math.min(sanitisedFileName.length(), appConfig.maximumFilenameLength)))
     } else {
-      sanitisedFileName
+      val fileRegex = "^(.*)(\\.\\w{1,4})$".r
+      sanitisedFileName match {
+        case fileRegex(fileNameMain, fileExtension) =>
+          logger.info(s"[RegimeAppealService][sanitisedAndTruncatedFileName] File name length: ${fileNameMain.length} with reference of: $reference, truncating to ${appConfig.maximumFilenameLength}")
+          Right(fileNameMain.substring(0, Math.min(fileNameMain.length(), appConfig.maximumFilenameLength)) ++ fileExtension)
+        case _ =>
+          Left(InvalidFileName(reference, s"Bad filename: $sanitisedFileName"))
+      }
     }
+  }
+}
 
+object AppealService {
+
+  sealed trait SDESNotificationCreationError {
+    def message: String
+  }
+
+  final case class MissingDownloadUrl(reference: String, caseID: String) extends SDESNotificationCreationError {
+    override val message: String =
+      s"Upload with reference $reference has no downloadUrl (case ID: $caseID)"
+  }
+
+  final case class InvalidFileName(reference: String, reason: String) extends SDESNotificationCreationError {
+    override val message: String =
+      s"Unable to build file notification name for upload with reference $reference: $reason"
+  }
+
+  sealed trait MultiplePenaltiesError {
+    def message: String
+  }
+
+  final case class MissingPenaltyCategory(category: LPPPenaltyCategoryEnum.Value,
+                                          principalChargeReference: String) extends MultiplePenaltiesError {
+    override val message: String =
+      s"Missing $category penalty for principal charge reference $principalChargeReference"
+  }
+
+  final case class MissingPenaltyChargeReference(category: LPPPenaltyCategoryEnum.Value,
+                                                 principalChargeReference: String) extends MultiplePenaltiesError {
+    override val message: String =
+      s"Missing penaltyChargeReference for $category penalty under principal charge reference $principalChargeReference"
   }
 }
