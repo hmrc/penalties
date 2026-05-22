@@ -32,10 +32,12 @@ import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
 import play.api.http.Status
 import play.api.libs.json.Json
-import play.api.mvc.Results.{InternalServerError, Ok}
 import play.api.test.Helpers._
+import services.PenaltiesFrontendService._
+import services.auditing.AuditService
 import services.{PenaltiesFrontendService, PenaltyDetailsService}
 import utils.AuthActionMock
+import utils.DateHelper
 import utils.Logger.logger
 import utils.PagerDutyHelper.PagerDutyKeys
 
@@ -46,7 +48,9 @@ import scala.concurrent.Future
 class PenaltiesFrontendControllerSpec extends SpecBase with LogCapturing with LPPDetailsBase with LSPDetailsBase with FeatureSwitching {
   val mockGetPenaltyDetailsService: PenaltyDetailsService    = mock(classOf[PenaltyDetailsService])
   val mockPenaltiesFrontendService: PenaltiesFrontendService = mock(classOf[PenaltiesFrontendService])
+  val mockAuditService: AuditService                         = mock(classOf[AuditService])
   val mockAuthAction: AuthAction                             = injector.instanceOf(classOf[AuthActionMock])
+  val dateHelper: DateHelper                                 = injector.instanceOf[DateHelper]
 
   implicit val config: play.api.Configuration = appConfig.config
 
@@ -63,6 +67,7 @@ class PenaltiesFrontendControllerSpec extends SpecBase with LogCapturing with LP
   class Setup(isFSEnabled: Boolean = true) {
     reset(mockGetPenaltyDetailsService)
     reset(mockPenaltiesFrontendService)
+    reset(mockAuditService)
 
     disableFeatureSwitch(CallAPI1812HIP)
 
@@ -70,6 +75,8 @@ class PenaltiesFrontendControllerSpec extends SpecBase with LogCapturing with LP
     val controller: PenaltiesFrontendController = new PenaltiesFrontendController(
       mockGetPenaltyDetailsService,
       mockPenaltiesFrontendService,
+      mockAuditService,
+      dateHelper,
       stubControllerComponents(),
       mockAuthAction
     )(global, config)
@@ -117,9 +124,8 @@ class PenaltiesFrontendControllerSpec extends SpecBase with LogCapturing with LP
       when(
         mockPenaltiesFrontendService.handleAndCombineGetFinancialDetailsData(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(
           ArgumentMatchers.any(),
-          ArgumentMatchers.any(),
           ArgumentMatchers.any()))
-        .thenReturn(Future.successful(InternalServerError("")))
+        .thenReturn(Future.successful(Left(FinancialDetailsUnexpectedStatus(Status.INTERNAL_SERVER_ERROR, clearedItemsCallSucceeded = false))))
       val result = controller.getPenaltiesData(regime, idType, id, Some("123456789"))(fakeRequest)
 
       status(result) shouldBe Status.INTERNAL_SERVER_ERROR
@@ -203,9 +209,8 @@ class PenaltiesFrontendControllerSpec extends SpecBase with LogCapturing with LP
       when(
         mockPenaltiesFrontendService.handleAndCombineGetFinancialDetailsData(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(
           ArgumentMatchers.any(),
-          ArgumentMatchers.any(),
           ArgumentMatchers.any()))
-        .thenReturn(Future.successful(Ok(Json.toJson(penaltyDetailsAfterCombining))))
+        .thenReturn(Future.successful(Right(CombinedPenaltyDetails(penaltyDetailsAfterCombining))))
       val result = controller.getPenaltiesData(regime, idType, id, Some("123456789"))(fakeRequest)
       status(result) shouldBe Status.OK
       contentAsJson(result) shouldBe Json.toJson(penaltyDetailsAfterCombining)
@@ -288,9 +293,8 @@ class PenaltiesFrontendControllerSpec extends SpecBase with LogCapturing with LP
       when(
         mockPenaltiesFrontendService.handleAndCombineGetFinancialDetailsData(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(
           ArgumentMatchers.any(),
-          ArgumentMatchers.any(),
           ArgumentMatchers.any()))
-        .thenReturn(Future.successful(Ok(Json.toJson(mockConvertedPenaltyDetails))))
+        .thenReturn(Future.successful(Right(CombinedPenaltyDetails(mockConvertedPenaltyDetails))))
 
       val result = controller.getPenaltiesData(regime, idType, id, Some("123456789"))(fakeRequest)
       status(result) shouldBe Status.OK
@@ -299,7 +303,7 @@ class PenaltiesFrontendControllerSpec extends SpecBase with LogCapturing with LP
       verify(mockPenaltiesFrontendService, times(1)).handleAndCombineGetFinancialDetailsData(
         ArgumentMatchers.any(),
         ArgumentMatchers.any(),
-        ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
+        ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
 
       disableFeatureSwitch(CallAPI1812HIP)
     }
@@ -312,9 +316,8 @@ class PenaltiesFrontendControllerSpec extends SpecBase with LogCapturing with LP
       when(
         mockPenaltiesFrontendService.handleAndCombineGetFinancialDetailsData(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(
           ArgumentMatchers.any(),
-          ArgumentMatchers.any(),
           ArgumentMatchers.any()))
-        .thenReturn(Future.successful(Ok(Json.toJson(mockConvertedPenaltyDetails))))
+        .thenReturn(Future.successful(Right(CombinedPenaltyDetails(mockConvertedPenaltyDetails))))
 
       val result = controller.getPenaltiesData(regime, idType, id, Some("123456789"))(fakeRequest)
       status(result) shouldBe Status.OK
@@ -323,7 +326,7 @@ class PenaltiesFrontendControllerSpec extends SpecBase with LogCapturing with LP
       verify(mockPenaltiesFrontendService, times(1)).handleAndCombineGetFinancialDetailsData(
         ArgumentMatchers.any(),
         ArgumentMatchers.any(),
-        ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
+        ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
     }
 
     s"return ISE (${Status.INTERNAL_SERVER_ERROR}) when unified service call fails" in new Setup {

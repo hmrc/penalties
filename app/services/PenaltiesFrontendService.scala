@@ -19,192 +19,148 @@ package services
 import config.AppConfig
 import connectors.parsers.getFinancialDetails.FinancialDetailsParser._
 import models.AgnosticEnrolmentKey
-import models.auditing.UserHasPenaltyRegimeAuditModel
 import models.getFinancialDetails.{DocumentDetails, FinancialDetails}
 import models.getPenaltyDetails.latePayment.PrincipalChargeMainTr.ManualLPP
 import models.getPenaltyDetails.latePayment._
 import models.getPenaltyDetails.{GetPenaltyDetails, Totalisations}
 import play.api.http.Status.NOT_FOUND
-import play.api.libs.json.Json
-import play.api.mvc.Results.{InternalServerError, NoContent, NotFound, Ok}
-import play.api.mvc.{Request, Result}
-import services.auditing.AuditService
 import uk.gov.hmrc.http.HeaderCarrier
-import utils.Logger.logger
-import utils.PagerDutyHelper.PagerDutyKeys.MALFORMED_RESPONSE_FROM_1811_API
-import utils.{DateHelper, PagerDutyHelper}
+import services.PenaltiesFrontendService._
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class PenaltiesFrontendService @Inject() (getFinancialDetailsService: FinancialDetailsService,
-                                          appConfig: AppConfig,
-                                          dateHelper: DateHelper,
-                                          auditService: AuditService) {
+                                          appConfig: AppConfig) {
 
-  def handleAndCombineGetFinancialDetailsData(penaltyDetails: GetPenaltyDetails, enrolmentKey: AgnosticEnrolmentKey, arn: Option[String])(implicit
-      request: Request[_],
+  def handleAndCombineGetFinancialDetailsData(penaltyDetails: GetPenaltyDetails, enrolmentKey: AgnosticEnrolmentKey, _arn: Option[String])(implicit
       ec: ExecutionContext,
-      hc: HeaderCarrier): Future[Result] =
+      hc: HeaderCarrier): Future[Either[PenaltiesFrontendError, FinancialDetailsCombinationResult]] = {
     getFinancialDetailsService.getFinancialDetails(enrolmentKey, None).flatMap { financialDetailsResponseWithClearedItems =>
-      financialDetailsResponseWithClearedItems.fold(
-        errorResponse =>
-          Future(handleErrorResponseFromGetFinancialDetails(errorResponse, enrolmentKey)(handleNoContent = {
-            logger.info(
-              s"[RegimePenaltiesFrontendService][handleAndCombineGetFinancialDetailsData] - 1811 call returned 404 for $enrolmentKey with NO_DATA_FOUND in response body")
-            if (penaltyDetails.latePaymentPenalty.isEmpty || penaltyDetails.latePaymentPenalty.get.details.isEmpty ||
-              penaltyDetails.latePaymentPenalty.get.details.get.isEmpty) {
-              returnResponse(penaltyDetails, enrolmentKey, arn)
-            } else {
-              NoContent
-            }
-          })),
-        financialDetailsSuccessWithClearedItems => { // NOTE: The decision was taken to make 2 calls to retrieve data with and without cleared items
-          logger.info(
-            s"[RegimePenaltiesFrontendService][handleAndCombineGetFinancialDetailsData] - 1811 clearedItems=true call returned 200 for $enrolmentKey")
+      financialDetailsResponseWithClearedItems match {
+        case Left(FinancialDetailsNoContent) =>
+          val result =
+            if (hasNoLatePaymentPenalties(penaltyDetails)) PenaltyDetailsFromFirstNoContent(penaltyDetails)
+            else NoPenaltyDetailsFromFirstNoContent
+          Future.successful(Right(result))
+
+        case Left(errorResponse) =>
+          Future.successful(Left(toPenaltiesFrontendError(errorResponse, enrolmentKey, clearedItemsCallSucceeded = false)))
+
+        case Right(FinancialDetailsSuccessResponse(financialDetailsWithClearedItems)) =>
           getFinancialDetailsService.getFinancialDetails(enrolmentKey, Some(appConfig.queryParametersForGetFinancialDetailsWithoutClearedItems)).map {
             financialDetailsResponseWithoutClearedItems =>
-              financialDetailsResponseWithoutClearedItems.fold(
-                handleErrorResponseFromGetFinancialDetails(_, enrolmentKey)(handleNoContent = {
-                  logger.info(
-                    s"[RegimePenaltiesFrontendService][handleAndCombineGetFinancialDetailsData] - 1811 call returned 404 for $enrolmentKey with NO_DATA_FOUND in response body")
-                  val newPenaltyDetails = combineAPIData(
-                    penaltyDetails,
-                    financialDetailsSuccessWithClearedItems.asInstanceOf[FinancialDetailsSuccessResponse].financialDetails,
-                    FinancialDetails(None, None))
-                  returnResponse(newPenaltyDetails, enrolmentKey, arn)
-                }),
-                financialDetailsSuccessWithoutClearedItems => {
-                  logger.info(
-                    s"[RegimePenaltiesFrontendService][handleAndCombineGetFinancialDetailsData] - 1811 clearedItems=false call returned 200 for $enrolmentKey")
-                  val newPenaltyDetails = combineAPIData(
-                    penaltyDetails,
-                    financialDetailsSuccessWithClearedItems.asInstanceOf[FinancialDetailsSuccessResponse].financialDetails,
-                    financialDetailsSuccessWithoutClearedItems.asInstanceOf[FinancialDetailsSuccessResponse].financialDetails
-                  )
-                  logger.info(s"[RegimePenaltiesFrontendService][handleAndCombineGetFinancialDetailsData] - 1811 call returned 200 for $enrolmentKey")
-                  returnResponse(newPenaltyDetails, enrolmentKey, arn)
-                }
-              )
+              financialDetailsResponseWithoutClearedItems match {
+                case Left(FinancialDetailsNoContent) =>
+                  combineAPIData(penaltyDetails, financialDetailsWithClearedItems, FinancialDetails(None, None))
+                    .map(PenaltyDetailsFromSecondNoContent)
+                case Left(errorResponse) =>
+                  Left(toPenaltiesFrontendError(errorResponse, enrolmentKey, clearedItemsCallSucceeded = true))
+                case Right(FinancialDetailsSuccessResponse(financialDetailsWithoutClearedItems)) =>
+                  combineAPIData(penaltyDetails, financialDetailsWithClearedItems, financialDetailsWithoutClearedItems)
+                    .map(CombinedPenaltyDetails)
+              }
           }
-        }
-      )
+      }
     }
-
-  def handleErrorResponseFromGetFinancialDetails(financialDetailsResponseWithClearedItems: FinancialDetailsFailure,
-                                                 enrolmentKey: AgnosticEnrolmentKey)(handleNoContent: => Result): Result =
-    financialDetailsResponseWithClearedItems match {
-      case FinancialDetailsNoContent => handleNoContent
-      case FinancialDetailsFailureResponse(status) if status == NOT_FOUND =>
-        logger.info(s"[RegimePenaltiesFrontendService][handleAndCombineGetFinancialDetailsData] - 1811 call returned 404 for $enrolmentKey")
-        NotFound(s"A downstream call returned 404 for $enrolmentKey")
-      case FinancialDetailsFailureResponse(status) =>
-        logger.error(s"[RegimePenaltiesFrontendService][handleAndCombineGetFinancialDetailsData] - 1811 call returned an unexpected status: $status")
-        InternalServerError(s"A downstream call returned an unexpected status: $status")
-      case FinancialDetailsMalformed =>
-        PagerDutyHelper.log("getPenaltiesData", MALFORMED_RESPONSE_FROM_1811_API)
-        logger.error(
-          s"[RegimePenaltiesFrontendService][handleAndCombineGetFinancialDetailsData] - 1811 call returned invalid body - failed to parse financial details response for $enrolmentKey")
-        InternalServerError(s"We were unable to parse penalty data.")
-    }
-
-  private def returnResponse(penaltyDetails: GetPenaltyDetails, enrolmentKey: AgnosticEnrolmentKey, arn: Option[String])(implicit
-      request: Request[_],
-      ec: ExecutionContext,
-      hc: HeaderCarrier): Result = {
-    val hasLSP = penaltyDetails.lateSubmissionPenalty.map(_.summary.activePenaltyPoints).getOrElse(0) > 0
-    val hasLPP = penaltyDetails.latePaymentPenalty.flatMap(_.details.map(_.length)).getOrElse(0) > 0
-
-    if (hasLSP || hasLPP) {
-      val auditModel =
-        UserHasPenaltyRegimeAuditModel(penaltyDetails = penaltyDetails, enrolmentKey = enrolmentKey, arn = arn, dateHelper = dateHelper)
-      auditService.audit(auditModel)
-    }
-    Ok(Json.toJson(penaltyDetails))
   }
+
+  private def toPenaltiesFrontendError(financialDetailsFailure: FinancialDetailsFailure,
+                                       enrolmentKey: AgnosticEnrolmentKey,
+                                       clearedItemsCallSucceeded: Boolean): PenaltiesFrontendError =
+    financialDetailsFailure match {
+      case FinancialDetailsFailureResponse(status) if status == NOT_FOUND =>
+        FinancialDetailsNotFound(enrolmentKey, clearedItemsCallSucceeded)
+      case FinancialDetailsFailureResponse(status) =>
+        FinancialDetailsUnexpectedStatus(status, clearedItemsCallSucceeded)
+      case FinancialDetailsMalformed =>
+        FinancialDetailsMalformedResponse(enrolmentKey, clearedItemsCallSucceeded)
+      case FinancialDetailsNoContent =>
+        FinancialDetailsNoDataFound(enrolmentKey, clearedItemsCallSucceeded)
+    }
 
   def combineAPIData(penaltyDetails: GetPenaltyDetails,
                      financialDetailsWithClearedItems: FinancialDetails,
-                     financialDetailsWithoutClearedItems: FinancialDetails): GetPenaltyDetails = {
-    val allLPPData                     = combineLPPData(penaltyDetails, financialDetailsWithClearedItems)
-    val penaltyDetailsWithCombinedLPPs = penaltyDetails.copy(latePaymentPenalty = Some(LatePaymentPenalty(allLPPData)))
-    val totalisationsCombined          = combineTotalisations(penaltyDetailsWithCombinedLPPs, financialDetailsWithoutClearedItems)
-    totalisationsCombined
-  }
+                     financialDetailsWithoutClearedItems: FinancialDetails): Either[PenaltiesFrontendError, GetPenaltyDetails] =
+    combineLPPData(penaltyDetails, financialDetailsWithClearedItems).map { allLPPData =>
+      val penaltyDetailsWithCombinedLPPs = penaltyDetails.copy(latePaymentPenalty = Some(LatePaymentPenalty(allLPPData)))
+      combineTotalisations(penaltyDetailsWithCombinedLPPs, financialDetailsWithoutClearedItems)
+    }
 
-  private def combineLPPData(penaltyDetails: GetPenaltyDetails, financialDetails: FinancialDetails): Option[Seq[LPPDetails]] = {
-    val optManualLPPs: Option[Seq[DocumentDetails]] =
-      financialDetails.documentDetails.map(_.filter(_.lineItemDetails.exists(_.exists(_.mainTransaction.contains(ManualLPP)))))
-    val optManualLPPsAs1812Models: Option[Seq[LPPDetails]] = optManualLPPs.map(_.map { manualLPPDetails =>
-      val principalChargeReference =
-        manualLPPDetails.chargeReferenceNumber.get // Set to penaltyChargeReference because Manual LPP's do not have principal charges and we don't use this in Manual LPP cases
-      val penaltyAmountPaid =
-        manualLPPDetails.documentTotalAmount.get - manualLPPDetails.documentOutstandingAmount.getOrElse(manualLPPDetails.documentTotalAmount.get)
-      val penaltyChargeCreationDate = manualLPPDetails.issueDate.get
-
-      LPPDetails(
-        penaltyCategory = LPPPenaltyCategoryEnum.ManualLPPenalty,
-        penaltyChargeReference = None,
-        principalChargeReference = principalChargeReference,
-        penaltyChargeCreationDate = Some(penaltyChargeCreationDate),
-        penaltyStatus = LPPPenaltyStatusEnum.Posted,
-        penaltyAmountAccruing = 0,
-        penaltyAmountPosted = manualLPPDetails.documentTotalAmount.get,
-        penaltyAmountOutstanding = manualLPPDetails.documentOutstandingAmount,
-        penaltyAmountPaid = Some(penaltyAmountPaid),
-        principalChargeMainTransaction = ManualLPP,
-        principalChargeBillingFrom = penaltyChargeCreationDate,
-        principalChargeBillingTo = penaltyChargeCreationDate,
-        principalChargeDueDate = penaltyChargeCreationDate,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        LPPDetailsMetadata(
-          mainTransaction = Some(ManualLPP)
-        ),
-        supplement = false // Manual LPPs can only ever be 'supplement = false'
-      )
-    })
-    val manualLPPAs1812Models = optManualLPPsAs1812Models.getOrElse(Seq())
-    if (penaltyDetails.latePaymentPenalty.isEmpty || penaltyDetails.latePaymentPenalty.exists(_.details.isEmpty)) {
-      Some(manualLPPAs1812Models)
-    } else {
-      val optNotManual = financialDetails.copy(documentDetails =
-        financialDetails.documentDetails.map(_.filter(x => !x.lineItemDetails.exists(_.exists(_.mainTransaction.contains(ManualLPP))))))
-      val vatAmounts = optNotManual.documentDetails
-        .map(docs => docs.map(doc => doc.chargeReferenceNumber -> doc.documentOutstandingAmount))
-        .getOrElse(Seq.empty)
-        .toMap
-      if (vatAmounts.isEmpty) {
-        penaltyDetails.latePaymentPenalty.flatMap(
-          _.details.map(
-            _.map(penalty =>
-              penalty.copy(metadata = penalty.metadata.copy(mainTransaction = Some(penalty.principalChargeMainTransaction)))) ++ manualLPPAs1812Models
-          )
-        )
+  private def combineLPPData(penaltyDetails: GetPenaltyDetails,
+                             financialDetails: FinancialDetails): Either[PenaltiesFrontendError, Option[Seq[LPPDetails]]] =
+    manualLPPsAs1812Models(financialDetails).map { manualLPPs =>
+      if (hasNoLatePaymentPenalties(penaltyDetails)) {
+        Some(manualLPPs)
       } else {
-        penaltyDetails.latePaymentPenalty.flatMap(
-          _.details.map(
-            _.map(penalty =>
-              penalty.copy(
-                metadata = penalty.metadata.copy(mainTransaction = Some(penalty.principalChargeMainTransaction)),
-                vatOutstandingAmount = if (vatAmounts.contains(Some(penalty.principalChargeReference))) {
-                  vatAmounts(Some(penalty.principalChargeReference))
-                } else None
-              )) ++ manualLPPAs1812Models
-          )
-        )
+        Some(enrichLatePaymentPenalties(penaltyDetails, financialDetails) ++ manualLPPs)
+      }
+    }
+
+  private def manualLPPsAs1812Models(financialDetails: FinancialDetails): Either[PenaltiesFrontendError, Seq[LPPDetails]] =
+    sequence(manualLPPDocuments(financialDetails).map(manualLPPAs1812Model))
+
+  private def manualLPPDocuments(financialDetails: FinancialDetails): Seq[DocumentDetails] =
+    financialDetails.documentDetails.getOrElse(Seq.empty).filter(isManualLPPDocument)
+
+  private def nonManualLPPDocuments(financialDetails: FinancialDetails): Seq[DocumentDetails] =
+    financialDetails.documentDetails.getOrElse(Seq.empty).filterNot(isManualLPPDocument)
+
+  private def isManualLPPDocument(documentDetails: DocumentDetails): Boolean =
+    documentDetails.lineItemDetails.exists(_.exists(_.mainTransaction.contains(ManualLPP)))
+
+  private def manualLPPAs1812Model(manualLPPDetails: DocumentDetails): Either[PenaltiesFrontendError, LPPDetails] =
+    for {
+      principalChargeReference <- manualLPPDetails.chargeReferenceNumber.toRight(MissingManualLPPField("chargeReferenceNumber"))
+      documentTotalAmount     <- manualLPPDetails.documentTotalAmount.toRight(MissingManualLPPField("documentTotalAmount"))
+      penaltyChargeCreationDate <- manualLPPDetails.issueDate.toRight(MissingManualLPPField("issueDate"))
+      penaltyAmountPaid = documentTotalAmount - manualLPPDetails.documentOutstandingAmount.getOrElse(documentTotalAmount)
+    } yield LPPDetails(
+      penaltyCategory = LPPPenaltyCategoryEnum.ManualLPPenalty,
+      penaltyChargeReference = None,
+      principalChargeReference = principalChargeReference,
+      penaltyChargeCreationDate = Some(penaltyChargeCreationDate),
+      penaltyStatus = LPPPenaltyStatusEnum.Posted,
+      penaltyAmountAccruing = 0,
+      penaltyAmountPosted = documentTotalAmount,
+      penaltyAmountOutstanding = manualLPPDetails.documentOutstandingAmount,
+      penaltyAmountPaid = Some(penaltyAmountPaid),
+      principalChargeMainTransaction = ManualLPP,
+      principalChargeBillingFrom = penaltyChargeCreationDate,
+      principalChargeBillingTo = penaltyChargeCreationDate,
+      principalChargeDueDate = penaltyChargeCreationDate,
+      None,
+      None,
+      None,
+      None,
+      None,
+      None,
+      None,
+      None,
+      None,
+      None,
+      None,
+      None,
+      None,
+      LPPDetailsMetadata(
+        mainTransaction = Some(ManualLPP)
+      ),
+      supplement = false // Manual LPPs can only ever be 'supplement = false'
+    )
+
+  private def enrichLatePaymentPenalties(penaltyDetails: GetPenaltyDetails, financialDetails: FinancialDetails): Seq[LPPDetails] = {
+    val vatOutstandingAmounts = nonManualLPPDocuments(financialDetails)
+      .map(doc => doc.chargeReferenceNumber -> doc.documentOutstandingAmount)
+      .toMap
+
+    latePaymentPenaltyDetails(penaltyDetails).map { penalty =>
+      val penaltyWithMainTransaction = penalty.copy(metadata = penalty.metadata.copy(mainTransaction = Some(penalty.principalChargeMainTransaction)))
+
+      if (vatOutstandingAmounts.isEmpty) {
+        penaltyWithMainTransaction
+      } else {
+        penaltyWithMainTransaction.copy(vatOutstandingAmount = vatOutstandingAmounts.get(Some(penalty.principalChargeReference)).flatten)
       }
     }
   }
@@ -212,7 +168,7 @@ class PenaltiesFrontendService @Inject() (getFinancialDetailsService: FinancialD
   private def combineTotalisations(penaltyDetails: GetPenaltyDetails, financialDetails: FinancialDetails): GetPenaltyDetails = {
     val totalAmountOfManualLPPs: Option[BigDecimal] = penaltyDetails.latePaymentPenalty
       .flatMap(
-        _.details.map(_.filter(_.principalChargeMainTransaction.equals(ManualLPP)).map(_.penaltyAmountOutstanding.getOrElse(BigDecimal(0))).sum)
+        _.details.map(_.filter(_.principalChargeMainTransaction == ManualLPP).map(_.penaltyAmountOutstanding.getOrElse(BigDecimal(0))).sum)
       )
       .fold[Option[BigDecimal]](None)(amount => if (amount == BigDecimal(0)) None else Some(amount))
     (financialDetails.totalisation.isDefined, penaltyDetails.totalisations.isDefined) match {
@@ -253,4 +209,60 @@ class PenaltiesFrontendService @Inject() (getFinancialDetailsService: FinancialD
         penaltyDetails.copy(totalisations = Some(totalisations))
     }
   }
+
+  private def hasNoLatePaymentPenalties(penaltyDetails: GetPenaltyDetails): Boolean =
+    penaltyDetails.latePaymentPenalty.flatMap(_.details).forall(_.isEmpty)
+
+  private def latePaymentPenaltyDetails(penaltyDetails: GetPenaltyDetails): Seq[LPPDetails] =
+    penaltyDetails.latePaymentPenalty.flatMap(_.details).getOrElse(Seq.empty)
+
+  private def sequence[E, A](xs: Seq[Either[E, A]]): Either[E, Seq[A]] =
+    xs.foldRight(Right(Seq.empty): Either[E, Seq[A]]) { (next, accumulated) =>
+      for {
+        value  <- next
+        values <- accumulated
+      } yield value +: values
+    }
+}
+
+object PenaltiesFrontendService {
+
+  sealed trait PenaltiesFrontendError {
+    def message: String
+    def clearedItemsCallSucceeded: Boolean
+  }
+
+  final case class FinancialDetailsNotFound(enrolmentKey: AgnosticEnrolmentKey, clearedItemsCallSucceeded: Boolean)
+      extends PenaltiesFrontendError {
+    override val message: String =
+      s"[RegimePenaltiesFrontendService][handleAndCombineGetFinancialDetailsData] - 1811 call returned 404 for $enrolmentKey"
+  }
+
+  final case class FinancialDetailsUnexpectedStatus(status: Int, clearedItemsCallSucceeded: Boolean) extends PenaltiesFrontendError {
+    override val message: String =
+      s"[RegimePenaltiesFrontendService][handleAndCombineGetFinancialDetailsData] - 1811 call returned an unexpected status: $status"
+  }
+
+  final case class FinancialDetailsMalformedResponse(enrolmentKey: AgnosticEnrolmentKey, clearedItemsCallSucceeded: Boolean)
+      extends PenaltiesFrontendError {
+    override val message: String =
+      s"[RegimePenaltiesFrontendService][handleAndCombineGetFinancialDetailsData] - 1811 call returned invalid body - failed to parse financial details response for $enrolmentKey"
+  }
+
+  final case class FinancialDetailsNoDataFound(enrolmentKey: AgnosticEnrolmentKey, clearedItemsCallSucceeded: Boolean) extends PenaltiesFrontendError {
+    override val message: String =
+      s"[RegimePenaltiesFrontendService][handleAndCombineGetFinancialDetailsData] - 1811 call returned 404 for $enrolmentKey with NO_DATA_FOUND in response body"
+  }
+
+  final case class MissingManualLPPField(fieldName: String) extends PenaltiesFrontendError {
+    override val clearedItemsCallSucceeded: Boolean = true
+    override val message: String =
+      s"[RegimePenaltiesFrontendService][combineAPIData] - Manual LPP document is missing $fieldName"
+  }
+
+  sealed trait FinancialDetailsCombinationResult
+  final case class PenaltyDetailsFromFirstNoContent(penaltyDetails: GetPenaltyDetails) extends FinancialDetailsCombinationResult
+  case object NoPenaltyDetailsFromFirstNoContent extends FinancialDetailsCombinationResult
+  final case class PenaltyDetailsFromSecondNoContent(penaltyDetails: GetPenaltyDetails) extends FinancialDetailsCombinationResult
+  final case class CombinedPenaltyDetails(penaltyDetails: GetPenaltyDetails) extends FinancialDetailsCombinationResult
 }

@@ -31,16 +31,9 @@ import org.mockito.ArgumentMatchers
 import org.mockito.Mockito.{mock, reset, when}
 import play.api.http.Status
 import play.api.http.Status.INTERNAL_SERVER_ERROR
-import play.api.libs.json.Json
-import play.api.mvc.Result
-import play.api.mvc.Results.{Gone, Ok}
 import play.api.test.Helpers._
-import services.auditing.AuditService
 import uk.gov.hmrc.http.HeaderCarrier
-import utils.DateHelper
-import utils.Logger.logger
-import utils.PagerDutyHelper.PagerDutyKeys
-import utils.PagerDutyHelper.PagerDutyKeys.MALFORMED_RESPONSE_FROM_1811_API
+import services.PenaltiesFrontendService._
 
 import java.time.LocalDate
 import scala.concurrent.{ExecutionContext, Future}
@@ -49,9 +42,7 @@ class PenaltiesFrontendServiceSpec extends SpecBase with LogCapturing with LPPDe
   implicit val ec: ExecutionContext                        = injector.instanceOf[ExecutionContext]
   implicit val hc: HeaderCarrier                           = HeaderCarrier()
   val mockAppConfig: AppConfig                             = mock(classOf[AppConfig])
-  val mockAuditService: AuditService                       = mock(classOf[AuditService])
   val mockFinancialDetailsService: FinancialDetailsService = mock(classOf[FinancialDetailsService])
-  val dateHelper: DateHelper                               = injector.instanceOf[DateHelper]
 
   val manualLPP: LPPDetails = LPPDetails(
     penaltyCategory = LPPPenaltyCategoryEnum.ManualLPPenalty,
@@ -102,7 +93,6 @@ class PenaltiesFrontendServiceSpec extends SpecBase with LogCapturing with LPPDe
 
   class Setup {
     reset(mockAppConfig)
-    reset(mockAuditService)
     reset(mockFinancialDetailsService)
     val sampleFinancialDetails: FinancialDetails = FinancialDetails(
       documentDetails = Some(
@@ -125,7 +115,7 @@ class PenaltiesFrontendServiceSpec extends SpecBase with LogCapturing with LPPDe
       totalisation = None
     )
     val penaltiesFrontendService: PenaltiesFrontendService =
-      new PenaltiesFrontendService(mockFinancialDetailsService, mockAppConfig, dateHelper, mockAuditService)
+      new PenaltiesFrontendService(mockFinancialDetailsService, mockAppConfig)
   }
 
   private val enrolmentKey = AgnosticEnrolmentKey(Regime("VATC"), IdType("VRN"), Id("123456789"))
@@ -174,8 +164,8 @@ class PenaltiesFrontendServiceSpec extends SpecBase with LogCapturing with LPPDe
       )
 
       val result = penaltiesFrontendService.combineAPIData(penaltyDetails, financialDetailsWithClearedItems, financialDetailsWithoutClearedItems)
-      result.totalisations.isDefined shouldBe true
-      result.totalisations.get shouldBe expectedResult
+      result.map(_.totalisations.isDefined) shouldBe Right(true)
+      result.map(_.totalisations.get) shouldBe Right(expectedResult)
     }
 
     "combine the financial details totalisations - if totalisations already present (updating LPPPostedAmount with manual LPP amount)" in new Setup {
@@ -221,8 +211,8 @@ class PenaltiesFrontendServiceSpec extends SpecBase with LogCapturing with LPPDe
       )
 
       val result = penaltiesFrontendService.combineAPIData(penaltyDetails, financialDetailsWithClearedItems, financialDetailsWithoutClearedItems)
-      result.totalisations.isDefined shouldBe true
-      result.totalisations.get shouldBe expectedResult
+      result.map(_.totalisations.isDefined) shouldBe Right(true)
+      result.map(_.totalisations.get) shouldBe Right(expectedResult)
     }
 
     "combine the financial details totalisations - if totalisations NOT already present" in new Setup {
@@ -258,8 +248,8 @@ class PenaltiesFrontendServiceSpec extends SpecBase with LogCapturing with LPPDe
       )
 
       val result = penaltiesFrontendService.combineAPIData(penaltyDetails, financialDetailsWithClearedItems, financialDetailsWithoutClearedItems)
-      result.totalisations.isDefined shouldBe true
-      result.totalisations.get shouldBe expectedResult
+      result.map(_.totalisations.isDefined) shouldBe Right(true)
+      result.map(_.totalisations.get) shouldBe Right(expectedResult)
     }
 
     "combine the financial details totalisations - if totalisations NOT already present (inserting manual LPP amount)" in new Setup {
@@ -295,8 +285,8 @@ class PenaltiesFrontendServiceSpec extends SpecBase with LogCapturing with LPPDe
       )
 
       val result = penaltiesFrontendService.combineAPIData(penaltyDetails, financialDetailsWithClearedItems, financialDetailsWithoutClearedItems)
-      result.totalisations.isDefined shouldBe true
-      result.totalisations.get shouldBe expectedResult
+      result.map(_.totalisations.isDefined) shouldBe Right(true)
+      result.map(_.totalisations.get) shouldBe Right(expectedResult)
     }
 
     "construct a manual LPP from the 1811 data and insert a generated LPP entry into the API 1812 data" should {
@@ -493,8 +483,8 @@ class PenaltiesFrontendServiceSpec extends SpecBase with LogCapturing with LPPDe
         )
 
         val result = penaltiesFrontendService.combineAPIData(penaltyDetailsWithFirstAndSecondPenalty, financialDetails, FinancialDetails(None, None))
-        result.latePaymentPenalty.isDefined shouldBe true
-        result.latePaymentPenalty.get shouldBe expectedResult
+        result.map(_.latePaymentPenalty.isDefined) shouldBe Right(true)
+        result.map(_.latePaymentPenalty.get) shouldBe Right(expectedResult)
       }
 
       "append the new data - defaulting the penaltyAmountOutstanding to documentTotalAmount when not present for penaltyAmountPaid" in new Setup {
@@ -690,8 +680,27 @@ class PenaltiesFrontendServiceSpec extends SpecBase with LogCapturing with LPPDe
         )
 
         val result = penaltiesFrontendService.combineAPIData(penaltyDetailsWithFirstAndSecondPenalty, financialDetails, FinancialDetails(None, None))
-        result.latePaymentPenalty.isDefined shouldBe true
-        result.latePaymentPenalty.get shouldBe expectedResult
+        result.map(_.latePaymentPenalty.isDefined) shouldBe Right(true)
+        result.map(_.latePaymentPenalty.get) shouldBe Right(expectedResult)
+      }
+
+      "return a typed error when a manual LPP document is missing a required field" in new Setup {
+        val financialDetails: FinancialDetails = FinancialDetails(
+          documentDetails = Some(
+            Seq(
+              DocumentDetails(
+                chargeReferenceNumber = Some("penalty123456"),
+                documentOutstandingAmount = Some(BigDecimal(45)),
+                lineItemDetails = Some(Seq(LineItemDetails(Some(ManualLPP)))),
+                documentTotalAmount = None,
+                issueDate = Some(LocalDate.of(2023, 4, 1))
+              )
+            )),
+          totalisation = None
+        )
+
+        val result = penaltiesFrontendService.combineAPIData(getPenaltyDetails, financialDetails, FinancialDetails(None, None))
+        result shouldBe Left(MissingManualLPPField("documentTotalAmount"))
       }
     }
 
@@ -802,148 +811,89 @@ class PenaltiesFrontendServiceSpec extends SpecBase with LogCapturing with LPPDe
         )
       )
 
-      val result: GetPenaltyDetails =
+      val result =
         penaltiesFrontendService.combineAPIData(penaltyDetailsWithFirstPenalty, financialDetails, FinancialDetails(None, None))
-      result.latePaymentPenalty.isDefined shouldBe true
-      result.latePaymentPenalty.get shouldBe expectedResult
+      result.map(_.latePaymentPenalty.isDefined) shouldBe Right(true)
+      result.map(_.latePaymentPenalty.get) shouldBe Right(expectedResult)
     }
   }
 
   "handleAndCombineGetFinancialDetailsData" should {
 
-    s"return ISE (${Status.INTERNAL_SERVER_ERROR}) when the first API 1811 call fails" in new Setup {
+    s"return a typed error when the first API 1811 call fails" in new Setup {
       when(mockFinancialDetailsService.getFinancialDetails(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any()))
         .thenReturn(Future.successful(Left(FinancialDetailsFailureResponse(INTERNAL_SERVER_ERROR))))
       val result =
-        penaltiesFrontendService.handleAndCombineGetFinancialDetailsData(getPenaltyDetails, enrolmentKey, None)(fakeRequest, implicitly, implicitly)
-      status(result) shouldBe Status.INTERNAL_SERVER_ERROR
+        penaltiesFrontendService.handleAndCombineGetFinancialDetailsData(getPenaltyDetails, enrolmentKey, None)(implicitly, implicitly)
+      await(result) shouldBe Left(FinancialDetailsUnexpectedStatus(INTERNAL_SERVER_ERROR, clearedItemsCallSucceeded = false))
     }
 
-    s"return ISE (${Status.INTERNAL_SERVER_ERROR}) when the first API 1811 call response body is malformed" in new Setup {
+    "return a typed error when the first API 1811 call response body is malformed" in new Setup {
       when(mockFinancialDetailsService.getFinancialDetails(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any()))
         .thenReturn(Future.successful(Left(FinancialDetailsMalformed)))
-        .thenReturn(Future.successful(Left(FinancialDetailsMalformed)))
-      withCaptureOfLoggingFrom(logger) { logs =>
-        val result = await(
-          penaltiesFrontendService
-            .handleAndCombineGetFinancialDetailsData(getPenaltyDetails, enrolmentKey, None)(fakeRequest, implicitly, implicitly))
-        result.header.status shouldBe Status.INTERNAL_SERVER_ERROR
-        logs.exists(_.getMessage.contains(PagerDutyKeys.MALFORMED_RESPONSE_FROM_1811_API.toString)) shouldBe true
-      }
+      val result = penaltiesFrontendService.handleAndCombineGetFinancialDetailsData(getPenaltyDetails, enrolmentKey, None)(implicitly, implicitly)
+      await(result) shouldBe Left(FinancialDetailsMalformedResponse(enrolmentKey, clearedItemsCallSucceeded = false))
     }
 
-    s"return NOT_FOUND (${Status.NOT_FOUND}) when the first API 1811 call returns no data" in new Setup {
+    "return a typed error when the first API 1811 call returns 404" in new Setup {
       when(mockFinancialDetailsService.getFinancialDetails(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any()))
         .thenReturn(Future.successful(Left(FinancialDetailsFailureResponse(Status.NOT_FOUND))))
-      val result = penaltiesFrontendService.handleAndCombineGetFinancialDetailsData(getPenaltyDetails, enrolmentKey, Some(""))(
-        fakeRequest,
-        implicitly,
-        implicitly)
-      status(result) shouldBe Status.NOT_FOUND
+      val result = penaltiesFrontendService.handleAndCombineGetFinancialDetailsData(getPenaltyDetails, enrolmentKey, Some(""))(implicitly, implicitly)
+      await(result) shouldBe Left(FinancialDetailsNotFound(enrolmentKey, clearedItemsCallSucceeded = false))
     }
 
-    s"return NO_CONTENT (${Status.NO_CONTENT}) when the first API 1811 call returns no data (DATA_NOT_FOUND response)" in new Setup {
+    "return no penalty details when the first API 1811 call returns no data and penalty data contains LPPs" in new Setup {
       when(mockFinancialDetailsService.getFinancialDetails(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any()))
         .thenReturn(Future.successful(Left(FinancialDetailsNoContent)))
-      val result = penaltiesFrontendService.handleAndCombineGetFinancialDetailsData(getPenaltyDetails, enrolmentKey, Some(""))(
-        fakeRequest,
-        implicitly,
-        implicitly)
-      status(result) shouldBe Status.NO_CONTENT
+      val result = penaltiesFrontendService.handleAndCombineGetFinancialDetailsData(getPenaltyDetails, enrolmentKey, Some(""))(implicitly, implicitly)
+      await(result) shouldBe Right(NoPenaltyDetailsFromFirstNoContent)
     }
 
-    s"return ISE (${Status.INTERNAL_SERVER_ERROR}) when the second API 1811 call fails" in new Setup {
+    "return a typed error when the second API 1811 call fails" in new Setup {
       when(mockFinancialDetailsService.getFinancialDetails(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(
         Future.successful(Right(FinancialDetailsSuccessResponse(sampleFinancialDetails))),
         Future.successful(Left(FinancialDetailsFailureResponse(INTERNAL_SERVER_ERROR)))
       )
       val result =
-        penaltiesFrontendService.handleAndCombineGetFinancialDetailsData(getPenaltyDetails, enrolmentKey, None)(fakeRequest, implicitly, implicitly)
-      status(result) shouldBe Status.INTERNAL_SERVER_ERROR
+        penaltiesFrontendService.handleAndCombineGetFinancialDetailsData(getPenaltyDetails, enrolmentKey, None)(implicitly, implicitly)
+      await(result) shouldBe Left(FinancialDetailsUnexpectedStatus(INTERNAL_SERVER_ERROR, clearedItemsCallSucceeded = true))
     }
 
-    s"return ISE (${Status.INTERNAL_SERVER_ERROR}) when the second API 1811 call response body is malformed" in new Setup {
+    "return a typed error when the second API 1811 call response body is malformed" in new Setup {
       when(mockFinancialDetailsService.getFinancialDetails(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(
         Future.successful(Right(FinancialDetailsSuccessResponse(sampleFinancialDetails))),
         Future.successful(Left(FinancialDetailsMalformed))
       )
-      withCaptureOfLoggingFrom(logger) { logs =>
-        val result = await(
-          penaltiesFrontendService
-            .handleAndCombineGetFinancialDetailsData(getPenaltyDetails, enrolmentKey, None)(fakeRequest, implicitly, implicitly))
-        result.header.status shouldBe Status.INTERNAL_SERVER_ERROR
-        logs.exists(_.getMessage.contains(PagerDutyKeys.MALFORMED_RESPONSE_FROM_1811_API.toString)) shouldBe true
-      }
+      val result = penaltiesFrontendService.handleAndCombineGetFinancialDetailsData(getPenaltyDetails, enrolmentKey, None)(implicitly, implicitly)
+      await(result) shouldBe Left(FinancialDetailsMalformedResponse(enrolmentKey, clearedItemsCallSucceeded = true))
     }
 
-    s"return NOT_FOUND (${Status.NOT_FOUND}) when the second API 1811 call returns no data" in new Setup {
+    "return a typed error when the second API 1811 call returns 404" in new Setup {
       when(mockFinancialDetailsService.getFinancialDetails(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(
         Future.successful(Right(FinancialDetailsSuccessResponse(sampleFinancialDetails))),
         Future.successful(Left(FinancialDetailsFailureResponse(Status.NOT_FOUND)))
       )
-      val result = penaltiesFrontendService.handleAndCombineGetFinancialDetailsData(getPenaltyDetails, enrolmentKey, Some(""))(
-        fakeRequest,
-        implicitly,
-        implicitly)
-      status(result) shouldBe Status.NOT_FOUND
+      val result = penaltiesFrontendService.handleAndCombineGetFinancialDetailsData(getPenaltyDetails, enrolmentKey, Some(""))(implicitly, implicitly)
+      await(result) shouldBe Left(FinancialDetailsNotFound(enrolmentKey, clearedItemsCallSucceeded = true))
     }
 
-    s"return OK (${Status.OK}) when the second API 1811 call returns no data (DATA_NOT_FOUND response) - default totalisations field" in new Setup {
+    "return combined penalty details when the second API 1811 call returns no data" in new Setup {
       when(mockFinancialDetailsService.getFinancialDetails(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any()))
         .thenReturn(
           Future.successful(Right(FinancialDetailsSuccessResponse(sampleFinancialDetails))),
           Future.successful(Left(FinancialDetailsNoContent))
         )
-      val result = penaltiesFrontendService.handleAndCombineGetFinancialDetailsData(getPenaltyDetails, enrolmentKey, Some(""))(
-        fakeRequest,
-        implicitly,
-        implicitly)
-      status(result) shouldBe Status.OK
+      val result = penaltiesFrontendService.handleAndCombineGetFinancialDetailsData(getPenaltyDetails, enrolmentKey, Some(""))(implicitly, implicitly)
+      await(result).map(_.isInstanceOf[PenaltyDetailsFromSecondNoContent]) shouldBe Right(true)
     }
 
-    s"return OK (${Status.OK}) when the first 1811 call returns no data (if penalty data contains no LPPs)" in new Setup {
+    "return unchanged penalty details when the first 1811 call returns no data and penalty data contains no LPPs" in new Setup {
       val penaltyDetails: GetPenaltyDetails = getPenaltyDetails.copy(latePaymentPenalty = None)
       when(mockFinancialDetailsService.getFinancialDetails(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any()))
         .thenReturn(Future.successful(Left(FinancialDetailsNoContent)))
       val result =
-        penaltiesFrontendService.handleAndCombineGetFinancialDetailsData(penaltyDetails, enrolmentKey, Some(""))(fakeRequest, implicitly, implicitly)
-      status(result) shouldBe Status.OK
-      contentAsJson(result) shouldBe Json.toJson(penaltyDetails)
-    }
-  }
-
-  "handleErrorResponseFromFinancialDetails" should {
-    s"return NOT_FOUND (${Status.NOT_FOUND})" when {
-      "the status returned from the call is NOT_FOUND" in new Setup {
-        val response: FinancialDetailsFailureResponse = FinancialDetailsFailureResponse(NOT_FOUND)
-        val result: Result = penaltiesFrontendService.handleErrorResponseFromGetFinancialDetails(response, enrolmentKey)(Ok(""))
-        result.header.status shouldBe NOT_FOUND
-      }
-    }
-
-    s"return INTERNAL_SERVER_ERROR (${Status.INTERNAL_SERVER_ERROR})" when {
-      "the status returned from the call is not matched" in new Setup {
-        val response: FinancialDetailsFailureResponse = FinancialDetailsFailureResponse(IM_A_TEAPOT)
-        val result: Result = penaltiesFrontendService.handleErrorResponseFromGetFinancialDetails(response, enrolmentKey)(Ok(""))
-        result.header.status shouldBe INTERNAL_SERVER_ERROR
-      }
-
-      "the response body is malformed - logging a PagerDuty" in new Setup {
-        val response: FinancialDetailsFailure = FinancialDetailsMalformed
-        withCaptureOfLoggingFrom(logger) { logs =>
-          val result: Result = penaltiesFrontendService.handleErrorResponseFromGetFinancialDetails(response, enrolmentKey)(Ok(""))
-          result.header.status shouldBe INTERNAL_SERVER_ERROR
-          logs.exists(_.getMessage.contains(MALFORMED_RESPONSE_FROM_1811_API.toString)) shouldBe true
-        }
-      }
-    }
-
-    "return a custom response" when {
-      s"$FinancialDetailsNoContent is returned from the call" in new Setup {
-        val response: FinancialDetailsFailure = FinancialDetailsNoContent
-        val result: Result                    = penaltiesFrontendService.handleErrorResponseFromGetFinancialDetails(response, enrolmentKey)(Gone(""))
-        result.header.status shouldBe GONE
-      }
+        penaltiesFrontendService.handleAndCombineGetFinancialDetailsData(penaltyDetails, enrolmentKey, Some(""))(implicitly, implicitly)
+      await(result) shouldBe Right(PenaltyDetailsFromFirstNoContent(penaltyDetails))
     }
   }
 }
