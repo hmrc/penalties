@@ -22,7 +22,6 @@ object PenaltyPeriodHelper {
 
   def earliestSubmissionByPenaltyStartDate(submissions: Seq[LateSubmission]): Option[LateSubmission] =
     submissions
-      .flatMap(submission => submission.taxPeriodStartDate.map(startDate => startDate -> submission))
-      .minByOption { case (startDate, _) => startDate }
-      .map { case (_, submission) => submission }
+      .filter(_.taxPeriodStartDate.nonEmpty)
+      .minByOption(_.taxPeriodStartDate)
 }
