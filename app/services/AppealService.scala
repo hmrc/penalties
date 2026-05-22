@@ -84,24 +84,30 @@ class AppealService @Inject()(appealsConnector: SubmitAppealConnector,
                             regime: String): Either[MultiplePenaltiesError, Option[MultiplePenaltiesData]] = {
     val allLPPDetails: Seq[LPPDetails] = penaltyDetails.latePaymentPenalty.flatMap(_.details).getOrElse(Seq.empty)
 
-    allLPPDetails.find(_.penaltyChargeReference.contains(penaltyId)).map { matchedPenalty =>
-      val principalChargeReference = matchedPenalty.principalChargeReference
-      val penaltiesForPrincipalCharge: Seq[LPPDetails] =
-        allLPPDetails.filter(_.principalChargeReference.equals(principalChargeReference))
+    allLPPDetails.find(_.penaltyChargeReference.contains(penaltyId)) match {
+      case None => Right(None)
+      case Some(matchedPenalty) =>
+        val principalChargeReference    = matchedPenalty.principalChargeReference
+        val penaltiesForPrincipalCharge = allLPPDetails.filter(_.principalChargeReference == principalChargeReference)
 
-      val allLppsAreAppealable =
-        if (regime == "ITSA") penaltiesForPrincipalCharge.forall(_.hasNoAppealsOrOnlyFirstStageRejectedAppeals)
-        else penaltiesForPrincipalCharge.forall(_.hasNoAppeals)
-      val areBothPenaltiesPostedAndVATPaid: Boolean = penaltiesForPrincipalCharge.forall { penalty =>
-        penalty.penaltyStatus == LPPPenaltyStatusEnum.Posted && penalty.principalChargeLatestClearing.isDefined
-      }
-
-      val isReturnable = penaltiesForPrincipalCharge.size == 2 && allLppsAreAppealable && areBothPenaltiesPostedAndVATPaid
-
-      if (!isReturnable) Right(None)
-      else buildMultiplePenaltiesData(penaltiesForPrincipalCharge, principalChargeReference).map(Some(_))
-    }.getOrElse(Right(None))
+        if (isReturnable(penaltiesForPrincipalCharge, regime))
+          buildMultiplePenaltiesData(penaltiesForPrincipalCharge, principalChargeReference).map(Some(_))
+        else
+          Right(None)
+    }
   }
+
+  private def isReturnable(penalties: Seq[LPPDetails], regime: String): Boolean =
+    penalties.size == 2 &&
+      penalties.forall(isAppealableUnder(regime)) &&
+      penalties.forall(isPostedAndCleared)
+
+  private def isAppealableUnder(regime: String)(penalty: LPPDetails): Boolean =
+    if (regime == "ITSA") penalty.hasNoAppealsOrOnlyFirstStageRejectedAppeals
+    else penalty.hasNoAppeals
+
+  private def isPostedAndCleared(penalty: LPPDetails): Boolean =
+    penalty.penaltyStatus == LPPPenaltyStatusEnum.Posted && penalty.principalChargeLatestClearing.isDefined
 
   private def createSDESNotification(upload: UploadJourney,
                                      details: UploadDetails,
