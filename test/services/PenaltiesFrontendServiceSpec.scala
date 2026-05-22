@@ -164,8 +164,7 @@ class PenaltiesFrontendServiceSpec extends SpecBase with LogCapturing with LPPDe
       )
 
       val result = penaltiesFrontendService.combineAPIData(penaltyDetails, financialDetailsWithClearedItems, financialDetailsWithoutClearedItems)
-      result.map(_.totalisations.isDefined) shouldBe Right(true)
-      result.map(_.totalisations.get) shouldBe Right(expectedResult)
+      result.map(_.totalisations) shouldBe Right(Some(expectedResult))
     }
 
     "combine the financial details totalisations - if totalisations already present (updating LPPPostedAmount with manual LPP amount)" in new Setup {
@@ -211,8 +210,7 @@ class PenaltiesFrontendServiceSpec extends SpecBase with LogCapturing with LPPDe
       )
 
       val result = penaltiesFrontendService.combineAPIData(penaltyDetails, financialDetailsWithClearedItems, financialDetailsWithoutClearedItems)
-      result.map(_.totalisations.isDefined) shouldBe Right(true)
-      result.map(_.totalisations.get) shouldBe Right(expectedResult)
+      result.map(_.totalisations) shouldBe Right(Some(expectedResult))
     }
 
     "combine the financial details totalisations - if totalisations NOT already present" in new Setup {
@@ -248,8 +246,7 @@ class PenaltiesFrontendServiceSpec extends SpecBase with LogCapturing with LPPDe
       )
 
       val result = penaltiesFrontendService.combineAPIData(penaltyDetails, financialDetailsWithClearedItems, financialDetailsWithoutClearedItems)
-      result.map(_.totalisations.isDefined) shouldBe Right(true)
-      result.map(_.totalisations.get) shouldBe Right(expectedResult)
+      result.map(_.totalisations) shouldBe Right(Some(expectedResult))
     }
 
     "combine the financial details totalisations - if totalisations NOT already present (inserting manual LPP amount)" in new Setup {
@@ -285,8 +282,7 @@ class PenaltiesFrontendServiceSpec extends SpecBase with LogCapturing with LPPDe
       )
 
       val result = penaltiesFrontendService.combineAPIData(penaltyDetails, financialDetailsWithClearedItems, financialDetailsWithoutClearedItems)
-      result.map(_.totalisations.isDefined) shouldBe Right(true)
-      result.map(_.totalisations.get) shouldBe Right(expectedResult)
+      result.map(_.totalisations) shouldBe Right(Some(expectedResult))
     }
 
     "construct a manual LPP from the 1811 data and insert a generated LPP entry into the API 1812 data" should {
@@ -483,8 +479,7 @@ class PenaltiesFrontendServiceSpec extends SpecBase with LogCapturing with LPPDe
         )
 
         val result = penaltiesFrontendService.combineAPIData(penaltyDetailsWithFirstAndSecondPenalty, financialDetails, FinancialDetails(None, None))
-        result.map(_.latePaymentPenalty.isDefined) shouldBe Right(true)
-        result.map(_.latePaymentPenalty.get) shouldBe Right(expectedResult)
+        result.map(_.latePaymentPenalty) shouldBe Right(Some(expectedResult))
       }
 
       "append the new data - defaulting the penaltyAmountOutstanding to documentTotalAmount when not present for penaltyAmountPaid" in new Setup {
@@ -680,8 +675,7 @@ class PenaltiesFrontendServiceSpec extends SpecBase with LogCapturing with LPPDe
         )
 
         val result = penaltiesFrontendService.combineAPIData(penaltyDetailsWithFirstAndSecondPenalty, financialDetails, FinancialDetails(None, None))
-        result.map(_.latePaymentPenalty.isDefined) shouldBe Right(true)
-        result.map(_.latePaymentPenalty.get) shouldBe Right(expectedResult)
+        result.map(_.latePaymentPenalty) shouldBe Right(Some(expectedResult))
       }
 
       "return a typed error when a manual LPP document is missing a required field" in new Setup {
@@ -813,8 +807,7 @@ class PenaltiesFrontendServiceSpec extends SpecBase with LogCapturing with LPPDe
 
       val result =
         penaltiesFrontendService.combineAPIData(penaltyDetailsWithFirstPenalty, financialDetails, FinancialDetails(None, None))
-      result.map(_.latePaymentPenalty.isDefined) shouldBe Right(true)
-      result.map(_.latePaymentPenalty.get) shouldBe Right(expectedResult)
+      result.map(_.latePaymentPenalty) shouldBe Right(Some(expectedResult))
     }
   }
 

@@ -160,7 +160,7 @@ class PenaltiesFrontendService @Inject() (getFinancialDetailsService: FinancialD
       if (vatOutstandingAmounts.isEmpty) {
         penaltyWithMainTransaction
       } else {
-        penaltyWithMainTransaction.copy(vatOutstandingAmount = vatOutstandingAmounts.get(Some(penalty.principalChargeReference)).flatten)
+        penaltyWithMainTransaction.copy(vatOutstandingAmount = vatOutstandingAmounts.getOrElse(Some(penalty.principalChargeReference), None))
       }
     }
   }

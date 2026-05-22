@@ -131,6 +131,31 @@ class PenaltiesFrontendControllerSpec extends SpecBase with LogCapturing with LP
       status(result) shouldBe Status.INTERNAL_SERVER_ERROR
     }
 
+    s"return ISE (${Status.INTERNAL_SERVER_ERROR}) and log when financial details combination returns a typed parsing error" in new Setup(
+      isFSEnabled = true) {
+      val getPenaltyDetails: GetPenaltyDetails = GetPenaltyDetails(
+        totalisations = None,
+        lateSubmissionPenalty = None,
+        latePaymentPenalty = Some(LatePaymentPenalty(Some(Seq(lpp2)), ManualLPPIndicator = None)),
+        breathingSpace = None
+      )
+      when(mockGetPenaltyDetailsService.getPenaltyDetails(ArgumentMatchers.any())(ArgumentMatchers.any()))
+        .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetails))))
+      when(
+        mockPenaltiesFrontendService.handleAndCombineGetFinancialDetailsData(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(
+          ArgumentMatchers.any(),
+          ArgumentMatchers.any()))
+        .thenReturn(Future.successful(Left(MissingManualLPPField("documentTotalAmount"))))
+
+      withCaptureOfLoggingFrom(logger) { logs =>
+        val result = controller.getPenaltiesData(regime, idType, id, Some("123456789"))(fakeRequest)
+
+        status(result) shouldBe Status.INTERNAL_SERVER_ERROR
+        contentAsString(result) shouldBe "We were unable to parse penalty data."
+        logs.exists(_.getMessage.contains("[RegimePenaltiesFrontendService][combineAPIData] - Manual LPP document is missing documentTotalAmount")) shouldBe true
+      }
+    }
+
     s"return OK based on the result of the service call" in new Setup(isFSEnabled = true) {
       val getPenaltyDetails: GetPenaltyDetails = GetPenaltyDetails(
         totalisations = None,
