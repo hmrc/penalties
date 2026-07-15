@@ -107,7 +107,7 @@ object HIPAppealParser {
     implicit val format: Format[HIPErrorResponse] = Json.format[HIPErrorResponse]
   }
 
-  val nonAlertingAppealErrorReasons: Seq[String] = Seq(
+  val nonAlertingAppealErrorReasons: Seq[String] = Seq( // These error messages are not actioned (see DL-17864)
     "No valid agent relationship",
     "ETMP has indicated that the penalty has already expired or has been reversed"
   )

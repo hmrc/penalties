@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,17 +30,15 @@ class HIPAppealsParserSpec extends SpecBase with LogCapturing {
 
   class Setup(status: Int, optJson: Option[JsValue] = None, responseHeaders: Map[String, Seq[String]] = Map.empty) {
 
-    private val httpMethod                     = "POST"
-    private val url                            = "/"
     val httpResponse: AnyRef with HttpResponse = HttpResponse.apply(status, optJson.getOrElse(JsString("")), responseHeaders)
 
-    def readResponse: AppealsParser.AppealSubmissionResponse = HIPAppealParser.HIPAppealSubmissionResponseReads.read(httpMethod, url, httpResponse)
+    def readResponse: AppealsParser.AppealSubmissionResponse = HIPAppealParser.HIPAppealSubmissionResponseReads.read("POST", "/", httpResponse)
 
   }
 
-  val validModel: AppealResponseModel = AppealResponseModel("PR-1234")
+  private val validModel: AppealResponseModel = AppealResponseModel("PR-1234")
 
-  val responseJson: JsValue = Json.parse(
+  private val responseJson: JsValue = Json.parse(
     s"""
       |{
       | "caseID": "PR-1234"
