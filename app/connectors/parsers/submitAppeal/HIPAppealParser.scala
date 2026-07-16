@@ -46,7 +46,9 @@ object HIPAppealParser {
           Left(DuplicateAppeal)
 
         case status if is4xx(status) =>
-          PagerDutyHelper.log("HIPAppealSubmissionResponseReads", RECEIVED_4XX_FROM_1808_API)
+          if (errorResponseHasAnAlertingReason(response.body)) {
+            PagerDutyHelper.log("HIPAppealSubmissionResponseReads", RECEIVED_4XX_FROM_1808_API)
+          }
           val (status, message) = extractResponse(response)
           logger.error(s"[HIPAppealSubmissionResponseReads][read]: Unexpected response, status $status returned with reason: $message")
           Left(BadRequest)
@@ -104,4 +106,13 @@ object HIPAppealParser {
   object HIPErrorResponse {
     implicit val format: Format[HIPErrorResponse] = Json.format[HIPErrorResponse]
   }
+
+  val nonAlertingAppealErrorReasons: Seq[String] = Seq( // These error messages are not actioned (see DL-17864)
+    "No valid agent relationship",
+    "ETMP has indicated that the penalty has already expired or has been reversed"
+  )
+
+  private def errorResponseHasAnAlertingReason(responseBody: String): Boolean =
+    nonAlertingAppealErrorReasons.forall(!responseBody.contains(_))
+
 }
