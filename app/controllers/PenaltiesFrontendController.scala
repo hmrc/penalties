@@ -16,7 +16,6 @@
 
 package controllers
 
-import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser._
 import controllers.auth.AuthAction
 import models.{AgnosticEnrolmentKey, Id, IdType, Regime}
 import play.api.Configuration

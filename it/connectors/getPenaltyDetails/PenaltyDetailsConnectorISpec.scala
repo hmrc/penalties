@@ -17,7 +17,6 @@
 package connectors.getPenaltyDetails
 
 import config.featureSwitches.{CallAPI1812ETMP, FeatureSwitching}
-import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser.{GetPenaltyDetailsFailureResponse, GetPenaltyDetailsMalformed, GetPenaltyDetailsNoContent, GetPenaltyDetailsResponse, GetPenaltyDetailsSuccessResponse}
 import models.getPenaltyDetails.GetPenaltyDetails
 import models.getPenaltyDetails.appealInfo.AppealInformationType
 import models.getPenaltyDetails.lateSubmission._

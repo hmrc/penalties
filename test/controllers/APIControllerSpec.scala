@@ -26,7 +26,6 @@ import connectors.parsers.getFinancialDetails.FinancialDetailsParser.{
   FinancialDetailsNoContent,
   FinancialDetailsSuccessResponse
 }
-import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser._
 import controllers.auth.AuthAction
 import models.getFinancialDetails.{DocumentDetails, FinancialDetails, LineItemDetails}
 import models.getPenaltyDetails.latePayment.PrincipalChargeMainTr.{ManualLPP, VATReturnCharge}

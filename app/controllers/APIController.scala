@@ -20,8 +20,6 @@ import config.featureSwitches.{CallAPI1812HIP, FeatureSwitching}
 import connectors.getPenaltyDetails.{HIPPenaltyDetailsConnector, PenaltyDetailsConnector}
 import connectors.parsers.getFinancialDetails.FinancialDetailsParser
 import connectors.parsers.getFinancialDetails.FinancialDetailsParser.FinancialDetailsSuccessResponse
-import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser
-import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser.{GetPenaltyDetailsResponse, GetPenaltyDetailsSuccessResponse}
 import controllers.auth.AuthAction
 import models.api.APIModel
 import models.auditing.{ThirdParty1812APIRetrievalRegimeAuditModel, ThirdPartyAPI1811RetrievalRegimeAuditModel, UserHasPenaltyRegimeAuditModel}

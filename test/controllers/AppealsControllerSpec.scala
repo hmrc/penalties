@@ -20,11 +20,6 @@ import base.{LogCapturing, SpecBase}
 import config.AppConfig
 import config.featureSwitches.{CallAPI1812HIP, FeatureSwitching}
 import connectors.FileNotificationOrchestratorConnector
-import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser.{
-  GetPenaltyDetailsFailureResponse,
-  GetPenaltyDetailsMalformed,
-  GetPenaltyDetailsSuccessResponse
-}
 import connectors.parsers.submitAppeal.AppealsParser.UnexpectedFailure
 import controllers.auth.AuthAction
 import models.appeals.AppealTypeEnum.{Additional, Late_Payment, Late_Submission}

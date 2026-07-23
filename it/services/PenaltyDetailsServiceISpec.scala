@@ -17,7 +17,6 @@
 package services
 
 import config.featureSwitches.{CallAPI1812HIP, FeatureSwitching}
-import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser._
 import models.getPenaltyDetails.appealInfo.{AppealInformationType, AppealLevelEnum}
 import models.getPenaltyDetails.breathingSpace.BreathingSpace
 import models.getPenaltyDetails.latePayment.PrincipalChargeMainTr.VATReturnCharge

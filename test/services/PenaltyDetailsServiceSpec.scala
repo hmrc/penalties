@@ -20,13 +20,6 @@ import base.{LPPDetailsBase, LogCapturing, SpecBase}
 import config.AppConfig
 import config.featureSwitches.{CallAPI1812HIP, FeatureSwitching}
 import connectors.getPenaltyDetails.{HIPPenaltyDetailsConnector, PenaltyDetailsConnector}
-import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser.{
-  GetPenaltyDetailsFailureResponse,
-  GetPenaltyDetailsMalformed,
-  GetPenaltyDetailsNoContent,
-  GetPenaltyDetailsResponse,
-  GetPenaltyDetailsSuccessResponse
-}
 import models.getPenaltyDetails.appealInfo.{AppealInformationType, AppealLevelEnum}
 import models.getPenaltyDetails.breathingSpace.BreathingSpace
 import models.getPenaltyDetails.latePayment.PrincipalChargeMainTr.VATReturnCharge

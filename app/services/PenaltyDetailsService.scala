@@ -19,7 +19,6 @@ package services
 import config.featureSwitches.{CallAPI1812HIP, FeatureSwitching}
 import connectors.getPenaltyDetails.{HIPPenaltyDetailsConnector, PenaltyDetailsConnector}
 import connectors.parsers.getPenaltyDetails.HIPPenaltyDetailsParser._
-import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser._
 import models.AgnosticEnrolmentKey
 import play.api.Configuration
 import uk.gov.hmrc.http.HeaderCarrier

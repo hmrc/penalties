@@ -18,11 +18,6 @@ package controllers
 
 import base.{LPPDetailsBase, LSPDetailsBase, LogCapturing, SpecBase}
 import config.featureSwitches.{CallAPI1812HIP, FeatureSwitching}
-import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser.{
-  GetPenaltyDetailsFailureResponse,
-  GetPenaltyDetailsMalformed,
-  GetPenaltyDetailsSuccessResponse
-}
 import controllers.auth.AuthAction
 import models.getPenaltyDetails.latePayment.PrincipalChargeMainTr.{VATReturnCharge, VATReturnFirstLPP, VATReturnSecondLPP}
 import models.getPenaltyDetails.latePayment._

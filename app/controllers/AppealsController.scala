@@ -18,8 +18,6 @@ package controllers
 
 import config.AppConfig
 import connectors.FileNotificationOrchestratorConnector
-import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser
-import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser.{GetPenaltyDetailsSuccessResponse, GetPenaltyDetailsResponse}
 import controllers.auth.AuthAction
 import models.appeals.AppealTypeEnum._
 import models.appeals._
