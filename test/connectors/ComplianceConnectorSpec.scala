@@ -249,4 +249,5 @@ class ComplianceConnectorSpec extends SpecBase with LogCapturing {
       }
     }
   }
+
 }
