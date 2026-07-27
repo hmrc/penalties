@@ -17,7 +17,7 @@
 package controllers
 
 import base.{LogCapturing, SpecBase}
-import config.featureSwitches.{CallAPI1811HIP, CallAPI1812HIP, FeatureSwitching}
+import config.featureSwitches.FeatureSwitching
 import connectors.getFinancialDetails.FinancialDetailsConnector
 import connectors.getPenaltyDetails.{HIPPenaltyDetailsConnector, PenaltyDetailsConnector}
 import connectors.parsers.getFinancialDetails.FinancialDetailsParser.{
@@ -187,21 +187,9 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
       filterService,
       mockAuthAction
     )
-  }
-  trait HipSetup extends Setup {
-    enableFeatureSwitch(CallAPI1811HIP)
-    enableFeatureSwitch(CallAPI1812HIP)
 
     def mockHipConnectorResponse(response: HttpResponse): OngoingStubbing[Future[HttpResponse]] =
       when(mockHIPPenaltyDetailsConnector.getPenaltyDetailsForAPI(any(), any())(any()))
-        .thenReturn(Future.successful(response))
-  }
-  trait IfSetup extends Setup {
-    disableFeatureSwitch(CallAPI1811HIP)
-    disableFeatureSwitch(CallAPI1812HIP)
-
-    def mockIfConnectorResponse(response: HttpResponse): OngoingStubbing[Future[HttpResponse]] =
-      when(mockGetPenaltyDetailsConnector.getPenaltyDetailsForAPI(any(), any())(any()))
         .thenReturn(Future.successful(response))
   }
 
@@ -411,21 +399,21 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
         )))
     )
 
-    s"return ISE (${Status.INTERNAL_SERVER_ERROR}) when the call fails" in new IfSetup {
+    s"return ISE (${Status.INTERNAL_SERVER_ERROR}) when the call fails" in new Setup {
       when(mockGetPenaltyDetailsService.getPenaltyDetails(any())(any()))
         .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(Status.INTERNAL_SERVER_ERROR))))
       private val result = controller.getSummaryData(regime = Regime("VATC"), idType = IdType("VRN"), id = Id("123456789"))(fakeRequest)
       status(result) shouldBe Status.INTERNAL_SERVER_ERROR
     }
 
-    s"return NOT_FOUND (${Status.NOT_FOUND}) when the call returns not found" in new IfSetup {
+    s"return NOT_FOUND (${Status.NOT_FOUND}) when the call returns not found" in new Setup {
       when(mockGetPenaltyDetailsService.getPenaltyDetails(any())(any()))
         .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(Status.NOT_FOUND))))
       private val result = controller.getSummaryData(regime = Regime("VATC"), idType = IdType("VRN"), id = Id("123456789"))(fakeRequest)
       status(result) shouldBe Status.NOT_FOUND
     }
 
-    s"return NO_CONTENT (${Status.NO_CONTENT}) when the call returns invalid ID" in new IfSetup {
+    s"return NO_CONTENT (${Status.NO_CONTENT}) when the call returns invalid ID" in new Setup {
       when(mockGetPenaltyDetailsService.getPenaltyDetails(any())(any()))
         .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(Status.UNPROCESSABLE_ENTITY))))
       when(mockAPIService.checkIfHasAnyPenaltyData(any())).thenReturn(false)
@@ -439,7 +427,7 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
       verify(mockAuditService, times(0)).audit(any())(any(), any(), any())
     }
 
-    s"return NO_CONTENT (${Status.NO_CONTENT}) when the call returns an empty body" in new IfSetup {
+    s"return NO_CONTENT (${Status.NO_CONTENT}) when the call returns an empty body" in new Setup {
       when(mockGetPenaltyDetailsService.getPenaltyDetails(any())(any()))
         .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetailsEmptyBody))))
       when(mockAPIService.checkIfHasAnyPenaltyData(any())).thenReturn(false)
@@ -457,14 +445,14 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
       verify(mockAuditService, times(0)).audit(any())(any(), any(), any())
     }
 
-    s"return NO_CONTENT (${Status.NO_CONTENT}) when the VRN is found but has no data" in new IfSetup {
+    s"return NO_CONTENT (${Status.NO_CONTENT}) when the VRN is found but has no data" in new Setup {
       when(mockGetPenaltyDetailsService.getPenaltyDetails(any())(any()))
         .thenReturn(Future.successful(Left(GetPenaltyDetailsNoContent)))
       private val result = controller.getSummaryData(regime = Regime("VATC"), idType = IdType("VRN"), id = Id("123456789"))(fakeRequest)
       status(result) shouldBe Status.NO_CONTENT
     }
 
-    s"return ISE (${Status.INTERNAL_SERVER_ERROR}) when the call returns malformed data" in new IfSetup {
+    s"return ISE (${Status.INTERNAL_SERVER_ERROR}) when the call returns malformed data" in new Setup {
       when(mockGetPenaltyDetailsService.getPenaltyDetails(any())(any()))
         .thenReturn(Future.successful(Left(GetPenaltyDetailsMalformed)))
       withCaptureOfLoggingFrom(logger) { logs =>
@@ -474,7 +462,7 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
       }
     }
 
-    s"return OK (${Status.OK}) when the call returns some data and can be parsed to the correct response" in new IfSetup {
+    s"return OK (${Status.OK}) when the call returns some data and can be parsed to the correct response" in new Setup {
       when(mockAPIService.checkIfHasAnyPenaltyData(any())).thenReturn(true)
       when(mockAPIService.getNumberOfEstimatedPenalties(any())).thenReturn(2)
       when(mockGetPenaltyDetailsService.getPenaltyDetails(any())(any()))
@@ -500,7 +488,7 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
       verify(mockAuditService, times(1)).audit(any())(any(), any(), any())
     }
 
-    s"return OK (${Status.OK}) when there are no estimated LPPs in penalty details" in new IfSetup {
+    s"return OK (${Status.OK}) when there are no estimated LPPs in penalty details" in new Setup {
       when(mockAPIService.checkIfHasAnyPenaltyData(any())).thenReturn(true)
       when(mockAPIService.getNumberOfEstimatedPenalties(any())).thenReturn(0)
       when(mockGetPenaltyDetailsService.getPenaltyDetails(any())(any()))
@@ -525,7 +513,7 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
       )
     }
 
-    s"return OK (${Status.OK}) when ManualLPPIndicator is true and there is a Manual LPP in the 1811 details" in new IfSetup {
+    s"return OK (${Status.OK}) when ManualLPPIndicator is true and there is a Manual LPP in the 1811 details" in new Setup {
       when(mockAPIService.checkIfHasAnyPenaltyData(any())).thenReturn(true)
       when(mockAPIService.getNumberOfEstimatedPenalties(any())).thenReturn(2)
       when(mockGetFinancialDetailsService.getFinancialDetails(any(), any())(any()))
@@ -552,7 +540,7 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
       )
     }
 
-    s"return OK (${Status.OK}) when ManualLPPIndicator is true and but there is no Manual LPP in the 1811 details" in new IfSetup {
+    s"return OK (${Status.OK}) when ManualLPPIndicator is true and but there is no Manual LPP in the 1811 details" in new Setup {
       when(mockAPIService.checkIfHasAnyPenaltyData(any())).thenReturn(true)
       when(mockAPIService.getNumberOfEstimatedPenalties(any())).thenReturn(2)
       when(mockGetFinancialDetailsService.getFinancialDetails(any(), any())(any()))
@@ -579,7 +567,7 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
       )
     }
 
-    s"return OK (${Status.OK}) when ManualLPPIndicator is true but the 1811 returns a failure response" in new IfSetup {
+    s"return OK (${Status.OK}) when ManualLPPIndicator is true but the 1811 returns a failure response" in new Setup {
       when(mockAPIService.checkIfHasAnyPenaltyData(any())).thenReturn(true)
       when(mockAPIService.getNumberOfEstimatedPenalties(any())).thenReturn(2)
       when(mockGetFinancialDetailsService.getFinancialDetails(any(), any())(any()))
@@ -606,7 +594,7 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
       )
     }
 
-    s"return OK (${Status.OK}) when ManualLPPIndicator is true but the 1811 returns No Content" in new IfSetup {
+    s"return OK (${Status.OK}) when ManualLPPIndicator is true but the 1811 returns No Content" in new Setup {
       when(mockAPIService.checkIfHasAnyPenaltyData(any())).thenReturn(true)
       when(mockAPIService.getNumberOfEstimatedPenalties(any())).thenReturn(2)
       when(mockGetFinancialDetailsService.getFinancialDetails(any(), any())(any()))
@@ -634,7 +622,7 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
       )
     }
 
-    s"return OK (${Status.OK}) when ManualLPPIndicator is true but the 1811 returns a Malformed Response, which is logged out" in new IfSetup {
+    s"return OK (${Status.OK}) when ManualLPPIndicator is true but the 1811 returns a Malformed Response, which is logged out" in new Setup {
       when(mockAPIService.checkIfHasAnyPenaltyData(any())).thenReturn(true)
       when(mockAPIService.getNumberOfEstimatedPenalties(any())).thenReturn(2)
       when(mockGetFinancialDetailsService.getFinancialDetails(any(), any())(any()))
@@ -669,9 +657,7 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
 
   "getFinancialDetails" should {
     s"return OK (${Status.OK}) when a JSON payload is received from EIS (auditing the response)" when {
-      "calling HIP" should {
-        Seq(OK, CREATED).foreach { responseStatus =>
-          s"response status is $responseStatus" in new HipSetup {
+          s"response status is $CREATED" in new Setup {
             private val sampleAPI1811Response = Json.parse("""
                 |{
                 |  "success": {
@@ -773,7 +759,7 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
 
             when(mockGetFinancialDetailsService
               .getFinancialDetailsForAPI(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any())(any()))
-              .thenReturn(Future.successful(HttpResponse.apply(responseStatus, sampleAPI1811Response.toString)))
+              .thenReturn(Future.successful(HttpResponse.apply(CREATED, sampleAPI1811Response.toString)))
             private val result = controller.getFinancialDetails(
               regime = Regime("VATC"),
               idType = IdType("VRN"),
@@ -797,138 +783,10 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
             contentAsJson(result) shouldBe sampleAPI1811Response
             verify(mockAuditService, times(1)).audit(any())(any(), any(), any())
           }
-        }
-      }
-
-      "calling IF" should {
-        Seq(OK, CREATED).foreach { responseStatus =>
-          s"response status is $responseStatus" in new IfSetup {
-            private val sampleAPI1811Response = Json.parse("""
-          {
-              |  "totalisation": {
-              |    "regimeTotalisation": {
-              |      "totalAccountOverdue": "1000.0,",
-              |      "totalAccountNotYetDue": "250.0,",
-              |      "totalAccountCredit": "40.0,",
-              |      "totalAccountBalance": 1210
-              |    },
-              |    "targetedSearch_SelectionCriteriaTotalisation": {
-              |      "totalOverdue": "100.0,",
-              |      "totalNotYetDue": "0.0,",
-              |      "totalBalance": "100.0,",
-              |      "totalCredit": "10.0,",
-              |      "totalCleared": 50
-              |    },
-              |    "additionalReceivableTotalisations": {
-              |      "totalAccountPostedInterest": "-99999999999.99,",
-              |      "totalAccountAccruingInterest": -99999999999.99
-              |    }
-              |  },
-              |  "documentDetails": [
-              |    {
-              |      "documentNumber": "187346702498,",
-              |      "documentType": "TRM New Charge,",
-              |      "chargeReferenceNumber": "XP001286394838,",
-              |      "businessPartnerNumber": "100893731,",
-              |      "contractAccountNumber": "900726630,",
-              |      "contractAccountCategory": "VAT,",
-              |      "contractObjectNumber": "104920928302302,",
-              |      "contractObjectType": "ZVAT,",
-              |      "postingDate": "2022-01-01,",
-              |      "issueDate": "2022-01-01,",
-              |      "documentTotalAmount": "100.0,",
-              |      "documentClearedAmount": "100.0,",
-              |      "documentOutstandingAmount": "0.0,",
-              |      "documentLockDetails": {
-              |        "lockType": "Payment,",
-              |        "lockStartDate": "2022-01-01,",
-              |        "lockEndDate": "2022-01-01"
-              |      },
-              |      "documentInterestTotals": {
-              |        "interestPostedAmount": "13.12,",
-              |        "interestPostedChargeRef": "XB001286323438,",
-              |        "interestAccruingAmount": 12.1
-              |      },
-              |      "documentPenaltyTotals": [
-              |        {
-              |          "penaltyType": "LPP1,",
-              |          "penaltyStatus": "POSTED,",
-              |          "penaltyAmount": "10.01,",
-              |          "postedChargeReference": "XR00123933492"
-              |        }
-              |      ],
-              |      "lineItemDetails": [
-              |        {
-              |          "itemNumber": "0001,",
-              |          "subItemNumber": "003,",
-              |          "mainTransaction": "4576,",
-              |          "subTransaction": "1000,",
-              |          "chargeDescription": "VAT Return,",
-              |          "periodFromDate": "2022-01-01,",
-              |          "periodToDate": "2022-01-31,",
-              |          "periodKey": "22A1,",
-              |          "netDueDate": "2022-02-08,",
-              |          "formBundleNumber": "125435934761,",
-              |          "statisticalKey": "1,",
-              |          "amount": "3420.0,",
-              |          "clearingDate": "2022-02-09,",
-              |          "clearingReason": "Payment at External Payment Collector Reported,",
-              |          "clearingDocument": "719283701921,",
-              |          "outgoingPaymentMethod": "B,",
-              |          "ddCollectionInProgress": "true,",
-              |          "lineItemLockDetails": [
-              |            {
-              |              "lockType": "Payment,",
-              |              "lockStartDate": "2022-01-01,",
-              |              "lockEndDate": "2022-01-01"
-              |            }
-              |          ],
-              |          "lineItemInterestDetails": {
-              |            "interestKey": "String,",
-              |            "currentInterestRate": "-999.999999,",
-              |            "interestStartDate": "1920-02-29,",
-              |            "interestPostedAmount": "-99999999999.99,",
-              |            "interestAccruingAmount": -99999999999.99
-              |          }
-              |        }
-              |      ]
-              |    }
-              |  ]
-              |}""".stripMargin)
-
-            when(mockGetFinancialDetailsService
-              .getFinancialDetailsForAPI(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any())(any()))
-              .thenReturn(Future.successful(HttpResponse.apply(responseStatus, sampleAPI1811Response.toString)))
-            private val result = controller.getFinancialDetails(
-              regime = Regime("VATC"),
-              idType = IdType("VRN"),
-              id = Id("123456789"),
-              searchType = Some("CHGREF"),
-              searchItem = Some("XC00178236592"),
-              dateType = Some("BILLING"),
-              dateFrom = Some("2020-10-03"),
-              dateTo = Some("2021-07-12"),
-              includeClearedItems = Some(false),
-              includeStatisticalItems = Some(true),
-              includePaymentOnAccount = Some(true),
-              addRegimeTotalisation = Some(false),
-              addLockInformation = Some(true),
-              addPenaltyDetails = Some(true),
-              addPostedInterestDetails = Some(true),
-              addAccruingInterestDetails = Some(true)
-            )(fakeRequest)
-
-            status(result) shouldBe Status.OK
-            contentAsJson(result) shouldBe sampleAPI1811Response
-            verify(mockAuditService, times(1)).audit(any())(any(), any(), any())
-          }
-        }
-      }
     }
 
     s"return NOT_FOUND (${Status.NOT_FOUND}) and audit the response" when {
-      "calling HIP" should {
-        "the call returns a 404" in new HipSetup {
+        "the call returns a 404" in new Setup {
           when(
             mockGetFinancialDetailsService
               .getFinancialDetailsForAPI(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any())(any()))
@@ -958,7 +816,7 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
           verify(mockAuditService, times(1)).audit(any())(any(), any(), any())
         }
 
-        "the call returns a 422-016" in new HipSetup {
+        "the call returns a 422-016" in new Setup {
           val hipInvalidIdError = """{ "errors": { "processingDate": "2025-03-03", "code": "016", "text": "Invalid ID Number" } }"""
           when(
             mockGetFinancialDetailsService
@@ -988,7 +846,7 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
           verify(mockAuditService, times(1)).audit(any())(any(), any(), any())
         }
 
-        "the call returns a 422-018" in new HipSetup {
+        "the call returns a 422-018" in new Setup {
           val hipNoDataError = """{ "errors": { "processingDate": "2025-03-03", "code": "018", "text": "No Data Identified" } }"""
           when(
             mockGetFinancialDetailsService
@@ -1017,102 +875,9 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
           status(result) shouldBe Status.NOT_FOUND
           verify(mockAuditService, times(1)).audit(any())(any(), any(), any())
         }
-      }
-
-      "calling IF" should {
-        "the call returns a 404" in new IfSetup {
-          when(
-            mockGetFinancialDetailsService
-              .getFinancialDetailsForAPI(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any())(any()))
-            .thenReturn(Future.successful(HttpResponse.apply(NOT_FOUND, """{"error": "NOT_FOUND"}""")))
-
-          private val result = controller.getFinancialDetails(
-            regime = Regime("VATC"),
-            idType = IdType("VRN"),
-            id = Id("123456789"),
-            searchType = Some("CHGREF"),
-            searchItem = Some("XC00178236592"),
-            dateType = Some("BILLING"),
-            dateFrom = Some("2020-10-03"),
-            dateTo = Some("2021-07-12"),
-            includeClearedItems = Some(false),
-            includeStatisticalItems = Some(true),
-            includePaymentOnAccount = Some(true),
-            addRegimeTotalisation = Some(false),
-            addLockInformation = Some(true),
-            addPenaltyDetails = Some(true),
-            addPostedInterestDetails = Some(true),
-            addAccruingInterestDetails = Some(true)
-          )(fakeRequest)
-
-          status(result) shouldBe Status.NOT_FOUND
-          verify(mockAuditService, times(1)).audit(any())(any(), any(), any())
-        }
-
-        "the call returns a 422-016" in new IfSetup {
-          val hipInvalidIdError = """{"errors":{"processingDate":"2025-03-03", "code":"016", "text":"Invalid ID Number"}}"""
-          when(
-            mockGetFinancialDetailsService
-              .getFinancialDetailsForAPI(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any())(any()))
-            .thenReturn(Future.successful(HttpResponse.apply(UNPROCESSABLE_ENTITY, hipInvalidIdError)))
-
-          private val result = controller.getFinancialDetails(
-            regime = Regime("VATC"),
-            idType = IdType("VRN"),
-            id = Id("123456789"),
-            searchType = Some("CHGREF"),
-            searchItem = Some("XC00178236592"),
-            dateType = Some("BILLING"),
-            dateFrom = Some("2020-10-03"),
-            dateTo = Some("2021-07-12"),
-            includeClearedItems = Some(false),
-            includeStatisticalItems = Some(true),
-            includePaymentOnAccount = Some(true),
-            addRegimeTotalisation = Some(false),
-            addLockInformation = Some(true),
-            addPenaltyDetails = Some(true),
-            addPostedInterestDetails = Some(true),
-            addAccruingInterestDetails = Some(true)
-          )(fakeRequest)
-
-          status(result) shouldBe Status.NOT_FOUND
-          verify(mockAuditService, times(1)).audit(any())(any(), any(), any())
-        }
-
-        "the call returns a 422-018" in new IfSetup {
-          val hipInvalidIdError = """{"errors":{"processingDate":"2025-03-03", "code":"018", "text":"No Data Identified"}}"""
-          when(
-            mockGetFinancialDetailsService
-              .getFinancialDetailsForAPI(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any())(any()))
-            .thenReturn(Future.successful(HttpResponse.apply(UNPROCESSABLE_ENTITY, hipInvalidIdError)))
-
-          private val result = controller.getFinancialDetails(
-            regime = Regime("VATC"),
-            idType = IdType("VRN"),
-            id = Id("123456789"),
-            searchType = Some("CHGREF"),
-            searchItem = Some("XC00178236592"),
-            dateType = Some("BILLING"),
-            dateFrom = Some("2020-10-03"),
-            dateTo = Some("2021-07-12"),
-            includeClearedItems = Some(false),
-            includeStatisticalItems = Some(true),
-            includePaymentOnAccount = Some(true),
-            addRegimeTotalisation = Some(false),
-            addLockInformation = Some(true),
-            addPenaltyDetails = Some(true),
-            addPostedInterestDetails = Some(true),
-            addAccruingInterestDetails = Some(true)
-          )(fakeRequest)
-
-          status(result) shouldBe Status.NOT_FOUND
-          verify(mockAuditService, times(1)).audit(any())(any(), any(), any())
-        }
-      }
     }
 
-    s"return the status from EIS when the call returns a non 200 or 404 status (auditing the response)" when {
-      "calling HIP" in new HipSetup {
+    s"return the status from EIS when the call returns a non 200 or 404 status (auditing the response)" in new Setup {
         when(
           mockGetFinancialDetailsService
             .getFinancialDetailsForAPI(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any())(any()))
@@ -1144,53 +909,11 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
         status(result) shouldBe Status.INTERNAL_SERVER_ERROR
         verify(mockAuditService, times(1)).audit(any())(any(), any(), any())
       }
-
-      "calling IF" in new IfSetup {
-        when(
-          mockGetFinancialDetailsService
-            .getFinancialDetailsForAPI(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any())(any()))
-          .thenReturn(Future.successful(HttpResponse.apply(INTERNAL_SERVER_ERROR, "INTERNAL_SERVER_ERROR")))
-
-        private val result = controller.getFinancialDetails(
-          regime = Regime("VATC"),
-          idType = IdType("VRN"),
-          id = Id("123456789"),
-          searchType = Some("CHGREF"),
-          searchItem = Some("XC00178236592"),
-          dateType = Some("BILLING"),
-          dateFrom = Some("2020-10-03"),
-          dateTo = Some("2021-07-12"),
-          includeClearedItems = Some(false),
-          includeStatisticalItems = Some(true),
-          includePaymentOnAccount = Some(true),
-          addRegimeTotalisation = Some(false),
-          addLockInformation = Some(true),
-          addPenaltyDetails = Some(true),
-          addPostedInterestDetails = Some(true),
-          addAccruingInterestDetails = Some(true)
-        )(fakeRequest)
-
-        status(result) shouldBe Status.INTERNAL_SERVER_ERROR
-        verify(mockAuditService, times(1)).audit(any())(any(), any(), any())
-      }
-    }
   }
 
   "getPenaltyDetails" should {
-    s"return OK (${Status.OK}) when a valid JSON payload is returned from the connector (auditing the response)" when {
-      "calling the IF connector" in new IfSetup {
-        mockIfConnectorResponse(HttpResponse.apply(OK, sampleAPI1812Response.toString))
-
-        private val result =
-          controller.getPenaltyDetails(regime = Regime("VATC"), idType = IdType("VRN"), id = Id("123456789"), dateLimit = Some("02"))(fakeRequest)
-        status(result) shouldBe Status.OK
-        contentAsJson(result) shouldBe sampleAPI1812Response
-        verify(mockAuditService, times(1)).audit(any())(any(), any(), any())
-        verify(mockHIPPenaltyDetailsConnector, times(0)).getPenaltyDetailsForAPI(any(), any())(any())
-        verify(mockGetPenaltyDetailsConnector, times(1)).getPenaltyDetailsForAPI(any(), any())(any())
-      }
-
-      "calling the HIP connector" in new HipSetup {
+    s"return OK (${Status.OK}) and audit the response" when {
+      "a valid JSON payload is returned from the connector" in new Setup {
         val sampleAPI1812ResponseWithHipWrapper: JsValue = Json.parse("""
             |{
             |  "success": {
@@ -1296,7 +1019,7 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
     }
 
     s"return NOT_FOUND (${Status.NOT_FOUND}) and audit the response" when {
-      "the call returns a 404" in new HipSetup {
+      "the call returns a 404" in new Setup {
         mockHipConnectorResponse(
           HttpResponse.apply(NOT_FOUND, """{ "errors": { "processingDate": "2025-04-24T12:00:00Z", "code": "404", "text": "NOT_FOUND" } }"""))
 
@@ -1307,7 +1030,7 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
         verify(mockAuditService, times(1)).audit(any())(any(), any(), any())
       }
 
-      "the call returns a 422-016" in new HipSetup {
+      "the call returns a 422-016" in new Setup {
         val hipInvalidIdError = """{ "errors": { "processingDate": "2025-03-03", "code": "016", "text": "Invalid ID Number" } }"""
         mockHipConnectorResponse(HttpResponse.apply(UNPROCESSABLE_ENTITY, hipInvalidIdError))
 
@@ -1319,7 +1042,7 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
       }
     }
 
-    "return the status from EIS when the call returns a non 200 or 404 status (auditing the response)" in new HipSetup {
+    "return the status from EIS when the call returns a non 200 or 404 status (auditing the response)" in new Setup {
       mockHipConnectorResponse(
         HttpResponse(
           INTERNAL_SERVER_ERROR,
@@ -1409,7 +1132,7 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
       breathingSpace = None
     )
 
-    s"return OK (${Status.OK}) when unified service returns penalty data" in new HipSetup {
+    s"return OK (${Status.OK}) when unified service returns penalty data" in new Setup {
       when(mockGetPenaltyDetailsService.getPenaltyDetails(any())(any()))
         .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(penaltyDetailsWithData))))
       when(mockAPIService.checkIfHasAnyPenaltyData(any())).thenReturn(true)
@@ -1436,7 +1159,7 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
       contentAsJson(result) shouldBe expectedJson
     }
 
-    s"return NO_CONTENT (${Status.NO_CONTENT}) when unified service returns no penalty data" in new IfSetup {
+    s"return NO_CONTENT (${Status.NO_CONTENT}) when unified service returns no penalty data" in new Setup {
       when(mockGetPenaltyDetailsService.getPenaltyDetails(any())(any()))
         .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(penaltyDetailsEmptyBody))))
       when(mockAPIService.checkIfHasAnyPenaltyData(any())).thenReturn(false)
@@ -1452,7 +1175,7 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
       }
     }
 
-    s"return NOT_FOUND (${Status.NOT_FOUND}) when unified service returns 404" in new IfSetup {
+    s"return NOT_FOUND (${Status.NOT_FOUND}) when unified service returns 404" in new Setup {
       when(mockGetPenaltyDetailsService.getPenaltyDetails(any())(any()))
         .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(NOT_FOUND))))
 
@@ -1461,16 +1184,7 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
       contentAsString(result) shouldBe s"A downstream call returned 404 for VRN: 123456789"
     }
 
-    s"return ISE (${Status.INTERNAL_SERVER_ERROR}) when unified service returns unexpected status" in new IfSetup {
-      when(mockGetPenaltyDetailsService.getPenaltyDetails(any())(any()))
-        .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(INTERNAL_SERVER_ERROR))))
-
-      private val result = controller.getSummaryData(regime = Regime("VATC"), idType = IdType("VRN"), id = Id("123456789"))(fakeRequest)
-      status(result) shouldBe Status.INTERNAL_SERVER_ERROR
-      contentAsString(result) should include("A downstream call returned an unexpected status:")
-    }
-
-    s"return ISE (${Status.INTERNAL_SERVER_ERROR}) when unified service returns malformed data" in new IfSetup {
+    s"return ISE (${Status.INTERNAL_SERVER_ERROR}) when unified service returns malformed data" in new Setup {
       when(mockGetPenaltyDetailsService.getPenaltyDetails(any())(any()))
         .thenReturn(Future.successful(Left(GetPenaltyDetailsMalformed)))
 
@@ -1481,12 +1195,21 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
       }
     }
 
-    s"return NO_CONTENT (${Status.NO_CONTENT}) when unified service returns no content" in new IfSetup {
+    s"return NO_CONTENT (${Status.NO_CONTENT}) when unified service returns no content" in new Setup {
       when(mockGetPenaltyDetailsService.getPenaltyDetails(any())(any()))
         .thenReturn(Future.successful(Left(GetPenaltyDetailsNoContent)))
 
       private val result = controller.getSummaryData(regime = Regime("VATC"), idType = IdType("VRN"), id = Id("123456789"))(fakeRequest)
       status(result) shouldBe Status.NO_CONTENT
+    }
+
+    s"return the original error's status when unified service returns an unexpected status" in new Setup {
+      when(mockGetPenaltyDetailsService.getPenaltyDetails(any())(any()))
+        .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(TOO_MANY_REQUESTS))))
+
+      private val result = controller.getSummaryData(regime = Regime("VATC"), idType = IdType("VRN"), id = Id("123456789"))(fakeRequest)
+      status(result) shouldBe Status.TOO_MANY_REQUESTS
+      contentAsString(result) should include(s"A downstream call returned an unexpected status: $TOO_MANY_REQUESTS")
     }
   }
 }

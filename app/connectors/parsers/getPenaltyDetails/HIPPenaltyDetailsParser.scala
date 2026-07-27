@@ -98,7 +98,7 @@ object HIPPenaltyDetailsParser {
   implicit object HIPPenaltyDetailsReads extends HttpReads[HIPPenaltyDetailsResponse] with SafeHttpReads {
     override def read(method: String, url: String, response: HttpResponse): HIPPenaltyDetailsResponse = {
       val status = response.status
-      val body = Option(response.body).getOrElse("")
+      val body   = Option(response.body).getOrElse("")
       status match {
         case OK =>
           parseJson(body) match {
@@ -114,10 +114,10 @@ object HIPPenaltyDetailsParser {
               logger.info("[HIPPenaltyDetailsReads] Non-JSON 422 response received")
               Left(HIPPenaltyDetailsFailureResponse(UNPROCESSABLE_ENTITY))
           }
-        case status@(BAD_REQUEST | UNAUTHORIZED | FORBIDDEN | NOT_FOUND | UNSUPPORTED_MEDIA_TYPE) =>
-          PagerDutyHelper.log("HIPPenaltyDetailsReads", RECEIVED_4XX_FROM_1812_API)
+        case status if alertingPagerDutyStatuses.contains(status) =>
+          PagerDutyHelper.logStatusCode("HIPPenaltyDetailsReads", status)(RECEIVED_4XX_FROM_1812_API, RECEIVED_5XX_FROM_1812_API)
           handleErrorResponseSafe(response)
-        case status@(BAD_GATEWAY | INTERNAL_SERVER_ERROR) =>
+        case status if nonAlertingPagerDutyStatuses.contains(status) =>
           logger.error(s"[HIPPenaltyDetailsReads][read] Downstream error status=$status")
           handleErrorResponseSafe(response)
         case status =>
@@ -128,12 +128,16 @@ object HIPPenaltyDetailsParser {
       }
     }
 
+    private[parsers] val alertingPagerDutyStatuses =
+      Set(BAD_REQUEST, UNAUTHORIZED, FORBIDDEN, NOT_FOUND, UNSUPPORTED_MEDIA_TYPE, INTERNAL_SERVER_ERROR)
+    private[parsers] val nonAlertingPagerDutyStatuses = Set(BAD_GATEWAY, TOO_MANY_REQUESTS, 499, GATEWAY_TIMEOUT)
+
     private def handleErrorResponseSafe(response: HttpResponse): Left[HIPPenaltyDetailsFailure, Nothing] = {
-      val body = Option(response.body).getOrElse("")
+      val body   = Option(response.body).getOrElse("")
       val status = response.status
       parseJson(body) match {
         case Some(json) =>
-          val error = (json \ "response" \ "error").validate[TechnicalError]
+          val error  = (json \ "response" \ "error").validate[TechnicalError]
           val errors = (json \ "response" \ "failures").validate[Seq[HipWrappedError]]
           val message = (error, errors) match {
             case (JsSuccess(e, _), _) =>
@@ -147,8 +151,9 @@ object HIPPenaltyDetailsParser {
           Left(HIPPenaltyDetailsFailureResponse(status))
         case None =>
           val fallbackMessage = classifyNonJson(body)
+          val overrideStatus = if (fallbackMessage == "Bad Gateway") BAD_GATEWAY else status
           logger.info(s"[HIPPenaltyDetailsParser][handleErrorResponse] $status Non-JSON error: $fallbackMessage")
-          Left(HIPPenaltyDetailsFailureResponse(status))
+          Left(HIPPenaltyDetailsFailureResponse(overrideStatus))
       }
     }
 

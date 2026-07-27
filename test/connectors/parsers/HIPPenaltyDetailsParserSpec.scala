@@ -18,6 +18,7 @@ package connectors.parsers
 
 import base.LogCapturing
 import connectors.parsers.getPenaltyDetails.HIPPenaltyDetailsParser
+import connectors.parsers.getPenaltyDetails.HIPPenaltyDetailsParser.HIPPenaltyDetailsReads.{alertingPagerDutyStatuses, nonAlertingPagerDutyStatuses}
 import connectors.parsers.getPenaltyDetails.HIPPenaltyDetailsParser._
 import models.getPenaltyDetails.latePayment.PrincipalChargeMainTr.VATReturnCharge
 import models.hipPenaltyDetails.PenaltyDetails
@@ -25,7 +26,7 @@ import models.hipPenaltyDetails.latePayment.{LPPDetails, LPPPenaltyCategoryEnum,
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import play.api.http.Status
-import play.api.http.Status.{BAD_REQUEST, IM_A_TEAPOT, INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY}
+import play.api.http.Status._
 import play.api.libs.json.Json
 import uk.gov.hmrc.http.HttpResponse
 import utils.Logger.logger
@@ -363,37 +364,8 @@ class HIPPenaltyDetailsParserSpec extends AnyWordSpec with Matchers with LogCapt
       }
     }
 
-    "will return a HIPPenaltyDetailsFailureResponse for complex error body" when {
-      "parsing an error with a html response body bad gateway" in {
-        val technicalError         =  """<html> <head><title>502 Bad Gateway</title></head> <body> <center>
-                                        |<h1>502 Bad Gateway</h1></center> <hr><center>nginx/1.29.6</center> </body> </html>""".stripMargin
-        val technicalErrorResponse = HttpResponse(status = INTERNAL_SERVER_ERROR, body = technicalError)
-
-        withCaptureOfLoggingFrom(logger) { logs =>
-          val result      = penaltyDetailsParserReads(technicalErrorResponse)
-          val expectedLog = s"[HIPPenaltyDetailsParser][handleErrorResponse] 500 Non-JSON error: Bad Gateway"
-          logs.exists(_.getMessage.contains(expectedLog)) shouldBe true
-          result shouldBe Left(HIPPenaltyDetailsFailureResponse(INTERNAL_SERVER_ERROR))
-        }
-      }
-
-      "parsing an error with proper json response body but unexpected one" in {
-        val hipWrappedError =
-          """{"incidentReference":"LTM000429"}""".stripMargin
-        val technicalErrorResponse = HttpResponse(status = BAD_REQUEST, body = hipWrappedError)
-
-        withCaptureOfLoggingFrom(logger) { logs =>
-          val result      = penaltyDetailsParserReads(technicalErrorResponse)
-          val expectedLog = """[HIPPenaltyDetailsReads][handleErrorResponse] 400 Parsed downstream error: {"incidentReference":"LTM000429"}"""
-          logs.exists(_.getMessage.contains(expectedLog)) shouldBe true
-          result shouldBe Left(HIPPenaltyDetailsFailureResponse(BAD_REQUEST))
-        }
-      }
-    }
-
-
-    "will return a HIPPenaltyDetailsFailureResponse" when {
-      "parsing an error with a TechnicalError response body" in {
+    "return a HIPPenaltyDetailsFailureResponse with the original status and handle the response body" when {
+      "parsing an error with the expected TechnicalError response body" in {
         val technicalError         = """{"response":{"error":{"code": "errorCode", "message": "errorMessage", "logId": "errorLogId"}}}"""
         val technicalErrorResponse = HttpResponse(status = INTERNAL_SERVER_ERROR, body = technicalError)
 
@@ -404,7 +376,8 @@ class HIPPenaltyDetailsParserSpec extends AnyWordSpec with Matchers with LogCapt
           result shouldBe Left(HIPPenaltyDetailsFailureResponse(INTERNAL_SERVER_ERROR))
         }
       }
-      "parsing an error with an array of HipWrappedError response body" in {
+
+      "parsing an error with the expected array of HipWrappedError response body" in {
         val hipWrappedError =
           """{"response":{"failures":[
             |{"type": "errorType", "reason": "errorReason"},
@@ -419,6 +392,48 @@ class HIPPenaltyDetailsParserSpec extends AnyWordSpec with Matchers with LogCapt
           result shouldBe Left(HIPPenaltyDetailsFailureResponse(BAD_REQUEST))
         }
       }
+
+      "parsing an error with proper json response body but unexpected format" in {
+        val unexpectedJsonError =
+          """{"incidentReference":"LTM000429"}""".stripMargin
+        val technicalErrorResponse = HttpResponse(status = BAD_REQUEST, body = unexpectedJsonError)
+
+        withCaptureOfLoggingFrom(logger) { logs =>
+          val result      = penaltyDetailsParserReads(technicalErrorResponse)
+          val expectedLog = """[HIPPenaltyDetailsReads][handleErrorResponse] 400 Parsed downstream error: {"incidentReference":"LTM000429"}"""
+          logs.exists(_.getMessage.contains(expectedLog)) shouldBe true
+          result shouldBe Left(HIPPenaltyDetailsFailureResponse(BAD_REQUEST))
+        }
+      }
+
+      "parsing an error with an unexpected html response body" in {
+        val htmlError =
+          """<html> <head><title>Send timeout</title></head> <body> <center>
+            |<h1>Send timeout</h1></center> <hr><center>nginx/1.29.6</center> </body> </html>""".stripMargin
+        val technicalErrorResponse = HttpResponse(status = INTERNAL_SERVER_ERROR, body = htmlError)
+
+        withCaptureOfLoggingFrom(logger) { logs =>
+          val result      = penaltyDetailsParserReads(technicalErrorResponse)
+          val expectedLog = s"[HIPPenaltyDetailsParser][handleErrorResponse] 500 Non-JSON error: Timeout from downstream"
+          logs.exists(_.getMessage.contains(expectedLog)) shouldBe true
+          result shouldBe Left(HIPPenaltyDetailsFailureResponse(INTERNAL_SERVER_ERROR))
+        }
+      }
+    }
+
+    "return a HIPPenaltyDetailsFailureResponse, extracting the 502 status from a HTML wrapped BadGateway response body" when {
+      "parsing an unexpected error with a BAD_GATEWAY html response body" in {
+        val badGatewayHtmlError = """<html> <head><title>502 Bad Gateway</title></head> <body> <center>
+                                        |<h1>502 Bad Gateway</h1></center> <hr><center>nginx/1.29.6</center> </body> </html>""".stripMargin
+        val technicalErrorResponse = HttpResponse(status = INTERNAL_SERVER_ERROR, body = badGatewayHtmlError)
+
+        withCaptureOfLoggingFrom(logger) { logs =>
+          val result      = penaltyDetailsParserReads(technicalErrorResponse)
+          val expectedLog = s"[HIPPenaltyDetailsParser][handleErrorResponse] 500 Non-JSON error: Bad Gateway"
+          logs.exists(_.getMessage.contains(expectedLog)) shouldBe true
+          result shouldBe Left(HIPPenaltyDetailsFailureResponse(BAD_GATEWAY))
+        }
+      }
     }
 
     "parsing an unknown error (e.g. IM A TEAPOT - 418) - and log a PagerDuty" in {
@@ -428,6 +443,38 @@ class HIPPenaltyDetailsParserSpec extends AnyWordSpec with Matchers with LogCapt
         val result = penaltyDetailsParserReads(imATeapotHttpResponse)
         logs.exists(_.getMessage.contains(PagerDutyKeys.RECEIVED_4XX_FROM_1812_API.toString)) shouldBe true
         result shouldBe Left(HIPPenaltyDetailsFailureResponse(IM_A_TEAPOT))
+      }
+    }
+
+    "raise a PagerDuty if the response contains a status from the 'alertingPagerDutyStatuses' set, e.g." when {
+      alertingPagerDutyStatuses.foreach { alertingStatus =>
+        s"response has status '$alertingStatus', log should contain RECEIVED_4XX_FROM_1812_API or RECEIVED_5XX_FROM_1812_API" in {
+          val response = HttpResponse.apply(status = alertingStatus, body = "")
+
+          withCaptureOfLoggingFrom(logger) { logs =>
+            val result = penaltyDetailsParserReads(response)
+            logs.exists(log =>
+              log.getMessage.contains(PagerDutyKeys.RECEIVED_4XX_FROM_1812_API.toString) ||
+                log.getMessage.contains(PagerDutyKeys.RECEIVED_5XX_FROM_1812_API.toString)) shouldBe true
+            result shouldBe Left(HIPPenaltyDetailsFailureResponse(alertingStatus))
+          }
+        }
+      }
+    }
+
+    "NOT raise a PagerDuty if the response contains a status from the 'nonAlertingPagerDutyStatuses' set, e.g." when {
+      nonAlertingPagerDutyStatuses.foreach { alertingStatus =>
+        s"response has status '$alertingStatus', log should NOT contain RECEIVED_4XX_FROM_1812_API or RECEIVED_5XX_FROM_1812_API" in {
+          val response = HttpResponse.apply(status = alertingStatus, body = "")
+
+          withCaptureOfLoggingFrom(logger) { logs =>
+            val result = penaltyDetailsParserReads(response)
+            logs.exists(log =>
+              log.getMessage.contains(PagerDutyKeys.RECEIVED_4XX_FROM_1812_API.toString) ||
+                log.getMessage.contains(PagerDutyKeys.RECEIVED_5XX_FROM_1812_API.toString)) shouldBe false
+            result shouldBe Left(HIPPenaltyDetailsFailureResponse(alertingStatus))
+          }
+        }
       }
     }
   }

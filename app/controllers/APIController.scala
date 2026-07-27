@@ -58,45 +58,45 @@ class APIController @Inject()(auditService: AuditService,
 
   def getSummaryData(regime: Regime, idType: IdType, id: Id): Action[AnyContent] = authAction.async {
     implicit request => {
-      val agnosticEnrolmenKey = AgnosticEnrolmentKey(regime, idType, id)
+      val agnosticEnrolmentKey = AgnosticEnrolmentKey(regime, idType, id)
 
-      getPenaltyDetailsService.getPenaltyDetails(agnosticEnrolmenKey).flatMap {
-        handlePenaltyDetailsResponse(_, agnosticEnrolmenKey)
+      getPenaltyDetailsService.getPenaltyDetails(agnosticEnrolmentKey).flatMap {
+        handlePenaltyDetailsResponse(_, agnosticEnrolmentKey)
       }
     }
   }
 
-  private def handlePenaltyDetailsResponse(response: GetPenaltyDetailsResponse, agnosticEnrolmenKey: AgnosticEnrolmentKey)(implicit request: Request[_], hc: HeaderCarrier): Future[Result] = {
+  private def handlePenaltyDetailsResponse(response: GetPenaltyDetailsResponse, agnosticEnrolmentKey: AgnosticEnrolmentKey)(implicit request: Request[_], hc: HeaderCarrier): Future[Result] = {
     response.fold({
       case PenaltyDetailsParser.GetPenaltyDetailsFailureResponse(status) if status == BAD_REQUEST =>
-        Future(NotFound(s"A downstream call returned 400 for ${agnosticEnrolmenKey.idType.value}: ${agnosticEnrolmenKey.id.value}"))
+        Future(NotFound(s"A downstream call returned 400 for ${agnosticEnrolmentKey.idType.value}: ${agnosticEnrolmentKey.id.value}"))
       case PenaltyDetailsParser.GetPenaltyDetailsFailureResponse(status) if status == NOT_FOUND =>
-        Future(NotFound(s"A downstream call returned 404 for ${agnosticEnrolmenKey.idType.value}: ${agnosticEnrolmenKey.id.value}"))
+        Future(NotFound(s"A downstream call returned 404 for ${agnosticEnrolmentKey.idType.value}: ${agnosticEnrolmentKey.id.value}"))
       case PenaltyDetailsParser.GetPenaltyDetailsFailureResponse(status) if status == UNPROCESSABLE_ENTITY =>
         val responsePayload = GetPenaltyDetailsSuccessResponse(GetPenaltyDetails(totalisations = None, lateSubmissionPenalty = None, latePaymentPenalty = None, breathingSpace = None))
-        Future(returnResponseForAPI(responsePayload.penaltyDetails, agnosticEnrolmenKey))
-      case PenaltyDetailsParser.GetPenaltyDetailsFailureResponse(status) =>
-        Future(InternalServerError(s"A downstream call returned an unexpected status: $status for $agnosticEnrolmenKey"))
+        Future(returnResponseForAPI(responsePayload.penaltyDetails, agnosticEnrolmentKey))
       case PenaltyDetailsParser.GetPenaltyDetailsMalformed =>
         PagerDutyHelper.log("getSummaryDataForVRN", MALFORMED_RESPONSE_FROM_1812_API)
         Future(InternalServerError(s"We were unable to parse penalty data."))
       case PenaltyDetailsParser.GetPenaltyDetailsNoContent =>
-        logger.info(s"[RegimeAPIController][getSummaryDataForVRN] - API call returned no content for $agnosticEnrolmenKey")
+        logger.info(s"[RegimeAPIController][getSummaryDataForVRN] - API call returned no content for $agnosticEnrolmentKey")
         Future(NoContent)
+      case PenaltyDetailsParser.GetPenaltyDetailsFailureResponse(status) =>
+        Future(Status(status)(s"A downstream call returned an unexpected status: $status for $agnosticEnrolmentKey"))
     },
     success => {
-      logger.info(s"[RegimeAPIController][getSummaryDataForVRN] - API call returned 200 for $agnosticEnrolmenKey")
+      logger.info(s"[RegimeAPIController][getSummaryDataForVRN] - API call returned 200 for $agnosticEnrolmentKey")
       val penaltyDetails = success.asInstanceOf[GetPenaltyDetailsSuccessResponse].penaltyDetails
       if (penaltyDetails.latePaymentPenalty.exists(LPP =>
         LPP.ManualLPPIndicator.getOrElse(false))) {
         logger.info(s"[RegimeAPIController][getSummaryDataForVRN] - Data has ManualLPPIndicator set to true, calling 1811")
-        callFinancialDetailsForManualLPPs(agnosticEnrolmenKey).map {
+        callFinancialDetailsForManualLPPs(agnosticEnrolmentKey).map {
           financialDetails => {
-            returnResponseForAPI(penaltyDetails, agnosticEnrolmenKey, financialDetails)
+            returnResponseForAPI(penaltyDetails, agnosticEnrolmentKey, financialDetails)
           }
         }
       } else {
-        Future(returnResponseForAPI(penaltyDetails, agnosticEnrolmenKey))
+        Future(returnResponseForAPI(penaltyDetails, agnosticEnrolmentKey))
       }
     })
   }
