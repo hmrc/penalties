@@ -37,6 +37,7 @@ import org.mockito.Mockito.{mock, reset, when}
 import play.api.Configuration
 import play.api.test.Helpers._
 import services.AppealServiceSpec._
+import services.AppealService._
 import uk.gov.hmrc.http.HeaderCarrier
 import utils.Logger.logger
 import utils.UUIDGenerator
@@ -77,6 +78,9 @@ class AppealServiceSpec extends SpecBase with LogCapturing with FeatureSwitching
     when(mockAppConfig.SDESNotificationFileRecipient).thenReturn("123456789012")
     when(mockAppConfig.maximumFilenameLength).thenReturn(150)
   }
+
+  private def notificationsOrFail(result: Either[SDESNotificationCreationError, Seq[SDESNotification]]): Seq[SDESNotification] =
+    result.fold(error => fail(error.message), identity)
 
   "submitAppeal" when {
     val enrolmentKey: AgnosticEnrolmentKey = AgnosticEnrolmentKey(Regime("HMRC-MTD-VAT"), IdType("VRN"), Id("123456789"))
@@ -166,7 +170,7 @@ class AppealServiceSpec extends SpecBase with LogCapturing with FeatureSwitching
     "return an empty Seq" when {
       "None is passed to the uploadJourney" in new Setup {
         val result = service.createSDESNotifications(None, "")
-        result shouldBe Seq.empty
+        result shouldBe Right(Seq.empty)
       }
     }
 
@@ -218,10 +222,51 @@ class AppealServiceSpec extends SpecBase with LogCapturing with FeatureSwitching
 
         when(mockUUIDGenerator.generateUUID).thenReturn(correlationId)
         val result = service.createSDESNotifications(Some(uploads), caseID = "PR-1234")
-        result shouldBe expectedResult
+        result shouldBe Right(expectedResult)
       }
 
-      "uploads are passed through but some uploads don't have an 'uploadDetails' field" in new Setup {
+      "return an error when an upload has no downloadUrl" in new Setup {
+        when(mockAppConfig.checksumAlgorithmForFileNotifications).thenReturn("SHA-256")
+        val mockDateTime: LocalDateTime = LocalDateTime.of(2020, 1, 1, 0, 0, 0)
+        val uploads = Seq(
+          UploadJourney(
+            reference = "ref-no-url",
+            fileStatus = UploadStatusEnum.READY,
+            downloadUrl = None,
+            uploadDetails = Some(
+              UploadDetails(
+                fileName = "file1",
+                fileMimeType = "text/plain",
+                uploadTimestamp = LocalDateTime.of(2018, 4, 24, 9, 30, 0),
+                checksum = "check123456789",
+                size = 1
+              )),
+            lastUpdated = mockDateTime,
+            uploadFields = None
+          ),
+          UploadJourney(
+            reference = "ref-with-url",
+            fileStatus = UploadStatusEnum.READY,
+            downloadUrl = Some("/"),
+            uploadDetails = Some(
+              UploadDetails(
+                fileName = "file2",
+                fileMimeType = "text/plain",
+                uploadTimestamp = LocalDateTime.of(2018, 4, 24, 9, 30, 0),
+                checksum = "check123456789",
+                size = 1
+              )),
+            lastUpdated = mockDateTime,
+            uploadFields = None
+          )
+        )
+        when(mockUUIDGenerator.generateUUID).thenReturn(correlationId)
+
+        val result = service.createSDESNotifications(Some(uploads), caseID = "PR-1234")
+        result shouldBe Left(MissingDownloadUrl(reference = "ref-no-url", caseID = "PR-1234"))
+      }
+
+      "skip the upload and warn when an upload has no uploadDetails" in new Setup {
         when(mockAppConfig.checksumAlgorithmForFileNotifications).thenReturn("SHA-256")
         val mockDateTime: LocalDateTime = LocalDateTime.of(2020, 1, 1, 0, 0, 0)
         val uploads = Seq(
@@ -316,7 +361,7 @@ class AppealServiceSpec extends SpecBase with LogCapturing with FeatureSwitching
         when(mockUUIDGenerator.generateUUID).thenReturn(correlationId)
         withCaptureOfLoggingFrom(logger) { logs =>
           val result = service.createSDESNotifications(Some(uploads), caseID = "PR-1234")
-          result shouldBe expectedResult
+          result shouldBe Right(expectedResult)
           logs.exists(_.getMessage == "[RegimeAppealService][createSDESNotifications] - There are 3 uploads but" +
             " only 2 uploads have upload details defined (possible missing files for case ID: PR-1234)") shouldBe true
         }
@@ -372,7 +417,7 @@ class AppealServiceSpec extends SpecBase with LogCapturing with FeatureSwitching
 
         when(mockUUIDGenerator.generateUUID).thenReturn(correlationId)
         val result = service.createSDESNotifications(Some(uploads), caseID = "PR-1234")
-        result shouldBe expectedResult
+        result shouldBe Right(expectedResult)
       }
     }
 
@@ -402,7 +447,7 @@ class AppealServiceSpec extends SpecBase with LogCapturing with FeatureSwitching
           )
         )
         when(mockUUIDGenerator.generateUUID).thenReturn(correlationId)
-        val result: Seq[SDESNotification] = service.createSDESNotifications(Some(uploads), caseID = "PR-5678")
+        val result: Seq[SDESNotification] = notificationsOrFail(service.createSDESNotifications(Some(uploads), caseID = "PR-5678"))
         val resultFileName: String        = result.head.file.name
         resultFileName.length shouldBe mockAppConfig.maximumFilenameLength + 4
         resultFileName.contains(".txt") shouldBe true
@@ -431,9 +476,33 @@ class AppealServiceSpec extends SpecBase with LogCapturing with FeatureSwitching
           )
         )
         when(mockUUIDGenerator.generateUUID).thenReturn(correlationId)
-        val result: Seq[SDESNotification] = service.createSDESNotifications(Some(uploads), caseID = "PR-5678")
+        val result: Seq[SDESNotification] = notificationsOrFail(service.createSDESNotifications(Some(uploads), caseID = "PR-5678"))
         val resultFileName: String        = result.head.file.name
         resultFileName.length shouldBe mockAppConfig.maximumFilenameLength
+      }
+
+      "return InvalidFileName when the filename has a period but the extension exceeds the regex limit" in new Setup {
+        val filenameWithBadExtension: String = Random.alphanumeric.take(160).mkString + ".verylongextension"
+        val uploads = Seq(
+          UploadJourney(
+            reference = "ref-bad-name",
+            fileStatus = UploadStatusEnum.READY,
+            downloadUrl = Some("/"),
+            uploadDetails = Some(
+              UploadDetails(
+                fileName = filenameWithBadExtension,
+                fileMimeType = "text/plain",
+                uploadTimestamp = LocalDateTime.of(2018, 4, 24, 9, 30, 0),
+                checksum = "check123456789",
+                size = 1
+              )),
+            lastUpdated = mockDateTime,
+            uploadFields = None
+          )
+        )
+        when(mockUUIDGenerator.generateUUID).thenReturn(correlationId)
+        val result = service.createSDESNotifications(Some(uploads), caseID = "PR-5678")
+        result shouldBe Left(InvalidFileName("ref-bad-name", s"Bad filename: $filenameWithBadExtension"))
       }
 
       "correctly remove file extension when filename includes periods" in new Setup {
@@ -460,7 +529,7 @@ class AppealServiceSpec extends SpecBase with LogCapturing with FeatureSwitching
           )
         )
         when(mockUUIDGenerator.generateUUID).thenReturn(correlationId)
-        val result: Seq[SDESNotification] = service.createSDESNotifications(Some(uploads), caseID = "PR-5678")
+        val result: Seq[SDESNotification] = notificationsOrFail(service.createSDESNotifications(Some(uploads), caseID = "PR-5678"))
         val resultFileName: String        = result.head.file.name
         resultFileName.length shouldBe mockAppConfig.maximumFilenameLength + 4
         resultFileName.contains(".txt") shouldBe true
@@ -473,32 +542,59 @@ class AppealServiceSpec extends SpecBase with LogCapturing with FeatureSwitching
 
     "return None" when {
       "there is only one penalty under this principal charge" in new Setup {
-        val result: Option[MultiplePenaltiesData] = service.findMultiplePenalties(getPenaltyDetailsOnePenalty, "1234567891", "VATC")
-        result shouldBe None
+        val result = service.findMultiplePenalties(getPenaltyDetailsOnePenalty, "1234567891", "VATC")
+        result shouldBe Right(None)
       }
 
       "either penalty under the principal charge has appeal in any state" in new Setup {
-        val result: Option[MultiplePenaltiesData] =
+        val result =
           service.findMultiplePenalties(getPenaltyDetailsTwoPenaltiesWithAppeal, "1234567891", "VATC")
-        result shouldBe None
+        result shouldBe Right(None)
       }
 
       "either penalty is accruing" in new Setup {
-        val result: Option[MultiplePenaltiesData] =
+        val result =
           service.findMultiplePenalties(getPenaltyDetailsTwoPenaltiesLPP2Accruing, "1234567891", "VATC")
-        result shouldBe None
+        result shouldBe Right(None)
       }
 
       "the VAT has not been paid" in new Setup {
-        val result: Option[MultiplePenaltiesData] =
+        val result =
           service.findMultiplePenalties(getPenaltyDetailsTwoPenaltiesVATNotPaid, "1234567891", "VATC")
-        result shouldBe None
+        result shouldBe Right(None)
+      }
+
+      "there is no latePaymentPenalty section" in new Setup {
+        val result = service.findMultiplePenalties(getPenaltyDetailsNoLPP, "1234567891", "VATC")
+        result shouldBe Right(None)
+      }
+
+      "the latePaymentPenalty section has no details" in new Setup {
+        val result = service.findMultiplePenalties(getPenaltyDetailsLPPWithNoDetails, "1234567891", "VATC")
+        result shouldBe Right(None)
+      }
+
+      "no penalty in the payload matches the supplied penaltyId" in new Setup {
+        val result = service.findMultiplePenalties(getPenaltyDetailsTwoPenalties, "doesNotExist", "VATC")
+        result shouldBe Right(None)
+      }
+
+      "a matched penalty in the principal-charge group is missing penaltyChargeReference" in new Setup {
+        val result =
+          service.findMultiplePenalties(getPenaltyDetailsTwoPenaltiesSecondMissingChargeReference, "1234567891", "VATC")
+        result shouldBe Left(MissingPenaltyChargeReference(LPPPenaltyCategoryEnum.SecondPenalty, "123456801"))
+      }
+
+      "two penalties under the same principal charge share the same penaltyCategory" in new Setup {
+        val result =
+          service.findMultiplePenalties(getPenaltyDetailsTwoFirstPenalties, "1234567891", "VATC")
+        result shouldBe Left(MissingPenaltyCategory(LPPPenaltyCategoryEnum.SecondPenalty, "123456801"))
       }
     }
 
     "return Some" when {
       "there is two penalties under this principal charge and they are both POSTED and VAT has been paid" in new Setup {
-        val result: Option[MultiplePenaltiesData] = service.findMultiplePenalties(getPenaltyDetailsTwoPenalties, "1234567892", "VATC")
+        val result = service.findMultiplePenalties(getPenaltyDetailsTwoPenalties, "1234567892", "VATC")
         val expectedReturnModel: MultiplePenaltiesData = MultiplePenaltiesData(
           firstPenaltyChargeReference = "1234567891",
           firstPenaltyAmount = 113.45,
@@ -507,13 +603,27 @@ class AppealServiceSpec extends SpecBase with LogCapturing with FeatureSwitching
           firstPenaltyCommunicationDate = LocalDate.of(2022, 8, 8),
           secondPenaltyCommunicationDate = LocalDate.of(2022, 9, 8)
         )
-        result shouldBe Some(expectedReturnModel)
+        result shouldBe Right(Some(expectedReturnModel))
+      }
+
+      "a matched penalty in the principal-charge group is missing amount data" in new Setup {
+        val result =
+          service.findMultiplePenalties(getPenaltyDetailsTwoPenaltiesSecondMissingAmount, "1234567891", "VATC")
+        val expectedReturnModel: MultiplePenaltiesData = MultiplePenaltiesData(
+          firstPenaltyChargeReference = "1234567891",
+          firstPenaltyAmount = 113.45,
+          secondPenaltyChargeReference = "1234567892",
+          secondPenaltyAmount = 13.44,
+          firstPenaltyCommunicationDate = LocalDate.of(2022, 8, 8),
+          secondPenaltyCommunicationDate = LocalDate.of(2022, 9, 8)
+        )
+        result shouldBe Right(Some(expectedReturnModel))
       }
 
       "there is two penalties under this principal charge and they are both POSTED and VAT has been paid" +
         " (defaulting the comms date if not present)" in new Setup {
           when(mockAppConfig.getTimeMachineDateTime).thenReturn(LocalDateTime.now)
-          val result: Option[MultiplePenaltiesData] =
+          val result =
             service.findMultiplePenalties(getPenaltyDetailsTwoPenaltiesNoCommunicationsDate, "1234567891", "VATC")
           val expectedReturnModel: MultiplePenaltiesData = MultiplePenaltiesData(
             firstPenaltyChargeReference = "1234567891",
@@ -523,7 +633,7 @@ class AppealServiceSpec extends SpecBase with LogCapturing with FeatureSwitching
             firstPenaltyCommunicationDate = LocalDate.now,
             secondPenaltyCommunicationDate = LocalDate.now
           )
-          result shouldBe Some(expectedReturnModel)
+          result shouldBe Right(Some(expectedReturnModel))
         }
     }
 
@@ -533,34 +643,34 @@ class AppealServiceSpec extends SpecBase with LogCapturing with FeatureSwitching
           private val firstAppealableLpp            = makeFirstLPP(appealInfo = Some(Seq(firstStageRejectedAppeal)))
           private val secondAppealableLpp           = makeSecondLPP(appealInfo = None)
           private val penaltyDetails                = makePenaltyDetailsWithLpp(Some(Seq(firstAppealableLpp, secondAppealableLpp)))
-          val result: Option[MultiplePenaltiesData] = service.findMultiplePenalties(penaltyDetails, "1234567891", "ITSA")
+          val result = service.findMultiplePenalties(penaltyDetails, "1234567891", "ITSA")
 
-          result shouldBe Some(returnMultiplePenaltiesModel)
+          result shouldBe Right(Some(returnMultiplePenaltiesModel))
         }
       }
       "return no data" when {
         "the penalty is appealable but there is only one LPP" in new Setup {
           private val firstAppealableLpp            = makeFirstLPP(appealInfo = Some(Seq(firstStageRejectedAppeal)))
           private val penaltyDetails                = makePenaltyDetailsWithLpp(Some(Seq(firstAppealableLpp)))
-          val result: Option[MultiplePenaltiesData] = service.findMultiplePenalties(penaltyDetails, "1234567891", "ITSA")
+          val result = service.findMultiplePenalties(penaltyDetails, "1234567891", "ITSA")
 
-          result shouldBe None
+          result shouldBe Right(None)
         }
         "the penalties are not appealable as they are not first stage" in new Setup {
           private val firstAppealableLpp            = makeFirstLPP(appealInfo = Some(Seq(secondStageRejectedAppeal)))
           private val secondAppealableLpp           = makeSecondLPP(appealInfo = Some(Seq(secondStageRejectedAppeal)))
           private val penaltyDetails                = makePenaltyDetailsWithLpp(Some(Seq(firstAppealableLpp, secondAppealableLpp)))
-          val result: Option[MultiplePenaltiesData] = service.findMultiplePenalties(penaltyDetails, "1234567891", "ITSA")
+          val result = service.findMultiplePenalties(penaltyDetails, "1234567891", "ITSA")
 
-          result shouldBe None
+          result shouldBe Right(None)
         }
         "the penalties are not appealable as they were not rejected" in new Setup {
           private val firstAppealableLpp            = makeFirstLPP(appealInfo = Some(Seq(firstStageNotRejectedAppeal)))
           private val secondAppealableLpp           = makeSecondLPP(appealInfo = Some(Seq(firstStageNotRejectedAppeal)))
           private val penaltyDetails                = makePenaltyDetailsWithLpp(Some(Seq(firstAppealableLpp, secondAppealableLpp)))
-          val result: Option[MultiplePenaltiesData] = service.findMultiplePenalties(penaltyDetails, "1234567891", "ITSA")
+          val result = service.findMultiplePenalties(penaltyDetails, "1234567891", "ITSA")
 
-          result shouldBe None
+          result shouldBe Right(None)
         }
       }
     }
@@ -571,26 +681,26 @@ class AppealServiceSpec extends SpecBase with LogCapturing with FeatureSwitching
           private val firstAppealableLpp            = makeFirstLPP(appealInfo = None)
           private val secondAppealableLpp           = makeSecondLPP(appealInfo = None)
           private val penaltyDetails                = makePenaltyDetailsWithLpp(Some(Seq(firstAppealableLpp, secondAppealableLpp)))
-          val result: Option[MultiplePenaltiesData] = service.findMultiplePenalties(penaltyDetails, "1234567891", "VATC")
+          val result = service.findMultiplePenalties(penaltyDetails, "1234567891", "VATC")
 
-          result shouldBe Some(returnMultiplePenaltiesModel)
+          result shouldBe Right(Some(returnMultiplePenaltiesModel))
         }
       }
       "return no data" when {
         "the penalty is appealable but there is only one LPP" in new Setup {
           private val firstAppealableLpp            = makeFirstLPP(appealInfo = None)
           private val penaltyDetails                = makePenaltyDetailsWithLpp(Some(Seq(firstAppealableLpp)))
-          val result: Option[MultiplePenaltiesData] = service.findMultiplePenalties(penaltyDetails, "1234567891", "VATC")
+          val result = service.findMultiplePenalties(penaltyDetails, "1234567891", "VATC")
 
-          result shouldBe None
+          result shouldBe Right(None)
         }
         "the penalties are not appealable as they already have appeal information" in new Setup {
           private val firstAppealableLpp            = makeFirstLPP(appealInfo = Some(Seq(firstStageRejectedAppeal)))
           private val secondAppealableLpp           = makeSecondLPP(appealInfo = Some(Seq(firstStageRejectedAppeal)))
           private val penaltyDetails                = makePenaltyDetailsWithLpp(Some(Seq(firstAppealableLpp, secondAppealableLpp)))
-          val result: Option[MultiplePenaltiesData] = service.findMultiplePenalties(penaltyDetails, "1234567891", "VATC")
+          val result = service.findMultiplePenalties(penaltyDetails, "1234567891", "VATC")
 
-          result shouldBe None
+          result shouldBe Right(None)
         }
       }
     }
@@ -745,6 +855,50 @@ object AppealServiceSpec {
         ),
         sampleLPP1
       )))),
+    breathingSpace = None
+  )
+
+  val getPenaltyDetailsNoLPP: GetPenaltyDetails = GetPenaltyDetails(
+    totalisations = None,
+    lateSubmissionPenalty = None,
+    latePaymentPenalty = None,
+    breathingSpace = None
+  )
+
+  val getPenaltyDetailsLPPWithNoDetails: GetPenaltyDetails = GetPenaltyDetails(
+    totalisations = None,
+    lateSubmissionPenalty = None,
+    latePaymentPenalty = Some(LatePaymentPenalty(None)),
+    breathingSpace = None
+  )
+
+  val getPenaltyDetailsTwoPenaltiesSecondMissingChargeReference: GetPenaltyDetails = GetPenaltyDetails(
+    totalisations = None,
+    lateSubmissionPenalty = None,
+    latePaymentPenalty = Some(LatePaymentPenalty(Some(Seq(
+      sampleLPP2.copy(penaltyChargeReference = None),
+      sampleLPP1
+    )))),
+    breathingSpace = None
+  )
+
+  val getPenaltyDetailsTwoFirstPenalties: GetPenaltyDetails = GetPenaltyDetails(
+    totalisations = None,
+    lateSubmissionPenalty = None,
+    latePaymentPenalty = Some(LatePaymentPenalty(Some(Seq(
+      sampleLPP1.copy(penaltyChargeReference = Some("1234567891")),
+      sampleLPP1.copy(penaltyChargeReference = Some("1234567892"))
+    )))),
+    breathingSpace = None
+  )
+
+  val getPenaltyDetailsTwoPenaltiesSecondMissingAmount: GetPenaltyDetails = GetPenaltyDetails(
+    totalisations = None,
+    lateSubmissionPenalty = None,
+    latePaymentPenalty = Some(LatePaymentPenalty(Some(Seq(
+      sampleLPP2.copy(penaltyAmountOutstanding = None),
+      sampleLPP1
+    )))),
     breathingSpace = None
   )
 
