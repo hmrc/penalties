@@ -16,6 +16,7 @@
 
 package connectors.parsers.submitAppeal
 
+import connectors.parsers.submitAppeal.HIPAppealParser.errorResponseHasAnAlertingReason
 import models.appeals.AppealResponseModel
 import play.api.http.Status.{BAD_REQUEST, CONFLICT, OK}
 import play.api.libs.json.JsSuccess
@@ -47,7 +48,9 @@ object AppealsParser {
           logger.error(s"[AppealSubmissionResponseReads][read]: Conflict status has been returned returned with body: ${response.body}")
           Left(DuplicateAppeal)
         case status =>
-          PagerDutyHelper.logStatusCode("AppealSubmissionResponseReads", status)(RECEIVED_4XX_FROM_1808_API, RECEIVED_5XX_FROM_1808_API)
+          if (errorResponseHasAnAlertingReason(response.body)) {
+            PagerDutyHelper.logStatusCode("AppealSubmissionResponseReads", status)(RECEIVED_4XX_FROM_1808_API, RECEIVED_5XX_FROM_1808_API)
+          }
           logger.error(s"[AppealSubmissionResponseReads][read]: Unexpected response, status $status returned with body: ${response.body}")
           Left(UnexpectedFailure(status, s"Unexpected response, status $status returned on submission to PEGA"))
       }

@@ -112,7 +112,7 @@ object HIPAppealParser {
     "ETMP has indicated that the penalty has already expired or has been reversed"
   )
 
-  private def errorResponseHasAnAlertingReason(responseBody: String): Boolean =
+  def errorResponseHasAnAlertingReason(responseBody: String): Boolean =
     nonAlertingAppealErrorReasons.forall(!responseBody.contains(_))
 
 }
