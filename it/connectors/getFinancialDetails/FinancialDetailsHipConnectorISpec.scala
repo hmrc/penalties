@@ -19,14 +19,14 @@ package connectors.getFinancialDetails
 import com.github.tomakehurst.wiremock.client.MappingBuilder
 import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, post, stubFor, urlEqualTo}
 import com.github.tomakehurst.wiremock.http.Fault
-import config.featureSwitches.{CallAPI1811HIP, FeatureSwitching}
+import config.featureSwitches.FeatureSwitching
 import connectors.parsers.getFinancialDetails.HIPFinancialDetailsParser._
 import models.getFinancialDetails.FinancialDetailsRequestModel
 import models.{AgnosticEnrolmentKey, Id, IdType, Regime}
 import play.api.http.Status._
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.http.HttpResponse
-import utils.{IntegrationSpecCommonBase, ETMPWiremock}
+import utils.{ETMPWiremock, IntegrationSpecCommonBase}
 
 import java.time.LocalDate
 
@@ -56,8 +56,6 @@ class FinancialDetailsHipConnectorISpec extends IntegrationSpecCommonBase with E
   val financialDetailsRequestMaxModel: FinancialDetailsRequestModel =
     financialDetailsRequestWithoutTargetedSearch.copy(searchType = Some("CHGREF"), searchItem = Some("XC00178236592"))
 
-  enableFeatureSwitch(CallAPI1811HIP)
-
   "getFinancialDetails" when {
     Seq(vatcEnrolmentKey, itsaEnrolmentKey).foreach { enrolmentKey =>
       s"calling HIP for ${enrolmentKey.regime.value} regime" should {
@@ -66,7 +64,7 @@ class FinancialDetailsHipConnectorISpec extends IntegrationSpecCommonBase with E
           "'includeClearedItems' query parameter is 'true'" in {
             val requestBody: String =
               financialDetailsRequestWithoutTargetedSearch.copy(includeClearedItems = Some(true)).toJsonRequest(enrolmentKey).toString()
-            mockGetFinancialDetailsHIP(CREATED, requestBody, successResponseBody)
+            mockResponseForGetFinancialDetails(CREATED, requestBody, successResponseBody)
 
             val result: HIPFinancialDetailsResponse = await(connector.getFinancialDetails(enrolmentKey, includeClearedItems = true)(hc))
 
@@ -76,7 +74,7 @@ class FinancialDetailsHipConnectorISpec extends IntegrationSpecCommonBase with E
           "'includeClearedItems' query parameter is 'false'" in {
             val requestBody: String =
               financialDetailsRequestWithoutTargetedSearch.copy(includeClearedItems = Some(false)).toJsonRequest(enrolmentKey).toString()
-            mockGetFinancialDetailsHIP(CREATED, requestBody, successResponseBody)
+            mockResponseForGetFinancialDetails(CREATED, requestBody, successResponseBody)
 
             val result: HIPFinancialDetailsResponse = await(connector.getFinancialDetails(enrolmentKey, includeClearedItems = false)(hc))
 
@@ -89,7 +87,7 @@ class FinancialDetailsHipConnectorISpec extends IntegrationSpecCommonBase with E
           val requestBody: String = financialDetailsRequestWithoutTargetedSearch.toJsonRequest(enrolmentKey).toString()
           s"is a $HIPFinancialDetailsMalformed when a malformed response body is returned" in {
             val malformedResponseBody: String = """{"documentDetails": [{ "documentOutstandingAmount": "xyz"}]}"""
-            mockGetFinancialDetailsHIP(CREATED, requestBody, malformedResponseBody)
+            mockResponseForGetFinancialDetails(CREATED, requestBody, malformedResponseBody)
 
             val result: HIPFinancialDetailsResponse = await(connector.getFinancialDetails(enrolmentKey, includeClearedItems = true)(hc))
 
@@ -97,7 +95,7 @@ class FinancialDetailsHipConnectorISpec extends IntegrationSpecCommonBase with E
           }
           Seq(BAD_REQUEST, NOT_FOUND, UNPROCESSABLE_ENTITY, INTERNAL_SERVER_ERROR, SERVICE_UNAVAILABLE).foreach { errorStatus =>
             s"is a $HIPFinancialDetailsFailureResponse when a $errorStatus response body is returned" in {
-              mockGetFinancialDetailsHIP(errorStatus, requestBody, "{}")
+              mockResponseForGetFinancialDetails(errorStatus, requestBody, "{}")
               val result: HIPFinancialDetailsResponse = await(connector.getFinancialDetails(enrolmentKey, includeClearedItems = true)(hc))
 
               result shouldBe Left(HIPFinancialDetailsFailureResponse(errorStatus))
@@ -115,7 +113,7 @@ class FinancialDetailsHipConnectorISpec extends IntegrationSpecCommonBase with E
           val successResponseBody: String = getFinancialDetailsHipResponseWithoutTotalisations.toString()
           "no extra query parameters are given" in {
             val requestBody: String = FinancialDetailsRequestModel.emptyModel.toJsonRequest(enrolmentKey).toString()
-            mockGetFinancialDetailsHIP(CREATED, requestBody, successResponseBody)
+            mockResponseForGetFinancialDetails(CREATED, requestBody, successResponseBody)
 
             val result: HttpResponse = await(
               connector.getFinancialDetailsForAPI(enrolmentKey, None, None, None, None, None, None, None, None, None, None, None, None, None)(hc))
@@ -124,7 +122,7 @@ class FinancialDetailsHipConnectorISpec extends IntegrationSpecCommonBase with E
           }
           "extra query parameters are given" in {
             val requestBody: String = financialDetailsRequestMaxModel.toJsonRequest(enrolmentKey).toString()
-            mockGetFinancialDetailsHIP(CREATED, requestBody, successResponseBody)
+            mockResponseForGetFinancialDetails(CREATED, requestBody, successResponseBody)
 
             val result: HttpResponse = await(
               connector.getFinancialDetailsForAPI(
@@ -161,7 +159,7 @@ class FinancialDetailsHipConnectorISpec extends IntegrationSpecCommonBase with E
           Seq(BAD_REQUEST, NOT_FOUND, UNPROCESSABLE_ENTITY, INTERNAL_SERVER_ERROR, SERVICE_UNAVAILABLE).foreach { errorStatus =>
             s"returns the $errorStatus error status response that is returned" in {
               val requestBody: String = FinancialDetailsRequestModel.emptyModel.toJsonRequest(enrolmentKey).toString()
-              mockGetFinancialDetailsHIP(errorStatus, requestBody, "{}")
+              mockResponseForGetFinancialDetails(errorStatus, requestBody, "{}")
 
               val result: HttpResponse = await(
                 connector.getFinancialDetailsForAPI(enrolmentKey, None, None, None, None, None, None, None, None, None, None, None, None, None)(hc))

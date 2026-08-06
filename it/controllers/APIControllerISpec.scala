@@ -19,7 +19,7 @@ package controllers
 import com.github.tomakehurst.wiremock.client.WireMock.{postRequestedFor, urlEqualTo}
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
 import config.featureSwitches._
-import controllers.APIControllerISpec.{financialDataIfResponse, financialDetailsQueryParams}
+import controllers.APIControllerISpec.financialDetailsQueryParams
 import models.getFinancialDetails.FinancialDetailsRequestModel
 import models.{AgnosticEnrolmentKey, Id, IdType, Regime}
 import org.scalatest.prop.TableDrivenPropertyChecks
@@ -276,8 +276,6 @@ class APIControllerISpec
     addAccruingInterestDetails = Some(true)
   )
 
-  private val upstreamServices = Seq("HIP", "IF")
-
   Table(
     ("Regime", "IdType", "Id"),
     (Regime("VATC"), IdType("VRN"), Id("123456789")),
@@ -285,18 +283,12 @@ class APIControllerISpec
   ).forEvery { (regime, idType, id) =>
     val enrolmentKey = AgnosticEnrolmentKey(regime, idType, id)
 
-    s"getSummaryData for $regime" when {
-      val penaltyUpstreamServices = Seq("HIP", "IF")
+    s"getSummaryData for $regime" should {
 
-      penaltyUpstreamServices.foreach { upstreamService =>
         def mockHIPSummary(responseStatus: Int): StubMapping =
           mockResponseForHIPPenaltyDetails(responseStatus, regime, idType, id, body = Some(getHIPPenaltyDetailsJson.toString()))
 
-        def mockIFSummary(responseStatus: Int, body: Option[String]): StubMapping =
-          mockResponseForGetPenaltyDetails(responseStatus, regime, idType, id.value, body)
-
-        val expectedSummaryResponse = if (upstreamService == "HIP") {
-          Json.parse("""
+        val expectedSummaryResponse = Json.parse("""
             |{
             |  "noOfPoints": 2,
             |  "noOfEstimatedPenalties": 1,
@@ -306,39 +298,13 @@ class APIControllerISpec
             |  "hasAnyPenaltyData": true
             |}
             |""".stripMargin)
-        } else {
-          Json.parse("""
-            |{
-            |  "noOfPoints": 2,
-            |  "noOfEstimatedPenalties": 2,
-            |  "noOfCrystalisedPenalties": 2,
-            |  "estimatedPenaltyAmount": 246.9,
-            |  "crystalisedPenaltyAmountDue": 288,
-            |  "hasAnyPenaltyData": true
-            |}
-            |""".stripMargin)
-        }
 
         val uriToSummaryController = s"/${regime.value}/summary/${idType.value}/${id.value}"
 
-        def setSummaryFeatureSwitch(): Unit =
-          if (upstreamService == "HIP") {
-            setEnabledFeatureSwitches(CallAPI1812HIP)
-          } else {
-            setEnabledFeatureSwitches(CallAPI1812ETMP)
-          }
-
-        s"calling $upstreamService" should {
           s"return OK (${Status.OK})" when {
             "the get penalty summary call succeeds" in {
-              setSummaryFeatureSwitch()
               mockStubResponseForAuthorisedUser
-
-              if (upstreamService == "HIP") {
-                mockHIPSummary(OK)
-              } else {
-                mockIFSummary(OK, Some(getPenaltyDetailsJson.toString()))
-              }
+              mockHIPSummary(OK)
 
               val result = await(buildClientForRequestToApp(uri = uriToSummaryController).get())
 
@@ -349,79 +315,54 @@ class APIControllerISpec
 
           s"return a NO_CONTENT 204" when {
             "a 422 response with 'Invalid ID Number' is returned" in {
-              setSummaryFeatureSwitch()
               mockStubResponseForAuthorisedUser
 
               val notFoundResponseBody = """{ "errors": { "processingDate": "2025-03-03", "code": "016", "text": "Invalid ID Number" } }"""
 
-              if (upstreamService == "HIP") {
-                mockResponseForHIPPenaltyDetails(UNPROCESSABLE_ENTITY, regime, idType, id, body = Some(notFoundResponseBody))
-              } else {
-                mockIFSummary(UNPROCESSABLE_ENTITY, Some(notFoundResponseBody))
-              }
+              mockResponseForHIPPenaltyDetails(UNPROCESSABLE_ENTITY, regime, idType, id, body = Some(notFoundResponseBody))
+
 
               val result = await(buildClientForRequestToApp(uri = uriToSummaryController).get())
               result.status shouldBe NO_CONTENT
             }
           }
 
-          s"return the status from $upstreamService" when {
+          "return the status from HIP" when {
             "a 404 response is returned" in {
-              setSummaryFeatureSwitch()
               mockStubResponseForAuthorisedUser
 
-              if (upstreamService == "HIP") {
                 mockHIPSummary(NOT_FOUND)
-              } else {
-                mockIFSummary(NOT_FOUND, Some(""))
-              }
 
               val result = await(buildClientForRequestToApp(uri = uriToSummaryController).get())
               result.status shouldBe NOT_FOUND
             }
 
             "an error response is returned" in {
-              setSummaryFeatureSwitch()
               mockStubResponseForAuthorisedUser
 
-              if (upstreamService == "HIP") {
                 mockHIPSummary(INTERNAL_SERVER_ERROR)
-              } else {
-                mockIFSummary(INTERNAL_SERVER_ERROR, Some(""))
-              }
 
               val result = await(buildClientForRequestToApp(uri = uriToSummaryController).get())
               result.status shouldBe INTERNAL_SERVER_ERROR
             }
 
             "a 200 response with empty body is returned" in {
-              setSummaryFeatureSwitch()
               mockStubResponseForAuthorisedUser
 
-              val emptyResponseBody = if (upstreamService == "HIP") {
-                """{
+              val emptyResponseBody = """{
                   "success": {
                     "processingDate": "2025-04-24T12:00:00Z",
                     "penaltyData": {}
                   }
                 }"""
-              } else {
-                "{}"
-              }
 
-              if (upstreamService == "HIP") {
                 mockResponseForHIPPenaltyDetails(OK, regime, idType, id, body = Some(emptyResponseBody))
-              } else {
-                mockIFSummary(OK, Some(emptyResponseBody))
-              }
 
               val result = await(buildClientForRequestToApp(uri = uriToSummaryController).get())
               result.status shouldBe NO_CONTENT
             }
 
-            if (upstreamService == "HIP") {
               "a 422 response with 'No Data Identified' is returned" in {
-                setSummaryFeatureSwitch()
                 mockStubResponseForAuthorisedUser
 
                 val noDataResponseBody = """{ "errors": { "processingDate": "2025-03-03", "code": "018", "text": "No Data Identified" } }"""
@@ -430,40 +371,21 @@ class APIControllerISpec
 
                 val result = await(buildClientForRequestToApp(uri = uriToSummaryController).get())
                 result.status shouldBe NO_CONTENT
-              }
             }
           }
         }
-      }
-    }
 
-    s"getFinancialDetails for $regime" when {
-      upstreamServices.foreach { upstreamService =>
-        def mockHIP(responseStatus: Int): StubMapping = mockGetFinancialDetailsHIP(
+    s"getFinancialDetails for $regime" should {
+        def buildMockApiCall(responseStatus: Int): StubMapping = mockResponseForGetFinancialDetails(
           responseStatus,
           hipRequestBody.toJsonRequest(enrolmentKey).toString(),
           getFinancialDetailsHipResponseAsJson.toString())
 
-        def mockIF(responseStatus: Int): StubMapping = mockResponseForGetFinancialDetails(
-          responseStatus,
-          regime,
-          idType,
-          id,
-          financialDetailsQueryParams,
-          Some(getFinancialDetailsAsJson.toString()))
-
-        def buildMockApiCall(responseStatus: Int): StubMapping = if (upstreamService == "HIP") mockHIP(responseStatus) else mockIF(responseStatus)
-
-        val expectedResponse = if (upstreamService == "HIP") getFinancialDetailsHipResponseAsJson else financialDataIfResponse
+        val expectedResponse = getFinancialDetailsHipResponseAsJson
         val uriToController  = s"/${regime.value}/penalty/financial-data/${idType.value}/${id.value}$financialDetailsQueryParams"
 
-        def setFeatureSwitch(): Unit =
-          if (upstreamService == "HIP") setEnabledFeatureSwitches(CallAPI1811HIP) else setEnabledFeatureSwitches(CallAPI1811ETMP)
-
-        s"calling $upstreamService" should {
           s"return OK (${Status.OK})" when {
             "the get Financial Details call succeeds" in {
-              setFeatureSwitch()
               mockStubResponseForAuthorisedUser
               buildMockApiCall(OK)
 
@@ -479,9 +401,8 @@ class APIControllerISpec
             }
           }
 
-          s"return the status from $upstreamService" when {
+          "return the status from HIP" when {
             "a 404 response is returned" in {
-              setFeatureSwitch()
               mockStubResponseForAuthorisedUser
               buildMockApiCall(NOT_FOUND)
 
@@ -495,7 +416,6 @@ class APIControllerISpec
             }
 
             "an error response is returned" in {
-              setFeatureSwitch()
               mockStubResponseForAuthorisedUser
               buildMockApiCall(BAD_REQUEST)
 
@@ -508,13 +428,11 @@ class APIControllerISpec
                 .exists(_.getBodyAsString.contains("Penalties3rdPartyFinancialPenaltyDetailsDataRetrieval")) shouldBe true
             }
 
-            if (upstreamService == "HIP") {
               "a 422-016 response (Invalid ID Number) is returned" in {
-                setFeatureSwitch()
                 mockStubResponseForAuthorisedUser
 
                 val hipInvalidIdError = """{ "errors": { "processingDate": "2025-03-03", "code": "016", "text": "Invalid ID Number" } }"""
-                mockGetFinancialDetailsHIP(UNPROCESSABLE_ENTITY, hipRequestBody.toJsonRequest(enrolmentKey).toString(), hipInvalidIdError)
+                mockResponseForGetFinancialDetails(UNPROCESSABLE_ENTITY, hipRequestBody.toJsonRequest(enrolmentKey).toString(), hipInvalidIdError)
 
                 val result = await(buildClientForRequestToApp(uri = uriToController).get())
                 result.status shouldBe NOT_FOUND
@@ -526,11 +444,10 @@ class APIControllerISpec
               }
 
               "a 422-018 response (No Data Identified) is returned" in {
-                setFeatureSwitch()
                 mockStubResponseForAuthorisedUser
 
                 val hipNoDataError = """{ "errors": { "processingDate": "2025-03-03", "code": "018", "text": "No Data Identified" } }"""
-                mockGetFinancialDetailsHIP(UNPROCESSABLE_ENTITY, hipRequestBody.toJsonRequest(enrolmentKey).toString(), hipNoDataError)
+                mockResponseForGetFinancialDetails(UNPROCESSABLE_ENTITY, hipRequestBody.toJsonRequest(enrolmentKey).toString(), hipNoDataError)
 
                 val result = await(buildClientForRequestToApp(uri = uriToController).get())
                 result.status shouldBe NOT_FOUND
@@ -539,24 +456,16 @@ class APIControllerISpec
                   .asScala
                   .toList
                   .exists(_.getBodyAsString.contains("Penalties3rdPartyFinancialPenaltyDetailsDataRetrieval")) shouldBe true
-              }
             }
           }
-        }
-      }
     }
-    s"getPenaltyDetails for $regime" when {
-      val penaltyUpstreamServices = Seq("HIP", "IF")
 
-      penaltyUpstreamServices.foreach { upstreamService =>
+    s"getPenaltyDetails for $regime" should {
+
         def mockHIPPenaltyDetails(responseStatus: Int): StubMapping =
           mockResponseForHIPPenaltyDetails(responseStatus, regime, idType, id, body = Some(getHIPPenaltyDetailsJson.toString()), dateLimit = Some("09"))
 
-        def mockIFPenaltyDetails(responseStatus: Int, body: Option[String]): StubMapping =
-          mockResponseForGetPenaltyDetails(responseStatus, regime, idType, s"${id.value}?dateLimit=09", body)
-
-        val expectedPenaltyResponse = if (upstreamService == "HIP") {
-          Json.parse("""
+        val expectedPenaltyResponse = Json.parse("""
             |{
             | "totalisations": {
             |   "LSPTotalValue": 200,
@@ -629,30 +538,14 @@ class APIControllerISpec
             | }
             |}
             |""".stripMargin)
-        } else {
-          getPenaltyDetailsJson
-        }
 
         val uriToPenaltyController = s"/${regime.value}/penalty-details/${idType.value}/${id.value}?dateLimit=09"
 
-        def setPenaltyFeatureSwitch(): Unit =
-          if (upstreamService == "HIP") {
-            setEnabledFeatureSwitches(CallAPI1812HIP)
-          } else {
-            setEnabledFeatureSwitches(CallAPI1812ETMP)
-          }
-
-        s"calling $upstreamService" should {
           s"return OK (${Status.OK})" when {
             "the get Penalty Details call succeeds" in {
-              setPenaltyFeatureSwitch()
               mockStubResponseForAuthorisedUser
 
-              if (upstreamService == "HIP") {
                 mockHIPPenaltyDetails(OK)
-              } else {
-                mockIFPenaltyDetails(OK, Some(getPenaltyDetailsJson.toString()))
-              }
 
               val result = await(buildClientForRequestToApp(uri = uriToPenaltyController).get())
 
@@ -668,14 +561,9 @@ class APIControllerISpec
 
           s"return NOT_FOUND (${Status.NOT_FOUND})" when {
             "a 404 response is returned" in {
-              setPenaltyFeatureSwitch()
               mockStubResponseForAuthorisedUser
 
-              if (upstreamService == "HIP") {
-                mockHIPPenaltyDetails(NOT_FOUND)
-              } else {
-                mockIFPenaltyDetails(NOT_FOUND, Some(""))
-              }
+              mockHIPPenaltyDetails(NOT_FOUND)
 
               val result = await(buildClientForRequestToApp(uri = uriToPenaltyController).get())
               result.status shouldBe NOT_FOUND
@@ -686,9 +574,7 @@ class APIControllerISpec
                 .exists(_.getBodyAsString.contains("Penalties3rdPartyPenaltyDetailsDataRetrieval")) shouldBe true
             }
 
-            if (upstreamService == "HIP") {
               "a 422-016 response (Invalid ID Number) is returned" in {
-                setPenaltyFeatureSwitch()
                 mockStubResponseForAuthorisedUser
 
                 val hipInvalidIdError = """{ "errors": { "processingDate": "2025-03-03", "code": "016", "text": "Invalid ID Number" } }"""
@@ -701,23 +587,17 @@ class APIControllerISpec
                   .asScala
                   .toList
                   .exists(_.getBodyAsString.contains("Penalties3rdPartyPenaltyDetailsDataRetrieval")) shouldBe true
-              }
             }
           }
 
-          s"return the status from $upstreamService" when {
+          "return the status from HIP" when {
             "an error response is returned" in {
-              setPenaltyFeatureSwitch()
               mockStubResponseForAuthorisedUser
 
-              if (upstreamService == "HIP") {
-                mockHIPPenaltyDetails(INTERNAL_SERVER_ERROR)
-              } else {
-                mockIFPenaltyDetails(BAD_REQUEST, Some(""))
-              }
+              mockHIPPenaltyDetails(INTERNAL_SERVER_ERROR)
 
               val result = await(buildClientForRequestToApp(uri = uriToPenaltyController).get())
-              result.status shouldBe (if (upstreamService == "HIP") INTERNAL_SERVER_ERROR else BAD_REQUEST)
+              result.status shouldBe INTERNAL_SERVER_ERROR
               wireMockServer
                 .findAll(postRequestedFor(urlEqualTo("/write/audit")))
                 .asScala
@@ -725,108 +605,11 @@ class APIControllerISpec
                 .exists(_.getBodyAsString.contains("Penalties3rdPartyPenaltyDetailsDataRetrieval")) shouldBe true
             }
           }
-        }
-      }
     }
   }
 }
+
 object APIControllerISpec {
-  val financialDataIfResponse: JsValue = Json.parse("""
-                                                      |{
-                                                      | "getFinancialData" : {
-                                                      | "financialDetails": {
-                                                      |  "totalisation": {
-                                                      |    "regimeTotalisation": {
-                                                      |      "totalAccountOverdue": 1000.0,
-                                                      |      "totalAccountNotYetDue": 250.0,
-                                                      |      "totalAccountCredit": 40.0,
-                                                      |      "totalAccountBalance": 1210
-                                                      |    },
-                                                      |    "targetedSearch_SelectionCriteriaTotalisation": {
-                                                      |      "totalOverdue": 100.0,
-                                                      |      "totalNotYetDue": 0.0,
-                                                      |      "totalBalance": 100.0,
-                                                      |      "totalCredit": 10.0,
-                                                      |      "totalCleared": 50
-                                                      |    },
-                                                      |    "additionalReceivableTotalisations": {
-                                                      |      "totalAccountPostedInterest": 12.34,
-                                                      |      "totalAccountAccruingInterest": 43.21
-                                                      |    }
-                                                      |  },
-                                                      |  "documentDetails": [
-                                                      |    {
-                                                      |      "documentNumber": "187346702498",
-                                                      |      "documentType": "TRM New Charge",
-                                                      |      "chargeReferenceNumber": "XM002610011594",
-                                                      |      "businessPartnerNumber": "100893731",
-                                                      |      "contractAccountNumber": "900726630",
-                                                      |      "contractAccountCategory": "VAT",
-                                                      |      "contractObjectNumber": "104920928302302",
-                                                      |      "contractObjectType": "ZVAT",
-                                                      |      "postingDate": "2022-01-01",
-                                                      |      "issueDate": "2022-01-01",
-                                                      |      "documentTotalAmount": "100.0",
-                                                      |      "documentClearedAmount": "100.0",
-                                                      |      "documentOutstandingAmount": "543.21",
-                                                      |      "documentLockDetails": {
-                                                      |        "lockType": "Payment",
-                                                      |        "lockStartDate": "2022-01-01",
-                                                      |        "lockEndDate": "2022-01-01"
-                                                      |      },
-                                                      |      "documentInterestTotals": {
-                                                      |        "interestPostedAmount": "13.12",
-                                                      |        "interestPostedChargeRef": "XB001286323438",
-                                                      |        "interestAccruingAmount": 12.1
-                                                      |      },
-                                                      |      "documentPenaltyTotals": [
-                                                      |        {
-                                                      |          "penaltyType": "LPP1",
-                                                      |          "penaltyStatus": "POSTED",
-                                                      |          "penaltyAmount": "10.01",
-                                                      |          "postedChargeReference": "XR00123933492"
-                                                      |        }
-                                                      |      ],
-                                                      |      "lineItemDetails": [
-                                                      |        {
-                                                      |          "itemNumber": "0001",
-                                                      |          "subItemNumber": "003",
-                                                      |          "mainTransaction": "4703",
-                                                      |          "subTransaction": "1000",
-                                                      |          "chargeDescription": "VAT Return",
-                                                      |          "periodFromDate": "2022-01-01",
-                                                      |          "periodToDate": "2022-01-31",
-                                                      |          "periodKey": "22A1",
-                                                      |          "netDueDate": "2022-02-08",
-                                                      |          "formBundleNumber": "125435934761",
-                                                      |          "statisticalKey": "1",
-                                                      |          "amount": "3420.0",
-                                                      |          "clearingDate": "2022-02-09",
-                                                      |          "clearingReason": "Payment at External Payment Collector Reported",
-                                                      |          "clearingDocument": "719283701921",
-                                                      |          "outgoingPaymentMethod": "B",
-                                                      |          "ddCollectionInProgress": "true",
-                                                      |          "lineItemLockDetails": [
-                                                      |            {
-                                                      |              "lockType": "Payment",
-                                                      |              "lockStartDate": "2022-01-01",
-                                                      |              "lockEndDate": "2022-01-01"
-                                                      |            }
-                                                      |          ],
-                                                      |          "lineItemInterestDetails": {
-                                                      |            "interestKey": "String",
-                                                      |            "currentInterestRate": "-999.999999",
-                                                      |            "interestStartDate": "1920-02-29",
-                                                      |            "interestPostedAmount": "-99999999999.99",
-                                                      |            "interestAccruingAmount": -99999999999.99
-                                                      |          }
-                                                      |        }
-                                                      |      ]
-                                                      |    }
-                                                      |  ]
-                                                      |}
-                                                      |}
-                                                      |}""".stripMargin)
 
   val financialDetailsQueryParams: String =
     "?searchType=CHGREF&searchItem=XC00178236592&dateType=BILLING&dateFrom=2020-10-03&dateTo=2021-07-12&includeClearedItems=false" +

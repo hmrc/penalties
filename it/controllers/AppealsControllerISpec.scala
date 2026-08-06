@@ -31,7 +31,7 @@ import utils._
 import java.time.LocalDate
 import scala.jdk.CollectionConverters._
 
-class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock with HIPWiremock
+class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock with SubmitPenaltyAppealWiremock
   with AppealWiremock
   with FileNotificationOrchestratorWiremock
   with FeatureSwitching
@@ -327,7 +327,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
     "call ETMP and compare the penalty ID provided and the penalty ID in the payload - return OK if there is a match" in {
 
       mockStubResponseForAuthorisedUser
-      mockStubResponseForGetPenaltyDetails(Status.OK, regime, idType, id, Some(getPenaltyDetailsJson.toString()))
+      mockResponseForGetPenaltyDetails(Status.OK, regime, idType, id, Some(getPenaltyDetailsJson.toString()))
 
       val result = await(buildClientForRequestToApp(uri = s"/${regime.value}/appeals-data/late-submissions/${idType.value}/${id.value}?penaltyId=123456789").get())
       result.status shouldBe Status.OK
@@ -337,7 +337,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
     "return NOT_FOUND when the penalty ID given does not match the penalty ID in the payload" in {
 
       mockStubResponseForAuthorisedUser
-      mockStubResponseForGetPenaltyDetails(Status.OK, regime, idType, id, Some(getPenaltyDetailsJson.toString()))
+      mockResponseForGetPenaltyDetails(Status.OK, regime, idType, id, Some(getPenaltyDetailsJson.toString()))
 
       val result = await(buildClientForRequestToApp(uri = s"/${regime.value}/appeals-data/late-submissions/${idType.value}/${id.value}?penaltyId=0001").get())
       result.status shouldBe Status.NOT_FOUND
@@ -346,7 +346,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
     "return an ISE when the call to ETMP fails" in {
 
       mockStubResponseForAuthorisedUser
-      mockStubResponseForGetPenaltyDetails(Status.INTERNAL_SERVER_ERROR, regime, idType, id, Some(""))
+      mockResponseForGetPenaltyDetails(Status.INTERNAL_SERVER_ERROR, regime, idType, id, Some(""))
 
       val result = await(buildClientForRequestToApp(
         uri = s"/${regime.value}/appeals-data/late-submissions/${idType.value}/${id.value}?penaltyId=123456789"
@@ -359,7 +359,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
       "call ETMP and compare the penalty ID provided and the penalty ID in the payload - return OK if there is a match" in {
 
         mockStubResponseForAuthorisedUser
-        mockStubResponseForGetPenaltyDetails(Status.OK, regime, idType, id, Some(getPenaltyDetailsJson.toString()))
+        mockResponseForGetPenaltyDetails(Status.OK, regime, idType, id, Some(getPenaltyDetailsJson.toString()))
 
         val result = await(buildClientForRequestToApp(uri = s"/${regime.value}/appeals-data/late-payments/${idType.value}/${id.value}?penaltyId=1234567887&isAdditional=false").get())
         result.status shouldBe Status.OK
@@ -369,7 +369,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
       "call ETMP and compare the penalty ID provided and the penalty ID in the payload for Additional - return OK if there is a match" in {
 
         mockStubResponseForAuthorisedUser
-        mockStubResponseForGetPenaltyDetails(Status.OK, regime, idType, id, Some(getPenaltyDetailsJson.toString()))
+        mockResponseForGetPenaltyDetails(Status.OK, regime, idType, id, Some(getPenaltyDetailsJson.toString()))
 
         val result = await(buildClientForRequestToApp(uri = s"/${regime.value}/appeals-data/late-payments/${idType.value}/${id.value}?penaltyId=1234567889&isAdditional=true").get())
         result.status shouldBe Status.OK
@@ -379,7 +379,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
       "return NOT_FOUND when the penalty ID given does not match the penalty ID in the payload" in {
 
         mockStubResponseForAuthorisedUser
-        mockStubResponseForGetPenaltyDetails(Status.OK, regime, idType, id, Some(getPenaltyDetailsJson.toString()))
+        mockResponseForGetPenaltyDetails(Status.OK, regime, idType, id, Some(getPenaltyDetailsJson.toString()))
 
         val result = await(buildClientForRequestToApp(uri = s"/${regime.value}/appeals-data/late-payments/${idType.value}/${id.value}?penaltyId=0001&isAdditional=false").get())
         result.status shouldBe Status.NOT_FOUND
@@ -388,7 +388,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
       "return an ISE when the call to ETMP fails" in {
 
         mockStubResponseForAuthorisedUser
-        mockStubResponseForGetPenaltyDetails(Status.INTERNAL_SERVER_ERROR, regime, idType, id, Some(""))
+        mockResponseForGetPenaltyDetails(Status.INTERNAL_SERVER_ERROR, regime, idType, id, Some(""))
 
         val result = await(buildClientForRequestToApp(uri = s"/${regime.value}/appeals-data/late-payments/${idType.value}/${id.value}?penaltyId=0001&isAdditional=false").get())
         result.status shouldBe Status.INTERNAL_SERVER_ERROR
@@ -1775,7 +1775,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
       "call ETMP and return NO_CONTENT" when {
         "there is only one penalty related to the charge" in {
           mockStubResponseForAuthorisedUser
-          mockStubResponseForGetPenaltyDetails(Status.OK, regime, idType, id, Some(getPenaltyDetailsOneLPPJson.toString()))
+          mockResponseForGetPenaltyDetails(Status.OK, regime, idType, id, Some(getPenaltyDetailsOneLPPJson.toString()))
 
           val result = await(buildClientForRequestToApp(uri = s"/${regime.value}/appeals-data/multiple-penalties/${idType.value}/${id.value}?penaltyId=1234567887").get())
           result.status shouldBe Status.NO_CONTENT
@@ -1783,7 +1783,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
 
         "either penalty under the principal charge has appeal in any state" in {
           mockStubResponseForAuthorisedUser
-          mockStubResponseForGetPenaltyDetails(Status.OK, regime, idType, id, Some(getPenaltyDetailsTwoLPPsWithAppealsJson.toString()))
+          mockResponseForGetPenaltyDetails(Status.OK, regime, idType, id, Some(getPenaltyDetailsTwoLPPsWithAppealsJson.toString()))
 
           val result = await(buildClientForRequestToApp(uri = s"/${regime.value}/appeals-data/multiple-penalties/${idType.value}/${id.value}?penaltyId=1234567887").get())
           result.status shouldBe Status.NO_CONTENT
@@ -1791,7 +1791,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
 
         "either penalty is accruing (LPP2)" in {
           mockStubResponseForAuthorisedUser
-          mockStubResponseForGetPenaltyDetails(Status.OK, regime, idType, id, Some(getPenaltyDetailsTwoLPPsLPP2AccruingJson.toString()))
+          mockResponseForGetPenaltyDetails(Status.OK, regime, idType, id, Some(getPenaltyDetailsTwoLPPsLPP2AccruingJson.toString()))
 
           val result = await(buildClientForRequestToApp(uri = s"/${regime.value}/appeals-data/multiple-penalties/${idType.value}/${id.value}?penaltyId=1234567887").get())
           result.status shouldBe Status.NO_CONTENT
@@ -1799,7 +1799,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
 
         "the VAT has not been paid" in {
           mockStubResponseForAuthorisedUser
-          mockStubResponseForGetPenaltyDetails(Status.OK, regime, idType, id, Some(getPenaltyDetailsTwoLPPsVATNotPaidJson.toString()))
+          mockResponseForGetPenaltyDetails(Status.OK, regime, idType, id, Some(getPenaltyDetailsTwoLPPsVATNotPaidJson.toString()))
 
           val result = await(buildClientForRequestToApp(uri = s"/${regime.value}/appeals-data/multiple-penalties/${idType.value}/${id.value}?penaltyId=1234567887").get())
           result.status shouldBe Status.NO_CONTENT
@@ -1809,7 +1809,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
       "call ETMP and return OK when there is two penalties related to the charge and they are both posted" +
         " and the VAT has been paid" in {
         mockStubResponseForAuthorisedUser
-        mockStubResponseForGetPenaltyDetails(Status.OK, regime, idType, id, Some(getPenaltyDetailsTwoLPPsJson.toString()))
+        mockResponseForGetPenaltyDetails(Status.OK, regime, idType, id, Some(getPenaltyDetailsTwoLPPsJson.toString()))
 
         val result = await(buildClientForRequestToApp(uri = s"/${regime.value}/appeals-data/multiple-penalties/${idType.value}/${id.value}?penaltyId=1234567887").get())
         val expectedModel = MultiplePenaltiesData(
@@ -1826,7 +1826,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
 
       "return an ISE when the call to ETMP fails" in {
         mockStubResponseForAuthorisedUser
-        mockStubResponseForGetPenaltyDetails(Status.INTERNAL_SERVER_ERROR, regime, idType, id, Some(""))
+        mockResponseForGetPenaltyDetails(Status.INTERNAL_SERVER_ERROR, regime, idType, id, Some(""))
 
         val result = await(buildClientForRequestToApp(uri = s"/${regime.value}/appeals-data/multiple-penalties/${idType.value}/${id.value}?penaltyId=1234567887").get())
         result.status shouldBe Status.INTERNAL_SERVER_ERROR

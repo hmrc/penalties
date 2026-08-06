@@ -17,13 +17,14 @@
 package controllers
 
 import com.github.tomakehurst.wiremock.client.WireMock.{postRequestedFor, urlEqualTo}
-import config.featureSwitches.{CallAPI1812HIP, FeatureSwitching}
+import config.featureSwitches.FeatureSwitching
+import models.getFinancialDetails.FinancialDetailsRequestModel
 import models.{Id, IdType, Regime}
 import org.scalatest.prop.TableDrivenPropertyChecks
 import play.api.http.Status
 import play.api.libs.json.{JsValue, Json}
 import play.api.test.Helpers._
-import utils.{AuthMock, HIPPenaltiesWiremock, IntegrationSpecCommonBase, ETMPWiremock}
+import utils.{AuthMock, ETMPWiremock, HIPPenaltiesWiremock, IntegrationSpecCommonBase}
 
 import java.time.LocalDate
 import scala.jdk.CollectionConverters._
@@ -451,6 +452,28 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
       |""".stripMargin
   )
 
+  private val noDataFoundBody = """
+      |{
+      | "failures": [
+      |   {
+      |     "code": "NO_DATA_FOUND",
+      |     "reason": "This is a reason"
+      |   }
+      | ]
+      |}
+      |""".stripMargin
+
+  private val errorBody = """
+      |{
+      | "failures": [
+      |   {
+      |     "code": "SOME_OTHER_ERROR",
+      |     "reason": "This is a reason"
+      |   }
+      | ]
+      |}
+      |""".stripMargin
+
   Table(
     ("Regime", "IdType", "Id"),
     (Regime("VATC"), IdType("VRN"), Id("123456789")),
@@ -459,17 +482,13 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
 
     val etmpUri = s"/${regime.value}/etmp/penalties/${idType.value}/${id.value}"
 
-    val financialDataUri = s"${idType.value}/${id.value}/${regime.value}"
-
     s"return OK (${Status.OK}) for $regime" when {
 
       "the get penalty details call succeeds and the get financial details call succeeds (combining the data together)" in {
         mockStubResponseForAuthorisedUser
-        mockStubResponseForGetPenaltyDetails(Status.OK, regime, idType, id, body = Some(getPenaltyDetailsJson.toString()))
-        mockStubResponseForGetFinancialDetails(Status.OK,
-          s"$financialDataUri?$financialDataQueryParamWithClearedItems", Some(getFinancialDetailsWithoutTotalisationsAsJson.toString()))
-        mockStubResponseForGetFinancialDetails(Status.OK,
-          s"$financialDataUri?$financialDataQueryParamWithoutClearedItems", Some(getFinancialDetailsTotalisationsAsJson.toString()))
+        mockResponseForGetPenaltyDetails(Status.OK, regime, idType, id, body = Some(getPenaltyDetailsJson.toString()))
+        mockResponseForGetFinancialDetails(Status.OK, requestBodyWithClearedItems, getFinancialDetailsWithoutTotalisationsAsJson.toString())
+        mockResponseForGetFinancialDetails(Status.OK, requestBodyWithoutClearedItems, getFinancialDetailsTotalisationsAsJson.toString())
 
         val result = await(buildClientForRequestToApp(uri = etmpUri).get())
         result.status shouldBe OK
@@ -478,9 +497,9 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
 
       "the get penalty details call includes blank appealLevel fields" in {
         mockStubResponseForAuthorisedUser
-        mockStubResponseForGetPenaltyDetails(Status.OK, regime, idType, id, body = Some(getPenaltyDetailsJsonWithBlankAppealLevel.toString()))
-        mockStubResponseForGetFinancialDetails(Status.OK, s"$financialDataUri?$financialDataQueryParamWithClearedItems")
-        mockStubResponseForGetFinancialDetails(Status.OK, s"$financialDataUri?$financialDataQueryParamWithoutClearedItems", Some(getFinancialDetailsTotalisationsAsJson.toString()))
+        mockResponseForGetPenaltyDetails(Status.OK, regime, idType, id, body = Some(getPenaltyDetailsJsonWithBlankAppealLevel.toString()))
+        mockResponseForGetFinancialDetails(Status.OK, requestBodyWithClearedItems, getFinancialDetailsWithoutTotalisationsAsJson.toString())
+        mockResponseForGetFinancialDetails(Status.OK, requestBodyWithoutClearedItems, getFinancialDetailsTotalisationsAsJson.toString())
 
         val result = await(buildClientForRequestToApp(uri = etmpUri).get())
         result.status shouldBe OK
@@ -489,11 +508,9 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
 
       "the get penalty details call succeeds and the get financial details call succeeds (combining the data together - second 1811 call returns NO_CONTENT)" in {
         mockStubResponseForAuthorisedUser
-        mockStubResponseForGetPenaltyDetails(Status.OK, regime, idType, id, body = Some(getPenaltyDetailsJson.toString()))
-        mockStubResponseForGetFinancialDetails(Status.OK,
-          s"$financialDataUri?$financialDataQueryParamWithClearedItems")
-        mockStubResponseForGetFinancialDetails(Status.NO_CONTENT,
-          s"$financialDataUri?$financialDataQueryParamWithoutClearedItems")
+        mockResponseForGetPenaltyDetails(Status.OK, regime, idType, id, body = Some(getPenaltyDetailsJson.toString()))
+        mockResponseForGetFinancialDetails(Status.OK, requestBodyWithClearedItems, getFinancialDetailsWithoutTotalisationsAsJson.toString())
+        mockResponseForGetFinancialDetails(Status.NO_CONTENT, requestBodyWithoutClearedItems, noDataFoundBody)
 
         val result = await(buildClientForRequestToApp(uri = etmpUri).get())
         result.status shouldBe OK
@@ -548,11 +565,9 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
             |}
             |""".stripMargin)
         mockStubResponseForAuthorisedUser
-        mockStubResponseForGetPenaltyDetails(Status.OK, regime, idType, id, body = Some(getPenaltyDetailsJson.toString()))
-        mockStubResponseForGetFinancialDetails(Status.OK,
-          s"$financialDataUri?$financialDataQueryParamWithClearedItems", body = Some(getFinancialDetailsWithManualLPP.toString()))
-        mockStubResponseForGetFinancialDetails(Status.NO_CONTENT,
-          s"$financialDataUri?$financialDataQueryParamWithoutClearedItems")
+        mockResponseForGetPenaltyDetails(Status.OK, regime, idType, id, body = Some(getPenaltyDetailsJson.toString()))
+        mockResponseForGetFinancialDetails(Status.OK, requestBodyWithClearedItems, responseBody = getFinancialDetailsWithManualLPP.toString())
+        mockResponseForGetFinancialDetails(Status.NO_CONTENT, requestBodyWithoutClearedItems, noDataFoundBody)
 
         val result = await(buildClientForRequestToApp(uri = etmpUri).get())
         result.status shouldBe OK
@@ -565,21 +580,9 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
             |{
             |}
             |""".stripMargin)
-        val noDataFoundBody =
-          """
-            |{
-            | "failures": [
-            |   {
-            |     "code": "NO_DATA_FOUND",
-            |     "reason": "This is a reason"
-            |   }
-            | ]
-            |}
-            |""".stripMargin
-        mockStubResponseForGetFinancialDetails(Status.NOT_FOUND,
-          s"$financialDataUri?$financialDataQueryParamWithClearedItems", Some(noDataFoundBody))
+        mockResponseForGetFinancialDetails(Status.NOT_FOUND, requestBodyWithClearedItems, noDataFoundBody)
         mockStubResponseForAuthorisedUser
-        mockStubResponseForGetPenaltyDetails(Status.OK, regime, idType, id, body = Some(getPenaltyDetailsNoLPPJson.toString()))
+        mockResponseForGetPenaltyDetails(Status.OK, regime, idType, id, body = Some(getPenaltyDetailsNoLPPJson.toString()))
         val result = await(buildClientForRequestToApp(uri = etmpUri).get())
         result.status shouldBe OK
         Json.parse(result.body) shouldBe getPenaltyDetailsNoLPPJson
@@ -600,7 +603,7 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
             |}
             |""".stripMargin
         mockStubResponseForAuthorisedUser
-        mockStubResponseForGetPenaltyDetails(Status.NOT_FOUND, regime, idType, id, body = Some(noDataFoundBody))
+        mockResponseForGetPenaltyDetails(Status.NOT_FOUND, regime, idType, id, body = Some(noDataFoundBody))
         val result = await(buildClientForRequestToApp(uri = etmpUri).get())
         result.status shouldBe NO_CONTENT
       }
@@ -618,8 +621,8 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
             |}
             |""".stripMargin
         mockStubResponseForAuthorisedUser
-        mockStubResponseForGetPenaltyDetails(Status.OK, regime, idType, id, body = Some(getPenaltyDetailsJson.toString()))
-        mockStubResponseForGetFinancialDetails(Status.NOT_FOUND, s"$financialDataUri?$financialDataQueryParamWithClearedItems", Some(noDataFoundBody))
+        mockResponseForGetPenaltyDetails(Status.OK, regime, idType, id, body = Some(getPenaltyDetailsJson.toString()))
+        mockResponseForGetFinancialDetails(Status.NOT_FOUND, requestBodyWithClearedItems, noDataFoundBody)
 
         val result = await(buildClientForRequestToApp(uri = etmpUri).get())
         result.status shouldBe NO_CONTENT
@@ -629,15 +632,15 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
     s"return ISE (${Status.INTERNAL_SERVER_ERROR}) for $regime" when {
       "the get penalty details call fails" in {
         mockStubResponseForAuthorisedUser
-        mockStubResponseForGetPenaltyDetails(Status.INTERNAL_SERVER_ERROR, regime, idType, id, body = Some(""))
+        mockResponseForGetPenaltyDetails(Status.INTERNAL_SERVER_ERROR, regime, idType, id, body = Some(""))
         val result = await(buildClientForRequestToApp(uri = etmpUri).get())
         result.status shouldBe INTERNAL_SERVER_ERROR
       }
 
       "the first get financial details call fails" in {
         mockStubResponseForAuthorisedUser
-        mockStubResponseForGetPenaltyDetails(Status.OK, regime, idType, id, body = Some(getPenaltyDetailsJson.toString()))
-        mockStubResponseForGetFinancialDetails(Status.INTERNAL_SERVER_ERROR, s"$financialDataUri?$financialDataQueryParamWithClearedItems")
+        mockResponseForGetPenaltyDetails(Status.OK, regime, idType, id, body = Some(getPenaltyDetailsJson.toString()))
+        mockResponseForGetFinancialDetails(Status.INTERNAL_SERVER_ERROR, requestBodyWithClearedItems, errorBody)
 
         val result = await(buildClientForRequestToApp(uri = etmpUri).get())
         result.status shouldBe INTERNAL_SERVER_ERROR
@@ -645,9 +648,9 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
 
       "the second get financial details call fails" in {
         mockStubResponseForAuthorisedUser
-        mockStubResponseForGetPenaltyDetails(Status.OK, regime, idType, id, body = Some(getPenaltyDetailsJson.toString()))
-        mockStubResponseForGetFinancialDetails(Status.OK, s"$financialDataUri?$financialDataQueryParamWithClearedItems")
-        mockStubResponseForGetFinancialDetails(Status.INTERNAL_SERVER_ERROR, s"$financialDataUri?$financialDataQueryParamWithoutClearedItems")
+        mockResponseForGetPenaltyDetails(Status.OK, regime, idType, id, body = Some(getPenaltyDetailsJson.toString()))
+        mockResponseForGetFinancialDetails(Status.OK, requestBodyWithClearedItems, getFinancialDetailsWithoutTotalisationsAsJson.toString())
+        mockResponseForGetFinancialDetails(Status.INTERNAL_SERVER_ERROR, requestBodyWithoutClearedItems, errorBody)
 
         val result = await(buildClientForRequestToApp(uri = etmpUri).get())
         result.status shouldBe INTERNAL_SERVER_ERROR
@@ -846,9 +849,9 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
           |}
           |""".stripMargin)
       mockStubResponseForAuthorisedUser
-      mockStubResponseForGetPenaltyDetails(Status.OK, regime, idType, id, body = Some(penaltyDetailsWithLSPAndLPPs.toString()))
-      mockStubResponseForGetFinancialDetails(Status.OK, s"$financialDataUri?$financialDataQueryParamWithClearedItems")
-      mockStubResponseForGetFinancialDetails(Status.OK, s"$financialDataUri?$financialDataQueryParamWithoutClearedItems", Some(getFinancialDetailsTotalisationsAsJson.toString))
+      mockResponseForGetPenaltyDetails(Status.OK, regime, idType, id, body = Some(penaltyDetailsWithLSPAndLPPs.toString()))
+      mockResponseForGetFinancialDetails(Status.OK, requestBodyWithClearedItems, getFinancialDetailsWithoutTotalisationsAsJson.toString())
+      mockResponseForGetFinancialDetails(Status.OK, requestBodyWithoutClearedItems, getFinancialDetailsTotalisationsAsJson.toString)
       val result = await(buildClientForRequestToApp(uri = etmpUri).get())
       result.status shouldBe Status.OK
       Json.parse(result.body) shouldBe penaltyDetailsWithLSPAndLPPAndFinancialDetails
@@ -883,9 +886,9 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
           |}
           |""".stripMargin)
       mockStubResponseForAuthorisedUser
-      mockStubResponseForGetPenaltyDetails(Status.OK, regime, idType, id, body = Some(getPenaltyDetailsWithNoPointsAsJson.toString()))
-      mockStubResponseForGetFinancialDetails(Status.OK, s"$financialDataUri?$financialDataQueryParamWithClearedItems")
-      mockStubResponseForGetFinancialDetails(Status.OK, s"$financialDataUri?$financialDataQueryParamWithoutClearedItems", Some(getFinancialDetailsTotalisationsAsJson.toString))
+      mockResponseForGetPenaltyDetails(Status.OK, regime, idType, id, body = Some(getPenaltyDetailsWithNoPointsAsJson.toString()))
+      mockResponseForGetFinancialDetails(Status.OK, requestBodyWithClearedItems, getFinancialDetailsWithoutTotalisationsAsJson.toString())
+      mockResponseForGetFinancialDetails(Status.OK, requestBodyWithoutClearedItems, getFinancialDetailsTotalisationsAsJson.toString)
       val result = await(buildClientForRequestToApp(uri = etmpUri).get())
       result.status shouldBe Status.OK
       result.body shouldBe getPenaltyDetailsWithNoPointsAsJson.toString()
@@ -893,7 +896,7 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
     }
   }
 
-  "HIP Integration Tests" should {
+  "getPenaltiesData" should {
    
   val hipPenaltyDetailsJson: JsValue = Json.parse(
     s"""
@@ -965,17 +968,13 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
     ).forEvery { (regime, idType, id) =>
 
       val etmpUri = s"/${regime.value}/etmp/penalties/${idType.value}/${id.value}"
-      val financialDataUri = s"${idType.value}/${id.value}/${regime.value}"
 
       s"return OK (${Status.OK}) for $regime when using HIP API" when {
         "the get HIP penalty details call succeeds and the get financial details call succeeds" in {
-          withFeature(CallAPI1812HIP -> FEATURE_SWITCH_ON) {
             mockStubResponseForAuthorisedUser
             mockResponseForHIPPenaltyDetails(Status.OK, regime, idType, id, body = Some(hipPenaltyDetailsJson.toString()))
-            mockStubResponseForGetFinancialDetails(Status.OK,
-              s"$financialDataUri?$financialDataQueryParamWithClearedItems", Some(getFinancialDetailsWithoutTotalisationsAsJson.toString()))
-            mockStubResponseForGetFinancialDetails(Status.OK,
-              s"$financialDataUri?$financialDataQueryParamWithoutClearedItems", Some(getFinancialDetailsTotalisationsAsJson.toString()))
+            mockResponseForGetFinancialDetails(Status.OK, requestBodyWithClearedItems, getFinancialDetailsWithoutTotalisationsAsJson.toString())
+            mockResponseForGetFinancialDetails(Status.OK, requestBodyWithoutClearedItems, getFinancialDetailsTotalisationsAsJson.toString())
 
             val result = await(buildClientForRequestToApp(uri = etmpUri).get())
             result.status shouldBe OK
@@ -1039,35 +1038,29 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
             }
             """)
             Json.parse(result.body) shouldBe expectedConvertedStructure
-          }
         }
       }
 
       s"return ISE (${Status.INTERNAL_SERVER_ERROR}) for $regime when using HIP API" when {
         "the get HIP penalty details call fails" in {
-          withFeature(CallAPI1812HIP -> FEATURE_SWITCH_ON) {
             mockStubResponseForAuthorisedUser
             mockResponseForHIPPenaltyDetails(Status.INTERNAL_SERVER_ERROR, regime, idType, id, body = Some(""))
 
             val result = await(buildClientForRequestToApp(uri = etmpUri).get())
             result.status shouldBe INTERNAL_SERVER_ERROR
           }
-        }
         "the get HIP penalty details call returns 422 without incorrect ID number message" in {
-          withFeature(CallAPI1812HIP -> FEATURE_SWITCH_ON) {
             mockStubResponseForAuthorisedUser
             mockResponseForHIPPenaltyDetails(Status.UNPROCESSABLE_ENTITY, regime, idType, id,
               body = Some("""{"errors":{"processingDate":"2025-03-03"}}"""))
 
             val result = await(buildClientForRequestToApp(uri = etmpUri).get())
             result.status shouldBe INTERNAL_SERVER_ERROR
-          }
         }
       }
 
       s"return NOT_FOUND (${Status.NOT_FOUND}) for $regime when using HIP API" when {
         "the get HIP penalty details call returns 404" in {
-          withFeature(CallAPI1812HIP -> FEATURE_SWITCH_ON) {
             mockStubResponseForAuthorisedUser
             mockResponseForHIPPenaltyDetails(Status.NOT_FOUND, regime, idType, id,
               body = Some("""{"response":{"error":{"code":"404","message":"NOT_FOUND","logId":"errorLogId"}}}"""))
@@ -1076,20 +1069,18 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
             result.status shouldBe NOT_FOUND
           }
         }
-      }
 
       s"return NO_CONTENT (${Status.NO_CONTENT}) for $regime when using HIP API" when {
         "the get HIP penalty details call returns 422 with 'Invalid ID Number' in body" in {
-          withFeature(CallAPI1812HIP -> FEATURE_SWITCH_ON) {
             val noDataFoundBody = """{"errors":{"processingDate":"2025-03-03", "code":"016", "text":"Invalid ID Number"}}"""
             mockStubResponseForAuthorisedUser
             mockResponseForHIPPenaltyDetails(Status.UNPROCESSABLE_ENTITY, regime, idType, id, body = Some(noDataFoundBody))
 
             val result = await(buildClientForRequestToApp(uri = etmpUri).get())
             result.status shouldBe NO_CONTENT
-          }
         }
       }
     }
   }
+
 }

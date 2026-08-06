@@ -22,12 +22,12 @@ import connectors.submitAppeal.HIPSubmitAppealConnector
 import models.appeals.AppealLevel.FirstStageAppeal
 import models.appeals.{AppealSubmission, CrimeAppealInformation}
 import play.api.test.Helpers._
-import utils.{HIPWiremock, IntegrationSpecCommonBase}
+import utils.{SubmitPenaltyAppealWiremock, IntegrationSpecCommonBase}
 
 import java.time.LocalDateTime
 import scala.concurrent.ExecutionContext
 
-class HIPSubmitAppealConnectorISpec extends IntegrationSpecCommonBase with HIPWiremock with FeatureSwitching {
+class HIPSubmitAppealConnectorISpec extends IntegrationSpecCommonBase with SubmitPenaltyAppealWiremock with FeatureSwitching {
   implicit val ec: ExecutionContext = ExecutionContext.Implicits.global
 
   class Setup {

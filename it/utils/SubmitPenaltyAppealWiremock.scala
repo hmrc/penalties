@@ -20,7 +20,7 @@ import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, post, stubFor
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
 import play.api.libs.json.{JsObject, JsValue, Json}
 
-trait HIPWiremock {
+trait SubmitPenaltyAppealWiremock {
 
   val appealResponse: JsValue = Json.parse(
     """
@@ -110,9 +110,5 @@ trait HIPWiremock {
           .withStatus(status)
       ))
   }
-
-
-
-
 
 }

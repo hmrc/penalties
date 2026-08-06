@@ -55,53 +55,12 @@ class AppConfigSpec extends AnyWordSpec with ShouldMatchers with FeatureSwitchin
     }
   }
 
-  "getPenaltyDetailsUrl" should {
-    "call API1812 when the feature switch is enabled" in new Setup {
-      enableFeatureSwitch(CallAPI1812ETMP)
-
-      val result: String = this.config.getPenaltyDetailsUrl(enrolmentKey)
-      result shouldBe "localhost:0000/penalty/details/VATC/VRN/123456789"
-    }
-
-    "call API1812 stub when the feature switch is disabled" in new Setup {
-      disableFeatureSwitch(CallAPI1812ETMP)
-
-      val result: String = this.config.getPenaltyDetailsUrl(enrolmentKey)
-      result shouldBe "localhost:0000/penalties-stub/penalty/details/VATC/VRN/123456789"
-    }
-  }
-
   "getHIPPenaltyDetailsUrl" should {
-    "call API5329 when the 'CallAPI1812HIP' feature switch is enabled" in new Setup {
-      enableFeatureSwitch(CallAPI1812HIP)
+    "call the correct API#5329 URL" in new Setup {
       when(mockServicesConfig.baseUrl(ArgumentMatchers.eq("hip"))).thenReturn("localhost:HIP")
 
       val result: String = this.config.getHIPPenaltyDetailsUrl(enrolmentKey)
       result shouldBe "localhost:HIP/etmp/RESTAdapter/cross-regime/taxpayer/penalties?taxRegime=VATC&idType=VRN&idNumber=123456789"
-    }
-
-    "call API5329 stub when the 'CallAPI1812HIP' feature switch is disabled" in new Setup {
-      disableFeatureSwitch(CallAPI1812HIP)
-      when(mockServicesConfig.baseUrl(ArgumentMatchers.eq("penalties-stub"))).thenReturn("localhost:STUB")
-
-      val result: String = this.config.getHIPPenaltyDetailsUrl(enrolmentKey)
-      result shouldBe "localhost:STUB/etmp/RESTAdapter/cross-regime/taxpayer/penalties?taxRegime=VATC&idType=VRN&idNumber=123456789"
-    }
-  }
-
-  "getFinancialDetailsIfUrl" should {
-    "call API1811 when the feature switch is enabled" in new Setup {
-      enableFeatureSwitch(CallAPI1811ETMP)
-
-      val result: String = this.config.getFinancialDetailsIfUrl(enrolmentKey)
-      result shouldBe "localhost:0000/penalty/financial-data/VRN/123456789/VATC"
-    }
-
-    "call API1811 stub when the feature switch is disabled" in new Setup {
-      disableFeatureSwitch(CallAPI1811ETMP)
-
-      val result: String = this.config.getFinancialDetailsIfUrl(enrolmentKey)
-      result shouldBe "localhost:0000/penalties-stub/penalty/financial-data/VRN/123456789/VATC"
     }
   }
 

@@ -38,7 +38,7 @@ import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class PenaltiesFrontendController @Inject()(
-                                             getPenaltyDetailsService: PenaltyDetailsService,
+                                             penaltyDetailsService: PenaltyDetailsService,
                                              penaltiesFrontendService: PenaltiesFrontendService,
                                              auditService: AuditService,
                                              dateHelper: DateHelper,
@@ -48,42 +48,42 @@ class PenaltiesFrontendController @Inject()(
 
   def getPenaltiesData(regime: Regime, idType: IdType, id: Id, arn: Option[String] = None): Action[AnyContent] = authAction.async {
     implicit request =>
-    val agnosticEnrolmenKey = AgnosticEnrolmentKey(regime, idType, id)
+    val agnosticEnrolmentKey = AgnosticEnrolmentKey(regime, idType, id)
     
-    getPenaltyDetailsService.getPenaltyDetails(agnosticEnrolmenKey).flatMap {
-      handlePenaltyDetailsResponse(_, agnosticEnrolmenKey, arn)
+    penaltyDetailsService.getPenaltyDetails(agnosticEnrolmentKey).flatMap {
+      handlePenaltyDetailsResponse(_, agnosticEnrolmentKey, arn)
     }
   }
 
-  private def handlePenaltyDetailsResponse(response: GetPenaltyDetailsResponse, agnosticEnrolmenKey: AgnosticEnrolmentKey, arn: Option[String])(
+  private def handlePenaltyDetailsResponse(response: GetPenaltyDetailsResponse, agnosticEnrolmentKey: AgnosticEnrolmentKey, arn: Option[String])(
       implicit request: Request[_],
       hc: HeaderCarrier): Future[Result] =
     response match {
       case Left(GetPenaltyDetailsNoContent) =>
         logger.info(
-          s"[RegimePenaltiesFrontendController][getPenaltiesData] - call returned 404 for $agnosticEnrolmenKey with NO_DATA_FOUND in response body")
+          s"[RegimePenaltiesFrontendController][getPenaltiesData] - call returned 404 for $agnosticEnrolmentKey with NO_DATA_FOUND in response body")
         Future.successful(NoContent)
       case Left(GetPenaltyDetailsFailureResponse(status)) if status == NOT_FOUND =>
-        logger.info(s"[RegimePenaltiesFrontendController][getPenaltiesData] - call returned 404 for $agnosticEnrolmenKey")
-        Future.successful(NotFound(s"A downstream call returned 404 for $agnosticEnrolmenKey"))
+        logger.info(s"[RegimePenaltiesFrontendController][getPenaltiesData] - call returned 404 for $agnosticEnrolmentKey")
+        Future.successful(NotFound(s"A downstream call returned 404 for $agnosticEnrolmentKey"))
       case Left(GetPenaltyDetailsFailureResponse(status)) =>
         logger.error(
-          s"[RegimePenaltiesFrontendController][getPenaltiesData] - call returned an unexpected status: $status for $agnosticEnrolmenKey")
+          s"[RegimePenaltiesFrontendController][getPenaltiesData] - call returned an unexpected status: $status for $agnosticEnrolmentKey")
         Future.successful(InternalServerError(s"A downstream call returned an unexpected status: $status"))
       case Left(GetPenaltyDetailsMalformed) =>
         PagerDutyHelper.log("getPenaltiesData", MALFORMED_RESPONSE_FROM_1812_API)
         logger.error(
-          s"[RegimePenaltiesFrontendController][getPenaltiesData] - call returned invalid body - failed to parse penalty details response for $agnosticEnrolmenKey")
+          s"[RegimePenaltiesFrontendController][getPenaltiesData] - call returned invalid body - failed to parse penalty details response for $agnosticEnrolmentKey")
         Future.successful(InternalServerError(s"We were unable to parse penalty data."))
       case Right(GetPenaltyDetailsSuccessResponse(penaltyDetails)) =>
-        logger.info(s"[RegimePenaltiesFrontendController][getPenaltiesData] - call returned 200 for $agnosticEnrolmenKey")
+        logger.info(s"[RegimePenaltiesFrontendController][getPenaltiesData] - call returned 200 for $agnosticEnrolmentKey")
         penaltiesFrontendService.handleAndCombineGetFinancialDetailsData(
           penaltyDetails,
-          agnosticEnrolmenKey,
+          agnosticEnrolmentKey,
           arn
         ).map {
-          case Left(error)   => handlePenaltiesFrontendError(error, agnosticEnrolmenKey)
-          case Right(result) => handleFinancialDetailsCombinationResult(result, agnosticEnrolmenKey, arn)
+          case Left(error)   => handlePenaltiesFrontendError(error, agnosticEnrolmentKey)
+          case Right(result) => handleFinancialDetailsCombinationResult(result, agnosticEnrolmentKey, arn)
         }
     }
 

@@ -62,23 +62,22 @@ class FinancialDetailsServiceISpec extends IntegrationSpecCommonBase with ETMPWi
         ))
       )
 
-      "call the connector and return a successful result" in {
-        mockStubResponseForGetFinancialDetails(Status.OK, s"${aKey.idType.value}/${aKey.id.value}/${regime.value}?$financialDataQueryParam", Some(getFinancialDetailsAsJson.toString()))
+      "call the connector WITH 'includeClearedItems' query in body and return a successful result, when passing in NO optional parameters" in {
+        mockResponseForGetFinancialDetails(Status.OK, requestBodyWithClearedItems, getFinancialDetailsAsJson.toString())
         val result = await(service.getFinancialDetails(aKey, None))
         result.isRight shouldBe true
         result.toOption.get shouldBe FinancialDetailsSuccessResponse(getFinancialDetailsModel)
       }
 
-      "call the connector and return a successful result - passing custom parameters when defined" in {
-        mockStubResponseForGetFinancialDetails(Status.OK, s"${aKey.idType.value}/${aKey.id.value}/${regime.value}?foo=bar&dateType=POSTING&dateFrom=${LocalDate.now().minusYears(2).toString}&dateTo=${LocalDate.now().toString}",
-          Some(getFinancialDetailsAsJson.toString()))
+      "call the connector WITHOUT 'includeClearedItems' query in body and return a successful result, when passing in optional parameters" in {
+        mockResponseForGetFinancialDetails(Status.OK, requestBodyWithoutClearedItems, getFinancialDetailsAsJson.toString())
         val result = await(service.getFinancialDetails(aKey, Some("?foo=bar")))
         result.isRight shouldBe true
         result.toOption.get shouldBe FinancialDetailsSuccessResponse(getFinancialDetailsModel)
       }
 
       s"the response body is not well formed: $FinancialDetailsMalformed" in {
-        mockStubResponseForGetFinancialDetails(Status.OK, s"${aKey.idType.value}/${aKey.id.value}/${regime.value}?$financialDataQueryParam", Some(
+        mockResponseForGetFinancialDetails(Status.OK, requestBodyWithClearedItems,
           """
           {
            "documentDetails": [
@@ -87,7 +86,7 @@ class FinancialDetailsServiceISpec extends IntegrationSpecCommonBase with ETMPWi
             }
            ]
           }
-          """))
+          """)
         val result = await(service.getFinancialDetails(aKey, None))
         result.isLeft shouldBe true
         result.left.getOrElse(FinancialDetailsFailureResponse(IM_A_TEAPOT)) shouldBe FinancialDetailsMalformed
@@ -105,14 +104,24 @@ class FinancialDetailsServiceISpec extends IntegrationSpecCommonBase with ETMPWi
             | ]
             |}
             |""".stripMargin
-        mockStubResponseForGetFinancialDetails(Status.NOT_FOUND, s"${aKey.idType.value}/${aKey.id.value}/${regime.value}?$financialDataQueryParam", Some(noDataFoundBody))
+        mockResponseForGetFinancialDetails(Status.NOT_FOUND, requestBodyWithClearedItems, noDataFoundBody)
         val result = await(service.getFinancialDetails(aKey, None))
         result.isLeft shouldBe true
         result.left.getOrElse(FinancialDetailsFailureResponse(IM_A_TEAPOT)) shouldBe FinancialDetailsNoContent
       }
 
       s"an unknown response is returned from the connector - $FinancialDetailsFailureResponse" in {
-        mockStubResponseForGetFinancialDetails(Status.IM_A_TEAPOT, s"${aKey.idType.value}/${aKey.id.value}/${regime.value}?$financialDataQueryParam")
+        val errorBody = """
+                                  |{
+                                  | "failures": [
+                                  |   {
+                                  |     "code": "SOME_OTHER_ERROR",
+                                  |     "reason": "This is a reason"
+                                  |   }
+                                  | ]
+                                  |}
+                                  |""".stripMargin
+        mockResponseForGetFinancialDetails(Status.IM_A_TEAPOT, requestBodyWithClearedItems, errorBody)
         val result = await(service.getFinancialDetails(aKey, None))
         result.isLeft shouldBe true
         result.left.getOrElse(FinancialDetailsFailureResponse(INTERNAL_SERVER_ERROR)) shouldBe FinancialDetailsFailureResponse(Status.IM_A_TEAPOT)

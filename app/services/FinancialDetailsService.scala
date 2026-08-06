@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,7 @@
 
 package services
 
-import config.featureSwitches.{CallAPI1811HIP, FeatureSwitching}
-import connectors.getFinancialDetails.{FinancialDetailsConnector, FinancialDetailsHipConnector}
+import connectors.getFinancialDetails.FinancialDetailsHipConnector
 import connectors.parsers.getFinancialDetails.FinancialDetailsParser._
 import connectors.parsers.getFinancialDetails.HIPFinancialDetailsParser.HIPFinancialDetailsResponse
 import models.AgnosticEnrolmentKey
@@ -28,27 +27,16 @@ import utils.Logger.logger
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class FinancialDetailsService @Inject() (
-    getFinancialDetailsConnector: FinancialDetailsConnector,
-    financialDetailsHipConnector: FinancialDetailsHipConnector)(implicit ec: ExecutionContext, val config: Configuration)
-    extends FeatureSwitching {
+class FinancialDetailsService @Inject() (financialDetailsHipConnector: FinancialDetailsHipConnector)(implicit
+    ec: ExecutionContext,
+    val config: Configuration) {
 
   def getFinancialDetails(enrolmentKey: AgnosticEnrolmentKey, optionalParameters: Option[String])(implicit
-      hc: HeaderCarrier): Future[FinancialDetailsResponse] = {
-
-    def callHipConnector: Future[FinancialDetailsResponse] = {
-      val includeClearedItems: Boolean = optionalParameters.isEmpty
-      financialDetailsHipConnector
-        .getFinancialDetails(enrolmentKey, includeClearedItems)
-        .map(mapHipToIfResponse)
-        .map(logResponse(_, enrolmentKey))
-    }
-
-    def callIfConnector: Future[FinancialDetailsResponse] =
-      getFinancialDetailsConnector.getFinancialDetails(enrolmentKey, optionalParameters).map(logResponse(_, enrolmentKey))
-
-    if (isEnabled(CallAPI1811HIP)) callHipConnector else callIfConnector
-  }
+      hc: HeaderCarrier): Future[FinancialDetailsResponse] =
+    financialDetailsHipConnector
+      .getFinancialDetails(enrolmentKey, includeClearedItems = optionalParameters.isEmpty)
+      .map(mapHipToIfResponse)
+      .map(logResponse(_, enrolmentKey))
 
   private def mapHipToIfResponse(response: HIPFinancialDetailsResponse): FinancialDetailsResponse =
     response.left.map(_.toIFFailureResponse).map(_.toIFSuccessResponse)
@@ -81,44 +69,21 @@ class FinancialDetailsService @Inject() (
                                 addLockInformation: Option[Boolean],
                                 addPenaltyDetails: Option[Boolean],
                                 addPostedInterestDetails: Option[Boolean],
-                                addAccruingInterestDetails: Option[Boolean])(implicit hc: HeaderCarrier): Future[HttpResponse] = {
-
-    def callHipConnector: Future[HttpResponse] =
-      financialDetailsHipConnector.getFinancialDetailsForAPI(
-        enrolmentKey,
-        searchType,
-        searchItem,
-        dateType,
-        dateFrom,
-        dateTo,
-        includeClearedItems,
-        includeStatisticalItems,
-        includePaymentOnAccount,
-        addRegimeTotalisation,
-        addLockInformation,
-        addPenaltyDetails,
-        addPostedInterestDetails,
-        addAccruingInterestDetails
-      )
-
-    def callIfConnector: Future[HttpResponse] =
-      getFinancialDetailsConnector.getFinancialDetailsForAPI(
-        enrolmentKey,
-        searchType,
-        searchItem,
-        dateType,
-        dateFrom,
-        dateTo,
-        includeClearedItems,
-        includeStatisticalItems,
-        includePaymentOnAccount,
-        addRegimeTotalisation,
-        addLockInformation,
-        addPenaltyDetails,
-        addPostedInterestDetails,
-        addAccruingInterestDetails
-      )
-
-    if (isEnabled(CallAPI1811HIP)) callHipConnector else callIfConnector
-  }
+                                addAccruingInterestDetails: Option[Boolean])(implicit hc: HeaderCarrier): Future[HttpResponse] =
+    financialDetailsHipConnector.getFinancialDetailsForAPI(
+      enrolmentKey,
+      searchType,
+      searchItem,
+      dateType,
+      dateFrom,
+      dateTo,
+      includeClearedItems,
+      includeStatisticalItems,
+      includePaymentOnAccount,
+      addRegimeTotalisation,
+      addLockInformation,
+      addPenaltyDetails,
+      addPostedInterestDetails,
+      addAccruingInterestDetails
+    )
 }

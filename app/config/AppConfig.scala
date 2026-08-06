@@ -113,25 +113,9 @@ class AppConfig @Inject() (val config: Configuration, servicesConfig: ServicesCo
     s"$baseUrl/pegacms/v1/penalty/appeal"
   }
 
-  def getFinancialDetailsIfUrl(enrolmentKey: AgnosticEnrolmentKey): String = {
-    val taxRegime = enrolmentKey.regime.value
-    val id        = enrolmentKey.idType.value
-    val idValue   = enrolmentKey.id.value
-    val baseUrl   = if (isEnabled(CallAPI1811ETMP)) etmpBase else s"$stubBase/penalties-stub"
-    s"$baseUrl/penalty/financial-data/$id/$idValue/$taxRegime"
-  }
-
   def getFinancialDetailsHipUrl: String = {
     val baseUrl = if (isEnabled(CallAPI1811Stub)) stubBase else hipBase
     s"$baseUrl/etmp/RESTAdapter/cross-regime/taxpayer/financial-data/query"
-  }
-
-  def getPenaltyDetailsUrl(agnosticEnrolmentKey: AgnosticEnrolmentKey): String = {
-    val regime  = agnosticEnrolmentKey.regime.value
-    val idType  = agnosticEnrolmentKey.idType.value
-    val idValue = agnosticEnrolmentKey.id.value
-    val baseUrl = if (isEnabled(CallAPI1812ETMP)) etmpBase else s"$stubBase/penalties-stub"
-    s"$baseUrl/penalty/details/$regime/$idType/$idValue"
   }
 
   def getHIPPenaltyDetailsUrl(agnosticEnrolmentKey: AgnosticEnrolmentKey, dateLimit: Option[String] = None): String = {
@@ -140,8 +124,7 @@ class AppConfig @Inject() (val config: Configuration, servicesConfig: ServicesCo
     val idValue                = agnosticEnrolmentKey.id.value
     val dateLimitParam: String = dateLimit.map(dateLimit => s"&dateLimit=$dateLimit").getOrElse("")
     val penaltiesHipUrl = s"/etmp/RESTAdapter/cross-regime/taxpayer/penalties?taxRegime=$regime&idType=$idType&idNumber=$idValue$dateLimitParam"
-    if (isEnabled(CallAPI1812HIP)) hipBase + penaltiesHipUrl
-    else stubBase + penaltiesHipUrl
+    hipBase + penaltiesHipUrl
   }
 
   def getComplianceDataUrl(agnosticEnrolmentKey: AgnosticEnrolmentKey, fromDate: String, toDate: String): String = {

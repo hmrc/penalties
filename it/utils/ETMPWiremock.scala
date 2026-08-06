@@ -18,12 +18,12 @@ package utils
 
 import com.github.tomakehurst.wiremock.client.WireMock._
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
-import play.api.libs.json.{JsValue, Json}
-import models.{Regime, IdType, Id}
+import models.getFinancialDetails.FinancialDetailsRequestModel
+import models.{AgnosticEnrolmentKey, Id, IdType, Regime}
+import play.api.libs.json.{JsObject, JsValue, Json}
 
 trait ETMPWiremock {
-  val getPenaltyDetailsWithLSPAndLPPAsJson: JsValue = Json.parse(
-    """
+  val getPenaltyDetailsWithLSPAndLPPAsJson: JsValue = Json.parse("""
       |{
       | "totalisations": {
       |   "LSPTotalValue": 200,
@@ -510,44 +510,28 @@ trait ETMPWiremock {
       |""".stripMargin
   )
 
-  def mockStubResponseForGetPenaltyDetails(status: Int, apiRegime: Regime, idType: IdType, id: Id, body: Option[String] = None): StubMapping = {
-    stubFor(get(urlEqualTo(s"/penalties-stub/penalty/details/${apiRegime.value}/${idType.value}/${id.value}"))
-      .willReturn(
-        aResponse()
-          .withBody(body.fold(getPenaltyDetailsWithLSPAndLPPAsJson.toString())(identity))
-          .withStatus(status)
-      ))
-  }
+  val enrolmentKey: AgnosticEnrolmentKey = AgnosticEnrolmentKey(Regime("VATC"), IdType("VRN"), Id("123456789"))
 
-  def mockResponseForGetPenaltyDetails(status: Int, apiRegime: Regime, idType: IdType, vatcUrl: String, body: Option[String] = None): StubMapping = {
-    stubFor(get(urlEqualTo(s"/penalty/details/${apiRegime.value}/${idType.value}/$vatcUrl"))
-      .willReturn(
-        aResponse()
-          .withBody(body.fold(getPenaltyDetailsWithLSPAndLPPAsJson.toString())(identity))
-          .withStatus(status)
-      ))
-  }
+  val requestBodyWithClearedItems: String =
+    FinancialDetailsRequestModel.emptyModel.copy(includeClearedItems = Some(true)).toJsonRequest(enrolmentKey).toString()
+  val requestBodyWithoutClearedItems: String =
+    FinancialDetailsRequestModel.emptyModel.toJsonRequest(enrolmentKey).toString()
 
-  def mockStubResponseForGetFinancialDetails(status: Int, vatcUrl: String, body: Option[String] = None): StubMapping = {
-    stubFor(get(urlEqualTo(s"/penalties-stub/penalty/financial-data/$vatcUrl"))
-      .willReturn(
-        aResponse()
-          .withBody(body.fold(getFinancialDetailsWithoutTotalisationsAsJson.toString())(identity))
-          .withStatus(status)
-      ))
-  }
+  def getFinancialMinimalRequestBody(enrolmentKey: AgnosticEnrolmentKey = enrolmentKey): JsObject =
+    FinancialDetailsRequestModel.emptyModel.toJsonRequest(enrolmentKey)
 
-  def mockResponseForGetFinancialDetails(status: Int, regime: Regime, idType: IdType, id: Id, params: String, body: Option[String] = None): StubMapping = {
-    stubFor(get(urlEqualTo(s"/penalty/financial-data/${idType.value}/${id.value}/${regime.value}$params"))
-      .willReturn(
-        aResponse()
-          .withBody(body.fold(getFinancialDetailsWithoutTotalisationsAsJson.toString())(identity))
-          .withStatus(status)
-      ))
-  }
+  def mockResponseForGetPenaltyDetails(status: Int, apiRegime: Regime, idType: IdType, id: Id, body: Option[String] = None): StubMapping =
+    stubFor(
+      get(urlEqualTo(s"/etmp/RESTAdapter/cross-regime/taxpayer/penalties?taxRegime=${apiRegime.value}&id=${idType.value}&idNumber=${id.value}"))
+        .willReturn(
+          aResponse()
+            .withBody(body.fold(getPenaltyDetailsWithLSPAndLPPAsJson.toString())(identity))
+            .withStatus(status)
+        ))
 
-  def mockGetFinancialDetailsHIP(status: Int, requestBody: String, responseBody: String): StubMapping = {
-    stubFor(post(urlEqualTo("/etmp/RESTAdapter/cross-regime/taxpayer/financial-data/query")).withRequestBody(equalToJson(requestBody))
-      .willReturn(aResponse().withBody(responseBody).withStatus(status)))
-  }
+  def mockResponseForGetFinancialDetails(status: Int, requestBody: String, responseBody: String): StubMapping =
+    stubFor(
+      post(urlEqualTo("/etmp/RESTAdapter/cross-regime/taxpayer/financial-data/query"))
+        .withRequestBody(equalToJson(requestBody))
+        .willReturn(aResponse().withBody(responseBody).withStatus(status)))
 }

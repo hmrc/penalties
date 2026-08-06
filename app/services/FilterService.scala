@@ -25,6 +25,7 @@ import models.hipPenaltyDetails.appealInfo.AppealStatusEnum
 import play.api.libs.json.{JsString, JsValue, Json}
 import services.FilterService.{filterOutLPPsWith9xAppealStatus, filterOutLSPsWith9xAppealStatus, loggerPrefix}
 import utils.Logger.logger
+import utils.LoggingContext
 import utils.PenaltyDetailsConverter.putSeqInsideOption
 
 import javax.inject.Inject

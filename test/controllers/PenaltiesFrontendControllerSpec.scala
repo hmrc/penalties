@@ -17,14 +17,15 @@
 package controllers
 
 import base.{LPPDetailsBase, LSPDetailsBase, LogCapturing, SpecBase}
-import config.featureSwitches.{CallAPI1812HIP, FeatureSwitching}
+import config.featureSwitches.FeatureSwitching
 import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser.{
   GetPenaltyDetailsFailureResponse,
   GetPenaltyDetailsMalformed,
+  GetPenaltyDetailsNoContent,
   GetPenaltyDetailsSuccessResponse
 }
 import controllers.auth.AuthAction
-import models.getPenaltyDetails.latePayment.PrincipalChargeMainTr.{VATReturnCharge, VATReturnFirstLPP, VATReturnSecondLPP}
+import models.getPenaltyDetails.latePayment.PrincipalChargeMainTr.VATReturnCharge
 import models.getPenaltyDetails.latePayment._
 import models.getPenaltyDetails.{GetPenaltyDetails, Totalisations}
 import models.{AgnosticEnrolmentKey, Id, IdType, Regime}
@@ -36,17 +37,15 @@ import play.api.test.Helpers._
 import services.PenaltiesFrontendService._
 import services.auditing.AuditService
 import services.{PenaltiesFrontendService, PenaltyDetailsService}
-import utils.AuthActionMock
-import utils.DateHelper
-import utils.Logger.logger
 import utils.PagerDutyHelper.PagerDutyKeys
+import utils.{AuthActionMock, DateHelper, Logger}
 
 import java.time.LocalDate
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 class PenaltiesFrontendControllerSpec extends SpecBase with LogCapturing with LPPDetailsBase with LSPDetailsBase with FeatureSwitching {
-  val mockGetPenaltyDetailsService: PenaltyDetailsService    = mock(classOf[PenaltyDetailsService])
+  val mockPenaltyDetailsService: PenaltyDetailsService       = mock(classOf[PenaltyDetailsService])
   val mockPenaltiesFrontendService: PenaltiesFrontendService = mock(classOf[PenaltiesFrontendService])
   val mockAuditService: AuditService                         = mock(classOf[AuditService])
   val mockAuthAction: AuthAction                             = injector.instanceOf(classOf[AuthActionMock])
@@ -65,15 +64,13 @@ class PenaltiesFrontendControllerSpec extends SpecBase with LogCapturing with LP
   )
 
   class Setup(isFSEnabled: Boolean = true) {
-    reset(mockGetPenaltyDetailsService)
+    reset(mockPenaltyDetailsService)
     reset(mockPenaltiesFrontendService)
     reset(mockAuditService)
 
-    disableFeatureSwitch(CallAPI1812HIP)
-
     implicit val config: play.api.Configuration = appConfig.config
     val controller: PenaltiesFrontendController = new PenaltiesFrontendController(
-      mockGetPenaltyDetailsService,
+      mockPenaltyDetailsService,
       mockPenaltiesFrontendService,
       mockAuditService,
       dateHelper,
@@ -82,316 +79,323 @@ class PenaltiesFrontendControllerSpec extends SpecBase with LogCapturing with LP
     )(global, config)
   }
 
-  "use unified API data and combine with API 1811 data" must {
-    s"return ISE (${Status.INTERNAL_SERVER_ERROR}) when the penalty details call fails" in new Setup(isFSEnabled = true) {
-      when(mockGetPenaltyDetailsService.getPenaltyDetails(ArgumentMatchers.any())(ArgumentMatchers.any()))
-        .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(Status.INTERNAL_SERVER_ERROR))))
-      val result = controller.getPenaltiesData(regime, idType, id, Some(""))(fakeRequest)
-      status(result) shouldBe Status.INTERNAL_SERVER_ERROR
-    }
-
-    s"return ISE (${Status.INTERNAL_SERVER_ERROR}) when the penalty details call response body is malformed" in new Setup(isFSEnabled = true) {
-      when(mockGetPenaltyDetailsService.getPenaltyDetails(ArgumentMatchers.any())(ArgumentMatchers.any()))
-        .thenReturn(Future.successful(Left(GetPenaltyDetailsMalformed)))
-      withCaptureOfLoggingFrom(logger) { logs =>
-        val result = await(controller.getPenaltiesData(regime, idType, id, Some(""))(fakeRequest))
-        result.header.status shouldBe Status.INTERNAL_SERVER_ERROR
-        logs.exists(_.getMessage.contains(PagerDutyKeys.MALFORMED_RESPONSE_FROM_1812_API.toString)) shouldBe true
-      }
-    }
-
-    s"return the service result for the financial details combination" in new Setup(isFSEnabled = true) {
-      val getPenaltyDetails: GetPenaltyDetails = GetPenaltyDetails(
-        totalisations = None,
-        lateSubmissionPenalty = None,
-        latePaymentPenalty = Some(
-          LatePaymentPenalty(
-            Some(
-              Seq(
-                lpp2,
-                lpp1PrincipalChargeDueToday.copy(penaltyStatus = LPPPenaltyStatusEnum.Posted),
-                lpp2.copy(principalChargeReference = "123456790"),
-                lpp1PrincipalChargeDueToday.copy(penaltyStatus = LPPPenaltyStatusEnum.Posted)
-              )
-            ),
-            ManualLPPIndicator = None
-          )
+  val penaltyDetails: GetPenaltyDetails = GetPenaltyDetails(
+    totalisations = Some(
+      Totalisations(
+        LSPTotalValue = Some(200),
+        penalisedPrincipalTotal = Some(2000),
+        LPPPostedTotal = Some(165.25),
+        LPPEstimatedTotal = Some(15.26),
+        totalAccountOverdue = None,
+        totalAccountPostedInterest = None,
+        totalAccountAccruingInterest = None
+      )
+    ),
+    lateSubmissionPenalty = Some(
+      models.getPenaltyDetails.lateSubmission.LateSubmissionPenalty(
+        summary = models.getPenaltyDetails.lateSubmission.LSPSummary(
+          activePenaltyPoints = 2,
+          inactivePenaltyPoints = 0,
+          regimeThreshold = 4,
+          penaltyChargeAmount = 200,
+          PoCAchievementDate = Some(LocalDate.of(2022, 1, 1))
         ),
-        breathingSpace = None
-      )
-      when(mockGetPenaltyDetailsService.getPenaltyDetails(ArgumentMatchers.any())(ArgumentMatchers.any()))
-        .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetails))))
-      when(
-        mockPenaltiesFrontendService.handleAndCombineGetFinancialDetailsData(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(
-          ArgumentMatchers.any(),
-          ArgumentMatchers.any()))
-        .thenReturn(Future.successful(Left(FinancialDetailsUnexpectedStatus(Status.INTERNAL_SERVER_ERROR, clearedItemsCallSucceeded = false))))
-      val result = controller.getPenaltiesData(regime, idType, id, Some("123456789"))(fakeRequest)
-
-      status(result) shouldBe Status.INTERNAL_SERVER_ERROR
-    }
-
-    s"return ISE (${Status.INTERNAL_SERVER_ERROR}) and log when financial details combination returns a typed parsing error" in new Setup(
-      isFSEnabled = true) {
-      val getPenaltyDetails: GetPenaltyDetails = GetPenaltyDetails(
-        totalisations = None,
-        lateSubmissionPenalty = None,
-        latePaymentPenalty = Some(LatePaymentPenalty(Some(Seq(lpp2)), ManualLPPIndicator = None)),
-        breathingSpace = None
-      )
-      when(mockGetPenaltyDetailsService.getPenaltyDetails(ArgumentMatchers.any())(ArgumentMatchers.any()))
-        .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetails))))
-      when(
-        mockPenaltiesFrontendService.handleAndCombineGetFinancialDetailsData(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(
-          ArgumentMatchers.any(),
-          ArgumentMatchers.any()))
-        .thenReturn(Future.successful(Left(MissingManualLPPField("documentTotalAmount"))))
-
-      withCaptureOfLoggingFrom(logger) { logs =>
-        val result = controller.getPenaltiesData(regime, idType, id, Some("123456789"))(fakeRequest)
-
-        status(result) shouldBe Status.INTERNAL_SERVER_ERROR
-        contentAsString(result) shouldBe "We were unable to parse penalty data."
-        logs.exists(_.getMessage.contains("[RegimePenaltiesFrontendService][combineAPIData] - Manual LPP document is missing documentTotalAmount")) shouldBe true
-      }
-    }
-
-    s"return OK based on the result of the service call" in new Setup(isFSEnabled = true) {
-      val getPenaltyDetails: GetPenaltyDetails = GetPenaltyDetails(
-        totalisations = None,
-        lateSubmissionPenalty = None,
-        latePaymentPenalty = Some(
-          LatePaymentPenalty(
-            Some(
-              Seq(
-                lpp2,
-                lpp1PrincipalChargeDueToday.copy(penaltyStatus = LPPPenaltyStatusEnum.Posted),
-                lpp2.copy(principalChargeReference = "123456790"),
-                lpp1PrincipalChargeDueToday.copy(penaltyStatus = LPPPenaltyStatusEnum.Posted)
-              )
-            ),
-            ManualLPPIndicator = None
-          )
-        ),
-        breathingSpace = None
-      )
-
-      val penaltyDetailsAfterCombining = getPenaltyDetails.copy(
-        totalisations = Some(
-          Totalisations(
-            LSPTotalValue = None,
-            penalisedPrincipalTotal = None,
-            LPPPostedTotal = None,
-            LPPEstimatedTotal = None,
-            totalAccountOverdue = Some(1000),
-            totalAccountPostedInterest = Some(123.45),
-            totalAccountAccruingInterest = Some(23.45)
-          )
-        ),
-        lateSubmissionPenalty = None,
-        latePaymentPenalty = Some(
-          LatePaymentPenalty(
-            Some(
-              Seq(
-                lpp2.copy(
-                  penaltyStatus = LPPPenaltyStatusEnum.Posted,
-                  penaltyChargeReference = Some("123456790"),
-                  metadata = LPPDetailsMetadata(
-                    mainTransaction = Some(VATReturnSecondLPP),
-                    timeToPay = Some(
-                      Seq(
-                        TimeToPay(
-                          TTPStartDate = Some(LocalDate.of(2022, 1, 1)),
-                          TTPEndDate = Some(LocalDate.of(2022, 12, 31)),
-                          TTPProposalDate = None,
-                          TTPAgreementDate = None
-                        )))
-                  )
-                ),
-                lpp1PrincipalChargeDueToday.copy(
-                  penaltyStatus = LPPPenaltyStatusEnum.Posted,
-                  penaltyChargeReference = Some("123456789"),
-                  metadata = LPPDetailsMetadata(
-                    mainTransaction = Some(VATReturnFirstLPP),
-                    timeToPay = Some(
-                      Seq(
-                        TimeToPay(
-                          TTPStartDate = Some(LocalDate.of(2022, 1, 1)),
-                          TTPEndDate = Some(LocalDate.of(2022, 12, 31)),
-                          TTPProposalDate = None,
-                          TTPAgreementDate = None
-                        )))
-                  )
-                )
-              )
-            ),
-            ManualLPPIndicator = None
-          )
-        )
-      )
-      when(mockGetPenaltyDetailsService.getPenaltyDetails(ArgumentMatchers.any())(ArgumentMatchers.any()))
-        .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetails))))
-      when(
-        mockPenaltiesFrontendService.handleAndCombineGetFinancialDetailsData(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(
-          ArgumentMatchers.any(),
-          ArgumentMatchers.any()))
-        .thenReturn(Future.successful(Right(CombinedPenaltyDetails(penaltyDetailsAfterCombining))))
-      val result = controller.getPenaltiesData(regime, idType, id, Some("123456789"))(fakeRequest)
-      status(result) shouldBe Status.OK
-      contentAsJson(result) shouldBe Json.toJson(penaltyDetailsAfterCombining)
-    }
-  }
-
-  "unified API with feature switching" must {
-    val mockConvertedPenaltyDetails: GetPenaltyDetails = GetPenaltyDetails(
-      totalisations = Some(
-        Totalisations(
-          LSPTotalValue = Some(200),
-          penalisedPrincipalTotal = Some(2000),
-          LPPPostedTotal = Some(165.25),
-          LPPEstimatedTotal = Some(15.26),
-          totalAccountOverdue = None,
-          totalAccountPostedInterest = None,
-          totalAccountAccruingInterest = None
-        )
-      ),
-      lateSubmissionPenalty = Some(
-        models.getPenaltyDetails.lateSubmission.LateSubmissionPenalty(
-          summary = models.getPenaltyDetails.lateSubmission.LSPSummary(
-            activePenaltyPoints = 2,
-            inactivePenaltyPoints = 0,
-            regimeThreshold = 4,
-            penaltyChargeAmount = 200,
-            PoCAchievementDate = Some(LocalDate.of(2022, 1, 1))
-          ),
-          details = Seq()
-        )),
-      latePaymentPenalty = Some(
-        LatePaymentPenalty(
-          details = Some(
-            Seq(
-              LPPDetails(
-                principalChargeReference = "12345675",
-                penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
-                penaltyStatus = LPPPenaltyStatusEnum.Posted,
-                penaltyAmountAccruing = BigDecimal(0),
-                penaltyAmountPosted = 144.21,
-                penaltyAmountPaid = Some(0.21),
-                penaltyAmountOutstanding = Some(144),
-                LPP1LRCalculationAmount = None,
-                LPP1LRDays = None,
-                LPP1LRPercentage = None,
-                LPP1HRCalculationAmount = None,
-                LPP1HRDays = None,
-                LPP1HRPercentage = None,
-                LPP2Days = None,
-                LPP2Percentage = None,
-                penaltyChargeCreationDate = Some(LocalDate.of(2022, 1, 1)),
-                communicationsDate = Some(LocalDate.of(2022, 1, 1)),
-                penaltyChargeReference = Some("1234567890"),
-                penaltyChargeDueDate = Some(LocalDate.of(2022, 1, 1)),
-                appealInformation = None,
-                principalChargeMainTransaction = VATReturnCharge,
-                principalChargeBillingFrom = LocalDate.of(2022, 1, 1),
-                principalChargeBillingTo = LocalDate.of(2022, 1, 1),
-                principalChargeDueDate = LocalDate.of(2022, 1, 1),
-                principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
-                vatOutstandingAmount = None,
-                metadata = LPPDetailsMetadata(
-                  principalChargeDocNumber = Some("DOC1"),
-                  principalChargeSubTransaction = Some("SUB1")
-                ),
-                supplement = false
-              )
+        details = Seq()
+      )),
+    latePaymentPenalty = Some(
+      LatePaymentPenalty(
+        details = Some(
+          Seq(
+            LPPDetails(
+              principalChargeReference = "12345675",
+              penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
+              penaltyStatus = LPPPenaltyStatusEnum.Posted,
+              penaltyAmountAccruing = BigDecimal(0),
+              penaltyAmountPosted = 144.21,
+              penaltyAmountPaid = Some(0.21),
+              penaltyAmountOutstanding = Some(144),
+              LPP1LRCalculationAmount = None,
+              LPP1LRDays = None,
+              LPP1LRPercentage = None,
+              LPP1HRCalculationAmount = None,
+              LPP1HRDays = None,
+              LPP1HRPercentage = None,
+              LPP2Days = None,
+              LPP2Percentage = None,
+              penaltyChargeCreationDate = Some(LocalDate.of(2022, 1, 1)),
+              communicationsDate = Some(LocalDate.of(2022, 1, 1)),
+              penaltyChargeReference = Some("1234567890"),
+              penaltyChargeDueDate = Some(LocalDate.of(2022, 1, 1)),
+              appealInformation = None,
+              principalChargeMainTransaction = VATReturnCharge,
+              principalChargeBillingFrom = LocalDate.of(2022, 1, 1),
+              principalChargeBillingTo = LocalDate.of(2022, 1, 1),
+              principalChargeDueDate = LocalDate.of(2022, 1, 1),
+              principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
+              vatOutstandingAmount = None,
+              metadata = LPPDetailsMetadata(
+                principalChargeDocNumber = Some("DOC1"),
+                principalChargeSubTransaction = Some("SUB1")
+              ),
+              supplement = false
             )
-          ),
-          ManualLPPIndicator = Some(true)
-        )),
-      breathingSpace = None
-    )
+          )
+        ),
+        ManualLPPIndicator = Some(true)
+      )),
+    breathingSpace = None
+  )
+  val penaltyDetails2: GetPenaltyDetails = penaltyDetails.copy(totalisations = None)
 
-    s"use unified service and handle HIP backend when CallAPI1812HIP feature switch is enabled" in new Setup {
-      enableFeatureSwitch(CallAPI1812HIP)
+  private def verifyCallMadeToGetPenaltyDetails() =
+    verify(mockPenaltyDetailsService, times(1)).getPenaltyDetails(ArgumentMatchers.any())(ArgumentMatchers.any())
+  private def verifyCallMadeToPenaltiesFrontendService() = verify(mockPenaltiesFrontendService, times(1)).handleAndCombineGetFinancialDetailsData(
+    ArgumentMatchers.any(),
+    ArgumentMatchers.any(),
+    ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
+  private def verifyNoCallMadeToPenaltiesFrontendService() = verify(mockPenaltiesFrontendService, never()).handleAndCombineGetFinancialDetailsData(
+    ArgumentMatchers.any(),
+    ArgumentMatchers.any(),
+    ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
 
-      when(mockGetPenaltyDetailsService.getPenaltyDetails(ArgumentMatchers.any())(ArgumentMatchers.any()))
-        .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(mockConvertedPenaltyDetails))))
-      when(
-        mockPenaltiesFrontendService.handleAndCombineGetFinancialDetailsData(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(
-          ArgumentMatchers.any(),
-          ArgumentMatchers.any()))
-        .thenReturn(Future.successful(Right(CombinedPenaltyDetails(mockConvertedPenaltyDetails))))
+  "getPenaltyDetails" should {
 
-      val result = controller.getPenaltiesData(regime, idType, id, Some("123456789"))(fakeRequest)
-      status(result) shouldBe Status.OK
+    "attempt to combine data from #5329 get-penalty-details and #5327 get-financial-data calls, and" should {
+      "return the combined data from PenaltiesFrontendService as a Json in a 200" when {
+        "the PenaltyDetailsService returns data and the PenaltiesFrontendService returns 'CombinedPenaltyDetails' with the combined data" in new Setup {
+          when(mockPenaltyDetailsService.getPenaltyDetails(ArgumentMatchers.any())(ArgumentMatchers.any()))
+            .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(penaltyDetails))))
+          when(
+            mockPenaltiesFrontendService.handleAndCombineGetFinancialDetailsData(
+              ArgumentMatchers.any(),
+              ArgumentMatchers.any(),
+              ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
+            .thenReturn(Future.successful(Right(CombinedPenaltyDetails(penaltyDetails2))))
 
-      verify(mockGetPenaltyDetailsService, times(1)).getPenaltyDetails(ArgumentMatchers.any())(ArgumentMatchers.any())
-      verify(mockPenaltiesFrontendService, times(1)).handleAndCombineGetFinancialDetailsData(
-        ArgumentMatchers.any(),
-        ArgumentMatchers.any(),
-        ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
+          private val result = controller.getPenaltiesData(regime, idType, id, Some("123456789"))(fakeRequest)
 
-      disableFeatureSwitch(CallAPI1812HIP)
-    }
+          status(result) shouldBe Status.OK
+          contentAsJson(result) shouldBe Json.toJson(penaltyDetails2)
 
-    s"use unified service with regular backend when CallAPI1812HIP feature switch is disabled" in new Setup {
-      disableFeatureSwitch(CallAPI1812HIP)
+          verifyCallMadeToGetPenaltyDetails()
+          verifyCallMadeToPenaltiesFrontendService()
+        }
 
-      when(mockGetPenaltyDetailsService.getPenaltyDetails(ArgumentMatchers.any())(ArgumentMatchers.any()))
-        .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(mockConvertedPenaltyDetails))))
-      when(
-        mockPenaltiesFrontendService.handleAndCombineGetFinancialDetailsData(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(
-          ArgumentMatchers.any(),
-          ArgumentMatchers.any()))
-        .thenReturn(Future.successful(Right(CombinedPenaltyDetails(mockConvertedPenaltyDetails))))
+        "the PenaltyDetailsService returns data and the PenaltiesFrontendService returns 'PenaltyDetailsFromSecondNoContent' with the combined data" in new Setup {
+          when(mockPenaltyDetailsService.getPenaltyDetails(ArgumentMatchers.any())(ArgumentMatchers.any()))
+            .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(penaltyDetails))))
+          when(
+            mockPenaltiesFrontendService.handleAndCombineGetFinancialDetailsData(
+              ArgumentMatchers.any(),
+              ArgumentMatchers.any(),
+              ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
+            .thenReturn(Future.successful(Right(PenaltyDetailsFromSecondNoContent(penaltyDetails2))))
 
-      val result = controller.getPenaltiesData(regime, idType, id, Some("123456789"))(fakeRequest)
-      status(result) shouldBe Status.OK
+          private val result = controller.getPenaltiesData(regime, idType, id, Some("123456789"))(fakeRequest)
 
-      verify(mockGetPenaltyDetailsService, times(1)).getPenaltyDetails(ArgumentMatchers.any())(ArgumentMatchers.any())
-      verify(mockPenaltiesFrontendService, times(1)).handleAndCombineGetFinancialDetailsData(
-        ArgumentMatchers.any(),
-        ArgumentMatchers.any(),
-        ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
-    }
+          status(result) shouldBe Status.OK
+          contentAsJson(result) shouldBe Json.toJson(penaltyDetails2)
 
-    s"return ISE (${Status.INTERNAL_SERVER_ERROR}) when unified service call fails" in new Setup {
-      enableFeatureSwitch(CallAPI1812HIP)
-
-      when(mockGetPenaltyDetailsService.getPenaltyDetails(ArgumentMatchers.any())(ArgumentMatchers.any()))
-        .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(Status.INTERNAL_SERVER_ERROR))))
-
-      val result = controller.getPenaltiesData(regime, idType, id, Some("123456789"))(fakeRequest)
-      status(result) shouldBe Status.INTERNAL_SERVER_ERROR
-
-      disableFeatureSwitch(CallAPI1812HIP)
-    }
-
-    s"return NOT_FOUND (${Status.NOT_FOUND}) when unified service returns 404" in new Setup {
-      enableFeatureSwitch(CallAPI1812HIP)
-
-      when(mockGetPenaltyDetailsService.getPenaltyDetails(ArgumentMatchers.any())(ArgumentMatchers.any()))
-        .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(Status.NOT_FOUND))))
-
-      val result = controller.getPenaltiesData(regime, idType, id, Some("123456789"))(fakeRequest)
-      status(result) shouldBe Status.NOT_FOUND
-      contentAsString(result) shouldBe s"A downstream call returned 404 for $vrn123456789"
-
-      disableFeatureSwitch(CallAPI1812HIP)
-    }
-
-    s"return ISE (${Status.INTERNAL_SERVER_ERROR}) when unified service returns malformed data" in new Setup {
-      enableFeatureSwitch(CallAPI1812HIP)
-
-      when(mockGetPenaltyDetailsService.getPenaltyDetails(ArgumentMatchers.any())(ArgumentMatchers.any()))
-        .thenReturn(Future.successful(Left(GetPenaltyDetailsMalformed)))
-
-      withCaptureOfLoggingFrom(logger) { logs =>
-        val result = await(controller.getPenaltiesData(regime, idType, id, Some("123456789"))(fakeRequest))
-        result.header.status shouldBe Status.INTERNAL_SERVER_ERROR
-        logs.exists(_.getMessage.contains(PagerDutyKeys.MALFORMED_RESPONSE_FROM_1812_API.toString)) shouldBe true
+          verifyCallMadeToGetPenaltyDetails()
+          verifyCallMadeToPenaltiesFrontendService()
+        }
       }
 
-      disableFeatureSwitch(CallAPI1812HIP)
+      "return the data returned from PenaltiesFrontendService (only penalties, not financial), as a Json in a 200" when {
+        "the PenaltyDetailsService returns data and the PenaltiesFrontendService returns 'PenaltyDetailsFromFirstNoContent' with the penalty data" in new Setup {
+          when(mockPenaltyDetailsService.getPenaltyDetails(ArgumentMatchers.any())(ArgumentMatchers.any()))
+            .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(penaltyDetails))))
+          when(
+            mockPenaltiesFrontendService.handleAndCombineGetFinancialDetailsData(
+              ArgumentMatchers.any(),
+              ArgumentMatchers.any(),
+              ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
+            .thenReturn(Future.successful(Right(PenaltyDetailsFromFirstNoContent(penaltyDetails2))))
+
+          private val result = controller.getPenaltiesData(regime, idType, id, Some("123456789"))(fakeRequest)
+
+          status(result) shouldBe Status.OK
+          contentAsJson(result) shouldBe Json.toJson(penaltyDetails2)
+
+          verifyCallMadeToGetPenaltyDetails()
+          verifyCallMadeToPenaltiesFrontendService()
+        }
+      }
+
+      "return a 204 with no data" when {
+        "the PenaltyDetailsService returns 'GetPenaltyDetailsNoContent' in a Left, and so the PenaltiesFrontendService is not called" in new Setup {
+          when(mockPenaltyDetailsService.getPenaltyDetails(ArgumentMatchers.any())(ArgumentMatchers.any()))
+            .thenReturn(Future.successful(Left(GetPenaltyDetailsNoContent)))
+
+          private val result = controller.getPenaltiesData(regime, idType, id, Some("123456789"))(fakeRequest)
+
+          status(result) shouldBe Status.NO_CONTENT
+
+          verifyCallMadeToGetPenaltyDetails()
+          verifyNoCallMadeToPenaltiesFrontendService()
+        }
+
+        "the PenaltyDetailsService returns data in a Right, and the PenaltiesFrontendService returns 'NoPenaltyDetailsFromFirstNoContent' in a Right" in new Setup {
+          when(mockPenaltyDetailsService.getPenaltyDetails(ArgumentMatchers.any())(ArgumentMatchers.any()))
+            .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(penaltyDetails))))
+          when(
+            mockPenaltiesFrontendService.handleAndCombineGetFinancialDetailsData(
+              ArgumentMatchers.any(),
+              ArgumentMatchers.any(),
+              ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
+            .thenReturn(Future.successful(Right(NoPenaltyDetailsFromFirstNoContent)))
+
+          private val result = controller.getPenaltiesData(regime, idType, id, Some("123456789"))(fakeRequest)
+
+          status(result) shouldBe Status.NO_CONTENT
+
+          verifyCallMadeToGetPenaltyDetails()
+          verifyCallMadeToPenaltiesFrontendService()
+        }
+
+        "the PenaltyDetailsService returns data in a Right, and the PenaltiesFrontendService returns 'FinancialDetailsNoDataFound' in a Left" in new Setup {
+          when(mockPenaltyDetailsService.getPenaltyDetails(ArgumentMatchers.any())(ArgumentMatchers.any()))
+            .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(penaltyDetails))))
+          when(
+            mockPenaltiesFrontendService.handleAndCombineGetFinancialDetailsData(
+              ArgumentMatchers.any(),
+              ArgumentMatchers.any(),
+              ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
+            .thenReturn(Future.successful(Left(FinancialDetailsNoDataFound(vrn123456789, clearedItemsCallSucceeded = false))))
+
+          private val result = controller.getPenaltiesData(regime, idType, id, Some("123456789"))(fakeRequest)
+
+          status(result) shouldBe Status.NO_CONTENT
+
+          verifyCallMadeToGetPenaltyDetails()
+          verifyCallMadeToPenaltiesFrontendService()
+        }
+      }
+
+      "return a 404" when {
+        "the PenaltyDetailsService returns a NOT_FOUND in a 'GetPenaltyDetailsFailureResponse' in a Left, and so the PenaltiesFrontendService is not called" in new Setup {
+          when(mockPenaltyDetailsService.getPenaltyDetails(ArgumentMatchers.any())(ArgumentMatchers.any()))
+            .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(NOT_FOUND))))
+
+          private val result = controller.getPenaltiesData(regime, idType, id, Some("123456789"))(fakeRequest)
+
+          status(result) shouldBe Status.NOT_FOUND
+
+          verifyCallMadeToGetPenaltyDetails()
+          verifyNoCallMadeToPenaltiesFrontendService()
+        }
+
+        "the PenaltyDetailsService returns data in a Right, and the PenaltiesFrontendService returns 'FinancialDetailsNotFound' in a Left" in new Setup {
+          when(mockPenaltyDetailsService.getPenaltyDetails(ArgumentMatchers.any())(ArgumentMatchers.any()))
+            .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(penaltyDetails))))
+          when(
+            mockPenaltiesFrontendService.handleAndCombineGetFinancialDetailsData(
+              ArgumentMatchers.any(),
+              ArgumentMatchers.any(),
+              ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
+            .thenReturn(Future.successful(Left(FinancialDetailsNotFound(vrn123456789, clearedItemsCallSucceeded = false))))
+
+          private val result = controller.getPenaltiesData(regime, idType, id, Some("123456789"))(fakeRequest)
+
+          status(result) shouldBe Status.NOT_FOUND
+
+          verifyCallMadeToGetPenaltyDetails()
+          verifyCallMadeToPenaltiesFrontendService()
+        }
+      }
+
+      "return a 500" when {
+        "the PenaltyDetailsService returns a 'GetPenaltyDetailsFailureResponse' in a Left with a non-400 status, and so the PenaltiesFrontendService is not called" in new Setup {
+          when(mockPenaltyDetailsService.getPenaltyDetails(ArgumentMatchers.any())(ArgumentMatchers.any()))
+            .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(BAD_REQUEST))))
+
+          private val result = controller.getPenaltiesData(regime, idType, id, Some("123456789"))(fakeRequest)
+
+          status(result) shouldBe Status.INTERNAL_SERVER_ERROR
+
+          verifyCallMadeToGetPenaltyDetails()
+          verifyNoCallMadeToPenaltiesFrontendService()
+        }
+
+        "the PenaltyDetailsService returns data in a Right, and the PenaltiesFrontendService returns 'FinancialDetailsUnexpectedStatus' in a Left" in new Setup {
+          when(mockPenaltyDetailsService.getPenaltyDetails(ArgumentMatchers.any())(ArgumentMatchers.any()))
+            .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(penaltyDetails))))
+          when(
+            mockPenaltiesFrontendService.handleAndCombineGetFinancialDetailsData(
+              ArgumentMatchers.any(),
+              ArgumentMatchers.any(),
+              ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
+            .thenReturn(Future.successful(Left(FinancialDetailsUnexpectedStatus(PAYMENT_REQUIRED, clearedItemsCallSucceeded = false))))
+
+          private val result = controller.getPenaltiesData(regime, idType, id, Some("123456789"))(fakeRequest)
+
+          status(result) shouldBe Status.INTERNAL_SERVER_ERROR
+
+          verifyCallMadeToGetPenaltyDetails()
+          verifyCallMadeToPenaltiesFrontendService()
+        }
+
+        "the PenaltyDetailsService returns data in a Right, and the PenaltiesFrontendService returns 'MissingManualLPPField' in a Left" in new Setup {
+          when(mockPenaltyDetailsService.getPenaltyDetails(ArgumentMatchers.any())(ArgumentMatchers.any()))
+            .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(penaltyDetails))))
+          when(
+            mockPenaltiesFrontendService.handleAndCombineGetFinancialDetailsData(
+              ArgumentMatchers.any(),
+              ArgumentMatchers.any(),
+              ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
+            .thenReturn(Future.successful(Left(MissingManualLPPField(fieldName = "thisIsTheMissingField"))))
+
+          private val result = controller.getPenaltiesData(regime, idType, id, Some("123456789"))(fakeRequest)
+
+          status(result) shouldBe Status.INTERNAL_SERVER_ERROR
+
+          verifyCallMadeToGetPenaltyDetails()
+          verifyCallMadeToPenaltiesFrontendService()
+        }
+      }
+
+      "return a 500 and raise a PagerDuty" when {
+        "the PenaltyDetailsService returns a 'GetPenaltyDetailsMalformed' in a Left, and so the PenaltiesFrontendService is not called" should {
+          "return a 500 and raise a 'MALFORMED_RESPONSE_FROM_1812_API' PagerDuty" in new Setup {
+            when(mockPenaltyDetailsService.getPenaltyDetails(ArgumentMatchers.any())(ArgumentMatchers.any()))
+              .thenReturn(Future.successful(Left(GetPenaltyDetailsMalformed)))
+
+            withCaptureOfLoggingFrom(Logger.logger) { logs =>
+              val result = controller.getPenaltiesData(regime, idType, id, Some("123456789"))(fakeRequest)
+
+              status(result) shouldBe Status.INTERNAL_SERVER_ERROR
+              logs.exists(_.getMessage.contains(PagerDutyKeys.MALFORMED_RESPONSE_FROM_1812_API.toString)) shouldBe true
+
+              verifyCallMadeToGetPenaltyDetails()
+              verifyNoCallMadeToPenaltiesFrontendService()
+            }
+          }
+        }
+
+        "the PenaltyDetailsService returns data in a Right, and the PenaltiesFrontendService returns 'FinancialDetailsMalformedResponse' in a Left" should {
+          "return a 500 and raise a 'MALFORMED_RESPONSE_FROM_1811_API' PagerDuty" in new Setup {
+            when(mockPenaltyDetailsService.getPenaltyDetails(ArgumentMatchers.any())(ArgumentMatchers.any()))
+              .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(penaltyDetails))))
+            when(
+              mockPenaltiesFrontendService.handleAndCombineGetFinancialDetailsData(
+                ArgumentMatchers.any(),
+                ArgumentMatchers.any(),
+                ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
+              .thenReturn(Future.successful(Left(FinancialDetailsMalformedResponse(vrn123456789, clearedItemsCallSucceeded = false))))
+
+            withCaptureOfLoggingFrom(Logger.logger) { logs =>
+              val result = controller.getPenaltiesData(regime, idType, id, Some("123456789"))(fakeRequest)
+
+              status(result) shouldBe Status.INTERNAL_SERVER_ERROR
+              logs.exists(_.getMessage.contains(PagerDutyKeys.MALFORMED_RESPONSE_FROM_1811_API.toString)) shouldBe true
+
+              verifyCallMadeToGetPenaltyDetails()
+              verifyCallMadeToPenaltiesFrontendService()
+            }
+          }
+        }
+      }
     }
   }
+
 }

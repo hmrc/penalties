@@ -34,6 +34,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class PenaltiesFrontendService @Inject() (getFinancialDetailsService: FinancialDetailsService,
                                           appConfig: AppConfig) {
 
+  // Purpose is to enrich the LPPs (no LSP change needed) with financial data
   def handleAndCombineGetFinancialDetailsData(penaltyDetails: GetPenaltyDetails, enrolmentKey: AgnosticEnrolmentKey, _arn: Option[String])(implicit
       ec: ExecutionContext,
       hc: HeaderCarrier): Future[Either[PenaltiesFrontendError, FinancialDetailsCombinationResult]] = {
@@ -41,8 +42,15 @@ class PenaltiesFrontendService @Inject() (getFinancialDetailsService: FinancialD
       financialDetailsResponseWithClearedItems match {
         case Left(FinancialDetailsNoContent) =>
           val result =
-            if (hasNoLatePaymentPenalties(penaltyDetails)) PenaltyDetailsFromFirstNoContent(penaltyDetails)
-            else NoPenaltyDetailsFromFirstNoContent
+            if (hasNoLatePaymentPenalties(penaltyDetails)) {
+              // financial data with cleared items is empty, but LPP details are also empty so nothing to enrich anyway
+              // -> return penalty details as they are
+              PenaltyDetailsFromFirstNoContent(penaltyDetails)
+            } else {
+              // financial with cleared items is empty, but LPP details are NOT empty -> contradiction
+              // -> we interpret this as ETMP has not updated penalties yet -> return NO_CONTENT
+              NoPenaltyDetailsFromFirstNoContent
+            }
           Future.successful(Right(result))
 
         case Left(errorResponse) =>

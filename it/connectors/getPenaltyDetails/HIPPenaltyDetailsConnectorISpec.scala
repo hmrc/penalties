@@ -16,7 +16,7 @@
 
 package connectors.getPenaltyDetails
 
-import config.featureSwitches.{CallAPI1812HIP, FeatureSwitching}
+import config.featureSwitches.FeatureSwitching
 import connectors.parsers.getPenaltyDetails.HIPPenaltyDetailsParser.{
   HIPPenaltyDetailsFailureResponse,
   HIPPenaltyDetailsMalformed,
@@ -59,7 +59,6 @@ class HIPPenaltyDetailsConnectorISpec
     val aKey = AgnosticEnrolmentKey(regime, idType, id)
     s"getPenaltyDetails for $regime" should {
       "return a successful response when called" in new Setup {
-        enableFeatureSwitch(CallAPI1812HIP)
         mockResponseForHIPPenaltyDetails(Status.OK, regime, idType, id)
         val result: HIPPenaltyDetailsResponse =
           await(connector.getPenaltyDetails(aKey)(hc))
@@ -67,7 +66,6 @@ class HIPPenaltyDetailsConnectorISpec
       }
 
       "return a successful response with the penaltyCategory returning as a point when it is blank in the body" in new Setup {
-        enableFeatureSwitch(CallAPI1812HIP)
         val bodyWithEmptyCategory: String = """
         {
           "success": {
@@ -194,7 +192,6 @@ class HIPPenaltyDetailsConnectorISpec
       }
 
       s"return a $HIPPenaltyDetailsMalformed response when called" in new Setup {
-        enableFeatureSwitch(CallAPI1812HIP)
         val malformedBody =
           """
           {
@@ -219,7 +216,6 @@ class HIPPenaltyDetailsConnectorISpec
       }
 
       s"return a $HIPPenaltyDetailsFailureResponse when the response status is ISE (${Status.INTERNAL_SERVER_ERROR})" in new Setup {
-        enableFeatureSwitch(CallAPI1812HIP)
         val errorBody = """{"error": {"code": "ISE", "message": "Internal Server Error", "logId": "123"}}"""
         mockResponseForHIPPenaltyDetails(
           Status.INTERNAL_SERVER_ERROR,
@@ -238,7 +234,6 @@ class HIPPenaltyDetailsConnectorISpec
       }
 
       s"return a $HIPPenaltyDetailsFailureResponse when the response status is ISE (${Status.SERVICE_UNAVAILABLE})" in new Setup {
-        enableFeatureSwitch(CallAPI1812HIP)
         val errorBody = """{"error": {"code": "SERVICE_UNAVAILABLE", "message": "Service Unavailable", "logId": "123"}}"""
         mockResponseForHIPPenaltyDetails(
           Status.SERVICE_UNAVAILABLE,
@@ -257,7 +252,6 @@ class HIPPenaltyDetailsConnectorISpec
       }
 
       s"return a $HIPPenaltyDetailsFailureResponse when the response status is NOT FOUND (${Status.NOT_FOUND})" in new Setup {
-        enableFeatureSwitch(CallAPI1812HIP)
         val errorBody = """{"error": {"code": "NOT_FOUND", "message": "Not Found", "logId": "123"}}"""
         mockResponseForHIPPenaltyDetails(
           Status.NOT_FOUND,
@@ -276,7 +270,6 @@ class HIPPenaltyDetailsConnectorISpec
       }
 
       s"return a $HIPPenaltyDetailsNoContent when the response status is UNPROCESSABLE_ENTITY FOUND (${Status.UNPROCESSABLE_ENTITY}) but with NO_DATA_FOUND in JSON body" in new Setup {
-        enableFeatureSwitch(CallAPI1812HIP)
         val noDataFoundBody: String = """{"errors":{"processingDate":"2025-03-03", "code":"016", "text":"Invalid ID Number"}}"""
         mockResponseForHIPPenaltyDetails(
           Status.UNPROCESSABLE_ENTITY,
@@ -294,7 +287,6 @@ class HIPPenaltyDetailsConnectorISpec
       }
 
       s"return a $HIPPenaltyDetailsFailureResponse when the response status is NO CONTENT (${Status.NO_CONTENT})" in new Setup {
-        enableFeatureSwitch(CallAPI1812HIP)
         mockResponseForHIPPenaltyDetails(
           Status.NO_CONTENT,
           regime,
@@ -311,7 +303,6 @@ class HIPPenaltyDetailsConnectorISpec
       }
 
       s"return a $HIPPenaltyDetailsFailureResponse when the response status is CONFLICT (${Status.CONFLICT})" in new Setup {
-        enableFeatureSwitch(CallAPI1812HIP)
         val errorBody = """{"error": {"code": "CONFLICT", "message": "Conflict", "logId": "123"}}"""
         mockResponseForHIPPenaltyDetails(
           Status.CONFLICT,
@@ -330,7 +321,6 @@ class HIPPenaltyDetailsConnectorISpec
       }
 
       s"return a $HIPPenaltyDetailsFailureResponse when the response status is UNPROCESSABLE ENTITY (${Status.UNPROCESSABLE_ENTITY})" in new Setup {
-        enableFeatureSwitch(CallAPI1812HIP)
         val errorBody = """{"error": {"code": "UNPROCESSABLE_ENTITY", "message": "Unprocessable Entity", "logId": "123"}}"""
         mockResponseForHIPPenaltyDetails(
           Status.UNPROCESSABLE_ENTITY,
@@ -349,7 +339,6 @@ class HIPPenaltyDetailsConnectorISpec
       }
 
       s"return a $HIPPenaltyDetailsFailureResponse when the response status is ISE (${Status.BAD_REQUEST})" in new Setup {
-        enableFeatureSwitch(CallAPI1812HIP)
         val errorBody = """{"error": {"code": "BAD_REQUEST", "message": "Bad Request", "logId": "123"}}"""
         mockResponseForHIPPenaltyDetails(
           Status.BAD_REQUEST,
