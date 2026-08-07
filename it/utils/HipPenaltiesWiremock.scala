@@ -18,15 +18,16 @@ package utils
 
 import com.github.tomakehurst.wiremock.client.WireMock._
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
+import models.{Id, IdType, Regime}
 import play.api.libs.json.{JsValue, Json}
-import models.{Regime, IdType, Id}
+
 import java.time.Instant
 
-trait HIPPenaltiesWiremock {
-    
-  val mockInstant = Instant.parse("2025-04-24T12:00:00Z")
-val getHIPPenaltyDetailsWithLSPAndLPPAsJson: JsValue = Json.parse(
-  s"""
+trait HipPenaltiesWiremock {
+
+  val mockInstant: Instant = Instant.parse("2025-04-24T12:00:00Z")
+
+  val getHIPPenaltyDetailsWithLSPAndLPPAsJson: JsValue = Json.parse(s"""
      |{
      |  "success": {
      |    "processingDate": "$mockInstant",
@@ -140,8 +141,7 @@ val getHIPPenaltyDetailsWithLSPAndLPPAsJson: JsValue = Json.parse(
      |}
      |""".stripMargin)
 
-  val getHIPPenaltyDetailsWithIncomeSourceNoneAsJson: JsValue = Json.parse(
-    s"""
+  val getHIPPenaltyDetailsWithIncomeSourceNoneAsJson: JsValue = Json.parse(s"""
        |{
        |  "success": {
        |    "processingDate": "$mockInstant",
@@ -200,23 +200,24 @@ val getHIPPenaltyDetailsWithLSPAndLPPAsJson: JsValue = Json.parse(
        |}
        |""".stripMargin)
 
-  def mockResponseForHIPPenaltyDetails(status: Int, apiRegime: Regime, idType: IdType, id: Id, dateLimit: Option[String] = None, body: Option[String] = None): StubMapping = {
+  def mockResponseForGetPenaltyDetails(status: Int,
+                                       apiRegime: Regime,
+                                       idType: IdType,
+                                       id: Id,
+                                       dateLimit: Option[String] = None,
+                                       responseBody: Option[String] = None): StubMapping = {
     val dateLimitParam = dateLimit.map(d => s"&dateLimit=$d").getOrElse("")
-    stubFor(get(urlEqualTo(s"/etmp/RESTAdapter/cross-regime/taxpayer/penalties?taxRegime=${apiRegime.value}&idType=${idType.value}&idNumber=${id.value}$dateLimitParam"))
-      .willReturn(
-        aResponse()
-          .withBody(body.fold(getHIPPenaltyDetailsWithLSPAndLPPAsJson.toString())(identity))
-          .withStatus(status)
-      ))
+    stubFor(
+      get(urlEqualTo(
+        s"/etmp/RESTAdapter/cross-regime/taxpayer/penalties?taxRegime=${apiRegime.value}&idType=${idType.value}&idNumber=${id.value}$dateLimitParam"))
+        .willReturn(
+          aResponse()
+            .withBody(responseBody.fold(getHIPPenaltyDetailsWithLSPAndLPPAsJson.toString())(identity))
+            .withStatus(status)
+        ))
   }
 
-  def mockResponseForHIPPenaltyDetailsWithIncomeSourceNone(status: Int, apiRegime: Regime, idType: IdType, id: Id, dateLimit: Option[String] = None): StubMapping = {
-    val dateLimitParam = dateLimit.map(d => s"&dateLimit=$d").getOrElse("")
-    stubFor(get(urlEqualTo(s"/etmp/RESTAdapter/cross-regime/taxpayer/penalties?taxRegime=${apiRegime.value}&idType=${idType.value}&idNumber=${id.value}$dateLimitParam"))
-      .willReturn(
-        aResponse()
-          .withBody(getHIPPenaltyDetailsWithIncomeSourceNoneAsJson.toString())
-          .withStatus(status)
-      ))
-  }
+  def mockEmptyResponseForGetPenaltyDetails(status: Int, apiRegime: Regime, idType: IdType, id: Id): StubMapping =
+    mockResponseForGetPenaltyDetails(status, apiRegime, idType, id, None, Some(""))
+
 }

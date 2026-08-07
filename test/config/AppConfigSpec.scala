@@ -72,20 +72,11 @@ class AppConfigSpec extends AnyWordSpec with ShouldMatchers with FeatureSwitchin
   }
 
   "getHIPPenaltyDetailsUrl" should {
-    "call API5329 when the 'CallAPI1812HIP' feature switch is enabled" in new Setup {
-      enableFeatureSwitch(CallAPI1812HIP)
+    "call the correct API5329 URI" in new Setup {
       when(mockServicesConfig.baseUrl(ArgumentMatchers.eq("hip"))).thenReturn("localhost:HIP")
 
       val result: String = this.config.getHIPPenaltyDetailsUrl(enrolmentKey)
       result shouldBe "localhost:HIP/etmp/RESTAdapter/cross-regime/taxpayer/penalties?taxRegime=VATC&idType=VRN&idNumber=123456789"
-    }
-
-    "call API5329 stub when the 'CallAPI1812HIP' feature switch is disabled" in new Setup {
-      disableFeatureSwitch(CallAPI1812HIP)
-      when(mockServicesConfig.baseUrl(ArgumentMatchers.eq("penalties-stub"))).thenReturn("localhost:STUB")
-
-      val result: String = this.config.getHIPPenaltyDetailsUrl(enrolmentKey)
-      result shouldBe "localhost:STUB/etmp/RESTAdapter/cross-regime/taxpayer/penalties?taxRegime=VATC&idType=VRN&idNumber=123456789"
     }
   }
 

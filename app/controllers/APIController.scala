@@ -16,8 +16,8 @@
 
 package controllers
 
-import config.featureSwitches.{CallAPI1812HIP, FeatureSwitching}
-import connectors.getPenaltyDetails.{HIPPenaltyDetailsConnector, PenaltyDetailsConnector}
+import config.featureSwitches.FeatureSwitching
+import connectors.getPenaltyDetails.HIPPenaltyDetailsConnector
 import connectors.parsers.getFinancialDetails.FinancialDetailsParser
 import connectors.parsers.getFinancialDetails.FinancialDetailsParser.FinancialDetailsSuccessResponse
 import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser
@@ -40,7 +40,7 @@ import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import utils.Logger.logger
 import utils.PagerDutyHelper.PagerDutyKeys._
 import utils.PenaltyDetailsConverter.convertHIPToGetPenaltyDetails
-import utils.{DateHelper, PagerDutyHelper}
+import utils.{DateHelper, LoggingContext, PagerDutyHelper}
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
@@ -49,7 +49,6 @@ class APIController @Inject()(auditService: AuditService,
                               apiService: APIService,
                               getPenaltyDetailsService: PenaltyDetailsService,
                               getFinancialDetailsService: FinancialDetailsService,
-                              getPenaltyDetailsConnector: PenaltyDetailsConnector,
                               hipPenaltyDetailsConnector: HIPPenaltyDetailsConnector,
                               dateHelper: DateHelper,
                               cc: ControllerComponents,
@@ -227,15 +226,7 @@ class APIController @Inject()(auditService: AuditService,
     implicit request => {
       val enrolmentKey = AgnosticEnrolmentKey(regime, idType, id)
 
-      val connectorResponse = if (isEnabled(CallAPI1812HIP)) {
-        logger.info(s"[RegimeAPIController][getPenaltyDetails] - Calling HIP connector - CallAPI1812HIP switch is on")
-        hipPenaltyDetailsConnector.getPenaltyDetailsForAPI(enrolmentKey, dateLimit)
-      } else {
-        logger.info(s"[RegimeAPIController][getPenaltyDetails] - Calling IF connector - CallAPI1812HIP switch is off")
-        getPenaltyDetailsConnector.getPenaltyDetailsForAPI(enrolmentKey, dateLimit)
-      }
-
-      connectorResponse.map(
+      hipPenaltyDetailsConnector.getPenaltyDetailsForAPI(enrolmentKey, dateLimit).map(
         response => {
           sendPenaltiesAudit(response, enrolmentKey)
 
@@ -261,12 +252,8 @@ class APIController @Inject()(auditService: AuditService,
 
   private def processSuccessResponse(response: HttpResponse, enrolmentKey: AgnosticEnrolmentKey): Result = {
     val jsonBody: JsValue = tryJsonParseOrJsString(response.body)
-    val validateBody: JsResult[GetPenaltyDetails] = if (isEnabled(CallAPI1812HIP)) {
-      convertHipResponseToGetPenaltyDetails(jsonBody)
-    } else {
-      jsonBody.validate[GetPenaltyDetails]
-    }
-    validateBody match {
+
+    convertHipResponseToGetPenaltyDetails(jsonBody) match {
       case JsSuccess(getPenaltyDetails, _) =>
         logger.info(s"[RegimeAPIController][getPenaltyDetails] - API call (3rd party API) - Successfully parsed 200 response body")
         Ok(filterPenaltiesResponseBody(getPenaltyDetails, enrolmentKey))
