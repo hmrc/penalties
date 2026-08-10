@@ -26,17 +26,18 @@ import org.scalatest.prop.TableDrivenPropertyChecks
 import play.api.http.Status
 import play.api.libs.json.{JsValue, Json}
 import play.api.test.Helpers._
-import utils.{AuthMock, ETMPWiremock, HIPPenaltiesWiremock, IntegrationSpecCommonBase}
+import utils.{AuthMock, HipFinancialWiremock, HipPenaltiesWiremock, IntegrationSpecCommonBase}
 
 import scala.jdk.CollectionConverters._
 
 class APIControllerISpec
     extends IntegrationSpecCommonBase
-    with ETMPWiremock
-    with HIPPenaltiesWiremock
+    with HipFinancialWiremock
+    with HipPenaltiesWiremock
     with FeatureSwitching
     with TableDrivenPropertyChecks
     with AuthMock {
+
   val controller: APIController = injector.instanceOf[APIController]
 
   val getHIPPenaltyDetailsJson: JsValue = Json.parse("""
@@ -132,134 +133,6 @@ class APIControllerISpec
       |}
       |""".stripMargin)
 
-  val getPenaltyDetailsJson: JsValue = Json.parse("""
-      |{
-      | "totalisations": {
-      |   "LSPTotalValue": 200,
-      |   "penalisedPrincipalTotal": 2000,
-      |   "LPPPostedTotal": 165.25,
-      |   "LPPEstimatedTotal": 15.26
-      | },
-      | "lateSubmissionPenalty": {
-      |   "summary": {
-      |     "activePenaltyPoints": 2,
-      |     "inactivePenaltyPoints": 0,
-      |     "regimeThreshold": 5,
-      |     "penaltyChargeAmount": 200.00,
-      |     "PoCAchievementDate": "2022-01-01"
-      |   },
-      |   "details": []
-      | },
-      | "latePaymentPenalty": {
-      |     "details": [
-      |       {
-      |          "penaltyCategory": "LPP2",
-      |          "penaltyStatus": "A",
-      |          "penaltyAmountPosted": 0,
-      |          "LPP1LRCalculationAmount": 123.45,
-      |          "LPP1LRDays": "15",
-      |          "LPP1LRPercentage": 2.00,
-      |          "LPP1HRCalculationAmount": 123.45,
-      |          "LPP1HRDays": "31",
-      |          "LPP1HRPercentage": 2.00,
-      |          "LPP2Days": "31",
-      |          "LPP2Percentage": 4.00,
-      |          "penaltyChargeCreationDate": "2022-10-30",
-      |          "communicationsDate": "2022-10-30",
-      |          "penaltyAmountAccruing": 246.9,
-      |          "principalChargeMainTransaction" : "4700",
-      |          "penaltyChargeDueDate": "2022-10-30",
-      |          "principalChargeReference": "1234567890",
-      |          "principalChargeBillingFrom": "2022-10-30",
-      |          "principalChargeBillingTo": "2022-10-30",
-      |          "principalChargeMainTransaction": "4700",
-      |          "principalChargeDueDate": "2022-10-30",
-      |          "supplement": false
-      |       },
-      |       {
-      |          "penaltyCategory": "LPP2",
-      |          "penaltyStatus": "A",
-      |          "penaltyAmountPosted": 0,
-      |          "penaltyAmountAccruing": 123.45,
-      |          "LPP1LRCalculationAmount": 123.45,
-      |          "LPP1LRDays": "15",
-      |          "LPP1LRPercentage": 2.00,
-      |          "LPP1HRCalculationAmount": 123.45,
-      |          "LPP1HRDays": "31",
-      |          "LPP1HRPercentage": 2.00,
-      |          "LPP2Days": "31",
-      |          "LPP2Percentage": 4.00,
-      |          "penaltyChargeCreationDate": "2022-10-30",
-      |          "communicationsDate": "2022-10-30",
-      |          "penaltyAmountAccruing": 0.00,
-      |          "principalChargeMainTransaction" : "4700",
-      |          "penaltyChargeDueDate": "2022-10-30",
-      |          "principalChargeReference": "1234567890",
-      |          "principalChargeBillingFrom": "2022-10-30",
-      |          "principalChargeBillingTo": "2022-10-30",
-      |          "principalChargeMainTransaction": "4700",
-      |          "principalChargeDueDate": "2022-10-30",
-      |          "supplement": false
-      |       },
-      |       {
-      |          "penaltyCategory": "LPP1",
-      |          "penaltyStatus": "P",
-      |          "penaltyAmountPaid": 0,
-      |          "penaltyAmountPosted": 144.0,
-      |          "penaltyAmountOutstanding": 144.00,
-      |          "penaltyAmountAccruing": 0,
-      |          "LPP1LRCalculationAmount": 99.99,
-      |          "LPP1LRDays": "15",
-      |          "LPP1LRPercentage": 2.00,
-      |          "LPP1HRCalculationAmount": 99.99,
-      |          "LPP1HRDays": "31",
-      |          "LPP1HRPercentage": 2.00,
-      |          "LPP2Days": "31",
-      |          "LPP2Percentage": 4.00,
-      |          "penaltyChargeCreationDate": "2022-10-30",
-      |          "communicationsDate": "2022-10-30",
-      |          "penaltyAmountAccruing": 0.00,
-      |          "principalChargeMainTransaction" : "4700",
-      |          "penaltyChargeDueDate": "2022-10-30",
-      |          "principalChargeReference": "1234567890",
-      |          "principalChargeBillingFrom": "2022-10-30",
-      |          "principalChargeBillingTo": "2022-10-30",
-      |          "principalChargeMainTransaction": "4700",
-      |          "principalChargeDueDate": "2022-10-30",
-      |          "supplement": false
-      |       },
-      |       {
-      |          "penaltyCategory": "LPP1",
-      |          "penaltyStatus": "P",
-      |          "penaltyAmountPaid": 0,
-      |          "penaltyAmountPosted": 144.00,
-      |          "penaltyAmountOutstanding": 144.00,
-      |          "penaltyAmountAccruing": 0,
-      |          "LPP1LRCalculationAmount": 99.99,
-      |          "LPP1LRDays": "15",
-      |          "LPP1LRPercentage": 2.00,
-      |          "LPP1HRCalculationAmount": 99.99,
-      |          "LPP1HRDays": "31",
-      |          "LPP1HRPercentage": 2.00,
-      |          "LPP2Days": "31",
-      |          "LPP2Percentage": 4.00,
-      |          "penaltyChargeCreationDate": "2022-10-30",
-      |          "communicationsDate": "2022-10-30",
-      |          "penaltyAmountAccruing": 0,
-      |          "principalChargeMainTransaction" : "4700",
-      |          "penaltyChargeDueDate": "2022-10-30",
-      |          "principalChargeReference": "1234567890",
-      |          "principalChargeBillingFrom": "2022-10-30",
-      |          "principalChargeBillingTo": "2022-10-30",
-      |          "principalChargeMainTransaction": "4700",
-      |          "principalChargeDueDate": "2022-10-30",
-      |          "supplement": false
-      |       }
-      |   ]
-      | }
-      |}
-      |""".stripMargin)
-
   val hipRequestBody: FinancialDetailsRequestModel = FinancialDetailsRequestModel(
     searchType = Some("CHGREF"),
     searchItem = Some("XC00178236592"),
@@ -286,17 +159,10 @@ class APIControllerISpec
     val enrolmentKey = AgnosticEnrolmentKey(regime, idType, id)
 
     s"getSummaryData for $regime" when {
-      val penaltyUpstreamServices = Seq("HIP", "IF")
-
-      penaltyUpstreamServices.foreach { upstreamService =>
         def mockHIPSummary(responseStatus: Int): StubMapping =
-          mockResponseForHIPPenaltyDetails(responseStatus, regime, idType, id, body = Some(getHIPPenaltyDetailsJson.toString()))
+          mockResponseForGetPenaltyDetails(responseStatus, regime, idType, id, responseBody = Some(getHIPPenaltyDetailsJson.toString()))
 
-        def mockIFSummary(responseStatus: Int, body: Option[String]): StubMapping =
-          mockResponseForGetPenaltyDetails(responseStatus, regime, idType, id.value, body)
-
-        val expectedSummaryResponse = if (upstreamService == "HIP") {
-          Json.parse("""
+        val expectedSummaryResponse = Json.parse("""
             |{
             |  "noOfPoints": 2,
             |  "noOfEstimatedPenalties": 1,
@@ -306,39 +172,14 @@ class APIControllerISpec
             |  "hasAnyPenaltyData": true
             |}
             |""".stripMargin)
-        } else {
-          Json.parse("""
-            |{
-            |  "noOfPoints": 2,
-            |  "noOfEstimatedPenalties": 2,
-            |  "noOfCrystalisedPenalties": 2,
-            |  "estimatedPenaltyAmount": 246.9,
-            |  "crystalisedPenaltyAmountDue": 288,
-            |  "hasAnyPenaltyData": true
-            |}
-            |""".stripMargin)
-        }
 
         val uriToSummaryController = s"/${regime.value}/summary/${idType.value}/${id.value}"
 
-        def setSummaryFeatureSwitch(): Unit =
-          if (upstreamService == "HIP") {
-            setEnabledFeatureSwitches(CallAPI1812HIP)
-          } else {
-            setEnabledFeatureSwitches(CallAPI1812ETMP)
-          }
-
-        s"calling $upstreamService" should {
-          s"return OK (${Status.OK})" when {
+        "calling HIP" should {
+          "return OK 200" when {
             "the get penalty summary call succeeds" in {
-              setSummaryFeatureSwitch()
               mockStubResponseForAuthorisedUser
-
-              if (upstreamService == "HIP") {
-                mockHIPSummary(OK)
-              } else {
-                mockIFSummary(OK, Some(getPenaltyDetailsJson.toString()))
-              }
+              mockHIPSummary(OK)
 
               val result = await(buildClientForRequestToApp(uri = uriToSummaryController).get())
 
@@ -347,95 +188,63 @@ class APIControllerISpec
             }
           }
 
-          s"return a NO_CONTENT 204" when {
+          "return a NO_CONTENT 204" when {
             "a 422 response with 'Invalid ID Number' is returned" in {
-              setSummaryFeatureSwitch()
               mockStubResponseForAuthorisedUser
 
               val notFoundResponseBody = """{ "errors": { "processingDate": "2025-03-03", "code": "016", "text": "Invalid ID Number" } }"""
-
-              if (upstreamService == "HIP") {
-                mockResponseForHIPPenaltyDetails(UNPROCESSABLE_ENTITY, regime, idType, id, body = Some(notFoundResponseBody))
-              } else {
-                mockIFSummary(UNPROCESSABLE_ENTITY, Some(notFoundResponseBody))
-              }
+              mockResponseForGetPenaltyDetails(UNPROCESSABLE_ENTITY, regime, idType, id, responseBody = Some(notFoundResponseBody))
 
               val result = await(buildClientForRequestToApp(uri = uriToSummaryController).get())
               result.status shouldBe NO_CONTENT
             }
           }
 
-          s"return the status from $upstreamService" when {
+          "return the status from HIP" when {
             "a 404 response is returned" in {
-              setSummaryFeatureSwitch()
               mockStubResponseForAuthorisedUser
-
-              if (upstreamService == "HIP") {
-                mockHIPSummary(NOT_FOUND)
-              } else {
-                mockIFSummary(NOT_FOUND, Some(""))
-              }
+              mockHIPSummary(NOT_FOUND)
 
               val result = await(buildClientForRequestToApp(uri = uriToSummaryController).get())
               result.status shouldBe NOT_FOUND
             }
 
             "an error response is returned" in {
-              setSummaryFeatureSwitch()
               mockStubResponseForAuthorisedUser
-
-              if (upstreamService == "HIP") {
-                mockHIPSummary(INTERNAL_SERVER_ERROR)
-              } else {
-                mockIFSummary(INTERNAL_SERVER_ERROR, Some(""))
-              }
+              mockHIPSummary(INTERNAL_SERVER_ERROR)
 
               val result = await(buildClientForRequestToApp(uri = uriToSummaryController).get())
               result.status shouldBe INTERNAL_SERVER_ERROR
             }
 
             "a 200 response with empty body is returned" in {
-              setSummaryFeatureSwitch()
               mockStubResponseForAuthorisedUser
 
-              val emptyResponseBody = if (upstreamService == "HIP") {
-                """{
+              val emptyResponseBody = """{
                   "success": {
                     "processingDate": "2025-04-24T12:00:00Z",
                     "penaltyData": {}
                   }
                 }"""
-              } else {
-                "{}"
-              }
-
-              if (upstreamService == "HIP") {
-                mockResponseForHIPPenaltyDetails(OK, regime, idType, id, body = Some(emptyResponseBody))
-              } else {
-                mockIFSummary(OK, Some(emptyResponseBody))
-              }
+              mockResponseForGetPenaltyDetails(OK, regime, idType, id, responseBody = Some(emptyResponseBody))
 
               val result = await(buildClientForRequestToApp(uri = uriToSummaryController).get())
               result.status shouldBe NO_CONTENT
             }
 
-            if (upstreamService == "HIP") {
-              "a 422 response with 'No Data Identified' is returned" in {
-                setSummaryFeatureSwitch()
-                mockStubResponseForAuthorisedUser
+            "a 422 response with 'No Data Identified' is returned" in {
+              mockStubResponseForAuthorisedUser
 
-                val noDataResponseBody = """{ "errors": { "processingDate": "2025-03-03", "code": "018", "text": "No Data Identified" } }"""
+              val noDataResponseBody = """{ "errors": { "processingDate": "2025-03-03", "code": "018", "text": "No Data Identified" } }"""
 
-                mockResponseForHIPPenaltyDetails(UNPROCESSABLE_ENTITY, regime, idType, id, body = Some(noDataResponseBody))
+              mockResponseForGetPenaltyDetails(UNPROCESSABLE_ENTITY, regime, idType, id, responseBody = Some(noDataResponseBody))
 
-                val result = await(buildClientForRequestToApp(uri = uriToSummaryController).get())
-                result.status shouldBe NO_CONTENT
-              }
+              val result = await(buildClientForRequestToApp(uri = uriToSummaryController).get())
+              result.status shouldBe NO_CONTENT
             }
           }
         }
       }
-    }
 
     s"getFinancialDetails for $regime" when {
       upstreamServices.foreach { upstreamService =>
@@ -545,18 +354,12 @@ class APIControllerISpec
         }
       }
     }
-    s"getPenaltyDetails for $regime" when {
-      val penaltyUpstreamServices = Seq("HIP", "IF")
 
-      penaltyUpstreamServices.foreach { upstreamService =>
+    s"getPenaltyDetails for $regime" should {
         def mockHIPPenaltyDetails(responseStatus: Int): StubMapping =
-          mockResponseForHIPPenaltyDetails(responseStatus, regime, idType, id, body = Some(getHIPPenaltyDetailsJson.toString()), dateLimit = Some("09"))
+          mockResponseForGetPenaltyDetails(responseStatus, regime, idType, id, responseBody = Some(getHIPPenaltyDetailsJson.toString()), dateLimit = Some("09"))
 
-        def mockIFPenaltyDetails(responseStatus: Int, body: Option[String]): StubMapping =
-          mockResponseForGetPenaltyDetails(responseStatus, regime, idType, s"${id.value}?dateLimit=09", body)
-
-        val expectedPenaltyResponse = if (upstreamService == "HIP") {
-          Json.parse("""
+        val expectedPenaltyResponse = Json.parse("""
             |{
             | "totalisations": {
             |   "LSPTotalValue": 200,
@@ -629,30 +432,13 @@ class APIControllerISpec
             | }
             |}
             |""".stripMargin)
-        } else {
-          getPenaltyDetailsJson
-        }
 
         val uriToPenaltyController = s"/${regime.value}/penalty-details/${idType.value}/${id.value}?dateLimit=09"
 
-        def setPenaltyFeatureSwitch(): Unit =
-          if (upstreamService == "HIP") {
-            setEnabledFeatureSwitches(CallAPI1812HIP)
-          } else {
-            setEnabledFeatureSwitches(CallAPI1812ETMP)
-          }
-
-        s"calling $upstreamService" should {
           s"return OK (${Status.OK})" when {
             "the get Penalty Details call succeeds" in {
-              setPenaltyFeatureSwitch()
               mockStubResponseForAuthorisedUser
-
-              if (upstreamService == "HIP") {
-                mockHIPPenaltyDetails(OK)
-              } else {
-                mockIFPenaltyDetails(OK, Some(getPenaltyDetailsJson.toString()))
-              }
+              mockHIPPenaltyDetails(OK)
 
               val result = await(buildClientForRequestToApp(uri = uriToPenaltyController).get())
 
@@ -668,14 +454,8 @@ class APIControllerISpec
 
           s"return NOT_FOUND (${Status.NOT_FOUND})" when {
             "a 404 response is returned" in {
-              setPenaltyFeatureSwitch()
               mockStubResponseForAuthorisedUser
-
-              if (upstreamService == "HIP") {
-                mockHIPPenaltyDetails(NOT_FOUND)
-              } else {
-                mockIFPenaltyDetails(NOT_FOUND, Some(""))
-              }
+              mockHIPPenaltyDetails(NOT_FOUND)
 
               val result = await(buildClientForRequestToApp(uri = uriToPenaltyController).get())
               result.status shouldBe NOT_FOUND
@@ -686,13 +466,11 @@ class APIControllerISpec
                 .exists(_.getBodyAsString.contains("Penalties3rdPartyPenaltyDetailsDataRetrieval")) shouldBe true
             }
 
-            if (upstreamService == "HIP") {
               "a 422-016 response (Invalid ID Number) is returned" in {
-                setPenaltyFeatureSwitch()
                 mockStubResponseForAuthorisedUser
 
                 val hipInvalidIdError = """{ "errors": { "processingDate": "2025-03-03", "code": "016", "text": "Invalid ID Number" } }"""
-                mockResponseForHIPPenaltyDetails(UNPROCESSABLE_ENTITY, regime, idType, id, dateLimit = Some("09"), body = Some(hipInvalidIdError))
+                mockResponseForGetPenaltyDetails(UNPROCESSABLE_ENTITY, regime, idType, id, dateLimit = Some("09"), responseBody = Some(hipInvalidIdError))
 
                 val result = await(buildClientForRequestToApp(uri = uriToPenaltyController).get())
                 result.status shouldBe NOT_FOUND
@@ -702,22 +480,16 @@ class APIControllerISpec
                   .toList
                   .exists(_.getBodyAsString.contains("Penalties3rdPartyPenaltyDetailsDataRetrieval")) shouldBe true
               }
-            }
           }
 
-          s"return the status from $upstreamService" when {
+          "return the status from HIP" when {
             "an error response is returned" in {
-              setPenaltyFeatureSwitch()
               mockStubResponseForAuthorisedUser
 
-              if (upstreamService == "HIP") {
                 mockHIPPenaltyDetails(INTERNAL_SERVER_ERROR)
-              } else {
-                mockIFPenaltyDetails(BAD_REQUEST, Some(""))
-              }
 
               val result = await(buildClientForRequestToApp(uri = uriToPenaltyController).get())
-              result.status shouldBe (if (upstreamService == "HIP") INTERNAL_SERVER_ERROR else BAD_REQUEST)
+              result.status shouldBe INTERNAL_SERVER_ERROR
               wireMockServer
                 .findAll(postRequestedFor(urlEqualTo("/write/audit")))
                 .asScala
@@ -725,11 +497,11 @@ class APIControllerISpec
                 .exists(_.getBodyAsString.contains("Penalties3rdPartyPenaltyDetailsDataRetrieval")) shouldBe true
             }
           }
-        }
       }
-    }
   }
+
 }
+
 object APIControllerISpec {
   val financialDataIfResponse: JsValue = Json.parse("""
                                                       |{

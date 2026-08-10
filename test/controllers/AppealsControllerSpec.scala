@@ -18,7 +18,7 @@ package controllers
 
 import base.{LogCapturing, SpecBase}
 import config.AppConfig
-import config.featureSwitches.{CallAPI1812HIP, FeatureSwitching}
+import config.featureSwitches.FeatureSwitching
 import connectors.FileNotificationOrchestratorConnector
 import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser.{
   GetPenaltyDetailsFailureResponse,
@@ -115,8 +115,6 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
       stubControllerComponents(),
       mockAuthAction
     )
-
-    disableFeatureSwitch(CallAPI1812HIP)
 
     implicit val hc: HeaderCarrier = HeaderCarrier()
   }

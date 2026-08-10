@@ -17,7 +17,7 @@
 package controllers
 
 import base.{LPPDetailsBase, LSPDetailsBase, LogCapturing, SpecBase}
-import config.featureSwitches.{CallAPI1812HIP, FeatureSwitching}
+import config.featureSwitches.FeatureSwitching
 import connectors.parsers.getPenaltyDetails.PenaltyDetailsParser.{
   GetPenaltyDetailsFailureResponse,
   GetPenaltyDetailsMalformed,
@@ -36,8 +36,7 @@ import play.api.test.Helpers._
 import services.PenaltiesFrontendService._
 import services.auditing.AuditService
 import services.{PenaltiesFrontendService, PenaltyDetailsService}
-import utils.AuthActionMock
-import utils.DateHelper
+import utils.{AuthActionMock, DateHelper}
 import utils.Logger.logger
 import utils.PagerDutyHelper.PagerDutyKeys
 
@@ -69,7 +68,7 @@ class PenaltiesFrontendControllerSpec extends SpecBase with LogCapturing with LP
     reset(mockPenaltiesFrontendService)
     reset(mockAuditService)
 
-    disableFeatureSwitch(CallAPI1812HIP)
+    
 
     implicit val config: play.api.Configuration = appConfig.config
     val controller: PenaltiesFrontendController = new PenaltiesFrontendController(
@@ -311,7 +310,7 @@ class PenaltiesFrontendControllerSpec extends SpecBase with LogCapturing with LP
     )
 
     s"use unified service and handle HIP backend when CallAPI1812HIP feature switch is enabled" in new Setup {
-      enableFeatureSwitch(CallAPI1812HIP)
+      
 
       when(mockGetPenaltyDetailsService.getPenaltyDetails(ArgumentMatchers.any())(ArgumentMatchers.any()))
         .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(mockConvertedPenaltyDetails))))
@@ -330,32 +329,11 @@ class PenaltiesFrontendControllerSpec extends SpecBase with LogCapturing with LP
         ArgumentMatchers.any(),
         ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
 
-      disableFeatureSwitch(CallAPI1812HIP)
-    }
-
-    s"use unified service with regular backend when CallAPI1812HIP feature switch is disabled" in new Setup {
-      disableFeatureSwitch(CallAPI1812HIP)
-
-      when(mockGetPenaltyDetailsService.getPenaltyDetails(ArgumentMatchers.any())(ArgumentMatchers.any()))
-        .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(mockConvertedPenaltyDetails))))
-      when(
-        mockPenaltiesFrontendService.handleAndCombineGetFinancialDetailsData(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(
-          ArgumentMatchers.any(),
-          ArgumentMatchers.any()))
-        .thenReturn(Future.successful(Right(CombinedPenaltyDetails(mockConvertedPenaltyDetails))))
-
-      val result = controller.getPenaltiesData(regime, idType, id, Some("123456789"))(fakeRequest)
-      status(result) shouldBe Status.OK
-
-      verify(mockGetPenaltyDetailsService, times(1)).getPenaltyDetails(ArgumentMatchers.any())(ArgumentMatchers.any())
-      verify(mockPenaltiesFrontendService, times(1)).handleAndCombineGetFinancialDetailsData(
-        ArgumentMatchers.any(),
-        ArgumentMatchers.any(),
-        ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
+      
     }
 
     s"return ISE (${Status.INTERNAL_SERVER_ERROR}) when unified service call fails" in new Setup {
-      enableFeatureSwitch(CallAPI1812HIP)
+      
 
       when(mockGetPenaltyDetailsService.getPenaltyDetails(ArgumentMatchers.any())(ArgumentMatchers.any()))
         .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(Status.INTERNAL_SERVER_ERROR))))
@@ -363,11 +341,11 @@ class PenaltiesFrontendControllerSpec extends SpecBase with LogCapturing with LP
       val result = controller.getPenaltiesData(regime, idType, id, Some("123456789"))(fakeRequest)
       status(result) shouldBe Status.INTERNAL_SERVER_ERROR
 
-      disableFeatureSwitch(CallAPI1812HIP)
+      
     }
 
     s"return NOT_FOUND (${Status.NOT_FOUND}) when unified service returns 404" in new Setup {
-      enableFeatureSwitch(CallAPI1812HIP)
+      
 
       when(mockGetPenaltyDetailsService.getPenaltyDetails(ArgumentMatchers.any())(ArgumentMatchers.any()))
         .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(Status.NOT_FOUND))))
@@ -376,11 +354,11 @@ class PenaltiesFrontendControllerSpec extends SpecBase with LogCapturing with LP
       status(result) shouldBe Status.NOT_FOUND
       contentAsString(result) shouldBe s"A downstream call returned 404 for $vrn123456789"
 
-      disableFeatureSwitch(CallAPI1812HIP)
+      
     }
 
     s"return ISE (${Status.INTERNAL_SERVER_ERROR}) when unified service returns malformed data" in new Setup {
-      enableFeatureSwitch(CallAPI1812HIP)
+      
 
       when(mockGetPenaltyDetailsService.getPenaltyDetails(ArgumentMatchers.any())(ArgumentMatchers.any()))
         .thenReturn(Future.successful(Left(GetPenaltyDetailsMalformed)))
@@ -391,7 +369,7 @@ class PenaltiesFrontendControllerSpec extends SpecBase with LogCapturing with LP
         logs.exists(_.getMessage.contains(PagerDutyKeys.MALFORMED_RESPONSE_FROM_1812_API.toString)) shouldBe true
       }
 
-      disableFeatureSwitch(CallAPI1812HIP)
+      
     }
   }
 }

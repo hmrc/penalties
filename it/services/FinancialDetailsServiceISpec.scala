@@ -26,11 +26,11 @@ import org.scalatest.prop.TableDrivenPropertyChecks
 import play.api.http.Status
 import play.api.http.Status.{IM_A_TEAPOT, INTERNAL_SERVER_ERROR}
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
-import utils.{ETMPWiremock, IntegrationSpecCommonBase}
+import utils.{HipFinancialWiremock, IntegrationSpecCommonBase}
 
 import java.time.LocalDate
 
-class FinancialDetailsServiceISpec extends IntegrationSpecCommonBase with ETMPWiremock with FeatureSwitching with TableDrivenPropertyChecks {
+class FinancialDetailsServiceISpec extends IntegrationSpecCommonBase with HipFinancialWiremock with FeatureSwitching with TableDrivenPropertyChecks {
   setEnabledFeatureSwitches()
   val service: FinancialDetailsService = injector.instanceOf[FinancialDetailsService]
   val financialDataQueryParam: String = {

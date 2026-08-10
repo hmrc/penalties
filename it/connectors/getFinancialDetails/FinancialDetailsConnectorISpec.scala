@@ -23,11 +23,11 @@ import play.api.http.Status
 import play.api.http.Status.IM_A_TEAPOT
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
-import utils.{IntegrationSpecCommonBase, ETMPWiremock}
+import utils.{IntegrationSpecCommonBase, HipFinancialWiremock}
 
 import java.time.LocalDate
 
-class FinancialDetailsConnectorISpec extends IntegrationSpecCommonBase with ETMPWiremock with FeatureSwitching {
+class FinancialDetailsConnectorISpec extends IntegrationSpecCommonBase with HipFinancialWiremock with FeatureSwitching {
 
   private val regime = Regime("VATC")
   private val idType = IdType("VRN")

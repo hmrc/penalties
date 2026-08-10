@@ -29,6 +29,7 @@ import org.mockito.Mockito.when
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.libs.json.{JsString, Json}
 import services.FilterService.{doesAppealInformationHave9xAppealStatus, tryJsonParseOrJsString}
+import utils.LoggingContext
 
 import java.time.LocalDate
 

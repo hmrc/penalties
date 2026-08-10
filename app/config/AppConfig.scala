@@ -140,8 +140,7 @@ class AppConfig @Inject() (val config: Configuration, servicesConfig: ServicesCo
     val idValue                = agnosticEnrolmentKey.id.value
     val dateLimitParam: String = dateLimit.map(dateLimit => s"&dateLimit=$dateLimit").getOrElse("")
     val penaltiesHipUrl = s"/etmp/RESTAdapter/cross-regime/taxpayer/penalties?taxRegime=$regime&idType=$idType&idNumber=$idValue$dateLimitParam"
-    if (isEnabled(CallAPI1812HIP)) hipBase + penaltiesHipUrl
-    else stubBase + penaltiesHipUrl
+    hipBase + penaltiesHipUrl
   }
 
   def getComplianceDataUrl(agnosticEnrolmentKey: AgnosticEnrolmentKey, fromDate: String, toDate: String): String = {

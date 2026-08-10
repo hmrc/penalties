@@ -26,11 +26,11 @@ import models.{AgnosticEnrolmentKey, Id, IdType, Regime}
 import play.api.http.Status._
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.http.HttpResponse
-import utils.{IntegrationSpecCommonBase, ETMPWiremock}
+import utils.{IntegrationSpecCommonBase, HipFinancialWiremock}
 
 import java.time.LocalDate
 
-class FinancialDetailsHipConnectorISpec extends IntegrationSpecCommonBase with ETMPWiremock with FeatureSwitching {
+class FinancialDetailsHipConnectorISpec extends IntegrationSpecCommonBase with HipFinancialWiremock with FeatureSwitching {
 
   val connector: FinancialDetailsHipConnector = injector.instanceOf[FinancialDetailsHipConnector]
 

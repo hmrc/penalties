@@ -19,7 +19,7 @@ package controllers
 import base.{LogCapturing, SpecBase}
 import config.featureSwitches.FeatureSwitching
 import connectors.getFinancialDetails.FinancialDetailsConnector
-import connectors.getPenaltyDetails.{HIPPenaltyDetailsConnector, PenaltyDetailsConnector}
+import connectors.getPenaltyDetails.HIPPenaltyDetailsConnector
 import connectors.parsers.getFinancialDetails.FinancialDetailsParser.{
   FinancialDetailsFailureResponse,
   FinancialDetailsMalformed,
@@ -61,7 +61,6 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
   val mockGetPenaltyDetailsService: PenaltyDetailsService         = mock(classOf[PenaltyDetailsService])
   val mockGetFinancialDetailsService: FinancialDetailsService     = mock(classOf[FinancialDetailsService])
   val mockGetFinancialDetailsConnector: FinancialDetailsConnector = mock(classOf[FinancialDetailsConnector])
-  val mockGetPenaltyDetailsConnector: PenaltyDetailsConnector     = mock(classOf[PenaltyDetailsConnector])
   val mockHIPPenaltyDetailsConnector: HIPPenaltyDetailsConnector  = mock(classOf[HIPPenaltyDetailsConnector])
 
   val controllerComponents: ControllerComponents = injector.instanceOf[ControllerComponents]
@@ -171,7 +170,6 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
     reset(mockAppealsService)
     reset(mockAuditService)
     reset(mockAPIService)
-    reset(mockGetPenaltyDetailsConnector)
     reset(mockHIPPenaltyDetailsConnector)
     reset(mockGetPenaltyDetailsService)
 
@@ -180,7 +178,6 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
       mockAPIService,
       mockGetPenaltyDetailsService,
       mockGetFinancialDetailsService,
-      mockGetPenaltyDetailsConnector,
       mockHIPPenaltyDetailsConnector,
       dateHelper,
       controllerComponents,
@@ -1014,7 +1011,6 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
         (responseJson \ "latePaymentPenalty" \ "ManualLPPIndicator").as[Boolean] shouldBe true
         verify(mockAuditService, times(1)).audit(any())(any(), any(), any())
         verify(mockHIPPenaltyDetailsConnector, times(1)).getPenaltyDetailsForAPI(any(), any())(any())
-        verify(mockGetPenaltyDetailsConnector, times(0)).getPenaltyDetailsForAPI(any(), any())(any())
       }
     }
 
